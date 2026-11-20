@@ -4,8 +4,13 @@ import { providerConnectionScopeEndpoint, type ProviderCredentialRequestOptions 
 import type { BackfillPreviewResult, BackfillExecutionHistoryResponse, BackfillProgressResponse, BackfillTriggerRequest, BackfillTriggerResult, AlpacaBrokerageConnectionRequest, BrokerageConnectionStatus, BrokerageHouseholdPortfolio, AssetOperationsDetail, MultiAssetCoverageSummary, NetSymbolPosition, ProviderConnectionRow, ProviderCredentialMutationResult, ProviderCredentialUpsertRequest, ProviderCredentialVerificationResult, ProviderReadinessSummary, ProviderRoutePreviewRequest, ProviderRoutePreviewResponse, ProviderRoutingBinding, ProviderRoutingConnection, ProviderRoutingTrustSnapshot, ManualCsvProviderIntegrationDryRunRequest, ProviderIntegrationActivationReadiness, ProviderIntegrationActivationRequest, ProviderIntegrationActivationResult, ProviderIntegrationConnectionMonitor, ProviderIntegrationDryRunResult, ProviderIntegrationManifest, ProviderIntegrationOpenApiImportRequest, ProviderIntegrationOpenApiImportResult, ProviderIntegrationPromotionReadinessPreview, ProviderIntegrationQuarantineReplayRequest, ProviderIntegrationQuarantineReplayResult, ProviderIntegrationQuarantineResolutionRequest, ProviderIntegrationQuarantineResolutionResult, ProviderIntegrationQuarantineReview, ProviderIntegrationReconciliationHandoffHistory, ProviderIntegrationReconciliationHandoffRequest, ProviderIntegrationReconciliationHandoffResult, ProviderIntegrationRestDryRunRequest, ProviderIntegrationRunDueSyncRequest, ProviderIntegrationRunDueSyncResult, ProviderIntegrationSchemaDriftCheckRequest, ProviderIntegrationSchemaDriftCheckResult, ProviderIntegrationSetupSaveRequest, ProviderIntegrationSetupSaveResult, ProviderIntegrationStagingIdentityResolutionPreview, ProviderIntegrationStagingReview, ProviderIntegrationSyncPlan, ProviderIntegrationSyncRunHistory, ProviderIntegrationTemplateCatalogEntry, PlaidLinkTokenRequest, PlaidLinkTokenResponse, PlaidPublicTokenExchangeRequest, PlaidPublicTokenExchangeResult, PlaidInstitutionSearchResult } from "@/types";
 import { BACKFILL_API_ENDPOINTS, PORTFOLIO_API_ENDPOINTS, PLAID_API_ENDPOINTS, PROVIDER_API_ENDPOINTS, PROVIDER_INTEGRATION_API_ENDPOINTS, PROVIDER_ROUTING_API_ENDPOINTS, QUALITY_API_ENDPOINTS, SECURITY_MASTER_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, securityMasterCoverageDraftEndpoint, brokerageConnectionConnectEndpoint, brokerageConnectionEndpoint, brokerageConnectionStatusEndpoint, portfolioHouseholdEndpoint, portfolioSymbolExposureEndpoint, providerCredentialEndpoint, providerVerifyEndpoint, workstationProviderIntegrationConnectionMonitorEndpoint, workstationProviderIntegrationConnectionRunDueSyncEndpoint, workstationProviderIntegrationConnectionSyncPlanEndpoint, workstationProviderIntegrationConnectionSyncRunsEndpoint, workstationProviderIntegrationIdentityResolutionEndpoint, workstationProviderIntegrationPromotionReadinessEndpoint, workstationProviderIntegrationQuarantineReviewEndpoint, workstationProviderIntegrationReadinessEndpoint, workstationProviderIntegrationReconciliationHandoffHistoryEndpoint, workstationProviderIntegrationStagingReviewEndpoint, workstationProviderIntegrationTemplateEndpoint, providerRemoveEndpoint, providerTestEndpoint, qualityAnomalyAcknowledgeEndpoint, securityMasterCorporateActionSourceProposalAcceptEndpoint, workstationAssetOperationsEndpoint } from "@/lib/workstation-endpoints";
 import { deleteJson, getJson, postJson, putJson, type ApiRequestOptions } from "@/lib/api/http-client";
+import type { BackfillJobReceipt, HistoricalBackfillProvider, QueueBackfillRequest } from "@/types";
 
 // --- Backfill mutations ---
+
+export function getHistoricalBackfillProviders(options: ApiRequestOptions = {}) {
+  return getJson<HistoricalBackfillProvider[]>(BACKFILL_API_ENDPOINTS.providers, options);
+}
 
 export function getBackfillProgress(options: ApiRequestOptions = {}) {
   return getJson<BackfillProgressResponse>(BACKFILL_API_ENDPOINTS.progress, options);
@@ -20,8 +25,16 @@ export function triggerBackfill(request: BackfillTriggerRequest) {
   return postJson<BackfillTriggerResult>(BACKFILL_API_ENDPOINTS.run, request);
 }
 
+export function queueBackfill(request: QueueBackfillRequest, options: ApiRequestOptions = {}) {
+  return postJson<BackfillJobReceipt>(BACKFILL_API_ENDPOINTS.jobs, request, options);
+}
+
+export function getBackfillJob(id: string, options: ApiRequestOptions = {}) {
+  return getJson<BackfillJobReceipt>(BACKFILL_API_ENDPOINTS.jobById.replace("{id}", encodeURIComponent(id)), options);
+}
+
 export function previewBackfill(request: BackfillTriggerRequest) {
-  return postJson<BackfillPreviewResult>(BACKFILL_API_ENDPOINTS.runPreview, request);
+  return postJson<BackfillPreviewResult>(BACKFILL_API_ENDPOINTS.runPreview, { ...request, prepareQueuedJob: true });
 }
 
 // --- Provider management ---
@@ -355,8 +368,26 @@ export function getProviderConnections(options: ProviderCredentialRequestOptions
   return getJson<ProviderConnectionRow[]>(providerConnectionScopeEndpoint(PROVIDER_API_ENDPOINTS.connections, options.connectionId), options);
 }
 
-export function getProviderReadiness(options: ApiRequestOptions = {}) {
-  return getJson<ProviderReadinessSummary>(PROVIDER_API_ENDPOINTS.readiness, options);
+export async function getProviderReadiness(options: ApiRequestOptions = {}): Promise<ProviderReadinessSummary> {
+  const readiness = await getJson<ProviderReadinessSummary>(PROVIDER_API_ENDPOINTS.readiness, options);
+  const statuses = ["Ready", "Review", "Degraded", "Blocked", "Unknown"] as const;
+  const kinds = ["Credential", "Connection", "Validation", "Degradation", "Plaid", "Routing"] as const;
+  const readStatus = (status: ProviderReadinessSummary["status"] | number) =>
+    typeof status === "number" ? statuses[status] ?? "Unknown" : status;
+
+  // The provider readiness endpoint can serialize these enums by ordinal.
+  return {
+    ...readiness,
+    status: readStatus(readiness.status),
+    providers: readiness.providers.map((provider) => ({
+      ...provider,
+      status: readStatus(provider.status),
+      evidence: provider.evidence.flatMap((item) => {
+        const kind = typeof item.kind === "number" ? kinds[item.kind] : item.kind;
+        return kind ? [{ ...item, kind, status: readStatus(item.status) }] : [];
+      })
+    }))
+  };
 }
 
 export function putProviderCredentials(

@@ -244,16 +244,15 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// <summary>
     /// Wait for a rate limit slot before making a request.
     /// </summary>
-    protected async Task WaitForRateLimitSlotAsync(CancellationToken ct)
-    {
-        await RequestRateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-    }
+    protected Task WaitForRateLimitSlotAsync(CancellationToken ct) =>
+        HistoricalBackfillQuotaSession.WaitForRequestAsync(this, RequestRateLimiter, ct);
 
     /// <summary>
     /// Record that a rate limit was hit.
     /// </summary>
     protected void RecordRateLimitHit(TimeSpan? retryAfter)
     {
+        HistoricalBackfillQuotaSession.RecordProviderRateLimit(Name);
         var duration = retryAfter is { } value ? (value > TimeSpan.Zero ? value : TimeSpan.Zero) : RateLimitWindow;
         RequestRateLimiter.ApplyCooldown(duration);
         DateTimeOffset resetAt;

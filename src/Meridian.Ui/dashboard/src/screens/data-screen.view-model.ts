@@ -55,9 +55,18 @@ import type {
   ProviderSetupSummaryState,
   ProviderSetupWorkflowStepState
 } from "@/screens/data-screen.provider-setup.types";
+import {
+  formatBackfillProgressTimestamp,
+  formatBackfillRange,
+  useBackfillJobHistory,
+  waitForBackfillProgressPoll
+} from "@/screens/data-screen.backfill-jobs";
 import { buildDataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
 import type {
   BackfillPreviewResult,
+  BackfillJobReceipt,
+  HistoricalBackfillProvider,
+  QueueBackfillRequest,
   BackfillExecutionHistoryResponse,
   BackfillProviderProgressSnapshot,
   BackfillProgressResponse,
@@ -168,6 +177,9 @@ export interface BackfillProviderOptionState {
   description: string;
   badge: string;
 }
+
+type BackfillProviderChoice = Pick<DataProviderRecord, "provider"> &
+  Partial<Pick<DataProviderRecord, "capability" | "status">> & { label?: string; description?: string };
 
 export interface BackfillDialogSummaryItemState {
   id: string;
@@ -284,6 +296,9 @@ export interface BackfillTriggerServices {
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
   getProgress: (signal?: AbortSignal) => Promise<BackfillProgressResponse>;
   getExecutions?: (signal?: AbortSignal) => Promise<BackfillExecutionHistoryResponse>;
+  queue?: (request: QueueBackfillRequest, signal?: AbortSignal) => Promise<BackfillJobReceipt>;
+  getJob?: (id: string, signal?: AbortSignal) => Promise<BackfillJobReceipt>;
+  getProviders?: (signal?: AbortSignal) => Promise<HistoricalBackfillProvider[]>;
 }
 
 export interface ProviderSetupLifecycleServices {
@@ -781,6 +796,9 @@ export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
 const defaultBackfillServices: BackfillTriggerServices = {
   preview: (request) => workstationApi.previewBackfill(request),
   run: (request) => workstationApi.triggerBackfill(request),
+  queue: (request, signal) => workstationApi.queueBackfill(request, { signal }),
+  getJob: (id, signal) => workstationApi.getBackfillJob(id, { signal }),
+  getProviders: (signal) => workstationApi.getHistoricalBackfillProviders({ signal }),
   getProgress: (signal) => workstationApi.getBackfillProgress({ signal }),
   getExecutions: (signal) => workstationApi.getBackfillExecutionHistory(100, { signal })
 };
@@ -989,15 +1007,12 @@ export function useDataViewModel(
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
   const [preview, setPreview] = useState<BackfillPreviewResult | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
+  const [historicalProviders, setHistoricalProviders] = useState<HistoricalBackfillProvider[] | null>(null);
   const [liveProgress, setLiveProgress] = useState<BackfillProgressResponse | null>(null);
-  const [remediationHistory, setRemediationHistory] = useState<BackfillExecutionHistoryResponse | null>(null);
-  const [remediationHistoryLoading, setRemediationHistoryLoading] = useState(false);
-  const [remediationHistoryError, setRemediationHistoryError] = useState<string | null>(null);
   const [remediationQueueSort, setRemediationQueueSort] = useState<BackfillRemediationQueueSortState>({
     columnId: "tier",
     direction: "asc"
   });
-  const remediationHistoryRevisionRef = useRef(0);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
@@ -1060,10 +1075,23 @@ export function useDataViewModel(
   const [providerVerifyResult, setProviderVerifyResult] = useState<ProviderCredentialVerificationResult | null>(null);
   const [providerVerifyError, setProviderVerifyError] = useState<ApiErrorDisplay | null>(null);
   const providerVerifyCommandRevisionRef = useRef(0);
-  const configuredBackfillProviders = useMemo(
-    () => data?.providers ?? [],
-    [data?.providers]
+  const configuredBackfillProviders = useMemo<BackfillProviderChoice[]>(
+    () => historicalProviders?.map(({ name, displayName, description }) => ({
+      provider: name, label: displayName, description
+    })) ?? data?.providers ?? [],
+    [data?.providers, historicalProviders]
   );
+  const getHistoricalProviders = services.getProviders;
+  useEffect(() => {
+    if (!dialogOpen || !getHistoricalProviders) return undefined;
+    const controller = new AbortController();
+    void getHistoricalProviders(controller.signal).then((providers) => {
+      if (!controller.signal.aborted) setHistoricalProviders(providers);
+    }).catch(() => {
+      // Keep the existing workspace choices when talking to an older or unavailable host.
+    });
+    return () => controller.abort();
+  }, [dialogOpen, getHistoricalProviders]);
 
 
   const nextProviderSetupCommandRevision = useCallback(() => {
@@ -1086,46 +1114,11 @@ export function useDataViewModel(
   }, [backfillLifecycle.invalidate, uploadLifecycle.invalidate]);
 
   const workstream = useMemo(() => resolveDataWorkstream(pathname), [pathname]);
-  const getBackfillExecutions = services.getExecutions;
-  const refreshRemediationHistory = useCallback(async (signal?: AbortSignal) => {
-    if (!getBackfillExecutions) {
-      return;
-    }
-
-    const revision = remediationHistoryRevisionRef.current + 1;
-    remediationHistoryRevisionRef.current = revision;
-    setRemediationHistoryLoading(true);
-    setRemediationHistoryError(null);
-
-    try {
-      const response = await getBackfillExecutions(signal);
-      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
-        setRemediationHistory(response);
-      }
-    } catch (failure: unknown) {
-      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
-        setRemediationHistoryError(
-          describeApiError(failure, "Backfill remediation history is unavailable.").summary
-        );
-      }
-    } finally {
-      if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
-        setRemediationHistoryLoading(false);
-      }
-    }
-  }, [getBackfillExecutions]);
-
-  useEffect(() => {
-    if (workstream !== "backfills") {
-      return undefined;
-    }
-
-    const controller = new AbortController();
-    void refreshRemediationHistory(controller.signal);
-
-    return () => controller.abort();
-  }, [refreshRemediationHistory, workstream]);
-
+  const {
+    backfillJob, backfillJobStatusError, setBackfillJob, resetBackfillJob,
+    remediationHistory, remediationHistoryLoading, remediationHistoryError,
+    refreshRemediationHistory, jobReceipts, dataWithBackfillJobs
+  } = useBackfillJobHistory(data, workstream, services.getExecutions, services.getJob);
   const remediationQueueState = useMemo(
     () => buildBackfillRemediationQueueState(remediationHistory, remediationQueueSort),
     [remediationHistory, remediationQueueSort]
@@ -1142,8 +1135,8 @@ export function useDataViewModel(
   );
   const selectedProviderRowId = selectedProvider ? buildProviderRowId(selectedProvider.provider) : selectedProviderId;
   const selectedBackfill = useMemo(
-    () => resolveSelectedBackfill(data?.backfills ?? [], selectedBackfillId),
-    [data, selectedBackfillId]
+    () => resolveSelectedBackfill(dataWithBackfillJobs?.backfills ?? [], selectedBackfillId),
+    [dataWithBackfillJobs, selectedBackfillId]
   );
   const selectedExport = useMemo(
     () => resolveSelectedExport(data?.exports ?? [], selectedExportId),
@@ -1159,7 +1152,7 @@ export function useDataViewModel(
   );
   const presentation = useMemo(
     () => buildDataPresentationState(
-      data,
+      dataWithBackfillJobs,
       selectedBackfill?.jobId ?? null,
       workstream,
       selectedProviderId,
@@ -1174,7 +1167,7 @@ export function useDataViewModel(
       )
     ),
     [
-      data,
+      dataWithBackfillJobs,
       providerEvidence,
       providerVerifyBusy,
       providerVerifyError,
@@ -1251,11 +1244,12 @@ export function useDataViewModel(
     setDialogOpen(true);
     setPreview(null);
     setResult(null);
+    resetBackfillJob();
     setLiveProgress(null);
     setError(null);
     setBusy(false);
     setPhase("idle");
-  }, [backfillLifecycle.invalidate]);
+  }, [backfillLifecycle.invalidate, resetBackfillJob]);
 
   useEffect(() => {
     setForm((current) => {
@@ -1286,9 +1280,10 @@ export function useDataViewModel(
     setForm((current) => ({ ...current, [field]: value }));
     setPreview(null);
     setResult(null);
+    resetBackfillJob();
     setLiveProgress(null);
     setError(null);
-  }, []);
+  }, [resetBackfillJob]);
 
   const selectUploadTemplate = useCallback((templateId: string) => {
     setSelectedUploadTemplateId(templateId);
@@ -1449,14 +1444,14 @@ export function useDataViewModel(
     }
   }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, services]);
 
-  const runBackfill = useCallback(async () => {
+  const runBackfill = useCallback(async (notBeforeUtc: string | null = null) => {
     const validationError = validateBackfillForm(form, configuredBackfillProviders);
     if (validationError) {
       setError(buildDataErrorState(validationError));
       return;
     }
 
-    if (!preview) {
+    if (!preview || normalizeBackfillProviderValue(preview.provider) !== normalizeBackfillProviderValue(form.provider)) {
       setError(buildDataErrorState("Preview the request before running the backfill."));
       return;
     }
@@ -1467,6 +1462,28 @@ export function useDataViewModel(
     token.safeSetState(setPhase, "running");
     token.safeSetState(setError, null);
     token.safeSetState(setLiveProgress, null);
+
+    if (preview.previewId && services.queue) {
+      try {
+        const job = await services.queue({
+          previewId: preview.previewId,
+          acceptThrottle: preview.quota?.exceedsBudget === true && notBeforeUtc === null,
+          notBeforeUtc
+        }, token.signal);
+        token.safeSetState(setBackfillJob, job);
+        token.safeSetState(setSelectedBackfillId, job.executionId);
+        backfillLifecycle.succeed(token, { message: `Backfill ${job.status.toLowerCase()}.` });
+        void refreshRemediationHistory(undefined, true);
+      } catch (err) {
+        token.safeSetState(setError, buildDataErrorState(err, "Backfill could not be queued."));
+        backfillLifecycle.fail(token, err, { fallback: "Backfill could not be queued." });
+      } finally {
+        token.safeSetState(setBusy, false);
+        token.safeSetState(setPhase, "idle");
+        backfillLifecycle.finish(token);
+      }
+      return;
+    }
 
     const pollingController = new AbortController();
     const abortPolling = () => pollingController.abort();
@@ -1525,7 +1542,7 @@ export function useDataViewModel(
       }
       backfillLifecycle.finish(token);
     }
-  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, refreshRemediationHistory, services]);
+  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, refreshRemediationHistory, services, setBackfillJob]);
 
   const resetPlaidInstitutionSearch = useCallback(() => {
     plaidInstitutionSearchRevisionRef.current += 1;
@@ -1891,6 +1908,7 @@ export function useDataViewModel(
     selectProviderTab: setSelectedProviderTab,
     verifySelectedProvider,
     selectedBackfill,
+    selectedBackfillReceipt: selectedBackfill ? jobReceipts.get(selectedBackfill.jobId) ?? null : null,
     selectedBackfillId,
     selectedBackfillRowId: selectedBackfill ? buildBackfillRowId(selectedBackfill.jobId) : null,
     selectBackfill: setSelectedBackfillId,
@@ -1920,6 +1938,8 @@ export function useDataViewModel(
     form,
     updateBackfillForm,
     preview,
+    backfillJob,
+    backfillJobStatusError,
     previewResultCard,
     result,
     runResultCard,
@@ -3392,9 +3412,12 @@ function backfillRowClassName(status: DataBackfillRecord["status"]): DataOperati
     return "bg-paper/5";
   }
 
-  if (status === "Review") {
+  if (status === "Review" || status === "Throttled") {
     return "bg-warning/5";
   }
+
+  if (status === "Failed") return "bg-danger/5";
+  if (status === "Completed") return "bg-success/5";
 
   return "bg-background/50";
 }
@@ -3467,7 +3490,7 @@ export function buildBackfillTriggerState({
   error: ApiErrorDisplay | null;
   preview: BackfillPreviewResult | null;
   result: BackfillTriggerResult | null;
-  configuredProviders?: DataProviderRecord[];
+  configuredProviders?: BackfillProviderChoice[];
   requestStatus?: RequestLifecycleStatus;
 }): BackfillTriggerState {
   const validationError = validateBackfillForm(form, configuredProviders);
@@ -3524,7 +3547,7 @@ export function buildBackfillDialogState({
   preview: BackfillPreviewResult | null;
   error?: ApiErrorDisplay | null;
   result?: BackfillTriggerResult | null;
-  configuredProviders?: DataProviderRecord[];
+  configuredProviders?: BackfillProviderChoice[];
 }): BackfillDialogState {
   const previewDisabledReason = resolveBackfillPreviewDisabledReason({ busy, phase, validationError });
   const runDisabledReason = resolveBackfillRunDisabledReason({ busy, phase, validationError, preview });
@@ -3609,14 +3632,17 @@ export function buildBackfillDialogState({
 
 export function buildBackfillDialogSummaryItems(
   form: BackfillFormState,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: BackfillProviderChoice[] = []
 ): BackfillDialogSummaryItemState[] {
   const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
   const provider = providerOptions.length > 0
     ? resolveBackfillProviderLabel(form.provider, configuredProviders)
     : "None configured";
   const symbols = parseSymbols(form.symbols);
-  const range = formatBackfillRange(form.from.trim() || null, form.to.trim() || null);
+  const from = form.from.trim();
+  const to = form.to.trim();
+  const range = from ? formatBackfillRange(from, to || "today")
+    : to ? `One year ending ${to}` : "One year ending today";
 
   return [
     { id: "provider", label: "Provider", value: provider, tone: providerOptions.length > 0 ? "default" : "warning" },
@@ -3632,7 +3658,7 @@ export function buildBackfillDialogSummaryItems(
 
 export function buildBackfillProviderOptions(
   selectedProvider: string,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: BackfillProviderChoice[] = []
 ): BackfillProviderOptionState[] {
   const options = new Map<string, BackfillProviderOptionState>();
 
@@ -3643,12 +3669,13 @@ export function buildBackfillProviderOptions(
     }
 
     const knownProvider = BACKFILL_PROVIDER_OPTIONS.find((option) => option.value === value);
-    const label = provider.provider.trim() || knownProvider?.label || value;
-    const capability = provider.capability.trim() || "historical backfill";
+    const label = provider.label?.trim() || provider.provider.trim() || knownProvider?.label || value;
+    const capability = provider.capability?.trim() || "historical backfill";
+    const status = provider.status ? ` Current status is ${provider.status.toLowerCase()}.` : "";
     options.set(value, {
       value,
       label,
-      description: `${label} is configured for ${capability}; current status is ${provider.status.toLowerCase()}.`,
+      description: provider.description || `${label} is configured for ${capability}.${status}`,
       badge: "Configured"
     });
   }
@@ -3664,7 +3691,7 @@ export function buildBackfillProviderOptions(
 
 export function buildBackfillProviderDetail(
   provider: string,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: BackfillProviderChoice[] = []
 ): string {
   const options = buildBackfillProviderOptions(provider, configuredProviders);
   if (options.length === 0) {
@@ -3678,7 +3705,7 @@ export function buildBackfillProviderDetail(
 
 function resolveBackfillProviderLabel(
   provider: string,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: BackfillProviderChoice[] = []
 ): string {
   const trimmed = provider.trim();
   const options = buildBackfillProviderOptions(provider, configuredProviders);
@@ -3833,7 +3860,7 @@ export function buildBackfillResultCardState(
     : formatCount((result as BackfillTriggerResult).barsWritten);
   const rangeText = formatBackfillRange(result.from, result.to);
   const timingText = isPreview
-    ? `${formatCount((result as BackfillPreviewResult).estimatedDurationSeconds)} sec est.`
+    ? "See quota estimate"
     : formatBackfillTiming((result as BackfillTriggerResult).startedUtc, (result as BackfillTriggerResult).completedUtc);
   const tone = isPreview ? "warning" : resolveBackfillResultTone(result as BackfillTriggerResult, kind);
   const statusLabel = isPreview ? "Preview only" : resolveBackfillResultStatusLabel(result as BackfillTriggerResult, kind);
@@ -3847,7 +3874,7 @@ export function buildBackfillResultCardState(
     { id: "symbols", label: "Symbols", value: symbolsText },
     { id: "range", label: "Range", value: rangeText },
     { id: "bars", label: "Bars", value: barsText },
-    { id: "timing", label: "Timing", value: timingText }
+    ...(!isPreview ? [{ id: "timing", label: "Timing", value: timingText }] : [])
   ];
 
   return {
@@ -3862,7 +3889,7 @@ export function buildBackfillResultCardState(
       `Symbols ${symbolsText}`,
       `Bars ${barsText}`,
       `Range ${rangeText}`,
-      `Timing ${timingText}`,
+      !isPreview ? `Timing ${timingText}` : null,
       !isPreview && (result as BackfillTriggerResult).error ? `Error ${(result as BackfillTriggerResult).error}` : null
     ].filter(Boolean).join(". ")
   };
@@ -3994,28 +4021,6 @@ function clampBackfillProgress(value: number): number {
   return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
 }
 
-function formatBackfillProgressTimestamp(value: string | null | undefined): string {
-  if (!value) return "Time unavailable";
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? "Time unavailable" : formatTimestamp(parsed);
-}
-
-function waitForBackfillProgressPoll(delayMs: number, signal: AbortSignal): Promise<void> {
-  if (signal.aborted) {
-    return Promise.resolve();
-  }
-
-  return new Promise((resolve) => {
-    const complete = () => {
-      window.clearTimeout(timer);
-      signal.removeEventListener("abort", complete);
-      resolve();
-    };
-    const timer = window.setTimeout(complete, delayMs);
-    signal.addEventListener("abort", complete, { once: true });
-  });
-}
-
 export function buildBackfillRequest(form: BackfillFormState): BackfillTriggerRequest {
   return {
     provider: form.provider.trim() || null,
@@ -4027,7 +4032,7 @@ export function buildBackfillRequest(form: BackfillFormState): BackfillTriggerRe
 
 export function validateBackfillForm(
   form: BackfillFormState,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: BackfillProviderChoice[] = []
 ): string | null {
   const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
   if (providerOptions.length === 0) {
@@ -4060,6 +4065,10 @@ export function validateBackfillForm(
 }
 
 export function buildBackfillNarrative(backfill: DataBackfillRecord): string {
+  if (backfill.status === "Scheduled") return "This backfill is waiting for its scheduled start.";
+  if (backfill.status === "Throttled") return "This backfill is waiting for a provider request slot.";
+  if (backfill.status === "Completed") return "This backfill has a completed execution receipt.";
+  if (backfill.status === "Failed" || backfill.status === "Cancelled") return "Review the execution receipt for the outcome.";
   if (backfill.status === "Running") {
     return `Replay is currently advancing for ${backfill.scope}; monitor provider pressure before adding more symbols.`;
   }
@@ -4113,25 +4122,6 @@ function formatProviderValue(value: string | null | undefined, fallback: string)
 function formatBackfillValue(value: string | null | undefined, fallback: string): string {
   const trimmed = value?.trim();
   return trimmed ? trimmed : fallback;
-}
-
-function formatBackfillRange(from: string | null, to: string | null): string {
-  const fromText = formatBackfillValue(from, "");
-  const toText = formatBackfillValue(to, "");
-
-  if (fromText && toText) {
-    return `${fromText} to ${toText}`;
-  }
-
-  if (fromText) {
-    return `From ${fromText}`;
-  }
-
-  if (toText) {
-    return `Through ${toText}`;
-  }
-
-  return "Full available history";
 }
 
 function formatBackfillTiming(startedUtc: string, completedUtc: string): string {

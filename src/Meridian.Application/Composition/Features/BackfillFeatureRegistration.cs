@@ -75,6 +75,11 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
             var historyPath = Path.Combine(dataRoot, "_status", "backfill-execution-history.json");
             return new BackfillExecutionHistory(historyPath);
         });
+        if (options.EnableBackfillQueue && options.EnableProcessWideHostedServices)
+        {
+            services.AddSingleton<BackfillJobQueue>();
+            services.AddHostedService(sp => sp.GetRequiredService<BackfillJobQueue>());
+        }
         services.AddSingleton<IngestionJobService>(sp =>
         {
             var configStore = sp.GetRequiredService<ConfigStore>();

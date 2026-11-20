@@ -173,6 +173,7 @@ public sealed record CompositionOptions
     {
         EnableSymbolManagement = true,
         EnableBackfillServices = true,
+        EnableBackfillQueue = true,
         EnableEtlServices = true,
         EnableMaintenanceServices = true,
         EnableDiagnosticServices = true,
@@ -240,6 +241,7 @@ public sealed record CompositionOptions
 
     public bool EnableSymbolManagement { get; init; }
     public bool EnableBackfillServices { get; init; }
+    public bool EnableBackfillQueue { get; init; }
     public bool EnableEtlServices { get; init; }
     public bool EnableMaintenanceServices { get; init; }
     public bool EnableDiagnosticServices { get; init; }

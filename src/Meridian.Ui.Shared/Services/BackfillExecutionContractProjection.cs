@@ -19,7 +19,8 @@ public static class BackfillExecutionContractProjection
         IReadOnlyList<BackfillExecutionLog> executions,
         string? defaultProvider,
         DateTimeOffset? nowUtc = null,
-        TimeSpan? dueSoonWindow = null)
+        TimeSpan? dueSoonWindow = null,
+        BackfillJobQueue? jobs = null)
     {
         ArgumentNullException.ThrowIfNull(executions);
 
@@ -30,7 +31,8 @@ public static class BackfillExecutionContractProjection
                 execution,
                 effectiveDefaultProvider,
                 evaluatedAt,
-                dueSoonWindow ?? DefaultDueSoonWindow))
+                dueSoonWindow ?? DefaultDueSoonWindow,
+                jobs))
             .ToArray();
         var remediationRows = executions
             .Where(IsAutoRemediation)
@@ -56,12 +58,14 @@ public static class BackfillExecutionContractProjection
         BackfillExecutionLog execution,
         string defaultProvider,
         DateTimeOffset evaluatedAt,
-        TimeSpan dueSoonWindow)
+        TimeSpan dueSoonWindow,
+        BackfillJobQueue? jobs)
     {
         var totalSymbols = execution.Statistics.TotalSymbols > 0
             ? execution.Statistics.TotalSymbols
             : execution.Symbols.Count;
         var bars = Math.Clamp(execution.Statistics.TotalBarsRetrieved, 0, int.MaxValue);
+        var job = jobs?.Project(execution);
 
         return new BackfillExecution
         {
@@ -69,7 +73,7 @@ public static class BackfillExecutionContractProjection
             ScheduleId = execution.ScheduleId,
             ScheduleName = execution.ScheduleName,
             Trigger = execution.Trigger.ToString(),
-            Status = execution.Status.ToString(),
+            Status = job?.Status ?? execution.Status.ToString(),
             StartedAt = (execution.StartedAt ?? execution.ScheduledAt).UtcDateTime,
             CompletedAt = execution.CompletedAt?.UtcDateTime,
             SymbolsProcessed = totalSymbols,
@@ -82,7 +86,8 @@ public static class BackfillExecutionContractProjection
             AutoRemediationAttemptCount = execution.AutoRemediationAttemptCount,
             AutoRemediationLastOutcome = execution.AutoRemediationLastOutcome,
             AutoRemediationIdempotencyKey = execution.AutoRemediationIdempotencyKey,
-            AutoRemediationSla = ProjectSla(execution, defaultProvider, evaluatedAt, dueSoonWindow)
+            AutoRemediationSla = ProjectSla(execution, defaultProvider, evaluatedAt, dueSoonWindow),
+            Job = job
         };
     }
 

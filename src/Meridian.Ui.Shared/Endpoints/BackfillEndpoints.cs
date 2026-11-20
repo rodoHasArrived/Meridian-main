@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
+using BackfillJobQueue = Meridian.Application.Backfill.BackfillJobQueue;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -25,6 +26,7 @@ public static class BackfillEndpoints
     private static readonly Regex SymbolPattern = new(@"^[A-Za-z0-9.\-]{1,20}$", RegexOptions.Compiled);
     private const int MaxIntradaySpanDays = 31;
     private const int MaxIntradaySymbolCount = 10;
+    private static readonly DateOnly EarliestBackfillDate = new(1970, 1, 1);
 
     /// <summary>
     /// Maps all backfill API endpoints.
@@ -78,10 +80,20 @@ public static class BackfillEndpoints
             if (backfill is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill coordinator");
 
+            var jobs = req.PrepareQueuedJob ? context.RequestServices.GetService<BackfillJobQueue>() : null;
+            if (req.PrepareQueuedJob && jobs is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill queue");
+
             BackfillRequest request;
             try
             {
                 request = CreateBackfillRequest(req);
+                if (jobs is not null)
+                {
+                    var to = request.To ?? DateOnly.FromDateTime(DateTime.UtcNow);
+                    var from = request.From ?? (to <= EarliestBackfillDate.AddYears(1) ? EarliestBackfillDate : to.AddYears(-1));
+                    request = request with { From = from, To = to };
+                }
                 var validation = ValidateBackfillRequest(context, req, request, backfill);
                 if (validation is not null)
                     return validation;
@@ -94,6 +106,11 @@ public static class BackfillEndpoints
             try
             {
                 var preview = await backfill.PreviewAsync(request, ct).ConfigureAwait(false);
+                if (jobs is not null && preview.Quota is { } estimate)
+                {
+                    var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId!;
+                    preview = preview with { PreviewId = jobs.Prepare(tenantId, request, estimate) };
+                }
                 return Results.Json(preview, jsonOptionsIndented);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -122,6 +139,61 @@ public static class BackfillEndpoints
         .ProducesProblem(StatusCodes.Status504GatewayTimeout)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .RequirePermission(UserPermission.TriggerBackfill);
+
+        group.MapPost(UiApiRoutes.BackfillJobs, (HttpContext context, QueueBackfillRequest request, IServiceProvider services) =>
+        {
+            var jobs = services.GetService<BackfillJobQueue>();
+            if (jobs is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill queue");
+
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId!;
+            try
+            {
+                var job = jobs.Submit(tenantId, request);
+                return Results.Json(job, jsonOptions, statusCode: StatusCodes.Status202Accepted);
+            }
+            catch (ArgumentException ex)
+            {
+                return ApiProblemDetails.Validation(context, "notBeforeUtc", ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Conflict(context, ex.Message);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(BackfillEndpoints))
+                    .LogError(ex, "Backfill queue admission could not be persisted.");
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill queue storage");
+            }
+        })
+        .WithName("QueueBackfill")
+        .WithDescription("Queues the exact previewed backfill, optionally with a future start time.")
+        .Produces<BackfillJobReceipt>(202)
+        .ProducesValidationProblem()
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.TriggerBackfill);
+
+        group.MapGet(UiApiRoutes.BackfillJobById, (HttpContext context, string id, IServiceProvider services) =>
+        {
+            var jobs = services.GetService<BackfillJobQueue>();
+            if (jobs is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill queue");
+
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId!;
+            var job = jobs.Read(tenantId, id);
+            return job is null
+                ? ApiProblemDetails.NotFound(context, "The requested backfill job was not found.")
+                : Results.Json(job, jsonOptions);
+        })
+        .WithName("GetBackfillJob")
+        .WithDescription("Returns the tenant-scoped status and receipt for a queued backfill.")
+        .Produces<BackfillJobReceipt>(200)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+        .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill);
 
         // Run backfill
         group.MapPost(UiApiRoutes.BackfillRun, async (
@@ -349,6 +421,57 @@ public static class BackfillEndpoints
         .Produces<Meridian.Contracts.Configuration.ProviderConfigAuditEntryDto[]>(200)
         .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
         .RequirePermission(UserPermission.ManageProviders);
+
+        group.MapGet(UiApiRoutes.BackfillQuotaPolicy, (HttpContext context, string provider, [FromServices] ConfigStore? store) =>
+            store is null
+                ? ApiProblemDetails.ServiceUnavailable(context, "configuration store")
+                : Results.Json(BackfillQuotaPolicy.ForProvider(store.Load().Backfill?.QuotaPolicies, provider), jsonOptions))
+        .WithName("GetBackfillQuotaPolicy")
+        .WithDescription("Reads the shared historical backfill policy for a provider.")
+        .Produces<BackfillQuotaPolicy>(200)
+        .RequirePermission(UserPermission.ManageProviders);
+
+        group.MapPut(UiApiRoutes.BackfillQuotaPolicy, async (
+            HttpContext context, string provider, BackfillQuotaPolicy policy,
+            [FromServices] BackfillCoordinator? backfill, [FromServices] ConfigStore? store, CancellationToken ct) =>
+        {
+            if (store is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "configuration store");
+            if (backfill is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill coordinator");
+            if (!backfill.HasHistoricalProvider(provider))
+                return ApiProblemDetails.Validation(context, "provider", "Select a configured historical provider.");
+            if (policy.ReserveHeadroomPercent is < 0 or > 99)
+                return ApiProblemDetails.Validation(context, "reserveHeadroomPercent", "Headroom must be between 0 and 99 percent.");
+            if (policy.MaxConcurrentRequests is < 1)
+                return ApiProblemDetails.Validation(context, "maxConcurrentRequests", "Concurrent requests must be at least one.");
+
+            var approved = policy.ApprovedEquivalentProviders ?? [];
+            if (approved.Length > 100 || approved.Any(name => string.IsNullOrWhiteSpace(name) ||
+                name.Equals(provider, StringComparison.OrdinalIgnoreCase) || !backfill.HasHistoricalProvider(name)))
+            {
+                return ApiProblemDetails.Validation(context, "approvedEquivalentProviders",
+                    "Choose configured historical providers other than the provider being edited.");
+            }
+
+            var updated = policy with { ApprovedEquivalentProviders = approved.Distinct(StringComparer.OrdinalIgnoreCase).ToArray() };
+            await store.UpdateAsync(config =>
+            {
+                var settings = config.Backfill ?? new BackfillConfig();
+                var policies = settings.QuotaPolicies ?? [];
+                var next = policies.Where(entry => !entry.Key.Equals(provider, StringComparison.OrdinalIgnoreCase))
+                    .ToDictionary(StringComparer.OrdinalIgnoreCase);
+                next[provider] = updated;
+                return config with { Backfill = settings with { QuotaPolicies = next } };
+            }, ct).ConfigureAwait(false);
+            return Results.Json(updated, jsonOptions);
+        })
+        .WithName("UpdateBackfillQuotaPolicy")
+        .WithDescription("Updates shared backfill headroom, concurrency, and administrator-approved equivalents.")
+        .Produces<BackfillQuotaPolicy>(200)
+        .ProducesValidationProblem()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.ManageProviders);
     }
 
     private static Meridian.Contracts.Configuration.BackfillProviderMetadataDto[] GetKnownProviderMetadata()
@@ -432,20 +555,20 @@ public static class BackfillEndpoints
         if (req.Symbols.Length > 100)
             return ApiProblemDetails.Validation(context, "symbols", "Maximum 100 symbols per backfill request.");
 
-        var invalidSymbols = req.Symbols.Where(s => !SymbolPattern.IsMatch(s)).ToArray();
+        var invalidSymbols = req.Symbols.Where(s => s is null || !SymbolPattern.IsMatch(s)).ToArray();
         if (invalidSymbols.Length > 0)
             return ApiProblemDetails.Validation(
                 context,
                 "symbols",
                 $"Invalid symbol format: {string.Join(", ", invalidSymbols.Take(5))}. Symbols must be 1-20 alphanumeric characters.");
 
-        if (req.From.HasValue && req.To.HasValue && req.From.Value > req.To.Value)
+        if (request.From > request.To)
             return ApiProblemDetails.Validation(context, "from", "From date must be before or equal to To date.");
 
-        if (req.From.HasValue && req.From.Value < new DateOnly(1970, 1, 1))
+        if (request.From < EarliestBackfillDate)
             return ApiProblemDetails.Validation(context, "from", "From date must be after 1970-01-01.");
 
-        if (req.To.HasValue && req.To.Value > DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)))
+        if (request.To > DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)))
             return ApiProblemDetails.Validation(context, "to", "To date cannot be in the future.");
 
         if (request.Granularity.IsIntraday())
@@ -458,9 +581,9 @@ public static class BackfillEndpoints
                     $"Intraday backfill supports at most {MaxIntradaySymbolCount} symbols per request.");
             }
 
-            if (req.From.HasValue && req.To.HasValue)
+            if (request.From.HasValue && request.To.HasValue)
             {
-                var spanDays = req.To.Value.DayNumber - req.From.Value.DayNumber + 1;
+                var spanDays = request.To.Value.DayNumber - request.From.Value.DayNumber + 1;
                 if (spanDays > MaxIntradaySpanDays)
                 {
                     return ApiProblemDetails.Validation(

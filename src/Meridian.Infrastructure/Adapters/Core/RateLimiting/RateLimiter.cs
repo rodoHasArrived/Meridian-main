@@ -1,4 +1,5 @@
 using Meridian.Contracts.Integrity;
+using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Serilog;
 
@@ -71,7 +72,11 @@ public sealed class RateLimiter : IDisposable
     /// Atomically reserve the complete request cost against short and daily limits. A wait
     /// cancelled before admission charges neither limit. No HTTP timeout runs during admission.
     /// </summary>
-    public async Task<TimeSpan> WaitForUnitsAsync(int units, CancellationToken ct = default)
+    public Task<TimeSpan> WaitForUnitsAsync(int units, CancellationToken ct = default) =>
+        WaitForUnitsAsync(units, ct, null, null);
+
+    internal async Task<TimeSpan> WaitForUnitsAsync(
+        int units, CancellationToken ct, BackfillQuotaPolicy? policy, Func<string, IDisposable>? onWait)
     {
         CancellationTokenSource linked;
         lock (_sync)
@@ -84,12 +89,18 @@ public sealed class RateLimiter : IDisposable
         using (linked)
         {
             var waitStart = _timeProvider.GetUtcNow();
-            await _semaphore.WaitAsync(linked.Token).ConfigureAwait(false);
+            if (!_semaphore.Wait(0, linked.Token))
+            {
+                using var waiting = onWait?.Invoke("pacing-queue");
+                await _semaphore.WaitAsync(linked.Token).ConfigureAwait(false);
+            }
+            var ownsAdmission = true;
             try
             {
                 while (true)
                 {
                     TimeSpan wait;
+                    string reason;
                     lock (_sync)
                     {
                         linked.Token.ThrowIfCancellationRequested();
@@ -97,6 +108,25 @@ public sealed class RateLimiter : IDisposable
                         CleanupOldTimestamps(now);
                         ValidateCost(units);
                         var next = NextAdmissionAt(now, units);
+                        reason = _cooldownUntil == next ? "provider-cooldown"
+                            : _limits.DailyMaximum is { } daily && (long)_dailyUnits + units > daily
+                                ? "daily-quota"
+                                : (long)_unitsInWindow + units > _limits.Maximum ? "quota-window" : "request-pacing";
+                        if (policy is { ReserveHeadroomPercent: > 0 })
+                        {
+                            var maximum = _limits.Maximum < int.MaxValue
+                                ? policy.GetBackfillLimit(_limits.Maximum) : _limits.Maximum;
+                            var dailyMaximum = _limits.DailyMaximum is { } cap ? policy.GetBackfillLimit(cap) : (int?)null;
+                            if (units > maximum || units > dailyMaximum)
+                                throw new InvalidOperationException("This request costs more than the shared backfill budget.");
+
+                            var reserved = NextAdmissionAt(now, units, maximum, dailyMaximum);
+                            if (reserved > next)
+                            {
+                                reason = "headroom";
+                                next = reserved;
+                            }
+                        }
                         wait = next - now;
                         if (wait <= TimeSpan.Zero)
                         {
@@ -109,14 +139,27 @@ public sealed class RateLimiter : IDisposable
                     // Task.Delay truncates fractional milliseconds, including positive waits
                     // below one millisecond. Round up so a frozen clock cannot spin at zero.
                     var delay = TimeSpan.FromMilliseconds(Math.Ceiling(wait.TotalMilliseconds));
-                    await Task.Delay(delay, _timeProvider, linked.Token).ConfigureAwait(false);
+                    // A headroom wait must leave the reserved slots usable by other workloads.
+                    if (reason == "headroom")
+                    {
+                        _semaphore.Release();
+                        ownsAdmission = false;
+                    }
+                    using (onWait?.Invoke(reason))
+                        await Task.Delay(delay, _timeProvider, linked.Token).ConfigureAwait(false);
+                    if (!ownsAdmission)
+                    {
+                        await _semaphore.WaitAsync(linked.Token).ConfigureAwait(false);
+                        ownsAdmission = true;
+                    }
                     // A response from another in-flight request can extend the cooldown while
                     // this caller sleeps; recheck all constraints before charging and sending.
                 }
             }
             finally
             {
-                _semaphore.Release();
+                if (ownsAdmission)
+                    _semaphore.Release();
             }
         }
     }
@@ -241,11 +284,12 @@ public sealed class RateLimiter : IDisposable
         _lastRequest = now;
     }
 
-    private DateTimeOffset NextAdmissionAt(DateTimeOffset now, int units)
+    private DateTimeOffset NextAdmissionAt(
+        DateTimeOffset now, int units, int? maximum = null, int? dailyMaximum = null)
     {
         var next = _lastRequest == DateTimeOffset.MinValue ? now : _lastRequest + _limits.MinimumDelay;
-        next = Max(next, CapacityAvailableAt(_requestTimestamps, _unitsInWindow, _limits.Maximum, units, _limits.Window, now));
-        if (_limits.DailyMaximum is { } daily && (long)_dailyUnits + units > daily)
+        next = Max(next, CapacityAvailableAt(_requestTimestamps, _unitsInWindow, maximum ?? _limits.Maximum, units, _limits.Window, now));
+        if ((dailyMaximum ?? _limits.DailyMaximum) is { } daily && (long)_dailyUnits + units > daily)
             next = Max(next, _limits.DailyReset == DailyQuotaResetMode.UtcMidnight
                 ? NextUtcMidnight(now)
                 : CapacityAvailableAt(_dailyTimestamps, _dailyUnits, daily, units, TimeSpan.FromDays(1), now));

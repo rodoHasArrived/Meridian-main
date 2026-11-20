@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
@@ -52,6 +53,45 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
     #endregion
 
     #region GET /api/backfill/status
+
+    [Fact]
+    public async Task QuotaPolicyRequiresProviderAdministration()
+    {
+        var policy = new { reserveHeadroomPercent = 20, maxConcurrentRequests = 1 };
+        var response = await _client.PutAsJsonAsync("/api/backfill/quota-policies/yahoo", policy);
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task QueuedPreviewFreezesDefaultDatesAndReportsUnknownQuota()
+    {
+        var previewResponse = await _client.PostAsJsonAsync("/api/backfill/run/preview", new
+        {
+            provider = "stooq",
+            symbols = new[] { "SPY" },
+            to = "2025-01-31",
+            prepareQueuedJob = true
+        });
+        previewResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var preview = JsonDocument.Parse(await previewResponse.Content.ReadAsStringAsync());
+        var plan = preview.RootElement;
+        plan.GetProperty("quota").GetProperty("providerLimit").ValueKind.Should().Be(JsonValueKind.Null);
+        plan.GetProperty("estimatedDurationSeconds").ValueKind.Should().Be(JsonValueKind.Null);
+        var when = DateTimeOffset.UtcNow.AddHours(1);
+        var queueResponse = await _client.PostAsJsonAsync("/api/backfill/jobs", new
+        {
+            previewId = plan.GetProperty("previewId").GetGuid(),
+            notBeforeUtc = when
+        });
+        queueResponse.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        using var queued = JsonDocument.Parse(await queueResponse.Content.ReadAsStringAsync());
+        queued.RootElement.GetProperty("status").GetString().Should().Be("Scheduled");
+        queued.RootElement.GetProperty("from").GetString().Should().Be("2024-01-31");
+        queued.RootElement.GetProperty("to").GetString().Should().Be("2025-01-31");
+        var id = queued.RootElement.GetProperty("executionId").GetString();
+        var receiptResponse = await _client.GetAsync($"/api/backfill/jobs/{id}");
+        receiptResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
 
     [Fact]
     public async Task GetStatus_ReturnsNotFoundWhenNoBackfillRan()
@@ -465,12 +505,12 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
         auto.GetProperty("withReason").GetInt32().Should().BeGreaterThan(0);
         auto.GetProperty("defaultProvider").GetString().Should().NotBeNullOrWhiteSpace();
 
-        var executions = doc.RootElement.GetProperty("executions");
-        executions[0].GetProperty("executionId").GetString().Should().Be("autoexec123");
-        executions[0].TryGetProperty("autoRemediationTriggerReason", out _).Should().BeTrue();
-        executions[0].TryGetProperty("autoRemediationAttemptCount", out _).Should().BeTrue();
-        executions[0].TryGetProperty("autoRemediationLastOutcome", out _).Should().BeTrue();
-        var sla = executions[0].GetProperty("autoRemediationSla");
+        var execution = doc.RootElement.GetProperty("executions").EnumerateArray()
+            .Single(row => row.GetProperty("executionId").GetString() == "autoexec123");
+        execution.TryGetProperty("autoRemediationTriggerReason", out _).Should().BeTrue();
+        execution.TryGetProperty("autoRemediationAttemptCount", out _).Should().BeTrue();
+        execution.TryGetProperty("autoRemediationLastOutcome", out _).Should().BeTrue();
+        var sla = execution.GetProperty("autoRemediationSla");
         sla.GetProperty("tier").GetString().Should().Be("SameBusinessDay");
         sla.GetProperty("status").GetString().Should().Be("Completed");
         sla.GetProperty("provider").GetString().Should().Be("polygon");

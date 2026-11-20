@@ -93,7 +93,15 @@ public sealed class HistoricalBackfillService
         }
     }
 
-    public async Task<BackfillResult> RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default)
+    public Task<BackfillResult> RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default)
+        => RunAsync(request, pipeline, null, null, ct);
+
+    internal async Task<BackfillResult> RunAsync(
+        BackfillRequest request,
+        EventPipeline pipeline,
+        HistoricalBackfillQuotaSession? quotaSession,
+        BackfillQuotaEstimate? estimate,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(pipeline);
@@ -103,6 +111,8 @@ public sealed class HistoricalBackfillService
         ValidateRequest(request);
         var provider = _providers[request.Provider.ToLowerInvariant()];
         var aggregateProvider = provider as IHistoricalAggregateBarProvider;
+        using var quotaScope = quotaSession?.Enter();
+        var observedSources = new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
 
         // Resume skips only dates recorded as durably written by this provider and feed. A
         // date-only checkpoint (symbol + granularity) cannot say which provider wrote it or where
@@ -169,7 +179,7 @@ public sealed class HistoricalBackfillService
 
         // Adaptive concurrency gate: starts at maxConcurrent, decrements by 1 on RateLimitException
         int currentConcurrency = maxConcurrent;
-        var semaphore = new SemaphoreSlim(maxConcurrent, maxConcurrent);
+        using var semaphore = new SemaphoreSlim(maxConcurrent, maxConcurrent);
         // Workers currently past the admission gate. The semaphore caps them at maxConcurrent; the
         // gate below also holds them at currentConcurrency, which shrinks after a rate limit. The
         // reduced value used to be logged but never enforced, so a throttled provider kept getting
@@ -272,19 +282,20 @@ public sealed class HistoricalBackfillService
                         {
                             foreach (var partition in executionPartitions)
                             {
-                                var bars = await aggregateProvider.GetAggregateBarsAsync(
+                                var bars = await HistoricalBackfillQuotaSession.FetchAsync(provider, () => aggregateProvider.GetAggregateBarsAsync(
                                     symbol,
                                     request.Granularity,
                                     partition.From,
                                     BackfillPartitionPlanner.ToInclusiveEnd(partition),
-                                    ct).ConfigureAwait(false);
+                                    ct), ct).ConfigureAwait(false);
 
                                 await PublishAggregateBarsAsync(bars).ConfigureAwait(false);
                             }
                         }
                         else
                         {
-                            var bars = await aggregateProvider.GetAggregateBarsAsync(symbol, request.Granularity, rangeFrom, rangeTo, ct).ConfigureAwait(false);
+                            var bars = await HistoricalBackfillQuotaSession.FetchAsync(provider,
+                                () => aggregateProvider.GetAggregateBarsAsync(symbol, request.Granularity, rangeFrom, rangeTo, ct), ct).ConfigureAwait(false);
                             await PublishAggregateBarsAsync(bars).ConfigureAwait(false);
                         }
                     }
@@ -297,11 +308,11 @@ public sealed class HistoricalBackfillService
                                 // A range spanning a ticker rename must query the provider with the
                                 // era-correct symbol per chunk, then land under the requested symbol.
                                 var eraSymbol = await ResolveEraSymbolAsync(symbol, partition.From, ct).ConfigureAwait(false);
-                                var bars = await provider.GetDailyBarsAsync(
+                                var bars = await HistoricalBackfillQuotaSession.FetchAsync(provider, () => provider.GetDailyBarsAsync(
                                     eraSymbol,
                                     partition.From,
                                     BackfillPartitionPlanner.ToInclusiveEnd(partition),
-                                    ct).ConfigureAwait(false);
+                                    ct), ct).ConfigureAwait(false);
 
                                 await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol)).ConfigureAwait(false);
                             }
@@ -311,7 +322,8 @@ public sealed class HistoricalBackfillService
                             var eraSymbol = rangeFrom.HasValue
                                 ? await ResolveEraSymbolAsync(symbol, rangeFrom.Value, ct).ConfigureAwait(false)
                                 : symbol;
-                            var bars = await provider.GetDailyBarsAsync(eraSymbol, rangeFrom, rangeTo, ct).ConfigureAwait(false);
+                            var bars = await HistoricalBackfillQuotaSession.FetchAsync(provider,
+                                () => provider.GetDailyBarsAsync(eraSymbol, rangeFrom, rangeTo, ct), ct).ConfigureAwait(false);
                             await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol)).ConfigureAwait(false);
                         }
                     }
@@ -446,6 +458,8 @@ public sealed class HistoricalBackfillService
                     symbolBars++;
                     rangeBars++;
                     servedBy.Add(eventSource);
+                    if (quotaSession is not null && !eventSource.Equals("composite", StringComparison.OrdinalIgnoreCase))
+                        observedSources.TryAdd(eventSource, 0);
                     if (firstBarDate is null || barDate < firstBarDate.Value)
                         firstBarDate = barDate;
                     if (lastBarDate is null || barDate > lastBarDate.Value)
@@ -542,7 +556,10 @@ public sealed class HistoricalBackfillService
             allSucceeded, provider.Name, symbols, request.From, request.To, barsWritten, started, completed,
             Error: errorSummary,
             SkippedSymbols: skippedSymbols.ToArray(),
-            SymbolValidationSignals: validationSignals.ToArray());
+            SymbolValidationSignals: validationSignals.ToArray())
+        {
+            QuotaReceipt = quotaSession?.BuildReceipt(estimate, completed - started, observedSources.Keys)
+        };
     }
 
     /// <summary>

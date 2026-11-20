@@ -343,7 +343,8 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     // Record the request attempt
                     _rotation.RecordRequest(provider.Name);
 
-                    var results = await fetchAsync(provider, resolvedSymbol, ct).ConfigureAwait(false);
+                    var results = await HistoricalBackfillQuotaSession.FetchAsync(provider,
+                        () => fetchAsync(provider, resolvedSymbol, ct), ct, allowRateLimitRetry: false).ConfigureAwait(false);
                     ct.ThrowIfCancellationRequested();
                     var elapsed = DateTimeOffset.UtcNow - startTime;
 
@@ -435,6 +436,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                         "Waiting for rate-limited coverage for {Symbol} {Operation} (attempt {Attempt}/{MaxRetries}). Waiting {WaitTime} for rate limit reset...",
                         symbol, operationLabel, attempt + 1, MaxRateLimitRetries, wait.Value);
                     Report(Name, "waiting-for-rate-limit");
+                    using var waiting = HistoricalBackfillQuotaSession.WaitForProviderReset(Name);
                     await Task.Delay(wait.Value, ct).ConfigureAwait(false);
                     continue;
                 }

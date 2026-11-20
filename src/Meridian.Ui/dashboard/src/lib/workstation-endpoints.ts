@@ -527,6 +527,9 @@ export const BACKFILL_API_ENDPOINTS = {
   checkpointsResumable: UI_API_ROUTES.BackfillCheckpointsResumable,
   checkpointsValidation: UI_API_ROUTES.BackfillCheckpointsValidation,
   executions: UI_API_ROUTES.BackfillExecutions,
+  jobs: UI_API_ROUTES.BackfillJobs,
+  jobById: UI_API_ROUTES.BackfillJobById,
+  providers: UI_API_ROUTES.BackfillProviders,
   progress: UI_API_ROUTES.BackfillProgress,
   run: UI_API_ROUTES.BackfillRun,
   runPreview: UI_API_ROUTES.BackfillRunPreview

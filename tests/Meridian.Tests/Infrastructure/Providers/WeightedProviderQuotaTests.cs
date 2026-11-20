@@ -214,6 +214,32 @@ public sealed class WeightedProviderQuotaTests
     }
 
     [Fact]
+    public async Task DailyHeadroomLeavesReservedCreditsAvailableToOtherWork()
+    {
+        var clock = new RequestBudgetTimeProvider();
+        using var limiter = new RateLimiter(
+            new(8, TimeSpan.FromMinutes(1), TimeSpan.Zero, 5, DailyQuotaResetMode.UtcMidnight, "credits"),
+            timeProvider: clock);
+        await limiter.WaitForUnitsAsync(4);
+
+        using var cancellation = new CancellationTokenSource();
+        var backfill = limiter.WaitForUnitsAsync(1, cancellation.Token, new BackfillQuotaPolicy(20), null);
+        Assert.False(backfill.IsCompleted);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        try
+        {
+            await limiter.WaitForSlotAsync(timeout.Token);
+            Assert.Equal(5, limiter.GetBudgetStatus().DailyUnitsUsed);
+            Assert.False(backfill.IsCompleted);
+        }
+        finally
+        {
+            await cancellation.CancelAsync();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => backfill);
+        }
+    }
+
+    [Fact]
     public async Task FractionalMillisecondWait_SchedulesPositiveDelayRatherThanSpinning()
     {
         var clock = new RequestBudgetTimeProvider();

@@ -36,6 +36,7 @@ import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-supp
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { BackfillJobDetails, BackfillQuotaActual, BackfillQuotaPanel } from "@/components/data/backfill-quota";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
@@ -1733,16 +1734,17 @@ const providerSetupNextActionIcons: Record<ProviderSetupNextActionState["id"], L
 };
 
 function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
+  const supportsQueue = Boolean(vm.preview?.previewId);
+  const queueLabel = vm.preview?.quota?.exceedsBudget ? "Queue with throttling" : "Queue backfill";
   return (
     <Dialog open={vm.dialogOpen} onOpenChange={(open) => { if (!open) vm.closeBackfillDialog(); }}>
       <DialogContent
         aria-labelledby={vm.dialogState.titleId}
         aria-describedby={vm.dialogState.descriptionId}
-        className="max-w-xl p-6"
+        className="flex max-w-2xl! flex-col overflow-hidden! p-0!"
       >
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border px-6 py-4">
           <DialogHeader className="mb-0">
-            <div className="eyebrow-label">Backfill</div>
             <DialogTitle id={vm.dialogState.titleId}>Trigger backfill</DialogTitle>
             <DialogDescription id={vm.dialogState.descriptionId}>
               Preview the request before writing historical bars.
@@ -1756,155 +1758,170 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
           />
         </div>
 
-        <dl className="mt-5 grid gap-2 rounded-lg border border-border/80 bg-secondary/20 p-3 sm:grid-cols-3">
-          {vm.dialogState.summaryItems.map((item) => (
-            <div key={item.id} className="min-w-0">
-              <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(item.label) && "type-label--caps")}>{item.label}</dt>
-              <dd className={cn("mt-1 truncate font-mono text-xs", item.tone === "warning" ? "text-warning" : "text-foreground")}>
-                {item.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <div className="min-h-0 overflow-y-auto overscroll-contain px-6 pb-4">
+          <dl className="mt-5 grid gap-2 rounded-lg border border-border/80 bg-secondary/20 p-3 sm:grid-cols-3">
+            {vm.dialogState.summaryItems.map((item) => (
+              <div key={item.id} className="min-w-0">
+                <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(item.label) && "type-label--caps")}>{item.label}</dt>
+                <dd className={cn("mt-1 truncate font-mono text-xs", item.tone === "warning" ? "text-warning" : "text-foreground")}>
+                  {item.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
 
-        <div className="mt-5 grid gap-4" role="group" aria-label={vm.dialogState.formLabel}>
-          <label htmlFor={vm.dialogState.providerField.id} className="grid gap-1 text-sm">
-            {vm.dialogState.providerField.label}
-            <Select
-              id={vm.dialogState.providerField.id}
-              className="min-h-11"
-              value={vm.form.provider}
-              aria-label={vm.dialogState.providerField.ariaLabel}
-              disabled={vm.dialogState.providerField.disabled}
-              aria-describedby={joinDescribedByIds(
-                `${vm.dialogState.providerField.id}-detail`,
-                `${vm.dialogState.providerField.id}-disabled-reason`
-              )}
-              onChange={(event) => vm.updateBackfillForm("provider", event.target.value)}
-            >
-              {vm.dialogState.providerOptions.map((provider) => (
-                <option key={provider.value} value={provider.value}>
-                  {provider.label}
-                </option>
-              ))}
-            </Select>
-            <FieldSupportText
-              helpId={`${vm.dialogState.providerField.id}-detail`}
-              helpText={vm.dialogState.selectedProviderDetail}
-              disabledReason={vm.dialogState.providerField.disabledReason}
-              disabledReasonId={`${vm.dialogState.providerField.id}-disabled-reason`}
-            />
-            <div className="flex flex-wrap gap-2" aria-label="Backfill provider options">
-              {vm.dialogState.providerOptions.map((provider) => (
-                <Button
-                  key={provider.value}
-                  type="button"
-                  variant={vm.form.provider === provider.value ? "secondary" : "outline"}
-                  size="sm"
-                  className="flex-wrap justify-start text-left"
-                  disabled={vm.dialogState.providerField.disabled}
-                  disabledReason={vm.dialogState.providerField.disabledReason}
-                  title={provider.description}
-                  aria-pressed={vm.form.provider === provider.value}
-                  onClick={() => vm.updateBackfillForm("provider", provider.value)}
-                >
-                  <span className="font-semibold">{provider.label}</span>{" "}
-                  <span className={cn("ml-2 text-xs text-primary", usesTrackedCaps(provider.badge) && "type-label--caps")}>{provider.badge}</span>
-                </Button>
-              ))}
+          <div className="mt-5 grid gap-4" role="group" aria-label={vm.dialogState.formLabel}>
+            <div className="grid gap-1 text-sm">
+              <label htmlFor={vm.dialogState.providerField.id}>{vm.dialogState.providerField.label}</label>
+              <Select
+                id={vm.dialogState.providerField.id}
+                className="min-h-11"
+                value={vm.form.provider}
+                aria-label={vm.dialogState.providerField.ariaLabel}
+                disabled={vm.dialogState.providerField.disabled}
+                aria-describedby={joinDescribedByIds(
+                  `${vm.dialogState.providerField.id}-detail`,
+                  `${vm.dialogState.providerField.id}-disabled-reason`
+                )}
+                onChange={(event) => vm.updateBackfillForm("provider", event.target.value)}
+              >
+                {vm.dialogState.providerOptions.map((provider) => (
+                  <option key={provider.value} value={provider.value}>
+                    {provider.label}
+                  </option>
+                ))}
+              </Select>
+              <FieldSupportText
+                helpId={`${vm.dialogState.providerField.id}-detail`}
+                helpText={vm.dialogState.selectedProviderDetail}
+                disabledReason={vm.dialogState.providerField.disabledReason}
+                disabledReasonId={`${vm.dialogState.providerField.id}-disabled-reason`}
+              />
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Backfill provider options">
+                {vm.dialogState.providerOptions.map((provider) => (
+                  <Button
+                    key={provider.value}
+                    type="button"
+                    variant={vm.form.provider === provider.value ? "secondary" : "outline"}
+                    size="sm"
+                    className="flex-wrap justify-start text-left"
+                    disabled={vm.dialogState.providerField.disabled}
+                    disabledReason={vm.dialogState.providerField.disabledReason}
+                    title={provider.description}
+                    aria-pressed={vm.form.provider === provider.value}
+                    onClick={() => vm.updateBackfillForm("provider", provider.value)}
+                  >
+                    <span className="font-semibold">{provider.label}</span>{" "}
+                    <span className={cn("ml-2 text-xs text-primary", usesTrackedCaps(provider.badge) && "type-label--caps")}>{provider.badge}</span>
+                  </Button>
+                ))}
+              </div>
             </div>
-          </label>
-          <label htmlFor={vm.dialogState.symbolsField.id} className="grid gap-1 text-sm">
-            {vm.dialogState.symbolsField.label}
-            <Input
-              id={vm.dialogState.symbolsField.id}
-              className="min-h-12 font-mono"
-              placeholder={vm.dialogState.symbolsField.placeholder}
-              value={vm.form.symbols}
-              aria-label={vm.dialogState.symbolsField.ariaLabel}
-              aria-invalid={vm.validationError !== null}
-              disabled={vm.dialogState.symbolsField.disabled}
-              aria-describedby={joinDescribedByIds(vm.dialogState.symbolsField.describedBy, `${vm.dialogState.symbolsField.id}-disabled-reason`)}
-              data-dialog-autofocus={vm.dialogState.symbolsField.autoFocus ? "" : undefined}
-              onChange={(event) => vm.updateBackfillForm("symbols", event.target.value)}
-            />
-            <FieldSupportText
-              helpId="backfill-symbols-help"
-              helpText={vm.symbolsHelpText}
-              disabledReason={vm.dialogState.symbolsField.disabledReason}
-              disabledReasonId={`${vm.dialogState.symbolsField.id}-disabled-reason`}
-            />
-          </label>
-          <div className="grid gap-3 md:grid-cols-2">
-            <label htmlFor={vm.dialogState.fromField.id} className="grid gap-1 text-sm">
-              {vm.dialogState.fromField.label}
+            <label htmlFor={vm.dialogState.symbolsField.id} className="grid gap-1 text-sm">
+              {vm.dialogState.symbolsField.label}
               <Input
-                id={vm.dialogState.fromField.id}
-                type="date"
-                className="min-h-11"
-                value={vm.form.from}
-                aria-label={vm.dialogState.fromField.ariaLabel}
-                disabled={vm.dialogState.fromField.disabled}
-                aria-describedby={joinDescribedByIds(`${vm.dialogState.fromField.id}-disabled-reason`)}
-                onChange={(event) => vm.updateBackfillForm("from", event.target.value)}
+                id={vm.dialogState.symbolsField.id}
+                className="min-h-12 font-mono"
+                placeholder={vm.dialogState.symbolsField.placeholder}
+                value={vm.form.symbols}
+                aria-label={vm.dialogState.symbolsField.ariaLabel}
+                aria-invalid={vm.validationError !== null}
+                disabled={vm.dialogState.symbolsField.disabled}
+                aria-describedby={joinDescribedByIds(vm.dialogState.symbolsField.describedBy, `${vm.dialogState.symbolsField.id}-disabled-reason`)}
+                data-dialog-autofocus={vm.dialogState.symbolsField.autoFocus ? "" : undefined}
+                onChange={(event) => vm.updateBackfillForm("symbols", event.target.value)}
               />
               <FieldSupportText
-                disabledReason={vm.dialogState.fromField.disabledReason}
-                disabledReasonId={`${vm.dialogState.fromField.id}-disabled-reason`}
+                helpId="backfill-symbols-help"
+                helpText={vm.symbolsHelpText}
+                disabledReason={vm.dialogState.symbolsField.disabledReason}
+                disabledReasonId={`${vm.dialogState.symbolsField.id}-disabled-reason`}
               />
             </label>
-            <label htmlFor={vm.dialogState.toField.id} className="grid gap-1 text-sm">
-              {vm.dialogState.toField.label}
-              <Input
-                id={vm.dialogState.toField.id}
-                type="date"
-                className="min-h-11"
-                value={vm.form.to}
-                aria-label={vm.dialogState.toField.ariaLabel}
-                disabled={vm.dialogState.toField.disabled}
-                aria-describedby={joinDescribedByIds(`${vm.dialogState.toField.id}-disabled-reason`)}
-                onChange={(event) => vm.updateBackfillForm("to", event.target.value)}
-              />
-              <FieldSupportText
-                disabledReason={vm.dialogState.toField.disabledReason}
-                disabledReasonId={`${vm.dialogState.toField.id}-disabled-reason`}
-              />
-            </label>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label htmlFor={vm.dialogState.fromField.id} className="grid gap-1 text-sm">
+                {vm.dialogState.fromField.label}
+                <Input
+                  id={vm.dialogState.fromField.id}
+                  type="date"
+                  className="min-h-11"
+                  value={vm.form.from}
+                  aria-label={vm.dialogState.fromField.ariaLabel}
+                  disabled={vm.dialogState.fromField.disabled}
+                  aria-describedby={joinDescribedByIds(`${vm.dialogState.fromField.id}-disabled-reason`)}
+                  onChange={(event) => vm.updateBackfillForm("from", event.target.value)}
+                />
+                <FieldSupportText
+                  disabledReason={vm.dialogState.fromField.disabledReason}
+                  disabledReasonId={`${vm.dialogState.fromField.id}-disabled-reason`}
+                />
+              </label>
+              <label htmlFor={vm.dialogState.toField.id} className="grid gap-1 text-sm">
+                {vm.dialogState.toField.label}
+                <Input
+                  id={vm.dialogState.toField.id}
+                  type="date"
+                  className="min-h-11"
+                  value={vm.form.to}
+                  aria-label={vm.dialogState.toField.ariaLabel}
+                  disabled={vm.dialogState.toField.disabled}
+                  aria-describedby={joinDescribedByIds(`${vm.dialogState.toField.id}-disabled-reason`)}
+                  onChange={(event) => vm.updateBackfillForm("to", event.target.value)}
+                />
+                <FieldSupportText
+                  disabledReason={vm.dialogState.toField.disabledReason}
+                  disabledReasonId={`${vm.dialogState.toField.id}-disabled-reason`}
+                />
+              </label>
+            </div>
           </div>
+
+          {!vm.backfillJob && <StatusBanner
+            id="backfill-form-status"
+            role="status"
+            aria-live="polite"
+            tone={dataStatusToneToBannerTone(vm.dialogState.formStatusTone)}
+            title="Backfill request status"
+            detail={supportsQueue && vm.phase === "running" ? "Submitting the previewed backfill." : vm.dialogState.formStatusLabel}
+            className="mt-4"
+          />}
+
+          {vm.feedbackText && (
+            <StatusBanner
+              id="backfill-form-feedback"
+              role="alert"
+              className="mt-4"
+              tone={vm.feedbackTone === "warning" ? "warning" : "danger"}
+              title={vm.feedbackText}
+              detail={vm.feedbackDetails.length > 0 ? (
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
+                    {vm.feedbackDetails.map((detail) => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                ) : null}
+            />
+          )}
+          <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
+          {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
+          {vm.preview && <BackfillQuotaPanel
+            key={vm.preview.previewId ?? vm.preview.provider}
+            preview={vm.preview}
+            busy={vm.busy}
+            submitted={vm.backfillJob !== null}
+            onSelectProvider={(provider) => {
+              vm.updateBackfillForm("provider", provider);
+              document.getElementById(vm.dialogState.providerField.id)?.focus();
+            }}
+            onSchedule={supportsQueue ? (when) => void vm.runBackfill(when) : undefined}
+          />}
+          {vm.backfillJob && <BackfillJobDetails job={vm.backfillJob} statusError={vm.backfillJobStatusError} />}
+          {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
+          {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
+          {vm.result?.quotaReceipt && <div className="mt-3"><BackfillQuotaActual receipt={vm.result.quotaReceipt} /></div>}
         </div>
 
-        <StatusBanner
-          id="backfill-form-status"
-          role="status"
-          aria-live="polite"
-          tone={dataStatusToneToBannerTone(vm.dialogState.formStatusTone)}
-          title="Backfill request status"
-          detail={vm.dialogState.formStatusLabel}
-          className="mt-4"
-        />
-
-        {vm.feedbackText && (
-          <StatusBanner
-            id="backfill-form-feedback"
-            role="alert"
-            className="mt-4"
-            tone={vm.feedbackTone === "warning" ? "warning" : "danger"}
-            title={vm.feedbackText}
-            detail={vm.feedbackDetails.length > 0 ? (
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
-                  {vm.feedbackDetails.map((detail) => (
-                    <li key={detail}>{detail}</li>
-                  ))}
-                </ul>
-              ) : null}
-          />
-        )}
-        <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
-        {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
-        {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
-        {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
-
-        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-border bg-background px-6 py-3 sm:flex-row sm:justify-end">
           <Button
             variant="outline"
             onClick={() => void vm.previewBackfill()}
@@ -1916,16 +1933,16 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
           >
             {vm.dialogState.previewAction.label}
           </Button>
-          {vm.preview && (
+          {vm.preview && !vm.backfillJob && (
             <Button
               onClick={() => void vm.runBackfill()}
               disabled={vm.dialogState.runAction.disabled}
               disabledReason={vm.dialogState.runAction.disabledReason}
               busy={vm.dialogState.runAction.busy}
-              busyLabel={vm.dialogState.runAction.busyLabel}
-              aria-label={vm.dialogState.runAction.ariaLabel}
+              busyLabel={supportsQueue ? "Submitting…" : vm.dialogState.runAction.busyLabel}
+              aria-label={supportsQueue ? queueLabel : vm.dialogState.runAction.ariaLabel}
             >
-              {vm.dialogState.runAction.label}
+              {supportsQueue ? queueLabel : vm.dialogState.runAction.label}
             </Button>
           )}
         </div>

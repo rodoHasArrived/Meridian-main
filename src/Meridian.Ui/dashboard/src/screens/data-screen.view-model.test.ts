@@ -770,7 +770,7 @@ describe("data-screen view model", () => {
     expect(dialog.summaryItems).toEqual([
       { id: "provider", label: "Provider", value: "Polygon", tone: "default" },
       { id: "symbols", label: "Symbols", value: "None yet", tone: "warning" },
-      { id: "range", label: "Range", value: "Full available history", tone: "default" }
+      { id: "range", label: "Range", value: "One year ending today", tone: "default" }
     ]);
     expect(dialog.providerOptions.map((provider) => provider.value)).toEqual(["polygon"]);
     expect(dialog.selectedProviderDetail).toContain("Polygon is configured for Streaming equities");
@@ -936,7 +936,7 @@ describe("data-screen view model", () => {
     expect(previewCard.rows).toContainEqual({ id: "symbols", label: "Symbols", value: "AAPL, MSFT" });
     expect(previewCard.rows).toContainEqual({ id: "bars", label: "Bars", value: "1,200" });
     expect(previewCard.rows).toContainEqual({ id: "range", label: "Range", value: "2024-01-01 to 2024-01-31" });
-    expect(previewCard.rows).toContainEqual({ id: "timing", label: "Timing", value: "5 sec est." });
+    expect(previewCard.rows.some((row) => row.id === "timing")).toBe(false);
     expect(previewCard.ariaLabel).toContain("Status Preview only");
 
     const completedCard = buildBackfillResultCardState(completedBackfill, "result");

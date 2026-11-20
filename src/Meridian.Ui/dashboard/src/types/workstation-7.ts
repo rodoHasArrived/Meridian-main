@@ -1135,6 +1135,12 @@ export interface ProviderRoutePreviewResponse {
 
 // --- Backfill mutation types ---
 
+export interface HistoricalBackfillProvider {
+  name: string;
+  displayName: string;
+  description: string;
+}
+
 export interface BackfillTriggerRequest {
   provider: string | null;
   symbols: string[];
@@ -1152,6 +1158,63 @@ export interface BackfillTriggerResult {
   startedUtc: string;
   completedUtc: string;
   error: string | null;
+  quotaReceipt?: BackfillQuotaReceipt | null;
+}
+
+export interface BackfillQuotaEstimate {
+  expectedRequests: number | null;
+  providerLimit: number | null;
+  windowSeconds: number | null;
+  observedRemainingRequests: number | null;
+  backfillRequestsPerWindow: number | null;
+  availableBackfillRequests: number | null;
+  reserveHeadroomPercent: number;
+  maxConcurrentRequests: number | null;
+  estimatedDurationSeconds: number | null;
+  exceedsBudget: boolean;
+  observedAt: string | null;
+  retryAt: string | null;
+  limitSource: string | null;
+  uncertainty: string;
+  quotaUnit?: string;
+  dailyProviderLimit?: number | null;
+  dailyRemaining?: number | null;
+  dailyBackfillLimit?: number | null;
+  dailyResetAt?: string | null;
+}
+
+export interface BackfillQuotaReceipt {
+  estimate: BackfillQuotaEstimate | null;
+  observedProviders: string[];
+  providerUsage: { provider: string; fetchAttempts: number; observedRequests: number | null }[];
+  throttlingEvents: { provider: string; reason: string; count: number; waitSeconds: number }[];
+  actualRequests: number | null;
+  actualDurationSeconds: number;
+  requestVariance: number | null;
+  durationVarianceSeconds: number | null;
+}
+
+export interface QueueBackfillRequest {
+  previewId: string;
+  acceptThrottle: boolean;
+  notBeforeUtc: string | null;
+}
+
+export interface BackfillJobReceipt {
+  executionId: string;
+  status: "Scheduled" | "Queued" | "Running" | "Throttled" | "Completed" | "Failed" | "Cancelled";
+  provider: string;
+  symbols: string[];
+  from: string | null;
+  to: string | null;
+  submittedAt: string;
+  notBeforeUtc: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  barsWritten: number | null;
+  error: string | null;
+  estimate: BackfillQuotaEstimate;
+  actual: BackfillQuotaReceipt | null;
 }
 
 export interface BackfillPreviewSymbol {
@@ -1169,8 +1232,11 @@ export interface BackfillPreviewResult {
   totalDays: number;
   estimatedTradingDays: number;
   symbols: BackfillPreviewSymbol[];
-  estimatedDurationSeconds: number;
+  estimatedDurationSeconds: number | null;
   notes: string[];
+  quota?: BackfillQuotaEstimate | null;
+  approvedEquivalentProviders?: { provider: string; displayName: string }[] | null;
+  previewId?: string | null;
 }
 
 export interface BackfillProgressEntry {
@@ -1272,6 +1338,7 @@ export interface BackfillExecutionHistoryRow {
   autoRemediationLastOutcome: string | null;
   autoRemediationIdempotencyKey: string | null;
   autoRemediationSla: BackfillRemediationSla | null;
+  job?: BackfillJobReceipt | null;
 }
 
 export interface BackfillExecutionHistoryResponse {

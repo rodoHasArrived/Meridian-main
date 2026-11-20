@@ -48,6 +48,7 @@ public sealed class BackfillCoordinator : IDisposable
     private readonly OpenFigiSymbolResolver? _ownedSymbolResolver;
     private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
     private BackfillResult? _lastRun;
+    private volatile ActiveQuotaRun? _activeQuotaRun;
     private bool _disposed;
 
     /// <summary>
@@ -118,9 +119,16 @@ public sealed class BackfillCoordinator : IDisposable
 
     public void ValidateRequest(BackfillRequest request)
     {
-        var service = CreateService();
-        service.ValidateRequest(request);
+        var config = _store.Load().Backfill;
+        var providers = CreateProviders();
+        using var composite = CreateComposite(request, providers, config);
+        CreateService(providers, composite, config).ValidateRequest(request);
     }
+
+    public bool HasHistoricalProvider(string provider) =>
+        FindProvider(CreateProviders(), provider) is not null;
+
+    internal string ResolveDataRoot() => _store.GetDataRoot(_store.Load());
 
     public BackfillResult? TryReadLast() => _lastRun ?? _store.TryLoadBackfillStatus();
 
@@ -218,21 +226,44 @@ public sealed class BackfillCoordinator : IDisposable
         return await _symbolResolver.ResolveAsync(symbol, ct: ct).ConfigureAwait(false);
     }
 
-    public async Task<BackfillResult> RunAsync(BackfillRequest request, CancellationToken ct = default)
+    public Task<BackfillResult> RunAsync(BackfillRequest request, CancellationToken ct = default) =>
+        RunCoreAsync(request, null, null, null, null, ct);
+
+    internal Task<BackfillResult> RunQueuedAsync(
+        BackfillRequest request, string jobId, BackfillQuotaEstimate estimate, string dataRoot,
+        Action onStarted, CancellationToken ct) =>
+        RunCoreAsync(request, jobId, estimate, dataRoot, onStarted, ct);
+
+    internal bool IsJobThrottled(string jobId) =>
+        _activeQuotaRun is { } active && active.JobId == jobId && active.Session.IsThrottled;
+
+    private async Task<BackfillResult> RunCoreAsync(
+        BackfillRequest request,
+        string? jobId,
+        BackfillQuotaEstimate? retainedEstimate,
+        string? queuedDataRoot,
+        Action? onStarted,
+        CancellationToken ct)
     {
-        if (!await _gate.WaitAsync(TimeSpan.Zero, ct).ConfigureAwait(false))
+        if (jobId is not null)
+            await _gate.WaitAsync(ct).ConfigureAwait(false);
+        else if (!await _gate.WaitAsync(TimeSpan.Zero, ct).ConfigureAwait(false))
             throw new InvalidOperationException("A backfill is already running. Please try again after it completes.");
 
         try
         {
+            onStarted?.Invoke();
             var normalizedSymbols = BackfillSymbolNormalizer.Normalize(request.Symbols);
-            _progressTracker.Clear();
-            foreach (var symbol in normalizedSymbols)
-                _progressTracker.RegisterSymbol(symbol, request.From, request.To);
+            if (jobId is null)
+            {
+                _progressTracker.Clear();
+                foreach (var symbol in normalizedSymbols)
+                    _progressTracker.RegisterSymbol(symbol, request.From, request.To);
+            }
 
             var cfg = _store.Load();
             var compressionEnabled = cfg.Compress ?? false;
-            var dataRoot = _store.GetDataRoot(cfg);
+            var dataRoot = queuedDataRoot ?? _store.GetDataRoot(cfg);
             var baseStorageOptions = cfg.Storage?.ToStorageOptions(dataRoot, compressionEnabled)
                 ?? StorageProfilePresets.CreateFromProfile(null, dataRoot, compressionEnabled);
             var storageOpt = CreateStorageOptionsForRequest(baseStorageOptions, request);
@@ -251,9 +282,18 @@ public sealed class BackfillCoordinator : IDisposable
             // Keep pipeline counters scoped per run
             _metrics.Reset();
 
-            var statusStore = new BackfillStatusStore(_store.GetDataRoot(cfg));
-            var service = CreateService(statusStore, await CreateProvidersAsync(ct).ConfigureAwait(false));
-            var result = await service.RunAsync(request, pipeline, ct).ConfigureAwait(false);
+            var statusStore = new BackfillStatusStore(dataRoot);
+            var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
+            using var composite = CreateComposite(request, providers, cfg.Backfill, jobId is null ? _progressTracker : null);
+            using var quotaSession = new HistoricalBackfillQuotaSession(cfg.Backfill?.QuotaPolicies, retryRateLimits: jobId is not null);
+            var estimate = retainedEstimate ?? EstimateQuota(request, providers, cfg.Backfill);
+            _activeQuotaRun = new ActiveQuotaRun(jobId, quotaSession);
+            var service = CreateService(providers, composite, cfg.Backfill, jobId is null ? statusStore : null);
+            var result = await service.RunAsync(request, pipeline, quotaSession, estimate, ct).ConfigureAwait(false);
+
+            // Queued jobs have their own tenant-scoped history and status.
+            if (jobId is not null)
+                return result;
 
             await statusStore.WriteAsync(result).ConfigureAwait(false);
             _lastRun = result;
@@ -273,13 +313,17 @@ public sealed class BackfillCoordinator : IDisposable
         }
         catch (Exception ex)
         {
-            foreach (var symbol in BackfillSymbolNormalizer.Normalize(request.Symbols))
-                _progressTracker.MarkFailed(symbol, ex.Message);
+            if (jobId is null)
+            {
+                foreach (var symbol in BackfillSymbolNormalizer.Normalize(request.Symbols))
+                    _progressTracker.MarkFailed(symbol, ex.Message);
+            }
             _log.Error(ex, "Backfill failed");
             throw;
         }
         finally
         {
+            _activeQuotaRun = null;
             _gate.Release();
         }
     }
@@ -290,17 +334,42 @@ public sealed class BackfillCoordinator : IDisposable
     /// </summary>
     public async Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, CancellationToken ct = default)
     {
-        // Validation needs the providers too; create them once, with credentials read ahead.
-        var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
-        CreateService(createdProviders: providers).ValidateRequest(request);
-
-        var provider = providers
-            .FirstOrDefault(p => p.Name.Equals(request.Provider, StringComparison.OrdinalIgnoreCase));
         var cfg = _store.Load();
+        var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
+        using var composite = CreateComposite(request, providers, cfg.Backfill);
+        CreateService(providers, composite, cfg.Backfill).ValidateRequest(request);
+        var provider = FindProvider(providers, request.Provider);
+        var policy = BackfillQuotaPolicy.ForProvider(cfg.Backfill?.QuotaPolicies, request.Provider);
+        var approved = (policy.ApprovedEquivalentProviders ?? [])
+            .Where(name => !name.Equals(request.Provider, StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(name => FindProvider(providers, name))
+            .OfType<IHistoricalDataProvider>()
+            .Where(p => p is not CompositeHistoricalDataProvider && p.IsSimulated == provider?.IsSimulated &&
+                (!request.Granularity.IsIntraday() || p is IHistoricalAggregateBarProvider aggregate &&
+                    aggregate.SupportedGranularities.Contains(request.Granularity)))
+            .Select(p => new BackfillEquivalentProvider(p.Name, p.DisplayName))
+            .ToArray();
         var dataRoot = _store.GetDataRoot(cfg);
 
-        return BackfillPreviewPlanner.BuildPreview(request, provider, dataRoot, _providerCatalog);
+        var quota = EstimateQuota(request, providers, cfg.Backfill);
+        return BackfillPreviewPlanner.BuildPreview(request, provider, dataRoot, _providerCatalog, quota, approved);
     }
+
+    internal BackfillQuotaEstimate EstimateQuota(BackfillRequest request) =>
+        EstimateQuota(request, CreateProviders(), _store.Load().Backfill);
+
+    private BackfillQuotaEstimate EstimateQuota(
+        BackfillRequest request, List<IHistoricalDataProvider> providers, BackfillConfig? config)
+    {
+        var provider = FindProvider(providers, request.Provider);
+        var hasLiveAdapter = _registry?.GetBackfillProviders().Any(p => ReferenceEquals(p, provider)) == true;
+        return BackfillQuotaPlanner.Estimate(request, provider,
+            BackfillQuotaPolicy.ForProvider(config?.QuotaPolicies, request.Provider), hasLiveAdapter);
+    }
+
+    private static IHistoricalDataProvider? FindProvider(List<IHistoricalDataProvider> providers, string name) =>
+        providers.Find(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Creates backfill providers using a priority-based discovery approach:
@@ -418,42 +487,42 @@ public sealed class BackfillCoordinator : IDisposable
             .ToList();
     }
 
-    private HistoricalBackfillService CreateService(
-        BackfillStatusStore? checkpointStore = null,
-        List<IHistoricalDataProvider>? createdProviders = null)
+    private CompositeHistoricalDataProvider? CreateComposite(
+        BackfillRequest request, List<IHistoricalDataProvider> providers, BackfillConfig? config,
+        BackfillProgressTracker? progressTracker = null)
     {
-        var cfg = _store.Load();
-        var backfillCfg = cfg.Backfill;
-
-        var providers = createdProviders ?? CreateProviders();
-
-        // If composite provider requested, wrap all providers
-        if (string.Equals(backfillCfg?.Provider, "composite", StringComparison.OrdinalIgnoreCase)
-            || (backfillCfg?.EnableFallback ?? true))
+        if (request.Provider.Equals("composite", StringComparison.OrdinalIgnoreCase) &&
+            FindProvider(providers, request.Provider) is null && providers.Count > 0 &&
+            (string.Equals(config?.Provider, "composite", StringComparison.OrdinalIgnoreCase) || (config?.EnableFallback ?? true)))
         {
-            var composite = new CompositeHistoricalDataProvider(
+            return new CompositeHistoricalDataProvider(
                 providers,
-                backfillCfg?.EnableSymbolResolution ?? true ? _symbolResolver : null,
+                config?.EnableSymbolResolution ?? true ? _symbolResolver : null,
                 enableCrossValidation: false,
                 log: _log,
-                progressTracker: _progressTracker,
-                validationProfiles: backfillCfg?.ValidationProfiles,
+                progressTracker: progressTracker,
+                validationProfiles: config?.ValidationProfiles,
                 crossValidationPolicy: () => CrossProviderTolerancePolicy.FromConfig(_store.Load())
             );
 
-            // Combine composite (for fallback routing) with individual providers (for direct selection)
-            var combined = new List<IHistoricalDataProvider> { composite };
-            combined.AddRange(providers);
-            providers = combined;
         }
+        return null;
+    }
 
-        return new HistoricalBackfillService(
-            providers,
+    private HistoricalBackfillService CreateService(
+        List<IHistoricalDataProvider> providers,
+        CompositeHistoricalDataProvider? composite,
+        BackfillConfig? config,
+        BackfillStatusStore? checkpointStore = null) =>
+        new(
+            composite is null ? providers : [composite, .. providers],
             _log,
+            jobsConfig: config?.Jobs,
             checkpointStore: checkpointStore,
             symbolTimelineResolver: _symbolTimelineResolver,
-            validationProfiles: backfillCfg?.ValidationProfiles);
-    }
+            validationProfiles: config?.ValidationProfiles);
+
+    private sealed record ActiveQuotaRun(string? JobId, HistoricalBackfillQuotaSession Session);
 
     private static string[] GetSupportedGranularityValues(IHistoricalDataProvider provider)
     {

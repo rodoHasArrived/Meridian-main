@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Backfill;
 
 namespace Meridian.Contracts.Api;
 
@@ -231,6 +232,9 @@ public sealed class BackfillExecution
     /// </summary>
     [JsonPropertyName("autoRemediationSla")]
     public BackfillRemediationSlaDto? AutoRemediationSla { get; set; }
+
+    [JsonPropertyName("job")]
+    public BackfillJobReceipt? Job { get; set; }
 }
 
 /// <summary>

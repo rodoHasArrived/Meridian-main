@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Backfill;
 using Meridian.Infrastructure.Adapters.Core;
 
 namespace Meridian.Application.Backfill;
@@ -14,8 +15,11 @@ public sealed record BackfillPreviewResult(
     int TotalDays,
     int EstimatedTradingDays,
     SymbolPreview[] Symbols,
-    int EstimatedDurationSeconds,
-    string[] Notes
+    double? EstimatedDurationSeconds,
+    string[] Notes,
+    BackfillQuotaEstimate? Quota = null,
+    IReadOnlyList<BackfillEquivalentProvider>? ApprovedEquivalentProviders = null,
+    Guid? PreviewId = null
 );
 
 /// <summary>
@@ -52,7 +56,9 @@ internal static class BackfillPreviewPlanner
         BackfillRequest request,
         IHistoricalDataProvider? provider,
         string dataRoot,
-        IProviderCatalog providerCatalog)
+        IProviderCatalog providerCatalog,
+        BackfillQuotaEstimate quota,
+        IReadOnlyList<BackfillEquivalentProvider> alternatives)
     {
         // Default ranges use the UTC date, matching how the backfill itself dates bars.
         var utcToday = DateTime.UtcNow.Date;
@@ -63,7 +69,7 @@ internal static class BackfillPreviewPlanner
         var estimatedBarsPerSymbol = EstimateBarsPerSymbol(request.Granularity, tradingDays);
 
         var symbolPreviews = new List<SymbolPreview>();
-        foreach (var symbol in request.Symbols)
+        foreach (var symbol in BackfillSymbolNormalizer.Normalize(request.Symbols))
         {
             // Check if data already exists for this symbol
             var existingDataInfo = GetExistingDataInfo(dataRoot, symbol, from, to, request.Granularity);
@@ -85,8 +91,10 @@ internal static class BackfillPreviewPlanner
             TotalDays: totalDays,
             EstimatedTradingDays: tradingDays,
             Symbols: symbolPreviews.ToArray(),
-            EstimatedDurationSeconds: EstimateBackfillDuration(request.Symbols.Count, tradingDays, request.Granularity, provider),
-            Notes: GetProviderNotes(provider, providerCatalog)
+            EstimatedDurationSeconds: quota.EstimatedDurationSeconds,
+            Notes: GetProviderNotes(provider, providerCatalog),
+            Quota: quota,
+            ApprovedEquivalentProviders: alternatives
         );
     }
 
@@ -300,28 +308,6 @@ internal static class BackfillPreviewPlanner
         return tradingDays * barsPerTradingDay;
     }
 
-    private static int EstimateBackfillDuration(
-        int symbolCount,
-        int tradingDays,
-        DataGranularity granularity,
-        IHistoricalDataProvider? provider)
-    {
-        var requestsPerSymbol = granularity switch
-        {
-            DataGranularity.Minute1 => Math.Max(1, (int)Math.Ceiling(tradingDays / 8d)),
-            DataGranularity.Minute5 or DataGranularity.Minute15 or DataGranularity.Minute30 => Math.Max(1, (int)Math.Ceiling(tradingDays / 60d)),
-            DataGranularity.Hour1 or DataGranularity.Hour4 => Math.Max(1, (int)Math.Ceiling(tradingDays / 730d)),
-            _ => 1
-        };
-
-        var estimatedRequests = Math.Max(1, symbolCount * requestsPerSymbol);
-        var requestsPerSecond = provider?.RateLimitDelay > TimeSpan.Zero
-            ? 1d / provider.RateLimitDelay.TotalSeconds
-            : 0.5d;
-
-        return (int)Math.Ceiling(estimatedRequests / Math.Max(requestsPerSecond, 0.1d)) + symbolCount;
-    }
-
     /// <summary>
     /// Gets provider notes from the centralized ProviderCatalog.
     /// Eliminates per-provider conditionals in favor of standardized catalog lookup.
@@ -330,7 +316,7 @@ internal static class BackfillPreviewPlanner
     {
         if (provider is null)
         {
-            return new[] { "Provider not found. Backfill may fail." };
+            return providerCatalog.Get("composite")?.Notes ?? [];
         }
 
         var catalogNotes = providerCatalog.Get(provider.Name)?.Notes ?? [];

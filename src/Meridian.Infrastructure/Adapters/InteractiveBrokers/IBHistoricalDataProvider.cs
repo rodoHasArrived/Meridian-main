@@ -269,6 +269,8 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
 
                 _log.Warning("IB pacing violation for {Symbol}, waiting {Seconds}s",
                     symbol, (int)PacingViolationCooldown.TotalSeconds);
+                HistoricalBackfillQuotaSession.RecordProviderRateLimit(Name);
+                using var waiting = HistoricalBackfillQuotaSession.WaitForProviderReset(Name);
                 await Task.Delay(PacingViolationCooldown, ct).ConfigureAwait(false);
                 // Don't move currentEnd, retry same period
             }
@@ -294,12 +296,10 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
         await _concurrentRequestsSemaphore.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // Wait for global rate limit
-            await _globalRateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-
             // Enforce per-contract rate limiting
             var contractKey = $"{cfg.Symbol}:{cfg.Exchange}:{whatToShow}";
             await EnforcePerContractPacingAsync(contractKey, ct).ConfigureAwait(false);
+            await HistoricalBackfillQuotaSession.WaitForRequestAsync(this, _globalRateLimiter, ct).ConfigureAwait(false);
 
             // Track request count
             Interlocked.Increment(ref _requestCount);
@@ -427,6 +427,8 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
 
                 _log.Warning("IB pacing violation for {Symbol} intraday, waiting {Seconds}s",
                     symbol, (int)PacingViolationCooldown.TotalSeconds);
+                HistoricalBackfillQuotaSession.RecordProviderRateLimit(Name);
+                using var waiting = HistoricalBackfillQuotaSession.WaitForProviderReset(Name);
                 await Task.Delay(PacingViolationCooldown, ct).ConfigureAwait(false);
             }
         }

@@ -1196,7 +1196,65 @@ describe("DataScreen", () => {
       expect(previewStatus).toHaveTextContent("2,100");
       expect(previewStatus).toHaveTextContent("2024-01-01 to 2024-01-31");
     });
+    expect(screen.getByText("Limit unavailable")).toBeInTheDocument();
+    expect(screen.queryByText("Estimated duration")).not.toBeInTheDocument();
     expect(screen.getByText("Preview is ready. Review the summary before running.")).toBeInTheDocument();
+  });
+
+  it("shows quota pressure and submits an explicitly throttled job with a retained receipt", async () => {
+    const user = userEvent.setup();
+    const quota = {
+      expectedRequests: 5, providerLimit: 5, windowSeconds: 60, observedRemainingRequests: 2,
+      backfillRequestsPerWindow: 4, availableBackfillRequests: 1, reserveHeadroomPercent: 20,
+      maxConcurrentRequests: 1, estimatedDurationSeconds: 60, exceedsBudget: true,
+      observedAt: "2026-01-05T10:00:00Z", retryAt: null, limitSource: "historical diagnostics",
+      uncertainty: "Retries and pagination can change the result."
+    };
+    vi.spyOn(api, "previewBackfill").mockResolvedValueOnce({
+      provider: "polygon", providerDisplayName: "Polygon", from: "2025-01-02", to: "2025-01-02",
+      totalDays: 1, estimatedTradingDays: 1, estimatedDurationSeconds: 60, notes: [],
+      symbols: [{ symbol: "AAPL", estimatedBars: 1, hasMarketHoursData: true, notes: [] }],
+      quota, previewId: "preview-1", approvedEquivalentProviders: [{ provider: "stooq", displayName: "Stooq" }]
+    });
+    const queued = {
+      executionId: "job-1", status: "Queued" as const, provider: "polygon", symbols: ["AAPL"],
+      from: "2025-01-02", to: "2025-01-02", submittedAt: "2026-01-05T10:00:00Z",
+      notBeforeUtc: null, startedAt: null, completedAt: null, barsWritten: null,
+      error: null, estimate: quota, actual: null
+    };
+    const submit = vi.spyOn(api, "queueBackfill").mockResolvedValueOnce(queued);
+    const finished: Awaited<ReturnType<typeof api.getBackfillJob>> = {
+      ...queued, status: "Completed", barsWritten: 1,
+      actual: {
+        estimate: quota, observedProviders: ["polygon"], providerUsage: [],
+        actualRequests: 6, requestVariance: 1, actualDurationSeconds: 65, durationVarianceSeconds: 5,
+        throttlingEvents: [{ provider: "polygon", reason: "headroom", count: 1, waitSeconds: 12 }]
+      }
+    };
+    let finishJob!: (receipt: typeof finished) => void;
+    vi.spyOn(api, "getBackfillJob").mockReturnValueOnce(new Promise((resolve) => { finishJob = resolve; }));
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
+
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
+    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "AAPL");
+    await user.click(screen.getByRole("button", { name: "Preview backfill request" }));
+    const estimate = await screen.findByRole("region", { name: "Provider quota estimate" });
+    expect(estimate).toHaveTextContent("5 requests / 1 min");
+    expect(estimate).toHaveTextContent("20% headroom policy");
+    expect(estimate).toHaveTextContent("Observed remaining2");
+    expect(within(estimate).getByRole("button", { name: "Use approved provider Stooq" })).toBeEnabled();
+    await user.click(within(estimate).getByRole("button", { name: "Schedule once" }));
+    expect(within(estimate).getByRole("button", { name: "Schedule backfill" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Queue with throttling" }));
+    expect(submit).toHaveBeenCalledWith(
+      { previewId: "preview-1", acceptThrottle: true, notBeforeUtc: null }, expect.anything());
+    const dialog = screen.getByRole("dialog");
+    expect(await within(dialog).findByText("Backfill queued")).toBeInTheDocument();
+
+    finishJob(finished);
+    expect(await within(dialog).findByText("Backfill completed")).toBeInTheDocument();
+    expect(within(dialog).getByText("6 actual · 5 estimated · +1 variance")).toBeInTheDocument();
+    expect(within(dialog).getByText(/polygon · Reserved headroom/)).toBeInTheDocument();
   });
 
   it("locks backfill request fields while preview is pending", async () => {

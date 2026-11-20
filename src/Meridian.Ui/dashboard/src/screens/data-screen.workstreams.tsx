@@ -5,6 +5,8 @@ import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-acce
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state";
 import { Pagination } from "@/components/data/pagination";
+import { BackfillJobDetails } from "@/components/data/backfill-quota";
+import type { BackfillJobReceipt } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,7 +55,9 @@ const backfillQueueColumns: TableWorkbenchColumn<DataOperationsBackfillRow>[] = 
     label: "Status",
     render: (backfill) => (
       <Badge
-        variant={backfill.status === "Review" ? "warning" : backfill.status === "Running" ? "default" : "outline"}
+        variant={backfill.status === "Review" || backfill.status === "Throttled" ? "warning"
+          : backfill.status === "Failed" ? "danger" : backfill.status === "Completed" ? "success"
+            : backfill.status === "Running" ? "default" : "outline"}
       >
         {backfill.status}
       </Badge>
@@ -66,9 +70,9 @@ const backfillQueueColumns: TableWorkbenchColumn<DataOperationsBackfillRow>[] = 
     render: (backfill) => (
       <span className="block min-w-[8rem]">
         <span className="mb-1 block font-mono text-xs text-muted-foreground">{backfill.progress}</span>
-        <span className="block h-1 rounded-full bg-border/70">
+        {backfill.progress.endsWith("%") && <span className="block h-1 rounded-full bg-border/70">
           <span className="block h-1 rounded-full bg-primary transition-all" style={{ width: backfill.progress }} />
-        </span>
+        </span>}
       </span>
     )
   },
@@ -226,6 +230,7 @@ export function DataBackfillWorkstream({ vm }: { vm: DataOperationsVm }) {
           )}
           <BackfillDetailPanel
             detail={vm.selectedBackfillDetail}
+            receipt={vm.selectedBackfillReceipt}
             emptyState={vm.backfillDetailEmptyState ?? vm.backfillSection.emptyState}
           />
         </div>
@@ -507,10 +512,12 @@ export function DataQueryWorkstream({
 
 function BackfillDetailPanel({
   detail,
-  emptyState
+  emptyState,
+  receipt
 }: {
   detail: DataOperationsBackfillDetailState | null;
   emptyState: DataOperationsEmptyState | null;
+  receipt: BackfillJobReceipt | null;
 }) {
   if (!detail) {
     return (
@@ -552,6 +559,7 @@ function BackfillDetailPanel({
           <FieldTile key={field.id} field={field} />
         ))}
       </div>
+      {receipt && <BackfillJobDetails job={receipt} />}
     </DenseRowDetailPanel>
   );
 }

@@ -71,6 +71,7 @@ public sealed class BackfillCoordinator : IDisposable
         => _core.RunAsync(request, ct);
 
     public void ValidateRequest(BackfillRequest request) => _core.ValidateRequest(request);
+    public bool HasHistoricalProvider(string provider) => _core.HasHistoricalProvider(provider);
 
     /// <summary>
     /// Gets health status of all providers.

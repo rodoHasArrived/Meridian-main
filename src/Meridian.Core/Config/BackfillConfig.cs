@@ -21,6 +21,7 @@ namespace Meridian.Core.Config;
 /// <param name="FillGapsOnly">Only fill detected gaps in existing data (vs. full backfill).</param>
 /// <param name="Jobs">Job management configuration.</param>
 /// <param name="Providers">Configuration for individual data providers.</param>
+/// <param name="QuotaPolicies">Administrator-managed historical provider budgets and equivalent providers.</param>
 public sealed record BackfillConfig(
     bool Enabled = false,
     string Provider = "composite",
@@ -41,8 +42,24 @@ public sealed record BackfillConfig(
     SymbolResolutionMode SymbolResolutionMode = SymbolResolutionMode.Compare,
     AutoGapRemediationConfig? AutoRemediation = null,
     IReadOnlyDictionary<string, ProviderValidationProfile>? ValidationProfiles = null,
-    ProviderValidationProfileAudit[]? ValidationProfileAudit = null
+    ProviderValidationProfileAudit[]? ValidationProfileAudit = null,
+    Dictionary<string, BackfillQuotaPolicy>? QuotaPolicies = null
 );
+
+/// <summary>Optional host-wide research budget and approved substitutions for one historical provider.</summary>
+public sealed record BackfillQuotaPolicy(
+    int ReserveHeadroomPercent = 0,
+    int? MaxConcurrentRequests = null,
+    string[]? ApprovedEquivalentProviders = null)
+{
+    public static BackfillQuotaPolicy ForProvider(
+        IReadOnlyDictionary<string, BackfillQuotaPolicy>? policies, string provider) =>
+        policies?.FirstOrDefault(entry => string.Equals(entry.Key, provider, StringComparison.OrdinalIgnoreCase)).Value
+        ?? new BackfillQuotaPolicy();
+
+    public int GetBackfillLimit(int providerLimit) =>
+        providerLimit - (int)((long)providerLimit * Math.Clamp(ReserveHeadroomPercent, 0, 99) / 100);
+}
 
 /// <summary>
 /// Host configuration for automatic, quality-triggered backfill remediation. Primitive time

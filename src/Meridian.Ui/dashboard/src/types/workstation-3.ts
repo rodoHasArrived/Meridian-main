@@ -1131,7 +1131,7 @@ export interface DataBackfillRecord {
   jobId: string;
   scope: string;
   provider: string;
-  status: "Queued" | "Running" | "Review";
+  status: "Queued" | "Running" | "Review" | "Scheduled" | "Throttled" | "Completed" | "Failed" | "Cancelled";
   progress: string;
   updatedAt: string;
 }

@@ -37,6 +37,60 @@ Use this sequence for controlled backfill execution:
 4. Monitor status/progress APIs until completion or bounded retries.
 5. Run quality check and gap report before archival or downstream promotion.
 
+### Workstation quota preview and queue
+
+In **Data → Backfills**, choose a historical provider and preview the symbols and
+dates. A blank end date defaults to the current UTC market date. A blank start date defaults to
+one year before the end date, starting no earlier than 1970. The workstation freezes those dates
+in the preview before accepting a submission.
+
+The quota panel reports the planned historical requests, the limit and window reported by the
+adapter, and recent remaining capacity when the host can observe it. This capacity reflects the
+historical adapter on the workstation host. Other processes, accounts, and provider surfaces can
+affect vendor-side quota. Pagination, retry delays, and queue traffic can change actual usage and
+timing. Providers with no usable window and limit show **Limit unavailable**.
+Providers that use credits display those units alongside the physical request estimate.
+A configured daily cap also limits the available backfill budget.
+
+Plans that exceed the budget can be reduced and previewed again, moved to an administrator-approved
+provider, scheduled once for a future start, or submitted with **Queue with throttling**. Switching
+providers clears the preview so the new source, scope, and budget can be reviewed. Scheduled jobs
+start at or after the chosen time and use the current shared policy when execution begins.
+
+One workstation host owns the queue and data root. Scheduled and queued submissions survive a
+restart. An interrupted run is retained as a failure for review because it may have written some
+bars. Drain the queue before moving the data root and transfer its execution history with the
+data. Queued jobs retain their own receipts for recovery.
+
+Select a job in the backfill queue to inspect observed providers, request counts, throttling and
+estimate variance. The request count records admissions through instrumented historical adapters,
+including pages and retries. A provider may supply bars without exposing request-level evidence,
+in which case the receipt leaves total request count and request variance unavailable. Duration
+variance compares execution time, including provider waits, with the preview duration. Time spent
+waiting to start is recorded through the submission and start timestamps.
+
+### Shared provider quota policy
+
+Operators with `ManageProviders` can read or update the policy with
+`GET` or `PUT /api/backfill/quota-policies/{provider}`. For example, a provider administrator
+could submit the following policy for a configured historical adapter.
+
+```json
+{
+  "reserveHeadroomPercent": 20,
+  "maxConcurrentRequests": 2,
+  "approvedEquivalentProviders": []
+}
+```
+
+The policy is stored in `Backfill.QuotaPolicies` for all researchers using that host.
+Set headroom to `0` or concurrency to `null` to remove the respective override. Reserved
+capacity is rounded down to whole requests. The concurrency cap limits overlapping fetches
+for each provider, including paginated fetches. Administrators should approve another provider
+after checking coverage, adjustment basis, and data entitlement for the supported use case.
+The workstation offers approved providers that are registered, support the requested granularity,
+and use the same simulated or live data posture.
+
 ## Key endpoints
 
 - `GET /api/backfill/providers`
@@ -45,6 +99,8 @@ Use this sequence for controlled backfill execution:
 - `POST /api/backfill/run/preview`
 - `POST /api/backfill/cost-estimate`
 - `POST /api/backfill/run`
+- `POST /api/backfill/jobs` with the `previewId` returned by a preview requested with `prepareQueuedJob: true`
+- `GET /api/backfill/jobs/{id}`
 - `GET /api/backfill/executions`
 - `GET /api/backfill/statistics`
 

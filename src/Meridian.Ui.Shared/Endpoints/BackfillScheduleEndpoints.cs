@@ -176,14 +176,16 @@ public static class BackfillScheduleEndpoints
             if (history is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill execution history");
 
-            var executions = history.GetRecentExecutions(limit ?? 50);
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId!;
+            var executions = history.GetRecentExecutionsForTenant(tenantId, limit ?? 50);
             var defaultProvider = services
                 .GetService<IOptions<AutoGapRemediationPolicy>>()?
                 .Value.DefaultProvider;
             var response = BackfillExecutionContractProjection.Build(
                 executions,
                 defaultProvider,
-                DateTimeOffset.UtcNow);
+                DateTimeOffset.UtcNow,
+                jobs: services.GetService<BackfillJobQueue>());
             return Results.Json(response, jsonOptions);
         })
         .WithName("GetBackfillExecutions")
@@ -203,7 +205,8 @@ public static class BackfillScheduleEndpoints
             if (schedMgr is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill schedule manager");
 
-            var systemSummary = history.GetSystemSummary(TimeSpan.FromDays(30));
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var systemSummary = history.GetSystemSummary(TimeSpan.FromDays(30), tenantId);
             var statusSummary = schedMgr.GetStatusSummary();
             var autoExecutions = history.GetRecentExecutions(250)
                 .Where(e => e.Trigger == ExecutionTrigger.AutoRemediation)
