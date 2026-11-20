@@ -1,3 +1,5 @@
+using Meridian.Contracts.Operations;
+
 namespace Meridian.Contracts.Workstation;
 
 /// <summary>
@@ -229,6 +231,7 @@ public sealed record StrategyDesignRunBacktestResponse(
     string? PromotionCandidatePath,
     string? ReviewPacketPath,
     BiasDisclosureDto? BiasDisclosure = null,
+    ProviderProvenanceReceipt? ProviderProvenance = null,
     string? StrategyVersionSha256 = null,
     string? DataSnapshotSha256 = null,
     string? DataProvenanceToken = null);

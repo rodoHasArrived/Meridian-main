@@ -604,7 +604,7 @@ Cross-screen counts (A3): open orders, provider health and open breaks, counted 
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:51](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L51).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:52](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L52).
 
 Endpoints for the desktop workstation API surface.
 
@@ -616,7 +616,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:59](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L59) |  |
+| <code>public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:60](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L60) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs#L12).
 
@@ -876,7 +876,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconcil
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs#L26).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs#L25).
 
 Strategy Designer and Strategy Engine endpoints for the workstation API surface, split out of the WorkstationEndpoints core partial as a capability group.
 
@@ -922,7 +922,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs:16]
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:29](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L29).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L25).
 
 Trading workspace payload composition for the workstation API surface: builds the live trading payload (positions, orders, fills, risk, brokerage, readiness). When neither the execution layer nor the strategy run read service is registered the builder returns null and the route responds 503 — fabricated fixture data is never served as live. The inline trading route lambda and the shared helpers (GetTradingOperatorReadinessAsync, NormalizeOperatorInboxToken, BuildTradingBrokerageNotes, ResolveLiveMark, ResolveRuntimeRiskDescriptorAsync, BuildModeComparisons, BuildRunDrillInLinks, FormatCurrency/FormatPercent) remain in core and are reached across the partial.
 
@@ -934,7 +934,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static WorkstationManualOrderEntry? ResolveManualOrderEntry(IExecutionGateway? gateway, BrokerageConfiguration? configuration);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:315](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L315) | Mirrors the OMS&#x27;s routing mode for the active gateway: manual orders are refused live (MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED) and admitted in paper. |
+| <code>public static WorkstationManualOrderEntry? ResolveManualOrderEntry(IExecutionGateway? gateway, BrokerageConfiguration? configuration);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:302](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L302) | Mirrors the OMS&#x27;s routing mode for the active gateway: manual orders are refused live (MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED) and admitted in paper. |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs:8](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs#L8).
 

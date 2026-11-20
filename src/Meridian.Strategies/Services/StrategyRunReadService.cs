@@ -280,6 +280,7 @@ public sealed partial class StrategyRunReadService
             BiasDisclosure: MapBiasDisclosure(run.Metrics?.BiasDisclosure))
         {
             EvidenceLoop = BuildEvidenceLoop(run),
+            ProviderProvenance = run.RunType == RunType.Backtest ? run.ProviderProvenance : null,
             AcceptanceChecklist = BuildAcceptanceChecklist(run, promotionLookup, promotionTargetRun, scope)
         };
     }

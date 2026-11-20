@@ -8,7 +8,10 @@ namespace Meridian.Platform.Scheduling;
 
 /// <summary>Resolves session expectations only after positively identifying a supported listing.</summary>
 public sealed class HistoricalSessionScheduleResolver(
-    ISecurityIdentityQueryService? identities, IOperationalTradingCalendar? calendar = null)
+    ISecurityIdentityQueryService? identities,
+    IOperationalTradingCalendar? calendar = null,
+    DateTimeOffset? identityAsOfUtc = null,
+    IReadOnlyDictionary<string, SecurityDetailDto?>? resolvedIdentities = null)
 {
     private readonly IOperationalTradingCalendar _calendar = calendar ?? new TradingCalendar();
 
@@ -21,20 +24,28 @@ public sealed class HistoricalSessionScheduleResolver(
         if (ListingId.TryParse(symbol, out var explicitListing) && HistoricalSessionEvidence.IsUsEquityListing(explicitListing.Mic.Value))
             return UsSessions(from, to);
 
-        if (identities is null)
-            return null;
-
         var start = new DateTimeOffset(from.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var end = new DateTimeOffset(to.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
         SecurityDetailDto? instrument;
-        try
+        if (resolvedIdentities is not null && resolvedIdentities.TryGetValue(symbol, out var resolved))
         {
-            instrument = await identities.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, symbol, null, ct, end).ConfigureAwait(false);
+            instrument = resolved;
         }
-        catch (Exception ex) when (ex is DbException or TimeoutException)
+        else
         {
-            ct.ThrowIfCancellationRequested();
-            return null;
+            if (identities is null)
+                return null;
+
+            try
+            {
+                instrument = await identities.GetByIdentifierAsync(
+                    SecurityIdentifierKind.Ticker, symbol, null, ct, identityAsOfUtc ?? end).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is DbException or TimeoutException)
+            {
+                ct.ThrowIfCancellationRequested();
+                return null;
+            }
         }
         if (instrument is null)
             return null;

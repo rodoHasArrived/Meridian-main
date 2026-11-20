@@ -213,6 +213,8 @@ public sealed class DesignerPaperRehearsalTests
         outcome.Success.Should().BeTrue();
         outcome.DataProvenanceToken.Should().Be("simulated");
         var sourceRun = (await repository.GetRunByIdAsync(outcome.RunId!))!;
+        outcome.ProviderProvenance.Should().NotBeNull();
+        outcome.ProviderProvenance!.ReceiptId.Should().Be(sourceRun.ProviderProvenance!.ReceiptId);
         var fill = sourceRun.Metrics!.Fills.Should().ContainSingle().Subject;
         fill.FillPrice.Should().Be(102m);
         fill.FilledQuantity.Should().Be(10);

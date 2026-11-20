@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RecordTickerChangeRequest
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.RecordTickerChangeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:10](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L10).
+
+Request to record a ticker change (e.g. FB→META) as a first-class security-master event.
+
+```csharp
+public sealed record RecordTickerChangeRequest(Guid SecurityId, string OldTicker, string NewTicker, DateTimeOffset EffectiveAtUtc, string UpdatedBy, string? Reason, string SourceSystem = "security-master-symbology");
+```
+
 ## SecurityMasterCorporateActionCommandService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.SecurityMasterCorporateActionCommandService</code>. Kind: `class`.
@@ -964,32 +976,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityMasterIngestStatusSnapshot GetSnapshot() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:286](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L286) |  |
 | <code>public Task&lt;SecurityMasterImportResult&gt; ImportAsync(string fileContent, string fileExtension, string actor, IProgress&lt;SecurityMasterImportProgress&gt;? progress = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:289](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L289) |  |
-
-## NullSecurityMasterPricingService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterPricingService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:11](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L11).
-
-No-op implementations for the Security Master reference-data governance services, registered when MERIDIAN_SECURITY_MASTER_CONNECTION_STRING is not configured.
-
-```csharp
-public sealed class NullSecurityMasterPricingService : ISecurityMasterPricingService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityPricingHierarchyDto?&gt; GetPricingHierarchyAsync(Guid securityId, string? accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:16](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L16) |  |
-| <code>public Task UpsertPricingHierarchyAsync(SecurityPricingHierarchyDto hierarchy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:20](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L20) |  |
-| <code>public Task RecordRawPriceAsync(RecordRawPriceRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:25](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L25) |  |
-| <code>public Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopyPriceAsync(Guid securityId, string? accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:29](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L29) |  |
-| <code>public Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopyPriceAsOfAsync(Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:33](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L33) |  |
-| <code>public Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopySelectionAsync(Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:37](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L37) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityPriceGoldenCopyDto&gt;&gt; GetObservationSelectionsAsync(Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:41](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L41) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityComparisonPriceDto&gt;&gt; GetComparisonPricesAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:45](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L45) |  |
-| <code>public Task&lt;SecurityClosePriceSetDto&gt; CreateClosePriceSetAsync(CreateSecurityClosePriceSetRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:49](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L49) |  |
-| <code>public Task&lt;SecurityClosePriceSetDto&gt; ApproveClosePriceSetAsync(ApproveSecurityClosePriceSetRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:52](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L52) |  |
-| <code>public Task&lt;SecurityClosePriceSetDto?&gt; GetClosePriceSetAsync(string accountId, string bookId, DateOnly valuationDate, Guid snapshotId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:55](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L55) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityClosePriceSetDto&gt;&gt; GetClosePriceSetsAsync(string accountId, string bookId, DateOnly valuationDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:58](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L58) |  |

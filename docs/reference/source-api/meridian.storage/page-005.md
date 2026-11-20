@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolInfo
+
+Qualified name: <code>Meridian.Storage.Interfaces.SymbolInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:81](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L81).
+
+Information about a symbol.
+
+```csharp
+public sealed record SymbolInfo(string Symbol, string Canonical, string[]? Aliases = null, string? AssetClass = null, string? Exchange = null, string? Currency = null, string? Sedol = null, string? Isin = null, string? Figi = null, string? Sector = null, string? Industry = null, Dictionary<string, string>? Metadata = null);
+```
+
 ## AccountingPostingCommandValidator
 
 Qualified name: <code>Meridian.Storage.Ledger.AccountingPostingCommandValidator</code>. Kind: `class`.
@@ -918,21 +930,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task ValidateIntercompanyAgreementReferencesAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:23](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L23) |  |
-
-## IIntercompanyAgreementPostingAuthority
-
-Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementPostingAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:6](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L6).
-
-Checks approved agreement authority and retains exclusion against amendments through ledger commit.
-
-```csharp
-public interface IIntercompanyAgreementPostingAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:8](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L8) |  |

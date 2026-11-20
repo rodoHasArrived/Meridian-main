@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IDataQualityGapRemediationService
+
+Qualified name: <code>Meridian.Application.Backfill.IDataQualityGapRemediationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/Backfill/AutoGapRemediationService.cs:37](../../../../src/Meridian.Application/Backfill/AutoGapRemediationService.cs#L37).
+
+Shared application boundary for explicit, contextual data-quality gap remediation.
+
+```csharp
+public interface IDataQualityGapRemediationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AutoGapRemediationRequestResult&gt; RequestDataQualityGapAsync(QualityDataGap gap, string? provider = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/AutoGapRemediationService.cs:39](../../../../src/Meridian.Application/Backfill/AutoGapRemediationService.cs#L39) |  |
+
 ## ProviderCostEstimate
 
 Qualified name: <code>Meridian.Application.Backfill.ProviderCostEstimate</code>. Kind: `record`.
@@ -1002,22 +1020,3 @@ Declared public members:
 | <code>public int Order =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:28](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L28) |  |
 | <code>public bool IsCritical =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:29](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L29) |  |
 | <code>public async ValueTask ExecuteAsync(CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:31](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L31) |  |
-
-## HostModeOrchestrator
-
-Qualified name: <code>Meridian.Application.Composition.Startup.HostModeOrchestrator</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs:17](../../../../src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs#L17).
-
-Shared startup orchestrator that dispatches commands and runs the appropriate host mode using HostStartupFactory.
-
-```csharp
-public sealed class HostModeOrchestrator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HostModeOrchestrator(ILogger log, DashboardServerFactory dashboardServerFactory);</code> | [src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs:22](../../../../src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs#L22) |  |
-| <code>public async Task&lt;int&gt; RunAsync(CliArguments cliArgs, AppConfig cfg, string cfgPath, ConfigurationService configService, DeploymentContext deployment, CancellationToken ct = default, IApplicationLifecycleCoordinator? lifecycle = null);</code> | [src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs:28](../../../../src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs#L28) |  |

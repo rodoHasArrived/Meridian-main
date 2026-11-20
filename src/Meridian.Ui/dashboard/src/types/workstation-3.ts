@@ -1134,9 +1134,10 @@ export interface DataBackfillRecord {
   jobId: string;
   scope: string;
   provider: string;
-  status: "Queued" | "Running" | "Review";
+  status: "Queued" | "Running" | "Review" | "Completed" | "Failed";
   progress: string;
   updatedAt: string;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
 }
 
 export interface DataExportRecord {

@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.Workstation;
@@ -331,6 +332,7 @@ public static partial class WorkstationEndpoints
             }
 
             var runId = Guid.NewGuid().ToString("N");
+            var scope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var entry = (StrategyRunEntry
                 .StartWithEvidence(
                     document.DocumentId,
@@ -345,6 +347,8 @@ public static partial class WorkstationEndpoints
                         ["designerDocumentId"] = document.DocumentId,
                         ["datasetFingerprint"] = preview.Compiled.DatasetFingerprint,
                         ["cellCount"] = document.Cells.Count.ToString(CultureInfo.InvariantCulture),
+                        ["workstationTenantId"] = scope.TenantId ?? string.Empty,
+                        ["workstationCompanyId"] = scope.CompanyId ?? string.Empty,
 
                         // The document's universe is carried as 'symbols' because promotion copies
                         // this parameter set verbatim and LiveTradingEngine.ResolveUniverse reads
@@ -364,10 +368,16 @@ public static partial class WorkstationEndpoints
                     approvalReferences: evidenceLoop.ApprovalReferences,
                     paperValidationReferences: evidenceLoop.PaperValidationReferences,
                     governedReportReferences: evidenceLoop.GovernedReportReferences))
-                .Complete(capturedBacktest);
+                .Complete(capturedBacktest with
+                {
+                    ProviderProvenance = ResearchProviderProvenance.FromWorkerResult(capturedBacktest, DateTimeOffset.UtcNow)
+                });
             await repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
 
-            return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null, biasDisclosure), jsonOptions);
+            return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null, biasDisclosure) with
+            {
+                ProviderProvenance = entry.ProviderProvenance
+            }, jsonOptions);
         })
         .WithName("RunStrategyDesignerBacktest").RequirePermission(UserPermission.ManageStrategies)
         .RequireWorkstationTenantCompanyScope()
@@ -432,6 +442,7 @@ public static partial class WorkstationEndpoints
                 StrategyVersionSha256 = DesignerStrategyVersion.Read(run),
                 DataSnapshotSha256 = run.ParameterSet?.GetValueOrDefault(DesignerStrategyVersion.DataSnapshotKey),
                 DataProvenanceToken = run.DataProvenanceToken,
+                ProviderProvenance = run.ProviderProvenance,
                 PromotionCandidatePath = string.Equals(run.DataProvenanceToken, "real", StringComparison.Ordinal)
                     ? $"/api/promotion/evaluate/{run.RunId}" : null
             };
