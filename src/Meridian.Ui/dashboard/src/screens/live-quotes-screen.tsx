@@ -29,6 +29,7 @@ import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view
 import { EmptyState } from "@/components/data/empty-state";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
 import { DepthQuantityIllustration } from "@/screens/depth-quantity-illustration";
+import { ChartEvidenceMark, ChartEvidenceView } from "@/components/charts/chart-evidence";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { denseTableVirtualization } from "@/lib/dense-table-virtualization";
 import { Input } from "@/components/ui/input";
@@ -282,7 +283,7 @@ export function LiveQuotesScreen() {
 
       {activeSymbol ? (
         <>
-        <HistoricalChartCard symbol={activeSymbol} />
+        <HistoricalChartCard key={activeSymbol} symbol={activeSymbol} />
         <PriceChartCard
           viewModel={marketVm.priceChart}
         />
@@ -664,7 +665,7 @@ interface DepthLadderProps {
 
 function DepthLadder({ ladder, onSeedBuy, onSeedSell }: DepthLadderProps) {
   return (
-    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,0.58fr)]">
+    <div id="live-quotes-depth-ladder" tabIndex={-1} className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,0.58fr)]">
       <div className="grid grid-cols-2 gap-2 font-mono text-xs" role="group" aria-label={ladder.tableLabel}>
         <DepthLadderSide
           label="Bid size"
@@ -687,7 +688,7 @@ function DepthLadder({ ladder, onSeedBuy, onSeedSell }: DepthLadderProps) {
           }}
         />
       </div>
-      <div id={ladder.detailPanelId} aria-live="polite">
+      <div id={ladder.detailPanelId} tabIndex={-1} aria-live="polite">
         {ladder.selectedDetail ? (
           <EntitySummary
             eyebrow={ladder.selectedDetail.eyebrow}
@@ -1038,7 +1039,7 @@ function TradesTable({ market }: { market: LiveQuotesMarketDataViewModel }) {
         caption={market.tradesTableCaption}
         virtualization={denseTableVirtualization(market.tradeDisplayRows.length)}
       />
-      <div id={market.tradesDetailPanelId} aria-live="polite">
+      <div id={market.tradesDetailPanelId} tabIndex={-1} aria-live="polite">
         {market.selectedTradeDetail ? (
           <EntitySummary
             eyebrow={market.selectedTradeDetail.eyebrow}
@@ -1142,71 +1143,84 @@ function ChartStat({ label, value }: { label: string; value: string }) {
 
 function PriceSparkline({ sparkline }: { sparkline: LiveQuotesSparklineViewModel }) {
   return (
-    <svg
-      viewBox={sparkline.viewBox}
-      preserveAspectRatio="none"
-      className="block h-44 w-full overflow-visible"
-      role="img"
-      aria-label={sparkline.ariaLabel}
-    >
-      <line
-        x1={sparkline.guideStartX}
-        x2={sparkline.guideEndX}
-        y1={sparkline.highGuideY}
-        y2={sparkline.highGuideY}
-        stroke="currentColor"
-        strokeOpacity="0.15"
-        strokeDasharray="4 4"
-      />
-      <line
-        x1={sparkline.guideStartX}
-        x2={sparkline.guideEndX}
-        y1={sparkline.lowGuideY}
-        y2={sparkline.lowGuideY}
-        stroke="currentColor"
-        strokeOpacity="0.15"
-        strokeDasharray="4 4"
-      />
-      <path d={sparkline.areaPath} fill={sparkline.strokeToken} fillOpacity="0.12" stroke="none" />
-      <polyline
-        fill="none"
-        stroke={sparkline.strokeToken}
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        points={sparkline.points}
-      />
-      <circle
-        cx={sparkline.lastPoint.x}
-        cy={sparkline.lastPoint.y}
-        r="3.25"
-        fill={sparkline.strokeToken}
-        stroke="currentColor"
-        strokeOpacity="0.4"
-        strokeWidth="1"
-      />
-      <text
-        x={sparkline.labelX}
-        y={sparkline.highLabelY}
-        textAnchor="end"
-        fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
-        fontSize="10"
-        fill="currentColor"
-        fillOpacity="0.55"
-      >
-        {sparkline.highLabel}
-      </text>
-      <text
-        x={sparkline.labelX}
-        y={sparkline.lowLabelY}
-        textAnchor="end"
-        fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
-        fontSize="10"
-        fill="currentColor"
-        fillOpacity="0.55"
-      >
-        {sparkline.lowLabel}
-      </text>
-    </svg>
+    <ChartEvidenceView label="Recent trade prices" evidence={sparkline.observations} initialIndex={sparkline.latestIndex}>
+      {(inspection) => (
+        <svg
+          viewBox={sparkline.viewBox}
+          preserveAspectRatio="none"
+          className="block h-44 w-full overflow-visible"
+          role="group"
+          aria-label={sparkline.ariaLabel}
+          aria-describedby={inspection.hintId}
+        >
+          <line
+            x1={sparkline.guideStartX}
+            x2={sparkline.guideEndX}
+            y1={sparkline.highGuideY}
+            y2={sparkline.highGuideY}
+            stroke="currentColor"
+            strokeOpacity="0.15"
+            strokeDasharray="4 4"
+          />
+          <line
+            x1={sparkline.guideStartX}
+            x2={sparkline.guideEndX}
+            y1={sparkline.lowGuideY}
+            y2={sparkline.lowGuideY}
+            stroke="currentColor"
+            strokeOpacity="0.15"
+            strokeDasharray="4 4"
+          />
+          <path d={sparkline.areaPath} fill={sparkline.strokeToken} fillOpacity="0.12" stroke="none" />
+          <polyline
+            fill="none"
+            stroke={sparkline.strokeToken}
+            strokeWidth="1.75"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            points={sparkline.points}
+          />
+          <circle
+            cx={sparkline.lastPoint.x}
+            cy={sparkline.lastPoint.y}
+            r="3.25"
+            fill={sparkline.strokeToken}
+            stroke="currentColor"
+            strokeOpacity="0.4"
+            strokeWidth="1"
+          />
+          <text
+            x={sparkline.labelX}
+            y={sparkline.highLabelY}
+            textAnchor="end"
+            fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
+            fontSize="10"
+            fill="currentColor"
+            fillOpacity="0.55"
+          >
+            {sparkline.highLabel}
+          </text>
+          <text
+            x={sparkline.labelX}
+            y={sparkline.lowLabelY}
+            textAnchor="end"
+            fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
+            fontSize="10"
+            fill="currentColor"
+            fillOpacity="0.55"
+          >
+            {sparkline.lowLabel}
+          </text>
+          {sparkline.observations.map((point, index) => (
+            <ChartEvidenceMark
+              key={point.id}
+              inspection={inspection}
+              index={index}
+              geometry={{ x: Number(point.x), y: Number(point.y) }}
+            />
+          ))}
+        </svg>
+      )}
+    </ChartEvidenceView>
   );
 }

@@ -1,4 +1,4 @@
-import { type DragEvent, type ReactNode, useState } from "react";
+import { type DragEvent, type ReactNode, useId, useState } from "react";
 import { BarChart2, ChevronLeft, ChevronRight, Eye, Filter, GripVertical, Palette, PencilLine, Plus, RotateCcw, Trash2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,11 @@ export type ReportWriterTokenDragOrigin = { gridId: string; zone: ReportWriterDr
 export type ReportWriterTokenDragPayload = { token: ReportingWriterToken; origin?: ReportWriterTokenDragOrigin | null };
 export type ReportWriterFixtureDatasetProfile = "portfolioPositions" | "ledgerFacts" | "cashLadder" | "customRows";
 export type ReportWriterPreviewDatasetProfile = ReportWriterFixtureDatasetProfile | `source:${string}`;
+
+interface ReportWriterPreview {
+  grid: ReportWriterGridRender;
+  sourceDetail: string;
+}
 export type ReportWriterDraftSettingsField =
   | "name"
   | "displayName"
@@ -180,7 +185,7 @@ export function useReportingReportWriter({
   const [writerCustomDatasetText, setWriterCustomDatasetText] = useState<Record<string, string>>({});
   const [writerDraftStatus, setWriterDraftStatus] = useState<ReportingCommandStatus | null>(null);
   const [writerPreviewStatus, setWriterPreviewStatus] = useState<ReportingCommandStatus | null>(null);
-  const [writerPreviewByGridId, setWriterPreviewByGridId] = useState<Record<string, ReportWriterGridRender | null>>({});
+  const [writerPreviewByGridId, setWriterPreviewByGridId] = useState<Record<string, ReportWriterPreview | null>>({});
   const [writerPreviousPreviewByGridId, setWriterPreviousPreviewByGridId] = useState<Record<string, ReportWriterGridRender | null>>({});
   const [writerChartDrafts, setWriterChartDrafts] = useState<Record<string, ReportWriterChartDraft>>({});
   const [writerFormatRuleDrafts, setWriterFormatRuleDrafts] = useState<Record<string, ReportWriterFormatRuleDraft[]>>({});
@@ -533,10 +538,14 @@ export function useReportingReportWriter({
     try {
       const result = await renderReportTemplate(request);
       const renderedGrid = result.grids?.find((item) => item.gridId === grid.gridId) ?? result.grids?.[0] ?? null;
-      const previousPreview = writerPreviewByGridId[grid.id] ?? null;
+      const previousPreview = writerPreviewByGridId[grid.id]?.grid ?? null;
+      const sourceDetail = retainedDatasetRows && selectedDatasetSource
+        ? `Dataset ${selectedDatasetSource.label}.`
+        : customDataset ? "Operator-pasted preview dataset."
+          : `Synthetic preview dataset (${reportWriterPreviewDatasetProfiles.find(({ id }) => id === settings.previewDataset)?.label ?? settings.previewDataset}).`;
       setWriterPreviewByGridId((current) => ({
         ...current,
-        [grid.id]: renderedGrid
+        [grid.id]: renderedGrid ? { grid: renderedGrid, sourceDetail } : null
       }));
       setWriterPreviousPreviewByGridId((current) => ({
         ...current,
@@ -615,9 +624,9 @@ function isReportWriterDatasetSourceProfile(value: string | null | undefined): v
 }
 
 function clearWriterPreview(
-  current: Record<string, ReportWriterGridRender | null>,
+  current: Record<string, ReportWriterPreview | null>,
   gridId: string
-): Record<string, ReportWriterGridRender | null> {
+): Record<string, ReportWriterPreview | null> {
   if (!(gridId in current)) {
     return current;
   }
@@ -914,7 +923,7 @@ interface ReportWriterDesignerGridProps {
   customDatasetText: string;
   isSaving: boolean;
   isPreviewing: boolean;
-  preview: ReportWriterGridRender | null;
+  preview: ReportWriterPreview | null;
   previousPreview: ReportWriterGridRender | null;
   getZoneTokens: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => ReportingWriterToken[];
   onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken, origin?: ReportWriterTokenDragOrigin | null) => void;
@@ -1499,8 +1508,13 @@ export function ReportWriterDesignerGrid({
   );
 }
 
-function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: ReportingWriterGridRow; preview: ReportWriterGridRender; previousPreview?: ReportWriterGridRender | null }) {
-  const rows = preview.rows.slice(0, 5);
+function ReportWriterPreviewTable({ grid, preview: rendered, previousPreview }: { grid: ReportingWriterGridRow; preview: ReportWriterPreview; previousPreview?: ReportWriterGridRender | null }) {
+  const proofId = useId();
+  const preview = rendered.grid;
+  const rows = preview.chart ? preview.rows : preview.rows.slice(0, 5);
+  const chartKeys = preview.chart ? [preview.chart.categoryField, ...preview.chart.series.map(({ key }) => key)] : [];
+  const proofColumns = [...new Set(chartKeys)].filter((key) => !preview.columns.some((column) => column.key.toLowerCase() === key.toLowerCase()));
+  const columns = [...preview.columns, ...proofColumns.map((key) => ({ key, label: key, role: "source field" }))];
   const lineage = preview.lineage;
   const dataDictionary = preview.dataDictionary ?? [];
   const validationChecks = preview.validationChecks ?? [];
@@ -1521,7 +1535,7 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
         <table className="min-w-full table-fixed text-left text-xs" aria-label={`${grid.title} preview rows`}>
           <thead className="bg-secondary/40 text-xs uppercase tracking-[0.12em] text-muted-foreground">
             <tr>
-              {preview.columns.map((column) => (
+            {columns.map((column) => (
                 <th key={column.key} scope="col" className="min-w-28 px-2 py-1.5 font-semibold">
                   <span className="block truncate" title={column.label}>{column.label}</span>
                   <span className="mt-0.5 block truncate font-mono text-xs normal-case tracking-normal" title={column.role}>
@@ -1532,9 +1546,9 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
             </tr>
           </thead>
           <tbody>
-            {rows.length > 0 ? rows.map((row) => (
-              <tr key={row.rowKey} className="border-t border-border/50">
-                {preview.columns.map((column) => (
+            {rows.length > 0 ? rows.map((row, index) => (
+              <tr key={`${row.rowKey}:${index}`} id={`${proofId}-row-${index}`} tabIndex={-1} className="border-t border-border/50 target:bg-secondary/60">
+                {columns.map((column) => (
                   <td
                     key={`${row.rowKey}:${column.key}`}
                     className={cn("px-2 py-1.5 font-mono text-foreground", cellStyleClassName(resolveCellStyle(row, column.key)))}
@@ -1545,7 +1559,7 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
               </tr>
             )) : (
               <tr>
-                <td className="px-2 py-2 text-muted-foreground" colSpan={Math.max(preview.columns.length, 1)}>
+                <td className="px-2 py-2 text-muted-foreground" colSpan={Math.max(columns.length, 1)}>
                   No rows returned.
                 </td>
               </tr>
@@ -1553,7 +1567,9 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
           </tbody>
         </table>
       </div>
-      {preview.chart ? <ReportWriterChartPreview chart={preview.chart} /> : null}
+      {preview.chart ? (
+        <ReportWriterChartPreview chart={preview.chart} grid={preview} proofId={proofId} sourceDetail={rendered.sourceDetail} />
+      ) : null}
       {comparison ? (
         <details className="mt-2 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs">
           <summary className="cursor-pointer select-none text-xs font-semibold text-foreground">
