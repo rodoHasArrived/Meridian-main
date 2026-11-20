@@ -440,6 +440,7 @@ export interface DataOperationsBackfillRow {
   detailPanelId: string;
   scope: string;
   provider: string;
+  usedFallback: boolean;
   status: DataBackfillRecord["status"];
   rowClassName: DataOperationsStatusRowClassName;
   progress: string;
@@ -3226,6 +3227,7 @@ export function buildBackfillSection(
         detailPanelId: DATA_BACKFILL_DETAIL_PANEL_ID,
         scope: backfill.scope,
         provider: backfill.provider,
+        usedFallback: backfill.providerProvenance?.fallbackOccurred === true,
         status: backfill.status,
         rowClassName: backfillRowClassName(backfill.status),
         progress: backfill.progress,
@@ -3270,7 +3272,7 @@ export function buildSelectedBackfillDetail(
     description,
     ariaLabel: `Backfill detail for ${selected.jobId}: ${selected.scope}. ${description}`,
     statusLabel: selected.status,
-    statusVariant: selected.status === "Review" ? "warning" : selected.status === "Running" ? "default" : "outline",
+    statusVariant: selected.status === "Review" || selected.status === "Failed" ? "warning" : selected.status === "Running" ? "default" : "outline",
     rows: [
       { id: "provider", label: "Provider", value: selected.provider },
       { id: "status", label: "Status", value: selected.status },
@@ -4069,8 +4071,15 @@ export function validateBackfillForm(
 export function buildBackfillNarrative(backfill: DataBackfillRecord): string {
   if (backfill.status === "Scheduled") return "This backfill is waiting for its scheduled start.";
   if (backfill.status === "Throttled") return "This backfill is waiting for a provider request slot.";
-  if (backfill.status === "Completed") return "This backfill has a completed execution receipt.";
-  if (backfill.status === "Failed" || backfill.status === "Cancelled") return "Review the execution receipt for the outcome.";
+  if (backfill.status === "Cancelled") return "Review the execution receipt for the outcome.";
+  if (backfill.status === "Completed") {
+    return `Historical backfill completed for ${backfill.scope}.`;
+  }
+
+  if (backfill.status === "Failed") {
+    return `Historical backfill ended with failures for ${backfill.scope}.`;
+  }
+
   if (backfill.status === "Running") {
     return `Replay is currently advancing for ${backfill.scope}; monitor provider pressure before adding more symbols.`;
   }

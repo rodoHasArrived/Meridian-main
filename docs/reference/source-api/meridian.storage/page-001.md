@@ -914,23 +914,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BackfillStatusStore(string dataRoot) : this(dataRoot, null);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:21](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L21) |  |
-| <code>public BackfillStatusStore(string dataRoot, string? tenantId);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:26](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L26) |  |
-| <code>public BackfillBatchStore Batches { get; }</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:40](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L40) |  |
-| <code>public static BackfillStatusStore FromConfig(AppConfig cfg) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:42](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L42) |  |
-| <code>public async Task WriteAsync(BackfillResult result, CancellationToken ct = default);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:48](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L48) |  |
-| <code>public BackfillResult? TryRead();</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:54](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L54) |  |
-| <code>public async Task WriteSymbolCheckpointAsync(string symbol, DateOnly lastCompletedDate, long barsWritten = 0, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:82](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L82) | Records that symbol was successfully backfilled up to and including lastCompletedDate with barsWritten bars. Subsequent calls update the stored date if the new value is later than the previously recorded one; the bar count is replaced unconditionally when the date advances. Thread-safe: concurrent writes are serialized through an internal lock. |
-| <code>public async Task WriteSymbolCheckpointAsync(string symbol, DataGranularity granularity, DateOnly lastCompletedDate, long barsWritten = 0, CancellationToken ct = default);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:94](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L94) | Records that symbol was successfully backfilled up to and including lastCompletedDate for the specified granularity. Granularity-scoped checkpoints prevent one backfill lane from suppressing another. |
-| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints() =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:140](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L140) | Returns the per-symbol checkpoint map, or null when no checkpoints have been saved yet. Keys are symbol names (case-insensitive); values are the last successfully completed date. |
-| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints(DataGranularity granularity) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:147](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L147) | Returns the checkpoint map for the requested granularity. Legacy unscoped entries are treated as daily checkpoints for backward compatibility. |
-| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts() =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:156](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L156) | Returns the per-symbol bar-count map persisted alongside the checkpoints, or null when no bar-count data has been saved yet. Keys are symbol names (case-insensitive); values are the number of bars written in the run that last advanced the checkpoint date for that symbol. |
-| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts(DataGranularity granularity) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:163](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L163) | Returns the per-symbol bar-count map for the requested granularity. Legacy unscoped entries are treated as daily bar counts for backward compatibility. |
-| <code>public async Task ClearSymbolCheckpointsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:244](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L244) | Removes all per-symbol checkpoints, bar-count data and verified coverage. Fresh backfill runs reset progress through ResetSymbolCheckpointStatusAsync. |
-| <code>public Task ClearSymbolCheckpointsAsync(DataGranularity granularity, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:272](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L272) | Removes only the checkpoints, bar-count data and verified coverage associated with the requested granularity, preserving resume state for other backfill lanes. |
-| <code>public Task ResetSymbolCheckpointStatusAsync(DataGranularity granularity, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:278](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L278) | Resets date and bar-count status for the requested granularity while retaining verified coverage. |
-| <code>public async Task WriteSymbolCoverageAsync(DataGranularity granularity, string provider, string feed, IReadOnlyCollection&lt;BackfillCoverageUpdate&gt; updates, CancellationToken ct = default);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:337](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L337) | Records, in one atomic write, the date ranges whose bars were durably written for each symbol by provider and feed. Ranges merge with the coverage already recorded for the same symbol, granularity, provider and feed. Call only after the bars are on disk: a resumed run skips exactly these dates. |
-| <code>public IReadOnlyDictionary&lt;string, IReadOnlyList&lt;BackfillCoverageRange&gt;&gt;? TryReadSymbolCoverage(DataGranularity granularity, string provider, string feed);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:399](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L399) | Returns the verified coverage recorded for provider and feed in one granularity lane, keyed by symbol (case-insensitive), or null when none is recorded. Coverage from another provider or feed, and legacy date-only checkpoints, are never returned. |
+| <code>public BackfillStatusStore(string dataRoot);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:22](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L22) |  |
+| <code>public BackfillBatchStore Batches { get; }</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:34](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L34) |  |
+| <code>public static BackfillStatusStore FromConfig(AppConfig cfg) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:36](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L36) |  |
+| <code>public async Task WriteAsync(BackfillResult result, CancellationToken ct = default);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:42](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L42) |  |
+| <code>public async Task WriteRetainedResultAsync(RetainedBackfillResult result, CancellationToken ct = default);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:51](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L51) |  |
+| <code>public RetainedBackfillResult? TryReadRetainedResult(Guid receiptId) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:78](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L78) |  |
+| <code>public IReadOnlyList&lt;RetainedBackfillResult&gt; ReadRecentRetainedResults(int limit, string? tenantId, Guid? before = null);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:80](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L80) |  |
+| <code>public BackfillResult? TryRead();</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:117](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L117) |  |
+| <code>public async Task WriteSymbolCheckpointAsync(string symbol, DateOnly lastCompletedDate, long barsWritten = 0, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:150](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L150) | Records that symbol was successfully backfilled up to and including lastCompletedDate with barsWritten bars. Subsequent calls update the stored date if the new value is later than the previously recorded one; the bar count is replaced unconditionally when the date advances. Thread-safe: concurrent writes are serialized through an internal lock. |
+| <code>public async Task WriteSymbolCheckpointAsync(string symbol, DataGranularity granularity, DateOnly lastCompletedDate, long barsWritten = 0, CancellationToken ct = default);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:162](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L162) | Records that symbol was successfully backfilled up to and including lastCompletedDate for the specified granularity. Granularity-scoped checkpoints prevent one backfill lane from suppressing another. |
+| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints() =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:208](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L208) | Returns the per-symbol checkpoint map, or null when no checkpoints have been saved yet. Keys are symbol names (case-insensitive); values are the last successfully completed date. |
+| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints(DataGranularity granularity) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:215](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L215) | Returns the checkpoint map for the requested granularity. Legacy unscoped entries are treated as daily checkpoints for backward compatibility. |
+| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts() =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:224](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L224) | Returns the per-symbol bar-count map persisted alongside the checkpoints, or null when no bar-count data has been saved yet. Keys are symbol names (case-insensitive); values are the number of bars written in the run that last advanced the checkpoint date for that symbol. |
+| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts(DataGranularity granularity) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:231](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L231) | Returns the per-symbol bar-count map for the requested granularity. Legacy unscoped entries are treated as daily bar counts for backward compatibility. |
+| <code>public async Task ClearSymbolCheckpointsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:312](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L312) | Removes all per-symbol checkpoints, bar-count data and verified coverage. Fresh backfill runs reset progress through ResetSymbolCheckpointStatusAsync. |
+| <code>public Task ClearSymbolCheckpointsAsync(DataGranularity granularity, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:340](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L340) | Removes only the checkpoints, bar-count data and verified coverage associated with the requested granularity, preserving resume state for other backfill lanes. |
+| <code>public Task ResetSymbolCheckpointStatusAsync(DataGranularity granularity, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:346](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L346) | Resets date and bar-count status for the requested granularity while retaining verified coverage. |
+| <code>public async Task WriteSymbolCoverageAsync(DataGranularity granularity, string provider, string feed, IReadOnlyCollection&lt;BackfillCoverageUpdate&gt; updates, CancellationToken ct = default);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:405](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L405) | Records, in one atomic write, the date ranges whose bars were durably written for each symbol by provider and feed. Ranges merge with the coverage already recorded for the same symbol, granularity, provider and feed. Call only after the bars are on disk: a resumed run skips exactly these dates. |
+| <code>public IReadOnlyDictionary&lt;string, IReadOnlyList&lt;BackfillCoverageRange&gt;&gt;? TryReadSymbolCoverage(DataGranularity granularity, string provider, string feed);</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:467](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L467) | Returns the verified coverage recorded for provider and feed in one granularity lane, keyed by symbol (case-insensitive), or null when none is recorded. Coverage from another provider or feed, and legacy date-only checkpoints, are never returned. |
 
 ## JsonlBackfillBarWriter
 
@@ -949,6 +951,24 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;string&gt; WriteAsync(DataGranularity granularity, IReadOnlyList&lt;HistoricalBar&gt; bars, string fallbackSource, CancellationToken ct = default);</code> | [src/Meridian.Storage/Backfill/JsonlBackfillBarWriter.cs:18](../../../../src/Meridian.Storage/Backfill/JsonlBackfillBarWriter.cs#L18) |  |
+
+## RetainedBackfillResult
+
+Qualified name: <code>Meridian.Storage.Backfill.RetainedBackfillResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:571](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L571).
+
+Durable history row. Only the safe receipt and numeric outcome are retained here.
+
+```csharp
+public sealed record RetainedBackfillResult(ProviderProvenanceReceipt Receipt, bool Success, long BarsWritten, ProviderProvenanceAccess? Access)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsVisibleTo(string? tenantId) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillStatusStore.cs:574](../../../../src/Meridian.Storage/Backfill/BackfillStatusStore.cs#L574) |  |
 
 ## BankingMigrationRunner
 
@@ -1134,26 +1154,3 @@ Enum declarations:
 | <code>Gzip</code> | [src/Meridian.Storage/StorageOptions.cs:217](../../../../src/Meridian.Storage/StorageOptions.cs#L217) | Gzip - balanced compression. |
 | <code>Zstd</code> | [src/Meridian.Storage/StorageOptions.cs:219](../../../../src/Meridian.Storage/StorageOptions.cs#L219) | Zstd - high compression ratio. |
 | <code>Brotli</code> | [src/Meridian.Storage/StorageOptions.cs:221](../../../../src/Meridian.Storage/StorageOptions.cs#L221) | Brotli - high compression, slower. |
-
-## ConflictStrategy
-
-Qualified name: <code>Meridian.Storage.ConflictStrategy</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/StorageOptions.cs:291](../../../../src/Meridian.Storage/StorageOptions.cs#L291).
-
-Conflict resolution strategy for multi-source data.
-
-```csharp
-public enum ConflictStrategy : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>FirstWins</code> | [src/Meridian.Storage/StorageOptions.cs:294](../../../../src/Meridian.Storage/StorageOptions.cs#L294) | Keep first source&#x27;s data. |
-| <code>LastWins</code> | [src/Meridian.Storage/StorageOptions.cs:296](../../../../src/Meridian.Storage/StorageOptions.cs#L296) | Keep latest source&#x27;s data. |
-| <code>HighestPriority</code> | [src/Meridian.Storage/StorageOptions.cs:298](../../../../src/Meridian.Storage/StorageOptions.cs#L298) | Use priority order. |
-| <code>LowestLatency</code> | [src/Meridian.Storage/StorageOptions.cs:300](../../../../src/Meridian.Storage/StorageOptions.cs#L300) | Prefer lowest-latency source. |
-| <code>MostComplete</code> | [src/Meridian.Storage/StorageOptions.cs:302](../../../../src/Meridian.Storage/StorageOptions.cs#L302) | Source with most fields populated. |
-| <code>Merge</code> | [src/Meridian.Storage/StorageOptions.cs:304](../../../../src/Meridian.Storage/StorageOptions.cs#L304) | Combine and deduplicate. |

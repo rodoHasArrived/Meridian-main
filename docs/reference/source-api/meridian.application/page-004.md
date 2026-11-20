@@ -6,25 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ICompositeDataQualityReadService
-
-Qualified name: <code>Meridian.Application.DataQuality.ICompositeDataQualityReadService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:18](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L18).
-
-Shared read boundary for the browser and WPF data-quality workstations.
-
-```csharp
-public interface ICompositeDataQualityReadService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;QualityCompositeDashboardResponse&gt; GetDashboardAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:20](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L20) |  |
-| <code>bool TryResolveGap(string symbol, string gapId, out CompositeDataQualityGap target);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:22](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L22) |  |
-
 ## QualityMonitoringPublisher
 
 Qualified name: <code>Meridian.Application.DataQuality.QualityMonitoringPublisher</code>. Kind: `class`.
@@ -1365,3 +1346,22 @@ The tenant half of PostgresFundStructureService: what a caller may see, what the
 ```csharp
 public sealed partial class PostgresFundStructureService
 ```
+
+## PostgresIntercompanyAgreementPostingAuthority
+
+Qualified name: <code>Meridian.Application.FundStructure.PostgresIntercompanyAgreementPostingAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:9](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L9).
+
+Validates exact approved provenance while retaining structure locks through ledger commit.
+
+```csharp
+public sealed class PostgresIntercompanyAgreementPostingAuthority(IIntercompanyAgreementStore store) : IIntercompanyAgreementBatchPostingAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:12](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L12) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireValidatedBatchLeaseAsync(IReadOnlyList&lt;IntercompanyAgreementPostingRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L16) |  |

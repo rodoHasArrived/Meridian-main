@@ -1,5 +1,6 @@
 using Meridian.Application.Scheduling;
 using Meridian.Contracts.Backfill;
+using Meridian.Storage.Backfill;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -59,8 +60,8 @@ public sealed class BackfillJobQueue(
             if (notBefore <= now)
                 throw new ArgumentException("Choose a future start time for the scheduled backfill.");
 
-            coordinator.ValidateRequest(work.Request);
-            var latestEstimate = coordinator.EstimateQuota(work.Request);
+            coordinator.ValidateRequest(work.Request, work.TenantId);
+            var latestEstimate = coordinator.EstimateQuota(work.Request, work.TenantId);
             if (notBefore is null && !submission.AcceptThrottle && (work.Estimate.ExceedsBudget || latestEstimate.ExceedsBudget))
                 throw new InvalidOperationException("The plan exceeds the available backfill budget. Preview again and confirm queueing with throttling.");
 
@@ -106,7 +107,7 @@ public sealed class BackfillJobQueue(
             work.Request.Symbols.ToArray(), work.Request.From, work.Request.To, execution.ScheduledAt,
             work.NotBeforeUtc, execution.StartedAt, execution.CompletedAt,
             execution.QuotaReceipt is null ? null : execution.Statistics.TotalBarsRetrieved,
-            execution.ErrorMessage, work.Estimate, execution.QuotaReceipt, execution.BatchReceipts);
+            execution.ErrorMessage, work.Estimate, execution.QuotaReceipt, execution.BatchReceipts, execution.ProviderProvenance);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -150,8 +151,11 @@ public sealed class BackfillJobQueue(
             }, ct).ConfigureAwait(false);
 
             var status = result.Success ? ExecutionStatus.Completed : ExecutionStatus.Failed;
+            var provenance = result.ProviderProvenance is { } receipt
+                ? new RetainedBackfillResult(receipt, result.Success, result.BarsWritten, result.ProvenanceAccess)
+                : null;
             await StoreTerminalAsync(WithStatus(running, status, completedAt: result.CompletedUtc,
-                error: result.Error, result: result), ct).ConfigureAwait(false);
+                error: result.Error, result: result.ForTenant(work.TenantId)), ct, provenance).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
@@ -165,7 +169,7 @@ public sealed class BackfillJobQueue(
         return true;
     }
 
-    private async Task StoreTerminalAsync(BackfillExecutionLog execution, CancellationToken ct)
+    private async Task StoreTerminalAsync(BackfillExecutionLog execution, CancellationToken ct, RetainedBackfillResult? provenance = null)
     {
         while (true)
         {
@@ -173,6 +177,8 @@ public sealed class BackfillJobQueue(
             try
             {
                 history.StoreQueuedExecution(execution);
+                if (provenance is not null)
+                    await new BackfillStatusStore(_dataRoot).WriteRetainedResultAsync(provenance, ct).ConfigureAwait(false);
                 return;
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -206,7 +212,8 @@ public sealed class BackfillJobQueue(
             ErrorMessage = error,
             Statistics = new ExecutionStatistics { TotalBarsRetrieved = result?.BarsWritten ?? 0 },
             QuotaReceipt = result?.QuotaReceipt,
-            BatchReceipts = result?.BatchReceipts
+            BatchReceipts = result?.BatchReceipts,
+            ProviderProvenance = result?.ProviderProvenance
         };
 
     public override void Dispose()

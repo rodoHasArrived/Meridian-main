@@ -123,13 +123,19 @@ export function useBackfillJobHistory(
     }
     return jobs;
   }, [backfillJob, remediationHistory]);
-  const dataWithBackfillJobs = useMemo(() => data && jobReceipts.size > 0 ? {
-    ...data,
-    backfills: [
-      ...Array.from(jobReceipts.values(), projectBackfillJob),
-      ...data.backfills.filter((record) => !jobReceipts.has(record.jobId))
-    ]
-  } : data, [data, jobReceipts]);
+  const dataWithBackfillJobs = useMemo(() => {
+    if (!data || jobReceipts.size === 0) return data;
+    const jobRows = Array.from(jobReceipts.values(), projectBackfillJob);
+    const providerReceiptIds = new Set(jobRows.map((row) => row.providerProvenance?.receiptId));
+    return {
+      ...data,
+      backfills: [
+        ...jobRows,
+        ...data.backfills.filter((row) => !jobReceipts.has(row.jobId) &&
+          (!row.providerProvenance || !providerReceiptIds.has(row.providerProvenance.receiptId)))
+      ]
+    };
+  }, [data, jobReceipts]);
 
   return {
     backfillJob, backfillJobStatusError, setBackfillJob, resetBackfillJob,
@@ -151,7 +157,8 @@ function projectBackfillJob(job: BackfillJobReceipt): DataBackfillRecord {
     provider: job.provider,
     status: job.status,
     progress: job.barsWritten === null ? "Pending" : `${formatCount(job.barsWritten)} bars`,
-    updatedAt: formatBackfillProgressTimestamp(job.completedAt ?? job.startedAt ?? job.submittedAt)
+    updatedAt: formatBackfillProgressTimestamp(job.completedAt ?? job.startedAt ?? job.submittedAt),
+    providerProvenance: job.providerProvenance
   };
 }
 

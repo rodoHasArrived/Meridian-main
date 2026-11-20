@@ -5,6 +5,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Backfill;
 using Meridian.Application.Scheduling;
+using Meridian.Contracts.Operations;
 using Meridian.Core.Config;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
@@ -34,6 +35,37 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
     }
 
     public void Dispose() => _client.Dispose();
+
+    [Fact]
+    public async Task ReceiptReadsAndCloneReviewEnforceTenantScope()
+    {
+        const string tenantId = "endpoint-test-tenant";
+        var coordinator = _fixture.Services.GetRequiredService<Meridian.Ui.Shared.Services.BackfillCoordinator>();
+        var now = DateTimeOffset.UtcNow;
+        var date = DateOnly.FromDateTime(now.UtcDateTime);
+        var receipt = new ProviderProvenanceReceipt(1, Guid.NewGuid(), "HistoricalBars", "Explicit provider",
+            [new("stooq", null, "Public", "Default historical feed", "Public feed", "Historical bars")], [], false,
+            new("historical-backfill/v1"), new(date, date, ["SPY"], "Daily"), now, now, "Historical bars",
+            "The original execution state was unavailable.");
+        var foreign = receipt with { ReceiptId = Guid.NewGuid() };
+        var store = coordinator.GetReceiptStore();
+        await store.WriteRetainedResultAsync(new(receipt, true, 1, ProviderProvenanceAccess.Public.ForRequestTenant(tenantId)));
+        await store.WriteRetainedResultAsync(new(foreign, true, 1, ProviderProvenanceAccess.Public.ForRequestTenant("other-tenant")));
+
+        var response = await _client.GetAsync($"/api/backfill/receipts/{receipt.ReceiptId}");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync();
+        using var json = JsonDocument.Parse(content);
+        json.RootElement.GetProperty("schemaVersion").GetInt32().Should().Be(1);
+        content.Should().NotContain(tenantId).And.NotContain("runtimeRevisions");
+        (await _client.GetAsync($"/api/backfill/receipts/{foreign.ReceiptId}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await _client.GetAsync($"/api/backfill/receipts/{foreign.ReceiptId}/clone")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var clone = await _client.GetAsync($"/api/backfill/receipts/{receipt.ReceiptId}/clone");
+        clone.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var plan = JsonDocument.Parse(await clone.Content.ReadAsStringAsync());
+        plan.RootElement.GetProperty("status").GetString().Should().Be("Unavailable");
+    }
 
     #region GET /api/backfill/providers
 

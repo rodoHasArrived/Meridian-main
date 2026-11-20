@@ -6,29 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## EventPipelineShutdownParticipant
-
-Qualified name: <code>Meridian.Application.Composition.Startup.EventPipelineShutdownParticipant</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:15](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L15).
-
-Completes and flushes EventPipeline exactly once. The pipeline flush already drains its channel and flushes the underlying storage sink, so the sink must not be registered separately.
-
-```csharp
-public sealed class EventPipelineShutdownParticipant : IRuntimeShutdownParticipant
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EventPipelineShutdownParticipant(EventPipeline pipeline, DualPathEventPipeline? hotPath = null);</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:20](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L20) |  |
-| <code>public string Id =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:26](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L26) |  |
-| <code>public LifecycleShutdownStage Stage =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:27](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L27) |  |
-| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:28](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L28) |  |
-| <code>public bool IsCritical =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:29](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L29) |  |
-| <code>public async ValueTask ExecuteAsync(CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:31](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L31) |  |
-
 ## HostModeOrchestrator
 
 Qualified name: <code>Meridian.Application.Composition.Startup.HostModeOrchestrator</code>. Kind: `class`.
@@ -1005,3 +982,22 @@ Declared public members:
 | <code>public CompositeDataQualityReadService(DataQualityMonitoringService streaming, IDataQualityScoringService? stored = null, DataQualityMonitor? adapter = null, ISymbolRegistryService? symbols = null, ILogger&lt;CompositeDataQualityReadService&gt;? logger = null);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:59](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L59) |  |
 | <code>public async Task&lt;QualityCompositeDashboardResponse&gt; GetDashboardAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:73](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L73) |  |
 | <code>public bool TryResolveGap(string symbol, string gapId, out CompositeDataQualityGap target);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:157](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L157) |  |
+
+## ICompositeDataQualityReadService
+
+Qualified name: <code>Meridian.Application.DataQuality.ICompositeDataQualityReadService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:18](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L18).
+
+Shared read boundary for the browser and WPF data-quality workstations.
+
+```csharp
+public interface ICompositeDataQualityReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;QualityCompositeDashboardResponse&gt; GetDashboardAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:20](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L20) |  |
+| <code>bool TryResolveGap(string symbol, string gapId, out CompositeDataQualityGap target);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:22](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L22) |  |

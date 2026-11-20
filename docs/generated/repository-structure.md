@@ -2192,7 +2192,8 @@ Meridian-main
 │   │   │   │   ├── page-076.md
 │   │   │   │   ├── page-077.md
 │   │   │   │   ├── page-078.md
-│   │   │   │   └── page-079.md
+│   │   │   │   ├── page-079.md
+│   │   │   │   └── page-080.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -5160,13 +5161,12 @@ Meridian-main
 │   │   │   └── WaterfallMarkPriceSource.cs
 │   │   ├── Backfill
 │   │   │   ├── AutoGapRemediationService.cs
+│   │   │   ├── BackfillCoordinator.Clone.cs
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── BackfillCoordinatorExecutionGateway.cs
 │   │   │   ├── BackfillCostEstimator.cs
-│   │   │   ├── BackfillJobQueue.cs
 │   │   │   ├── BackfillPartitionPlanner.cs
 │   │   │   ├── BackfillPreview.cs
-│   │   │   ├── BackfillQuotaPlanner.cs
 │   │   │   ├── BackfillRequest.cs
 │   │   │   ├── BackfillSymbolNormalizer.cs
 │   │   │   ├── CrossSourceBackfillReconciliationService.cs
@@ -5764,6 +5764,7 @@ Meridian-main
 │   │   ├── PortfolioSnapshot.cs
 │   │   ├── Position.cs
 │   │   ├── README.md
+│   │   ├── ResearchProviderProvenance.cs
 │   │   ├── StrategyParameterAttribute.cs
 │   │   ├── TcaReportModels.cs
 │   │   ├── TradeTicket.cs
@@ -5847,7 +5848,6 @@ Meridian-main
 │   │   ├── Backfill
 │   │   │   ├── BackfillBatchReceipt.cs
 │   │   │   ├── BackfillProgress.cs
-│   │   │   ├── BackfillQuota.cs
 │   │   │   ├── BackfillResult.cs
 │   │   │   └── SymbolValidationSignal.cs
 │   │   ├── Backtesting
@@ -6135,6 +6135,7 @@ Meridian-main
 │   │   │   ├── OperationsContractsJsonContext.cs
 │   │   │   ├── OperationsOriginGuard.cs
 │   │   │   ├── PreparerAttestationApprovalBoundary.cs
+│   │   │   ├── ProviderProvenanceReceipt.cs
 │   │   │   └── VerifiedOperationOutcome.cs
 │   │   ├── Options
 │   │   │   ├── OptionAssessmentValidation.cs
@@ -7318,9 +7319,9 @@ Meridian-main
 │   │   │   ├── Core
 │   │   │   │   ├── Backfill
 │   │   │   │   │   ├── BackfillJobManager.cs
+│   │   │   │   │   ├── BackfillProvenanceCapture.cs
 │   │   │   │   │   ├── BackfillRequestQueue.cs
 │   │   │   │   │   ├── BackfillWorkerService.cs
-│   │   │   │   │   ├── HistoricalBackfillQuotaSession.cs
 │   │   │   │   │   ├── MarketDataTracing.cs
 │   │   │   │   │   └── PriorityBackfillQueue.cs
 │   │   │   │   ├── GapAnalysis
@@ -7599,6 +7600,7 @@ Meridian-main
 │   │   │   ├── IOptionChainImportService.cs
 │   │   │   ├── IOptionReferenceService.cs
 │   │   │   ├── OptionProjectionService.cs
+│   │   │   ├── OptionsChainProvenance.cs
 │   │   │   └── OptionsChainService.cs
 │   │   ├── DesignModule.cs
 │   │   ├── InstrumentProjectionServiceBase.cs
@@ -7966,6 +7968,7 @@ Meridian-main
 │   │   ├── ProviderModuleContext.cs
 │   │   ├── ProviderModuleLoader.cs
 │   │   ├── ProviderRoutingModels.cs
+│   │   ├── ProviderRuntimeProvenance.cs
 │   │   ├── README.md
 │   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
@@ -9126,7 +9129,6 @@ Meridian-main
 │   │   │   │   │   │   └── use-chart-size.ts
 │   │   │   │   │   ├── data
 │   │   │   │   │   │   ├── add-provider-drawer.tsx
-│   │   │   │   │   │   ├── backfill-quota.tsx
 │   │   │   │   │   │   ├── concrete.ts
 │   │   │   │   │   │   ├── edit-provider-drawer.tsx
 │   │   │   │   │   │   ├── editable-cell.test.tsx
@@ -9310,6 +9312,7 @@ Meridian-main
 │   │   │   │   │   │   ├── private-capital-lifecycle.view-model.ts
 │   │   │   │   │   │   ├── proof-drawer.test.tsx
 │   │   │   │   │   │   ├── proof-drawer.tsx
+│   │   │   │   │   │   ├── provider-provenance-panel.tsx
 │   │   │   │   │   │   ├── provider-verification-timeline.test.tsx
 │   │   │   │   │   │   ├── provider-verification-timeline.tsx
 │   │   │   │   │   │   ├── quant-notebook.test.tsx
@@ -10254,7 +10257,6 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.analytics-status.test.tsx
 │   │   │   │   │   ├── data-screen.analytics-status.tsx
 │   │   │   │   │   ├── data-screen.backfill-batch-receipts.tsx
-│   │   │   │   │   ├── data-screen.backfill-jobs.ts
 │   │   │   │   │   ├── data-screen.backfill-provider-editor.test.tsx
 │   │   │   │   │   ├── data-screen.backfill-provider-editor.tsx
 │   │   │   │   │   ├── data-screen.canonical-symbols.test.tsx
@@ -10722,6 +10724,7 @@ Meridian-main
 │   │   │   │   │   ├── provider-integration-identity.ts
 │   │   │   │   │   ├── provider-integration-provenance.ts
 │   │   │   │   │   ├── provider-ownership.types.ts
+│   │   │   │   │   ├── provider-provenance.ts
 │   │   │   │   │   ├── provider-setup.ts
 │   │   │   │   │   ├── reconciliation-readiness.types.ts
 │   │   │   │   │   ├── report-amount-proof.ts
@@ -12980,7 +12983,7 @@ Meridian-main
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillExecutionHistoryTests.cs
 │   │   │   │   ├── BackfillJobProgressAndGranularityTests.cs
-│   │   │   │   ├── BackfillQuotaTests.cs
+│   │   │   │   ├── BackfillProviderProvenanceTests.cs
 │   │   │   │   ├── BackfillRequestTraceContextTests.cs
 │   │   │   │   ├── BackfillScheduleManagerDurabilityTests.cs
 │   │   │   │   ├── BackfillSourceAttributionTests.cs

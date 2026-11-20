@@ -71,6 +71,9 @@ including pages and retries. A provider may supply bars without exposing request
 in which case the receipt leaves total request count and request variance unavailable. Duration
 variance compares execution time, including provider waits, with the preview duration. Time spent
 waiting to start is recorded through the submission and start timestamps.
+The same job retains provider provenance and verified batch revisions when available. Provenance
+counts adapter attempts, including fallback, while quota usage counts individual admitted requests.
+To repeat a queued job, submit a fresh quota preview with the current provider policy.
 
 ### Shared provider quota policy
 
@@ -112,6 +115,22 @@ reads. Workstation submissions use the signed-in operator session and its mutati
 `/api/backfill/progress` describes the host's coordinator activity; it does not monitor a separate
 CLI process. `/api/backfill/status` reads the most recent completed result from the configured data
 root and returns `404` when none exists.
+
+## Inspect and reproduce a result
+
+Open **Data → Backfill queue** and select a completed result. Expand **Provider provenance** to see
+which providers supplied data, whether fallback occurred, the requested scope, and the effective
+validation profile. Use **Load older backfill results** to page through retained runs. Research run
+details and completed Quant Lab and Covered Call results use the same receipt panel.
+
+**Export JSON sidecar** downloads the versioned receipt. **Export report** downloads its plain-text
+form. A scoped connection has an opaque receipt ID. The receipt records the feed and entitlement
+labels reported by the runtime and marks unavailable provenance explicitly.
+
+**Clone this run** restores the saved request and checks the provider route before presenting a run
+confirmation. Confirm again if provider availability changes during review. A missing or changed
+historical route, an unretained checkpoint, or an unversioned research dataset leaves reproduction
+unavailable and the original receipt inspectable.
 
 ## Provider configuration posture
 

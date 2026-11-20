@@ -1160,6 +1160,7 @@ export interface BackfillTriggerResult {
   completedUtc: string;
   error: string | null;
   quotaReceipt?: BackfillQuotaReceipt | null;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
   batchReceipts?: BackfillBatchReceipt[] | null;
 }
 
@@ -1235,6 +1236,7 @@ export interface BackfillJobReceipt {
   estimate: BackfillQuotaEstimate;
   actual: BackfillQuotaReceipt | null;
   batchReceipts?: BackfillBatchReceipt[] | null;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
 }
 
 export interface BackfillPreviewSymbol {

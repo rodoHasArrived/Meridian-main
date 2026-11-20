@@ -1,3 +1,5 @@
+using Meridian.Contracts.Operations;
+
 namespace Meridian.Contracts.Backfill;
 
 /// <summary>Historical provider quota and the shared policy observed when a plan was estimated.</summary>
@@ -59,4 +61,5 @@ public sealed record BackfillJobReceipt(
     string? Error,
     BackfillQuotaEstimate Estimate,
     BackfillQuotaReceipt? Actual,
-    IReadOnlyList<BackfillBatchReceipt>? BatchReceipts = null);
+    IReadOnlyList<BackfillBatchReceipt>? BatchReceipts = null,
+    ProviderProvenanceReceipt? ProviderProvenance = null);

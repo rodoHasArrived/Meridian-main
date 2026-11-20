@@ -103,11 +103,18 @@ public sealed class BackfillQuotaTests : IDisposable
                 .Should().Contain(["headroom", "provider-rate-limit", "concurrency"]);
             receipt.BatchReceipts.Should().HaveCount(2);
             coordinator.TryReadSymbolCheckpoints().Should().BeNull();
+            coordinator.TryReadLast().Should().BeNull();
             var dataRoot = Path.Combine(_root, "data");
-            var archiveBatches = new BackfillStatusStore(dataRoot).Batches;
+            var archive = new BackfillStatusStore(dataRoot);
+            receipt.ProviderProvenance.Should().NotBeNull();
+            RetainedBackfillResult? retainedProvenance;
+            while ((retainedProvenance = archive.TryReadRetainedResult(receipt.ProviderProvenance!.ReceiptId)) is null)
+                await Task.Delay(10, deadline.Token);
+            retainedProvenance.IsVisibleTo(Tenant).Should().BeTrue();
+            retainedProvenance.IsVisibleTo("different-tenant").Should().BeFalse();
             foreach (var batch in receipt.BatchReceipts!)
             {
-                var archived = await archiveBatches.ReadAsync(batch.RevisionId);
+                var archived = await archive.Batches.ReadAsync(batch.RevisionId);
                 archived!.Receipt.Should().BeEquivalentTo(batch);
             }
             new BackfillStatusStore(dataRoot, Tenant)

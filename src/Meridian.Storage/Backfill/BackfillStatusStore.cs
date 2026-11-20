@@ -4,6 +4,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.Archival;
 using Meridian.Contracts.Backfill;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.Storage.Backfill;
 
@@ -14,6 +15,7 @@ namespace Meridian.Storage.Backfill;
 public sealed class BackfillStatusStore
 {
     private readonly string _path;
+    private readonly string _receiptDirectory;
     private readonly string _symbolCheckpointsPath;
     private readonly string _symbolBarCountsPath;
     private readonly string _symbolCoveragePath;
@@ -29,6 +31,7 @@ public sealed class BackfillStatusStore
         var statusDir = Path.Combine(root, "_status");
         // Stored rows reference these revisions from the shared market-data archive.
         Batches = new BackfillBatchStore(Path.Combine(statusDir, "backfill-batches"));
+        _receiptDirectory = Path.Combine(statusDir, "backfill-receipts");
         if (tenantId is not null)
             statusDir = Path.Combine(statusDir, "backfill-tenants", Sha256Digest.ComputeUtf8(tenantId));
         _path = Path.Combine(statusDir, "backfill.json");
@@ -47,8 +50,77 @@ public sealed class BackfillStatusStore
 
     public async Task WriteAsync(BackfillResult result, CancellationToken ct = default)
     {
+        if (result.ProviderProvenance is { } receipt)
+            await WriteRetainedResultAsync(new(receipt, result.Success, result.BarsWritten, result.ProvenanceAccess), ct).ConfigureAwait(false);
+
         var json = JsonSerializer.Serialize(result, BackfillStatusStoreJsonContext.Default.BackfillResult);
         await AtomicFileWriter.WriteAsync(_path, json, ct);
+    }
+
+    public async Task WriteRetainedResultAsync(RetainedBackfillResult result, CancellationToken ct = default)
+    {
+        var destination = ReceiptPath(result.Receipt.ReceiptId);
+        var temporary = Path.Combine(_receiptDirectory, $"{Guid.NewGuid():N}.tmp");
+        var json = JsonSerializer.Serialize(result, BackfillStatusStoreJsonContext.Default.RetainedBackfillResult);
+        try
+        {
+            await AtomicFileWriter.WriteAsync(temporary, json, ct).ConfigureAwait(false);
+            try
+            {
+                // Publish a complete receipt once. Retrying the same write is idempotent.
+                File.Move(temporary, destination, overwrite: false);
+            }
+            catch (IOException) when (File.Exists(destination))
+            {
+                if (!string.Equals(json, await File.ReadAllTextAsync(destination, ct).ConfigureAwait(false), StringComparison.Ordinal))
+                    throw;
+            }
+            await AtomicFileWriter.SyncDirectoryAsync(_receiptDirectory, CancellationToken.None).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (File.Exists(temporary))
+                File.Delete(temporary);
+        }
+    }
+
+    public RetainedBackfillResult? TryReadRetainedResult(Guid receiptId) => ReadRetainedResult(ReceiptPath(receiptId));
+
+    public IReadOnlyList<RetainedBackfillResult> ReadRecentRetainedResults(int limit, string? tenantId, Guid? before = null)
+    {
+        if (!Directory.Exists(_receiptDirectory))
+            return [];
+
+        var files = new DirectoryInfo(_receiptDirectory).EnumerateFiles("*.json")
+            .OrderByDescending(static file => file.LastWriteTimeUtc)
+            .ThenByDescending(static file => file.Name, StringComparer.Ordinal);
+        var page = before is { } id
+            ? files.SkipWhile(file => !string.Equals(file.Name, $"{id:N}.json", StringComparison.Ordinal)).Skip(1)
+            : files;
+        return page
+            .Select(static file => ReadRetainedResult(file.FullName))
+            .OfType<RetainedBackfillResult>()
+            .Where(result => result.IsVisibleTo(tenantId))
+            .Take(limit)
+            .ToArray();
+    }
+
+    private string ReceiptPath(Guid receiptId) => Path.Combine(_receiptDirectory, $"{receiptId:N}.json");
+
+    private static RetainedBackfillResult? ReadRetainedResult(string path)
+    {
+        try
+        {
+            var json = File.ReadAllText(path);
+            var result = JsonSerializer.Deserialize(json, BackfillStatusStoreJsonContext.Default.RetainedBackfillResult);
+            return result?.Receipt is { Request: not null, ValidationProfile: not null } receipt &&
+                !receipt.Providers.IsDefault && !receipt.FallbackChain.IsDefault && !receipt.Request.Symbols.IsDefault &&
+                Guid.TryParseExact(Path.GetFileNameWithoutExtension(path), "N", out var id) && id == receipt.ReceiptId ? result : null;
+        }
+        catch (Exception ex) when (ex is JsonException or IOException)
+        {
+            return null;
+        }
     }
 
     public BackfillResult? TryRead()
@@ -58,7 +130,12 @@ public sealed class BackfillStatusStore
             if (!File.Exists(_path))
                 return null;
             var json = File.ReadAllText(_path);
-            return JsonSerializer.Deserialize(json, BackfillStatusStoreJsonContext.Default.BackfillResult);
+            var result = JsonSerializer.Deserialize(json, BackfillStatusStoreJsonContext.Default.BackfillResult);
+            if (result?.ProviderProvenance is not { } receipt)
+                return result;
+
+            var retained = TryReadRetainedResult(receipt.ReceiptId);
+            return result with { ProviderProvenance = retained?.Receipt, ProvenanceAccess = retained?.Access };
         }
         catch (Exception ex) when (ex is JsonException or IOException)
         {
@@ -497,4 +574,11 @@ public sealed class BackfillStatusStore
 
     private static bool IsCheckpointKeyForGranularity(string rawKey, DataGranularity granularity)
         => TryMapCheckpointKey(rawKey, granularity, out _);
+}
+
+/// <summary>Durable history row. Only the safe receipt and numeric outcome are retained here.</summary>
+public sealed record RetainedBackfillResult(ProviderProvenanceReceipt Receipt, bool Success, long BarsWritten,
+    ProviderProvenanceAccess? Access)
+{
+    public bool IsVisibleTo(string? tenantId) => Access?.IsVisibleTo(tenantId) == true;
 }

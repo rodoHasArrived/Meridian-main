@@ -63,6 +63,9 @@ public static class UiApiRoutes
     public const string BackfillJobs = "/api/backfill/jobs";
     public const string BackfillJobById = "/api/backfill/jobs/{id}";
     public const string BackfillQuotaPolicy = "/api/backfill/quota-policies/{provider}";
+    public const string BackfillClone = "/api/backfill/receipts/{receiptId:guid}/clone";
+    public const string BackfillReceipts = "/api/backfill/receipts";
+    public const string BackfillReceipt = "/api/backfill/receipts/{receiptId:guid}";
     public const string BackfillProgress = "/api/backfill/progress";
     public const string BackfillHealth = "/api/backfill/health";
     public const string BackfillResolve = "/api/backfill/resolve/{symbol}";

@@ -1134,6 +1134,7 @@ export interface DataBackfillRecord {
   status: "Queued" | "Running" | "Review" | "Scheduled" | "Throttled" | "Completed" | "Failed" | "Cancelled";
   progress: string;
   updatedAt: string;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
 }
 
 export interface DataExportRecord {

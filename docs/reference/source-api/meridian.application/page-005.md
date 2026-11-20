@@ -6,25 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## PostgresIntercompanyAgreementPostingAuthority
-
-Qualified name: <code>Meridian.Application.FundStructure.PostgresIntercompanyAgreementPostingAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:9](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L9).
-
-Validates exact approved provenance while retaining structure locks through ledger commit.
-
-```csharp
-public sealed class PostgresIntercompanyAgreementPostingAuthority(IIntercompanyAgreementStore store) : IIntercompanyAgreementBatchPostingAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:12](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L12) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireValidatedBatchLeaseAsync(IReadOnlyList&lt;IntercompanyAgreementPostingRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L16) |  |
-
 ## BondHoldingImportService
 
 Qualified name: <code>Meridian.Application.Integrations.BondHoldingImportService</code>. Kind: `class`.
@@ -989,3 +970,24 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool Succeeded =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:40](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L40) | Gets whether shutdown completed without cancellation, timeout, or publication failure. |
+
+## DualPathPipelineStopStatus
+
+Qualified name: <code>Meridian.Application.Pipeline.DualPathPipelineStopStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:16](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L16).
+
+Describes the terminal state reached by a dual-path pipeline shutdown.
+
+```csharp
+public enum DualPathPipelineStopStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Succeeded</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:18](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L18) |  |
+| <code>Failed</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:19](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L19) |  |
+| <code>Cancelled</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:20](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L20) |  |
+| <code>TimedOut</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:21](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L21) |  |

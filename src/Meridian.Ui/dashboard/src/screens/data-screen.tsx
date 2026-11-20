@@ -14,7 +14,7 @@ import {
   TimerReset
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { KpiProvider } from "@/lib/kpi-context";
@@ -40,6 +40,7 @@ import { BackfillJobDetails, BackfillQuotaActual, BackfillQuotaPanel } from "@/c
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
+import { getOlderBackfillResults } from "@/lib/api";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   buildDataAnalyticsDegradedViewModel,
@@ -78,6 +79,7 @@ import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history"
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
+import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
   selectProvidersInUse,
@@ -101,6 +103,7 @@ import type {
 } from "@/screens/data-screen.view-model";
 import type { DataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
 import type {
+  DataBackfillRecord,
   ProviderConnectionRow,
   ProviderReadinessSummary,
   ProviderRoutingBinding,
@@ -126,6 +129,7 @@ interface DataScreenProps {
   dataQualityActionApi?: Partial<CellActionApi>;
   onProviderSetupConfigured?: () => Promise<void> | void;
   onProviderRoutingRefresh?: () => Promise<void> | void;
+  onBackfillCompleted?: (workspace: "data") => Promise<void> | void;
 }
 
 const providerHealthColumns: TableWorkbenchColumn<DataOperationsProviderRow>[] = [
@@ -203,7 +207,7 @@ export function DataScreen(props: DataScreenProps) {
 }
 
 function DataScreenContent({
-  data,
+  data: currentData,
   session = null,
   providerConnections = null,
   providerReadiness = null,
@@ -214,11 +218,35 @@ function DataScreenContent({
   dataQualityFetcher,
   dataQualityActionApi,
   onProviderSetupConfigured,
-  onProviderRoutingRefresh
+  onProviderRoutingRefresh,
+  onBackfillCompleted
 }: DataScreenProps) {
   const sharedCounts = useSharedCrossScreenCounts();
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
+  const [olderBackfills, setOlderBackfills] = useState<{
+    session: typeof session; rows: DataBackfillRecord[]; loading: boolean; end: boolean; error: boolean;
+  } | null>(null);
+  const older = olderBackfills?.session === session ? olderBackfills : null;
+  const data = useMemo(() => {
+    if (!currentData || !older?.rows.length) return currentData;
+    const recent = new Set(currentData.backfills.map((row) => row.jobId));
+    return { ...currentData, backfills: [...currentData.backfills, ...older.rows.filter((row) => !recent.has(row.jobId))] };
+  }, [currentData, older?.rows]);
+  const cursor = (older?.rows ?? currentData?.backfills ?? []).filter((row) => row.providerProvenance).at(-1)?.providerProvenance?.receiptId;
+  const canLoadOlder = Boolean(cursor && !older?.end && (older || (currentData?.backfills.length ?? 0) >= 50));
+
+  async function loadOlderBackfills() {
+    if (!cursor || older?.loading) return;
+    const rows = older?.rows ?? [];
+    setOlderBackfills({ session, rows, loading: true, end: false, error: false });
+    try {
+      const page = await getOlderBackfillResults(cursor);
+      setOlderBackfills({ session, rows: [...rows, ...page], loading: false, end: page.length < 50, error: false });
+    } catch {
+      setOlderBackfills({ session, rows, loading: false, end: false, error: true });
+    }
+  }
   const providerSetupLifecycle = useMemo(
     () => ({ onConfigured: onProviderSetupConfigured }),
     [onProviderSetupConfigured]
@@ -261,6 +289,10 @@ function DataScreenContent({
     if (!shared || !local || (shared.healthy === local.healthy && shared.total === local.total)) return null;
     return `Providers healthy counts every provider in use across the workstation (${formatProviderHealth(shared)}); the health cards below show ${formatProviderHealth(local)} loaded on this page.`;
   }, [sharedCounts, kpiProviders]);
+  const lastReceiptId = vm.backfillJob?.providerProvenance?.receiptId ?? vm.result?.providerProvenance?.receiptId;
+  useEffect(() => {
+    if (lastReceiptId) void onBackfillCompleted?.("data");
+  }, [lastReceiptId, onBackfillCompleted]);
   const queryPanel = useDataQueryPanel();
   const qualityPanel = useDataQualityPanel(dataQualityFetcher);
   const capabilityMatrixPanel = useCapabilityMatrixPanel();
@@ -515,7 +547,16 @@ function DataScreenContent({
           </>
         ) : null}
 
-        {showBackfillWorkstream ? <DataBackfillWorkstream vm={vm} /> : null}
+        {showBackfillWorkstream ? (
+          <DataBackfillWorkstream vm={vm} onBackfillCompleted={() => void onBackfillCompleted?.("data")}>
+            {canLoadOlder ? (
+              <Button variant="outline" size="sm" onClick={() => void loadOlderBackfills()} disabled={older?.loading}>
+                {older?.loading ? "Loading older results…" : "Load older backfill results"}
+              </Button>
+            ) : null}
+            {older?.error ? <p role="alert" className="text-sm text-danger">Could not load older backfill results.</p> : null}
+          </DataBackfillWorkstream>
+        ) : null}
 
         {showOperationsWorkstream ? <IngestionOperationsWorkstream /> : null}
 
@@ -533,7 +574,7 @@ function DataScreenContent({
       </section>
 
       <ProviderSetupDialog vm={vm} />
-      <BackfillTriggerDialog vm={vm} />
+      <BackfillTriggerDialog vm={vm} onBackfillCompleted={() => void onBackfillCompleted?.("data")} />
     </div>
   );
 }
@@ -1734,7 +1775,7 @@ const providerSetupNextActionIcons: Record<ProviderSetupNextActionState["id"], L
   "plaid-transfers": RefreshCcw
 };
 
-function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
+function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperationsVm; onBackfillCompleted: () => void }) {
   const supportsQueue = Boolean(vm.preview?.previewId);
   const queueLabel = vm.preview?.quota?.exceedsBudget ? "Queue with throttling" : "Queue backfill";
   return (
@@ -1920,8 +1961,10 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
           />}
           {vm.backfillJob && <BackfillJobDetails job={vm.backfillJob} statusError={vm.backfillJobStatusError} />}
           {vm.backfillJob?.batchReceipts?.length ? <BackfillBatchReceipts receipts={vm.backfillJob.batchReceipts} /> : null}
+          {vm.backfillJob?.providerProvenance ? <ProviderProvenancePanel receipt={vm.backfillJob.providerProvenance} onBackfillCompleted={onBackfillCompleted} /> : null}
           {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
           {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
+          {vm.runResultCard ? <ProviderProvenancePanel receipt={vm.result?.providerProvenance} onBackfillCompleted={onBackfillCompleted} /> : null}
           {vm.result?.batchReceipts?.length ? <BackfillBatchReceipts receipts={vm.result.batchReceipts} /> : null}
           {vm.result?.quotaReceipt && <div className="mt-3"><BackfillQuotaActual receipt={vm.result.quotaReceipt} /></div>}
         </div>

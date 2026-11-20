@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Application.Backfill;
 using Meridian.Contracts.Backfill;
+using Meridian.Contracts.Operations;
 using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
 using Serilog;
@@ -143,6 +144,7 @@ public sealed class BackfillExecutionLog
     public BackfillQueuedWork? QueuedWork { get; init; }
     public BackfillQuotaReceipt? QuotaReceipt { get; init; }
     public IReadOnlyList<BackfillBatchReceipt>? BatchReceipts { get; init; }
+    public ProviderProvenanceReceipt? ProviderProvenance { get; init; }
 }
 
 /// <summary>

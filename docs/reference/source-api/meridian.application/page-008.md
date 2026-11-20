@@ -6,24 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## NullCorporateActionRestatementTrigger
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.NullCorporateActionRestatementTrigger</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:31](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L31).
-
-Default trigger for hosts without the workstation restatement stack; a superseding append succeeds with no restatement proposal.
-
-```csharp
-public sealed class NullCorporateActionRestatementTrigger : ICorporateActionRestatementTrigger
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityMasterRestatementDecision?&gt; OnSupersededAsync(CorporateActionDto superseding, CorporateActionDto superseded, string? fundProfileId, string actor, string? correlationId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:33](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L33) |  |
-
 ## RecordTickerChangeRequest
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.RecordTickerChangeRequest</code>. Kind: `record`.
@@ -975,3 +957,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public Task&lt;SecurityMasterQualityReportDto&gt; RunQualityChecksAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:117](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L117) |  |
 | <code>public Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:121](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L121) |  |
+
+## NullSecurityMasterImportService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:284](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L284).
+
+Reports an unavailable Security Master import service and refuses imports.
+
+```csharp
+public sealed class NullSecurityMasterImportService : ISecurityMasterImportService, ISecurityMasterIngestStatusService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterIngestStatusSnapshot GetSnapshot() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:286](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L286) |  |
+| <code>public Task&lt;SecurityMasterImportResult&gt; ImportAsync(string fileContent, string fileExtension, string actor, IProgress&lt;SecurityMasterImportProgress&gt;? progress = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:289](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L289) |  |

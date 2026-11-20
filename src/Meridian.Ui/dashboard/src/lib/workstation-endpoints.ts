@@ -530,10 +530,16 @@ export const BACKFILL_API_ENDPOINTS = {
   jobs: UI_API_ROUTES.BackfillJobs,
   jobById: UI_API_ROUTES.BackfillJobById,
   providers: UI_API_ROUTES.BackfillProviders,
+  receipts: UI_API_ROUTES.BackfillReceipts,
+  clone: UI_API_ROUTES.BackfillClone,
   progress: UI_API_ROUTES.BackfillProgress,
   run: UI_API_ROUTES.BackfillRun,
   runPreview: UI_API_ROUTES.BackfillRunPreview
 } as const;
+
+export function backfillCloneEndpoint(receiptId: string): string {
+  return BACKFILL_API_ENDPOINTS.clone.replace("{receiptId:guid}", encodeURIComponent(receiptId));
+}
 
 export const PROVIDER_API_ENDPOINTS = {
   configure: UI_API_ROUTES.ProviderConfigure,
