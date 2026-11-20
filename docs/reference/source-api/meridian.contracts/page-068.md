@@ -84,7 +84,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.PortfolioSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:539](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L539).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:544](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L544).
 
 Shared portfolio rollup for workstation research and trading surfaces.
 
@@ -96,14 +96,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:572](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L572) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:574](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L574) |  |
+| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:577](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L577) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:579](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L579) |  |
 
 ## PositionDiffEntry
 
 Qualified name: <code>Meridian.Contracts.Workstation.PositionDiffEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:861](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L861).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:866](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L866).
 
 A single position change between two runs.
 
