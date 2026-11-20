@@ -460,6 +460,78 @@ Symbol universe management response.
 public sealed record SymbolUniverseResponse(string Symbol, bool Configured = false, int DataFilesCount = 0, DateTime? LastDataPoint = null, string Status = "Unconfigured", string? Note = null);
 ```
 
+## TimeSeriesAlignmentDifference
+
+Qualified name: <code>Meridian.Contracts.Api.TimeSeriesAlignmentDifference</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs:44](../../../../src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs#L44).
+
+```csharp
+public sealed record TimeSeriesAlignmentDifference(string Symbol, string LeftProvider, string RightProvider, int ObservedOverlap, int EqualCloses, decimal? MaxAbsoluteCloseDifference, string? ComparisonNote);
+```
+
+## TimeSeriesAlignmentExecution
+
+Qualified name: <code>Meridian.Contracts.Api.TimeSeriesAlignmentExecution</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs:79](../../../../src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs#L79).
+
+```csharp
+public sealed record TimeSeriesAlignmentExecution(TimeSeriesAlignmentSummary Summary, TimeSeriesAlignmentRow[] Rows);
+```
+
+## TimeSeriesAlignmentPreview
+
+Qualified name: <code>Meridian.Contracts.Api.TimeSeriesAlignmentPreview</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs:75](../../../../src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs#L75).
+
+```csharp
+public sealed record TimeSeriesAlignmentPreview(TimeSeriesAlignmentSummary Summary, TimeSeriesAlignmentRow[] SampleRows);
+```
+
+## TimeSeriesAlignmentRequest
+
+Qualified name: <code>Meridian.Contracts.Api.TimeSeriesAlignmentRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs:4](../../../../src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs#L4).
+
+One bounded transformation over selected provider archives.
+
+```csharp
+public sealed record TimeSeriesAlignmentRequest(string[]? Symbols, DateOnly? FromDate, DateOnly? ToDate, string[]? Providers = null, string Interval = "Daily", string GapStrategy = "Skip", int MaxGapIntervals = 5, string Timezone = "America/New_York", bool MarketHoursOnly = true, string InputKind = "Auto", string AdjustmentPolicy = "AsStored", string[]? Fields = null, string Aggregation = "OHLCV", string? ExpectedContentHash = null);
+```
+
+## TimeSeriesAlignmentRow
+
+Qualified name: <code>Meridian.Contracts.Api.TimeSeriesAlignmentRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs:20](../../../../src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs#L20).
+
+```csharp
+public sealed record TimeSeriesAlignmentRow(string Provider, string Symbol, DateOnly SessionDate, DateTimeOffset Timestamp, string AdjustmentBasis, string ValueStatus, decimal? Open, decimal? High, decimal? Low, decimal? Close, decimal? Volume, string[] SourceIds);
+```
+
+## TimeSeriesAlignmentSeries
+
+Qualified name: <code>Meridian.Contracts.Api.TimeSeriesAlignmentSeries</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs:34](../../../../src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs#L34).
+
+```csharp
+public sealed record TimeSeriesAlignmentSeries(string Provider, string Symbol, string AdjustmentBasis, int SourceRecords, int ObservedIntervals, int Gaps, int GapsFilled, int DuplicateRecords);
+```
+
+## TimeSeriesAlignmentSummary
+
+Qualified name: <code>Meridian.Contracts.Api.TimeSeriesAlignmentSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs:53](../../../../src/Meridian.Contracts/Api/TimeSeriesAlignmentContracts.cs#L53).
+
+```csharp
+public sealed record TimeSeriesAlignmentSummary(string ContentHash, string Calendar, string TimestampRule, string Timezone, string InputKind, string Interval, string GapStrategy, int MaxGapIntervals, string MissingValueRule, string AdjustmentPolicy, string DuplicatePolicy, string[] Fields, int IntervalCount, int TotalSourceRecords, int OutputRecords, int GapsDetected, int GapsFilled, int RecordsOutsideCalendar, TimeSeriesAlignmentSeries[] Series, TimeSeriesAlignmentDifference[] Differences);
+```
+
 ## ToggleRequest
 
 Qualified name: <code>Meridian.Contracts.Api.ToggleRequest</code>. Kind: `record`.
@@ -1921,106 +1993,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;monthlyFullVerificationDay&quot;)] public int MonthlyFullVerificationDay { get; set; } = 1;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:239](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L239) |  |
 | <code>[JsonPropertyName(&quot;pauseDuringMarketHours&quot;)] public bool PauseDuringMarketHours { get; set; } = true;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:242](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L242) |  |
 | <code>[JsonPropertyName(&quot;maxConcurrentVerifications&quot;)] public int MaxConcurrentVerifications { get; set; } = 4;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:245](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L245) |  |
-
-## AccountBondHoldingsSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountBondHoldingsSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountBondHoldingsDtos.cs:6](../../../../src/Meridian.Contracts/AssetOperations/AccountBondHoldingsDtos.cs#L6).
-
-Accepted observed positions, retaining the exact full-statement authority.
-
-```csharp
-public sealed record AccountBondHoldingsSnapshotDto(Guid AccountId, DateOnly AsOfDate, Guid BatchId, string SourceContentHash, string EvidenceReference, IReadOnlyList<CustodianPositionLineDto> Positions);
-```
-
-## AccountCashEvidenceRole
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashEvidenceRole</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:10](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L10).
-
-```csharp
-public enum AccountCashEvidenceRole
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Observation</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:10](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L10) |  |
-| <code>Projection</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:10](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L10) |  |
-| <code>DeclaredFx</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:10](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L10) |  |
-
-## AccountCashFlowDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashFlowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:29](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L29).
-
-Signed account cash movement. All three dates are explicit; only CashReceiptDate changes cash. FlowId links an expectation to its observed movement; VersionId identifies the retained source revision.
-
-```csharp
-public sealed record AccountCashFlowDto(string FlowId, string VersionId, string AccountId, string BookId, AccountCashFlowStatus Status, string FlowType, decimal Amount, string Currency, DateOnly? EconomicDate, DateOnly? SettlementDate, DateOnly? CashReceiptDate, AccountCashProvenanceDto Provenance, Guid? SecurityId = null, Guid? ProjectionRunId = null, string? ProjectionEngineVersion = null, Guid? TermsVersionId = null, string? TermsHash = null, string? SupersedesVersionId = null);
-```
-
-## AccountCashFlowStatus
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashFlowStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:9](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L9).
-
-```csharp
-public enum AccountCashFlowStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Expected</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:9](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L9) |  |
-| <code>Actual</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:9](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L9) |  |
-
-## AccountCashForecastIssueDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:98](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L98).
-
-```csharp
-public sealed record AccountCashForecastIssueDto(string Code, string Message, string? InputId = null);
-```
-
-## AccountCashForecastJsonContext
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastJsonContext.cs:14](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastJsonContext.cs#L14).
-
-Provides source-generated JSON metadata for account cash forecast requests, scopes, and snapshots.
-
-```csharp
-public partial class AccountCashForecastJsonContext : JsonSerializerContext;
-```
-
-## AccountCashForecastRequestDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:58](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L58).
-
-Complete retained inputs for an inclusive cash period, suitable for deterministic replay.
-
-```csharp
-public sealed record AccountCashForecastRequestDto(string RunId, AccountCashForecastScopeDto Scope, DateOnly PeriodStart, DateOnly PeriodEnd, AccountSettledCashObservationDto? OpeningCash, AccountSettledCashObservationDto? ClosingCash, IReadOnlyList<AccountCashFlowDto> Flows, IReadOnlyList<AccountCashFxConversionDto> FxConversions, DateTimeOffset RecordedAtUtc, string? PreviousSnapshotId = null, string? CorrectionRationale = null, decimal MinimumCashThreshold = 0m, int BucketDays = 1)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CalculationVersion { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:74](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L74) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountSettledCashObservationDto&gt;? NativeOpeningBalances { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:76](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L76) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountSettledCashObservationDto&gt;? NativeClosingBalances { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:78](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L78) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountCashPaymentAllocationDto&gt;? PaymentAllocations { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:80](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L80) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountCashReceiptRevisionDto&gt;? ReceiptRevisions { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:82](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L82) |  |

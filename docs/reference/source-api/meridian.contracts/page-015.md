@@ -6,6 +6,115 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderContinuityHealthDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderContinuityHealthDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:46](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L46).
+
+```csharp
+public enum ProviderContinuityHealthDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:48](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L48) |  |
+| <code>Healthy</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:49](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L49) |  |
+| <code>Warning</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:50](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L50) |  |
+| <code>Degraded</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:51](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L51) |  |
+| <code>Blocked</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:52](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L52) |  |
+
+## ProviderCredentialFieldMetadataDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialFieldMetadataDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:63](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L63).
+
+```csharp
+public sealed record ProviderCredentialFieldMetadataDto(string Name, string Label, bool Required, ProviderCredentialInputKindDto InputKind, string? Placeholder = null, string? HelpText = null);
+```
+
+## ProviderCredentialInputKindDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialInputKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:56](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L56).
+
+```csharp
+public enum ProviderCredentialInputKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Text</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:58](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L58) |  |
+| <code>Password</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:59](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L59) |  |
+| <code>Url</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:60](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L60) |  |
+
+## ProviderCredentialMutationResultDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialMutationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:104](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L104).
+
+```csharp
+public sealed record ProviderCredentialMutationResultDto(string ProviderId, ProviderCredentialStateDto CredentialState, ProviderCredentialSourceDto CredentialSource, ProviderVerificationStateDto VerificationState, ProviderContinuityHealthDto Health, string? MaskedKeyPreview, string? Environment, IReadOnlyList<string> Warnings);
+```
+
+## ProviderCredentialSourceDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialSourceDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:26](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L26).
+
+```csharp
+public enum ProviderCredentialSourceDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:28](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L28) |  |
+| <code>LocalEncryptedStore</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:29](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L29) |  |
+| <code>Environment</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:30](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L30) |  |
+| <code>ExternalVaultReference</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:31](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L31) |  |
+| <code>NotRequired</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:32](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L32) |  |
+
+## ProviderCredentialStateDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:15](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L15).
+
+```csharp
+public enum ProviderCredentialStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotRequired</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:17](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L17) |  |
+| <code>Missing</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:18](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L18) |  |
+| <code>Partial</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:19](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L19) |  |
+| <code>Configured</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:20](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L20) |  |
+| <code>Verified</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:21](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L21) |  |
+| <code>Invalid</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:22](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L22) |  |
+
+## ProviderCredentialUpsertRequestDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialUpsertRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:99](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L99).
+
+```csharp
+public sealed record ProviderCredentialUpsertRequestDto(IReadOnlyDictionary<string, string?>? Credentials, string? Environment = null, string? RequestedBy = null);
+```
+
 ## ProviderCredentialVerificationResultDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialVerificationResultDto</code>. Kind: `record`.
@@ -840,85 +949,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:538](../../..
 
 ```csharp
 public sealed record AddCollateralRequest(CollateralType CollateralType, string Description, decimal EstimatedValue, CurrencyCode Currency, DateOnly AppraisalDate);
-```
-
-## AmendLoanTermsRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.AmendLoanTermsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:323](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L323).
-
-```csharp
-public sealed record AmendLoanTermsRequest(DirectLendingTermsDto Terms, string AmendmentReason);
-```
-
-## AmortizationType
-
-Qualified name: <code>Meridian.Contracts.DirectLending.AmortizationType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:70](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L70).
-
-```csharp
-public enum AmortizationType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Bullet = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:72](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L72) |  |
-| <code>InterestOnly = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:73](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L73) |  |
-| <code>StraightLine = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:74](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L74) |  |
-| <code>CustomSchedule = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:75](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L75) |  |
-
-## AmortizeDiscountPremiumRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.AmortizeDiscountPremiumRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:571](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L571).
-
-```csharp
-public sealed record AmortizeDiscountPremiumRequest(DateOnly AccrualDate);
-```
-
-## ApplyMixedPaymentRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ApplyMixedPaymentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:53](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L53).
-
-```csharp
-public sealed record ApplyMixedPaymentRequest(decimal Amount, DateOnly EffectiveDate, PaymentBreakdownDto? Breakdown, string? ExternalRef);
-```
-
-## ApplyPrincipalPaymentRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ApplyPrincipalPaymentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:342](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L342).
-
-```csharp
-public sealed record ApplyPrincipalPaymentRequest(decimal Amount, DateOnly EffectiveDate, string? ExternalRef);
-```
-
-## ApplyRateResetRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ApplyRateResetRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:336](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L336).
-
-```csharp
-public sealed record ApplyRateResetRequest(DateOnly EffectiveDate, decimal ObservedRate, decimal? SpreadBps, string? SourceRef);
-```
-
-## ApplyScheduledRateResetRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ApplyScheduledRateResetRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:141](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L141).
-
-Applies the reset scheduled for ResetDate from the fixing store.
-
-```csharp
-public sealed record ApplyScheduledRateResetRequest(DateOnly ResetDate);
 ```

@@ -6,6 +6,148 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IAccountCashForecastService
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.IAccountCashForecastService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:133](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L133).
+
+Captures account cash forecasts and retrieves snapshots within an explicit account and book scope.
+
+```csharp
+public interface IAccountCashForecastService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AccountCashForecastSnapshotDto&gt; CaptureAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:135](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L135) |  |
+| <code>Task&lt;AccountCashForecastSnapshotDto?&gt; GetAsync(AccountCashForecastScopeDto scope, string snapshotId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:136](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L136) |  |
+| <code>Task&lt;IReadOnlyList&lt;AccountCashForecastSnapshotDto&gt;&gt; GetHistoryAsync(AccountCashForecastScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:137](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L137) |  |
+
+## IAccountCashForecastStore
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.IAccountCashForecastStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:124](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L124).
+
+Retains account-scoped cash forecast snapshots and retrieves their captured history.
+
+```csharp
+public interface IAccountCashForecastStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AccountCashForecastSnapshotDto&gt; AppendAsync(AccountCashForecastSnapshotDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:126](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L126) |  |
+| <code>Task&lt;IReadOnlyList&lt;AccountCashForecastSnapshotDto&gt;&gt; GetHistoryAsync(AccountCashForecastScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:127](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L127) |  |
+
+## IAssetOperationsCommandService
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.IAssetOperationsCommandService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:328](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L328).
+
+Writes asset operations projections together with their approval authority.
+
+```csharp
+public interface IAssetOperationsCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AssetOperationsDetailDto&gt; UpsertProjectionAsync(AssetOperationsProjectionDto projection, AssetOperationsWriteApprovalDto approval, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:330](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L330) |  |
+
+## IAssetOperationsQueryService
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.IAssetOperationsQueryService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:301](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L301).
+
+Retrieves security-level asset operations details and operational readiness.
+
+```csharp
+public interface IAssetOperationsQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AssetOperationsDetailDto?&gt; GetOperationsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:303](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L303) |  |
+| <code>Task&lt;AssetOperationsReadinessDto?&gt; GetReadinessAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:305](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L305) |  |
+| <code>bool SupportsTermsAsOf =&gt; …;</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:311](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L311) | True when GetOperationsAsOfAsync projects from the terms recorded as of the context&#x27;s cutoff. False means it falls back to the current projection. |
+| <code>Task&lt;AssetOperationsDetailDto?&gt; GetOperationsAsOfAsync(Guid securityId, Meridian.Contracts.FixedIncome.BondCalculationContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:318](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L318) | The operations projected at context&#x27;s cutoff, from the terms recorded by its KnownAt. The default implementation returns the current projection; check SupportsTermsAsOf before relying on historical terms. |
+
+## ICorporateActionRuleProfile
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs:13](../../../../src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs#L13).
+
+A versioned corporate-action methodology profile: the source-proposed treatment of each normalized action type under each accounting basis. A profile is a projection input, not GAAP, statutory or tax authority, and policy-dependent branches stay explicit so a vendor default can never be mistaken for an approved conclusion. The domain projector depends on this contract only; the vendor-specific profiles live outside the domain and are injected by the composition root.
+
+```csharp
+public interface ICorporateActionRuleProfile
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string ProfileId { get; }</code> | [src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs:16](../../../../src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs#L16) | Stable profile identifier (persisted in projection fingerprints and methodology references). |
+| <code>string ProfileVersion { get; }</code> | [src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs:18](../../../../src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs#L18) |  |
+| <code>string ProfileKey { get; }</code> | [src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs:21](../../../../src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs#L21) | ProfileId and ProfileVersion joined by a slash. |
+| <code>string SelectedRuleVersion { get; }</code> | [src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs:23](../../../../src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs#L23) |  |
+| <code>DateOnly EffectiveFrom { get; }</code> | [src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs:26](../../../../src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs#L26) | Meridian adoption date of this captured methodology; not when the underlying methodology took effect. |
+| <code>bool IsEffectiveOn(DateOnly evaluationDate);</code> | [src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs:28](../../../../src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs#L28) |  |
+| <code>CorporateActionTreatmentDecisionDto Resolve(CorporateActionAccountingTypeDto actionType, AccountingBasisKindDto accountingBasis);</code> | [src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs:30](../../../../src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs#L30) |  |
+
+## InstrumentAccountingSides
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.InstrumentAccountingSides</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:22](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L22).
+
+Defines the debit and credit classifications carried by instrument roles.
+
+```csharp
+public static class InstrumentAccountingSides
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Debit = &quot;Debit&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:24](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L24) |  |
+| <code>public const string Credit = &quot;Credit&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:25](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L25) |  |
+
+## InstrumentEconomicSides
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.InstrumentEconomicSides</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:31](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L31).
+
+Defines asset, liability, inflow, and outflow classifications for instrument roles.
+
+```csharp
+public static class InstrumentEconomicSides
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Asset = &quot;Asset&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:33](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L33) |  |
+| <code>public const string Liability = &quot;Liability&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:34](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L34) |  |
+| <code>public const string Inflow = &quot;Inflow&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:35](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L35) |  |
+| <code>public const string Outflow = &quot;Outflow&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:36](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L36) |  |
+
 ## InstrumentRoleDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.InstrumentRoleDto</code>. Kind: `record`.
@@ -716,89 +858,3 @@ Enum declarations:
 | <code>Passed = 0</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:28](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L28) |  |
 | <code>Warning = 1</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:29](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L29) |  |
 | <code>Failed = 2</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:30](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L30) |  |
-
-## BacktestPreflightReportV2Dto
-
-Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightReportV2Dto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:11](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L11).
-
-```csharp
-public sealed record BacktestPreflightReportV2Dto(bool IsReadyToRun, bool HasWarnings, IReadOnlyList<BacktestPreflightCheckResultDto> Checks, long TotalDurationMs, DateTimeOffset CheckedAt, string? SummaryMessage = null);
-```
-
-## BacktestPreflightRequestDto
-
-Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:3](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L3).
-
-```csharp
-public sealed record BacktestPreflightRequestDto(DateOnly From, DateOnly To, string DataRoot, IReadOnlyList<string>? Symbols = null, string? RequiredExecutionModel = null, IReadOnlyList<string>? RequiredReplayDataTypes = null);
-```
-
-## ApprovePaymentRequest
-
-Qualified name: <code>Meridian.Contracts.Banking.ApprovePaymentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:68](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L68).
-
-Approve a pending payment request.
-
-```csharp
-public sealed record ApprovePaymentRequest(string? ReviewNotes, string? ReviewedBy, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## BankTransactionDto
-
-Qualified name: <code>Meridian.Contracts.Banking.BankTransactionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:104](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L104).
-
-A single bank-side transaction record. This is distinct from a loan-level CashTransactionDto in the DirectLending module; the two may be reconciled but are not the same object.
-
-```csharp
-public sealed record BankTransactionDto(Guid BankTransactionId, Guid EntityId, string TransactionType, DateOnly EffectiveDate, DateOnly TransactionDate, DateOnly SettlementDate, decimal Amount, string Currency, string? ExternalRef, DateTimeOffset RecordedAt, bool IsVoided, string? RecordedBy = null, Guid? PendingPaymentId = null, string? EvidenceId = null, string? CanonicalInputHash = null);
-```
-
-## BankTransactionSeedRequest
-
-Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:133](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L133).
-
-Request to seed representative bank transactions for one or more entities. When EntityIds is null or empty, all known entities are seeded.
-
-```csharp
-public sealed record BankTransactionSeedRequest(IReadOnlyList<Guid>? EntityIds, int CountPerEntity, DateOnly? FromDate, DateOnly? ToDate);
-```
-
-## BankTransactionSeedResultDto
-
-Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:140](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L140).
-
-Result returned after seeding bank transactions.
-
-```csharp
-public sealed record BankTransactionSeedResultDto(int EntitiesProcessed, int TransactionsSeeded, IReadOnlyList<Guid> ProcessedEntityIds);
-```
-
-## IBankTransactionSource
-
-Qualified name: <code>Meridian.Contracts.Banking.IBankTransactionSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:154](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L154).
-
-Read-only banking data source for cross-domain integrations such as reconciliation. Services outside the Banking module can depend on this narrow interface instead of the full IBankingService.
-
-```csharp
-public interface IBankTransactionSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;BankTransactionDto&gt;&gt; GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:160](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L160) | Return bank transactions. When entityId is provided the result is scoped to that entity; otherwise all transactions are returned. |

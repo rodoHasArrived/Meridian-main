@@ -6,6 +6,86 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondMigrationBlockDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationBlockDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:34](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L34).
+
+An explicitly reviewed operational block bound to exactly one retained terms version.
+
+```csharp
+public sealed record BondMigrationBlockDto(Guid SecurityId, long Version, string SecurityContentSha256, string Reason);
+```
+
+## BondMigrationCashDifference
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationCashDifference</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:15](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L15).
+
+One economic payment before and after migration, compared by actual payment date.
+
+```csharp
+public sealed record BondMigrationCashDifference(DateOnly PaymentDate, decimal PreviousPrincipal, decimal CandidatePrincipal, decimal PreviousInterest, decimal CandidateInterest);
+```
+
+## BondMigrationCutoverReceiptDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationCutoverReceiptDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:55](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L55).
+
+Immutable reviewed cutover snapshot. Subsequent undeclared terms are blocked live.
+
+```csharp
+public sealed record BondMigrationCutoverReceiptDto(string InventorySha256, string Reviewer, DateTimeOffset RecordedAt, IReadOnlyList<BondMigrationBlockDto> ExplicitBlocks, string ModelVersion, string? PreviousReceiptSha256 = null);
+```
+
+## BondMigrationCutoverRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationCutoverRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:48](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L48).
+
+```csharp
+public sealed record BondMigrationCutoverRequest(string ExpectedInventorySha256, string Reviewer, IReadOnlyList<BondMigrationBlockDto> ExplicitBlocks, string? ExpectedPreviousReceiptSha256 = null);
+```
+
+## BondMigrationInventoryDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationInventoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:41](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L41).
+
+Full active Security Master inventory read; not a transaction-visibility certificate.
+
+```csharp
+public sealed record BondMigrationInventoryDto(string InventorySha256, IReadOnlyList<BondMigrationInventoryRowDto> Bonds, bool CutoverEnabled, bool RequiresLegacyCalculations, string? CurrentReceiptSha256 = null);
+```
+
+## BondMigrationInventoryRowDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationInventoryRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:36](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L36).
+
+```csharp
+public sealed record BondMigrationInventoryRowDto(Guid SecurityId, long Version, string SecurityContentSha256, string DisplayName, bool HasDeclaredConventions, string? BlockedReason);
+```
+
+## BondMigrationPreviewDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:23](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L23).
+
+Retained-input-bound preview, never permission to change a security or a posted journal.
+
+```csharp
+public sealed record BondMigrationPreviewDto(BondMigrationPreviewRequest Request, string SecurityContentSha256, string PreviewSha256, StructuredCashFlowProjectionDto? PreviousProjection, StructuredCashFlowProjectionDto? CandidateProjection, IReadOnlyList<BondMigrationCashDifference> CashDifferences, IReadOnlyList<string> Gaps, bool CanStage);
+```
+
 ## BondMigrationPreviewRequest
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationPreviewRequest</code>. Kind: `record`.
@@ -592,79 +672,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Clean</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L14) |  |
 | <code>Dirty</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L14) |  |
-
-## BondRedemptionScenario
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondRedemptionScenario</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs:11](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs#L11).
-
-Discrete fixed-price exercise scenarios. Continuous, make-whole and partial calls refuse.
-
-```csharp
-public sealed record BondRedemptionScenario(string Kind, DateOnly ExerciseDate, decimal RedemptionPrice, decimal AccruedPer100, DateOnly? LatestNoticeDate, DateOnly? EarliestNoticeDate, decimal TimeInYears);
-```
-
-## BondReferenceDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:112](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L112).
-
-```csharp
-public sealed record BondReferenceDto(Guid SecurityId, string DisplayName, string Currency, string? IssuerName, string? Seniority, string PrimaryIdentifier, BondLifecycleDto? Lifecycle, BondAccrualConventionDto? AccrualConvention, long Version, BondSinkingFundDto? SinkingFund = null, BondInflationLinkedDto? InflationLinked = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BondPrincipalFactorDto? PrincipalFactor = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BondCouponStructureDto? CouponStructure = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ScheduleConventionTerms? ScheduleConventions = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonElement? CallSchedule = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] JsonElement? PutSchedule = null);
-```
-
-## BondReferencePageDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondReferencePageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:142](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L142).
-
-A bounded issuer or maturity page. The cursor is opaque and bound to its query.
-
-```csharp
-public sealed record BondReferencePageDto(IReadOnlyList<BondReferenceDto> Items, string? NextCursor);
-```
-
-## BondScreeningGap
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondScreeningGap</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:13](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L13).
-
-```csharp
-public sealed record BondScreeningGap(Guid SecurityId, string Reason);
-```
-
-## BondScreeningJsonContext
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondScreeningJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L27).
-
-```csharp
-public partial class BondScreeningJsonContext : JsonSerializerContext;
-```
-
-## BondScreeningPageDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondScreeningPageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L14).
-
-```csharp
-public sealed record BondScreeningPageDto(IReadOnlyList<BondScreeningRow> Rows, string? NextCursor, IReadOnlyList<BondScreeningGap> Gaps, int SourcePagesRead, bool ReferenceKnowledgeTimeVerified, IReadOnlyList<string> Limitations);
-```
-
-## BondScreeningQuery
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondScreeningQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:6](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L6).
-
-Issuer is a case-insensitive substring; currency, coupon and agency rating labels are exact filters.
-
-```csharp
-public sealed record BondScreeningQuery(DateOnly AsOf, DateTimeOffset KnownAtUtc, DateOnly MaturityFrom, DateOnly MaturityTo, string? Issuer = null, string? Currency = null, string? CouponKind = null, DateOnly? CallProtectedThrough = null, string? RatingAgency = null, IReadOnlyList<string>? AcceptedRatings = null, int PageSize = 50, string? Cursor = null);
-```

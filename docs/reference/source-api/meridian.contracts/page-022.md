@@ -6,6 +6,92 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TenantTemplateActivationRequestDto
+
+Qualified name: <code>Meridian.Contracts.Extensibility.TenantTemplateActivationRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:174](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L174).
+
+```csharp
+public sealed record TenantTemplateActivationRequestDto(string ChangeReason, string? LinkedAuditEventId = null);
+```
+
+## TenantTemplateActivationResultDto
+
+Qualified name: <code>Meridian.Contracts.Extensibility.TenantTemplateActivationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:178](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L178).
+
+```csharp
+public sealed record TenantTemplateActivationResultDto(string TenantTemplateId, bool IsActivated, ExtensibilityConfigurationStatusDto ResultingStatus, DateTimeOffset EvaluatedAt, string EvaluatedBy, string ChangeReason, string? LinkedAuditEventId, ExtensibilityActivationReadinessDto Readiness, TenantTemplateConfigurationBundleDto? TenantTemplate);
+```
+
+## TenantTemplateConfigurationBundleDto
+
+Qualified name: <code>Meridian.Contracts.Extensibility.TenantTemplateConfigurationBundleDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:159](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L159).
+
+```csharp
+public sealed record TenantTemplateConfigurationBundleDto(string TenantTemplateId, string DisplayName, string Profile, IReadOnlyList<ExtensibilityConfigurationEnvelopeDto> Configurations, IReadOnlyList<DomainExtensionDescriptorDto> DomainExtensions, bool AllowsCoreObjectIdentityOverrides = false, bool AllowsAuditTrailOverrides = false, bool AllowsCalculationOverrides = false);
+```
+
+## AccountBondIncomePlanDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.AccountBondIncomePlanDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/AccountBondIncomePlanningDtos.cs:11](../../../../src/Meridian.Contracts/FixedIncome/AccountBondIncomePlanningDtos.cs#L11).
+
+```csharp
+public sealed record AccountBondIncomePlanDto(AccountCashForecastScopeDto Scope, DateOnly PeriodStart, DateOnly PeriodEnd, Guid? HoldingsBatchId, string? HoldingsContentHash, IReadOnlyList<PortfolioCashLadderDto> CurrencyLadders, PortfolioCashLadderDto BaseCurrencyLadder, IReadOnlyList<BondWorkflowResult> Calculations, BondMonitoringCaptureRequest MonitoringInputs, IReadOnlyList<string> Blockers, DateTimeOffset GeneratedAt);
+```
+
+## AccountBondIncomePlanningRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.AccountBondIncomePlanningRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/AccountBondIncomePlanningDtos.cs:5](../../../../src/Meridian.Contracts/FixedIncome/AccountBondIncomePlanningDtos.cs#L5).
+
+```csharp
+public sealed record AccountBondIncomePlanningRequest(AccountCashForecastScopeDto Scope, DateOnly PeriodStart, DateOnly PeriodEnd, BondCalculationContext Context, IReadOnlyList<AccountSettledCashObservationDto> OpeningBalances, IReadOnlyList<AccountCashFxConversionDto> FxConversions, decimal MinimumCashThreshold = 0m, int BucketDays = 7);
+```
+
+## BondAccrualConventionDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondAccrualConventionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:59](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L59).
+
+```csharp
+public sealed record BondAccrualConventionDto(Guid SecurityId, string? DayCountConvention, int? SettlementCycleDays, string? HolidayCalendarId, string? CouponKind, decimal? FixedCouponRate, string? FloatingRateIndex, decimal? FloatingSpreadBps, long Version)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Meridian.Contracts.SecurityMaster.DayCountConvention? DayCount =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:74](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L74) | DayCountConvention as a typed basis, or null when the stored text is absent or names no recognized convention. The raw text stays on DayCountConvention. |
+
+## BondAmortizationMethod
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondAmortizationMethod</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:20](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L20).
+
+```csharp
+public enum BondAmortizationMethod
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ConstantYield</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:23](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L23) |  |
+| <code>StraightLine</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:25](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L25) |  |
+| <code>NoAmortization</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L27) |  |
+| <code>AuctionRate</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:29](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L29) |  |
+| <code>PurchasedCreditImpaired</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:31](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L31) |  |
+
 ## BondAnalyticsBlocker
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsBlocker</code>. Kind: `record`.
@@ -654,84 +740,4 @@ Bounded bulk preview; each row retains its own expected security version.
 
 ```csharp
 public sealed record BondMigrationBatchPreviewRequest(IReadOnlyList<BondMigrationPreviewRequest> Bonds);
-```
-
-## BondMigrationBlockDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationBlockDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:34](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L34).
-
-An explicitly reviewed operational block bound to exactly one retained terms version.
-
-```csharp
-public sealed record BondMigrationBlockDto(Guid SecurityId, long Version, string SecurityContentSha256, string Reason);
-```
-
-## BondMigrationCashDifference
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationCashDifference</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:15](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L15).
-
-One economic payment before and after migration, compared by actual payment date.
-
-```csharp
-public sealed record BondMigrationCashDifference(DateOnly PaymentDate, decimal PreviousPrincipal, decimal CandidatePrincipal, decimal PreviousInterest, decimal CandidateInterest);
-```
-
-## BondMigrationCutoverReceiptDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationCutoverReceiptDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:55](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L55).
-
-Immutable reviewed cutover snapshot. Subsequent undeclared terms are blocked live.
-
-```csharp
-public sealed record BondMigrationCutoverReceiptDto(string InventorySha256, string Reviewer, DateTimeOffset RecordedAt, IReadOnlyList<BondMigrationBlockDto> ExplicitBlocks, string ModelVersion, string? PreviousReceiptSha256 = null);
-```
-
-## BondMigrationCutoverRequest
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationCutoverRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:48](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L48).
-
-```csharp
-public sealed record BondMigrationCutoverRequest(string ExpectedInventorySha256, string Reviewer, IReadOnlyList<BondMigrationBlockDto> ExplicitBlocks, string? ExpectedPreviousReceiptSha256 = null);
-```
-
-## BondMigrationInventoryDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationInventoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:41](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L41).
-
-Full active Security Master inventory read; not a transaction-visibility certificate.
-
-```csharp
-public sealed record BondMigrationInventoryDto(string InventorySha256, IReadOnlyList<BondMigrationInventoryRowDto> Bonds, bool CutoverEnabled, bool RequiresLegacyCalculations, string? CurrentReceiptSha256 = null);
-```
-
-## BondMigrationInventoryRowDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationInventoryRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:36](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L36).
-
-```csharp
-public sealed record BondMigrationInventoryRowDto(Guid SecurityId, long Version, string SecurityContentSha256, string DisplayName, bool HasDeclaredConventions, string? BlockedReason);
-```
-
-## BondMigrationPreviewDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:23](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L23).
-
-Retained-input-bound preview, never permission to change a security or a posted journal.
-
-```csharp
-public sealed record BondMigrationPreviewDto(BondMigrationPreviewRequest Request, string SecurityContentSha256, string PreviewSha256, StructuredCashFlowProjectionDto? PreviousProjection, StructuredCashFlowProjectionDto? CandidateProjection, IReadOnlyList<BondMigrationCashDifference> CashDifferences, IReadOnlyList<string> Gaps, bool CanStage);
 ```
