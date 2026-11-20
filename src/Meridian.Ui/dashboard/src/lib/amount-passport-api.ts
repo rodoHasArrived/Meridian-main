@@ -6,7 +6,7 @@ import type { AmountPassport, AmountPassportIdentity, AmountPassportScope } from
 
 const scopeKeys = ["tenantId", "companyId", "basis", "fundProfileId", "ledgerBookId", "periodId",
   "entityId", "accountId", "organizationId"] as const;
-const fragmentPrefix = "#amount-passport?";
+export const AMOUNT_PASSPORT_FRAGMENT_PREFIX = "#amount-passport?";
 
 function passportQuery(identity: AmountPassportIdentity): URLSearchParams {
   const params = new URLSearchParams({ asOf: identity.asOf, revision: identity.revision });
@@ -46,12 +46,13 @@ export function parseAmountPassportKey(key: string): AmountPassportIdentity | nu
 }
 
 export function readAmountPassportLink(hash: string): AmountPassportIdentity | null {
-  return hash.startsWith(fragmentPrefix) ? parseAmountPassportKey(hash.slice(fragmentPrefix.length)) : null;
+  return hash.startsWith(AMOUNT_PASSPORT_FRAGMENT_PREFIX)
+    ? parseAmountPassportKey(hash.slice(AMOUNT_PASSPORT_FRAGMENT_PREFIX.length)) : null;
 }
 
 /** The fragment opens the shared rail on an existing workstation screen. It contains only the address. */
 export function amountPassportHref(identity: AmountPassportIdentity): string {
-  const hash = fragmentPrefix + amountPassportKey(identity);
+  const hash = AMOUNT_PASSPORT_FRAGMENT_PREFIX + amountPassportKey(identity);
   if (identity.subjectKind === "position-valuation") return `/workstation${WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync}${hash}`;
   if (identity.subjectId.startsWith("report:")) {
     const runId = identity.subjectId.slice("report:".length, identity.subjectId.lastIndexOf(":"));
