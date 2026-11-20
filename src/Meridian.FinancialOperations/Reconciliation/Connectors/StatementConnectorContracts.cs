@@ -113,7 +113,17 @@ public sealed record StatementCanonicalRecord(
     string? ProviderActivityCode = null,
     string? RelatedTransactionId = null,
     string? OrderId = null,
-    string? Description = null);
+    string? Description = null)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SecurityId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ReceiptAllocations { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ObligationKey { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? ProjectedCashFlowId { get; init; }
+}
 
 /// <summary>
 /// Structural fingerprint of a parsed source used for format-drift detection: when a

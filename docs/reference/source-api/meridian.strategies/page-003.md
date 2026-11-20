@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationCaseWorkflowVocabulary
+
+Qualified name: <code>Meridian.Strategies.Services.ReconciliationCaseWorkflowVocabulary</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:19](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L19).
+
+Compile-time-checked translation between the C# reconciliation enums and the string token vocabulary of the F# ReconciliationCaseWorkflow. The F# kernel is a leaf assembly and cannot reference these enums, so the previous boundary relied on coincidental name equality (enum.ToString() / Enum.Parse): an enum rename or addition silently misrouted a transition at runtime. Every mapping below references its enum member by name (via nameof), so renaming a member breaks compilation here, and the exhaustive _ =&gt; throw arms surface any newly added member immediately instead of silently falling through the workflow. The ReconciliationCaseWorkflowVocabularyTests guard additionally asserts token parity against the vocabulary the F# workflow actually recognizes.
+
+```csharp
+public static class ReconciliationCaseWorkflowVocabulary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string ToToken(ReconciliationCaseTransitionAction action) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:21](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L21) |  |
+| <code>public static string ToToken(ReconciliationCaseLifecycleState state) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:32](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L32) |  |
+| <code>public static string ToToken(ReconciliationBreakQueueStatus status) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:48](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L48) |  |
+| <code>public static ReconciliationCaseLifecycleState ParseLifecycleState(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:58](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L58) |  |
+| <code>public static ReconciliationBreakQueueStatus ParseQueueStatus(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:74](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L74) |  |
+| <code>public static ReconciliationBreakQueueTransitionErrorCode ParseErrorCode(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:84](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L84) |  |
+
 ## ReconciliationCashMovementInput
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCashMovementInput</code>. Kind: `record`.
@@ -20,7 +43,7 @@ public sealed record ReconciliationCashMovementInput(string MovementId, decimal 
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScope</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:292](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L292).
+Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:299](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L299).
 
 ```csharp
 public sealed record ReconciliationCloseScope(string FundProfileId, Guid LedgerBookId, Guid AccountingPeriodId, DateOnly AsOfDate);
@@ -30,7 +53,7 @@ public sealed record ReconciliationCloseScope(string FundProfileId, Guid LedgerB
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScopeCheckpoint</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:298](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L298).
+Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:305](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L305).
 
 ```csharp
 public sealed record ReconciliationCloseScopeCheckpoint(ReconciliationCloseScope Scope, IReadOnlyList<ReconciliationBreakQueueItem> Items, string CheckpointHashSha256, long Generation = 1);
@@ -40,7 +63,7 @@ public sealed record ReconciliationCloseScopeCheckpoint(ReconciliationCloseScope
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScopeHistoryEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:329](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L329).
+Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:336](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L336).
 
 ```csharp
 public sealed record ReconciliationCloseScopeHistoryEntry(ReconciliationCloseScope Scope, long CheckpointGeneration, string CheckpointHashSha256, IReadOnlyList<ReconciliationBreakQueueItem> Items, DateTimeOffset SealedAtUtc, ReconciliationCloseScopeReopenReceipt ReopenReceipt);
@@ -50,7 +73,7 @@ public sealed record ReconciliationCloseScopeHistoryEntry(ReconciliationCloseSco
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScopeReopenCommand</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:304](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L304).
+Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:311](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L311).
 
 ```csharp
 public sealed record ReconciliationCloseScopeReopenCommand(string Actor, string Role, string Reason, string ApprovalReference, string CorrelationId, IReadOnlyList<string> EvidenceLinks, long ReopenedLedgerPeriodVersion, string CommandHashSha256);
@@ -60,7 +83,7 @@ public sealed record ReconciliationCloseScopeReopenCommand(string Actor, string 
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScopeReopenReceipt</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:314](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L314).
+Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:321](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L321).
 
 ```csharp
 public sealed record ReconciliationCloseScopeReopenReceipt(ReconciliationCloseScope Scope, long CheckpointGeneration, string CheckpointHashSha256, long ReopenedLedgerPeriodVersion, string Actor, string Role, string Reason, string ApprovalReference, string CorrelationId, IReadOnlyList<string> EvidenceLinks, string CommandHashSha256, DateTimeOffset ReopenedAtUtc, bool WasAlreadyReopened = false);
@@ -786,21 +809,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public StrategyRunResearchRecorder(IStrategyRepository store, ILogger&lt;StrategyRunResearchRecorder&gt; logger) : this(store, logger, null);</code> | [src/Meridian.Strategies/Services/StrategyRunResearchRecorder.cs:33](../../../../src/Meridian.Strategies/Services/StrategyRunResearchRecorder.cs#L33) | Retains the existing in-memory/isolated recorder constructor. |
 | <code>public async Task&lt;string?&gt; RecordAsync(ResearchRunDescriptor descriptor, BacktestResult result, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunResearchRecorder.cs:45](../../../../src/Meridian.Strategies/Services/StrategyRunResearchRecorder.cs#L45) |  |
-
-## WeekdayReconciliationSlaCalendarResolver
-
-Qualified name: <code>Meridian.Strategies.Services.WeekdayReconciliationSlaCalendarResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs:15](../../../../src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs#L15).
-
-```csharp
-public sealed class WeekdayReconciliationSlaCalendarResolver : IReconciliationSlaCalendarResolver, IReconciliationSlaCalendar
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WeekdayReconciliationSlaCalendarResolver Instance { get; } = new ();</code> | [src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs:17](../../../../src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs#L17) |  |
-| <code>public IReconciliationSlaCalendar Resolve(ReconciliationSlaPolicy policy);</code> | [src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs:18](../../../../src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs#L18) |  |
-| <code>public bool IsBusinessDay(DateOnly date) =&gt; …;</code> | [src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs:24](../../../../src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs#L24) |  |

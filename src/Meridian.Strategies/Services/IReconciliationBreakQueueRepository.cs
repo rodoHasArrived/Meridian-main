@@ -17,6 +17,13 @@ public interface IReconciliationBreakQueueAuthorityProbe
 /// <summary>Persists reconciliation break casework and coordinates governed updates and close-scope access.</summary>
 public interface IReconciliationBreakQueueRepository
 {
+    /// <summary>Reopens only a receipt-source case after a retained receipt or posting reversal.</summary>
+    Task<ReconciliationBreakQueueTransitionResult> ApplyBookReceiptReversalAsync(
+        ReconciliationBreakQueueScope scope, BookReceiptReversalCommand command, CancellationToken ct = default)
+        => Task.FromResult(new ReconciliationBreakQueueTransitionResult(
+            ReconciliationBreakQueueTransitionStatus.ValidationFailed, null,
+            "Source receipt reversals are not supported by this repository."));
+
     Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default);
 
     async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
