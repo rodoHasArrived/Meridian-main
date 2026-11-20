@@ -6,11 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GapSeverity
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:59](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L59).
+
+Gap severity classification.
+
+```csharp
+public enum GapSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Minor</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:61](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L61) |  |
+| <code>Moderate</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:62](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L62) |  |
+| <code>Significant</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:63](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L63) |  |
+| <code>Major</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:64](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L64) |  |
+| <code>Critical</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:65](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L65) |  |
+
+## GapStatistics
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapStatistics</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:601](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L601).
+
+Gap statistics summary.
+
+```csharp
+public sealed record GapStatistics(int TotalGaps, TimeSpan TotalGapDuration, TimeSpan AverageGapDuration, TimeSpan MaxGapDuration, TimeSpan MinGapDuration, Dictionary<GapSeverity, int> GapsBySeverity, int SymbolsAffected, string[] MostAffectedSymbols, DateTimeOffset CalculatedAt);
+```
+
 ## HealthState
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.HealthState</code>. Kind: `enum`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:457](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L457).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:460](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L460).
 
 Health state enumeration.
 
@@ -22,17 +56,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Healthy</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:459](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L459) |  |
-| <code>Degraded</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:460](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L460) |  |
-| <code>Unhealthy</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:461](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L461) |  |
-| <code>Stale</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:462](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L462) |  |
-| <code>Unknown</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:463](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L463) |  |
+| <code>Healthy</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:462](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L462) |  |
+| <code>Degraded</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:463](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L463) |  |
+| <code>Unhealthy</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:464](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L464) |  |
+| <code>Stale</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:465](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L465) |  |
+| <code>Unknown</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:466](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L466) |  |
 
 ## HistogramBucket
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.HistogramBucket</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:210](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L210).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:213](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L213).
 
 Histogram bucket for latency distribution.
 
@@ -132,7 +166,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.LatencyDistribution</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:220](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L220).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:223](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L223).
 
 Latency distribution histogram.
 
@@ -333,7 +367,7 @@ public readonly record struct PriceDiscontinuityEvent(string Symbol, string? Pro
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.ProviderComparisonStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/CrossProviderComparisonService.cs:684](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/CrossProviderComparisonService.cs#L684).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/CrossProviderComparisonService.cs:682](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/CrossProviderComparisonService.cs#L682).
 
 Provider comparison statistics.
 
@@ -370,6 +404,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool IsInformational { get; init; }</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:193](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L193) | True when the tolerance policy reports this kind of difference for information only (for example volume in Informational mode). Informational discrepancies are not alerts. |
+| <code>public CrossProviderToleranceResolution? PolicyResolution { get; init; }</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:196](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L196) | Thresholds and asset class in use when the discrepancy was detected. |
 
 ## QualityAnalysisResult
 
@@ -474,7 +509,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.RealTimeQualityMetrics</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:429](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L429).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:432](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L432).
 
 Real-time quality metrics snapshot.
 
@@ -486,7 +521,7 @@ public sealed record RealTimeQualityMetrics(DateTimeOffset Timestamp, int Active
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.ReportExportFormat</code>. Kind: `enum`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:397](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L397).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:400](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L400).
 
 Export format for reports.
 
@@ -498,16 +533,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Json</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:399](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L399) |  |
-| <code>Csv</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:400](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L400) |  |
-| <code>Html</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:401](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L401) |  |
-| <code>Markdown</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:402](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L402) |  |
+| <code>Json</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:402](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L402) |  |
+| <code>Csv</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:403](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L403) |  |
+| <code>Html</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:404](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L404) |  |
+| <code>Markdown</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:405](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L405) |  |
 
 ## ReportGenerationOptions
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.ReportGenerationOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:408](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L408).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:411](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L411).
 
 Report generation options.
 
@@ -519,25 +554,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string[] Symbols { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:410](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L410) |  |
-| <code>public bool IncludeAllSymbols { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:411](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L411) |  |
-| <code>public bool IncludeGaps { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:412](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L412) |  |
-| <code>public bool IncludeSequenceErrors { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:413](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L413) |  |
-| <code>public bool IncludeAnomalies { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:414](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L414) |  |
-| <code>public bool IncludeRecommendations { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:415](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L415) |  |
-| <code>public bool IncludeTimeline { get; init; } = false;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:416](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L416) |  |
-| <code>public int MaxGapsPerSymbol { get; init; } = 50;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:417](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L417) |  |
-| <code>public int MaxErrorsPerSymbol { get; init; } = 50;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:418](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L418) |  |
-| <code>public int MaxAnomaliesPerSymbol { get; init; } = 50;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:419](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L419) |  |
-| <code>public double MinScoreThreshold { get; init; } = 0.0;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:420](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L420) |  |
-| <code>public ReportExportFormat ExportFormat { get; init; } = ReportExportFormat.Json;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:421](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L421) |  |
-| <code>public static ReportGenerationOptions Default =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:423](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L423) |  |
+| <code>public string[] Symbols { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:413](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L413) |  |
+| <code>public bool IncludeAllSymbols { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:414](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L414) |  |
+| <code>public bool IncludeGaps { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:415](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L415) |  |
+| <code>public bool IncludeSequenceErrors { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:416](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L416) |  |
+| <code>public bool IncludeAnomalies { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:417](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L417) |  |
+| <code>public bool IncludeRecommendations { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:418](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L418) |  |
+| <code>public bool IncludeTimeline { get; init; } = false;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:419](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L419) |  |
+| <code>public int MaxGapsPerSymbol { get; init; } = 50;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:420](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L420) |  |
+| <code>public int MaxErrorsPerSymbol { get; init; } = 50;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:421](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L421) |  |
+| <code>public int MaxAnomaliesPerSymbol { get; init; } = 50;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:422](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L422) |  |
+| <code>public double MinScoreThreshold { get; init; } = 0.0;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:423](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L423) |  |
+| <code>public ReportExportFormat ExportFormat { get; init; } = ReportExportFormat.Json;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:424](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L424) |  |
+| <code>public static ReportGenerationOptions Default =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:426](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L426) |  |
 
 ## ReportStatistics
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.ReportStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:366](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L366).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:369](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L369).
 
 Report statistics.
 
@@ -758,7 +793,7 @@ public readonly record struct SlaViolationEvent(string Symbol, DateTimeOffset Ti
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.SymbolHealthStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:445](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L445).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:448](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L448).
 
 Health status for a single symbol.
 
@@ -782,7 +817,7 @@ public sealed record SymbolPriceStatistics(string Symbol, string? Provider, int 
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.SymbolQualitySummary</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:350](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L350).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:353](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L353).
 
 Symbol-level quality summary.
 
@@ -840,7 +875,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.WeeklyQualityReport</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:334](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L334).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:337](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L337).
 
 Weekly data quality report.
 
@@ -852,40 +887,10 @@ public sealed record WeeklyQualityReport(DateOnly WeekStart, DateOnly WeekEnd, D
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.WeeklyStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:381](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L381).
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:384](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L384).
 
 Weekly statistics.
 
 ```csharp
 public sealed record WeeklyStatistics(long TotalEvents, long EventsPerDay, int TotalGaps, int GapsPerDay, int TotalAnomalies, double AverageScore, double BestDayScore, double WorstDayScore, DateOnly BestDay, DateOnly WorstDay);
-```
-
-## IncidentSeverity
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.IncidentSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:47](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L47).
-
-```csharp
-public enum IncidentSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:49](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L49) |  |
-| <code>Minor = 1</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:50](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L50) |  |
-| <code>Moderate = 2</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:51](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L51) |  |
-| <code>Major = 3</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:52](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L52) |  |
-| <code>Critical = 4</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:53](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L53) |  |
-
-## KernelLineageMetadata
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.KernelLineageMetadata</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:102](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L102).
-
-```csharp
-public sealed record KernelLineageMetadata(string BaselineKernelVersion, string CandidateKernelVersion, string DatasetId, DateTimeOffset CalibratedAt, string CalibratedBy);
 ```

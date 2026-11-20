@@ -52,8 +52,9 @@ Data-quality watch includes an on-demand Cross-provider tolerances panel
 (`data-quality-watch.cross-provider-policy.tsx`, API in `lib/api/cross-provider-tolerance.api.ts`):
 bounded tolerances, volume mode, asset-class overrides, a required reason when loosening, audit
 history and a preview of what the draft would have flagged over the last 30 days for one symbol,
-with its provider-call cost shown first. Focused coverage:
-`data-quality-watch.cross-provider-policy.test.tsx`.
+with its provider-call cost shown first. Preview shows the symbol registry class or base
+tolerances when the class is unknown, plus the daily-close and volume thresholds it applied.
+See `data-quality-watch.cross-provider-policy.test.tsx` for focused coverage.
 
 ## Fixed-income workflow access
 

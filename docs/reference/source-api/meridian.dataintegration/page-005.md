@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IncidentSeverity
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.IncidentSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:47](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L47).
+
+```csharp
+public enum IncidentSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:49](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L49) |  |
+| <code>Minor = 1</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:50](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L50) |  |
+| <code>Moderate = 2</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:51](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L51) |  |
+| <code>Major = 3</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:52](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L52) |  |
+| <code>Critical = 4</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:53](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L53) |  |
+
+## KernelLineageMetadata
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.KernelLineageMetadata</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:102](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L102).
+
+```csharp
+public sealed record KernelLineageMetadata(string BaselineKernelVersion, string CandidateKernelVersion, string DatasetId, DateTimeOffset CalibratedAt, string CalibratedBy);
+```
+
 ## KernelPromotionDecision
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.KernelPromotionDecision</code>. Kind: `record`.
@@ -777,53 +807,3 @@ Enum declarations:
 | <code>Low</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:351](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L351) |  |
 | <code>Close</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:352](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L352) |  |
 | <code>Mid</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:353](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L353) |  |
-
-## TickSizeValidator
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.TickSizeValidator</code>. Kind: `class`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:19](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L19).
-
-Validates that prices conform to expected tick size increments. Part of the data quality framework (DQ-13) to detect prices that don&#x27;t match the exchange&#x27;s minimum price increment rules.
-
-```csharp
-public sealed class TickSizeValidator : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event Action&lt;TickSizeViolationAlert&gt;? OnViolation;</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:35](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L35) | Event raised when a tick size violation is detected. |
-| <code>public TickSizeValidator(TickSizeValidatorConfig? config = null);</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:37](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L37) |  |
-| <code>public void SetTickSize(string symbol, decimal tickSize);</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:53](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L53) | Sets a custom tick size for a specific symbol. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool ValidateTrade(string symbol, decimal price, string? provider = null);</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:70](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L70) | Validates a trade price against expected tick size. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool ValidateQuote(string symbol, decimal bidPrice, decimal askPrice, string? provider = null);</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:79](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L79) | Validates quote prices against expected tick size. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool ValidateBar(string symbol, decimal open, decimal high, decimal low, decimal close, string? provider = null);</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:90](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L90) | Validates a bar&#x27;s OHLC prices against expected tick size. |
-| <code>public TickSizeValidatorStats GetStats();</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:196](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L196) | Gets statistics about tick size validation. |
-| <code>public long TotalViolationsDetected =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:218](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L218) | Gets the total count of tick size violations detected. |
-| <code>public void Dispose();</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:249](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L249) |  |
-
-## TickSizeValidatorConfig
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.TickSizeValidatorConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:294](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L294).
-
-Configuration for tick size validation.
-
-```csharp
-public sealed record TickSizeValidatorConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal DefaultTickSize { get; init; } = 0.01m;</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:300](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L300) | Default tick size for prices &gt;= $1.00. Standard US equity tick size is $0.01. |
-| <code>public decimal SubDollarTickSize { get; init; } = 0.0001m;</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:306](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L306) | Tick size for sub-dollar prices (&lt; $1.00). Standard US equity sub-dollar tick size is $0.0001. |
-| <code>public bool UseSubDollarTicks { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:311](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L311) | Whether to use different tick size for sub-dollar prices. |
-| <code>public int AlertCooldownMs { get; init; } = 10000;</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:316](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L316) | Minimum time between alerts for the same symbol in milliseconds. |
-| <code>public static TickSizeValidatorConfig Default =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:318](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L318) |  |
-| <code>public static TickSizeValidatorConfig FuturesForex =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:323](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L323) | Configuration for futures/forex with custom tick sizes. |
-| <code>public static TickSizeValidatorConfig Lenient =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs:333](../../../../src/Meridian.DataIntegration/Monitoring/TickSizeValidator.cs#L333) | Lenient configuration that allows finer precision. |
