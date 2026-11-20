@@ -1009,6 +1009,26 @@ optional `EntityId` and `FundId` members, appended last, so the server keeps ent
 saved default; the dashboard mirror is `types/operator-scope-preference.ts`. No endpoint was added.
 The operator presentation preferences mirror `OperatorPreferencesDto` in `types/operator-preferences.ts`.
 
+### Record identity and related work
+
+Instrument, account, fund, and position inspectors use `RecordIdentitySpine`. The fact band shows
+the retained identifiers, classification, entity and book, status, date, and trust evidence the
+source supplies. Missing fields are shown explicitly. A position link uses a stable position key
+when available, or an unambiguous symbol and side in the originating view. Ambiguous links leave
+the detail unselected.
+
+`Related work` opens existing Portfolio, Accounting, Data, Trading, or Reporting routes. The
+destination displays the originating record in the workstation header with its captured status and
+trust, an `Origin scope` disclosure, and a return link to the source selection. Supported target
+selectors, such as a quote symbol or a ledger book and period, travel in the destination's own
+query parameters. Other dimensions remain visible in the origin disclosure. The captured context
+survives reload and can be dismissed from the header. Destination filters from a handoff stay
+local to that visit. Context links carry display facts and identifiers, and each destination uses
+its normal permission checks and source reads.
+
+Focused coverage includes `record-workspace-context.test.ts`, `app.test.tsx`, and
+`portfolio-screen.positions-table.test.tsx`.
+
 React, React DOM, and their type packages are upgraded together. Runtime support uses the floating
 Node major in `.nvmrc` and the minimum declared in this dashboard's `engines.node`; both prerequisite
 doctors enforce that minimum. Account names, tab counts, and provider badges retain explicit text

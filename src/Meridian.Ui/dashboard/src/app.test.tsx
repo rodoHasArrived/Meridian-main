@@ -12,6 +12,8 @@ import { getDisplayTimeZone, reloadDisplayTimeZone } from "@/lib/display-time-zo
 import { OPERATOR_TRIAGE_ENDPOINT, type OperatorTriageInbox } from "@/lib/operator-inbox-triage";
 import { OPERATING_CONTEXT_STORAGE_KEY } from "@/lib/operating-scope/persistence";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { appendRecordWorkspaceContext, buildRecordWorkspaceContext } from "@/lib/record-workspace-context";
+import { readStoredOperatingScope, writeStoredOperatingScope } from "@/lib/operating-scope/persistence";
 import { renderWithRouter } from "@/test/render";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { FirstRunStatus } from "@/features/first-run/types";
@@ -391,6 +393,38 @@ describe("App", () => {
     await waitFor(() => expect(screen.getByRole("region", { name: "View controls" })).toBeVisible());
     expect(views.closest("details")).toHaveAttribute("open");
     expect(views).toHaveFocus();
+  });
+
+  it("shows the originating record in related work and keeps a quote symbol local to the destination", async () => {
+    const user = userEvent.setup();
+    mockWorkstationData({
+      loading: false,
+      session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "data", commandCount: 7 }
+    });
+    writeStoredOperatingScope({ symbol: "MSFT", fundAccountId: "current-account" });
+    const context = buildRecordWorkspaceContext({
+      kind: "instrument", id: "security-a", name: "Example Equity", assetClass: "Equity", status: "Active",
+      asOf: "2026-10-28", trust: "Identity on file", scope: { securityId: "security-a", symbol: "DEMO" }
+    }, {
+      pathname: "/portfolio/asset-detail", search: "?securityId=security-a&provider=Alpaca", hash: ""
+    }, {})!;
+    const route = appendRecordWorkspaceContext("/data/quotes?symbol=DEMO", context)!;
+    renderWithRouter(<App />, { initialEntries: [route] });
+
+    const origin = within(await screen.findByRole("region", { name: "Originating record" }));
+    expect(origin.getByText("Instrument from Portfolio")).toBeVisible();
+    expect(origin.getByText("Example Equity")).toBeVisible();
+    expect(origin.getByText("Identity on file")).toBeVisible();
+    expect(origin.getByText("2026-10-28")).toBeVisible();
+    expect(origin.getByRole("link", { name: "Return to Portfolio" })).toHaveAttribute("href", context.origin);
+    expect(screen.getByRole("region", { name: "Operating scope bar" })).not.toHaveTextContent("current-account");
+    await user.click(origin.getByText("Origin scope"));
+    expect(origin.getByText("current-account")).toBeVisible();
+    expect(readStoredOperatingScope().symbol).toBe("MSFT");
+
+    await user.click(origin.getByRole("link", { name: "Dismiss originating record" }));
+    expect(screen.queryByRole("region", { name: "Originating record" })).not.toBeInTheDocument();
+    expect(readStoredOperatingScope().symbol).toBe("MSFT");
   });
 
   it("keeps the workstation closed while activation status is loading", () => {
