@@ -1,7 +1,10 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Meridian.Application.Backfill;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Backfill;
+using Meridian.Contracts.Operations;
+using Meridian.Contracts.Workstation;
 using Meridian.Core.Config;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
@@ -11,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using BackfillCoordinator = Meridian.Ui.Shared.Services.BackfillCoordinator;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -34,13 +38,89 @@ public static class BackfillEndpoints
         var group = app.MapGroup("").WithTags("Backfill");
         group.RequireWorkstationTenantScope();
 
+        group.MapGet(UiApiRoutes.BackfillReceipts, (Guid? before, HttpContext context, [FromServices] BackfillCoordinator? backfill) =>
+        {
+            if (backfill is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill receipt store");
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var store = backfill.GetReceiptStore();
+            if (before is { } id && store.TryReadRetainedResult(id)?.IsVisibleTo(tenantId) != true)
+                return ApiProblemDetails.NotFound(context, "Backfill receipt was not found.");
+            return Results.Json(store.ReadRecentRetainedResults(50, tenantId, before).Select(WorkstationEndpoints.BuildRetainedBackfillRow), jsonOptions);
+        })
+        .WithName("ListBackfillReceipts")
+        .Produces<WorkstationDataBackfillRecord[]>(200)
+        .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
+
+        group.MapGet(UiApiRoutes.BackfillReceipt, (Guid receiptId, HttpContext context, [FromServices] BackfillCoordinator? backfill) =>
+        {
+            if (backfill is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill receipt store");
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var result = backfill.GetReceiptStore().TryReadRetainedResult(receiptId);
+            return result?.IsVisibleTo(tenantId) == true ? Results.Json(result.Receipt, jsonOptions)
+                : ApiProblemDetails.NotFound(context, "Backfill receipt was not found.");
+        })
+        .WithName("GetBackfillReceipt")
+        .Produces<ProviderProvenanceReceipt>(200)
+        .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
+
+        group.MapGet(UiApiRoutes.BackfillClone, async (
+            Guid receiptId, HttpContext context, [FromServices] BackfillCoordinator? backfill, CancellationToken ct) =>
+        {
+            if (backfill is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill coordinator");
+
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var plan = await backfill.GetClonePlanAsync(receiptId, tenantId, ct).ConfigureAwait(false);
+            return plan is null ? ApiProblemDetails.NotFound(context, "Backfill receipt was not found.") : Results.Json(plan, jsonOptions);
+        })
+        .WithName("ReviewBackfillClone")
+        .Produces<BackfillClonePlan>(200)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .RequirePermission(UserPermission.TriggerBackfill);
+
+        group.MapPost(UiApiRoutes.BackfillClone, async (
+            Guid receiptId, BackfillCloneConfirmation confirmation, HttpContext context,
+            [FromServices] BackfillCoordinator? backfill, CancellationToken ct) =>
+        {
+            if (backfill is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill coordinator");
+            if (string.IsNullOrWhiteSpace(confirmation.ConfirmationCode))
+                return ApiProblemDetails.Validation(context, "confirmationCode", "Review and confirm the clone before running it.");
+
+            try
+            {
+                var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+                var result = await backfill.RunCloneAsync(receiptId, confirmation.ConfirmationCode, tenantId, ct).ConfigureAwait(false);
+                return Results.Json(result.ForTenant(tenantId), jsonOptions);
+            }
+            catch (BackfillCloneConflictException ex)
+            {
+                return Results.Json(ex.Plan, jsonOptions, statusCode: StatusCodes.Status409Conflict);
+            }
+            catch (KeyNotFoundException)
+            {
+                return ApiProblemDetails.NotFound(context, "Backfill receipt was not found.");
+            }
+            catch (InvalidOperationException)
+            {
+                return ApiProblemDetails.Conflict(context, "The historical backfill clone could not be started. Review it again.");
+            }
+        })
+        .WithName("RunBackfillClone")
+        .Produces<BackfillResult>(200)
+        .Produces<BackfillClonePlan>(StatusCodes.Status409Conflict)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.TriggerBackfill);
+
         // Get available providers
         group.MapGet(UiApiRoutes.BackfillProviders, ([FromServices] BackfillCoordinator? backfill, HttpContext context) =>
         {
             if (backfill is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill coordinator");
 
-            var providers = backfill.DescribeProviders();
+            var providers = backfill.DescribeProviders(HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId);
             return Results.Json(providers, jsonOptions);
         })
         .WithName("GetBackfillProviders")
@@ -55,7 +135,7 @@ public static class BackfillEndpoints
             if (backfill is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill coordinator");
 
-            var status = backfill.TryReadLast();
+            var status = backfill.TryReadLast()?.ForTenant(HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId);
             return status is null
                 ? ApiProblemDetails.NotFound(context, "No completed backfill operation was found.")
                 : Results.Json(status, jsonOptionsIndented);
@@ -82,7 +162,7 @@ public static class BackfillEndpoints
             try
             {
                 request = CreateBackfillRequest(req);
-                var validation = ValidateBackfillRequest(context, req, request, backfill);
+                var validation = ValidateBackfillRequest(context, req, request, backfill, validateProvider: false);
                 if (validation is not null)
                     return validation;
             }
@@ -93,8 +173,13 @@ public static class BackfillEndpoints
 
             try
             {
-                var preview = await backfill.PreviewAsync(request, ct).ConfigureAwait(false);
+                var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+                var preview = await backfill.PreviewAsync(request, tenantId, ct).ConfigureAwait(false);
                 return Results.Json(preview, jsonOptionsIndented);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Validation(context, "request", ex.Message);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -138,7 +223,7 @@ public static class BackfillEndpoints
             try
             {
                 request = CreateBackfillRequest(req);
-                var validation = ValidateBackfillRequest(context, req, request, backfill);
+                var validation = ValidateBackfillRequest(context, req, request, backfill, validateProvider: req.ExecutionPolicy is null);
                 if (validation is not null)
                     return validation;
             }
@@ -147,10 +232,43 @@ public static class BackfillEndpoints
                 return ApiProblemDetails.Validation(context, "request", ex.Message);
             }
 
+            if (req.ExecutionPolicy is not null || req.SubmissionId is not null || req.ScheduledAt is not null || req.ApprovedAlternativeFor is not null)
+            {
+                if (req.ExecutionPolicy is not ("queued" or "scheduled") || req.SubmissionId is null || req.SubmissionId == Guid.Empty ||
+                    (req.ExecutionPolicy == "scheduled") != req.ScheduledAt.HasValue)
+                    return ApiProblemDetails.Validation(context, "executionPolicy", "Choose queued or scheduled execution. Scheduling requires a start time and both options require a submission ID.");
+
+                var queue = context.RequestServices.GetService<WorkstationBackfillQueue>();
+                if (queue is null)
+                    return ApiProblemDetails.ServiceUnavailable(context, "workstation backfill queue");
+
+                try
+                {
+                    var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                    var receipt = await queue.SubmitAsync(req.SubmissionId.Value, tenant.TenantId!, request, req.ScheduledAt, req.ApprovedAlternativeFor, ct)
+                        .ConfigureAwait(false);
+                    return Results.Json(receipt, jsonOptions, statusCode: StatusCodes.Status202Accepted);
+                }
+                catch (BackfillSubmissionConflictException ex)
+                {
+                    return ApiProblemDetails.Conflict(context, ex.Message);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return ApiProblemDetails.Validation(context, "request", ex.Message);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+                {
+                    loggerFactory.CreateLogger(nameof(BackfillEndpoints)).LogError(ex, "Could not retain queued backfill submission.");
+                    return ApiProblemDetails.ServiceUnavailable(context, "backfill execution storage");
+                }
+            }
+
             try
             {
-                var result = await backfill.RunAsync(request, ct).ConfigureAwait(false);
-                return Results.Json(result, jsonOptionsIndented);
+                var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+                var result = await backfill.RunAsync(request, tenantId, ct).ConfigureAwait(false);
+                return Results.Json(result.ForTenant(tenantId), jsonOptionsIndented);
             }
             catch (InvalidOperationException)
             {
@@ -176,8 +294,9 @@ public static class BackfillEndpoints
             }
         })
         .WithName("RunBackfill")
-        .WithDescription("Executes a backfill operation for the specified symbols and date range.")
+        .WithDescription("Executes a backfill, or accepts a queued or scheduled workstation submission.")
         .Produces<BackfillResult>(200)
+        .Produces<BackfillSubmissionReceipt>(202)
         .ProducesValidationProblem()
         .ProducesProblem(StatusCodes.Status409Conflict)
         .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -205,7 +324,10 @@ public static class BackfillEndpoints
                     DroppedProviderNotifications: 0,
                     Timestamp: DateTimeOffset.UtcNow),
                 Timestamp: DateTimeOffset.UtcNow);
-            return Results.Json(progress, jsonOptions);
+            return Results.Json(progress with
+            {
+                LastRun = progress.LastRun?.ForTenant(HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId)
+            }, jsonOptions);
         })
         .WithName("GetBackfillProgress")
         .WithDescription("Returns the latest run plus bounded, live provider-attempt progress for the current symbol and range.")
@@ -424,7 +546,8 @@ public static class BackfillEndpoints
         HttpContext context,
         BackfillRequestDto req,
         BackfillRequest request,
-        BackfillCoordinator backfill)
+        BackfillCoordinator backfill,
+        bool validateProvider = true)
     {
         if (req.Symbols is null || req.Symbols.Length == 0)
             return ApiProblemDetails.Validation(context, "symbols", "At least one symbol is required.");
@@ -432,7 +555,7 @@ public static class BackfillEndpoints
         if (req.Symbols.Length > 100)
             return ApiProblemDetails.Validation(context, "symbols", "Maximum 100 symbols per backfill request.");
 
-        var invalidSymbols = req.Symbols.Where(s => !SymbolPattern.IsMatch(s)).ToArray();
+        var invalidSymbols = req.Symbols.Where(s => s is null or "." or ".." || !SymbolPattern.IsMatch(s)).ToArray();
         if (invalidSymbols.Length > 0)
             return ApiProblemDetails.Validation(
                 context,
@@ -471,9 +594,12 @@ public static class BackfillEndpoints
             }
         }
 
+        if (!validateProvider)
+            return null;
+
         try
         {
-            backfill.ValidateRequest(request);
+            backfill.ValidateRequest(request, HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId);
         }
         catch (InvalidOperationException ex)
         {

@@ -5,6 +5,7 @@ import { Histogram } from "@/components/charts";
 import { CompareToggle } from "@/components/charts/SelectionCompare";
 import { Sparkline } from "@/components/charts/Sparkline";
 import { StrategyRunParityPanel } from "./strategy-screen.parity";
+import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
 import { DetailFields } from "@/components/meridian/detail-pane";
 import { DetailRail } from "@/components/meridian/detail-rail";
@@ -1261,6 +1262,11 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
             </section>
 
             <BiasDisclosurePanel disclosure={vm.selectedRunDetail.biasDisclosure} className="mt-4" />
+            {vm.selectedRunDetail.modeBadgeVariant === "research" ? (
+              vm.selectedRunEvidenceStatus === "loading"
+                ? <p role="status" className="mt-3 text-xs text-muted-foreground">Loading provider provenance…</p>
+                : <ProviderProvenancePanel receipt={vm.selectedRunProvenance} />
+            ) : null}
           </DialogContent>
         )}
       </Dialog>

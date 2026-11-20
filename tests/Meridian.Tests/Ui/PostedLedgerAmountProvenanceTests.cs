@@ -9,6 +9,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
@@ -24,6 +25,78 @@ namespace Meridian.Tests.Ui;
 public sealed class PostedLedgerAmountProvenanceTests
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+
+    [Theory]
+    [InlineData("verified", "complete")]
+    [InlineData("expired", "stale")]
+    [InlineData("missing", "review-required")]
+    public async Task AmountPassport_RetainsExactValueAndDistinguishesEvidenceStates(string condition, string status)
+    {
+        using var fixture = new Fixture();
+        if (condition != "missing")
+        {
+            fixture.SetReferences(await fixture.RetainAsync(fixture.SubjectId, "selected-source",
+                expiresAt: condition == "expired" ? DateTimeOffset.UtcNow.AddDays(-1) : null));
+        }
+        var identity = fixture.PassportIdentity;
+        var route = AmountPassportTestRoutes.PassportRoute(identity);
+        await using var app = await fixture.CreateAppAsync();
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(route);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Headers.CacheControl!.NoStore.Should().BeTrue();
+        var passport = (await response.Content.ReadFromJsonAsync<AmountPassportDto>(Json))!;
+        passport.Reference.Identity.Should().Be(identity);
+        passport.ExactValue.Should().Be("125");
+        passport.Reference.Currency.Should().Be("USD");
+        passport.Status.Should().Be(status);
+        passport.Permissions.Should().Match<AmountPassportPermissionsDto>(value =>
+            value.View == "allowed" && value.Amend == "read-only" && value.PeriodStatus == "Open");
+        passport.Components.Select(value => value.Component).Should().BeEquivalentTo(
+            ["scope", "source", "calculation", "freshness", "evidence", "history", "permissions"]);
+        if (status == "complete")
+        {
+            passport.Gaps.Should().BeEmpty();
+            var evidence = passport.Evidence.Should().ContainSingle().Subject;
+            (await client.GetAsync(evidence.Href)).StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        else
+        {
+            passport.Gaps.Should().NotBeEmpty();
+            passport.Evidence.Should().BeEmpty();
+            passport.Freshness.Status.Should().Be(status);
+        }
+    }
+
+    [Fact]
+    public async Task AmountPassport_RejectsForeignCompanyAndChangedDateBasisAndRevision()
+    {
+        using var fixture = new Fixture();
+        await using var app = await fixture.CreateAppAsync();
+        var client = app.GetTestClient();
+        var identity = fixture.PassportIdentity;
+        var mismatches = new[]
+        {
+            identity with { AsOf = "2026-10-02T00:00:00Z" },
+            identity with { Revision = "2" },
+            identity with { Scope = identity.Scope with { Basis = "Tax" } },
+            identity with { Scope = identity.Scope with { EntityId = "foreign-entity" } }
+        };
+        foreach (var mismatch in mismatches)
+        {
+            using var result = await client.GetAsync(AmountPassportTestRoutes.PassportRoute(mismatch));
+            result.StatusCode.Should().Be(HttpStatusCode.Conflict);
+            (await result.Content.ReadAsStringAsync()).Should().NotContain("125");
+        }
+        (await client.GetAsync(AmountPassportTestRoutes.PassportRoute(identity with
+        {
+            Scope = identity.Scope with { CompanyId = "other-company" }
+        }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await using var denied = await fixture.CreateAppAsync(UserPermission.ViewTrades);
+        (await denied.GetTestClient().GetAsync(AmountPassportTestRoutes.PassportRoute(identity)))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
 
     [Fact]
     public async Task RetainedIntakeAndReview_AmountPacketContainsOnlyItsSupportingEvidence()
@@ -449,6 +522,9 @@ public sealed class PostedLedgerAmountProvenanceTests
         public string SubjectId => $"{_journalId:D}:{_debitId:D}:debit";
         public string CreditSubjectId => $"{_journalId:D}:{_creditId:D}:credit";
         public string PacketRoute => $"/api/workstation/evidence/subjects/ledger-amount/{SubjectId}/packet?fundProfileId={Scope.FundProfileId}&ledgerBookId={Scope.LedgerBookId:D}&periodId={Scope.PeriodId:D}";
+        public AmountPassportIdentityDto PassportIdentity => new("ledger-amount", SubjectId,
+            new(Scope.TenantId, Scope.CompanyId, "Primary", Scope.FundProfileId, Scope.LedgerBookId, Scope.PeriodId),
+            Records[0].Entry.Timestamp.ToUniversalTime().ToString("O"), "1");
         public FileEvidenceArtifactStore Artifacts { get; }
         public PostedLedgerAmountProvenanceService Service { get; }
         public string? LastManifestPath { get; private set; }
@@ -472,6 +548,9 @@ public sealed class PostedLedgerAmountProvenanceTests
             _journals.Setup(store => store.QueryAsync(It.Is<LedgerJournalEntryQuery>(query =>
                     query.LedgerBookId == Scope.LedgerBookId && query.PeriodId == Scope.PeriodId), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() => Records);
+            _journals.Setup(store => store.QueryAsync(It.Is<LedgerJournalEntryQuery>(query =>
+                    query.LedgerBookId == Scope.LedgerBookId && query.SourceJournalEntryId == _journalId), It.IsAny<CancellationToken>()))
+                .ReturnsAsync([]);
             Service = new PostedLedgerAmountProvenanceService(_journals.Object, _books.Object, _tenancy.Object, Artifacts);
             SetReferences();
         }

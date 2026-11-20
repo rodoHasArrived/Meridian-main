@@ -6,11 +6,15 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Ui/dashboard
 
+Data → Backfills previews the historical adapter's quota, observed budget, and expected cost.
+The same dialog queues, schedules, or previews a provider administrator-approved equivalent.
+Workstation backfill receipts show the submission estimate, waiting states, observed providers,
+and execution variance from the shared API. See [provider backfill operations](../../../docs/operators/provider-backfill-operations.md#workstation-quota-and-receipts).
 Native intercompany agreement editors capture structured terms without calculating charges.
 Externally reviewed attestations retain the operator and external reviewer separately. The entity
 workspace presents advisory obligation monitoring and reviewed legacy coverage corrections or
@@ -479,6 +483,16 @@ the workstation's demo status. Configure exposes synthetic-only automatic fill
 posting grants: authenticated operators inspect, activate and revoke exact scoped authority against
 the current retained policy/mapping. Grant identities survive uncertain responses for inspection
 and retry; tenant, company and actor are server-owned. These reads never use development fallback.
+
+Accounting Reconciliation also includes a book receipt queue for coupon, interest and principal.
+It reads immutable daily runs from authoritative holdings, accepted projections, retained cash receipts
+and posted journals. Only **Run daily check** creates a run and synchronizes linked exceptions;
+book and history selection perform reads. Expected, received, posted and remaining amounts retain
+their exact decimal strings and individual currencies. Filters expose due, overdue, partial, disputed,
+received-but-unposted, reconciled, scheduled and incomplete-evidence states. Source details preserve
+earlier terms expectations, split allocations, reversals, owner and aging. Missing provider coverage
+remains visible even for an empty queue. Book changes cancel pending UI reads and commands; server
+scope and ledger permissions remain authoritative. No development fallback supplies receipt evidence.
 
 Reporting Exports downloads the server's single-snapshot general-ledger ZIP for the selected
 book/period with the session's explicit ExportData permission, without rebuilding financial rows in JavaScript. Quant Lab's corporate-action selector
@@ -1005,6 +1019,26 @@ optional `EntityId` and `FundId` members, appended last, so the server keeps ent
 saved default; the dashboard mirror is `types/operator-scope-preference.ts`. No endpoint was added.
 The operator presentation preferences mirror `OperatorPreferencesDto` in `types/operator-preferences.ts`.
 
+### Record identity and related work
+
+Instrument, account, fund, and position inspectors use `RecordIdentitySpine`. The fact band shows
+the retained identifiers, classification, entity and book, status, date, and trust evidence the
+source supplies. Missing fields are shown explicitly. A position link uses a stable position key
+when available, or an unambiguous symbol and side in the originating view. Ambiguous links leave
+the detail unselected.
+
+`Related work` opens existing Portfolio, Accounting, Data, Trading, or Reporting routes. The
+destination displays the originating record in the workstation header with its captured status and
+trust, an `Origin scope` disclosure, and a return link to the source selection. Supported target
+selectors, such as a quote symbol or a ledger book and period, travel in the destination's own
+query parameters. Other dimensions remain visible in the origin disclosure. The captured context
+survives reload and can be dismissed from the header. Destination filters from a handoff stay
+local to that visit. Context links carry display facts and identifiers, and each destination uses
+its normal permission checks and source reads.
+
+Focused coverage includes `record-workspace-context.test.ts`, `app.test.tsx`, and
+`portfolio-screen.positions-table.test.tsx`.
+
 React, React DOM, and their type packages are upgraded together. Runtime support uses the floating
 Node major in `.nvmrc` and the minimum declared in this dashboard's `engines.node`; both prerequisite
 doctors enforce that minimum. Account names, tab counts, and provider badges retain explicit text
@@ -1023,6 +1057,20 @@ development fallback and never calculate support from current Accounting scope o
 Focused coverage lives in `reporting-retained-amounts.test.tsx` and `report-amount-proof-api.test.ts`.
 
 The reconciliation queue shows source observation and retained occurrence age directly. Clearing is labeled Source cleared and never implies case resolution. Legacy rows explicitly show identity/age unavailable. Queue refresh compares lineage metadata; inspector details include business and comparison scopes.
+
+The Match handoff and Casework render the same retained break evidence. Casework keeps the queue beside
+the selected case, with its observed and expected amounts, supplied residuals and lineage next to actions,
+affected outputs and activity. An earlier retained comparison travels in the case link. The browser
+compares supplied residuals only when the retained comparison scope and units agree. Source clearing,
+case disposition and sign-off have separate labels.
+
+Waive, supersede, sign-off and reopen bind the reviewed case version. After a conflict, reload the case and
+review a new preview. The browser tab retains unconfirmed command IDs for audit lookup. Statement
+decisions also require the paired handoff event. After checking the outcome, the operator can resume
+the exact reviewed request while it is available in workbench memory. The bulk bar shows a sample of
+eligible cases, blocked cases and per-case queue receipts. It reports any outstanding statement handoff
+alongside the retained batch result. Match allocations, full run-diff classifications and atomic binding
+to the bulk preview versions depend on further service contracts.
 
 Accounting payment approvals provides an explicit entity-ID selection on the ordinary unscoped route. Unapplied scope edits disable decisions; applying a new entity clears the old review session. Cash Ladder retains the same-account scenario catalog through loading and errors while continuing to withhold stale balances and drill evidence.
 
@@ -1150,20 +1198,27 @@ Fresh JSON test evidence is written under `artifacts/test-results/browser/` at r
 Missing results, zero passing discovery or missing selected files fail the run. Counts, skips,
 durations and stable test identity digests support the manual CI concurrency benchmark.
 
-`EvidenceAmount` opens an exact retained evidence subject in the shared sheet primitive. Manual
-journal detail debit/credit cells carry the entry and ledger-book identity; values without a supported
-retained subject are never assigned inferred provenance. Reads disable development fallback and
-show loading, unavailable, empty, stale and mismatched-subject states. Escape and focus restoration
-use the shared sheet behavior. Full evidence links retain the selected ledger book.
+`AmountPassportTrigger` opens the shared Amount passport rail from Ledger Explorer, posted journal
+detail, retained brokerage positions, and retained trial-balance amounts in governed reports. Each
+trigger passes its displayed value and the server-issued amount reference. The compact markers pair
+text with the proof icon for sourced, calculated, overridden, estimated, unavailable, stale and zero
+values. The rail preserves the work surface, supports keyboard resizing and restores focus on
+dismissal. Copy stable link uses the subject ID, declared scope, date and revision. Follow a
+contributing posting in the rail or open its guarded evidence in a new tab. Pin for comparison
+keeps the address of an amount while you open a second period or revision.
+
+The rail displays exact server values and component-level gaps. Metrics, chart readouts,
+reconciliation variances and factor previews can use the same interaction when their source only
+supplies display context. The rail identifies the missing retained address in those cases.
+`EvidenceAmount` still opens entry-level evidence for manual journal drafts.
 
 Statement import links to the exact retained Operations Continuity workflow, book, and period.
 An unavailable requested workflow fails closed. Close publication continues to require the full
 fund/account/entity/book/period scope and current server readiness; the import handoff alone
 does not supply that complete close authority.
 
-Ledger Explorer clears the selected amount when its tab becomes inactive, its book or period
-changes, or its posted journal no longer contains that amount. Returning to the prior scope
-requires a new amount click; a late evidence response cannot restore the previous drawer.
+Ledger Explorer closes the rail when its tab, book or period changes. A late response cannot reopen
+it. A copied link opens the originally declared amount independent of the current table selection.
 `finance-standard-pages-screen.test.tsx` covers tab, book and period round trips and late responses.
 Posted debits and credits render at the book currency's minor-unit precision (`$500.00`), the
 Journal ID column links with the journal ID itself, and posting rows leave Status blank rather than
@@ -1447,10 +1502,16 @@ not been recorded.
   breaks the current filters show. Assign to me, Route to owner and Resolve with reason go through
   the governed casework endpoints: a dry run checks the whole selection and lists each blocked
   break with its reason, and the operator then confirms an execute of only the breaks that passed,
-  applied all or nothing. The server stamps the actor (Assign to me sets
+  applied all or nothing. The preview shows sampled case versions. Confirming sends the retained
+  preview ID, and the server checks every eligible version. The server stamps the actor (Assign to me sets
   `assignToCurrentOperator`, so it names the login user, not the display name) and writes an
   audit entry for each case. Resolve takes a reason, a root cause and a resolution from the
   taxonomy endpoint, plus an optional evidence reference.
+- **Retained match evidence.** Casework and the Match Workbench show both statement and ledger
+  contributions, exact decimal residuals, and the executed tolerance policy version. The candidate
+  rail states the rule basis and requires review. Split and merge labels open confirmed group
+  allocations and link the prior cases that participated in the group. Residual amounts open the
+  Amount Passport with their exact unit and comparison basis.
 - **Since your last visit.** `lib/since-last-visit.ts` records the operator's visit to the break
   queue (`POST /api/workstation/operator/visits/reconciliation-breaks`) once per browser tab. The
   visit it replaces is the baseline: a break detected after it is marked New, a break whose
@@ -1627,6 +1688,11 @@ provider trust list.
 and local command search. Purpose descriptions and search-only aliases expose intents such as
 cash forecast, statement import, historical prices, and running reports. Local destinations remain
 searchable when remote command or entity search is unavailable; unwired routes stay excluded.
+Command search also looks up instruments, retained brokerage positions, journals, governed report
+runs, reconciliation cases, statement runs, and close workflows. After the typing pause, the server
+checks the session's family permissions, retained ownership, and applicable scoped grants or report
+audience. Exact record IDs precede identifier and name prefixes. Each result shows its scope,
+as-of posture, status, and a link that opens the selected record in its own scope.
 Accounting onboarding searches open the existing External GL surface, which hosts the bounded
 onboarding workspace and its retained comparison and readiness evidence. Its shadow-mode section
 (`accounting-screen.onboarding-shadow-panel.tsx`) covers shadow-book designation, incumbent
@@ -3678,3 +3744,10 @@ previous scope's response. Missing book currency remains explicitly unavailable 
 defaulting to dollars. Legacy API callers that omit accounting basis retain an unfiltered read. The
 route helper lives in `src/lib/ledger-reports-api.ts` rather than `workstation-endpoints.ts`,
 which is at its file-size limit.
+
+### External GL posting
+
+The Accounting External GL workspace reviews exact journal export packages, mapping versions,
+scoped amounts, and provider receipts. The book policy defaults to optional confirmation.
+Operators certify and approve the reviewed payload, download its audit snapshot, and prepare
+corrective or reversal packages from retained outcomes.

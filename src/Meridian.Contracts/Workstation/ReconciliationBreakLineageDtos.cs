@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Reconciliation;
 
 namespace Meridian.Contracts.Workstation;
 
@@ -18,7 +19,31 @@ public sealed record ReconciliationBreakLineageDto(
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? IdentityScopeId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ReconciliationSourceRegrouping? Regrouping { get; init; }
 }
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReconciliationSourceRegroupingKind>))]
+public enum ReconciliationSourceRegroupingKind
+{
+    Split = 1,
+    Merged = 2
+}
+
+/// <summary>A completed match group that proves how a prior source break cleared.</summary>
+public sealed record ReconciliationSourceRegrouping(
+    ReconciliationSourceRegroupingKind Kind,
+    string PriorRunId,
+    IReadOnlyList<string> PriorBreakIds,
+    ReconciliationObservedMatchGroup Group);
+
+public sealed record ReconciliationObservedMatchSubject(string EvidenceReference, string SourceSubjectId);
+
+public sealed record ReconciliationObservedMatchGroup(
+    string MatchGroupId,
+    IReadOnlyList<ReconciliationObservedMatchSubject> SourceSubjects,
+    RetainedStatementCaseEvidence Evidence);
 
 /// <summary>Exact authority and source population covered by a completed comparison.</summary>
 public sealed record ReconciliationRunObservationScope(
@@ -43,4 +68,8 @@ public sealed record ReconciliationCompletedRunObservation(
     DateTimeOffset ObservedAt,
     bool Succeeded,
     bool CompletePopulation,
-    IReadOnlyList<ReconciliationBreakObservation> Breaks);
+    IReadOnlyList<ReconciliationBreakObservation> Breaks)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<ReconciliationObservedMatchGroup>? ConfirmedMatchGroups { get; init; }
+}

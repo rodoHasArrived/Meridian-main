@@ -37,6 +37,63 @@ Use this sequence for controlled backfill execution:
 4. Monitor status/progress APIs until completion or bounded retries.
 5. Run quality check and gap report before archival or downstream promotion.
 
+### Workstation quota and receipts
+
+In **Data → Backfills → Trigger backfill**, enter the provider, symbols, and date range, then
+select **Preview**. Blank daily dates use a one-year lookback ending today when no end date is
+entered. The preview shows the effective range that a queued or scheduled job will use.
+
+The quota panel reports the historical adapter's known limit and window, the expected requests
+and duration, and the observed remaining budget when available. It also displays daily limits
+and distinguishes provider credits from HTTP requests. Local observations
+can miss usage from other clients sharing the same account. Pagination, retries, and provider
+latency can change usage and timing. The duration excludes time spent waiting in the job queue
+or waiting for a scheduled start. Providers without usable quota diagnostics show **Limit unavailable**.
+When resuming from retained coverage, the estimate counts requests for each uncovered date range.
+Coverage can change before a queued job starts.
+
+For an over-budget plan, narrow the dates or symbols and preview again, schedule the job, choose
+an administrator-approved equivalent and preview it, or **Queue with throttling**. Enter the
+earliest eligible start in UTC. Queued and scheduled jobs both follow the provider budget.
+The workstation keeps an execution receipt with the submission estimate, observed providers,
+throttling events, and request and duration variance where measured. Expand the job under
+**Workstation backfill receipts**. Live waits appear as **Throttled**.
+Completed jobs also show retained batch revisions with provider and session counts. Each revision
+identifies the full evidence retained under the host's data root.
+
+The workstation queue is retained on the single host that owns the data root. Pending jobs survive
+a restart. Jobs interrupted during execution are marked failed so operators can inspect partial
+coverage before submitting again. Provider request counts cover observed adapter attempts.
+Receipts show unavailable counts when an adapter cannot expose its individual requests.
+
+### Provider administrator budgets
+
+Provider administrators can set `Backfill.OperationalBudgets` in the host's `appsettings.json`.
+Policies apply across workstation jobs. The dialog displays the policy and researchers submit
+jobs within it. Keys are runtime historical provider IDs.
+
+```json
+{
+  "Backfill": {
+    "OperationalBudgets": {
+      "provider-id": {
+        "ReserveHeadroomPercent": 20,
+        "MaxConcurrentRequests": 2,
+        "ApprovedEquivalentProviders": ["alternative-provider-id"]
+      }
+    }
+  }
+}
+```
+
+`ReserveHeadroomPercent` accepts 0–99. The host rounds the backfill allowance down to whole
+units with a minimum of one historical request per window. Headroom applies to both the short
+window and the daily limit when reported by the adapter.
+`MaxConcurrentRequests` is an optional positive cap on the provider's parallel backfill work.
+Approve equivalent providers only after checking instrument coverage, entitlements, intervals,
+and price adjustment conventions. The host checks approval and runtime compatibility again when
+the job is dispatched. In-progress runs keep the policy loaded when they started.
+
 ## Key endpoints
 
 - `GET /api/backfill/providers`
@@ -50,9 +107,26 @@ Use this sequence for controlled backfill execution:
 
 Use [preflight authentication](preflight-checklist.md#authenticated-evidence-collection) for API
 reads. Workstation submissions use the signed-in operator session and its mutation protections.
-`/api/backfill/progress` describes the host's coordinator activity; it does not monitor a separate
-CLI process. `/api/backfill/status` reads the most recent completed result from the configured data
-root and returns `404` when none exists.
+`/api/backfill/progress` describes the host's coordinator activity. `/api/backfill/status` reads
+the last retained immediate or CLI result from the configured data root and returns `404` when
+none exists. `/api/backfill/executions` includes queued and scheduled workstation receipts for
+the authenticated tenant.
+
+## Inspect and reproduce a result
+
+Open **Data → Backfill queue** and select a completed result. Expand **Provider provenance** to see
+which providers supplied data, whether fallback occurred, the requested scope, and the effective
+validation profile. Use **Load older backfill results** to page through retained runs. Research run
+details and completed Quant Lab and Covered Call results use the same receipt panel.
+
+**Export JSON sidecar** downloads the versioned receipt. **Export report** downloads its plain-text
+form. A scoped connection has an opaque receipt ID. The receipt records the feed and entitlement
+labels reported by the runtime and marks unavailable provenance explicitly.
+
+**Clone this run** restores the saved request and checks the provider route before presenting a run
+confirmation. Confirm again if provider availability changes during review. A missing or changed
+historical route, an unretained checkpoint, or an unversioned research dataset leaves reproduction
+unavailable and the original receipt inspectable.
 
 ## Provider configuration posture
 

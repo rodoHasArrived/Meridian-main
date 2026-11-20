@@ -23,6 +23,7 @@ using Meridian.Execution.Services;
 using Meridian.Instruments.AssetOperations;
 using Meridian.QuantScript.Compilation;
 using Meridian.Storage.Export;
+using Meridian.Storage.Backfill;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Query;
 using Meridian.Storage.Services;
@@ -123,7 +124,9 @@ public static partial class WorkstationEndpoints
         MapExtensibilityEndpoints(group, jsonOptions);
         MapCloseReadinessEndpoints(group, jsonOptions);
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
+        MapRecordSearchEndpoint(group, jsonOptions);
         MapOperatorTriageEndpoints(group, jsonOptions);
+        MapBookReceiptQueueEndpoints(group, jsonOptions);
         MapCloseChecklistHistoryEndpoints(group, jsonOptions);
         MapApprovalCollaborationEndpoints(group, jsonOptions);
         MapWorkstationChartEvidenceEndpoints(group, jsonOptions);
@@ -1486,38 +1489,20 @@ public static partial class WorkstationEndpoints
             .CountProviderHealth(providers.Select(static provider => provider.Status))
             .Healthy;
 
-        // --- Backfills (last known backfill result from status file) ---
-        var lastBackfill = configStore?.TryLoadBackfillStatus();
-        WorkstationDataBackfillRecord[] backfills;
-        if (lastBackfill is not null)
+        var backfillStore = context.RequestServices.GetService<BackfillCoordinator>()?.GetReceiptStore()
+            ?? (configStore is null ? null : new BackfillStatusStore(configStore.GetDataRoot()));
+        var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+        var retained = backfillStore?.ReadRecentRetainedResults(50, tenantId) ?? [];
+        var backfills = retained.Select(BuildRetainedBackfillRow).ToList();
+
+        if (backfillStore?.TryRead() is { ProviderProvenance: null } legacy)
         {
-            var symbolSummary = lastBackfill.Symbols.Length > 0
-                ? string.Join(", ", lastBackfill.Symbols.Take(3)) + (lastBackfill.Symbols.Length > 3 ? " …" : "")
-                : "unknown";
-            var days = (lastBackfill.To != null && lastBackfill.From != null)
-                ? (lastBackfill.To.Value.DayNumber - lastBackfill.From.Value.DayNumber).ToString(CultureInfo.InvariantCulture) + "d"
-                : "—";
-            var age = DateTimeOffset.UtcNow - lastBackfill.CompletedUtc;
-            var updatedAt = age.TotalMinutes < 60
-                ? $"{(int)age.TotalMinutes}m ago"
-                : $"{(int)age.TotalHours}h ago";
-            backfills =
-            [
-                new WorkstationDataBackfillRecord(
-                    JobId: "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
-                    {
-                        lastBackfill.Provider, lastBackfill.CompletedUtc, lastBackfill.From, lastBackfill.To, lastBackfill.Symbols
-                    }))[..16],
-                    Scope: $"{symbolSummary} / {days}",
-                    Provider: lastBackfill.Provider,
-                    Status: lastBackfill.Success ? "Completed" : "Failed",
-                    Progress: lastBackfill.Success ? "100%" : "Error",
-                    UpdatedAt: updatedAt)
-            ];
-        }
-        else
-        {
-            backfills = [];
+            var legacyId = "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
+            {
+                legacy.Provider, legacy.CompletedUtc, legacy.From, legacy.To, legacy.Symbols
+            }))[..16];
+            backfills.Add(BuildBackfillRow(legacyId, legacy.Symbols,
+                legacy.From, legacy.To, legacy.Provider, legacy.Success, legacy.CompletedUtc));
         }
 
         var metrics = new List<WorkstationMetricCard>
@@ -1547,6 +1532,28 @@ public static partial class WorkstationEndpoints
             Exports: [],
             UploadTemplates: BuildDataUploadTemplateCatalog(),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+    }
+
+    private static WorkstationDataBackfillRecord BuildBackfillRow(string id, IReadOnlyList<string> symbols,
+        DateOnly? from, DateOnly? to, string provider, bool success, DateTimeOffset completed)
+    {
+        var symbolSummary = symbols.Count > 0
+            ? string.Join(", ", symbols.Take(3)) + (symbols.Count > 3 ? " …" : "")
+            : "Unknown symbols";
+        var days = from.HasValue && to.HasValue ? $"{to.Value.DayNumber - from.Value.DayNumber + 1}d" : "—";
+        var age = DateTimeOffset.UtcNow - completed;
+        var updatedAt = age.TotalMinutes < 60 ? $"{(int)age.TotalMinutes}m ago" : $"{(int)age.TotalHours}h ago";
+        return new(id, $"{symbolSummary} / {days}", provider, success ? "Completed" : "Failed", success ? "100%" : "Error", updatedAt);
+    }
+
+    internal static WorkstationDataBackfillRecord BuildRetainedBackfillRow(RetainedBackfillResult result)
+    {
+        var receipt = result.Receipt;
+        var providers = receipt.Providers.Where(provider => provider.ResponsesWithData > 0 || provider.StaleResponsesAccepted > 0)
+            .Select(provider => provider.ProviderId).ToArray();
+        var providerLabel = providers.Length > 0 ? string.Join(", ", providers) : receipt.RoutingDecision;
+        return BuildBackfillRow($"BF-{receipt.ReceiptId:N}", receipt.Request.Symbols, receipt.Request.From,
+            receipt.Request.To, providerLabel, result.Success, receipt.CompletedUtc) with { ProviderProvenance = receipt };
     }
 
     /// <summary>

@@ -6,6 +6,204 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileOperatorSurfaceVisitStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorSurfaceVisitStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:24](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L24).
+
+JSON-backed store beside the operator scope preferences, keyed by tenant, company, user and surface. Writes go through the snapshot store&#x27;s atomic replace.
+
+```csharp
+public sealed partial class FileOperatorSurfaceVisitStore : JsonFileSnapshotStore<OperatorSurfaceVisitSnapshot>, IOperatorSurfaceVisitStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileOperatorSurfaceVisitStore(string dataRoot, ILogger&lt;FileOperatorSurfaceVisitStore&gt; logger, TimeProvider? timeProvider = null) : base(ResolveSnapshotPath(dataRoot), OperatorSurfaceVisitJsonContext.Default.OperatorSurfaceVisitSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:32](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L32) |  |
+| <code>public Task&lt;OperatorSurfaceVisitDto&gt; GetAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:42](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L42) |  |
+| <code>public async Task&lt;OperatorSurfaceVisitDto&gt; RecordVisitAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:51](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L51) |  |
+| <code>public static string NormalizeSurface(string? surface);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:72](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L72) | Surface ids are short lowercase slugs, such as reconciliation-breaks. |
+
+## FileWorkflowPresetStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.FileWorkflowPresetStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L12).
+
+JSON-backed workflow preset store rooted under Meridian&#x27;s resolved data directory.
+
+```csharp
+public sealed class FileWorkflowPresetStore : JsonFileSnapshotStore<WorkflowPresetSnapshot>, IWorkflowPresetStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileWorkflowPresetStore(string dataRoot, ILogger&lt;FileWorkflowPresetStore&gt; logger) : base(ResolveSnapshotPath(dataRoot), WorkflowPresetJsonContext.Default.WorkflowPresetSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:22](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L22) |  |
+| <code>public Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:28](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L28) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:31](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L31) |  |
+
+## IOperatorPreferenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorPreferenceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L11).
+
+Durable per-operator presentation preferences (theme, density, time zone, descriptions, shortcuts, notifications).
+
+```csharp
+public interface IOperatorPreferenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperatorPreferencesDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:13](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L13) |  |
+| <code>Task&lt;OperatorPreferencesDto&gt; SetAsync(string operatorKey, OperatorPreferenceValuesDto? preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:15](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L15) |  |
+
+## IOperatorScopePreferenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorScopePreferenceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L10).
+
+Durable per-operator default operating scope (C1).
+
+```csharp
+public interface IOperatorScopePreferenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperatorScopePreferenceDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L12) |  |
+| <code>Task&lt;OperatorScopePreferenceDto&gt; SetAsync(string operatorKey, OperatingScopeValuesDto? defaultScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L14) |  |
+
+## IOperatorSurfaceVisitStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorSurfaceVisitStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L11).
+
+Durable per-operator last visit to each workstation surface (C3).
+
+```csharp
+public interface IOperatorSurfaceVisitStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperatorSurfaceVisitDto&gt; GetAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L14) | The last recorded visit, without recording one. |
+| <code>Task&lt;OperatorSurfaceVisitDto&gt; RecordVisitAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:17](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L17) | Records a visit now and returns the visit it replaced. |
+
+## IWorkflowActionCatalog
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L8).
+
+Resolves workflow actions into shell page targets for summaries, queues, and UI.
+
+```csharp
+public interface IWorkflowActionCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L10) |  |
+| <code>IReadOnlyList&lt;WorkflowActionDto&gt; GetActions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L12) |  |
+| <code>WorkflowActionDto? ResolveAction(string? actionId);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L14) |  |
+| <code>WorkflowActionDto? ResolveOperatorWorkItem(OperatorWorkItemDto? workItem);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:16](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L16) |  |
+| <code>WorkflowActionDto? ResolveRoute(string? targetRoute);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:18](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L18) |  |
+| <code>string ResolveTargetPageTag(string? actionId, string fallbackPageTag);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:20](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L20) |  |
+
+## IWorkflowDefinitionProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowDefinitionProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs#L8).
+
+Supplies reusable workstation workflow definitions.
+
+```csharp
+public interface IWorkflowDefinitionProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs#L10) |  |
+
+## IWorkflowPresetStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowPresetStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L8).
+
+Durable store for operator-saved workflow presets.
+
+```csharp
+public interface IWorkflowPresetStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L10) |  |
+| <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L12) |  |
+
+## OperatorPreferenceRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:350](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L350).
+
+```csharp
+public sealed record OperatorPreferenceRecord(string OperatorKey, OperatorPreferenceValuesDto Preferences, DateTimeOffset UpdatedAt);
+```
+
+## OperatorPreferenceSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:352](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L352).
+
+```csharp
+public sealed record OperatorPreferenceSnapshot(int Version, IReadOnlyList<OperatorPreferenceRecord> Operators);
+```
+
+## OperatorScopePreferenceRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorScopePreferenceRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:143](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L143).
+
+```csharp
+public sealed record OperatorScopePreferenceRecord(string OperatorKey, OperatingScopeValuesDto DefaultScope, DateTimeOffset UpdatedAt);
+```
+
+## OperatorScopePreferenceSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorScopePreferenceSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:145](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L145).
+
+```csharp
+public sealed record OperatorScopePreferenceSnapshot(int Version, IReadOnlyList<OperatorScopePreferenceRecord> Operators);
+```
+
 ## OperatorSurfaceVisitRecord
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorSurfaceVisitRecord</code>. Kind: `record`.

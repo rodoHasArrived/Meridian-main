@@ -64,10 +64,13 @@ export function BreakAuditTimeline({ breakId, refreshKey, load = getReconciliati
                   ? `${lifecycleStateLabel(event.previousLifecycleState)} → ${lifecycleStateLabel(event.newLifecycleState)}`
                   : null;
                 const detail = event.reason ?? event.note;
+                const label = event.eventType === "ResolutionSet" && event.newLifecycleState === "Resolved" && transition
+                  ? "Resolved"
+                  : auditEventLabel(event.eventType);
                 return (
                   <li key={event.eventId} className="border-b border-border/60 pb-2 text-sm">
                     <p className="font-medium">
-                      {auditEventLabel(event.eventType)}
+                      {label}
                       {transition ? <span className="font-normal text-muted-foreground"> · {transition}</span> : null}
                     </p>
                     <p className="text-xs text-muted-foreground">

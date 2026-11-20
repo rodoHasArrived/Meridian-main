@@ -1173,6 +1173,7 @@ export function OperationsContinuityScreen() {
   const vm = useOperationsContinuityScreenViewModel(undefined, closeScope, {
     initialWorkflowId: searchParams.get("workflowId"),
     filters: {
+      fundAccountId: searchParams.get("recordScope") === "1" ? closeScope.fundAccountId ?? undefined : undefined,
       ledgerBookId: searchParams.get("ledgerBookId") ?? undefined,
       periodId: searchParams.get("periodId") ?? undefined
     }

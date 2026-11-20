@@ -1099,6 +1099,11 @@ Core workstation host. Do not introduce a second listener or independent monitor
 - `Backfill/` - historical backfill request orchestration and execution coordination. Shared run
   results and per-symbol validation signals live in `Meridian.Contracts.Backfill`, while durable
   last-run status, checkpoints, and bar-count sidecars live in `Meridian.Storage.Backfill`.
+  `WorkstationBackfillQueue` retains tenant-scoped, one-off submissions in execution history and
+  uses the shared coordinator for due jobs. `BackfillQuotaPlanner` combines the partition plan,
+  historical adapter diagnostics, and host policy. The submission estimate anchors the receipt's
+  request and duration variance. The [operator workflow](../../docs/operators/provider-backfill-operations.md#workstation-quota-and-receipts)
+  describes scheduling, policy configuration, and restart handling.
   Automatic gap-analyzer remediation batches same-provider, same-window symbol gaps into one
   deterministic request and retained execution-history entry; data-quality and quality-alert
   remediation paths remain single-symbol signals. A remediation is retained as completed only after

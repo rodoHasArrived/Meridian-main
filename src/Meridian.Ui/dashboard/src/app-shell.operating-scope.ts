@@ -231,13 +231,19 @@ export function appendOperatingScopeToRoute(route: string, operatingScope: AppSh
  */
 const CENTRALLY_CARRIED_SCOPE_PARAMS: ReadonlySet<string> = new Set(["entityId", "fundId", "fundAccountId"]);
 
+/** Record links carry their own authorized view scope. Remembered filters stay available elsewhere. */
+export function hasExplicitRecordScope(search: string | URLSearchParams): boolean {
+  const params = typeof search === "string" ? new URLSearchParams(search) : search;
+  return params.get("recordScope") === "1";
+}
+
 /**
  * Returns `search` with the stored scope's fund hierarchy added for the keys the route's workspace
  * carries. Values already on the URL win, and `accountId` counts as an explicit fund account.
  * Returns the original string when nothing needs adding, so callers can compare by identity.
  */
 export function carryOperatingScopeIntoSearch(pathname: string, search: string, scope: AppShellOperatingScopeInput | null | undefined): string {
-  if (!scope) return search;
+  if (!scope || hasExplicitRecordScope(search)) return search;
   const state = buildOperatingScopeFromSearch("", scope);
   if (!state.hasScope) return search;
   const carried = operatingScopeCarriedKeysForRoute(pathname);

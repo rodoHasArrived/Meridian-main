@@ -11,6 +11,14 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui.Shared
 
+The book receipt queue composes approved historical positions, accepted Asset Operations schedules,
+canonical statement cash and retained reconciliation/journal links. Expected, received and posted
+amounts stay separate; missing account/provider coverage remains incomplete. Explicit capture commands
+retain dated, content-addressed observations and reuse the canonical exception queue, including
+version-checked reversal reopening that respects close freezes. Scoped GETs only read saved runs.
+No queue action creates a payment or journal. See
+[book receipt operations](../../docs/operators/book-receipt-queue.md) for authority and recovery.
+
 Receipt-backed Long bond acquisitions built through the asset-accounting candidate endpoint now
 enter the immutable journal review queue. Intake requires face-value per-100 terms, an explicit
 amortization method, matching acquisition/functional currency and reconciled settlement; the
@@ -824,6 +832,10 @@ file implies gives the import its own batch identity, so a corrected header can 
 with the same bytes. Provider shadow cash comparisons use the same statement authority as
 account reconciliation instead of choosing a balance from arrival order.
 
+The external GL posting endpoints and hosted dispatcher use the PostgreSQL ledger. The routes
+derive tenant, company and operator identity from the workstation session. Final ledger report
+certification and release check receipts when the book requires external GL confirmation.
+
 `ProviderConnectionLifecycleService` verifies retained Xero, NetSuite and QuickBooks
 connections through credential-bound adapters. Each adapter reads and rotates only the
 selected connection's secrets; provider-wide credentials never supply scoped verification.
@@ -1446,7 +1458,14 @@ case as its own casework command (`{bulkActionId}:{breakId}`) and retain one aud
 The endpoint stamps the actor and source from the session. When `AssignToCurrentOperator` is set on
 an Assign request, it also replaces the assignee with the authenticated operator, then clears the
 flag before the queue hashes the request. `WorkstationEndpointsTests.BulkCasework.cs` covers the
-dry run, the per-case audit and the session assignee.
+dry run, the per-case audit and the session assignee. Fresh executions must submit the returned
+`bulkActionId` as `previewBulkActionId` and include the eligible cases in preview order. Validation
+uses the case versions retained by the server. A changed case blocks the reviewed batch, whose
+terminal result remains available through the bulk result route.
+
+Governed statement intake publishes retained rule and operand evidence from the verified match
+artifact. Completed, comparable runs may attach split or merge proof from accepted transaction
+groups. Multi-source ambiguity prevents a run from establishing source absence.
 
 ## Return figures on the brokerage performance seam
 
@@ -4264,6 +4283,21 @@ subject, so unrelated report, strategy, or reconciliation evidence cannot enter 
 
 The legacy report amount service accepts only explicit retained amount IDs and fully scoped pointers;
 label-only manifests fail closed. See [validation and slice boundaries](../../docs/testing/w10-amount-provenance.md).
+
+The Amount passport read uses `GET /api/workstation/evidence/subjects/{subjectKind}/{subjectId}/amount-passport`.
+The browser passes the server-issued address with its tenant, company, applicable fund, book,
+period, entity and account, basis, as-of timestamp and immutable revision. The endpoint checks the
+authenticated actor and the complete address before returning exact decimal text, source records,
+calculation and FX details, freshness, history and permission posture. A report amount uses the
+checkpoint certified on its governed run. Report contributors retain their original posting
+periods. Existing source-document links still revalidate the selected amount and artifact digest.
+
+The brokerage position address identifies the authorized account, retained snapshot, source row
+and field. A scoped sync writes a digest-bound raw snapshot. Later syncs preserve the original
+bytes and link a newer observation when the provider retains the same position identity. Broker
+snapshot age follows the sync freshness policy. Missing mark timestamps, pricing rules, incomplete
+provider inputs and absent position currency remain explicit gaps. Existing projections without a
+scoped snapshot surface the gap until the next successful scoped sync.
 
 Broker synchronization resolves option multipliers from the Security Master OCC identity retained
 as of each broker observation. Missing/ambiguous identities or missing/nonpositive multipliers block

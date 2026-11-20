@@ -97,7 +97,7 @@ public static partial class WorkstationEndpoints
             return Results.BadRequest(new { error = "Idempotency key is required." });
         }
 
-        if (request.BreakIds.Count > request.MaxCaseCount)
+        if (request.BreakIds is null || request.BreakIds.Count > request.MaxCaseCount)
         {
             return Results.BadRequest(new { error = $"Bulk action exceeds max case count {request.MaxCaseCount}." });
         }
@@ -124,6 +124,7 @@ public static partial class WorkstationEndpoints
                 ? currentUser
                 : request.Assignee,
             AssignToCurrentOperator = false,
+            RequireReviewedPreview = !request.DryRun,
             // Derived from the principal -- see the single-case handler above (#2673).
             ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context),
             ApprovalActor = NormalizeOptional(request.ApprovalActor),

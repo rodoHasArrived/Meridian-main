@@ -6,10 +6,16 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Contracts
+
+`AssetOperations/BookReceiptDtos.cs` shares exact tenant/company/book scope, accepted expectation
+versions, canonical receipt allocations, distinct posted evidence, coverage and immutable daily runs
+across workstation consumers. Monetary values and quantities serialize as decimal strings. Stable
+obligation identity survives supported schedule amendments; missing evidence never implies zero cash.
+See [book receipt operations](../../docs/operators/book-receipt-queue.md).
 
 `Api/ProviderRateLimits.cs` retains the existing counters and adds their explicit `quotaUnit`,
 daily usage/cap and vendor reset policy. Compatibility request-named counters can contain credits;
@@ -348,6 +354,14 @@ The source-lineage contract separates optional `IdentityScopeId` (business ident
 changes; absence clears only its current comparison policy. Verified legacy receipts preserve
 original lineage IDs, reject changed replays, and refuse ambiguous historical forks. Optional fields
 are omitted from legacy JSON. Source clearing never resolves governed casework.
+
+Statement case evidence identifies the originating run, the immutable match artifact, and the
+executed tolerance policy with its version and statement date. The matched operands carry separate
+record IDs and evidence references. Amounts, quantities, prices, and residuals are invariant decimal
+text so clients can retain the precision supplied to the matcher. Split and merge observations carry
+the completed match group and the affected prior case IDs. Reviewed bulk execution names a retained
+dry run through `PreviewBulkActionId`. Its results carry the reviewed case versions and a reviewed
+successor version when supersession affects a separate case.
 
 `Meridian.Contracts.SecurityMaster` owns `ISecurityResolver`, the identity, trading-parameter and
 corporate-action query interfaces, and `ILivePositionCorporateActionAdjuster` with its result record.
@@ -2617,3 +2631,9 @@ legacy prose metadata is descriptive. Schedule write semantics share the frozen 
 and the readable-ahead rollout guard. Bond/CD write through 3 and StructuredCredit through 4, while S2 document
 floors keep undeclared scalar payloads at 1/1/2. Configured writers require the activated deployment
 capability floor; this code change does not execute its activation SQL.
+
+
+External GL posting contracts retain the exact fund, book and period, provider destination,
+certified mapping, source checkpoint, journal and line identities, and exact decimal amounts.
+`ExternalGlPostingPackage` combines that immutable payload with certification, approval and
+receipt observations. Amounts and journal sequence values use JSON strings for exact review.
