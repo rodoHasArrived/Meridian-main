@@ -32,6 +32,9 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
     private int _booksGeneration;
     private bool _loadingBooks;
     private string _choicesStatus = ChoicesIdle;
+    private const string JournalChoicesIdle = "Choose the counterpart book to list its matching posted journals.";
+    private string _journalChoicesStatus = JournalChoicesIdle;
+    private int _journalChoicesGeneration;
 
     public IntercompanyCounterpartQueueWorkspace(IWorkstationIntercompanyAgreementApiClient client)
     {
@@ -44,7 +47,27 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
         ApplyRepricingCommand = new AsyncRelayCommand(ApplyRepricingAsync, () => Actionable && SelectedProposal!.CanReprice
             && _preview?.CurrentDraft is not null && _previewProposal == SelectedProposal.ProposalId && !string.IsNullOrWhiteSpace(RepricingReason));
         LoadChoicesCommand = new AsyncRelayCommand(LoadBooksAsync, () => !_loadingBooks);
+        OpenTargetJournalCommand = new RelayCommand<IntercompanyCounterpartProposalRow>(
+            row => JournalOpener?.Invoke(row!.Proposal.ResolvedTargetBookId!.Value, row.Proposal.ResolvedTargetJournalId!.Value,
+                _books.FirstOrDefault(book => book.LedgerBookId == row.Proposal.ResolvedTargetBookId)?.FundProfileId),
+            row => JournalOpener is not null && row?.Proposal.ResolvedTargetBookId is not null && row.Proposal.ResolvedTargetJournalId is not null);
     }
+
+    /// <summary>
+    /// Opens a target or resolved counterpart journal in the host's journal view: book, journal, and the book's
+    /// fund profile when the book list is loaded. The desktop shell supplies it; the workspace never navigates on its own.
+    /// </summary>
+    public Action<Guid, Guid, string?>? JournalOpener
+    {
+        get => _journalOpener;
+        set { _journalOpener = value; OpenTargetJournalCommand.NotifyCanExecuteChanged(); }
+    }
+    private Action<Guid, Guid, string?>? _journalOpener;
+    public IRelayCommand<IntercompanyCounterpartProposalRow> OpenTargetJournalCommand { get; }
+    /// <summary>Posted journals in <see cref="TargetBook"/> that the server's link check would accept; choosing one sets <see cref="TargetJournal"/>.</summary>
+    public ObservableCollection<IntercompanyChoice> TargetJournalChoices { get; } = [];
+    /// <summary>What the journal list holds, or why it is empty.</summary>
+    public string TargetJournalChoicesStatus { get => _journalChoicesStatus; private set => SetProperty(ref _journalChoicesStatus, value); }
 
     /// <summary>Books the signed-in account can see; choosing one sets <see cref="SourceBook"/>.</summary>
     public ObservableCollection<IntercompanyChoice> BookChoices { get; } = [];
@@ -74,7 +97,18 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
     public string SourceBook { get => _sourceBook; set => ChangeScope(ref _sourceBook, value); }
     public string AsOf { get => _asOf; set => ChangeScope(ref _asOf, value); }
     public string RetryReason { get => _retryReason; set { if (SetProperty(ref _retryReason, value ?? "")) NotifyCommands(); } }
-    public string TargetBook { get => _targetBook; set { if (SetProperty(ref _targetBook, value ?? "")) NotifyCommands(); } }
+    public string TargetBook
+    {
+        get => _targetBook;
+        set
+        {
+            if (!SetProperty(ref _targetBook, value ?? ""))
+                return;
+            TargetJournal = "";
+            _ = LoadTargetJournalChoicesAsync();
+            NotifyCommands();
+        }
+    }
     public string TargetJournal { get => _targetJournal; set { if (SetProperty(ref _targetJournal, value ?? "")) NotifyCommands(); } }
     public string LinkReason { get => _linkReason; set { if (SetProperty(ref _linkReason, value ?? "")) NotifyCommands(); } }
     public string RepricingReason { get => _repricingReason; set { if (SetProperty(ref _repricingReason, value ?? "")) NotifyCommands(); } }
@@ -131,6 +165,35 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
             _loadingBooks = false;
             LoadChoicesCommand.NotifyCanExecuteChanged();
         }
+    }
+
+    // The list is a convenience over the server's own link check, which still runs when the link is submitted.
+    private async Task LoadTargetJournalChoicesAsync()
+    {
+        var generation = ++_journalChoicesGeneration;
+        TargetJournalChoices.Clear();
+        if (SelectedProposal is not { IsResolved: false } proposal || !Guid.TryParse(TargetBook, out var book) || book == Guid.Empty)
+        {
+            TargetJournalChoicesStatus = JournalChoicesIdle;
+            return;
+        }
+        TargetJournalChoicesStatus = "Loading matching posted journals…";
+        try
+        {
+            var response = await _client.GetCounterpartCandidatesAsync(proposal.ProposalId, book, _sessionCancellation.Token);
+            if (generation != _journalChoicesGeneration || _disposed)
+                return;
+            if (!response.Success || response.Data is null)
+            {
+                TargetJournalChoicesStatus = $"Matching journals could not be listed: {Refusal(response)}";
+                return;
+            }
+            IntercompanyChoice.Replace(TargetJournalChoices, response.Data.Select(IntercompanyChoice.Journal));
+            TargetJournalChoicesStatus = TargetJournalChoices.Count == 0
+                ? "No posted journal in this book reciprocates this source transaction."
+                : $"{TargetJournalChoices.Count} matching posted journal(s). Linking re-checks the one you choose.";
+        }
+        catch (OperationCanceledException) { }
     }
 
     // An existing counterpart can only live in a book of the proposal's counterparty entity; the server
@@ -341,6 +404,9 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
         _books.Clear();
         BookChoices.Clear();
         TargetBookChoices.Clear();
+        _journalChoicesGeneration++;
+        TargetJournalChoices.Clear();
+        TargetJournalChoicesStatus = JournalChoicesIdle;
         ChoicesStatus = ChoicesIdle;
         CanManageLedger = false;
         SetProperty(ref _sourceBook, "", nameof(SourceBook));
@@ -375,6 +441,7 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
         LinkCommand?.NotifyCanExecuteChanged();
         PreviewRepricingCommand?.NotifyCanExecuteChanged();
         ApplyRepricingCommand?.NotifyCanExecuteChanged();
+        OpenTargetJournalCommand?.NotifyCanExecuteChanged();
     }
 }
 

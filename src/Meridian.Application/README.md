@@ -1826,6 +1826,15 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `TODO-SRC-APP-001` | Complete W6 backtesting evidence loop linkage to strategy lineage | done | medium |
 <!-- source-todos:end -->
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`AddIntercompanyEntityServices` registers `PostgresManualJournalEntryDraftStore` (ledger migration 077) and
+`PostgresIntercompanyConfirmationClosePolicyStore` (ledger migration 078) when `MERIDIAN_LEDGER_CONNECTION_STRING`
+is configured, and the file close-policy store otherwise; hosts without a ledger database keep the workstation's
+file draft store. It also registers `IntercompanyConfirmationClosePolicyService` and `IIntercompanyConfirmationCloseGate`.
+The gate is composed whenever the policy store exists, so an active policy fails closed on a host that cannot read
+confirmation status. See [ADR-032](../../docs/adr/032-intercompany-confirmation-close-policy.md).
+
 ## Validation
 
 ```bash

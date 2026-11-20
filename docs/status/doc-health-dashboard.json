@@ -1,11 +1,11 @@
 {
-  "total_files": 1288,
+  "total_files": 1290,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:b6b14d18dc6ad99857f34c906511f5f981fd8e150dca6e8294cceb41ce471dbe",
+  "signal_digest": "sha256:276a7bb5a69b126d18ec36d747fb07df4c7d9e7949217011348c752b2de59c39",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -1250,6 +1250,13 @@
     },
     {
       "path": "docs/adr/031-intercompany-accrual-schedules.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/032-intercompany-confirmation-close-policy.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5786,6 +5793,13 @@
     },
     {
       "path": "docs/roadmap/schema-versioning.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

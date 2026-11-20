@@ -789,9 +789,13 @@ writer announces changes through `lib/operator-preference-events.ts`; the theme 
 re-read their store when host values are applied. Host values the browser cannot use (an unknown
 appearance or density, a zone missing from its Intl data, refused shortcut combos) are ignored. Once
 the host holds a record, missing shortcut overrides mean "none", so a reset in one browser reaches
-the others. A failed read (no session, an older host, offline) leaves preferences browser-only for
-the visit and saves nothing; a failed save keeps the local value and retries with the next change.
-Last write wins across browsers. Fixture sessions stay browser-only. The values are display-only.
+the others. A failed read (no session, an older host, offline) leaves preferences browser-only and
+saves nothing; a failed save keeps the local value and retries with the next change. The sync
+publishes its state (`local`, `loading`, `saving`, `synced`, `failed`) through
+`lib/operator-preference-events.ts`, and the Appearance and Notifications cards render it with
+`screens/settings-screen.preference-sync-status.tsx`: "Saved to your profile" with the save time,
+"Saving…", or "Only in this browser" with **Retry now**, which re-reads the host after a failed
+read or saves the current set at once after a failed save. Last write wins across browsers. Fixture sessions stay browser-only. The values are display-only.
 Settings > Preferences > Notifications (`screens/settings-screen.notification-preferences.tsx`, store
 `lib/notification-preferences.ts`) holds the pop-up switch, five notification types (connection,
 errors, backfill, data gaps, storage), quiet hours as 24-hour `HH:mm` times in the display time zone
@@ -3496,6 +3500,14 @@ endpoint contracts for behavior also consumed by WPF or host workflows.
 Browser reconciliation route helpers include the shared Accounting casework family for assignment, lifecycle transitions, comments, taxonomy, sign-off, reopen, audit, bulk triage, and bulk status/result lookup; keep these helpers aligned with `UiApiRoutes` and WPF consumers.
 
 Browser extensibility route helpers expose the shared core extensibility catalog plus tenant-template activation-readiness, activation, and activation-history endpoints; keep `src/types.ts` aligned with `Meridian.Contracts.Extensibility` instead of adding UI-local workflow or rule shapes.
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+The counterpart-proposal panel picks the existing counterpart journal from the posted journals the server's link
+check would accept (`entityOperationEndpoints.counterpartCandidates`); changing the counterpart book clears the
+choice, and linking still re-checks it. The balance-confirmation screen includes
+`accounting-screen.entity-confirmation-close-policy.tsx`: propose which confirmation findings block close, then a
+different reviewer approves; reject or disable needs a reason. Without an active policy confirmation stays advisory.
 
 ## Accounting close browser surface
 

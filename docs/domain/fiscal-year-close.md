@@ -1,5 +1,9 @@
 # Fiscal-year close
 
+**Status:** active guidance
+**Owner:** Accounting and Ledger
+**Reviewed:** 2026-11-20
+
 Roadmap item: `W12-YEND-001` (Fiscal year-end close and opening-balance roll-forward).
 
 ## What exists today (slice 1: read-only close plan)

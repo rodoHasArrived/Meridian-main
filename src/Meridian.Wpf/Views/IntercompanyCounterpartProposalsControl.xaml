@@ -54,6 +54,15 @@
                     <DataGridTextColumn Header="Attempts" Binding="{Binding Attempts}" Width="80" />
                     <DataGridTextColumn Header="Delivery detail" Binding="{Binding DeliveryDetail}" Width="320" />
                     <DataGridTextColumn Header="Target" Binding="{Binding Target}" Width="420" />
+                    <DataGridTemplateColumn Header="Journal" Width="150">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Open journal" Style="{StaticResource GhostButtonStyle}"
+                                        Command="{Binding DataContext.OpenTargetJournalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" AutomationProperties.Name="Open target journal" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Counterparty entity" Binding="{Binding CounterpartyEntityId}" Width="240" />
                 </DataGrid.Columns>
             </DataGrid>
@@ -118,10 +127,13 @@
                         <StackPanel><TextBlock Text="Existing counterpart book (counterparty entity's books)" />
                             <ComboBox ItemsSource="{Binding TargetBookChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding TargetBook}"
                                       Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Existing counterpart book" /></StackPanel>
-                        <StackPanel><TextBlock Text="Existing counterpart journal ID" /><TextBox Text="{Binding TargetJournal, UpdateSourceTrigger=PropertyChanged}" Width="300" AutomationProperties.Name="Existing counterpart journal ID" /></StackPanel>
+                        <StackPanel><TextBlock Text="Existing counterpart journal (matching posted journals)" />
+                            <ComboBox ItemsSource="{Binding TargetJournalChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding TargetJournal}"
+                                      Style="{StaticResource FormComboBoxStyle}" Width="460" Margin="0,3,12,10" AutomationProperties.Name="Existing counterpart journal" /></StackPanel>
                         <StackPanel><TextBlock Text="Counterpart linking reason" /><TextBox Text="{Binding LinkReason, UpdateSourceTrigger=PropertyChanged}" Width="420" AutomationProperties.Name="Counterpart linking reason" /></StackPanel>
                         <Button Content="Validate and link existing counterpart" Command="{Binding LinkCommand}" VerticalAlignment="Center" />
                     </WrapPanel>
+                    <TextBlock Text="{Binding TargetJournalChoicesStatus}" TextWrapping="Wrap" AutomationProperties.Name="Counterpart journal choices status" AutomationProperties.LiveSetting="Polite" />
                 </StackPanel>
             </Expander>
         </StackPanel>

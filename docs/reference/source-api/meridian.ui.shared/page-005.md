@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MutationAuthorizationGuardMiddleware
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MutationAuthorizationGuardMiddleware</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs:36](../../../../src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs#L36).
+
+Enforces every mutating route&#x27;s declared authorization from in front of minimal-API argument binding, and refuses a mutating route that declares nothing. The endpoint filters attached by RequirePermission/RequireAnyPermission run only after binding has parsed the request body and resolved the handler&#x27;s services, so a caller holding zero permissions could learn validation outcomes (a binding 400) or trip service resolution before authorization was ever consulted. This middleware reads the same EndpointAuthorizationMetadata those filters record and answers 401/403 before any body byte is deserialized, mirroring the filters&#x27; own response bodies exactly. The filters stay attached as the declarative, host-independent layer, which means a host composed without this guard still fails closed once binding completes. Omission fails closed: a mutating route carrying no authorization declaration at all is refused outright unless it explicitly states why it needs none — EndpointPermissionlessMutationMetadata for deliberately permissionless seams (login, the first-account bootstrap, 410 Gone tombstones) or EndpointIndependentAuthenticationMetadata for routes that authenticate their caller by their own mechanism (provider webhooks, the portal grant exchange, the loopback lifecycle token). An empty-permission declaration (the RequireAuthenticatedSession family) passes through to its own filter, which owns the session-kind nuance a permission snapshot cannot express. Reads are deliberately out of scope; their posture is owned by the read-declaration lane.
+
+```csharp
+public sealed class MutationAuthorizationGuardMiddleware
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MutationAuthorizationGuardMiddleware(RequestDelegate next) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs:40](../../../../src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs#L40) |  |
+| <code>public async Task InvokeAsync(HttpContext context);</code> | [src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs:42](../../../../src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs#L42) |  |
+
 ## MutationAuthorizationGuardMiddlewareExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.MutationAuthorizationGuardMiddlewareExtensions</code>. Kind: `class`.
@@ -756,21 +775,3 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:23
 ```csharp
 public sealed record RunAccrualScheduleInput(string FundProfileId, Guid LedgerBookId, string EntityId, int ExpectedVersion);
 ```
-
-## SamplingEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.SamplingEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs#L17).
-
-Extension methods for registering data sampling API endpoints. Reads actual JSONL data files from storage for sampling operations.
-
-```csharp
-public static class SamplingEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapSamplingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/SamplingEndpoints.cs#L28) |  |

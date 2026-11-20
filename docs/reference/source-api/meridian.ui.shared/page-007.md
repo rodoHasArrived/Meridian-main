@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceContributionContext
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceContributionContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs:5](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs#L5).
+
+```csharp
+public sealed record EvidenceContributionContext(EvidenceSubjectDto Subject, CancellationToken CancellationToken);
+```
+
 ## EvidenceGraphService
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceGraphService</code>. Kind: `class`.
@@ -1067,21 +1077,3 @@ Declared public members:
 | <code>public async Task SaveTenantTemplateAsync(string tenantId, TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:176](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L176) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;TenantTemplateActivationResultDto&gt;&gt; ListActivationHistoryAsync(string tenantId, string? tenantTemplateId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:199](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L199) |  |
 | <code>public async Task RecordActivationResultAsync(string tenantId, TenantTemplateActivationResultDto result, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:210](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L210) |  |
-
-## IExtensibilityCatalogProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Extensibility.IExtensibilityCatalogProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs:8](../../../../src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs#L8).
-
-Supplies extension registrations to the workstation catalog.
-
-```csharp
-public interface IExtensibilityCatalogProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;ExtensibilityRegistrationDto&gt; GetRegistrations();</code> | [src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs:10](../../../../src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs#L10) |  |

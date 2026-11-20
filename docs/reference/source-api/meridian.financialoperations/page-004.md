@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DistributionRecipient
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.DistributionRecipient</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:265](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L265).
+
+A normalized distribution target: an administrator, custodian, or counterparty.
+
+```csharp
+public sealed record DistributionRecipient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DistributionRecipient(DistributionRecipientKind kind, string name, string channel, string address);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:267](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L267) |  |
+| <code>public DistributionRecipientKind Kind { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:282](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L282) |  |
+| <code>public string Name { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:284](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L284) |  |
+| <code>public string Channel { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:287](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L287) | Transport channel, e.g. &quot;SFTP&quot;, &quot;Email&quot;, &quot;SecurePortal&quot;. |
+| <code>public string Address { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:290](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L290) | Channel-specific destination (host, mailbox, portal id). |
+
+## DistributionRecipientKind
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.DistributionRecipientKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:257](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L257).
+
+Normalized category of a file-distribution recipient.
+
+```csharp
+public enum DistributionRecipientKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Administrator</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:259](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L259) |  |
+| <code>Custodian</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:260](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L260) |  |
+| <code>Counterparty</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:261](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L261) |  |
+
+## FileDeliveryOutcome
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDeliveryOutcome</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:335](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L335).
+
+The outcome of a single transport dispatch attempt.
+
+```csharp
+public sealed record FileDeliveryOutcome(bool Delivered, string? FailureReason = null);
+```
+
+## FileDeliveryRecord
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDeliveryRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:322](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L322).
+
+An immutable archived delivery-log entry: one file, one recipient, one outcome. The middle-office service retains these and also mirrors each into the tamper-evident fund-administration event log.
+
+```csharp
+public sealed record FileDeliveryRecord(string DeliveryId, string DistributionId, string FileName, string ContentSha256, long ContentLength, DistributionRecipient Recipient, FileDeliveryStatus Status, DateTimeOffset DeliveredAtUtc, string DistributedBy, string? FailureReason = null);
+```
+
 ## FileDeliveryStatus
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDeliveryStatus</code>. Kind: `enum`.
@@ -616,8 +682,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FinancialOperationsCommandCenterReadService(IOperationsContinuityWorkflowService workflowService, IOperationsCloseCalendarService? closeCalendarService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, ILedgerBookService? ledgerBookService = null, IAccountingCloseManagementService? closeManagementService = null, ICloseReadinessSubjectSource? closeSubjectSource = null, IIntercompanyCloseAdvisorySource? intercompanyAdvisories = null, Func&lt;IBookOfRecordGuard?&gt;? bookOfRecordGuardFactory = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:33](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L33) |  |
-| <code>public async Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:53](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L53) |  |
+| <code>public FinancialOperationsCommandCenterReadService(IOperationsContinuityWorkflowService workflowService, IOperationsCloseCalendarService? closeCalendarService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, ILedgerBookService? ledgerBookService = null, IAccountingCloseManagementService? closeManagementService = null, ICloseReadinessSubjectSource? closeSubjectSource = null, IIntercompanyCloseAdvisorySource? intercompanyAdvisories = null, Func&lt;IBookOfRecordGuard?&gt;? bookOfRecordGuardFactory = null, IIntercompanyConfirmationCloseGate? confirmationCloseGate = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:34](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L34) |  |
+| <code>public async Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:56](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L56) |  |
 
 Source: [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs#L5).
 
@@ -934,223 +1000,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static OperationsCloseChecklistHistoryDto Build(Guid workflowId, IReadOnlyList&lt;OperationsTimelineEntryDto&gt; timeline, DateTimeOffset asOf);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseChecklistHistory.cs:8](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseChecklistHistory.cs#L8) |  |
-
-## OperationsContinuityTransactionalCommitResult
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsContinuityTransactionalCommitResult</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:71](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L71).
-
-```csharp
-public sealed record OperationsContinuityTransactionalCommitResult(OperationsContinuityWorkflow Workflow, OperationsWorkflowAuditDto Audit);
-```
-
-## OperationsContinuityWorkflow
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsContinuityWorkflow</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ApprovalCollaboration.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ApprovalCollaboration.cs#L5).
-
-```csharp
-public sealed partial class OperationsContinuityWorkflow
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;OperationsApprovalCommentDto&gt; ApprovalComments { get; set; } = [];</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ApprovalCollaboration.cs:7](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ApprovalCollaboration.cs#L7) |  |
-| <code>public List&lt;OperationsApprovalCollaborationReceipt&gt; ApprovalCollaborationReceipts { get; set; } = [];</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ApprovalCollaboration.cs:8](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ApprovalCollaboration.cs#L8) |  |
-| <code>public OperationsWorkflowBlockerDto? ApprovalCollaborationBlocker(string approvalId);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ApprovalCollaboration.cs:10](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ApprovalCollaboration.cs#L10) |  |
-| <code>public OperationsWorkflowBlockerDto? ReassignApprovalReviewer(string approvalId, string reviewer, string rationale);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ApprovalCollaboration.cs:18](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ApprovalCollaboration.cs#L18) |  |
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:12](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L12).
-
-Aggregate root for the fund-account and period operations continuity workflow. Overall status is derived by IOperationsStatusDerivationService.
-
-```csharp
-public sealed partial class OperationsContinuityWorkflow
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Guid WorkflowId { get; init; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:14](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L14) |  |
-| <code>public Guid FundAccountId { get; init; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:15](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L15) |  |
-| <code>public string PeriodId { get; init; } = string.Empty;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:16](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L16) |  |
-| <code>public Guid? LedgerBookId { get; init; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:17](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L17) |  |
-| <code>public Guid? SecurityMasterSnapshotId { get; init; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:18](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L18) |  |
-| <code>public string BrokerSource { get; init; } = &quot;unspecified&quot;;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:19](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L19) |  |
-| <code>public DateTimeOffset CreatedAtUtc { get; init; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:20](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L20) |  |
-| <code>public DateTimeOffset UpdatedAtUtc { get; set; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:21](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L21) |  |
-| <code>public long Version { get; set; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:22](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L22) |  |
-| <code>public OperationsBrokerIntakeStateDto BrokerIntakeState { get; set; } = OperationsBrokerIntakeStateDto.Pending;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:24](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L24) |  |
-| <code>public OperationsSecurityMasterStateDto SecurityMasterState { get; set; } = OperationsSecurityMasterStateDto.Pending;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:25](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L25) |  |
-| <code>public OperationsLedgerPostingStateDto LedgerPostingState { get; set; } = OperationsLedgerPostingStateDto.Pending;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:26](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L26) |  |
-| <code>public OperationsReconciliationStateDto ReconciliationState { get; set; } = OperationsReconciliationStateDto.Pending;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:27](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L27) |  |
-| <code>public OperationsApprovalStateDto ApprovalState { get; set; } = OperationsApprovalStateDto.Pending;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:28](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L28) |  |
-| <code>public bool IsClosed { get; set; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:29](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L29) |  |
-| <code>public OperationsLedgerPreviewDto? LedgerPreview { get; set; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:30](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L30) |  |
-| <code>public OperationsReportPackReadinessDto ReportPackReadiness { get; set; } = new (false, null, &quot;Report pack evidence has not been linked.&quot;, []);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:31](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L31) |  |
-| <code>public OperationsClosePackagePublicationDto? ClosePackage { get; set; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:33](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L33) |  |
-| <code>public List&lt;OperationsBreakCaseDto&gt; BreakCases { get; set; } = [];</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:34](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L34) |  |
-| <code>public List&lt;OperationsReconciliationLaneSummaryDto&gt; ReconciliationLanes { get; set; } = [];</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:35](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L35) |  |
-| <code>public List&lt;OperationsApprovalDto&gt; Approvals { get; set; } = [];</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:36](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L36) |  |
-| <code>public OperationsGateState BrokerIngestGate { get; set; } = OperationsGateState.Create(OperationsGateKeyDto.BrokerIngest);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:38](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L38) |  |
-| <code>public OperationsGateState SecurityMasterGate { get; set; } = OperationsGateState.Create(OperationsGateKeyDto.SecurityMaster);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:40](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L40) |  |
-| <code>public OperationsGateState LedgerPostingGate { get; set; } = OperationsGateState.Create(OperationsGateKeyDto.LedgerPosting);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:42](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L42) |  |
-| <code>public OperationsGateState ReconciliationGate { get; set; } = OperationsGateState.Create(OperationsGateKeyDto.Reconciliation);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:44](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L44) |  |
-| <code>public OperationsGateState ApprovalGate { get; set; } = OperationsGateState.Create(OperationsGateKeyDto.Approval);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:46](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L46) |  |
-| <code>public IReadOnlyList&lt;OperationsGateState&gt; Gates =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:49](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L49) |  |
-| <code>public static OperationsContinuityWorkflow Start(Guid workflowId, Guid fundAccountId, string periodId, Guid? securityMasterSnapshotId, string? brokerSource, DateTimeOffset now, Guid? ledgerBookId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:106](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L106) |  |
-| <code>public void MarkBrokerImported(DateTimeOffset now, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:143](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L143) |  |
-| <code>public OperationsWorkflowBlockerDto? GetBrokerImportTransitionBlocker();</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:174](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L174) |  |
-| <code>public OperationsWorkflowBlockerDto? GetSecurityMasterResolveTransitionBlocker();</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:199](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L199) |  |
-| <code>public OperationsWorkflowBlockerDto? GetBrokerNormalizeTransitionBlocker();</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:224](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L224) |  |
-| <code>public void NormalizeBrokerTransactions(OperationsTransitionRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:239](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L239) |  |
-| <code>public void ResolveSecurityMasterMappings(OperationsSecurityMasterResolveRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:266](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L266) |  |
-| <code>public OperationsWorkflowBlockerDto? GetApproveSecurityMasterOverrideTransitionBlocker(OperationsSecurityMasterOverrideApprovalRequestDto request);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:305](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L305) |  |
-| <code>public void ApproveSecurityMasterOverride(OperationsSecurityMasterOverrideApprovalRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:347](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L347) |  |
-| <code>public OperationsWorkflowBlockerDto? GetBuildLedgerDraftTransitionBlocker();</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:378](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L378) |  |
-| <code>public void BuildLedgerDraft(OperationsLedgerDraftRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:394](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L394) |  |
-| <code>public OperationsWorkflowBlockerDto? GetValidateLedgerDraftTransitionBlocker();</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:477](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L477) |  |
-| <code>public void ValidateLedgerDraft(OperationsLedgerValidationRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:492](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L492) |  |
-| <code>public OperationsWorkflowBlockerDto? GetPostLedgerEntriesTransitionBlocker();</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:551](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L551) |  |
-| <code>public void PostLedgerEntries(OperationsLedgerPostRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now, IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt;? additionalBlockers = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:566](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L566) |  |
-| <code>public OperationsWorkflowBlockerDto? GetRunReconciliationTransitionBlocker();</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:651](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L651) |  |
-| <code>public OperationsWorkflowBlockerDto? GetRejectTransitionBlocker(OperationsRejectWorkflowRequestDto request);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:667](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L667) |  |
-| <code>public void Reject(OperationsRejectWorkflowRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:702](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L702) |  |
-| <code>public void RunReconciliation(OperationsReconciliationRunRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:758](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L758) |  |
-| <code>public OperationsWorkflowBlockerDto? ResolveBreakCase(string breakId, OperationsResolveBreakCaseRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:803](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L803) |  |
-| <code>public OperationsWorkflowBlockerDto? AssignBreakCase(string breakId, OperationsAssignBreakCaseRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:966](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L966) |  |
-| <code>public OperationsWorkflowBlockerDto? GetSubmitForApprovalTransitionBlocker(OperationsSubmitApprovalRequestDto request);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:1046](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L1046) |  |
-| <code>public void SubmitForApproval(OperationsSubmitApprovalRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:1136](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L1136) |  |
-| <code>public OperationsWorkflowBlockerDto? GetApproveTransitionBlocker(OperationsApprovalDecisionRequestDto request);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:1168](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L1168) |  |
-| <code>public void Approve(OperationsApprovalDecisionRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:1235](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L1235) |  |
-| <code>public OperationsWorkflowBlockerDto? GetCloseTransitionBlocker(OperationsCloseWorkflowRequestDto request);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:1270](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L1270) |  |
-| <code>public void MarkClosed(OperationsCloseWorkflowRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:1330](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L1330) |  |
-| <code>public void Reopen(OperationsReopenWorkflowRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:1598](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L1598) |  |
-| <code>public void ReplaceGate(OperationsGateState gate);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:1624](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L1624) |  |
-| <code>public void SetApprovalState(OperationsApprovalStateDto approvalState, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:1649](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L1649) |  |
-| <code>public void Touch(DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:1655](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L1655) |  |
-| <code>public void ApplyGatePosture(OperationsGatePostureRequestDto request, IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; evidenceLinks, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:1661](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L1661) |  |
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.Reconciliation.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.Reconciliation.cs#L5).
-
-```csharp
-public sealed partial class OperationsContinuityWorkflow
-```
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ReopenGovernance.cs:6](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ReopenGovernance.cs#L6).
-
-```csharp
-public sealed partial class OperationsContinuityWorkflow
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationsWorkflowBlockerDto? GetReopenTransitionBlocker(OperationsReopenWorkflowRequestDto request);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ReopenGovernance.cs:8](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.ReopenGovernance.cs#L8) |  |
-
-## OperationsContinuityWorkflowService
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsContinuityWorkflowService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ApprovalCollaboration.cs:7](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ApprovalCollaboration.cs#L7).
-
-```csharp
-public sealed partial class OperationsContinuityWorkflowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;OperationsApprovalCollaborationDto?&gt; GetApprovalCollaborationAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ApprovalCollaboration.cs:9](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ApprovalCollaboration.cs#L9) |  |
-| <code>public Task&lt;OperationsTransitionResultDto&gt; AddApprovalCommentAsync(Guid workflowId, OperationsApprovalCommentRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ApprovalCollaboration.cs:21](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ApprovalCollaboration.cs#L21) |  |
-| <code>public Task&lt;OperationsTransitionResultDto&gt; ReassignApprovalAsync(Guid workflowId, OperationsApprovalReassignRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ApprovalCollaboration.cs:38](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ApprovalCollaboration.cs#L38) |  |
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ChecklistControls.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ChecklistControls.cs#L5).
-
-```csharp
-public sealed partial class OperationsContinuityWorkflowService
-```
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.CloseReadiness.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.CloseReadiness.cs#L5).
-
-```csharp
-public sealed partial class OperationsContinuityWorkflowService
-```
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:129](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L129).
-
-Coordinates governed operations workflow transitions, checklist controls, and close readiness.
-
-```csharp
-public sealed partial class OperationsContinuityWorkflowService : IOperationsContinuityWorkflowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationsContinuityWorkflowService(IOperationsContinuityRepository repository, IOperationsWorkflowAuditStore auditStore, IOperationsStatusDerivationService statusDerivation, ILedgerJournalStore? ledgerJournalStore = null, IOperationsContinuityTransactionalCommitStore? transactionalCommitStore = null, ISecurityMasterQueryService? securityMasterQueryService = null, IClosePublicationReadinessGuard? closeReadinessGuard = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:146](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L146) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; ImportBrokerDataAsync(Guid workflowId, OperationsTransitionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:175](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L175) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; RefreshGatePostureAsync(Guid workflowId, OperationsGatePostureRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:266](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L266) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; NormalizeBrokerTransactionsAsync(Guid workflowId, OperationsTransitionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:290](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L290) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; ResolveSecurityMasterMappingsAsync(Guid workflowId, OperationsSecurityMasterResolveRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:314](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L314) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; ApproveSecurityMasterOverrideAsync(Guid workflowId, string overrideId, OperationsSecurityMasterOverrideApprovalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:338](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L338) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; BuildLedgerDraftAsync(Guid workflowId, OperationsLedgerDraftRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:390](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L390) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; PostLedgerEntriesAsync(Guid workflowId, OperationsLedgerPostRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:414](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L414) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; ValidateLedgerDraftAsync(Guid workflowId, OperationsLedgerValidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:562](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L562) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; RejectWorkflowAsync(Guid workflowId, OperationsRejectWorkflowRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:586](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L586) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:615](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L615) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; ReopenWorkflowAsync(Guid workflowId, OperationsReopenWorkflowRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:639](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L639) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; ResolveBreakCaseAsync(Guid workflowId, string breakId, OperationsResolveBreakCaseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:669](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L669) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; AssignBreakCaseAsync(Guid workflowId, string breakId, OperationsAssignBreakCaseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:703](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L703) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; SubmitForApprovalAsync(Guid workflowId, OperationsSubmitApprovalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:735](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L735) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; ApproveWorkflowAsync(Guid workflowId, OperationsApprovalDecisionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:765](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L765) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; CloseWorkflowAsync(Guid workflowId, OperationsCloseWorkflowRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:795](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L795) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;OperationsContinuityWorkflowSummaryDto&gt;&gt; ListAsync(Guid? fundAccountId = null, string? periodId = null, OperationsWorkflowStatusDto? status = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:862](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L862) |  |
-| <code>public async Task&lt;OperationsContinuityWorkflowDto?&gt; GetAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:873](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L873) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;OperationsTimelineEntryDto&gt;&gt; GetTimelineAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:879](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L879) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;OperationsCloseChecklistTaskDto&gt;&gt; GetChecklistAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:885](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L885) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; AcknowledgeChecklistTaskAsync(Guid workflowId, string taskId, OperationsChecklistAcknowledgeRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs:897](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs#L897) |  |
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.PreparedStart.cs:6](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.PreparedStart.cs#L6).
-
-```csharp
-public sealed partial class OperationsContinuityWorkflowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;OperationsTransitionResultDto&gt; StartWorkflowAsync(OperationsStartWorkflowRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.PreparedStart.cs:10](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.PreparedStart.cs#L10) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; StartPreparedWorkflowAsync(OperationsStartWorkflowRequestDto request, Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.PreparedStart.cs:97](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.PreparedStart.cs#L97) | Creates a fresh workflow under an identity retained by the preparation operation before this call. Recovery accepts only that exact prepared identity and accounting scope; it never adopts a plan by scope. |
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.Transitions.cs:8](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.Transitions.cs#L8).
-
-```csharp
-public sealed partial class OperationsContinuityWorkflowService
-```
-
-## OperationsGateState
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsGateState</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:2004](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L2004).
-
-```csharp
-public sealed record OperationsGateState(OperationsGateKeyDto GateKey, OperationsGateStatusDto Status, IReadOnlyList<OperationsWorkflowBlockerDto> Blockers, IReadOnlyList<OperationsNextActionDto> NextActions, DateTimeOffset? CompletedAtUtc, string? CompletedBy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OperationsGateState Create(OperationsGateKeyDto gateKey) =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:2012](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L2012) |  |
-| <code>public OperationsGateState WithStatus(OperationsGateStatusDto status, IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt;? blockers = null, IReadOnlyList&lt;OperationsNextActionDto&gt;? nextActions = null, DateTimeOffset? completedAtUtc = null, string? completedBy = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:2015](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L2015) |  |

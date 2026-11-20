@@ -1974,6 +1974,15 @@ ordinary lifecycle transitions cannot replace the preparation link or relax sour
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`PostgresManualJournalEntryDraftStore` (ledger migration 077) keeps manual journal drafts keyed by fund, tenant,
+company and journal ID exactly as the file store does, retaining each complete draft so server-held intercompany
+fields round-trip unchanged; batch saves are one transaction. The same migration holds the command receipts that
+serialize journal commands across hosts; completed receipts cannot be rewritten or removed.
+`PostgresIntercompanyConfirmationClosePolicyStore` (ledger migration 078) and `FileIntercompanyConfirmationClosePolicyStore`
+retain append-only confirmation close-policy versions; the database refuses update, delete and truncate.
+
 ## Validation
 
 ```bash

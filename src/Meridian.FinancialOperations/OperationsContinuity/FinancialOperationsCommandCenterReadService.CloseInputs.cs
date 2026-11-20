@@ -117,6 +117,10 @@ public sealed partial class FinancialOperationsCommandCenterReadService
             await ContributeShadowAgreementAsync(projection, bookOfRecordGuard, scope.LedgerBookId!.Value,
                 tenantId, companyId, ct).ConfigureAwait(false);
 
+        if (_confirmationCloseGate is not null && scope.LedgerBookId is not null)
+            await ContributeConfirmationClosePolicyAsync(projection, _confirmationCloseGate, scope, tenantId, companyId, ct)
+                .ConfigureAwait(false);
+
         // The workflow can change while its contributors are being read. Never combine an older
         // plan/calendar with a later approval or reopening into a ready result.
         if (workflow is not null)
@@ -151,6 +155,32 @@ public sealed partial class FinancialOperationsCommandCenterReadService
     }
 
     internal const string ShadowAgreementContributor = "shadow-agreement";
+    internal const string ConfirmationClosePolicyContributor = "intercompany-confirmation";
+
+    /// <summary>
+    /// Opt-in confirmation close blocking (ADR-032). Contributes nothing unless the book has an active reviewed policy,
+    /// so books without one keep today's decision. A gate that throws is reported as unavailable, never as ready.
+    /// </summary>
+    private static async Task ContributeConfirmationClosePolicyAsync(CloseReadinessProjection projection,
+        IIntercompanyConfirmationCloseGate gate, CloseReadinessScopeDto scope, string? tenantId, string? companyId, CancellationToken ct)
+    {
+        IntercompanyConfirmationCloseGateResultDto? result;
+        try
+        {
+            result = await gate.EvaluateAsync(scope, tenantId, companyId, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception)
+        {
+            projection.Contribute(ConfirmationClosePolicyContributor, "Intercompany", "Unavailable", null, [],
+                "The intercompany confirmation close policy could not be evaluated for the selected scope.");
+            return;
+        }
+        if (result is null)
+            return;
+        projection.Contribute(ConfirmationClosePolicyContributor, "Intercompany", result.Status,
+            DateTimeOffset.UtcNow, result.Records, result.Message);
+    }
 
     private IBookOfRecordGuard? ResolveBookOfRecordGuard()
     {
