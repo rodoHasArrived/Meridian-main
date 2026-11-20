@@ -213,6 +213,35 @@ public sealed class WeightedProviderQuotaTests
         Assert.Equal(30, limiter.GetBudgetStatus().DailyUnitsUsed);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task WaitingBackfillLeavesReservedDailyCreditsAvailableToOtherWork(int backfillUnits)
+    {
+        var clock = new RequestBudgetTimeProvider();
+        using var limiter = new RateLimiter(
+            new(8, TimeSpan.FromMinutes(1), TimeSpan.Zero, 5, DailyQuotaResetMode.UtcMidnight, "credits"),
+            timeProvider: clock);
+        await limiter.WaitForUnitsAsync(4);
+
+        using var backfillCancellation = new CancellationTokenSource();
+        var backfill = limiter.WaitForUnitsAsync(backfillUnits, 20, null, backfillCancellation.Token);
+        try
+        {
+            Assert.False(backfill.IsCompleted);
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await limiter.WaitForSlotAsync(timeout.Token);
+            Assert.False(backfill.IsCompleted);
+        }
+        finally
+        {
+            await backfillCancellation.CancelAsync();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => backfill);
+        }
+
+        Assert.Equal(5, limiter.GetBudgetStatus().DailyUnitsUsed);
+    }
+
     [Fact]
     public async Task FractionalMillisecondWait_SchedulesPositiveDelayRatherThanSpinning()
     {
