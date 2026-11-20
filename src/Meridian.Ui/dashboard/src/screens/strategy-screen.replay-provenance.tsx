@@ -1,7 +1,8 @@
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { formatCount } from "@/lib/format";
-import type { StrategyRunReplayProvenance, StrategyRunReplayRevision, StrategyRunReplaySourceCount } from "@/types";
+import type { ProviderProvenanceReceipt, StrategyRunReplayProvenance, StrategyRunReplayRevision, StrategyRunReplaySourceCount } from "@/types";
 
 const sourceColumns: DenseDataTableColumn<StrategyRunReplaySourceCount>[] = [
   { id: "symbol", label: "Symbol", rowHeader: true, render: (row) => row.symbol },
@@ -16,8 +17,9 @@ const revisionColumns: DenseDataTableColumn<StrategyRunReplayRevision>[] = [
   { id: "content", label: "Content hash", render: (row) => <code className="break-all">{row.contentHash}</code> }
 ];
 
-export function StrategyReplayProvenance({ evidence, loading }: {
+export function StrategyReplayProvenance({ evidence, receipt, loading }: {
   evidence: StrategyRunReplayProvenance | null;
+  receipt: ProviderProvenanceReceipt | null;
   loading: boolean;
 }) {
   return <section aria-label="Replay data sources" className="mt-4 rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
@@ -48,5 +50,6 @@ export function StrategyReplayProvenance({ evidence, loading }: {
         ) : null}
       </TechnicalDetails>
     ) : null}
+    {receipt ? <ProviderProvenancePanel receipt={receipt} /> : null}
   </section>;
 }

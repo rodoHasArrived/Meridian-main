@@ -222,7 +222,7 @@ export function BackfillSchedulesRegion() {
 
   return <Card role="region" aria-labelledby="backfill-schedules-title" className="workspace-region">
     <CardHeader>
-      <CardTitle id="backfill-schedules-title">Backfill schedules</CardTitle>
+      <CardTitle id="backfill-schedules-title">Recurring backfill schedules</CardTitle>
       <CardDescription>Review scheduled runs and set their provider order.</CardDescription>
       <Button type="button" size="sm" variant="outline" aria-expanded={open} disabled={saving || editing}
         onClick={() => setOpen(value => !value)}>{open ? "Close schedules" : "Manage schedules"}</Button>

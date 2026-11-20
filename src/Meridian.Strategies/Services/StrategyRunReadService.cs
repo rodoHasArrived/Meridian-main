@@ -1,8 +1,12 @@
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Domain;
+using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
+using DataGranularityExtensions = Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions;
 
 namespace Meridian.Strategies.Services;
 
@@ -281,6 +285,7 @@ public sealed partial class StrategyRunReadService
         {
             ReplayProvenance = BuildReplayProvenance(run),
             EvidenceLoop = BuildEvidenceLoop(run),
+            ProviderProvenance = run.RunType == RunType.Backtest ? run.ProviderProvenance : null,
             AcceptanceChecklist = BuildAcceptanceChecklist(run, promotionLookup, promotionTargetRun, scope)
         };
     }
@@ -290,8 +295,14 @@ public sealed partial class StrategyRunReadService
         if (run.Metrics is not { EngineMetadata.InputCoverage: { } coverage })
             return null;
 
+        var revisions = coverage.Revisions
+            .Where(static row => Sha256Digest.IsCanonical(row.RevisionId) && Sha256Digest.IsCanonical(row.ContentHash))
+            .Select(static row => new StrategyRunReplayRevisionDto(row.RevisionId, row.ContentHash,
+                PublicReplayProviderId(row.ServingProvider), PublicReplayInstrument(row.Instrument),
+                PublicReplayGranularity(row.Granularity)))
+            .ToArray();
         var sourceMixHash = coverage.SourceMixHash;
-        if (sourceMixHash is null && coverage.Revisions.Count == 0)
+        if (sourceMixHash is null && revisions.Length == 0)
             return null;
 
         string? completedInputHash = null;
@@ -311,12 +322,28 @@ public sealed partial class StrategyRunReadService
                 : StrategyRunEntry.ComputeRealismBoundInputHash(completed);
         }
 
-        return new StrategyRunReplayProvenanceDto(
-            coverage.SourceMix?.Select(static row => new StrategyRunReplaySourceCountDto(row.Symbol, row.Source, row.Bars)).ToArray() ?? [],
-            coverage.Revisions.Select(static row => new StrategyRunReplayRevisionDto(
-                row.RevisionId, row.ContentHash, row.ServingProvider, row.Instrument, row.Granularity)).ToArray(),
-            sourceMixHash, completedInputHash);
+        var sourceMix = coverage.SourceMix?
+            .GroupBy(static row => (Symbol: PublicReplayInstrument(row.Symbol), Source: PublicReplayProviderId(row.Source).ToUpperInvariant()))
+            .Select(static group => new StrategyRunReplaySourceCountDto(group.Key.Symbol, group.Key.Source, group.Sum(row => row.Bars)))
+            .OrderBy(static row => row.Symbol, StringComparer.Ordinal)
+            .ThenBy(static row => row.Source, StringComparer.Ordinal)
+            .ToArray() ?? [];
+        return new StrategyRunReplayProvenanceDto(sourceMix, revisions, sourceMixHash, completedInputHash);
     }
+
+    private static string PublicReplayProviderId(string? source) =>
+        string.IsNullOrWhiteSpace(source) || string.Equals(source.Trim(), MarketDataSources.Unknown, StringComparison.OrdinalIgnoreCase)
+            ? MarketDataSources.Unknown
+            : ProviderProvenanceLabels.ProviderId(source.Trim().ToLowerInvariant());
+
+    private static string PublicReplayInstrument(string? symbol) =>
+        ProviderProvenanceLabels.IsSymbol(symbol) ? symbol! : "Unknown symbol";
+
+    private static string PublicReplayGranularity(string granularity) =>
+        granularity is { Length: > 0 } && char.IsAsciiLetterOrDigit(granularity[0]) &&
+        DataGranularityExtensions.TryParseValue(granularity, out var parsed)
+            ? DataGranularityExtensions.ToConfigValue(parsed)
+            : ProviderProvenanceLabels.Unknown;
 
     private async Task<StrategyRunEntry?> GetRunForScopeAsync(
         string runId,

@@ -2,7 +2,7 @@ import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { BackfillBatchReceipts } from "@/screens/data-screen.backfill-batch-receipts";
 import { renderWithRouter } from "@/test/render";
-import type { BackfillBatchReceipt } from "@/types";
+import type { BackfillBatchReceipt, BackfillBatchReceiptSummary } from "@/types";
 
 function receipt(revisionId: string, servingProvider: string, rowCount: number): BackfillBatchReceipt {
   return {
@@ -23,5 +23,14 @@ describe("Backfill provider attribution", () => {
     expect(table.getByRole("row", { name: "AAPL stooq 2" })).toBeVisible();
     expect(screen.getByText("Provider attempts (1)")).toBeVisible();
     expect(screen.getByText(/Rate limited/)).toBeInTheDocument();
+  });
+
+  it("aggregates compact receipts from queued runs", () => {
+    const { expectedSessions, receivedSessions, ...retained } = receipt("queued", "tiingo", 3);
+    const summary: BackfillBatchReceiptSummary = {
+      ...retained, expectedSessionCount: expectedSessions?.length ?? null, receivedSessionCount: receivedSessions.length
+    };
+    renderWithRouter(<BackfillBatchReceipts receipts={[summary]} />);
+    expect(screen.getByRole("row", { name: "AAPL tiingo 3" })).toBeVisible();
   });
 });

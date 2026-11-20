@@ -15,7 +15,7 @@ const sourceColumns: DenseDataTableColumn<BackfillSourceRow>[] = [
   { id: "bars", label: "Retained bars", numeric: true, render: row => formatCount(row.bars) }
 ];
 
-export function retainedSourceRows(receipts: BackfillBatchReceipt[]): BackfillSourceRow[] {
+export function retainedSourceRows(receipts: readonly Pick<BackfillBatchReceipt, "revisionId" | "instrument" | "servingProvider" | "rowCount">[]): BackfillSourceRow[] {
   const seen = new Set<string>();
   const rows = new Map<string, BackfillSourceRow>();
   for (const receipt of receipts) {

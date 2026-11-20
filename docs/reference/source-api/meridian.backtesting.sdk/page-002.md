@@ -240,6 +240,27 @@ Declared public members:
 | <code>public long AbsoluteQuantity =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Position.cs:42](../../../../src/Meridian.Backtesting.Sdk/Position.cs#L42) | Absolute number of shares. |
 | <code>public decimal NotionalValue(decimal lastPrice) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Position.cs:45](../../../../src/Meridian.Backtesting.Sdk/Position.cs#L45) | Notional market value (signed). |
 
+## ResearchProviderProvenance
+
+Qualified name: <code>Meridian.Backtesting.Sdk.ResearchProviderProvenance</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs:7](../../../../src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs#L7).
+
+Projects research inputs without copying a data path, a script, or account configuration.
+
+```csharp
+public static class ResearchProviderProvenance
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string MissingRevision = &quot;The exact dataset and strategy revision were not retained for reproduction.&quot;;</code> | [src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs:10](../../../../src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs#L10) |  |
+| <code>public static ProviderProvenanceReceipt Create(BacktestRequest request, DateTimeOffset startedUtc, DateTimeOffset completedUtc, IReadOnlyDictionary&lt;string, long&gt;? sourceCounts = null, bool? preflightEnabled = null, bool? corporateActionsApplied = null);</code> | [src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs:12](../../../../src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs#L12) |  |
+| <code>public static ProviderProvenanceReceipt FromWorkerResult(BacktestResult result, DateTimeOffset completedUtc);</code> | [src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs:43](../../../../src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs#L43) | Rebuilds a worker-produced receipt at the host boundary using only recognized IDs and typed values. |
+| <code>public static DateTimeOffset StartFromElapsed(DateTimeOffset end, TimeSpan elapsed) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs:61](../../../../src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs#L61) |  |
+
 ## ResearchRunDescriptor
 
 Qualified name: <code>Meridian.Backtesting.Sdk.ResearchRunDescriptor</code>. Kind: `record`.
@@ -872,26 +893,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Basic</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs:11](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs#L11) | Score by bid price × multiplier (conservative executable premium dollar amount). |
 | <code>Relative</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs:17](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs#L17) | Score by vega-dollar IV residual penalised by spread and boosted by market depth. Selects relatively expensive volatility versus an estimated IV surface. |
-
-## ShortCallExitReason
-
-Qualified name: <code>Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason</code>. Kind: `enum`.
-
-Source: [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:154](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L154).
-
-Outcome of a completed short-call cycle (entry → exit).
-
-```csharp
-public enum ShortCallExitReason
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ExpiredWorthless</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:157](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L157) | Option expired worthless. |
-| <code>Assigned</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:159](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L159) | Option was exercised (assignment). |
-| <code>TakeProfitRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:161](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L161) | Take-profit trigger reached; position was closed / rolled. |
-| <code>RiskRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:163](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L163) | Delta-risk trigger reached; position was rolled. |
-| <code>DividendRiskRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:165](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L165) | Dividend-assignment risk trigger; position was closed / rolled. |
-| <code>ForcedClose</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:167](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L167) | Strategy ended while position was still open (backtest ran out of data). |

@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyLedgerPostingAuthority
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyLedgerPostingAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:12](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L12).
+
+Resolves agreement and account authority under leases retained through ledger commit.
+
+```csharp
+public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingArrangementStore agreements, IntercompanyAccountingArrangementService service, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationStore configuration, ILedgerJournalStore journals, IFundProfileTenancyRegistry owners, ILegacyIntercompanyAttributionStore? legacyAttributions = null, IConsolidationFxAuthority? fxAuthority = null, IIntercompanyRateFixingStore? fixings = null) : ILedgerPostingAuthority, ILedgerBookControlPreflight
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task VerifyAccrualAuthorityAsync(string tenantId, IntercompanyAccrualEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:25](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L25) | Re-resolves every retained accrual slice under current profile and legal authority. The posted lines carry only the revision of the posting date, so an earlier slice whose revision was since retired, superseded or re-pinned would otherwise post on authority that no longer covers its days. |
+| <code>public string ControlName =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:60](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L60) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:62](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L62) |  |
+| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:235](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L235) |  |
+| <code>public async Task VerifyFeeAccrualAuthorityAsync(string tenantId, IntercompanyFeeAccrualEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:300](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L300) | Re-resolves every retained fee slice under current profile and legal authority before review or posting, so a revision retired, superseded or re-pinned after drafting stops the fee draft. |
+
+## IntercompanyObligationMonitorService
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyObligationMonitorService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs:13](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs#L13).
+
+Read-only legal and lifecycle observations over the native posted balance schedule.
+
+```csharp
+public sealed class IntercompanyObligationMonitorService(IIntercompanyBalanceScheduleSource schedules, IIntercompanyAgreementService agreements, IEntityLifecycleService lifecycle, ILedgerJournalStore journals, IIntercompanyAgreementAccessAuthority access, TimeProvider? timeProvider = null) : IIntercompanyObligationMonitorService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyObligationMonitorDto&gt; EvaluateAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs:23](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs#L23) |  |
+
 ## IntercompanyProposalDraftBuilder
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyProposalDraftBuilder</code>. Kind: `class`.
@@ -921,32 +961,4 @@ Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportOpt
 
 ```csharp
 public sealed record LedgerTextReportOptions(string Report, string? AccountFilter);
-```
-
-## LedgerTextReportRenderer
-
-Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextReportRenderer</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportRenderer.cs:9](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportRenderer.cs#L9).
-
-Renders a structured ledger text journal as the requested report.
-
-```csharp
-public static class LedgerTextReportRenderer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Render(LedgerTextJournalDocument document, LedgerTextReportOptions options);</code> | [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportRenderer.cs:11](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportRenderer.cs#L11) |  |
-
-## LedgerTextTransaction
-
-Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextTransaction</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransaction.cs:5](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransaction.cs#L5).
-
-```csharp
-public sealed record LedgerTextTransaction(DateTimeOffset Date, string Payee, IReadOnlyList<LedgerTextPosting> Postings);
 ```

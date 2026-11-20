@@ -22,7 +22,7 @@ public sealed record DataSheetRow(string Date, string XValue, string YValue);
 
 Qualified name: <code>Meridian.Wpf.ViewModels.DataSourceRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1011](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1011).
+Source: [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1023](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1023).
 
 ```csharp
 public sealed class DataSourceRow(DataSourceConfigDto source) : BindableBase
@@ -32,15 +32,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Id =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1018](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1018) |  |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1019](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1019) |  |
-| <code>public string Provider =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1020](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1020) |  |
-| <code>public string Type =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1021](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1021) |  |
-| <code>public string? Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1022](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1022) |  |
-| <code>public int Priority =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1023](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1023) |  |
-| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1024](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1024) |  |
-| <code>public string ActivationState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1025](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1025) |  |
-| <code>public string ActivationDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1026](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1026) |  |
+| <code>public string Id =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1030](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1030) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1031](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1031) |  |
+| <code>public string Provider =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1032](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1032) |  |
+| <code>public string Type =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1033](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1033) |  |
+| <code>public string? Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1034](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1034) |  |
+| <code>public int Priority =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1035](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1035) |  |
+| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1036](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1036) |  |
+| <code>public string ActivationState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1037](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1037) |  |
+| <code>public string ActivationDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1038](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1038) |  |
 
 ## DataSourcesViewModel
 
@@ -123,7 +123,7 @@ Declared public members:
 | <code>public string ConfigurationRecoveryTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:461](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L461) |  |
 | <code>public string ConfigurationRecoveryDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:466](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L466) |  |
 | <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:474](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L474) |  |
-| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:522](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L522) |  |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:523](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L523) |  |
 
 ## DataWorkspaceShellViewModel
 

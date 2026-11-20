@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataSourceConfig
+
+Qualified name: <code>Meridian.Core.Config.DataSourceConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/DataSourceConfig.cs:10](../../../../src/Meridian.Core/Config/DataSourceConfig.cs#L10).
+
+Configuration for an individual data source (real-time or historical). Allows users to configure multiple data sources with different providers and settings.
+
+```csharp
+public sealed record DataSourceConfig(string Id, string Name, DataSourceKind Provider = DataSourceKind.IB, bool Enabled = true, DataSourceType Type = DataSourceType.RealTime, int Priority = 100, AlpacaOptions? Alpaca = null, PolygonOptions? Polygon = null, IBOptions? IB = null, string[]? Symbols = null, string? Description = null, string[]? Tags = null);
+```
+
 ## DataSourceKind
 
 Qualified name: <code>Meridian.Core.Config.DataSourceKind</code>. Kind: `enum`.
@@ -103,7 +115,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.DefaultScheduleConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:123](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L123).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:131](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L131).
 
 Configuration for a default schedule to create on startup.
 
@@ -272,7 +284,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.FinnhubConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:291](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L291).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:299](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L299).
 
 Finnhub provider configuration. Generous free tier with company fundamentals, earnings, and news. Free tier: 60 API calls/minute.
 
@@ -284,7 +296,7 @@ public sealed record FinnhubConfig(bool Enabled = true, string? ApiKey = null, i
 
 Qualified name: <code>Meridian.Core.Config.FredConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:307](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L307).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:315](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L315).
 
 FRED (Federal Reserve Economic Data) provider configuration. Maps economic time-series observations into synthetic daily bars for Meridian backfill workflows.
 
@@ -445,7 +457,7 @@ public sealed record IndexOptionsConfig(bool Enabled = false, string[]? Indices 
 
 Qualified name: <code>Meridian.Core.Config.NasdaqDataLinkConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:171](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L171).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:179](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L179).
 
 Nasdaq Data Link (Quandl) provider configuration.
 
@@ -457,7 +469,7 @@ public sealed record NasdaqDataLinkConfig(bool Enabled = true, string? ApiKey = 
 
 Qualified name: <code>Meridian.Core.Config.OpenFigiConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:196](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L196).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:204](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L204).
 
 OpenFIGI symbol resolver configuration.
 
@@ -481,7 +493,7 @@ public sealed record PipelineRuntimeConfig(int? FinalFlushTimeoutSeconds = null,
 
 Qualified name: <code>Meridian.Core.Config.PolygonConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:251](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L251).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:259](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L259).
 
 Polygon.io provider configuration. High-quality OHLCV aggregates with reference data. Free tier: 5 API calls/minute, 2 years history.
 
@@ -719,7 +731,7 @@ public sealed record ProviderValidationProfileAudit(Guid Id, string Provider, Da
 
 Qualified name: <code>Meridian.Core.Config.RobinhoodConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:322](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L322).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:330](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L330).
 
 Robinhood historical data provider configuration. Uses the unofficial Robinhood API; requires a personal access token. No official public API exists — set ROBINHOOD_ACCESS_TOKEN via environment variable.
 
@@ -731,28 +743,10 @@ public sealed record RobinhoodConfig(bool Enabled = false, int Priority = 35, in
 
 Qualified name: <code>Meridian.Core.Config.ScheduledBackfillConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:103](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L103).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:111](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L111).
 
 Configuration for scheduled backfill operations.
 
 ```csharp
 public sealed record ScheduledBackfillConfig(bool Enabled = false, int ScheduleCheckIntervalSeconds = 60, int MaxExecutionDurationHours = 6, bool CatchUpMissedSchedules = true, int CatchUpWindowHours = 24, int MaxConcurrentExecutions = 1, bool PauseDuringMarketHours = false, DefaultScheduleConfig[]? DefaultSchedules = null);
 ```
-
-## SemanticValidationStage
-
-Qualified name: <code>Meridian.Core.Config.SemanticValidationStage</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Config/IConfigValidator.cs:140](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L140).
-
-Semantic validation that checks cross-property constraints and configuration consistency. Duplicate-symbol and retention-days checks are now handled by AppConfigValidator in the field validation stage. This stage handles warning-level checks that should not affect FluentValidation.Results.ValidationResult.IsValid.
-
-```csharp
-public sealed class SemanticValidationStage : IConfigValidationStage
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ConfigValidationResult&gt; Validate(AppConfig config);</code> | [src/Meridian.Core/Config/IConfigValidator.cs:142](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L142) |  |

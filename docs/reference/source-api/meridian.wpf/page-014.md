@@ -1595,13 +1595,13 @@ Declared public members:
 | <code>public static string DescribeDetail(ProviderActivationEntry? entry);</code> | [src/Meridian.Wpf/ViewModels/ProviderActivationViewModel.cs:67](../../../../src/Meridian.Wpf/ViewModels/ProviderActivationViewModel.cs#L67) |  |
 | <code>public ProviderActivationEntry? Find(string providerId, string surface) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderActivationViewModel.cs:79](../../../../src/Meridian.Wpf/ViewModels/ProviderActivationViewModel.cs#L79) |  |
 | <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderActivationViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/ProviderActivationViewModel.cs#L83) |  |
-| <code>public void CancelPending();</code> | [src/Meridian.Wpf/ViewModels/ProviderActivationViewModel.cs:112](../../../../src/Meridian.Wpf/ViewModels/ProviderActivationViewModel.cs#L112) |  |
+| <code>public void CancelPending();</code> | [src/Meridian.Wpf/ViewModels/ProviderActivationViewModel.cs:113](../../../../src/Meridian.Wpf/ViewModels/ProviderActivationViewModel.cs#L113) |  |
 
 ## ProviderCatalogViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ProviderCatalogViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:584](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L584).
+Source: [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:596](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L596).
 
 View model for provider catalog cards in the wizard.
 
@@ -1613,17 +1613,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderCatalogViewModel(ProviderCatalogEntry entry, ProviderCredentialStatus? credStatus);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:595](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L595) |  |
-| <code>public string Id { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:632](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L632) |  |
-| <code>public string DisplayName { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:633](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L633) |  |
-| <code>public string Description { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:634](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L634) |  |
-| <code>public bool SupportsStreaming { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:635](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L635) |  |
-| <code>public bool SupportsHistorical { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:636](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L636) |  |
-| <code>public string TierLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:637](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L637) |  |
-| <code>public Brush TierBrush { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:638](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L638) |  |
-| <code>public Brush CredentialStatusBrush { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:639](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L639) |  |
-| <code>public Visibility StreamingVisibility { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:640](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L640) |  |
-| <code>public Visibility HistoricalVisibility { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:641](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L641) |  |
+| <code>public ProviderCatalogViewModel(ProviderCatalogEntry entry, ProviderCredentialStatus? credStatus);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:607](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L607) |  |
+| <code>public string Id { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:644](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L644) |  |
+| <code>public string DisplayName { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:645](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L645) |  |
+| <code>public string Description { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:646](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L646) |  |
+| <code>public bool SupportsStreaming { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:647](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L647) |  |
+| <code>public bool SupportsHistorical { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:648](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L648) |  |
+| <code>public string TierLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:649](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L649) |  |
+| <code>public Brush TierBrush { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:650](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L650) |  |
+| <code>public Brush CredentialStatusBrush { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:651](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L651) |  |
+| <code>public Visibility StreamingVisibility { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:652](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L652) |  |
+| <code>public Visibility HistoricalVisibility { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:653](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L653) |  |
 
 ## ProviderDataProjectionViewModel
 

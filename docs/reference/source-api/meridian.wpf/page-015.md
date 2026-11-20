@@ -275,11 +275,11 @@ Declared public members:
 | <code>public ProviderViewModel(WpfServices.NotificationService notificationService, WpfServices.ConfigService configService, ProviderConfigurationApiClient client, IProviderDiagnosticsApiClient providerDiagnosticsApiClient);</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:322](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L322) |  |
 | <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:396](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L396) |  |
 | <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L403) |  |
-| <code>public async Task LoadProviderSettingsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:421](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L421) |  |
-| <code>public Task OnProviderToggleChangedAsync(ProviderSettingsViewModel provider) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:667](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L667) |  |
-| <code>public Task OnPriorityLostFocusAsync(ProviderSettingsViewModel provider, string rawText);</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:670](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L670) |  |
-| <code>public Task OnRateLimitLostFocusAsync(ProviderSettingsViewModel provider) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:682](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L682) |  |
-| <code>public Task OnResetProviderAsync(string providerId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:685](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L685) |  |
+| <code>public async Task LoadProviderSettingsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:423](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L423) |  |
+| <code>public Task OnProviderToggleChangedAsync(ProviderSettingsViewModel provider) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:670](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L670) |  |
+| <code>public Task OnPriorityLostFocusAsync(ProviderSettingsViewModel provider, string rawText);</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:673](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L673) |  |
+| <code>public Task OnRateLimitLostFocusAsync(ProviderSettingsViewModel provider) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:685](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L685) |  |
+| <code>public Task OnResetProviderAsync(string providerId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderViewModel.cs:688](../../../../src/Meridian.Wpf/ViewModels/ProviderViewModel.cs#L688) |  |
 
 ## QualityArchiveViewModel
 

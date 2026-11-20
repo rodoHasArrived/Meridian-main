@@ -22,6 +22,7 @@ namespace Meridian.Core.Config;
 /// <param name="FillGapsOnly">Only fill detected gaps in existing data (vs. full backfill).</param>
 /// <param name="Jobs">Job management configuration.</param>
 /// <param name="Providers">Configuration for individual data providers.</param>
+/// <param name="OperationalBudgets">Provider administrator policies keyed by historical provider ID.</param>
 public sealed record BackfillConfig(
     bool Enabled = false,
     string Provider = "composite",
@@ -42,8 +43,15 @@ public sealed record BackfillConfig(
     SymbolResolutionMode SymbolResolutionMode = SymbolResolutionMode.Compare,
     AutoGapRemediationConfig? AutoRemediation = null,
     IReadOnlyDictionary<string, ProviderValidationProfile>? ValidationProfiles = null,
-    ProviderValidationProfileAudit[]? ValidationProfileAudit = null
+    ProviderValidationProfileAudit[]? ValidationProfileAudit = null,
+    Dictionary<string, BackfillOperationalBudgetConfig>? OperationalBudgets = null
 );
+
+/// <summary>Shared historical backfill policy managed in the host configuration.</summary>
+public sealed record BackfillOperationalBudgetConfig(
+    int ReserveHeadroomPercent = 0,
+    int? MaxConcurrentRequests = null,
+    string[]? ApprovedEquivalentProviders = null);
 
 /// <summary>
 /// Host configuration for automatic, quality-triggered backfill remediation. Primitive time

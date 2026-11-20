@@ -79,6 +79,11 @@ public sealed record FailoverRuleDeleteRequest(string? Reason);
 /// <summary>Request to run a backfill operation.</summary>
 public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To, string? Granularity = null)
 {
+    public string? ExecutionPolicy { get; init; }
+    public DateTimeOffset? ScheduledAt { get; init; }
+    public Guid? SubmissionId { get; init; }
+    public string? ApprovedAlternativeFor { get; init; }
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool ResumeFromCheckpoint { get; init; }
 }

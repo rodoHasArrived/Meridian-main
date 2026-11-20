@@ -2,9 +2,10 @@
 // Re-exported through @/lib/api.
 import { providerConnectionScopeEndpoint, type ProviderCredentialRequestOptions } from "@/lib/provider-credential-scope";
 import type { BackfillPreviewResult, BackfillExecutionHistoryResponse, BackfillProgressResponse, BackfillTriggerRequest, BackfillTriggerResult, AlpacaBrokerageConnectionRequest, BrokerageConnectionStatus, BrokerageHouseholdPortfolio, AssetOperationsDetail, MultiAssetCoverageSummary, NetSymbolPosition, ProviderConnectionRow, ProviderCredentialMutationResult, ProviderCredentialUpsertRequest, ProviderCredentialVerificationResult, ProviderReadinessSummary, ProviderRoutePreviewRequest, ProviderRoutePreviewResponse, ProviderRoutingBinding, ProviderRoutingConnection, ProviderRoutingTrustSnapshot, ManualCsvProviderIntegrationDryRunRequest, ProviderIntegrationActivationReadiness, ProviderIntegrationActivationRequest, ProviderIntegrationActivationResult, ProviderIntegrationConnectionMonitor, ProviderIntegrationDryRunResult, ProviderIntegrationManifest, ProviderIntegrationOpenApiImportRequest, ProviderIntegrationOpenApiImportResult, ProviderIntegrationPromotionReadinessPreview, ProviderIntegrationQuarantineReplayRequest, ProviderIntegrationQuarantineReplayResult, ProviderIntegrationQuarantineResolutionRequest, ProviderIntegrationQuarantineResolutionResult, ProviderIntegrationQuarantineReview, ProviderIntegrationReconciliationHandoffHistory, ProviderIntegrationReconciliationHandoffRequest, ProviderIntegrationReconciliationHandoffResult, ProviderIntegrationRestDryRunRequest, ProviderIntegrationRunDueSyncRequest, ProviderIntegrationRunDueSyncResult, ProviderIntegrationSchemaDriftCheckRequest, ProviderIntegrationSchemaDriftCheckResult, ProviderIntegrationSetupSaveRequest, ProviderIntegrationSetupSaveResult, ProviderIntegrationStagingIdentityResolutionPreview, ProviderIntegrationStagingReview, ProviderIntegrationSyncPlan, ProviderIntegrationSyncRunHistory, ProviderIntegrationTemplateCatalogEntry, PlaidLinkTokenRequest, PlaidLinkTokenResponse, PlaidPublicTokenExchangeRequest, PlaidPublicTokenExchangeResult, PlaidInstitutionSearchResult } from "@/types";
-import { BACKFILL_API_ENDPOINTS, PORTFOLIO_API_ENDPOINTS, PLAID_API_ENDPOINTS, PROVIDER_API_ENDPOINTS, PROVIDER_INTEGRATION_API_ENDPOINTS, PROVIDER_ROUTING_API_ENDPOINTS, QUALITY_API_ENDPOINTS, SECURITY_MASTER_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, securityMasterCoverageDraftEndpoint, brokerageConnectionConnectEndpoint, brokerageConnectionEndpoint, brokerageConnectionStatusEndpoint, portfolioHouseholdEndpoint, portfolioSymbolExposureEndpoint, providerCredentialEndpoint, providerVerifyEndpoint, workstationProviderIntegrationConnectionMonitorEndpoint, workstationProviderIntegrationConnectionRunDueSyncEndpoint, workstationProviderIntegrationConnectionSyncPlanEndpoint, workstationProviderIntegrationConnectionSyncRunsEndpoint, workstationProviderIntegrationIdentityResolutionEndpoint, workstationProviderIntegrationPromotionReadinessEndpoint, workstationProviderIntegrationQuarantineReviewEndpoint, workstationProviderIntegrationReadinessEndpoint, workstationProviderIntegrationReconciliationHandoffHistoryEndpoint, workstationProviderIntegrationStagingReviewEndpoint, workstationProviderIntegrationTemplateEndpoint, providerRemoveEndpoint, providerTestEndpoint, qualityAnomalyAcknowledgeEndpoint, securityMasterCorporateActionSourceProposalAcceptEndpoint, workstationAssetOperationsEndpoint } from "@/lib/workstation-endpoints";
+import { BACKFILL_API_ENDPOINTS, backfillCloneEndpoint, PORTFOLIO_API_ENDPOINTS, PLAID_API_ENDPOINTS, PROVIDER_API_ENDPOINTS, PROVIDER_INTEGRATION_API_ENDPOINTS, PROVIDER_ROUTING_API_ENDPOINTS, QUALITY_API_ENDPOINTS, SECURITY_MASTER_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, securityMasterCoverageDraftEndpoint, brokerageConnectionConnectEndpoint, brokerageConnectionEndpoint, brokerageConnectionStatusEndpoint, portfolioHouseholdEndpoint, portfolioSymbolExposureEndpoint, providerCredentialEndpoint, providerVerifyEndpoint, workstationProviderIntegrationConnectionMonitorEndpoint, workstationProviderIntegrationConnectionRunDueSyncEndpoint, workstationProviderIntegrationConnectionSyncPlanEndpoint, workstationProviderIntegrationConnectionSyncRunsEndpoint, workstationProviderIntegrationIdentityResolutionEndpoint, workstationProviderIntegrationPromotionReadinessEndpoint, workstationProviderIntegrationQuarantineReviewEndpoint, workstationProviderIntegrationReadinessEndpoint, workstationProviderIntegrationReconciliationHandoffHistoryEndpoint, workstationProviderIntegrationStagingReviewEndpoint, workstationProviderIntegrationTemplateEndpoint, providerRemoveEndpoint, providerTestEndpoint, qualityAnomalyAcknowledgeEndpoint, securityMasterCorporateActionSourceProposalAcceptEndpoint, workstationAssetOperationsEndpoint } from "@/lib/workstation-endpoints";
 import { deleteJson, getJson, postJson, putJson, type ApiRequestOptions } from "@/lib/api/http-client";
 import type { ProviderCredentialDraftResult } from "@/types/workstation-2";
+import type { BackfillSubmissionReceipt, BackfillSubmissionRequest } from "@/types";
 
 // --- Backfill mutations ---
 
@@ -12,13 +13,34 @@ export function getBackfillProgress(options: ApiRequestOptions = {}) {
   return getJson<BackfillProgressResponse>(BACKFILL_API_ENDPOINTS.progress, options);
 }
 
+export function getBackfillClonePlan(receiptId: string) {
+  return getJson<import("@/types/provider-provenance").BackfillClonePlan>(backfillCloneEndpoint(receiptId), {
+    allowDevelopmentFallback: false
+  });
+}
+
+export function getOlderBackfillResults(beforeReceiptId: string) {
+  const query = new URLSearchParams({ before: beforeReceiptId });
+  return getJson<import("@/types").DataBackfillRecord[]>(`${BACKFILL_API_ENDPOINTS.receipts}?${query}`, {
+    allowDevelopmentFallback: false
+  });
+}
+
+export function runBackfillClone(receiptId: string, confirmationCode: string) {
+  return postJson<BackfillTriggerResult>(backfillCloneEndpoint(receiptId), { confirmationCode });
+}
+
 export function getBackfillExecutionHistory(limit = 100, options: ApiRequestOptions = {}) {
   const query = new URLSearchParams({ limit: String(Math.max(1, Math.min(limit, 1000))) });
-  return getJson<BackfillExecutionHistoryResponse>(`${BACKFILL_API_ENDPOINTS.executions}?${query}`, options);
+  return getJson<BackfillExecutionHistoryResponse>(`${BACKFILL_API_ENDPOINTS.executions}?${query}`, { ...options, allowDevelopmentFallback: false });
 }
 
 export function triggerBackfill(request: BackfillTriggerRequest) {
   return postJson<BackfillTriggerResult>(BACKFILL_API_ENDPOINTS.run, request);
+}
+
+export function submitBackfill(request: BackfillSubmissionRequest) {
+  return postJson<BackfillSubmissionReceipt>(BACKFILL_API_ENDPOINTS.run, request);
 }
 
 export function previewBackfill(request: BackfillTriggerRequest) {
@@ -412,8 +434,11 @@ export function revokeAlpacaConnection(options: ApiRequestOptions = {}) {
   return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("alpaca"), options);
 }
 
-export function getBrokerageHouseholdPortfolio(provider = "alpaca", options: ApiRequestOptions = {}) {
-  return getJson<BrokerageHouseholdPortfolio>(portfolioHouseholdEndpoint(provider), options);
+export function getBrokerageHouseholdPortfolio(
+  provider = "alpaca",
+  options: ApiRequestOptions & { fundAccountId?: string | null } = {}
+) {
+  return getJson<BrokerageHouseholdPortfolio>(portfolioHouseholdEndpoint(provider, options.fundAccountId), options);
 }
 
 export function getPortfolioAggregate() {

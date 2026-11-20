@@ -372,12 +372,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static AlpacaOptions ToDomain(this AlpacaOptionsDto dto, AlpacaOptions? existing = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:15](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L15) | Converts AlpacaOptionsDto to AlpacaOptions domain type. |
-| <code>public static PolygonOptions ToDomain(this PolygonOptionsDto dto) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:28](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L28) | Converts PolygonOptionsDto to PolygonOptions domain type. |
-| <code>public static IBOptions ToDomain(this IBOptionsDto dto) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:40](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L40) | Converts IBOptionsDto to IBOptions domain type. |
-| <code>public static IBClientPortalOptions ToDomain(this IBClientPortalOptionsDto dto) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:53](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L53) | Converts IBClientPortalOptionsDto to IBClientPortalOptions domain type. |
-| <code>public static DerivativesConfig ToDomain(this DerivativesConfigDto dto) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:62](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L62) | Converts DerivativesConfigDto to DerivativesConfig domain type. |
-| <code>public static IndexOptionsConfig ToDomain(this IndexOptionsConfigDto dto) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:78](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L78) | Converts IndexOptionsConfigDto to IndexOptionsConfig domain type. |
+| <code>public static AlpacaOptions ToDomain(this AlpacaOptionsDto dto) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:15](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L15) | Converts AlpacaOptionsDto to AlpacaOptions domain type. |
+| <code>public static PolygonOptions ToDomain(this PolygonOptionsDto dto) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:31](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L31) | Converts PolygonOptionsDto to PolygonOptions domain type. |
+| <code>public static IBOptions ToDomain(this IBOptionsDto dto) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:43](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L43) | Converts IBOptionsDto to IBOptions domain type. |
+| <code>public static IBClientPortalOptions ToDomain(this IBClientPortalOptionsDto dto) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:56](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L56) | Converts IBClientPortalOptionsDto to IBClientPortalOptions domain type. |
+| <code>public static DerivativesConfig ToDomain(this DerivativesConfigDto dto) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:65](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L65) | Converts DerivativesConfigDto to DerivativesConfig domain type. |
+| <code>public static IndexOptionsConfig ToDomain(this IndexOptionsConfigDto dto) =&gt; …;</code> | [src/Meridian.Ui.Shared/DtoExtensions.cs:81](../../../../src/Meridian.Ui.Shared/DtoExtensions.cs#L81) | Converts IndexOptionsConfigDto to IndexOptionsConfig domain type. |
 
 ## AccessReviewRunRequest
 
@@ -669,7 +669,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.BackfillEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs#L23).
+Source: [src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs#L27).
 
 Extension methods for registering backfill-related API endpoints. Shared between web dashboard and desktop application hosts.
 
@@ -681,7 +681,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapBackfillEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions jsonOptionsIndented);</code> | [src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:33](../../../../src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs#L33) | Maps all backfill API endpoints. |
+| <code>public static void MapBackfillEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions jsonOptionsIndented);</code> | [src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs#L37) | Maps all backfill API endpoints. |
 
 ## BackfillScheduleEndpoints
 

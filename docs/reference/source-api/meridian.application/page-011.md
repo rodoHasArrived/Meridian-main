@@ -6,6 +6,105 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityValidationContext
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityValidationContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:8](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L8).
+
+```csharp
+public sealed record SecurityValidationContext(SecurityProjectionRecord Record, DateTimeOffset EvaluatedAtUtc);
+```
+
+## SecurityValidationGateService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityValidationGateService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:9](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L9).
+
+Evaluates symbol and security validation gates against Security Master evidence.
+
+```csharp
+public sealed class SecurityValidationGateService : ISecurityValidationGateService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityValidationGateService(ISecurityMasterQueryService securityMaster, ISecurityValidationService validationService, ISecurityValidationSnapshotStore snapshotStore);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:15](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L15) |  |
+| <code>public async Task&lt;SecurityValidationGateResultDto&gt; ValidateSymbolAsync(string symbol, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:25](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L25) |  |
+| <code>public async Task&lt;SecurityValidationGateResultDto&gt; ValidateSecurityAsync(Guid securityId, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, string? symbol = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:69](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L69) |  |
+
+## SecurityValidationService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityValidationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:24](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L24).
+
+Runs record and universe validation using registered asset-class rules and reference evidence.
+
+```csharp
+public sealed class SecurityValidationService : ISecurityValidationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityValidationService(ISecurityMasterStore store, AssetClassValidatorRegistry assetClassValidators, IOperatorOverridesStore? operatorOverridesStore = null);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:50](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L50) |  |
+| <code>public async Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:60](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L60) |  |
+| <code>public async Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:90](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L90) |  |
+
+## DiscountedCashFlowValuationModel
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Valuation.DiscountedCashFlowValuationModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:17](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L17).
+
+The discounted-cash-flow model: the base-scenario projection as of the valuation date (fixed legs from terms, floating legs from the registered forward-curve provider) discounted on a stored Discount curve. The curve comes from the request (pinned by id, optionally by version) or, when none is pinned, from the one Discount definition in the security&#x27;s currency; ambiguity and missing inputs block, and zero is never substituted. The value is dirty: it includes the full next coupon. A schedule generated from declared conventions also names its kernel, mapping and calendars as inputs.
+
+```csharp
+public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Key = &quot;discounted-cash-flow&quot;;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:19](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L19) |  |
+| <code>public const string Version = &quot;v2&quot;;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:20](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L20) |  |
+| <code>public const string DiscountRole = &quot;Discount&quot;;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:21](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L21) |  |
+| <code>public DiscountedCashFlowValuationModel(ISecurityMasterCashFlowService cashFlows, ISecurityCurveStore curves, ILogger&lt;DiscountedCashFlowValuationModel&gt; logger, IBondCalculationPolicy? bondPolicy = null);</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:31](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L31) |  |
+| <code>public SecurityValuationModelKind Kind =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:43](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L43) |  |
+| <code>public string ModelKey =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:45](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L45) |  |
+| <code>public string ModelVersion =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:47](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L47) |  |
+| <code>public async Task&lt;SecurityValuationResult&gt; ValueAsync(SecurityValuationRequest request, SecurityDetailDto security, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:49](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L49) |  |
+
+## QuotedPriceValuationModel
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Valuation.QuotedPriceValuationModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:13](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L13).
+
+The quoted-price model: the golden-copy price selected through the pricing hierarchy in force at the as-of and knowledge cutoffs. The pricing lane&#x27;s staleness verdict is reported as a diagnostic, not re-decided, and the selection receipt is the result&#x27;s input. Every evaluation retains a selection receipt, exactly as the golden-copy read does. The market value follows the price&#x27;s quote unit: percent of par on the outstanding face after applicable factors and completed contractual principal payments, or currency per unit on units.
+
+```csharp
+public sealed class QuotedPriceValuationModel : ISecurityValuationModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Key = &quot;quoted-price&quot;;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:15](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L15) |  |
+| <code>public const string Version = &quot;v1&quot;;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:16](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L16) |  |
+| <code>public QuotedPriceValuationModel(ISecurityMasterPricingService pricing);</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:20](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L20) |  |
+| <code>public SecurityValuationModelKind Kind =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:25](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L25) |  |
+| <code>public string ModelKey =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:27](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L27) |  |
+| <code>public string ModelVersion =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:29](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L29) |  |
+| <code>public async Task&lt;SecurityValuationResult&gt; ValueAsync(SecurityValuationRequest request, SecurityDetailDto security, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:31](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L31) |  |
+
 ## SecurityValuationService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Valuation.SecurityValuationService</code>. Kind: `class`.
@@ -814,7 +913,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Services.StoredProviderCredentialResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:13](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L13).
+Source: [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:14](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L14).
 
 Resolves catalog-managed provider credentials exclusively through the credential store. Unmanaged provider types retain their legacy resolver; managed records never mix sources.
 
@@ -826,11 +925,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:22](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L22) |  |
-| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, UI.ConfigStore configStore, ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:31](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L31) | Resolves host defaults from the current retained configuration at provider construction. |
-| <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:44](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L44) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
-| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:53](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L53) |  |
-| <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:110](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L110) |  |
+| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:23](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L23) |  |
+| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, UI.ConfigStore configStore, ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:32](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L32) | Resolves host defaults from the current retained configuration at provider construction. |
+| <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:45](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L45) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
+| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:54](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L54) |  |
+| <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:113](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L113) |  |
 
 ## SymbolPreset
 
@@ -896,93 +995,3 @@ Declared public members:
 | <code>public string Name { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:586](../../../../src/Meridian.Application/Services/DryRunService.cs#L586) |  |
 | <code>public bool Passed { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:587](../../../../src/Meridian.Application/Services/DryRunService.cs#L587) |  |
 | <code>public string Message { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:588](../../../../src/Meridian.Application/Services/DryRunService.cs#L588) |  |
-
-## ValidationSection
-
-Qualified name: <code>Meridian.Application.Services.ValidationSection</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DryRunService.cs:557](../../../../src/Meridian.Application/Services/DryRunService.cs#L557).
-
-A validation section with checks.
-
-```csharp
-public sealed class ValidationSection
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:559](../../../../src/Meridian.Application/Services/DryRunService.cs#L559) |  |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:560](../../../../src/Meridian.Application/Services/DryRunService.cs#L560) |  |
-| <code>public List&lt;ValidationCheck&gt; Checks { get; set; } = new ();</code> | [src/Meridian.Application/Services/DryRunService.cs:561](../../../../src/Meridian.Application/Services/DryRunService.cs#L561) |  |
-| <code>public List&lt;string&gt; Warnings { get; set; } = new ();</code> | [src/Meridian.Application/Services/DryRunService.cs:562](../../../../src/Meridian.Application/Services/DryRunService.cs#L562) |  |
-| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Application/Services/DryRunService.cs:563](../../../../src/Meridian.Application/Services/DryRunService.cs#L563) |  |
-| <code>public void AddCheck(string name, bool passed, string message, string errorMessage);</code> | [src/Meridian.Application/Services/DryRunService.cs:565](../../../../src/Meridian.Application/Services/DryRunService.cs#L565) |  |
-
-## WebhookConfig
-
-Qualified name: <code>Meridian.Application.Services.WebhookConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:670](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L670).
-
-Configuration for a single webhook endpoint.
-
-```csharp
-public sealed record WebhookConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; init; } = &quot;Default&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:675](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L675) | Display name for the webhook. |
-| <code>public string Url { get; init; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:680](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L680) | Webhook URL. |
-| <code>public WebhookType Type { get; init; } = WebhookType.Generic;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:685](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L685) | Type of webhook (affects message formatting). |
-| <code>public bool Enabled { get; init; } = true;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:690](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L690) | Whether this webhook is enabled. |
-| <code>public Dictionary&lt;string, string&gt;? Headers { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:695](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L695) | Custom headers to include with requests. |
-
-## WebhookDeliveryResult
-
-Qualified name: <code>Meridian.Application.Services.WebhookDeliveryResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:771](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L771).
-
-Result of a single webhook delivery.
-
-```csharp
-public readonly record struct WebhookDeliveryResult(string WebhookName, WebhookType WebhookType, bool Success, int? StatusCode, string? ErrorMessage, DateTimeOffset SentAt);
-```
-
-## WebhookType
-
-Qualified name: <code>Meridian.Application.Services.WebhookType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:701](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L701).
-
-Supported webhook types.
-
-```csharp
-public enum WebhookType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Generic</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:704](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L704) | Generic JSON webhook. |
-| <code>Slack</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:707](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L707) | Slack incoming webhook. |
-| <code>Discord</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:710](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L710) | Discord webhook. |
-| <code>Teams</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:713](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L713) | Microsoft Teams webhook connector. |
-
-## WizardResult
-
-Qualified name: <code>Meridian.Application.Services.WizardResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:331](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L331).
-
-Result of running the configuration wizard.
-
-```csharp
-public sealed record WizardResult(bool Success, AppConfig? Config, string? ConfigPath);
-```

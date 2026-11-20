@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Contracts.Operations;
 using Meridian.Core.IO;
 using Meridian.Core.Logging;
 using Serilog;
@@ -34,6 +35,9 @@ public sealed class BackfillJobManager : IDisposable
     private Func<string, CancellationToken, Task>? _jobCancellationHandler;
     private Func<IReadOnlyCollection<BackfillRequest>, Task>? _uncommittedBatchCancellationHandler;
     private bool _disposed;
+
+    internal Action<BackfillJob, DateTimeOffset, BackfillRoutingSnapshot?>? CaptureReceipt { get; set; }
+    internal Func<BackfillJob, CancellationToken, Task>? RetainReceiptAsync { get; init; }
 
     /// <summary>
     /// Event raised when a job's status changes.
@@ -155,6 +159,10 @@ public sealed class BackfillJobManager : IDisposable
                         await PersistJobAsync(job, ct).ConfigureAwait(false);
                         OnJobStatusChanged?.Invoke(job, previousStatus);
                     }
+                    else if (job.IsComplete)
+                    {
+                        await PublishReceiptAsync(job).ConfigureAwait(false);
+                    }
 
                     _log.Debug("Loaded job {JobId}: {Name} ({Status})", job.JobId, job.Name, job.Status);
                 }
@@ -244,8 +252,9 @@ public sealed class BackfillJobManager : IDisposable
                 if (!gapAnalysis.HasGaps)
                 {
                     _log.Information("No gaps detected for job {JobId}, completing immediately", jobId);
-                    job.Status = BackfillJobStatus.Completed;
                     job.CompletedAt = DateTimeOffset.UtcNow;
+                    CaptureReceipt?.Invoke(job, job.CompletedAt.Value, routing);
+                    job.Status = BackfillJobStatus.Completed;
                     job.StatusReason = "No data gaps detected";
                     await PersistJobAsync(job, ct).ConfigureAwait(false);
                     durableStartStatePersisted = true;
@@ -611,8 +620,9 @@ public sealed class BackfillJobManager : IDisposable
                 var hasFailures = job.SymbolProgress.Values.Any(p => p.Status == SymbolBackfillStatus.Failed);
                 completedFromStatus = job.Status;
 
-                job.Status = hasFailures ? BackfillJobStatus.Failed : BackfillJobStatus.Completed;
                 job.CompletedAt = DateTimeOffset.UtcNow;
+                CaptureReceipt?.Invoke(job, job.CompletedAt.Value, request.RoutingSnapshot);
+                job.Status = hasFailures ? BackfillJobStatus.Failed : BackfillJobStatus.Completed;
                 job.StatusReason = hasFailures ? "Completed with errors" : "All symbols backfilled successfully";
             }
         }
@@ -719,10 +729,28 @@ public sealed class BackfillJobManager : IDisposable
             }
             _jobsPathGuard.EnsurePath(filePath);
             await _atomicWriteAsync(filePath, json, ct).ConfigureAwait(false);
+            await PublishReceiptAsync(job).ConfigureAwait(false);
         }
         finally
         {
             _persistLock.Release();
+        }
+    }
+
+    private async Task PublishReceiptAsync(BackfillJob job)
+    {
+        if (job.ProviderProvenance is null || RetainReceiptAsync is null)
+            return;
+
+        try
+        {
+            await RetainReceiptAsync(job, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // The terminal job snapshot owns the receipt. Rebuild the workstation history
+            // entry from it on reload if publication was interrupted.
+            _log.Warning(ex, "Could not index the retained receipt for backfill job {JobId}", job.JobId);
         }
     }
 
@@ -827,6 +855,8 @@ public sealed class BackfillJobManager : IDisposable
         DateTimeOffset? PausedAt,
         string? StatusReason,
         int GapsDetected,
+        ProviderProvenanceReceipt? ProviderProvenance,
+        ProviderProvenanceAccess? ProvenanceAccess,
         IReadOnlyDictionary<string, SymbolBackfillProgress> SymbolProgress)
     {
         public static BackfillJobStartSnapshot Capture(BackfillJob job)
@@ -837,6 +867,8 @@ public sealed class BackfillJobManager : IDisposable
                 job.PausedAt,
                 job.StatusReason,
                 job.Statistics.GapsDetected,
+                job.ProviderProvenance,
+                job.ProvenanceAccess,
                 job.SymbolProgress.ToDictionary(
                     static pair => pair.Key,
                     static pair => CloneProgress(pair.Value),
@@ -850,6 +882,8 @@ public sealed class BackfillJobManager : IDisposable
             job.PausedAt = PausedAt;
             job.StatusReason = StatusReason;
             job.Statistics.GapsDetected = GapsDetected;
+            job.ProviderProvenance = ProviderProvenance;
+            job.ProvenanceAccess = ProvenanceAccess;
             job.SymbolProgress.Clear();
             foreach (var (symbol, progress) in SymbolProgress)
                 job.SymbolProgress[symbol] = CloneProgress(progress);

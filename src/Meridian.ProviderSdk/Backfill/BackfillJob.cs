@@ -10,6 +10,9 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// </summary>
 public sealed class BackfillJob
 {
+    public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; set; }
+    public Meridian.Contracts.Operations.ProviderProvenanceAccess? ProvenanceAccess { get; set; }
+
     /// <summary>
     /// Unique identifier for this job.
     /// </summary>

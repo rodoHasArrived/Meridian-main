@@ -6,6 +6,100 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutomatedJournalIntakeReadiness
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalIntakeReadiness</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:102](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L102).
+
+Outcome of one automated intake run: producer-side skips plus the intake result (created drafts and intake-side skips). Empty productions return an empty intake rather than an error.
+
+```csharp
+public enum AutomatedJournalIntakeReadiness
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Ready = 0</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:104](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L104) |  |
+| <code>NeedsInvestigation = 1</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:105](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L105) |  |
+| <code>Blocked = 2</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:106](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L106) |  |
+
+## AutomatedJournalIntakeRunner
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalIntakeRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:140](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L140).
+
+Wires the automated event producers to AutomatedJournalDraftIntakeService: corporate-action dividends and fee-schedule accruals become governed drafts in the close cockpit&#x27;s approval queue. The dividend lane requires the Security Master query service; when it is not configured the run fails loudly instead of producing nothing.
+
+```csharp
+public sealed partial class AutomatedJournalIntakeRunner
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AutomatedJournalIntakeRunner(AutomatedJournalDraftIntakeService intake, FeeScheduleAccrualEventProducer feeProducer, CorporateActionDividendEventProducer? dividendProducer = null, ILedgerBookService? ledgerBookService = null, DailyMarkToMarketService? dailyMarkToMarketService = null, DailyValuationPositionService? dailyValuationPositionService = null, AutomatedJournalEvidencePolicy? evidencePolicy = null, IAutomatedJournalCapitalAccountReconciliationResolver? capitalAccountReconciliationResolver = null, TimeProvider? timeProvider = null, IManualJournalEntryWorkbenchService? manualJournalWorkbench = null, IPrivateCapitalStore? privateCapitalStore = null, Meridian.Contracts.Banking.IBankTransactionSource? bankTransactionSource = null, Meridian.FinancialOperations.FundAdministration.IDistributionRegister? distributionRegister = null);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:158](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L158) |  |
+| <code>public bool CanRunDailyMarkToMarket =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:189](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L189) | Whether this process can execute the provider-backed daily valuation lane. |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunDividendIntakeAsync(RunDividendDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:192](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L192) |  |
+| <code>public async Task&lt;DailyMarkToMarketIntakeRunResult&gt; RunDailyMarkToMarketIntakeAsync(RunDailyMarkToMarketDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:239](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L239) | Resolves policy-qualified closing marks and admits the resulting fair-value draft into the existing human approval queue. Posting remains exclusively available via the workbench lifecycle and its governed durable posting target. |
+| <code>public async Task&lt;ValuationFreshnessPreviewDto&gt; PreviewDailyMarkToMarketAsync(RunDailyMarkToMarketDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:314](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L314) |  |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunPeriodCloseIntakeAsync(RunPeriodCloseDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:346](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L346) | Projects closing entries from a closed period&#x27;s trial balance and admits the resulting draft into the workbench queue. Mutating intake is allowed only while the period is soft-closed; hard-closed periods remain available through the read-only preview path but cannot acquire new drafts. A period with no temporary-account balances returns an empty intake — a correct outcome, not a gap. |
+| <code>public Task&lt;AutomatedJournalIntakeRunResult&gt; RunFeeAccrualIntakeAsync(RunFeeAccrualDraftIntakeRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:478](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L478) |  |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunCapitalCallIssuanceIntakeAsync(RunCapitalCallIssuanceDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:590](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L590) | Plans a fund-level capital call over approved commitment authority and admits the per-LP issuance drafts into the human approval queue. The called-to-date basis is recomputed server-side from exact commitment posting receipts before planning; runs whose evidence or capacity cannot be corroborated return Blocked with reasons instead of drafts. Posting remains exclusively available via the governed workbench lifecycle. |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunCapitalCallFundingIntakeAsync(RunCapitalCallFundingDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:689](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L689) | Records LP cash receipts against an issued capital call and admits the per-LP funding drafts (Dr Cash / Cr Capital Call Receivable) into the human approval queue. The fundable ceiling is recomputed server-side from the call&#x27;s posted ledger activity — issuance debits minus funding credits on each LP&#x27;s receivable — before drafting; runs that name an unissued call, exceed the open receivable, or carry no retained funding evidence return Blocked with reasons instead of drafts. Partial funding drafts the funded portion and leaves the receivable balance open. Posting remains exclusively available via the governed workbench lifecycle. |
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapital.cs:7](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapital.cs#L7).
+
+```csharp
+public sealed partial class AutomatedJournalIntakeRunner
+```
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs:6](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs#L6).
+
+```csharp
+public sealed partial class AutomatedJournalIntakeRunner
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunCapitalCallDefaultInterestIntakeAsync(RunCapitalCallDefaultInterestDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs:15](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs#L15) | Admits default-interest drafts for the unfunded part of a posted capital call into the approval queue. Nothing is posted; a blocked run admits nothing. |
+| <code>public async Task&lt;AutomatedJournalIntakeRunResult&gt; RunDistributionDeclarationIntakeAsync(RunDistributionDeclarationDraftIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs:49](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs#L49) | Admits one distribution draft per investor into the approval queue and retains each declaration&#x27;s waterfall tiers so the investor&#x27;s next distribution continues from them. |
+
+## AutomatedJournalIntakeRunResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalIntakeRunResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:109](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L109).
+
+```csharp
+public sealed record AutomatedJournalIntakeRunResult(IReadOnlyList<AutomatedJournalEventProductionSkip> ProducerSkips, AutomatedJournalDraftIntakeResult Intake, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null, AutomatedJournalIntakeReadiness Readiness = AutomatedJournalIntakeReadiness.Ready, IReadOnlyList<string>? ReadinessBlockers = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyDictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt; EvidenceAssessments { get; init; } = EvidenceAssessments?? new Dictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:116](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L116) |  |
+| <code>public IReadOnlyList&lt;string&gt; ReadinessBlockers { get; init; } = ReadinessBlockers??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:119](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L119) |  |
+
+## AutomatedJournalPositionSnapshotScope
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalPositionSnapshotScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:9](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L9).
+
+Named durable position source used by a recurring dividend schedule.
+
+```csharp
+public sealed record AutomatedJournalPositionSnapshotScope(string RunId, string AccountId);
+```
+
 ## AutomatedJournalPreparedDraftIntakeRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalPreparedDraftIntakeRequest</code>. Kind: `record`.
@@ -200,16 +294,23 @@ Declared public members:
 | <code>public BackfillCoordinator(ConfigStore store, ProviderRegistry? registry = null, ProviderFactory? factory = null, IProviderCatalog? providerCatalog = null);</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:28](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L28) | Creates a façade that owns a private core coordinator built from the UI config store. |
 | <code>public BackfillCoordinator(CoreBackfillCoordinator core);</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:41](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L41) | Creates a façade over an externally owned core coordinator (typically the composition-root singleton) so UI endpoints and non-UI callers share one run gate. |
 | <code>public IEnumerable&lt;object&gt; DescribeProviders() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:50](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L50) | Gets descriptions of all available backfill providers. |
-| <code>public BackfillResult? TryReadLast() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:55](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L55) | Tries to read the last backfill result. |
-| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:60](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L60) | Returns the per-symbol checkpoint map, or null when no checkpoints exist. |
-| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:65](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L65) | Returns the per-symbol bar-count sidecar, or null when no bar-count data exists. |
-| <code>public Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:70](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L70) | Runs a backfill operation for the specified request. |
-| <code>public void ValidateRequest(BackfillRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:73](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L73) |  |
-| <code>public Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckProviderHealthAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:78](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L78) | Gets health status of all providers. |
-| <code>public Task&lt;Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution?&gt; ResolveSymbolAsync(string symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:84](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L84) | Resolve a symbol using OpenFIGI. |
-| <code>public object? GetProgress() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:90](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L90) | Gets backfill progress snapshot from the core coordinator, if available. |
-| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:96](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L96) | Previews a backfill operation without actually fetching data. Returns information about what would be backfilled. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:99](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L99) |  |
+| <code>public IEnumerable&lt;object&gt; DescribeProviders(string? tenantId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:52](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L52) |  |
+| <code>public BackfillResult? TryReadLast() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:57](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L57) | Tries to read the last backfill result. |
+| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:62](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L62) | Returns the per-symbol checkpoint map, or null when no checkpoints exist. |
+| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:67](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L67) | Returns the per-symbol bar-count sidecar, or null when no bar-count data exists. |
+| <code>public Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:72](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L72) | Runs a backfill operation for the specified request. |
+| <code>public Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:75](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L75) |  |
+| <code>public Task&lt;BackfillClonePlan?&gt; GetClonePlanAsync(Guid receiptId, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:78](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L78) |  |
+| <code>public Task&lt;BackfillResult&gt; RunCloneAsync(Guid receiptId, string confirmationCode, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:81](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L81) |  |
+| <code>public void ValidateRequest(BackfillRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:84](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L84) |  |
+| <code>public void ValidateRequest(BackfillRequest request, string? tenantId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:86](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L86) |  |
+| <code>public Meridian.Storage.Backfill.BackfillStatusStore GetReceiptStore() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:88](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L88) |  |
+| <code>public Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckProviderHealthAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:93](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L93) | Gets health status of all providers. |
+| <code>public Task&lt;Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution?&gt; ResolveSymbolAsync(string symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:99](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L99) | Resolve a symbol using OpenFIGI. |
+| <code>public Meridian.Contracts.Backfill.BackfillRunProgressResponse? GetProgress() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:105](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L105) | Gets backfill progress snapshot from the core coordinator, if available. |
+| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:111](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L111) | Previews a backfill operation without actually fetching data. Returns information about what would be backfilled. |
+| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:114](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L114) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:117](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L117) |  |
 
 ## BackfillExecutionContractProjection
 
@@ -540,6 +641,12 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BrokeragePortfolioSyncService</code>. Kind: `class`.
 
+Source: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.AmountPassport.cs:11](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.AmountPassport.cs#L11).
+
+```csharp
+public sealed partial class BrokeragePortfolioSyncService
+```
+
 Source: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:40](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L40).
 
 Pulls read-only broker account, portfolio, order, fill, and cash activity snapshots into a durable workstation projection. This service is operator-triggered and intentionally avoids live-trading readiness decisions.
@@ -555,16 +662,16 @@ Declared public members:
 | <code>public BrokeragePortfolioSyncService(BrokeragePortfolioSyncOptions options, IEnumerable&lt;IBrokerageAccountCatalog&gt; catalogs, IEnumerable&lt;IBrokeragePortfolioSync&gt; portfolioAdapters, IEnumerable&lt;IBrokerageActivitySync&gt; activityAdapters, IServiceProvider services, ILogger&lt;BrokeragePortfolioSyncService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:63](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L63) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;WorkstationBrokerageAccountDto&gt;&gt; DiscoverAccountsAsync(Func&lt;IReadOnlyCollection&lt;Guid&gt;, CancellationToken, Task&lt;IReadOnlySet&lt;Guid&gt;&gt;&gt; authorizeFundAccounts, bool includeUnlinkedAccounts = false, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:86](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L86) |  |
 | <code>public async Task&lt;WorkstationBrokerageSyncStatusDto&gt; GetStatusAsync(Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:140](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L140) |  |
-| <code>public async Task&lt;WorkstationBrokerageSyncStatusDto&gt; RunSyncAsync(Guid fundAccountId, WorkstationBrokerageSyncRunRequestDto? request = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:179](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L179) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokeragePositionDto&gt;&gt; GetPositionsAsync(Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:394](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L394) |  |
-| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetActivityAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:402](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L402) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokerageCashTransactionDto&gt;&gt; GetCashTransactionHistoryAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:411](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L411) | Every cash transaction a sync has observed for the account, deduplicated by provider transaction id and ordered by posting time. Unlike the current projection, which holds only the latest activity snapshot, this history keeps rows that later syncs no longer return. Empty when no activity has been retained or the history file cannot be read. |
-| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetActivityForActiveLinkAsync(Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:422](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L422) | The current projection only when it was synced from the external account the fund account is linked to now. A relink updates the link at once but leaves the previous account&#x27;s projection in place until the next sync, and that projection is not evidence about the newly linked account. |
-| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokerageFillDto&gt;&gt; GetFillHistoryAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:441](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L441) | Every fill a sync has observed for the account, deduplicated by provider fill id. |
-| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetViewAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:472](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L472) |  |
-| <code>public async Task&lt;WorkstationBrokerageAccountLinkDto?&gt; LinkAccountAsync(Guid fundAccountId, BrokerageAccountLinkRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:475](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L475) |  |
-| <code>public async Task&lt;BrokerageCashFlowSummaryDto&gt; GetCashFlowAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:516](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L516) |  |
-| <code>public async Task&lt;BrokerageHouseholdPortfolioDto&gt; GetHouseholdAsync(string? providerId, Func&lt;IReadOnlyCollection&lt;Guid&gt;, CancellationToken, Task&lt;IReadOnlySet&lt;Guid&gt;&gt;&gt; authorizeFundAccounts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:552](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L552) |  |
+| <code>public async Task&lt;WorkstationBrokerageSyncStatusDto&gt; RunSyncAsync(Guid fundAccountId, WorkstationBrokerageSyncRunRequestDto? request = null, CancellationToken ct = default, string? passportTenantId = null, string? passportCompanyId = null);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:179](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L179) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokeragePositionDto&gt;&gt; GetPositionsAsync(Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:398](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L398) |  |
+| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetActivityAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:406](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L406) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokerageCashTransactionDto&gt;&gt; GetCashTransactionHistoryAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:415](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L415) | Every cash transaction a sync has observed for the account, deduplicated by provider transaction id and ordered by posting time. Unlike the current projection, which holds only the latest activity snapshot, this history keeps rows that later syncs no longer return. Empty when no activity has been retained or the history file cannot be read. |
+| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetActivityForActiveLinkAsync(Guid fundAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:426](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L426) | The current projection only when it was synced from the external account the fund account is linked to now. A relink updates the link at once but leaves the previous account&#x27;s projection in place until the next sync, and that projection is not evidence about the newly linked account. |
+| <code>public async Task&lt;IReadOnlyList&lt;FundAccountBrokerageFillDto&gt;&gt; GetFillHistoryAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:445](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L445) | Every fill a sync has observed for the account, deduplicated by provider fill id. |
+| <code>public async Task&lt;FundAccountBrokerageSyncActivityDto?&gt; GetViewAsync(Guid fundAccountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:476](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L476) |  |
+| <code>public async Task&lt;WorkstationBrokerageAccountLinkDto?&gt; LinkAccountAsync(Guid fundAccountId, BrokerageAccountLinkRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:479](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L479) |  |
+| <code>public async Task&lt;BrokerageCashFlowSummaryDto&gt; GetCashFlowAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:520](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L520) |  |
+| <code>public async Task&lt;BrokerageHouseholdPortfolioDto&gt; GetHouseholdAsync(string? providerId, Func&lt;IReadOnlyCollection&lt;Guid&gt;, CancellationToken, Task&lt;IReadOnlySet&lt;Guid&gt;&gt;&gt; authorizeFundAccounts, CancellationToken ct = default, string? passportTenantId = null, string? passportCompanyId = null);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:556](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L556) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.Performance.cs:9](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.Performance.cs#L9).
 
@@ -878,75 +985,3 @@ Declared public members:
 | <code>public void UpsertHaircutRule(HaircutRule rule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:96](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L96) |  |
 | <code>public IReadOnlyList&lt;ExposureSnapshot&gt; BuildSnapshots(IReadOnlyList&lt;CollateralInputRow&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:99](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L99) |  |
 | <code>public IReadOnlyList&lt;ThresholdBreach&gt; EvaluateBreaches(IReadOnlyList&lt;ExposureSnapshot&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:169](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L169) |  |
-
-## CollateralIngestionBuffer
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralIngestionBuffer</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:296](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L296).
-
-Buffers bounded collateral input batches separately for each tenant and company scope.
-
-```csharp
-public sealed class CollateralIngestionBuffer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaxBufferedRows = 20_000;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:303](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L303) | How many rows one tenant&#x27;s buffer retains. Public because the ingest route quotes it when it refuses an observation for exceeding it, and a message naming a different number than the rule enforces would send the producer looking for the wrong thing. |
-| <code>public int BufferedCount(CollateralTenantScope scope);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:311](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L311) | Rows currently held for one tenant scope. Scoped rather than global because a count spanning tenants would be a number no operator can act on. |
-| <code>public CollateralIngestOutcome IngestBatch(CollateralTenantScope scope, IReadOnlyList&lt;CollateralInputRow&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:338](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L338) | Applies one delivery: rows restating a buffered exposure replace it, the rest are added. The row cap remains as a backstop against a producer that invents unbounded identities; steady state is the number of distinct exposures, not the number of messages. Ingestion does not refuse for being at capacity — refusing past capacity would freeze exposure at whatever a deployment saw first, and with non-consuming reads nothing would ever drain it. Eviction of older observations is what makes room. It does refuse one thing, because eviction cannot absorb it: a single observation larger than the whole window. Observations are evicted whole, so one that cannot fit makes itself the eviction candidate and takes every row it owns with it — a counterparty disappearing from the exposure read while every request that built it was acknowledged. The delivery that would cross that line is refused instead, leaving what is already held untouched, so the producer learns at the point the observation outgrew the window rather than discovering the counterparty missing later. |
-| <code>public IReadOnlyList&lt;CollateralInputRow&gt; SnapshotCurrent(CollateralTenantScope scope);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:616](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L616) | The whole current picture, without consuming it. Every retained row is a live exposure, and CollateralExposureService.BuildSnapshots treats what it is handed as the complete set, so there is no honest read limit: any subset silently drops counterparties out of net exposure, coverage, and breach evaluation with nothing to signal it. The window cap is what bounds this — retention and reporting are the same number by construction rather than two limits that can drift apart. Reading must also leave the buffer intact. Draining on read made each snapshot cover only the rows arriving since the previous reader, so two operators looking at the same moment saw different exposure and the second frequently saw none. |
-
-## CollateralIngestOutcome
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralIngestOutcome</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:279](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L279).
-
-What the buffer did with one delivery.
-
-```csharp
-public enum CollateralIngestOutcome
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Retained</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:282](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L282) | Every row the delivery carried is retained, and older observations were evicted to fit. |
-| <code>ObservationExceedsWindow</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:290](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L290) | The delivery would have left one observation — a single identity at a single AsOf — holding more rows than the whole retention window. Nothing from the delivery was retained and what was already held is unchanged, because such an observation is evicted whole and would take every row it owns with it. |
-
-## CollateralInputRow
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralInputRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:49](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L49).
-
-One position within a collateral observation. ChunkId is optional and exists to settle a question the other fields cannot: an observation with more rows than the ingest route accepts in a single request arrives in pieces, and a second request at the same AsOf is then either another piece or a retry of one already sent. Naming the piece makes that decidable -- a chunk redelivered under the same name replaces itself, a chunk under a new name is added -- so two genuinely identical positions in different chunks both survive. Producers that do not split observations can leave it null and get the best-effort matching described on CollateralIngestionBuffer.
-
-```csharp
-public sealed record CollateralInputRow(DateTimeOffset AsOf, string Counterparty, string ProductType, decimal PositionNotional, decimal MarkToMarket, decimal CollateralBalance, string CollateralType, decimal InitialMargin, decimal VariationMargin, string? ChunkId = null);
-```
-
-## CollateralTenantScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralTenantScope</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:255](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L255).
-
-Holds the current collateral picture: one row per distinct exposure, replaced when a producer reports that exposure again. Why current state and not a log. CollateralExposureService.BuildSnapshots sums mark-to-market, collateral balance, and margin across every row it is handed. That is correct for a set of simultaneous positions and wrong for a history of observations: a producer posting periodic refreshes for the same exposure would have its numbers added together, so two identical refreshes reported twice the exposure and the figure kept climbing until eviction happened to change it. Reads used to drain the buffer, which hid this; once reads stopped consuming, the retained history became the reported total. Exposure identity is counterparty, product type, and collateral type — the same three fields BuildSnapshots groups and resolves haircuts by. A delivery replaces every buffered row whose identity it restates and keeps the rest, so a producer may refresh one counterparty without erasing the others. Simultaneous positions are never collapsed. Rows sharing an identity and an AsOf are two positions observed at one moment and are summed. Rows sharing an identity at different times are a restatement and a straggler, and only the newest observation survives — whether the straggler arrives in a later delivery or in the same one. That is why the API takes a batch: calling it once per row would make a delivery overwrite itself and silently under-report. An observation may arrive in pieces. The ingest route caps a single request, so an observation with more rows than that cap has to be split across requests. A later delivery at the same AsOf therefore continues the observation already held rather than replacing it, and a producer that names the piece it is sending (CollateralInputRow.ChunkId) has that chunk replaced exactly, so two identical positions in different chunks both survive. Without a chunk id the incoming rows are matched by count against what is held, which keeps a redelivered chunk from double-counting at the cost of reading an identical position in a later chunk as one. Only a strictly newer AsOf replaces the observation. State is partitioned by tenant scope. The buffer is a process-wide singleton, so without a scope key one tenant&#x27;s ingest would appear in another&#x27;s exposure and a same-identity restatement from either would overwrite the other&#x27;s current reading. The scope is resolved server-side from the request, never from the payload. A deployment with no tenancy resolves one empty scope and behaves exactly as before.
-
-```csharp
-public readonly record struct CollateralTenantScope(string TenantId, string CompanyId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly CollateralTenantScope Unscoped = new (string.Empty, string.Empty);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:257](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L257) |  |
-| <code>public static CollateralTenantScope For(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:259](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L259) |  |
-| <code>public static CollateralTenantScope ForRequest(HttpContext context);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:267](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L267) | Resolves the scope from the request, mirroring WorkstationWorkflowReadScope.ForRequest. The tenant comes from what the server resolved for the caller, never from the ingest payload -- a payload-supplied tenant would let a producer write into another tenant&#x27;s exposure. |

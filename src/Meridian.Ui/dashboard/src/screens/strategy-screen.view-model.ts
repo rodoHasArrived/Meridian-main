@@ -24,6 +24,7 @@ import type {
   MetricsDiff,
   ParameterDiff,
   PositionDiffEntry,
+  ProviderProvenanceReceipt,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
@@ -744,6 +745,7 @@ export function useStrategyRunLibraryViewModel(
   const [selectedRun, setSelectedRun] = useState<StrategyRunRecord | null>(null);
   const [selectedRunEvidenceLoop, setSelectedRunEvidenceLoop] = useState<StrategyRunEvidenceLoop | null>(null);
   const [selectedRunReplayProvenance, setSelectedRunReplayProvenance] = useState<StrategyRunReplayProvenance | null>(null);
+  const [selectedRunProvenance, setSelectedRunProvenance] = useState<ProviderProvenanceReceipt | null>(null);
   const [selectedRunAcceptanceChecklist, setSelectedRunAcceptanceChecklist] = useState<StrategyRunAcceptanceChecklistItem[]>([]);
   const [selectedRunEvidenceStatus, setSelectedRunEvidenceStatus] = useState<StrategyRunEvidenceLoadStatus>("idle");
   const [inspectedRunId, setInspectedRunId] = useState<string | null>(null);
@@ -880,6 +882,7 @@ export function useStrategyRunLibraryViewModel(
     const requestId = reviewPacketRequestId.current + 1;
     reviewPacketRequestId.current = requestId;
     setSelectedRun(run);
+    setSelectedRunProvenance(null);
     setSelectedRunEvidenceLoop(null);
     setSelectedRunReplayProvenance(null);
     setSelectedRunAcceptanceChecklist([]);
@@ -892,6 +895,7 @@ export function useStrategyRunLibraryViewModel(
         }
 
         const evidenceLoop = packet.run.evidenceLoop ?? null;
+        setSelectedRunProvenance(packet.run.providerProvenance ?? null);
         setSelectedRunEvidenceLoop(evidenceLoop);
         setSelectedRunReplayProvenance(packet.run.replayProvenance ?? null);
         setSelectedRunAcceptanceChecklist(packet.run.acceptanceChecklist ?? []);
@@ -922,6 +926,7 @@ export function useStrategyRunLibraryViewModel(
   const closeRunDetail = useCallback(() => {
     reviewPacketRequestId.current += 1;
     setSelectedRun(null);
+    setSelectedRunProvenance(null);
     setSelectedRunEvidenceLoop(null);
     setSelectedRunReplayProvenance(null);
     setSelectedRunAcceptanceChecklist([]);
@@ -1167,6 +1172,7 @@ export function useStrategyRunLibraryViewModel(
     comparisonOverlay,
     comparisonCurvesLoading,
     clearRunSelection,
+    selectedRunProvenance,
     toggleRun,
     openRunDetail,
     closeRunDetail,

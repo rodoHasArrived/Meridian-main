@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Net;
+using System.Net.Http.Json;
 using FluentAssertions;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
@@ -6,9 +8,13 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
+using Meridian.Identity.Auth;
 using Meridian.Strategies.Services;
 using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -22,6 +28,74 @@ namespace Meridian.Tests.Ui;
 /// </summary>
 public sealed class BrokeragePortfolioSyncServiceTests
 {
+    [Fact]
+    public async Task AmountPassport_RetainsTheExactBrokerObservationAndItsSuccessor()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var now = DateTimeOffset.UtcNow;
+            var time = new FixedTimeProvider(now);
+            var adapter = new PassportPortfolioAdapter(time);
+            var (service, services) = CreateService(root, adapter, new SequencedCashActivityAdapter("alpaca"),
+                includeSecurityLookup: false, timeProvider: time);
+            await using var provider = services;
+            var accounts = provider.GetRequiredService<IFundAccountService>();
+            var accountId = Guid.NewGuid();
+            await accounts.CreateAccountAsync(new CreateAccountRequest(accountId, AccountTypeDto.Brokerage,
+                "PASSPORT-ACCOUNT", "Test brokerage", "USD", now.AddDays(-1), "tests"));
+            var request = new WorkstationBrokerageSyncRunRequestDto("alpaca", "PASSPORT-ACCOUNT", "tests");
+            await service.RunSyncAsync(accountId, request, passportTenantId: "tenant", passportCompanyId: "company");
+            var original = await GetPositionAsync();
+            var valueAddress = original.AmountPassports!["market-value"].Identity;
+            original.AmountPassports["average-price"].Origin.Should().Be("unavailable", "the incomplete feed used a zero placeholder");
+            original.AmountPassports["average-price"].IsZero.Should().BeFalse();
+
+            time.UtcNow = now.AddHours(1);
+            adapter.MarketValue = 20_000m;
+            await service.RunSyncAsync(accountId, request, passportTenantId: "tenant", passportCompanyId: "company");
+            var current = await GetPositionAsync();
+
+            var builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            builder.Services.AddSingleton(service);
+            builder.Services.AddSingleton<IAccountQueryService>((IAccountQueryService)accounts);
+            await using var app = builder.Build();
+            app.Use(async (context, next) =>
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserKey] = "controller";
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewTrades | UserPermission.AdminMaintenance;
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant";
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company";
+                await next();
+            });
+            app.MapEvidenceEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            await app.StartAsync();
+            var client = app.GetTestClient();
+            var passport = (await client.GetFromJsonAsync<AmountPassportDto>(AmountPassportTestRoutes.PassportRoute(valueAddress)))!;
+            passport.ExactValue.Should().Be("18750.125", "the retained provider mark is read at full precision without recomputing quantity times price");
+            passport.Reference.Currency.Should().BeNull("the position currency was not retained");
+            passport.Status.Should().Be("stale");
+            passport.Freshness.AgeMinutes.Should().Be(60);
+            passport.History.Should().ContainSingle(item => item.Kind == "successor" &&
+                item.Passport == current.AmountPassports!["market-value"].Identity);
+            passport.Gaps.Should().Contain(gap => gap.Contains("underlying mark observation timestamp", StringComparison.Ordinal));
+            (await client.GetAsync(AmountPassportTestRoutes.PassportRoute(valueAddress with { Revision = new string('c', 64) })))
+                .StatusCode.Should().Be(HttpStatusCode.NotFound);
+            (await client.GetAsync(AmountPassportTestRoutes.PassportRoute(valueAddress with
+            {
+                Scope = valueAddress.Scope with { TenantId = "other-tenant" }
+            }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+            async Task<BrokerageHouseholdPositionDto> GetPositionAsync() =>
+                (await service.GetHouseholdAsync("alpaca", (ids, _) => Task.FromResult<IReadOnlySet<Guid>>(ids.ToHashSet()),
+                    passportTenantId: "tenant", passportCompanyId: "company")).Positions.Single();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
     [Theory]
     [InlineData(125, "brokerage-sync:alpaca")]
     [InlineData(-125, "brokerage-sync:alpaca")]
@@ -1847,7 +1921,25 @@ public sealed class BrokeragePortfolioSyncServiceTests
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
-        public override DateTimeOffset GetUtcNow() => utcNow;
+        public DateTimeOffset UtcNow { get; set; } = utcNow;
+        public override DateTimeOffset GetUtcNow() => UtcNow;
+    }
+
+    private sealed class PassportPortfolioAdapter(TimeProvider time) : IBrokeragePortfolioSync
+    {
+        public string ProviderId => "alpaca";
+        public decimal MarketValue { get; set; } = 18750.125m;
+
+        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default)
+            => Task.FromResult(new BrokeragePortfolioSnapshotDto(
+                BuildExternalAccount(ProviderId, externalAccountId),
+                new BrokerageBalanceSnapshotDto(50_000m, 125_000m, 95_000m, "USD"),
+                [new BrokeragePositionSnapshotDto("AAPL", 100m, 0m, 190m, MarketValue, 0m,
+                    "equity", PositionId: "pos-aapl")
+                {
+                    ValuationBasis = BrokeragePositionValuationBasis.ProviderReported
+                }],
+                time.GetUtcNow(), IsComplete: false, CompletenessIssues: ["Average entry price is unavailable."]));
     }
 
     private sealed class MismatchedPortfolioAdapter(string providerId, string mismatch) : IBrokeragePortfolioSync

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Backfill;
@@ -5,6 +6,7 @@ using Meridian.Application.UI;
 using Meridian.Contracts.Backfill;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Operations;
 using Meridian.Core.Config;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Core;
@@ -133,13 +135,85 @@ public sealed class BackfillRoutingRuntimeTests : IDisposable
     }
 
     [Fact]
+    public async Task QuotaWaitRechecksCooldownBeforeRecordingAnAttempt()
+    {
+        var throttled = new GatedProvider();
+        var fallback = new RecordingProvider("stooq", _ => [Bar("stooq")]);
+        using var admission = new BackfillRoutingAdmission([throttled, fallback], perProvider: 2);
+        var snapshot = new BackfillRoutingSnapshot([new(throttled, 5), new(fallback, 20)],
+            new BackfillConfig(), admission, DateTimeOffset.UtcNow);
+        var beforeQuota = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseQuota = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var quotaAdmissions = new ConcurrentQueue<string>();
+        var beforeThrottle = 0;
+
+        using var observation = new HistoricalBackfillRequestScope(_ => 0, async (provider, ct) =>
+        {
+            if (provider == throttled && Interlocked.Increment(ref beforeThrottle) == 2)
+            {
+                beforeQuota.TrySetResult();
+                await releaseQuota.Task.WaitAsync(ct);
+            }
+        }, _ => { }, _ => { }, (_, _, _) => { }, retryRateLimited: true, unmeteredFetchStarted: quotaAdmissions.Enqueue);
+
+        using var first = snapshot.CreateComposite([], null, Serilog.Log.Logger, null);
+        var attempts = new List<BackfillRoutingAttempt>();
+        using var second = snapshot.CreateComposite([], null, Serilog.Log.Logger, null, attempts.Add);
+        var provenance = new BackfillProvenanceCapture(second, DataGranularity.Daily, symbolTimelineResolution: false);
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var started = DateTimeOffset.UtcNow;
+        var firstFetch = first.GetDailyBarsAsync("SPY", Date, Date, deadline.Token);
+        await throttled.Entered.Task.WaitAsync(deadline.Token);
+        var secondFetch = second.GetDailyBarsAsync("QQQ", Date, Date, provenance, deadline.Token);
+        await beforeQuota.Task.WaitAsync(deadline.Token);
+        throttled.Release.TrySetResult();
+        await firstFetch;
+        releaseQuota.TrySetResult();
+        await secondFetch;
+
+        var request = BackfillProvenanceCapture.DescribeRequest(Date, Date, ["QQQ"], DataGranularity.Daily, 1);
+        var receipt = provenance.Complete(request, started, DateTimeOffset.UtcNow);
+        receipt.Providers.Select(provider => (provider.Priority, provider.Requests, provider.Unavailable))
+            .Should().Equal((5, 0L, 1L), (20, 1L, 0L));
+        quotaAdmissions.Should().Equal(throttled.Name, fallback.Name, fallback.Name);
+        attempts.Select(attempt => (attempt.ProviderId, attempt.Reason, attempt.Attempted))
+            .Should().Equal((throttled.Name, "skipped-rate-limited", false), (fallback.Name, "completed", true));
+        admission.GetStatus(throttled.Name)!.RequestsInWindow.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task CoordinatorUsesLiveTenantRouteAndProtectsTheResultEvidence()
+    {
+        var restricted = ProviderRuntimeProvenance.Attach(new RecordingProvider("yahoo", _ => [Bar("yahoo")]),
+            new TenantCredentials("owner"));
+        var publicProvider = new RecordingProvider("stooq", _ => [Bar("stooq")]);
+        await using var host = await CreateHostAsync(new AppConfig(DataRoot: _directory), publicProvider, restricted);
+        var runtime = host.GetRequiredService<BackfillRoutingRuntime>();
+        await runtime.StartAsync(CancellationToken.None);
+        var store = host.GetRequiredService<ConfigStore>();
+        using var coordinator = new BackfillCoordinator(store, host.GetRequiredService<ProviderRegistry>(),
+            symbolResolver: new AliasResolver(), routingRuntime: runtime);
+
+        var result = await coordinator.RunAsync(new BackfillRequest("composite", ["SPY"], Date, Date), "requester", CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.BarsWritten.Should().Be(1);
+        result.ProviderProvenance!.FallbackChain.Should().Equal("stooq");
+        result.RoutingAttempts.Should().ContainSingle(attempt => attempt is { ProviderId: "stooq", Attempted: true });
+        result.QuotaReceipt!.ObservedProviders.Should().Equal("stooq");
+        result.ForTenant("requester").RoutingAttempts.Should().BeSameAs(result.RoutingAttempts);
+        result.ForTenant("owner").RoutingAttempts.Should().BeNull();
+        runtime.Admission!.GetStatus(restricted.Name)!.RequestsInWindow.Should().Be(0);
+    }
+
+    [Fact]
     public async Task QueuedJobKeepsItsCapturedRouteAndRetainsTheCanonicalSymbol()
     {
         var provider = new RecordingProvider("first", symbol => [new HistoricalBar(symbol, Date, 100, 101, 99, 100, 1_000, "first")]);
         var other = new RecordingProvider("other", _ => throw new InvalidOperationException("Unexpected provider."));
         var config = new BackfillConfig(Jobs: new BackfillJobsConfig(MaxConcurrentRequests: 1));
         using var admission = new BackfillRoutingAdmission([provider, other], perProvider: 1);
-        var current = new BackfillRoutingSnapshot([new(provider, 0), new(other, 1)], config, admission, DateTimeOffset.UtcNow);
+        var current = new BackfillRoutingSnapshot([new(provider, 12), new(other, 1)], config, admission, DateTimeOffset.UtcNow);
         var writer = new CapturingWriter();
         var factory = new BackfillServiceFactory(new AtomicFileWriterAdapter(), _ => writer,
             symbolResolver: new AliasResolver(), captureRouting: () => current);
@@ -152,7 +226,7 @@ public sealed class BackfillRoutingRuntimeTests : IDisposable
                 complete.TrySetResult(job);
         };
         var scheduled = await services.JobManager.CreateJobAsync("alias", ["SPY"], Date, Date.AddDays(1),
-            options: new BackfillJobOptions { SkipExistingData = false, FillGapsOnly = false });
+            options: new BackfillJobOptions { SkipExistingData = false, FillGapsOnly = false }, preferredProviders: ["first"]);
         await services.JobManager.StartJobAsync(scheduled.JobId);
         current = new BackfillRoutingSnapshot([new(other, 0)], config, admission, DateTimeOffset.UtcNow);
         services.StartWorker();
@@ -162,6 +236,10 @@ public sealed class BackfillRoutingRuntimeTests : IDisposable
         writer.Bars.Should().ContainSingle(bar => bar.Symbol == "SPY" && bar.Source == "first");
         result.SymbolProgress["SPY"].ServedBy["first"].Should().Be(1L);
         result.SymbolProgress["SPY"].FilledDates.Should().ContainSingle().Which.Should().Be(Date);
+        result.ProviderProvenance!.FallbackChain.Should().Equal(ProviderProvenanceLabels.ProviderId(provider.Name),
+            ProviderProvenanceLabels.ProviderId(other.Name));
+        result.ProviderProvenance.Providers[0].Priority.Should().Be(12);
+        result.ProviderProvenance.Providers[0].Requests.Should().Be(1);
         admission.GetStatus("other")!.RequestsInWindow.Should().Be(0);
     }
 
@@ -209,6 +287,13 @@ public sealed class BackfillRoutingRuntimeTests : IDisposable
     {
         public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary<string, string?>? configuredValues = null)
             => this;
+        public string? Get(string name) => null;
+        public bool IsConfigured(string name) => false;
+    }
+
+    private sealed class TenantCredentials(string tenantId) : ICredentialContext
+    {
+        public string? ProvenanceTenantId => tenantId;
         public string? Get(string name) => null;
         public bool IsConfigured(string name) => false;
     }

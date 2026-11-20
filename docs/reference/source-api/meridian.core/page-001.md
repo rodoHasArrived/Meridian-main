@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Core.Config.AlpacaBackfillConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:214](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L214).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:222](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L222).
 
 Alpaca Markets historical data provider configuration.
 
@@ -102,7 +102,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.AlphaVantageConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:269](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L269).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:277](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L277).
 
 Alpha Vantage provider configuration. Unique capability: Intraday historical data (1, 5, 15, 30, 60 min intervals). Free tier: 25 requests/day (severely limited), 5 calls/minute.
 
@@ -114,7 +114,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? TierId { get; init; }</code> | [src/Meridian.Core/Config/BackfillConfig.cs:279](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L279) | Declared vendor tier used to validate physical request pacing. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? TierId { get; init; }</code> | [src/Meridian.Core/Config/BackfillConfig.cs:287](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L287) | Declared vendor tier used to validate physical request pacing. |
 
 ## AlphaVantageQuotaConfig
 
@@ -189,7 +189,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.AutoGapRemediationConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:53](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L53).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:61](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L61).
 
 Host configuration for automatic, quality-triggered backfill remediation. Primitive time units keep JSON and environment configuration portable; Application composition maps this value into the typed remediation policy exposed through the Options pattern.
 
@@ -201,24 +201,36 @@ public sealed record AutoGapRemediationConfig(int MinimumGapDurationSeconds = 12
 
 Qualified name: <code>Meridian.Core.Config.BackfillConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:25](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L25).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:26](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L26).
 
 Configuration for historical backfill operations.
 
 ```csharp
-public sealed record BackfillConfig(bool Enabled = false, string Provider = "composite", string[]? Symbols = null, DateOnly? From = null, DateOnly? To = null, string Granularity = "daily", bool EnableFallback = true, bool PreferAdjustedPrices = true, bool EnableSymbolResolution = true, string[]? ProviderPriority = null, bool EnableRateLimitRotation = true, double RateLimitRotationThreshold = 0.8, bool SkipExistingData = true, bool FillGapsOnly = true, BackfillJobsConfig? Jobs = null, BackfillProvidersConfig? Providers = null, SymbolResolutionMode SymbolResolutionMode = SymbolResolutionMode.Compare, AutoGapRemediationConfig? AutoRemediation = null, IReadOnlyDictionary<string, ProviderValidationProfile>? ValidationProfiles = null, ProviderValidationProfileAudit[]? ValidationProfileAudit = null);
+public sealed record BackfillConfig(bool Enabled = false, string Provider = "composite", string[]? Symbols = null, DateOnly? From = null, DateOnly? To = null, string Granularity = "daily", bool EnableFallback = true, bool PreferAdjustedPrices = true, bool EnableSymbolResolution = true, string[]? ProviderPriority = null, bool EnableRateLimitRotation = true, double RateLimitRotationThreshold = 0.8, bool SkipExistingData = true, bool FillGapsOnly = true, BackfillJobsConfig? Jobs = null, BackfillProvidersConfig? Providers = null, SymbolResolutionMode SymbolResolutionMode = SymbolResolutionMode.Compare, AutoGapRemediationConfig? AutoRemediation = null, IReadOnlyDictionary<string, ProviderValidationProfile>? ValidationProfiles = null, ProviderValidationProfileAudit[]? ValidationProfileAudit = null, Dictionary<string, BackfillOperationalBudgetConfig>? OperationalBudgets = null);
 ```
 
 ## BackfillJobsConfig
 
 Qualified name: <code>Meridian.Core.Config.BackfillJobsConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:77](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L77).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:85](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L85).
 
 Configuration for backfill job management.
 
 ```csharp
 public sealed record BackfillJobsConfig(bool PersistJobs = true, string JobsDirectory = "_backfill_jobs", int MaxConcurrentRequests = 3, int MaxConcurrentPerProvider = 2, int MaxRetries = 3, int RetryDelaySeconds = 5, int BatchSizeDays = 365, bool AutoPauseOnRateLimit = true, bool AutoResumeAfterRateLimit = true, int MaxRateLimitWaitMinutes = 5, ScheduledBackfillConfig? Scheduling = null, int WorkerErrorRetryDelayMs = 1000);
+```
+
+## BackfillOperationalBudgetConfig
+
+Qualified name: <code>Meridian.Core.Config.BackfillOperationalBudgetConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:51](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L51).
+
+Shared historical backfill policy managed in the host configuration.
+
+```csharp
+public sealed record BackfillOperationalBudgetConfig(int ReserveHeadroomPercent = 0, int? MaxConcurrentRequests = null, string[]? ApprovedEquivalentProviders = null);
 ```
 
 ## BackfillProviderCatalog
@@ -272,7 +284,7 @@ public sealed record BackfillProviderEdit(bool Enabled, int Priority, string Tie
 
 Qualified name: <code>Meridian.Core.Config.BackfillProvidersConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:135](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L135).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:143](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L143).
 
 Configuration for individual backfill data providers.
 
@@ -872,16 +884,4 @@ User-editable data-quality configuration. Absent sections keep built-in defaults
 
 ```csharp
 public sealed record DataQualityConfig(CrossProviderTolerancePolicy? CrossProvider = null, CrossProviderTolerancePolicyAudit[]? CrossProviderAudit = null);
-```
-
-## DataSourceConfig
-
-Qualified name: <code>Meridian.Core.Config.DataSourceConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/DataSourceConfig.cs:10](../../../../src/Meridian.Core/Config/DataSourceConfig.cs#L10).
-
-Configuration for an individual data source (real-time or historical). Allows users to configure multiple data sources with different providers and settings.
-
-```csharp
-public sealed record DataSourceConfig(string Id, string Name, DataSourceKind Provider = DataSourceKind.IB, bool Enabled = true, DataSourceType Type = DataSourceType.RealTime, int Priority = 100, AlpacaOptions? Alpaca = null, PolygonOptions? Polygon = null, IBOptions? IB = null, string[]? Symbols = null, string? Description = null, string[]? Tags = null);
 ```

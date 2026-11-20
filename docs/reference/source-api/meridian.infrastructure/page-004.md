@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FailoverTriggeredEvent
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1426](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1426).
+
+Raised when an automatic or manual failover is triggered.
+
+```csharp
+public readonly record struct FailoverTriggeredEvent(string RuleId, string FromProviderId, string ToProviderId, string Reason, DateTimeOffset Timestamp);
+```
+
+## ProviderHealthSnapshot
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1459](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1459).
+
+Point-in-time snapshot of a provider&#x27;s health.
+
+```csharp
+public readonly record struct ProviderHealthSnapshot(string ProviderId, int ConsecutiveFailures, int ConsecutiveSuccesses, DateTimeOffset? LastFailureTime, DateTimeOffset? LastSuccessTime, double AverageLatencyMs, string[] RecentIssues);
+```
+
+## StreamingFailoverRegistry
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.StreamingFailoverRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:13](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L13).
+
+Singleton registry that holds the runtime StreamingFailoverService instance. Allows API endpoints (in the Ui.Shared layer) to access the failover service without requiring a direct project reference to the runtime.
+
+```csharp
+public sealed class StreamingFailoverRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StreamingFailoverRegistry Process { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L19) | Process-wide instance. Desktop mode runs the UI server and the collector in separate DI containers; both register this instance so the UI reads the collector&#x27;s live coordinator. |
+| <code>public StreamingFailoverService? Service { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:24](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L24) | The runtime failover service, or null if failover is disabled. |
+| <code>public bool IsAvailable =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L31) | Whether a runtime failover service is available. |
+
 ## StreamingFailoverService
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService</code>. Kind: `class`.
@@ -1257,7 +1301,7 @@ Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDat
 Historical data provider using Interactive Brokers TWS API. Implements rate limiting based on IB&#x27;s pacing rules: - Max 60 requests per 10-minute window - Max 6 requests per 2 seconds for same contract - Min 15 seconds between identical requests - Max 50 concurrent requests
 
 ```csharp
-public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLimitAwareProvider, IDisposable
+public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLimitAwareProvider, IBackfillRequestMeteredProvider, IDisposable
 ```
 
 Declared public members:
@@ -1278,8 +1322,8 @@ Declared public members:
 | <code>public async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:133](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L133) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:169](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L169) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:179](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L179) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntradayBar&gt;&gt; GetIntradayBarsAsync(string symbol, DateTimeOffset start, DateTimeOffset end, string barSize = &quot;1 min&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:352](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L352) | Request intraday bars for a symbol. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:532](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L532) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntradayBar&gt;&gt; GetIntradayBarsAsync(string symbol, DateTimeOffset start, DateTimeOffset end, string barSize = &quot;1 min&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:361](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L361) | Request intraday bars for a symbol. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:542](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L542) |  |
 
 ## IBHistoricalTickRequest
 
@@ -1491,103 +1535,3 @@ Declared public members:
 | <code>public int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:204](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L204) |  |
 | <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:212](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L212) |  |
 | <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs:263](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs#L263) |  |
-
-## IBTickByTickTypes
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickByTickTypes</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:384](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L384).
-
-Tick-by-tick data types for reqTickByTickData.
-
-```csharp
-public static class IBTickByTickTypes
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Last = &quot;Last&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:387](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L387) | Trade ticks only. |
-| <code>public const string AllLast = &quot;AllLast&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:390](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L390) | All trades including combos/derivatives. |
-| <code>public const string BidAsk = &quot;BidAsk&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:393](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L393) | Bid/Ask updates. |
-| <code>public const string MidPoint = &quot;MidPoint&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:396](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L396) | Midpoint price updates. |
-
-## IBTickTypes
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:192](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L192).
-
-Standard tick type IDs returned by reqMktData without genericTickList.
-
-```csharp
-public static class IBTickTypes
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int BidSize = 0;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:195](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L195) |  |
-| <code>public const int BidPrice = 1;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:196](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L196) |  |
-| <code>public const int AskPrice = 2;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:197](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L197) |  |
-| <code>public const int AskSize = 3;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:198](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L198) |  |
-| <code>public const int LastPrice = 4;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:199](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L199) |  |
-| <code>public const int LastSize = 5;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:200](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L200) |  |
-| <code>public const int High = 6;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:201](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L201) |  |
-| <code>public const int Low = 7;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:202](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L202) |  |
-| <code>public const int Volume = 8;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:203](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L203) |  |
-| <code>public const int ClosePrice = 9;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:204](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L204) |  |
-| <code>public const int Open = 14;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:205](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L205) |  |
-| <code>public const int LastTimestamp = 45;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:206](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L206) |  |
-| <code>public const int Halted = 49;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:207](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L207) |  |
-| <code>public const int HistoricalVolatility = 23;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:210](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L210) |  |
-| <code>public const int ImpliedVolatility = 24;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:211](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L211) |  |
-| <code>public const int OptionCallOpenInterest = 27;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:212](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L212) |  |
-| <code>public const int OptionPutOpenInterest = 28;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:213](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L213) |  |
-| <code>public const int OptionCallVolume = 29;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:214](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L214) |  |
-| <code>public const int OptionPutVolume = 30;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:215](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L215) |  |
-| <code>public const int AuctionVolume = 34;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:216](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L216) |  |
-| <code>public const int AuctionPrice = 35;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:217](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L217) |  |
-| <code>public const int AuctionImbalance = 36;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:218](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L218) |  |
-| <code>public const int MarkPrice = 37;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:219](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L219) |  |
-| <code>public const int Shortable = 46;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:220](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L220) |  |
-| <code>public const int RTVolume = 48;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:221](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L221) |  |
-| <code>public const int TradeCount = 54;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:222](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L222) |  |
-| <code>public const int TradeRate = 55;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:223](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L223) |  |
-| <code>public const int VolumeRate = 56;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:224](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L224) |  |
-| <code>public const int LastRTHTrade = 57;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:225](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L225) |  |
-| <code>public const int RTHistoricalVolatility = 58;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:226](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L226) |  |
-| <code>public const int Dividends = 59;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:227](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L227) |  |
-| <code>public const int ShortTermVolume3Min = 63;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:228](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L228) |  |
-| <code>public const int ShortTermVolume5Min = 64;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:229](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L229) |  |
-| <code>public const int ShortTermVolume10Min = 65;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:230](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L230) |  |
-| <code>public const int RTTradeVolume = 77;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:231](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L231) |  |
-| <code>public const int ShortableShares = 89;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:232](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L232) |  |
-
-## IBWhatToShow
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:351](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L351).
-
-Valid whatToShow values for reqHistoricalData on stocks.
-
-```csharp
-public static class IBWhatToShow
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Trades = &quot;TRADES&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:354](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L354) | Trade prices (split-adjusted). Includes volume. |
-| <code>public const string Midpoint = &quot;MIDPOINT&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:357](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L357) | Midpoint of bid/ask. No volume. |
-| <code>public const string Bid = &quot;BID&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:360](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L360) | Bid prices. No volume. |
-| <code>public const string Ask = &quot;ASK&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:363](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L363) | Ask prices. No volume. |
-| <code>public const string BidAsk = &quot;BID_ASK&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:366](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L366) | Time-averaged bid/ask. No volume. Counts as 2 requests. |
-| <code>public const string AdjustedLast = &quot;ADJUSTED_LAST&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:369](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L369) | Dividend + split adjusted prices. Includes volume. |
-| <code>public const string HistoricalVolatility = &quot;HISTORICAL_VOLATILITY&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:372](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L372) | 30-day historical volatility. No volume. |
-| <code>public const string OptionImpliedVolatility = &quot;OPTION_IMPLIED_VOLATILITY&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:375](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L375) | 30-day implied volatility. No volume. |
-| <code>public const string Schedule = &quot;SCHEDULE&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:378](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L378) | Trading schedule only. |

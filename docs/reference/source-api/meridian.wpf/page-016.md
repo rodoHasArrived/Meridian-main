@@ -1022,7 +1022,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolMappingItem</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:525](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L525).
+Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:528](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L528).
 
 ```csharp
 public sealed record SymbolMappingItem(string CanonicalSymbol, string ProviderMappingsText, string UpdatedText);
@@ -1032,7 +1032,7 @@ public sealed record SymbolMappingItem(string CanonicalSymbol, string ProviderMa
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolMappingProviderInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:516](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L516).
+Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:519](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L519).
 
 ```csharp
 public sealed record SymbolMappingProviderInfo(string Id, string DisplayName, string Description);
@@ -1042,7 +1042,7 @@ public sealed record SymbolMappingProviderInfo(string Id, string DisplayName, st
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolMappingProviderOption</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:521](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L521).
+Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:524](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L524).
 
 ```csharp
 public sealed record SymbolMappingProviderOption(string Id, string Label);
@@ -1052,7 +1052,7 @@ public sealed record SymbolMappingProviderOption(string Id, string Label);
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolMappingTestResultItem</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:530](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L530).
+Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:533](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L533).
 
 ```csharp
 public sealed record SymbolMappingTestResultItem(string ProviderName, string MappedSymbol);
@@ -1105,14 +1105,14 @@ Declared public members:
 | <code>public bool CanTestMapping() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:198](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L198) |  |
 | <code>public bool CanAddMapping() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:200](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L200) |  |
 | <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:206](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L206) |  |
-| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:230](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L230) |  |
-| <code>public void TestMapping();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:237](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L237) |  |
-| <code>public async Task AddMappingAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:264](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L264) |  |
-| <code>public void RequestRemoveMapping(string? canonicalSymbol);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:300](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L300) |  |
-| <code>public async Task ConfirmRemoveMappingAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:312](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L312) |  |
-| <code>public void CancelRemoveMapping();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:341](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L341) |  |
-| <code>public async Task&lt;int&gt; ImportCsvContentAsync(string csvContent, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:348](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L348) |  |
-| <code>public async Task&lt;string&gt; ExportCsvAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:373](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L373) |  |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:231](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L231) |  |
+| <code>public void TestMapping();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:238](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L238) |  |
+| <code>public async Task AddMappingAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L265) |  |
+| <code>public void RequestRemoveMapping(string? canonicalSymbol);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:302](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L302) |  |
+| <code>public async Task ConfirmRemoveMappingAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:314](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L314) |  |
+| <code>public void CancelRemoveMapping();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:344](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L344) |  |
+| <code>public async Task&lt;int&gt; ImportCsvContentAsync(string csvContent, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:351](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L351) |  |
+| <code>public async Task&lt;string&gt; ExportCsvAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:376](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L376) |  |
 
 ## SymbolQualityDisplayItem
 

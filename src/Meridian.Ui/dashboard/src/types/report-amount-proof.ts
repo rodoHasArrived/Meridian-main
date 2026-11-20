@@ -1,4 +1,5 @@
 import type { LedgerAmountScope } from "./ledger-amount-proof";
+import type { AmountPassportReference } from "./amount-passport";
 
 /** Retained ReportLedgerAmountBindingDto, projected from the certified run checkpoint. */
 export interface ReportLedgerAmountBinding {
@@ -13,4 +14,5 @@ export interface ReportLedgerAmountBinding {
   sourceSnapshotHash: string;
   /** Server-owned: whether this caller may open the amount's proof. Absent means denied. */
   proofAvailable?: boolean;
+  amountPassport?: AmountPassportReference | null;
 }

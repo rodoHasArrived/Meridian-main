@@ -338,6 +338,7 @@ Declared public members:
 | <code>public IReadOnlyList&lt;LedgerIntegrityBreak&gt; LedgerIntegrityBreaks { get; init; } = [];</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:120](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L120) | Day-end accounting differences retained for inspection; empty for a reconciled run. |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BacktestCanonicalActionSnapshot? CanonicalCorporateActions { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:124](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L124) | Frozen effective action terms for an explicit canonical settlement replay. |
 | <code>public ExecutionRealismDescriptor ToResolvedRealismDescriptor() =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:127](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L127) | Includes observed replay and action evidence in the completed experiment&#x27;s identity. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:134](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L134) |  |
 
 ## BacktestResultKinds
 

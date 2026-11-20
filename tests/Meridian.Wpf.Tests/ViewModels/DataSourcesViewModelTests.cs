@@ -1,3 +1,10 @@
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using Meridian.Ui.Services;
+using Meridian.Ui.Services.ProviderDiagnostics;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
 
@@ -200,10 +207,3 @@ public sealed class DataSourcesViewModelTests
             => send(request);
     }
 }
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using Meridian.Ui.Services;
-using Meridian.Ui.Services.ProviderDiagnostics;
-using Meridian.Wpf.Services;

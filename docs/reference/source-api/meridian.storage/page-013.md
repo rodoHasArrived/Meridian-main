@@ -6,6 +6,41 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataReplacementCostOptions
+
+Qualified name: <code>Meridian.Storage.Services.DataReplacementCostOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:140](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L140).
+
+Rate card and toggles for the data replacement-cost meter, bound from the DataReplacementCost configuration section. Defaults are conservative low-end list prices as of the recorded verification date; operators should refresh them from current vendor rate cards rather than treating them as quotes.
+
+```csharp
+public sealed class DataReplacementCostOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionName = &quot;DataReplacementCost&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:142](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L142) |  |
+| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:144](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L144) |  |
+| <code>public string Currency { get; set; } = &quot;USD&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:146](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L146) |  |
+| <code>public Dictionary&lt;string, decimal&gt;? HistoricalRatePerSymbolDayUsd { get; set; } = new (StringComparer.OrdinalIgnoreCase) {[&quot;Trade&quot;]= 0.10m, [&quot;Quote&quot;]= 0.10m, [&quot;Depth&quot;]= 0.25m, [&quot;OrderBook&quot;]= 0.25m, };</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:149](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L149) | Historical per-symbol-day rates keyed by event type (e.g. Trade, Quote, Depth). |
+| <code>public decimal DefaultRatePerSymbolDayUsd { get; set; } = 0.10m;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:159](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L159) | Fallback rate applied to event types not present in the rate card. |
+| <code>public decimal RatePerGigabyteUsd { get; set; } = 5.00m;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:162](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L162) | Metered per-gigabyte rate applied to uncompressed stored volume. |
+| <code>public string RateCardSource { get; set; } = &quot;Conservative low-end of published metered vendor list prices (per-symbol-day historical and per-GB tick data).&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:165](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L165) | Provenance note for the configured rates. |
+| <code>public string RateCardLastVerified { get; set; } = &quot;2026-07-01&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:169](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L169) | Date the rate card values were last checked against vendor pricing pages. |
+
+## DateIndex
+
+Qualified name: <code>Meridian.Storage.Services.DateIndex</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:841](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L841).
+
+```csharp
+public sealed record DateIndex(string Date, List<string> Files);
+```
+
 ## DateRange
 
 Qualified name: <code>Meridian.Storage.Services.DateRange</code>. Kind: `record`.
@@ -879,48 +914,3 @@ Enum declarations:
 | <code>Normal</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1631](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1631) |  |
 | <code>Low</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1632](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1632) |  |
 | <code>Deferred</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1633](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1633) |  |
-
-## JobStatus
-
-Qualified name: <code>Meridian.Storage.Services.JobStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1666](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1666).
-
-```csharp
-public enum JobStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1668](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1668) |  |
-| <code>Running</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1669](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1669) |  |
-| <code>Completed</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1670](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1670) |  |
-| <code>Failed</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1671](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1671) |  |
-| <code>Cancelled</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1672](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1672) |  |
-| <code>Blocked</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1673](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1673) |  |
-
-## JsonlPositionSnapshotStore
-
-Qualified name: <code>Meridian.Storage.Services.JsonlPositionSnapshotStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:32](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L32).
-
-JSONL-backed implementation of IPositionSnapshotStore. Owned path convention: {StorageRoot}/portfolios/owned/{tenant}/{company}/{fund}/{book}/{entity}/{runId}/{accountId}/snapshots.jsonl. Legacy unowned snapshots retain {StorageRoot}/portfolios/{runId}/{accountId}/snapshots.jsonl and are never returned by an owned lookup. This path falls under StorageOptions.RootPath so the LifecyclePolicyEngine automatically picks it up for tiered-storage lifecycle enforcement (ADR-002). Each snapshot is a single JSON line appended atomically (ADR-007). A per-partition file lock serializes the conditional same-timestamp check and append across store instances and cooperating processes. Recovery streams the file and selects the greatest recorded AsOf timestamp rather than trusting append order, so a delayed writer cannot make an older observation authoritative.
-
-```csharp
-public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonlPositionSnapshotStore(StorageOptions options, ILogger&lt;JsonlPositionSnapshotStore&gt; logger);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:41](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L41) |  |
-| <code>public async Task SaveSnapshotAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:51](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L51) |  |
-| <code>public async Task&lt;PositionSnapshotSaveOutcome&gt; SaveSnapshotConditionallyAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:59](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L59) |  |
-| <code>public async Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:106](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L106) |  |
-| <code>public async Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:126](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L126) |  |
-| <code>public async IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:149](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L149) |  |
-| <code>public async IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:180](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L180) |  |

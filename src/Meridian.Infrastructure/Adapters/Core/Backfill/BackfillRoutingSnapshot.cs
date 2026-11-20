@@ -20,6 +20,7 @@ public sealed class BackfillRoutingSnapshot
     private readonly BackfillRoutingAdmission _admission;
     private readonly BackfillConfig _settings;
     private readonly string? _defaultProviderId;
+    private readonly IReadOnlyDictionary<string, int> _priorities;
 
     public BackfillRoutingSnapshot(
         IEnumerable<BackfillRoutingProvider> providers,
@@ -28,6 +29,7 @@ public sealed class BackfillRoutingSnapshot
         DateTimeOffset appliedAtUtc)
     {
         Providers = Array.AsReadOnly(Order(providers).ToArray());
+        _priorities = Providers.ToDictionary(entry => entry.Provider.Name, entry => entry.Priority, StringComparer.OrdinalIgnoreCase);
         _settings = settings;
         _admission = admission;
         AppliedAtUtc = appliedAtUtc;
@@ -43,6 +45,13 @@ public sealed class BackfillRoutingSnapshot
     public bool RotationEnabled => _settings.EnableRateLimitRotation;
 
     public IReadOnlyList<BackfillRoutingProvider> DefaultOrder => SelectProviders([]);
+
+    public int GetPriority(IHistoricalDataProvider provider) => _priorities.GetValueOrDefault(provider.Name, provider.Priority);
+
+    /// <summary>Applies request authority without changing the active route or shared admission state.</summary>
+    public BackfillRoutingSnapshot ForTenant(string? tenantId) => tenantId is null ? this : new(
+        Providers.Where(entry => BackfillProvenanceCapture.CanUseProviderForTenant(entry.Provider, tenantId)),
+        _settings, _admission, AppliedAtUtc);
 
     public static IOrderedEnumerable<BackfillRoutingProvider> Order(IEnumerable<BackfillRoutingProvider> providers)
         => providers.OrderBy(entry => entry.Provider.IsSimulated)
@@ -104,7 +113,8 @@ public sealed class BackfillRoutingSnapshot
             crossValidationPolicy: crossValidationPolicy,
             routingAdmission: _admission,
             captureAttempt: captureAttempt,
-            unavailablePreferences: unavailable);
+            unavailablePreferences: unavailable,
+            routingPriorities: _priorities);
     }
 }
 
@@ -138,20 +148,34 @@ public sealed class BackfillRoutingAdmission : IDisposable
         string symbol,
         Func<CancellationToken, Task<IReadOnlyList<TResult>>> fetch,
         Action<BackfillRoutingAttempt>? capture,
-        CancellationToken ct)
+        CancellationToken ct,
+        BackfillProvenanceCapture? provenance = null)
     {
         using var slot = await AcquireAsync(provider.Name, ct).ConfigureAwait(false);
-        ct.ThrowIfCancellationRequested();
-        if (Tracker.IsRateLimited(provider.Name))
+        void CheckAdmission()
         {
-            capture?.Invoke(new(symbol, provider.Name, "skipped-rate-limited", 0, false));
-            throw new RateLimitException("Provider is rate limited; coverage was not checked.",
-                provider.Name, symbol, Tracker.GetTimeUntilReset(provider.Name));
+            ct.ThrowIfCancellationRequested();
+            if (Tracker.IsRateLimited(provider.Name))
+            {
+                provenance?.Observe(provider, BackfillProviderObservation.Unavailable);
+                capture?.Invoke(new(symbol, provider.Name, "skipped-rate-limited", 0, false));
+                throw new RateLimitException("Provider is rate limited; coverage was not checked.",
+                    provider.Name, symbol, Tracker.GetTimeUntilReset(provider.Name));
+            }
         }
+
+        CheckAdmission();
+        if (provider is not IBackfillRequestMeteredProvider && HistoricalBackfillRequestScope.Current is { } observation)
+        {
+            await observation.BeforeUnmeteredFetch(provider, ct).ConfigureAwait(false);
+            CheckAdmission();
+            observation.UnmeteredFetchStarted?.Invoke(provider.Name);
+        }
+
         Tracker.RecordRequest(provider.Name);
         try
         {
-            var result = await fetch(ct).ConfigureAwait(false);
+            var result = await (provenance is null ? fetch(ct) : provenance.ObserveDirectAsync(provider, () => fetch(ct))).ConfigureAwait(false);
             capture?.Invoke(new(symbol, provider.Name, result.Count == 0 ? "no-data" : "completed", result.Count, true));
             return result;
         }

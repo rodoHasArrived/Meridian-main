@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { BackfillAttribution, retainedSourceRows } from "@/screens/data-screen.backfill-attribution";
-import type { BackfillBatchReceipt, BackfillRoutingAttempt } from "@/types";
+import type { BackfillBatchReceipt, BackfillBatchReceiptSummary, BackfillRoutingAttempt } from "@/types";
 
-const receiptColumns: DenseDataTableColumn<BackfillBatchReceipt>[] = [
+const receiptColumns: DenseDataTableColumn<BackfillBatchReceipt | BackfillBatchReceiptSummary>[] = [
   {
     id: "instrument", label: "Instrument", rowHeader: true, render: receipt => <>
       {receipt.instrument} · {receipt.granularity}
@@ -19,9 +19,14 @@ const receiptColumns: DenseDataTableColumn<BackfillBatchReceipt>[] = [
     </>
   },
   {
-    id: "coverage", label: "Coverage", render: receipt => <>{receipt.status}<div className="text-xs">
-      {receipt.expectedSessions ? `${receipt.receivedSessions.length} / ${receipt.expectedSessions.length}` : `${receipt.receivedSessions.length} observed`} sessions
-    </div></>
+    id: "coverage", label: "Coverage", render: receipt => {
+      const [received, expected] = "receivedSessionCount" in receipt
+        ? [receipt.receivedSessionCount, receipt.expectedSessionCount]
+        : [receipt.receivedSessions.length, receipt.expectedSessions?.length];
+      return <>{receipt.status}<div className="text-xs">
+        {expected == null ? `${received} observed` : `${received} / ${expected}`} sessions
+      </div></>;
+    }
   },
   {
     id: "evidence", label: "Evidence", render: receipt => <details>
@@ -36,7 +41,7 @@ const receiptColumns: DenseDataTableColumn<BackfillBatchReceipt>[] = [
 ];
 
 export function BackfillBatchReceipts({ receipts, attempts }: {
-  receipts: BackfillBatchReceipt[];
+  receipts: (BackfillBatchReceipt | BackfillBatchReceiptSummary)[];
   attempts?: BackfillRoutingAttempt[];
 }) {
   const [open, setOpen] = useState(false);

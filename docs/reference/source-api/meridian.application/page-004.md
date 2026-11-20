@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SelfHealingFix
+
+Qualified name: <code>Meridian.Application.Config.SelfHealingFix</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:584](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L584).
+
+Describes a single self-healing change that was proposed by ConfigurationPipeline.
+
+```csharp
+public sealed record SelfHealingFix(string Description, SelfHealingSeverity Severity);
+```
+
+## SelfHealingSeverity
+
+Qualified name: <code>Meridian.Application.Config.SelfHealingSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:560](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L560).
+
+Indicates how impactful a self-healing fix is, which determines how it is handled under different SelfHealingStrictness levels.
+
+```csharp
+public enum SelfHealingSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AutoFix = 0</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:567](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L567) | Safe, cosmetic correction (e.g., clamping an out-of-range value, normalising a format string, resolving credentials from environment variables). Applied silently in all environments. |
+| <code>Warn = 1</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:575](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L575) | Significant behavioural change (e.g., switching the active data provider, adding a default symbol set). Applied with a Warning-level log entry in SelfHealingStrictness.Development; refused with a startup error in SelfHealingStrictness.Production. |
+
+## SelfHealingStrictness
+
+Qualified name: <code>Meridian.Application.Config.SelfHealingStrictness</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:538](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L538).
+
+Controls how self-healing reacts to significant configuration issues.
+
+```csharp
+public enum SelfHealingStrictness : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Development = 0</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:545](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L545) | All self-healing fixes are applied. SelfHealingSeverity.Warn-level changes are applied but logged as Warning. Suitable for local development and CI environments where operator attention is not required for every startup. |
+| <code>Production = 1</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:553](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L553) | Only safe cosmetic fixes (SelfHealingSeverity.AutoFix) are applied silently. SelfHealingSeverity.Warn-level fixes are refused and surfaced as validation errors so that the process cannot start until a human corrects the configuration. Use MDC_CONFIG_STRICTNESS=production to enable. |
+
+## CompositeDataQualityGap
+
+Qualified name: <code>Meridian.Application.DataQuality.CompositeDataQualityGap</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:28](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L28).
+
+Server-owned remediation target resolved from an opaque composite gap identifier.
+
+```csharp
+public sealed record CompositeDataQualityGap(string GapId, string DashboardVersion, StreamingDataGap Gap, string? Provider);
+```
+
 ## CompositeDataQualityReadService
 
 Qualified name: <code>Meridian.Application.DataQuality.CompositeDataQualityReadService</code>. Kind: `class`.
@@ -1251,90 +1313,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IntercompanyFeeAccrualPreviewDto Preview(IntercompanyFeeAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs#L22) |  |
-
-## IntercompanyRateFixingRules
-
-Qualified name: <code>Meridian.Application.FundStructure.IntercompanyRateFixingRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:11](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L11).
-
-Pure transitions of one index fixing. A value sets accrual rates only once a second person approves it, and a correction never replaces the approved value until it is itself approved. Nothing here reads a market feed.
-
-```csharp
-public static class IntercompanyRateFixingRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaximumTextLength = 500;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:13](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L13) |  |
-| <code>public static string IndexKey(string? indexReference);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:16](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L16) | Index references match ignoring case and surrounding space, as agreement terms are typed. |
-| <code>public static Guid FixingId(string tenantId, string indexReference, DateOnly fixingDate) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:25](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L25) | One record per tenant, index and observation date. |
-| <code>public static string ValueDigest(string indexKey, DateOnly fixingDate, decimal rate, string source, string justification) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:29](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L29) |  |
-| <code>public static IntercompanyRateFixingDto Propose(IntercompanyRateFixingDto? current, string tenantId, string actor, ProposeIntercompanyRateFixingRequest request, DateTimeOffset at);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:33](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L33) |  |
-| <code>public static IntercompanyRateFixingDto Decide(IntercompanyRateFixingDto current, string actor, DecideIntercompanyRateFixingRequest request, DateTimeOffset at);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:59](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L59) |  |
-| <code>public static bool IsReplay(IntercompanyRateFixingDto? current, Guid requestId, IntercompanyRateFixingActionDto action);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:83](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L83) | True when this request already produced the current record; a reused identity for a different step conflicts. |
-| <code>public static IntercompanyApprovedRateFixingDto? Approved(IntercompanyRateFixingDto fixing) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:92](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L92) |  |
-
-## IntercompanyRateFixingService
-
-Qualified name: <code>Meridian.Application.FundStructure.IntercompanyRateFixingService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L9).
-
-Tenant-scoped authority for reviewed index fixings. It records what an operator observed and a second person approved; it never fetches, interpolates or carries a rate forward.
-
-```csharp
-public sealed class IntercompanyRateFixingService(IIntercompanyRateFixingStore store, TimeProvider? clock = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaximumRangeDays = 3_700;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:12](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L12) | A fixing range read never spans more than this many days. |
-| <code>public Task&lt;IntercompanyRateFixingDto?&gt; GetAsync(string tenantId, Guid fixingId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:15](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L15) |  |
-| <code>public Task&lt;IReadOnlyList&lt;IntercompanyRateFixingDto&gt;&gt; ListAsync(string tenantId, string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:18](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L18) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyApprovedRateFixingDto&gt;&gt; ApprovedAsync(string tenantId, string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:27](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L27) | Approved values only, as the accrual calculator receives them. |
-| <code>public async Task&lt;IntercompanyRateFixingDto&gt; ProposeAsync(string tenantId, string actor, ProposeIntercompanyRateFixingRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:33](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L33) |  |
-| <code>public async Task&lt;IntercompanyRateFixingDto&gt; DecideAsync(string tenantId, string actor, Guid fixingId, DecideIntercompanyRateFixingRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:46](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L46) |  |
-
-## IntercompanyStructuredTermsPreviewService
-
-Qualified name: <code>Meridian.Application.FundStructure.IntercompanyStructuredTermsPreviewService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs#L9).
-
-Pure shared date preview. Declared terms never fetch fixings, calculate charges or authorize journals.
-
-```csharp
-public sealed class IntercompanyStructuredTermsPreviewService(IBusinessDayCalendarSource calendars) : IIntercompanyStructuredTermsPreviewService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyStructuredTermsPreviewDto Preview(IntercompanyAgreementDraftDto draft, string subjectHash);</code> | [src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs:12](../../../../src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs#L12) |  |
-
-## LifecycleLedgerPostingAuthority
-
-Qualified name: <code>Meridian.Application.FundStructure.LifecycleLedgerPostingAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:11](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L11).
-
-Resolves entity identity and lifecycle from authoritative structure and retained revisions.
-
-```csharp
-public sealed class LifecycleLedgerPostingAuthority(IFundStructureService structure, IEntityLifecycleStore history, Func<IControlledCloseAuthorizationStore?> closeAuthorizations, Func<CancellationToken, Task<IAsyncDisposable>>? structureAuthority = null) : ILedgerPostingAuthority, ILedgerBookControlPreflight, ILedgerStructurePostingAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ControlName =&gt; …;</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:15](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L15) |  |
-| <code>public Task&lt;IAsyncDisposable&gt; AcquireStructureAuthorityAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L16) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:18](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L18) |  |
-| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:128](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L128) |  |
