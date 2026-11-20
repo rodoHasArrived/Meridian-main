@@ -25,10 +25,9 @@ import {
   WorkspaceInspectorHost
 } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
-import { StatusBadge } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
 import { useOnGlobalRefresh } from "@/lib/global-refresh";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
