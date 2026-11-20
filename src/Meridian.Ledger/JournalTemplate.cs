@@ -211,6 +211,7 @@ public sealed record JournalTemplate
             : instantiation.DescriptionOverride.Trim();
 
         var resolvedLines = new List<(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)>();
+        Dictionary<int, string>? lineMemos = null;
         foreach (var line in Lines)
         {
             var amount = line.Resolve(parameters);
@@ -218,6 +219,8 @@ public sealed record JournalTemplate
                 continue;
 
             var dimensions = line.Dimensions ?? instantiation.Dimensions;
+            if (!string.IsNullOrWhiteSpace(line.Memo))
+                (lineMemos ??= new Dictionary<int, string>()).Add(resolvedLines.Count, line.Memo);
             resolvedLines.Add(line.Side == JournalTemplateSide.Debit
                 ? (line.Account, amount, 0m, dimensions)
                 : (line.Account, 0m, amount, dimensions));
@@ -259,7 +262,10 @@ public sealed record JournalTemplate
             instantiation.Timestamp.ToUniversalTime(),
             description,
             resolvedLines,
-            metadata.Normalize());
+            metadata.Normalize())
+        {
+            LineMemos = lineMemos is null ? null : ReadOnlyCollectionHelpers.FreezeDictionary(lineMemos)
+        };
     }
 
     private static IReadOnlyList<string> InferParameters(IReadOnlyList<JournalTemplateLine> lines)
@@ -293,6 +299,9 @@ public sealed record JournalTemplateInstance(
     IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)> Lines,
     JournalEntryMetadata Metadata)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyDictionary<int, string>? LineMemos { get; init; }
+
     public decimal TotalDebits => Lines.Sum(static line => line.debit);
 
     public decimal TotalCredits => Lines.Sum(static line => line.credit);
@@ -304,7 +313,7 @@ public sealed record JournalTemplateInstance(
     {
         var journalId = Guid.NewGuid();
         var entries = Lines
-            .Select(line => new LedgerEntry(
+            .Select((line, index) => new LedgerEntry(
                 Guid.NewGuid(),
                 journalId,
                 Timestamp,
@@ -312,7 +321,10 @@ public sealed record JournalTemplateInstance(
                 line.debit,
                 line.credit,
                 Description,
-                line.dimensions))
+                line.dimensions)
+            {
+                Memo = LineMemos?.GetValueOrDefault(index)
+            })
             .ToList();
 
         return new JournalEntry(journalId, Timestamp, Description, entries, Metadata);

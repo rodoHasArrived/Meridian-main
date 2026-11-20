@@ -236,7 +236,12 @@ public sealed record ChartOfAccountsNodeDto(
     string? Symbol = null,
     string? FinancialAccountId = null,
     bool IsArchived = false,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IntercompanyAccountRoleDto? IntercompanyRole = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IntercompanyAccountRoleDto? IntercompanyRole = null)
+{
+    /// <summary>Stable posting code assigned to this node within its book's chart.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountCode { get; init; }
+}
 
 public sealed record JournalEntryTemplateLineDto(
     string LineId,

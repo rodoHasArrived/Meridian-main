@@ -3172,6 +3172,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillBatchReceipt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Backfill.BackfillJobStatus"
     },
     {
@@ -3209,6 +3215,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Backfill.BackfillRunProgressResponse"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Backfill.HistoricalSessionEvidence"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Backfill.HistoricalSessionSchedule"
     },
     {
       "kind": "contract-set-member",
@@ -9706,6 +9724,42 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementAmountsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementJournalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementLegDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementLegReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetPlanDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
     },
     {
@@ -9755,6 +9809,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchStatementLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CaptureBookFxSettlementLegRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -10300,6 +10360,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FinalizeFiscalYearCloseRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.FinancialStatementPackageDto"
     },
     {
@@ -10324,6 +10390,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBookEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto"
     },
     {
@@ -10331,6 +10403,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseReceiptDto"
     },
     {
       "kind": "contract-set-member",
@@ -11098,6 +11176,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalLineChartAccountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalLineCurrencyDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
     },
     {
@@ -11458,6 +11548,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PreviewPrivateCapitalUnitRegisterRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto"
     },
     {
@@ -11638,6 +11734,36 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterHoldingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterMovementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterSourceMovementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
     },
     {
@@ -11723,6 +11849,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.RestatementWorkflowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RetainBookFxSettlementSetRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -27826,6 +27958,42 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementAmountsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementJournalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementLegDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementLegReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetPlanDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
     },
     {
@@ -27875,6 +28043,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchStatementLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CaptureBookFxSettlementLegRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -28420,6 +28594,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FinalizeFiscalYearCloseRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.FinancialStatementPackageDto"
     },
     {
@@ -28444,6 +28624,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBookEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto"
     },
     {
@@ -28451,6 +28637,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseReceiptDto"
     },
     {
       "kind": "contract-set-member",
@@ -29218,6 +29410,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalLineChartAccountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalLineCurrencyDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
     },
     {
@@ -29578,6 +29782,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PreviewPrivateCapitalUnitRegisterRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto"
     },
     {
@@ -29758,6 +29968,36 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterHoldingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterMovementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterSourceMovementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
     },
     {
@@ -29843,6 +30083,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.RestatementWorkflowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RetainBookFxSettlementSetRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -35025,6 +35271,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Api.BackfillResultDto",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillBatchReceipt"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Api.CanonicalSymbolRegistryEntryResponse",
       "target": "contract:Meridian.Contracts.Api.CanonicalProviderAliasResponse"
     },
@@ -37007,6 +37259,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Backfill.BackfillProviderProgressSnapshotDto",
       "target": "contract:Meridian.Contracts.Backfill.BackfillProviderSymbolProgressDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillResult",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillBatchReceipt"
     },
     {
       "kind": "contract-reference",
@@ -43533,6 +43791,48 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.BookFxSettlementLegReceiptDto",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementLegDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetDto",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementLegDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetDto",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementLegReceiptDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetDto",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetPlanDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetPlanDto",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementAmountsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetPlanDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetPlanDto",
+      "target": "contract:Meridian.Contracts.Ledger.RetainBookFxSettlementSetRequestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto"
     },
@@ -43649,6 +43949,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchStatementLineageDto",
       "target": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchRestatementChangedLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CaptureBookFxSettlementLegRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementLegDto"
     },
     {
       "kind": "contract-reference",
@@ -44451,6 +44757,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBookEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto",
       "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBalanceDto"
     },
@@ -44464,7 +44776,25 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBookEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto",
       "target": "contract:Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.FiscalYearCloseReceiptDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.FiscalYearCloseReceiptDto",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto"
     },
     {
       "kind": "contract-reference",
@@ -45077,6 +45407,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalLineChartAccountDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalLineCurrencyDto"
     },
     {
       "kind": "contract-reference",
@@ -46155,6 +46497,36 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingConfigurationValidationIssueDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterHoldingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterMovementDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterSourceDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterSourceMovementDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalCallDto"
     },
@@ -46271,6 +46643,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.RestatementWorkflowDto",
       "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.RetainBookFxSettlementSetRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.BookFxSettlementJournalDto"
     },
     {
       "kind": "contract-reference",
@@ -60585,6 +60963,129 @@
       "target": "database:ledger.tax_lots_pkey"
     },
     {
+      "constraint": "book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey",
+      "kind": "foreign-key",
+      "label": "tenant_id, company_id, set_id",
+      "source": "database:ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_sets"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_content_hash_sha256_check on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_receipts.content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_leg_check on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_receipts.leg"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_payload_json_check on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_receipts.payload_json"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_sets.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_sets.set_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_sets.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_sets_pkey"
+    },
+    {
+      "constraint": "book_fx_settlement_sets_cash_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "cash_book_id",
+      "source": "database:ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "book_fx_settlement_sets_gaap_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "gaap_book_id",
+      "source": "database:ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_cash_book_id_fkey on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_cash_book_id_fkey on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.cash_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.gaap_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.settlement_event_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.trade_event_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_gaap_book_id_fkey on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_gaap_book_id_fkey on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_payload_json_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.payload_json"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_plan_hash_sha256_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.plan_hash_sha256"
+    },
+    {
       "kind": "normal",
       "label": "",
       "source": "database:ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
@@ -61772,6 +62273,98 @@
       "label": "",
       "source": "database:ledger.entity_controlled_close_authorization_ledger_book_id_fkey on ledger.entity_controlled_close_authorization",
       "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "constraint": "fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id, fiscal_year, supersedes_receipt_id",
+      "source": "database:ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts"
+    },
+    {
+      "constraint": "fiscal_year_close_receipts_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.supersedes_receipt_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_content_hash_sha256_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_fiscal_year_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.fiscal_year"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.fiscal_year"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.receipt_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_payload_json_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.payload_json"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_plan_hash_sha256_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.plan_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_revision_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.revision"
     },
     {
       "kind": "normal",
@@ -68185,6 +68778,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.book_fx_settlement_receipts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.book_fx_settlement_sets"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.consolidation_fx_book_configurations"
     },
     {
@@ -68210,6 +68815,12 @@
       "label": "",
       "source": "schema:ledger",
       "target": "database:ledger.entity_controlled_close_authorization"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.fiscal_year_close_receipts"
     },
     {
       "kind": "contains",
@@ -69537,7 +70148,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "99c4f8258e61caae3fc621a9bee9da58d95c27b3820caad961959616924307b5",
+  "fingerprint": "cd55b3d7a9ed1e60be524692ba72a2a84f9d748ca3b5ba836e7442fdf336cfd0",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -72759,6 +73370,12 @@
       "label": "Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Backfill.BackfillBatchReceipt",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Backfill.BackfillBatchReceipt"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.Backfill.BackfillJobStatus",
       "kind": "contract-type",
@@ -72799,6 +73416,18 @@
       "id": "contract:Meridian.Contracts.Backfill.BackfillRunProgressResponse",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Backfill.BackfillRunProgressResponse"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Backfill.HistoricalSessionEvidence",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Backfill.HistoricalSessionEvidence"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Backfill.HistoricalSessionSchedule",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Backfill.HistoricalSessionSchedule"
     },
     {
       "classification": "class",
@@ -79294,6 +79923,42 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.BookFxSettlementAmountsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.BookFxSettlementAmountsDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.BookFxSettlementJournalDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.BookFxSettlementJournalDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.BookFxSettlementLegDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.BookFxSettlementLegDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.BookFxSettlementLegReceiptDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.BookFxSettlementLegReceiptDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.BookFxSettlementSetDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.BookFxSettlementSetPlanDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.BookFxSettlementSetPlanDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
@@ -79345,6 +80010,12 @@
       "id": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchStatementLineageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CapitalAccountWorkbenchStatementLineageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.CaptureBookFxSettlementLegRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CaptureBookFxSettlementLegRequestDto"
     },
     {
       "classification": "dto",
@@ -79888,6 +80559,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.FinalizeFiscalYearCloseRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.FinalizeFiscalYearCloseRequestDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.FinancialStatementPackageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.FinancialStatementPackageDto"
@@ -79912,6 +80589,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBookEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.FiscalYearCloseBookEvidenceDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto"
@@ -79921,6 +80604,12 @@
       "id": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.FiscalYearClosePlanDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.FiscalYearCloseReceiptDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.FiscalYearCloseReceiptDto"
     },
     {
       "classification": "request",
@@ -80686,6 +81375,18 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerJournalLineChartAccountDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerJournalLineChartAccountDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerJournalLineCurrencyDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerJournalLineCurrencyDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
@@ -81045,6 +81746,12 @@
       "label": "Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.PreviewPrivateCapitalUnitRegisterRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PreviewPrivateCapitalUnitRegisterRequest"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto",
       "kind": "contract-type",
@@ -81226,6 +81933,36 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterHoldingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterHoldingDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterMovementDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterMovementDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterPreviewDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterSourceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterSourceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterSourceMovementDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterSourceMovementDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
@@ -81313,6 +82050,12 @@
       "id": "contract:Meridian.Contracts.Ledger.RestatementWorkflowDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.RestatementWorkflowDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.RetainBookFxSettlementSetRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.RetainBookFxSettlementSetRequestDto"
     },
     {
       "classification": "request",
@@ -94875,6 +95618,128 @@
       "label": "ledger.bond_coupon_recognition_tax_lot_record_id_fkey on ledger.bond_coupon_recognition"
     },
     {
+      "id": "database:ledger.book_fx_settlement_receipts",
+      "kind": "database-table",
+      "label": "ledger.book_fx_settlement_receipts",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts.content_hash_sha256",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts.content_hash_sha256"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts.leg",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts.leg"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts.payload_json",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts.payload_json"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts_content_hash_sha256_check on ledger.book_fx_settlement_receipts",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts_content_hash_sha256_check on ledger.book_fx_settlement_receipts"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts_leg_check on ledger.book_fx_settlement_receipts",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts_leg_check on ledger.book_fx_settlement_receipts"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts_payload_json_check on ledger.book_fx_settlement_receipts",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts_payload_json_check on ledger.book_fx_settlement_receipts"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets",
+      "kind": "database-table",
+      "label": "ledger.book_fx_settlement_sets",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.cash_book_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.cash_book_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.company_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.company_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.gaap_book_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.gaap_book_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.payload_json",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.payload_json"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.plan_hash_sha256",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.plan_hash_sha256"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.set_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.set_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.settlement_event_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.settlement_event_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.tenant_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.trade_event_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.trade_event_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_cash_book_id_fkey on ledger.book_fx_settlement_sets",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_cash_book_id_fkey on ledger.book_fx_settlement_sets"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_gaap_book_id_fkey on ledger.book_fx_settlement_sets",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_gaap_book_id_fkey on ledger.book_fx_settlement_sets"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_payload_json_check on ledger.book_fx_settlement_sets",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_payload_json_check on ledger.book_fx_settlement_sets"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_pkey",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_pkey"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_plan_hash_sha256_check on ledger.book_fx_settlement_sets",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_plan_hash_sha256_check on ledger.book_fx_settlement_sets"
+    },
+    {
       "id": "database:ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
       "kind": "database-object",
       "label": "ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head"
@@ -95603,6 +96468,97 @@
       "id": "database:ledger.entity_controlled_close_authorization_ledger_book_id_fkey on ledger.entity_controlled_close_authorization",
       "kind": "database-object",
       "label": "ledger.entity_controlled_close_authorization_ledger_book_id_fkey on ledger.entity_controlled_close_authorization"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts",
+      "kind": "database-table",
+      "label": "ledger.fiscal_year_close_receipts",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.content_hash_sha256",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.content_hash_sha256"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.fiscal_year",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.fiscal_year"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.ledger_book_id",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.ledger_book_id"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.payload_json",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.payload_json"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.plan_hash_sha256",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.plan_hash_sha256"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.receipt_id",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.receipt_id"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.revision",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.revision"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.supersedes_receipt_id",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.supersedes_receipt_id"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_check on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_content_hash_sha256_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_content_hash_sha256_check on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_fiscal_year_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_fiscal_year_check on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fkey on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_ledger_book_id_fkey on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_payload_json_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_payload_json_check on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_pkey",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_pkey"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_plan_hash_sha256_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_plan_hash_sha256_check on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_revision_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_revision_check on ledger.fiscal_year_close_receipts"
     },
     {
       "id": "database:ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
@@ -102175,11 +103131,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4270,
-    "contract_set_memberships": 5612,
-    "edges": 11552,
-    "foreign_keys": 208,
+    "contract_references": 4292,
+    "contract_set_memberships": 5653,
+    "edges": 11653,
+    "foreign_keys": 213,
     "logical_references": 6,
-    "nodes": 5675
+    "nodes": 5739
   }
 }

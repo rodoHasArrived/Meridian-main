@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyStructuredTermsDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:31](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L31).
+
+Versioned declarations. Presence does not authorize accrual, posting, settlement or FX conversion.
+
+```csharp
+public sealed record IntercompanyStructuredTermsDto(IntercompanyScheduleDto? Schedule = null, IntercompanyRateBasisDto? RateBasis = null, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? FixedAnnualRate = null, string? FloatingIndexReference = null, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? SpreadBps = null, IntercompanyDayCountDto? DayCount = null, IntercompanyCompoundingDto? Compounding = null, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? FixedFeeAmount = null, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? AnnualFeeRate = null, string? CalculationBaseReference = null, IReadOnlyList<IntercompanyAllocationDto>? Allocations = null, string? AllocationDriverReference = null, IntercompanyGuaranteeTermsDto? Guarantee = null, int SchemaVersion = 1, IntercompanyFixedFeeBasisDto? FixedFeeBasis = null, int? FixingLagBusinessDays = null);
+```
+
+## IntercompanyStructuredTermsJsonContext
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsJsonContext.cs:10](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsJsonContext.cs#L10).
+
+```csharp
+public partial class IntercompanyStructuredTermsJsonContext : JsonSerializerContext;
+```
+
+## IntercompanyStructuredTermsPreviewDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:51](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L51).
+
+```csharp
+public sealed record IntercompanyStructuredTermsPreviewDto(string Status, string TermsFormat, string SubjectHash, string KernelVersion, string? CalendarId, string? CalendarHash, IReadOnlyList<IntercompanyDatePeriodDto> Periods, IReadOnlyList<string> Diagnostics);
+```
+
 ## IntercompanyStructuredTermsPreviewRequestDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsPreviewRequestDto</code>. Kind: `record`.
@@ -681,34 +713,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:81](../..
 
 ```csharp
 public sealed record UpdateLegalEntityProfileRequest(Guid EntityId, string UpdatedBy, LegalEntityTypeDto? EntityType = null, LegalEntityFormDto? LegalForm = null, string? Code = null, string? Name = null, string? Jurisdiction = null, string? BaseCurrency = null, DateTimeOffset? EffectiveFrom = null, DateTimeOffset? EffectiveTo = null, bool? IsActive = null, string? Description = null, string? RegistrationNumber = null, LegalEntityLifecycleStatusDto? LifecycleStatus = null, IReadOnlyList<BeneficialOwnerSummaryDto>? BeneficialOwners = null, LegalEntityLifecycleEventDto? LifecycleEvent = null);
-```
-
-## UpdateOwnershipLinkRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.UpdateOwnershipLinkRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:124](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L124).
-
-```csharp
-public sealed record UpdateOwnershipLinkRequest(Guid OwnershipLinkId, OwnershipRelationshipTypeDto RelationshipType, DateTimeOffset EffectiveFrom, string UpdatedBy, decimal? OwnershipPercent = null, bool IsPrimary = false, DateTimeOffset? EffectiveTo = null, string? Notes = null);
-```
-
-## ValidateOwnershipGraphRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.ValidateOwnershipGraphRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:153](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L153).
-
-```csharp
-public sealed record ValidateOwnershipGraphRequest(DateTimeOffset? AsOf = null, bool ActiveOnly = true);
-```
-
-## VehicleOperatingViewDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.VehicleOperatingViewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:391](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L391).
-
-```csharp
-public sealed record VehicleOperatingViewDto(VehicleSummaryDto Vehicle, LegalEntitySummaryDto? LegalEntity, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<AccountSummaryDto> Accounts);
 ```

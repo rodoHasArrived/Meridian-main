@@ -61,7 +61,8 @@ public static partial class WorkstationEndpoints
             var query = new AuditTrailExplorerQueryDto(request.SearchText, Filter("runId"), Filter("category"), Filter("action"),
                 Filter("outcome"), Filter("actor"), Filter("symbol"), Filter("correlationId"), Filter("objectKind"), Filter("objectId"), Filter("relatedObjectId"), from, to);
             var source = await service.ExportAuthorizedAsync(query,
-                (workflow, token) => AuditTrailHttpAuthority.CanReadWorkflowAsync(context, workflow, token), context.RequestAborted).ConfigureAwait(false);
+                (workflow, token) => AuditTrailHttpAuthority.CanReadWorkflowAsync(context, workflow, token), context.RequestAborted,
+                account => FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(account, context)).ConfigureAwait(false);
             object? Cell(AuditTrailTimelineEntryDto row, string column) => column switch
             {
                 "column-1" => row.OccurredAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),

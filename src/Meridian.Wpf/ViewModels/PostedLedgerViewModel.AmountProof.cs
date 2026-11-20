@@ -101,19 +101,39 @@ public sealed partial class PostedLedgerViewModel
                 JournalLines.Add(new(
                     journal.JournalEntryId,
                     line.EntryId,
-                    line.AccountName,
+                    line.ChartAccount?.AccountCode is { } code ? $"{code} · {line.AccountName}" : line.AccountName,
                     line.Symbol,
-                    line.Description,
+                    line.Memo ?? line.Description,
                     PostedLedgerProjection.FormatAmount(line.Debit, BaseCurrency),
                     PostedLedgerProjection.FormatAmount(line.Credit, BaseCurrency),
                     Selection("debit", line.Debit),
-                    Selection("credit", line.Credit)));
+                    Selection("credit", line.Credit))
+                {
+                    RetainedLineEvidence = FormatLineEvidence(line)
+                });
             }
         }
 
         JournalStatusText = JournalLines.Count == 0
             ? "No posted journal amounts are available for this book, period, and basis."
             : "Select a posted debit or credit to review its retained support.";
+    }
+
+    private static string FormatLineEvidence(LedgerJournalEntryLineDto line)
+    {
+        var evidence = new List<string>();
+        if (line.ChartAccount is { } chart)
+            evidence.Add($"Chart node {chart.NodeId} · revision {chart.Revision}");
+        if (line.Currency is { } currency)
+        {
+            var debit = currency.TransactionDebit != 0m;
+            var amount = debit ? currency.TransactionDebit : currency.TransactionCredit;
+            var transaction = $"{(debit ? "Debit" : "Credit")} {amount} {currency.TransactionCurrency}";
+            if (currency.TransactionCurrency != currency.FunctionalCurrency)
+                transaction += $" · rate {currency.FxRateToFunctional} to {currency.FunctionalCurrency}";
+            evidence.Add(transaction);
+        }
+        return string.Join(Environment.NewLine, evidence);
     }
 
     private Task OpenAmountProofAsync(PostedLedgerAmountSelection? selection)
@@ -161,6 +181,7 @@ public sealed record PostedLedgerJournalLineRow(
     PostedLedgerAmountSelection? DebitProof,
     PostedLedgerAmountSelection? CreditProof)
 {
+    public string RetainedLineEvidence { get; init; } = string.Empty;
     public bool HasDebit => DebitProof is not null;
     public bool HasCredit => CreditProof is not null;
 }

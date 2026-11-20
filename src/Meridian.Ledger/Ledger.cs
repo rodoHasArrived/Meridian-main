@@ -546,8 +546,8 @@ public sealed class Ledger : IReadOnlyLedger
 
         var journalId = Guid.NewGuid();
         var entries = lines
-            .Select(l => new LedgerEntry(Guid.NewGuid(), journalId, timestamp, l.account, l.debit, l.credit, description,
-                currency: StampFunctionalCurrency(l.debit, l.credit)))
+            .Select(l => CreatePostingLine(journalId, timestamp, l.account, l.debit, l.credit, description, null,
+                StampFunctionalCurrency(l.debit, l.credit)))
             .ToList();
 
         Post(new JournalEntry(journalId, timestamp, description, entries, metadata));
@@ -570,7 +570,7 @@ public sealed class Ledger : IReadOnlyLedger
 
         var journalId = Guid.NewGuid();
         var entries = lines
-            .Select(l => new LedgerEntry(Guid.NewGuid(), journalId, timestamp, l.account, l.debit, l.credit, description, l.dimensions,
+            .Select(l => CreatePostingLine(journalId, timestamp, l.account, l.debit, l.credit, description, l.dimensions,
                 StampFunctionalCurrency(l.debit, l.credit)))
             .ToList();
 
@@ -595,11 +595,18 @@ public sealed class Ledger : IReadOnlyLedger
 
         var journalId = Guid.NewGuid();
         var entries = lines
-            .Select(l => new LedgerEntry(Guid.NewGuid(), journalId, timestamp, l.account, l.debit, l.credit, description, l.dimensions, l.currency))
+            .Select(l => CreatePostingLine(journalId, timestamp, l.account, l.debit, l.credit, description, l.dimensions, l.currency))
             .ToList();
 
         Post(new JournalEntry(journalId, timestamp, description, entries, metadata));
     }
+
+    private LedgerEntry CreatePostingLine(Guid journalId, DateTimeOffset timestamp, LedgerAccount account,
+        decimal debit, decimal credit, string description, LedgerLineDimensionSet? dimensions, LedgerEntryCurrency? currency)
+        => new(Guid.NewGuid(), journalId, timestamp, account, debit, credit, description, dimensions, currency)
+        {
+            ChartAccount = Policy?.Chart.GetPostingReference(account)
+        };
 
     // Lines posted without currency detail are stated in the bound functional currency. Stamping it
     // here makes that explicit on the persisted line instead of leaving readers to infer it.
@@ -978,6 +985,9 @@ public sealed class Ledger : IReadOnlyLedger
                     $"Ledger entry '{line.EntryId}' posts to account '{line.Account}' ({line.Account.AccountType}), " +
                     "which is not registered in the chart of accounts.");
             }
+
+            if (line.ChartAccount is not null && line.ChartAccount != policy.Chart.GetPostingReference(line.Account))
+                throw new LedgerValidationException($"Ledger entry '{line.EntryId}' has conflicting chart account evidence.");
 
             if (line.Currency is null)
             {

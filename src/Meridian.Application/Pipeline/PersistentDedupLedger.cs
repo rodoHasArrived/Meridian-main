@@ -9,6 +9,7 @@ using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Integrity;
 using Meridian.Domain.Events;
+using Meridian.Storage.Backfill;
 using Serilog;
 
 namespace Meridian.Application.Pipeline;
@@ -582,12 +583,8 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// the semantic identity fields per event type.
     /// </summary>
     /// <remarks>
-    /// SCOPE: content-based identity is implemented only for Trade, BBO quote, and LOB
-    /// snapshot payloads — the high-volume types where provider replays and overlapping
-    /// backfills occur. Every other payload type falls back to sequence-number identity,
-    /// which dedups exact replays within one source stream but NOT re-deliveries that
-    /// arrive under a different sequence. When adding a new high-volume payload type,
-    /// give it a content key here rather than relying on the fallback.
+    /// Trade, quote, book snapshot and bar payloads have explicit identities. Other payloads
+    /// use sequence identity, which suppresses replays that retain the original sequence.
     /// </remarks>
     private string ComputeEventKey(MarketEvent evt)
     {
@@ -607,6 +604,12 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
         var resolvedPrefix = prefix!;
 
+        // Each versioned backfill batch retains its own exact stored row population. A
+        // provider sequence, daily date or aggregate window alone cannot prove those bytes.
+        if (evt.BackfillRevisionId is { } revision && Sha256Digest.IsCanonical(revision)
+            && evt.Payload is Contracts.Domain.Models.HistoricalBar or Contracts.Domain.Models.AggregateBarPayload)
+            return $"{resolvedPrefix}backfill:{revision}:{BackfillBatchRevision.HashRow(evt)}";
+
         return evt.Payload switch
         {
             Contracts.Domain.Models.Trade trade => CreateTradeKey(resolvedPrefix, trade),
@@ -616,6 +619,9 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             Contracts.Domain.Models.LOBSnapshot snap =>
                 // L2: use sequence + timestamp
                 resolvedPrefix + $"seq:{snap.SequenceNumber}",
+
+            Contracts.Domain.Models.HistoricalBar when evt.Sequence <= 0 =>
+                resolvedPrefix + $"daily:{BackfillBatchRevision.HashRow(evt)}",
 
             Contracts.Domain.Models.AggregateBarPayload agg =>
                 // Aggregates: identity is the bar window itself (timeframe + start time),

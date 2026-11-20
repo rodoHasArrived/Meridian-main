@@ -323,6 +323,12 @@ public sealed class UiServer : IAsyncDisposable
                         ? Path.Combine(resolvedDataRoot, "execution", "sessions")
                         : paperSessionBaseDirectory,
                     sp.GetRequiredService<ILogger<JsonlFilePaperSessionStore>>()));
+            builder.Services.AddSingleton<ResolvePaperAccountCurrency>(sp => async (accountId, ct) =>
+            {
+                var source = sp.GetService<Meridian.PortfolioRecords.Accounts.IAccountQueryService>();
+                var account = source is null ? null : await source.GetAccountAsync(accountId, ct).ConfigureAwait(false);
+                return account is { IsActive: true } ? account.BaseCurrency : null;
+            });
             builder.Services.AddSingleton<PaperSessionPersistenceService>();
             // Daily variation-margin settlement of paper futures; off unless
             // "PaperTrading:FuturesSettlement:Enabled" is true and a mark price source is registered.

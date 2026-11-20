@@ -738,6 +738,7 @@ public static class UiApiRoutes
     public const string ExecutionSessionCreate = "/api/execution/sessions/create";
     public const string ExecutionSessionClose = "/api/execution/sessions/{sessionId}/close";
     public const string ExecutionSessionReplay = "/api/execution/sessions/{sessionId}/replay";
+    public const string ExecutionSessionReconciliation = "/api/execution/sessions/{sessionId}/reconciliation";
 
     // Multi-account execution endpoints
     public const string ExecutionAccounts = "/api/execution/accounts";
@@ -973,7 +974,11 @@ public static class UiApiRoutes
     public const string LedgerAutomationGrantRevoke = LedgerAutomationGrant + "/revoke";
     public const string LedgerBookRolloutAssessment = "/api/ledger/books/rollout-assessment";
     public const string LedgerBookById = "/api/ledger/books/{ledgerBookId:guid}";
+    public const string LedgerBookFxSettlementSets = "/api/ledger/book-fx-settlement-sets";
+    public const string LedgerBookFxSettlementSet = "/api/ledger/book-fx-settlement-sets/{setId:guid}";
+    public const string LedgerBookFxSettlementCapture = "/api/ledger/book-fx-settlement-sets/{setId:guid}/capture";
     public const string LedgerFiscalYearClosePlan = "/api/ledger/books/{ledgerBookId:guid}/fiscal-years/{fiscalYear:int}/close-plan";
+    public const string LedgerFiscalYearCloseReceipts = "/api/ledger/books/{ledgerBookId:guid}/fiscal-years/{fiscalYear:int}/close-receipts";
     public const string LedgerAccountCashReconciliationRuns = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs";
     public const string LedgerAccountCashReconciliationReplay = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs/{runId}/replay";
     public const string LedgerAccountCashReconciliationCases = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/cases";
@@ -1050,6 +1055,7 @@ public static class UiApiRoutes
     public const string LedgerPrivateCapitalCapitalAccountSubledger = "/api/ledger/private-capital/capital-account-subledger";
     public const string LedgerPrivateCapitalReportOutput = "/api/ledger/private-capital/report-output";
     public const string LedgerPrivateCapitalCapitalAccountWorkbench = "/api/ledger/private-capital/capital-account-workbench";
+    public const string LedgerPrivateCapitalUnitRegisterPreview = "/api/ledger/private-capital/unit-register/preview";
     public const string LedgerManualJournalEntryDrafts = "/api/ledger/journal-entry-workbench/drafts";
     public const string LedgerManualJournalEntryValidate = "/api/ledger/journal-entry-workbench/validate";
     public const string LedgerManualJournalEntrySubmitApproval = "/api/ledger/journal-entry-workbench/submit-approval";
