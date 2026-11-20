@@ -1055,6 +1055,7 @@ public sealed class ProviderConnectionEndpointsTests
         await core.UpdateAsync(config => config with
         {
             Alpaca = new(Feed: "iex", OptionsFeed: "indicative"),
+            Backfill = new(Providers: new(Alpaca: new(Feed: "iex", Adjustment: "raw"))),
             DataSources = new(Sources: [new("named-alpaca", "Alpaca feed", DataSourceKind.Alpaca,
                 Alpaca: new(Feed: "iex", CryptoFeed: "us"))]),
             ProviderModules = new(new() { ["alpaca-api"] = new(Settings: new() { ["FeEd"] = "iex" }) })
@@ -1076,6 +1077,8 @@ public sealed class ProviderConnectionEndpointsTests
         var expectedFeed = expectedStatus == HttpStatusCode.OK ? "sip" : "iex";
         config.Alpaca!.Feed.Should().Be(expectedFeed);
         config.Alpaca.OptionsFeed.Should().Be("indicative");
+        config.Backfill!.Providers!.Alpaca!.Feed.Should().Be(expectedFeed);
+        config.Backfill.Providers.Alpaca.Adjustment.Should().Be("raw");
         config.DataSources!.Sources!.Single().Alpaca!.Feed.Should().Be(expectedFeed);
         config.ProviderModules!.Modules!["alpaca-api"].Settings!.Single(setting =>
             setting.Key.Equals("feed", StringComparison.OrdinalIgnoreCase)).Value.Should().Be(expectedFeed);
@@ -1110,6 +1113,31 @@ public sealed class ProviderConnectionEndpointsTests
 
         var failure = await update.Should().ThrowAsync<UiConfigurationValidationException>();
         failure.Which.Errors.Should().ContainKey("Alpaca.Feed");
+    }
+
+    [Theory]
+    [InlineData("iex", "iex", "sip")]
+    [InlineData("sip", "iex", null)]
+    public async Task GenericSettingsWrite_BlocksIntroducingSipInTheHistoricalAdapter(
+        string hostFeed, string startingOverride, string? proposedOverride)
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        var store = app.Services.GetRequiredService<ConfigStore>();
+        var core = new Meridian.Application.UI.ConfigStore(store.ConfigPath);
+        await core.UpdateAsync(config => config with
+        {
+            Alpaca = new(Feed: hostFeed),
+            Backfill = new(Providers: new(Alpaca: new(Feed: startingOverride)))
+        });
+
+        var update = async () => await store.UpdateAsync(config => config with
+        {
+            Backfill = new(Providers: new(Alpaca: proposedOverride is null ? null : new(Feed: proposedOverride)))
+        });
+
+        var failure = await update.Should().ThrowAsync<UiConfigurationValidationException>();
+        failure.Which.Errors.Should().ContainKey("Alpaca.Feed");
+        store.Load().Backfill!.Providers!.Alpaca!.Feed.Should().Be(startingOverride);
     }
 
     private static async Task<WebApplication> CreateAppAsync(

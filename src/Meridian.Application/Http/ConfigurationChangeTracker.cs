@@ -115,7 +115,7 @@ internal sealed class ConfigurationChangeTracker
             {
                 Providers = providers with
                 {
-                    Alpaca = providers.Alpaca ?? new(),
+                    Alpaca = providers.Alpaca ?? new(Feed: string.Empty),
                     Yahoo = providers.Yahoo ?? new(),
                     Nasdaq = providers.Nasdaq ?? new(),
                     Stooq = providers.Stooq ?? new(),

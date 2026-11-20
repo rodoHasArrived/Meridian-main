@@ -27,7 +27,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
-import { PanelReload } from "@/components/ui/panel-reload";
 import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -52,18 +51,14 @@ import {
   type QualityDashboardFetcher
 } from "@/screens/data-screen.data-quality.view-model";
 import {
-  CAPABILITY_LEGEND,
   buildCapabilityFreshnessIndex,
-  useCapabilityMatrixPanel,
-  type CapabilityFreshnessModel,
-  type CapabilityMatrixViewModel,
-  type CapabilityMatrixRowModel
+  useCapabilityMatrixPanel
 } from "@/screens/data-screen.capability-matrix.view-model";
+import { CapabilityMatrixRegion } from "@/screens/data-screen.capability-matrix";
 import {
   useCorporateActionInboxPanel
 } from "@/screens/data-screen.corporate-action-inbox.view-model";
 import { CorporateActionInboxRegion } from "@/screens/data-screen.corporate-action-inbox";
-import { FixedIncomeCapabilityReadiness } from "@/screens/data-screen.fixed-income-capabilities";
 import { useCoverageGapsPanel } from "@/screens/data-screen.coverage-gaps.view-model";
 import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.data-regions";
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
@@ -83,8 +78,7 @@ import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history"
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
-import { BackfillQuotaPanel, BackfillReceiptEvidence } from "@/screens/data-screen.backfill-quota";
-import { TimeText } from "@/components/ui/time-text";
+import { BackfillSubmissionPanel, BackfillReceiptEvidence } from "@/screens/data-screen.backfill-quota";
 import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
@@ -1978,39 +1972,7 @@ function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperations
         )}
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
         {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
-        {vm.preview && <BackfillQuotaPanel preview={vm.preview} submissionEstimate={vm.submission?.quota} busy={vm.busy}
-          selectAlternative={(alternative) => {
-            providerField.current?.focus();
-            vm.selectBackfillAlternative(alternative);
-          }} />}
-        {quota && !vm.submission && (
-          <div className="mt-3 space-y-2 text-sm">
-            <label className="flex w-fit items-center gap-2">
-              <input type="checkbox" checked={vm.scheduleForLater} disabled={vm.busy}
-                onChange={(event) => vm.setScheduleForLater(event.target.checked)} />
-              Schedule for later
-            </label>
-            {vm.scheduleForLater && (
-              <label className="grid max-w-xs gap-1">
-                Earliest start (UTC)
-                <Input type="datetime-local" value={vm.scheduledStart} disabled={vm.busy}
-                  onChange={(event) => vm.setScheduledStart(event.target.value)} />
-              </label>
-            )}
-          </div>
-        )}
-        {vm.submission && (
-          <div className="mt-4 space-y-2 rounded-md border border-border/70 p-3" role="status">
-            <p className="text-sm font-medium">{submissionStatus} · {vm.submission.provider}</p>
-            <p className="break-all font-mono text-xs text-muted-foreground">Job {vm.submission.executionId}</p>
-            {submissionStatus === "Scheduled" && <p className="text-xs">Eligible from <TimeText value={vm.submission.scheduledAt} />.</p>}
-            {vm.submission.quota.exceedsBudget && <p className="text-xs">Requests are paced to the shared provider budget.</p>}
-            {latestSubmission?.quotaReceipt && <BackfillReceiptEvidence receipt={latestSubmission.quotaReceipt} />}
-          </div>
-        )}
-        {latestSubmission && (latestSubmission.batchReceipts?.length || latestSubmission.routingAttempts?.length) ? (
-          <BackfillBatchReceipts receipts={latestSubmission.batchReceipts ?? []} attempts={latestSubmission.routingAttempts ?? []} />
-        ) : null}
+        <BackfillSubmissionPanel vm={vm} providerField={providerField} />
         {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
         {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
         {vm.result?.quotaReceipt && <div className="mt-3"><BackfillReceiptEvidence receipt={vm.result.quotaReceipt} /></div>}
@@ -2163,97 +2125,6 @@ function BackfillLiveProgress({ state }: { state: BackfillLiveProgressState }) {
         </p>
       ) : null}
       <p className="text-right text-xs text-muted-foreground">Observed {state.observedAt}</p>
-    </section>
-  );
-}
-
-const FRESHNESS_SEVERITY: Record<CapabilityFreshnessModel["state"], string> = { current: "ready", stale: "stale", "no-evidence": "unknown" };
-
-function declaredSupport(value?: boolean) {
-  return value === undefined ? "Unavailable" : value ? "Yes" : "No";
-}
-
-function declaredDepth(row: CapabilityMatrixRowModel) {
-  const declaration = row.capabilities;
-  if (!declaration?.supportsMarketDepth) return declaredSupport(declaration?.supportsMarketDepth);
-  return declaration.maxDepthLevels == null ? "Unlimited" : declaration.maxDepthLevels.toString();
-}
-
-const declaredCapabilityColumns: TableWorkbenchColumn<CapabilityMatrixRowModel>[] = [
-  { id: "market-depth", label: "Depth levels", render: declaredDepth, exportValue: declaredDepth },
-  ...([
-    ["supportsAdjustedPrices", "Adjusted bars"],
-    ["supportsHistoricalTrades", "Historical trades"],
-    ["supportsHistoricalQuotes", "Historical quotes"],
-    ["supportsIntraday", "Intraday"]
-  ] as const).map(([id, label]) => ({
-    id, label,
-    render: (row: CapabilityMatrixRowModel) => declaredSupport(row.capabilities?.[id]),
-    exportValue: (row: CapabilityMatrixRowModel) => declaredSupport(row.capabilities?.[id])
-  }))
-];
-
-function CapabilityMatrixRegion({ panel, freshness }: { panel: CapabilityMatrixViewModel; freshness: (providerId: string) => CapabilityFreshnessModel }) {
-  return (
-    <section aria-labelledby="capability-matrix-title" className="workspace-region capability-matrix-region">
-      <Card>
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div>
-            <CardTitle id="capability-matrix-title">Provider capability matrix</CardTitle>
-            <CardDescription>
-              Declared provider coverage per instrument type, with how fresh each provider's newest evidence is.
-              {panel.model ? ` ${panel.model.summary}` : null}
-            </CardDescription>
-          </div>
-          <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="provider capability matrix" />
-        </CardHeader>
-        <CardContent>
-          {panel.error ? (
-            <StatusBanner tone="danger" title="Capability matrix unavailable" detail={panel.error} />
-          ) : !panel.model ? (
-            <p className="text-sm text-muted-foreground" role="status">Loading capability matrix…</p>
-          ) : (
-            <div className="grid gap-4">
-              <FixedIncomeCapabilityReadiness rows={panel.model.rows} />
-              <div className="overflow-x-auto">
-                <TableWorkbench workbenchId="data-provider-capabilities" sourceKey={panel.model.rows.map((row) => row.providerId).join("|")}
-                  sourceDescription="Loaded declared provider capability matrix; discovery failures are listed below."
-                  completePopulation={panel.model.failures.length === 0}
-                  rows={panel.model.rows} getRowId={(row) => row.providerId} getSearchText={(row) => `${row.providerId} ${row.cells.map((cell) => cell.description).join(" ")}`}
-                  columns={[{ id: "provider", label: "Provider", rowHeader: true, render: (row) => <span className="font-mono font-semibold">{row.providerId}</span>, exportValue: (row) => row.providerId },
-                    { id: "freshness", label: "Freshness", render: (row: CapabilityMatrixRowModel) => { const fresh = freshness(row.providerId); return (
-                      <span className="inline-flex flex-wrap items-center gap-1.5" data-freshness={fresh.state}>
-                        <StatusBadge status={FRESHNESS_SEVERITY[fresh.state]} label={fresh.label} />
-                        {fresh.ageText ? <span className="text-xs tabular-nums text-muted-foreground">{fresh.ageText}</span> : null}
-                      </span>); },
-                      exportValue: (row: CapabilityMatrixRowModel) => { const fresh = freshness(row.providerId); return fresh.ageText ? `${fresh.label} (${fresh.ageText})` : fresh.label; } },
-                    ...panel.model.columns.map((column) => ({ id: column, label: column,
-                      render: (row: CapabilityMatrixRowModel) => { const cell = row.cells.find((item) => item.instrumentType === column); return cell ? <span aria-label={cell.description} title={cell.description}>{cell.marks}</span> : "Unavailable"; },
-                      exportValue: (row: CapabilityMatrixRowModel) => row.cells.find((cell) => cell.instrumentType === column)?.description ?? "Unavailable" })),
-                    ...declaredCapabilityColumns]}
-                  ariaLabel="Provider capability by instrument type" emptyText="No declared capabilities." maxVisibleRows={null} />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {CAPABILITY_LEGEND.map((mark) => `${mark.code} = ${mark.label}`).join(" · ")}
-              </p>
-              <p className="text-xs text-muted-foreground">Depth, adjusted bars, historical trades and quotes, and intraday coverage are adapter declarations.</p>
-              {panel.model.failures.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold">Discovery failures</h3>
-                  <ul className="mt-2 grid gap-1.5">
-                    {panel.model.failures.map((failure, index) => (
-                      <li key={`${failure.stage}-${failure.subject}-${index}`} className="text-sm text-muted-foreground">
-                        <Badge variant="danger">{failure.stage}</Badge>{" "}
-                        <span className="font-mono">{failure.subject}</span> — {failure.errorType}: {failure.errorMessage}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </section>
   );
 }

@@ -11,6 +11,14 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui.Shared
 
+The book receipt queue composes approved historical positions, accepted Asset Operations schedules,
+canonical statement cash and retained reconciliation/journal links. Expected, received and posted
+amounts stay separate; missing account/provider coverage remains incomplete. Explicit capture commands
+retain dated, content-addressed observations and reuse the canonical exception queue, including
+version-checked reversal reopening that respects close freezes. Scoped GETs only read saved runs.
+No queue action creates a payment or journal. See
+[book receipt operations](../../docs/operators/book-receipt-queue.md) for authority and recovery.
+
 The Provider Accounting quota editor uses `GET /api/providers/{providerId}/quota` and
 `PUT /api/providers/{providerId}/quota`. Reads show saved values and observe running limits on
 initialized historical adapters. Edits require provider-management and configuration permissions

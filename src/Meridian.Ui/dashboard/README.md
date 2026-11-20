@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Ui/dashboard
@@ -493,6 +493,16 @@ the workstation's demo status. Configure exposes synthetic-only automatic fill
 posting grants: authenticated operators inspect, activate and revoke exact scoped authority against
 the current retained policy/mapping. Grant identities survive uncertain responses for inspection
 and retry; tenant, company and actor are server-owned. These reads never use development fallback.
+
+Accounting Reconciliation also includes a book receipt queue for coupon, interest and principal.
+It reads immutable daily runs from authoritative holdings, accepted projections, retained cash receipts
+and posted journals. Only **Run daily check** creates a run and synchronizes linked exceptions;
+book and history selection perform reads. Expected, received, posted and remaining amounts retain
+their exact decimal strings and individual currencies. Filters expose due, overdue, partial, disputed,
+received-but-unposted, reconciled, scheduled and incomplete-evidence states. Source details preserve
+earlier terms expectations, split allocations, reversals, owner and aging. Missing provider coverage
+remains visible even for an empty queue. Book changes cancel pending UI reads and commands; server
+scope and ledger permissions remain authoritative. No development fallback supplies receipt evidence.
 
 Reporting Exports downloads the server's single-snapshot general-ledger ZIP for the selected
 book/period with the session's explicit ExportData permission, without rebuilding financial rows in JavaScript. Quant Lab's corporate-action selector

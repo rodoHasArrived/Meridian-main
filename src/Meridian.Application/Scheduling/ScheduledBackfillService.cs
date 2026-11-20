@@ -1,8 +1,8 @@
 using Meridian.Application.Backfill;
-using Meridian.Contracts.Backfill;
 using Meridian.Contracts.Coordination;
 using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.Logging;
+using BackfillProviderContribution = Meridian.Contracts.Backfill.BackfillProviderContribution;
 
 namespace Meridian.Application.Scheduling;
 

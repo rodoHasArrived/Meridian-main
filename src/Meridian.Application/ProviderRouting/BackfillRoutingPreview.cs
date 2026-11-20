@@ -69,7 +69,7 @@ public static class BackfillRoutingPreview
         return new RoutePreviewResponse("HistoricalBars", selected is not null, selected?.ConnectionId,
             selected?.ProviderFamilyId, "ReadOnlyPreview", false,
             selected?.ReasonCodes ?? ["No eligible adapter is available for the configured provider selection."], [],
-            candidates.Skip(1).Select(candidate => candidate.ConnectionId).ToArray(), null, candidates, Warnings: warnings);
+            candidates.Skip(1).Select(candidate => candidate.ConnectionId).ToArray(), null, candidates, Warnings: warnings.ToArray());
     }
 
     private static RoutePreviewCandidateDto ToCandidate(BackfillRoutingProvider entry)

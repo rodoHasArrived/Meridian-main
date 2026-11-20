@@ -117,8 +117,18 @@ export function ProviderActivationPanel({
     restartRequest.current = request;
     setConfirmOpen(false);
     setRestarting(true);
-    setRestartMessage("Requesting restart…");
+    setRestartMessage("Checking pending changes…");
     try {
+      const latest = await readActivation(AbortSignal.any([request.signal, AbortSignal.timeout(5_000)]));
+      if (request.signal.aborted) return;
+      if (!latest.canRestart || latest.runtimeSessionId !== previousSession ||
+        latest.pendingPaths.length !== activation.pendingPaths.length ||
+        !activation.pendingPaths.every((path) => latest.pendingPaths.includes(path))) {
+        setActivation(latest);
+        setRestartMessage("The host session or pending changes changed. Review the current status before restarting.");
+        return;
+      }
+      setRestartMessage("Requesting restart…");
       try {
         await apiPostJson("/api/providers/restart", undefined, {
           signal: AbortSignal.any([request.signal, AbortSignal.timeout(10_000)]),

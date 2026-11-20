@@ -152,6 +152,10 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
   useEffect(() => { commandMemory.current.clear(); }, [operatorId]);
   const pendingQueueScroll = useRef<number | null>(null);
   const focusCaseAfterSelection = useRef(false);
+  const inspectorFocusFrame = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (inspectorFocusFrame.current !== null) cancelAnimationFrame(inspectorFocusFrame.current);
+  }, []);
   const [detailOpen, setDetailOpen] = useState(() => {
     const stored = (location.state as { reconciliationDetailOpen?: boolean } | null)?.reconciliationDetailOpen;
     return stored ?? Boolean(readReconciliationViewState(location.search).selectedBreakId);
@@ -322,7 +326,11 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
 
   function openInspector() {
     setInspectorOpen(true);
-    requestAnimationFrame(() => document.getElementById(reconciliation.detailPanelId)?.focus());
+    if (inspectorFocusFrame.current !== null) cancelAnimationFrame(inspectorFocusFrame.current);
+    inspectorFocusFrame.current = requestAnimationFrame(() => {
+      inspectorFocusFrame.current = null;
+      document.getElementById(reconciliation.detailPanelId)?.focus();
+    });
   }
 
   function focusQueueRow(breakId: string) {

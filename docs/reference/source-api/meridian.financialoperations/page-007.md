@@ -64,7 +64,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementRecordKindResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:242](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L242).
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:252](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L252).
 
 Maps canonical activity types (position, cash, cashbalance, trade, fee, dividend, div) to record kinds with the same semantics as the downstream reconciliation row classifier, so every connector buckets mixed-kind statements identically.
 
@@ -76,7 +76,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static StatementRecordKind Resolve(string canonicalActivityType);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:244](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L244) |  |
+| <code>public static StatementRecordKind Resolve(string canonicalActivityType);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:254](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L254) |  |
 
 ## StatementSourceDocument
 

@@ -7,6 +7,12 @@ internal static class AlpacaFeedConfiguration
 {
     internal static string SavedFeed(AppConfig config) => ModuleFeed(config) ?? config.Alpaca?.Feed ?? "iex";
 
+    internal static string SavedHistoricalFeed(AppConfig config)
+    {
+        var feed = config.Backfill?.Providers?.Alpaca?.Feed;
+        return ModuleFeed(config) ?? (string.IsNullOrWhiteSpace(feed) ? config.Alpaca?.Feed : feed) ?? "iex";
+    }
+
     internal static string? ModuleFeed(AppConfig config)
     {
         var settings = config.ProviderModules?.Modules?.LastOrDefault(IsAlpacaModule).Value?.Settings;
@@ -31,10 +37,17 @@ internal static class AlpacaFeedConfiguration
             }
         }
 
-        // The runtime constructs the Alpaca provider from host options. Keep an explicit
-        // module override in sync so it cannot shadow a verified host-wide selection.
+        // Keep explicit adapter overrides in sync with the verified host-wide selection.
         if (!feed.Equals(updated.Alpaca?.Feed ?? "iex", StringComparison.Ordinal))
             updated = updated with { Alpaca = (updated.Alpaca ?? new AlpacaOptions()) with { Feed = feed } };
+        if (updated.Backfill is { Providers: { Alpaca: { } historical } providers } backfill &&
+            !string.IsNullOrWhiteSpace(historical.Feed) && !feed.Equals(historical.Feed, StringComparison.Ordinal))
+        {
+            updated = updated with
+            {
+                Backfill = backfill with { Providers = providers with { Alpaca = historical with { Feed = feed } } }
+            };
+        }
         if (updated.ProviderModules?.Modules is { } modules &&
             modules.LastOrDefault(IsAlpacaModule) is { Key: not null, Value.Settings: { } settings } module &&
             settings.LastOrDefault(IsFeedSetting).Key is { } feedKey &&

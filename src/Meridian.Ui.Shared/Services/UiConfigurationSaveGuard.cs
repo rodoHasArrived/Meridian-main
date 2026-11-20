@@ -143,7 +143,11 @@ public static class UiConfigurationSaveGuard
         static bool IsSip(string? feed) => string.Equals(feed?.Trim(), "sip", StringComparison.OrdinalIgnoreCase);
         if (IsSip(AlpacaFeedConfiguration.SavedFeed(next)) && !IsSip(AlpacaFeedConfiguration.SavedFeed(current)))
             return true;
+        if (IsSip(AlpacaFeedConfiguration.SavedHistoricalFeed(next)) && !IsSip(AlpacaFeedConfiguration.SavedHistoricalFeed(current)))
+            return true;
         if (IsSip(next.Alpaca?.Feed) && !IsSip(current.Alpaca?.Feed))
+            return true;
+        if (IsSip(next.Backfill?.Providers?.Alpaca?.Feed) && !IsSip(current.Backfill?.Providers?.Alpaca?.Feed))
             return true;
         if (IsSip(AlpacaFeedConfiguration.ModuleFeed(next)) && !IsSip(AlpacaFeedConfiguration.ModuleFeed(current)))
             return true;

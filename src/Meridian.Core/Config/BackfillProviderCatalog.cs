@@ -125,7 +125,7 @@ public static class BackfillProviderCatalog
         var hour = edit.RateLimitPerHour ?? tier.RateLimitPerHour;
         return id switch
         {
-            "alpaca" => config with { Alpaca = (config.Alpaca ?? new()) with { Enabled = edit.Enabled, Priority = edit.Priority, TierId = edit.TierId, RateLimitPerMinute = minute!.Value } },
+            "alpaca" => config with { Alpaca = (config.Alpaca ?? new(Feed: string.Empty)) with { Enabled = edit.Enabled, Priority = edit.Priority, TierId = edit.TierId, RateLimitPerMinute = minute!.Value } },
             "polygon" => config with { Polygon = (config.Polygon ?? new()) with { Enabled = edit.Enabled, Priority = edit.Priority, TierId = edit.TierId, RateLimitPerMinute = minute!.Value } },
             "tiingo" => config with { Tiingo = (config.Tiingo ?? new()) with { Enabled = edit.Enabled, Priority = edit.Priority, TierId = edit.TierId, RateLimitPerHour = hour!.Value } },
             "finnhub" => config with { Finnhub = (config.Finnhub ?? new()) with { Enabled = edit.Enabled, Priority = edit.Priority, TierId = edit.TierId, RateLimitPerMinute = minute!.Value } },

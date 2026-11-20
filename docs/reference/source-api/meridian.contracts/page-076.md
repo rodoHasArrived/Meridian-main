@@ -6,6 +6,172 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationAccountingScopeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:249](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L249).
+
+Exact accounting authority bound to a statement import before it can enter close casework.
+
+```csharp
+public sealed record StatementReconciliationAccountingScopeDto(string FundProfileId, Guid LedgerBookId, Guid AccountingPeriodId, DateOnly AsOfDate);
+```
+
+## StatementReconciliationBreakExplanationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationBreakExplanationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:251](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L251).
+
+```csharp
+public sealed record StatementReconciliationBreakExplanationDto(string? Summary, IReadOnlyList<string>? SourceSystems, string? ProbableCause, string? LedgerImpact, string? SuggestedNextAction, string? RequiredSignoffRole, IReadOnlyList<string>? EvidenceLinks);
+```
+
+## StatementReconciliationCaseAttachmentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseAttachmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:242](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L242).
+
+```csharp
+public sealed record StatementReconciliationCaseAttachmentDto(string? AttachmentId, string? EvidenceKind, string? SourceSystem, string? SourceReference, string? ContentHash, string? Route, DateTimeOffset? AttachedAtUtc);
+```
+
+## StatementReconciliationCaseAuditEventDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseAuditEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:260](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L260).
+
+```csharp
+public sealed record StatementReconciliationCaseAuditEventDto(string? EventId, string? EventType, DateTimeOffset? OccurredAtUtc, string? Actor, string? Detail);
+```
+
+## StatementReconciliationCaseCommentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseCommentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:235](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L235).
+
+```csharp
+public sealed record StatementReconciliationCaseCommentDto(string? CommentId, string? Body, string? Actor, DateTimeOffset? CreatedAtUtc, string? ParentCommentId = null);
+```
+
+## StatementReconciliationCaseCommentThreadDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseCommentThreadDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:230](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L230).
+
+```csharp
+public sealed record StatementReconciliationCaseCommentThreadDto(string? ThreadId, string? Subject, IReadOnlyList<StatementReconciliationCaseCommentDto>? Comments);
+```
+
+## StatementReconciliationCaseDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:206](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L206).
+
+Operator case opened to investigate and close one or more statement reconciliation breaks.
+
+```csharp
+public sealed record StatementReconciliationCaseDto(string? CaseId, string? RunId, string? Status, string? Priority, string? Title, string? Summary, IReadOnlyList<string>? BreakIds, DateTimeOffset? CreatedAtUtc, DateTimeOffset? LastUpdatedAtUtc, string? LastUpdatedBy, string? Owner = null, DateTimeOffset? DueAtUtc = null, DateTimeOffset? ResolvedAtUtc = null, string? ResolutionCode = null, string? ResolutionSummary = null, string? EvidenceLink = null, string? Disposition = null, int? AgingDays = null, IReadOnlyList<StatementReconciliationCaseCommentThreadDto>? CommentThreads = null, IReadOnlyList<StatementReconciliationCaseAttachmentDto>? Attachments = null, StatementReconciliationBreakExplanationDto? BreakExplanation = null, IReadOnlyList<StatementReconciliationCaseAuditEventDto>? AuditEvents = null);
+```
+
+## StatementReconciliationReportArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationReportArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:220](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L220).
+
+One immutable, hash-verified artifact produced by the statement reconciliation report workflow.
+
+```csharp
+public sealed record StatementReconciliationReportArtifactDto(string ArtifactId = default !, string ArtifactKind = default !, string FileName = default !, string ContentType = default !, long ByteLength = default, string ContentHashSha256 = default !, string DownloadRoute = default !, DateTimeOffset RetainedAtUtc = default);
+```
+
+## StatementReconciliationReportArtifactGenerationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationReportArtifactGenerationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:235](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L235).
+
+One superseded artifact generation retained for immutable workflow and audit history. Artifact descriptors preserve the exact metadata that was current for the generation; their original download routes are audit metadata and do not authorize historical download.
+
+```csharp
+public sealed record StatementReconciliationReportArtifactGenerationDto(int Generation = default, IReadOnlyList<StatementReconciliationReportArtifactDto> Artifacts = default !, string ManifestFileName = default !, long ManifestByteLength = default, string ManifestContentHashSha256 = default !, DateTimeOffset GeneratedAtUtc = default, DateTimeOffset ArchivedAtUtc = default, IReadOnlyList<string> EvidenceReferences = default !, string ArchiveReceiptContentHashSha256 = default !);
+```
+
+## StatementReconciliationReportWorkflowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:259](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L259).
+
+Durable workflow projection shared by browser and WPF clients. It exposes retained evidence and recovery routes without exposing server file-system paths.
+
+```csharp
+public sealed record StatementReconciliationReportWorkflowDto(string WorkflowId = default !, StatementReconciliationReportWorkflowStatusDto Status = default, long Version = default, string TenantId = default !, string? CompanyId = default, string SourceInstitution = default !, string FundAccountId = default !, string ExternalAccountId = default !, DateOnly PeriodStart = default, DateOnly PeriodEnd = default, string? StatementRunId = default, EvidenceVaultIdentityDto? EvidenceVaultIdentity = default, IReadOnlyList<StatementReconciliationReportArtifactDto> RetainedArtifacts = default !, IReadOnlyList<string> EvidenceReferences = default !, int BreakCount = default, int CaseCount = default, DateTimeOffset CreatedAtUtc = default, DateTimeOffset UpdatedAtUtc = default, DateTimeOffset? CompletedAtUtc = default, string? FailureReason = default, string? RecoveryAction = default, string StatusRoute = default !, string ResumeRoute = default !)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementReconciliationAccountingScopeDto? AccountingScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:288](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L288) | Server-verified fund, ledger-book, period, and as-of scope. Null denotes a legacy reconciliation-only workflow that cannot be used as close or certified-reporting evidence. |
+| <code>public Guid? OperationsWorkflowId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:294](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L294) | Existing Operations Continuity workflow that owns posting, casework, approval, and close. The statement operation does not duplicate that lifecycle. |
+| <code>public int ArtifactGeneration { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:301](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L301) | Monotonic number of the latest artifact generation produced by this workflow. When the workflow is awaiting reconciliation after a reopen, the latest generation is historical and RetainedArtifacts remains empty until a new current generation completes. |
+| <code>public IReadOnlyList&lt;StatementReconciliationReportArtifactGenerationDto&gt; ArtifactHistory { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:307](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L307) | Immutable metadata, manifest hashes, descriptors, and audit evidence for superseded artifact generations. Current artifact authority remains exclusively in RetainedArtifacts. |
+
+## StatementReconciliationReportWorkflowStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:209](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L209).
+
+Status of the durable statement reconciliation report workflow.
+
+```csharp
+public enum StatementReconciliationReportWorkflowStatusDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>InputRetained = 0</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:211](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L211) |  |
+| <code>Importing = 1</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:212](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L212) |  |
+| <code>AwaitingReconciliation = 2</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:213](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L213) |  |
+| <code>RenderingReconciliationReport = 3</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:214](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L214) |  |
+| <code>Completed = 4</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:215](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L215) |  |
+| <code>Failed = 5</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:216](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L216) |  |
+
+## StatementRecordPreviewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRecordPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L73).
+
+One canonical record sample shown in the import preview, grouped by kind.
+
+```csharp
+public sealed record StatementRecordPreviewDto(string Kind, string Account, string Symbol, decimal Quantity, decimal Price, decimal CashAmount, string ActivityType, string TradeDate, string? SettlementDate, string? Currency, decimal? FeesCommission, string? ExternalTransactionId, string? ActivityCategory = null, string? ActivitySubtype = null, string? ProviderActivityCode = null, string? RelatedTransactionId = null, string? OrderId = null, string? Description = null);
+```
+
+## StatementRunBreakDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunBreakDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:347](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L347).
+
+Open or retained break row scoped to a statement reconciliation run.
+
+```csharp
+public sealed record StatementRunBreakDto(string BreakId, string RunId, string ImportId, string SourceReference, StatementBreakType BreakType, string Category, decimal Delta, decimal Tolerance, bool ToleranceBreached, DateTimeOffset CreatedAtUtc, string Status);
+```
+
 ## StatementRunCreateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunCreateDto</code>. Kind: `record`.
@@ -470,171 +636,4 @@ Request body for saving a strategy design draft.
 
 ```csharp
 public sealed record StrategyDesignDraftSaveRequest(StrategyDesignDocument Document);
-```
-
-## StrategyDesignDraftSaveResponse
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDraftSaveResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:151](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L151).
-
-Response returned after saving a strategy design draft.
-
-```csharp
-public sealed record StrategyDesignDraftSaveResponse(StrategyDesignDocument Document, StrategyDesignDraftSummary Summary, StrategyDesignValidationResult Validation, IReadOnlyList<StrategyDesignRunTraceEntry> Trace);
-```
-
-## StrategyDesignDraftSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDraftSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:133](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L133).
-
-Summary row for a durable design draft.
-
-```csharp
-public sealed record StrategyDesignDraftSummary(string DocumentId, string Name, string Version, string DatasetReference, int CellCount, int TransitionCount, DateTimeOffset UpdatedAt, string ValidationSummary);
-```
-
-## StrategyDesignFieldCatalogItem
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignFieldCatalogItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L49).
-
-AMX-style field vocabulary item mapped to a Meridian canonical source.
-
-```csharp
-public sealed record StrategyDesignFieldCatalogItem(string FieldId, string Label, string Source, string DataSet, string TypeName, string Description, bool IsEnabled, string? DisabledReason, IReadOnlyList<string> Synonyms);
-```
-
-## StrategyDesignPreviewResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignPreviewResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:113](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L113).
-
-Preview result returned before execution.
-
-```csharp
-public sealed record StrategyDesignPreviewResult(StrategyDesignValidationResult Validation, StrategyDesignCompiledScript Compiled, IReadOnlyList<StrategyDesignPreviewRow> Rows, IReadOnlyList<StrategyDesignRunTraceEntry> Trace);
-```
-
-## StrategyDesignPreviewRow
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignPreviewRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:92](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L92).
-
-Preview row explaining how a cell will be compiled.
-
-```csharp
-public sealed record StrategyDesignPreviewRow(string RowId, string CellId, string Label, string Purpose, string Status, IReadOnlyList<string> FieldRefs, string Detail);
-```
-
-## StrategyDesignRunBacktestRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignRunBacktestRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:160](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L160).
-
-Request body for a Strategy Builder backtest run.
-
-```csharp
-public sealed record StrategyDesignRunBacktestRequest(StrategyDesignDocument Document, IReadOnlyDictionary<string, string>? Parameters = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; OperatorAcceptanceCriteria { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:171](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L171) |  |
-| <code>public IReadOnlyList&lt;string&gt; RetainedEvidenceReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:177](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L177) |  |
-| <code>public IReadOnlyList&lt;string&gt; AccountingRecordReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:183](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L183) |  |
-| <code>public IReadOnlyList&lt;string&gt; ApprovalReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:189](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L189) |  |
-| <code>public IReadOnlyList&lt;string&gt; PaperValidationReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:195](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L195) |  |
-| <code>public IReadOnlyList&lt;string&gt; GovernedReportReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:201](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L201) |  |
-
-## StrategyDesignRunBacktestResponse
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:213](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L213).
-
-Backtest execution response returned by the Strategy Builder route. BiasDisclosure carries the engine&#x27;s honest-assumptions report for the captured run (null when the runner did not capture an engine-level result).
-
-```csharp
-public sealed record StrategyDesignRunBacktestResponse(bool Success, string? RunId, string StrategyId, string StrategyName, StrategyDesignValidationResult Validation, StrategyDesignCompiledScript Compiled, IReadOnlyList<StrategyDesignRunTraceEntry> Trace, IReadOnlyList<StrategyDesignPreviewRow> PreviewRows, IReadOnlyDictionary<string, string> Metrics, string? RuntimeError, string? PromotionCandidatePath, string? ReviewPacketPath, BiasDisclosureDto? BiasDisclosure = null, ProviderProvenanceReceipt? ProviderProvenance = null);
-```
-
-## StrategyDesignRunTraceEntry
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignRunTraceEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:122](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L122).
-
-Step-level trace entry for preview and run proof.
-
-```csharp
-public sealed record StrategyDesignRunTraceEntry(string StepId, string Label, string Status, string Detail, string? CellId = null, DateTimeOffset? OccurredAt = null);
-```
-
-## StrategyDesignTemplate
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignTemplate</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L63).
-
-Strategy Builder template imported from the prototype requirements and rebuilt in Meridian terms.
-
-```csharp
-public sealed record StrategyDesignTemplate(string TemplateId, string Name, string Description, string Category, string SourcePrototype, IReadOnlyList<string> Tags, StrategyDesignDocument Document);
-```
-
-## StrategyDesignTransition
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignTransition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L37).
-
-Directed transition between two cells in the design canvas.
-
-```csharp
-public sealed record StrategyDesignTransition(string TransitionId, string FromCellId, string ToCellId, string Kind, string Condition, int? MaxIterations = null, string? Rationale = null);
-```
-
-## StrategyDesignValidationMessage
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignValidationMessage</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L75).
-
-Validation message returned by design validation, preview, and run endpoints.
-
-```csharp
-public sealed record StrategyDesignValidationMessage(string Code, string Severity, string TargetId, string Message);
-```
-
-## StrategyDesignValidationResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignValidationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L84).
-
-Validation state for a design document.
-
-```csharp
-public sealed record StrategyDesignValidationResult(bool IsValid, string Summary, IReadOnlyList<StrategyDesignValidationMessage> Messages);
-```
-
-## StrategyRunAcceptanceChecklistItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:305](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L305).
-
-A canonical promotion checklist requirement projected from durable promotion history. A ready item always has both the canonical checklist id and its keyed evidence reference in the same durable decision record.
-
-```csharp
-public sealed record StrategyRunAcceptanceChecklistItemDto(string ChecklistId, string Label, StrategyRunAcceptanceChecklistStatusDto Status, string? EvidenceReference = null, string? DecidedBy = null, DateTimeOffset? DecidedAt = null, string? AuditReference = null, string? Blocker = null);
 ```

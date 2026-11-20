@@ -204,7 +204,9 @@ public sealed partial class BackfillCoordinator
 
         var provider = cfg.Backfill?.Providers?.Alpaca;
         var module = cfg.ProviderModules?.Modules?.GetValueOrDefault("alpaca");
-        var feed = module?.Settings?.GetValueOrDefault("feed") ?? provider?.Feed ?? cfg.Alpaca?.Feed ?? "iex";
+        var overrideFeed = provider?.Feed;
+        var configuredFeed = string.IsNullOrWhiteSpace(overrideFeed) ? cfg.Alpaca?.Feed : overrideFeed;
+        var feed = module?.Settings?.GetValueOrDefault("feed") ?? configuredFeed ?? "iex";
         var adjustment = (provider?.Adjustment ?? "all").ToLowerInvariant();
         return source.FeedLabel.Equals(feed, StringComparison.OrdinalIgnoreCase) &&
             source.DataSemantics == $"Historical bars ({adjustment} adjustment)";

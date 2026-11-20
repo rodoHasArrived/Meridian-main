@@ -20,7 +20,7 @@ describe("ProviderActivationPanel", () => {
   beforeEach(() => vi.resetAllMocks());
 
   it("confirms pending paths and waits for readiness in a different host session", async () => {
-    api.apiGetJson.mockResolvedValueOnce(current).mockResolvedValue({
+    api.apiGetJson.mockResolvedValueOnce(current).mockResolvedValueOnce(current).mockResolvedValue({
       ...current, providers: [{ ...current.providers[0], state: "active" }],
       pendingPaths: [], runtimeSessionId: "after"
     });
@@ -36,6 +36,19 @@ describe("ProviderActivationPanel", () => {
     expect(await screen.findByText("Meridian restarted and is ready.", {}, { timeout: 3_000 })).toBeInTheDocument();
     expect(screen.getByText("Active")).toBeInTheDocument();
     expect(api.apiPostJson).toHaveBeenCalledOnce();
+  });
+
+  it("requires a fresh confirmation when the pending paths change", async () => {
+    api.apiGetJson.mockResolvedValueOnce(current).mockResolvedValue({
+      ...current, pendingPaths: [...current.pendingPaths, "alpaca.feed"]
+    });
+    render(<ProviderActivationPanel />);
+
+    fireEvent.click(await screen.findByRole("button", { name: "Restart host to apply 1 pending change" }));
+    fireEvent.click(screen.getByRole("button", { name: "Restart host" }));
+
+    expect(await screen.findByRole("button", { name: "Restart host to apply 2 pending changes" })).toBeVisible();
+    expect(api.apiPostJson).not.toHaveBeenCalled();
   });
 
   it("shows the process owner's instructions for an unsupervised host", async () => {
