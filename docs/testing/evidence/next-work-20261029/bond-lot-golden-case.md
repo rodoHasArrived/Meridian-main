@@ -1,13 +1,18 @@
 # Bond settlement and LOT handoff golden case
 
-**Status:** draft
+**Status:** active
 **Owner:** core-team
 **Reviewed:** 2026-11-20
+**Evidence scope:** synthetic-verified for the selected local runtime checks; live-untested
 
 This packet specifies and records bounded synthetic bond settlement and governed acquisition intake for
-`W10-LOT-002` and `W10-BOND-001`. Its base is `dfdbb0ce7751d3bf2e01ae670389dbf2027dd229`
-on `codex/bond-lot-evidence`, plus the task changes. Runtime checks are pending below; the
-independent arithmetic is a specification, not evidence that the application produced it.
+`W10-LOT-002` and `W10-BOND-001`. The implementation candidate is
+`67b81bbfe838434bd5b3b3f39893787d971bca5c` on `codex/bond-lot-evidence`, based on
+`dfdbb0ce7751d3bf2e01ae670389dbf2027dd229`; see [PR #3685](https://github.com/rodoHasArrived/Meridian-main/pull/3685).
+Execution, ordinary endpoint/LOT-consumer and disposable PostgreSQL checks passed within the
+scopes below: 464 selected tests, zero failures or skips. The ordinary rerun used test-only follow-up
+`3759142b20b1cc128802abbb411b0aaa21c70fb6`, which adds required reviewer notes to the intake fixture.
+Production code is unchanged from the implementation candidate.
 It supplies no roadmap acceptance, live-provider claim, or release certification.
 
 ## Implementation boundary
@@ -65,14 +70,14 @@ it does not prove coupon cash receipt or period-end premium amortization.
 
 | Check | Required result | Current candidate evidence |
 | --- | --- | --- |
-| Dirty settlement and clean basis | Cash 97,250; clean basis 101,250; receivable 1,500; purchase income zero | Pending execution |
-| Required paper settlement | With the opt-in enabled, immediate and resting fills reject missing/inconsistent economics without fill quantity, price or fees; zero accrual remains valid | Pending execution |
-| Default and replay compatibility | Legacy fallback and persisted-fill economics remain unchanged | Pending execution |
-| Governed acquisition intake | A server-verified Long, same-currency, face-value candidate enters journal review with balanced 102,750 debits/credits and clean 101,250 acquisition basis | Pending execution |
-| Intake retry and review authority | Exact retry retains one immutable source draft; self-approval, forged manual saves and generic posting refuse | Pending execution |
-| Missing or inconsistent authority | Missing review services refuse before drafting; unsupported identity, scope or accounting facts supply no guessed amount or identity | Pending execution |
-| Canonical lot persistence | Required identity, Face basis, original/open quantities, acquisition currency/FX and clean basis survive a disposable PostgreSQL round trip | Pending PostgreSQL execution |
-| Existing LOT boundaries | Selected consumer, acquisition and amortization regressions retain their supported behavior | Pending execution; record selected tests separately |
+| Dirty settlement and clean basis | Cash 97,250; clean basis 101,250; receivable 1,500; purchase income zero | Passed in the 146-test execution selection |
+| Required paper settlement | With the opt-in enabled, immediate and resting fills reject missing/inconsistent economics without fill quantity, price or fees; zero accrual remains valid | Passed in the 146-test execution selection |
+| Default and replay compatibility | Legacy fallback and persisted-fill economics remain unchanged | Passed in the 146-test execution selection |
+| Governed acquisition intake | A server-verified Long, same-currency, face-value candidate enters journal review with balanced 102,750 debits/credits and clean 101,250 acquisition basis | Passed in the 310-test ordinary selection |
+| Intake retry and review authority | Exact retry retains one immutable source draft; self-approval, forged manual saves and generic posting refuse | PostgreSQL review/post/reopen replay and ordinary endpoint cases passed |
+| Missing or inconsistent authority | Missing review services refuse before drafting; unsupported identity, scope or accounting facts supply no guessed amount or identity | Execution refusal and ordinary endpoint cases passed |
+| Canonical lot persistence | Required identity, Face basis, original/open quantities, acquisition currency/FX and clean basis survive a disposable PostgreSQL round trip | Passed in the 8-test PostgreSQL selection |
+| Existing LOT boundaries | Selected consumer, acquisition and amortization regressions retain their supported behavior | Selected ordinary consumer and PostgreSQL acquisition cases passed |
 
 Keep an unresolved handoff visible and retryable. A pending accounting consequence must never
 be represented as a posted lot. Retain original execution evidence and acquisition authority
@@ -80,23 +85,32 @@ on retry rather than recalculating purchased interest from current terms or a cu
 
 ## Candidate verification receipt
 
-Run from the repository root in Bash with the SDK selected by `global.json`. The following
-commands are the initial selection; replace this pending receipt with the exact commands,
-candidate identity and observed results after execution. Do not inherit counts from earlier packets.
+Commands run from the repository root in Bash with .NET SDK 10.0.404, selected by
+`PATH=/tmp/meridian-dotnet:$PATH DOTNET_ROOT=/tmp/meridian-dotnet`. The completed execution
+selection restored and built candidate `67b81bbfe8`. The PostgreSQL selection used `--no-build`
+and the same `bond-lot-evidence` isolation key to reuse those verified candidate assemblies.
+It was not a fresh build. Neither run inherits counts from an earlier packet.
 
 ```bash
-python build/python/cli/buildctl.py test --project tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj \
-  --filter 'Category!=Integration&(FullyQualifiedName~PaperBondAccruedInterestTests|FullyQualifiedName~EventDrivenDecouplingTests)' \
-  --queue --isolation-key bond-settlement-evidence
+python3 build/python/cli/buildctl.py test --project tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj \
+  --filter 'FullyQualifiedName~PaperBondAccruedInterestTests|FullyQualifiedName~EventDrivenDecouplingTests|FullyQualifiedName~PaperTradingGatewayConcurrencyTests' \
+  --queue --queue-timeout-seconds 1800 --verbosity quiet --logger trx \
+  --isolation-key bond-lot-evidence --results-directory artifacts/test-results/bond-lot-evidence
 
-python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj \
-  --filter 'Category!=Integration&(FullyQualifiedName~BondAcquisitionIntake|FullyQualifiedName~CanonicalOpenLotConsumerTests)' \
-  --queue --isolation-key bond-lot-evidence
+python3 build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj \
+  --filter 'Category!=Integration&(FullyQualifiedName~BondAcquisitionIntake|FullyQualifiedName~CanonicalOpenLotConsumerTests|FullyQualifiedName~BondSettlementConsiderationTests|FullyQualifiedName~AssetAccountingEventSpineServiceTests)' \
+  --queue --queue-timeout-seconds 1800 --property BuildProjectReferences=false --verbosity quiet --logger trx \
+  --isolation-key bond-lot-evidence --results-directory artifacts/test-results/bond-lot-evidence
 
-python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj \
+python3 build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj \
   --filter 'FullyQualifiedName~AssetAcquisitionLotPostgresRoundTripTests|FullyQualifiedName~OpenLotPostgresTests' \
-  --queue --isolation-key bond-lot-postgres
+  --no-build --queue --queue-timeout-seconds 1800 --verbosity quiet --logger trx \
+  --isolation-key bond-lot-evidence --results-directory artifacts/test-results/bond-lot-postgres
 ```
+
+The middle command is the completed ordinary rerun selection on `3759142b20`. It rebuilt the
+test project with `BuildProjectReferences=false`, reusing unchanged production outputs built
+and verified at `67b81bbfe8`; it does not rebuild every project at the test-only follow-up.
 
 Execution tests remain under `tests/Meridian.Tests/Execution/` in source but compile in the
 split `Meridian.Execution.Tests` project. The new required-settlement cases are in
@@ -105,6 +119,16 @@ The intake cases are in
 [`WorkstationEndpointsTests.BondAcquisitionIntake.cs`](../../../../tests/Meridian.Tests/Ui/WorkstationEndpointsTests.BondAcquisitionIntake.cs)
 and compile in `Meridian.Tests`.
 
+The PostgreSQL golden case is
+[`GoldenBondSettlement_ReviewApprovePostAndReopen_PreservesCleanLotAndDirtyJournalExactlyOnce`](../../../../tests/Meridian.Tests/AssetOperations/AssetAcquisitionLotPostgresRoundTripTests.BondSettlement.cs)
+in `AssetAcquisitionLotPostgresRoundTripTests`. It supplies fixed analytical prices through a
+stub `IBondAnalyticsService`; real settlement-receipt verification, source spine, posting rules,
+journal review, independent controller approval and typed atomic journal/lot posting consume
+them. The test uses PostgreSQL source, journal, lot, draft and recovery stores plus a file-backed
+Evidence Vault, then reopens services and retries the same posting. Its expected result is one
+clean-cost lot and one dirty-consideration journal. It does not validate coupon-schedule analytics.
+The narrower filter `FullyQualifiedName~GoldenBondSettlement` selects that case alone.
+
 The PostgreSQL selection must use only a disposable synthetic test database. Use the
 [shared test-fixture configuration](../../README.md#shared-postgresql-fixtures); keep production
 connection variables unset. Record schema cleanup explicitly and count skipped tests rather
@@ -112,16 +136,25 @@ than treating an unavailable database as a successful round trip.
 
 | Verification | Result | Receipt |
 | --- | --- | --- |
-| Focused ordinary .NET checks | Pending | Exact filter, pass/fail/skip counts and TRX location pending |
-| Disposable PostgreSQL checks | Pending | Database availability, pass/fail/skip counts and schema cleanup pending |
+| Execution .NET checks | 146 passed, 0 failed, 0 skipped; exit 0 | Candidate `67b81bbfe8`; local log `/tmp/meridian-bond-execution-verified.log`; TRX run `test-meridian-execution-tests-20261120191450-dbf14a8e1de34071927d8a7907adecb6` under `artifacts/test-results/bond-lot-evidence/` |
+| Ordinary endpoint and LOT-consumer checks | 310 passed, 0 failed, 0 skipped; exit 0 | Test assembly rebuilt at `3759142b20` using unchanged verified `67b81bbfe8` production references; local log `/tmp/meridian-bond-ledger-final.log`; TRX run `test-meridian-tests-20261120192901-ae240dd35f1f4edcab10d506d37521ca` under `artifacts/test-results/bond-lot-evidence/` |
+| Disposable PostgreSQL checks | 8 passed, 0 failed, 0 skipped; exit 0 | Same verified `67b81bbfe8` assemblies, `--no-build`; local log `/tmp/meridian-bond-postgres-verified.log`; TRX run `test-meridian-tests-20261120192207-42a1a5d1267e40d686702db51608f246` under `artifacts/test-results/bond-lot-postgres/` |
+| PostgreSQL cleanup | Passed: zero owned/non-system schemas remained; disposable container removed | Shared local PostgreSQL selected through the test alias; `docker stop` removed the `--rm` container; subsequent `docker ps -a --filter name=meridian-bond-lot-evidence` returned no container |
+| Local documentation lane | Passed, exit 0 on `67b81bbfe8` | `PATH=/tmp/meridian-dotnet:$PATH DOTNET_ROOT=/tmp/meridian-dotnet bash scripts/ci.sh --lane verify-docs`; .NET SDK 10.0.404; local log `/tmp/meridian-bond-docs-verified.log` |
 | Full local `bash scripts/ci.sh` | Not run for this packet | Record any later attempt and limitations |
 | Required hosted checks | Pending | Run URLs and checked commit pending |
-| Separate AI review of financial changes | Pending | Material findings and dispositions pending |
+| Separate AI review of financial changes | Completed: no consequential defects found | Separate-agent financial review; this is not independent human review or owner acceptance |
 | Browser / Windows WPF / operator acceptance | Not exercised by this packet | Separate workflow and runtime evidence required |
 
 Keep raw logs and TRX files in CI artifacts rather than adding raw payloads to this directory.
-Only a completed check may be labeled `synthetic-verified`; provider behavior remains
-`live-untested` without a separately authorized live run.
+The selected local runtime scope is `synthetic-verified`; provider behavior remains
+`live-untested` without a separately authorized live run. Hosted checks remain pending and these
+local results do not replace their conclusions.
+
+Initial development runs exposed test-fixture defects: missing entity dimensions, a chart
+display-name/path assertion mismatch and an interface-only position assertion. Those test
+corrections are included in the implementation candidate. The final intake-fixture correction adds
+required reviewer notes in test-only `3759142b20`; its ordinary rerun passed as recorded above.
 
 ## Remaining boundaries
 
