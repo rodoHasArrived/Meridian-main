@@ -59,9 +59,15 @@ public sealed partial class ManualJournalEntryWorkbenchService
     // Only a server-verified held-bond settlement may extend the review queue's acquisition lane.
     // Analytics verification and authoritative book/position checks remain owned by the spine.
     internal static bool IsSupportedBondAcquisitionIntake(AssetLotMutationInstructionDto? mutation)
-        => mutation is { Intent: AssetLotMutationIntentDto.Acquire, Direction: OpenLotDirection.Long,
-                Acquisition: { HasFaceValueTerms: true, ParBasis: 100m, AmortizationMethod: { } method,
-                    SettlementConsideration: { IsForeignCurrency: false } } acquisition }
+        => mutation is
+        {
+            Intent: AssetLotMutationIntentDto.Acquire, Direction: OpenLotDirection.Long,
+            Acquisition:
+            {
+                HasFaceValueTerms: true, ParBasis: 100m, AmortizationMethod: { } method,
+                SettlementConsideration: { IsForeignCurrency: false }
+            } acquisition
+        }
             && Enum.IsDefined(method)
             && BondSettlementConsideration.ValidateAcquisition(acquisition).Count == 0;
 

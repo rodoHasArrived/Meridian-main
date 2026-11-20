@@ -116,10 +116,16 @@ public sealed partial class WorkstationEndpointsTests
         {
             "short" => mutation with { Direction = OpenLotDirection.Short },
             "missing-face" => mutation with { Acquisition = acquisition with { OriginalFace = null } },
-            "foreign-currency" => mutation with { Acquisition = acquisition with
-            { SettlementConsideration = acquisition.SettlementConsideration! with { FunctionalCurrency = "EUR", SettlementFxRateToFunctional = 1m } } },
-            _ => mutation with { Acquisition = acquisition with
-            { SettlementConsideration = acquisition.SettlementConsideration! with { ObservedDirtyCash = 102_749.99m } } }
+            "foreign-currency" => mutation with
+            {
+                Acquisition = acquisition with
+                { SettlementConsideration = acquisition.SettlementConsideration! with { FunctionalCurrency = "EUR", SettlementFxRateToFunctional = 1m } }
+            },
+            _ => mutation with
+            {
+                Acquisition = acquisition with
+                { SettlementConsideration = acquisition.SettlementConsideration! with { ObservedDirtyCash = 102_749.99m } }
+            }
         };
         await using var app = await CreateAppAsync(services => services.AddSingleton(spine),
             currentUserPermissions: UserPermission.ManageLedgerReports, currentUserCompanyId: "company-alpha", mapLedgerApi: true);
@@ -155,8 +161,11 @@ public sealed partial class WorkstationEndpointsTests
     public async Task BondAcquisitionIntake_OrdinaryAcquisitionWithoutVerifiedSettlementRemainsOutsideReviewIntake()
     {
         var request = BondAcquisitionIntakeRequest(Guid.NewGuid(), Guid.NewGuid());
-        request = request with { LotMutation = request.LotMutation! with
-        { Acquisition = request.LotMutation.Acquisition! with { SettlementConsideration = null } } };
+        request = request with
+        {
+            LotMutation = request.LotMutation! with
+            { Acquisition = request.LotMutation.Acquisition! with { SettlementConsideration = null } }
+        };
         var workbench = new ManualJournalEntryWorkbenchService(new InMemoryManualJournalEntryDraftStore(),
             Substitute.For<IAccountingConfigurationService>(), new InMemoryAccountingActionAuditStore());
         var save = () => workbench.SaveAssetAccountingDraftAsync(BondAcquisitionIntakeCandidate(request), request.Actor, default);
@@ -180,7 +189,8 @@ public sealed partial class WorkstationEndpointsTests
             EventKind = AssetAccountingEventKindDto.Acquisition,
             Scope = request.Scope with
             {
-                LedgerBookId = bookId, PeriodId = periodId,
+                LedgerBookId = bookId,
+                PeriodId = periodId,
                 Dimensions = new LedgerDimensionSetDto(FundId: request.Scope.FundProfileId, EntityId: "company-alpha",
                     InstrumentId: request.Scope.SecurityId, BookId: bookId.ToString("D"))
                 { PositionId = request.Scope.BookPositionId }
@@ -210,9 +220,12 @@ public sealed partial class WorkstationEndpointsTests
             scope.PeriodId, request.AccountingTimestamp, request.Description, scope.AccountingBasis, scope.LedgerBookId,
             scope.Dimensions, SourceEventId: request.EconomicEvent.EventId, TenantId: scope.TenantId, CompanyId: scope.CompanyId)
         {
-            AssetLotMutation = request.LotMutation, RetainedEvidence = request.RetainedEvidence,
-            EconomicEvent = request.EconomicEvent, ProjectionLineage = request.ProjectionLineage,
-            BookPositionId = scope.BookPositionId, ExpectedPeriodVersion = request.ExpectedPeriodVersion
+            AssetLotMutation = request.LotMutation,
+            RetainedEvidence = request.RetainedEvidence,
+            EconomicEvent = request.EconomicEvent,
+            ProjectionLineage = request.ProjectionLineage,
+            BookPositionId = scope.BookPositionId,
+            ExpectedPeriodVersion = request.ExpectedPeriodVersion
         };
         var spine = new AssetAccountingEventSpineDto(request.EconomicEvent.EventId, request.EventKind,
             request.EconomicEvent.EventVersion, 3, request.EconomicEvent.EffectiveDate, request.EventAmount, request.Currency,

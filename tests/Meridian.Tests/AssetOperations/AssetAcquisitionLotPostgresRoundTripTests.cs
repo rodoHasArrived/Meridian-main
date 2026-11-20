@@ -208,8 +208,12 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
                 new BondAnalyticsRequest(securityId, new BondCalculationContext(DateTimeOffset.UtcNow, EffectiveDate), CleanPrice: 101.25m),
                 100_000m, 1m, 0m, 102_750m, retainedEvidence.EvidenceId, "assets/cash", "assets/purchased-interest"), ct);
             prepared.IsBlocked.Should().BeFalse();
-            draftRequest = draftRequest with { Description = "100,000 face premium bond with purchased interest", LotMutation = draftRequest.LotMutation! with
-            { Acquisition = draftRequest.LotMutation.Acquisition! with { SettlementConsideration = prepared.Settlement } } };
+            draftRequest = draftRequest with
+            {
+                Description = "100,000 face premium bond with purchased interest",
+                LotMutation = draftRequest.LotMutation! with
+                { Acquisition = draftRequest.LotMutation.Acquisition! with { SettlementConsideration = prepared.Settlement } }
+            };
         }
         if (faceLot && method is null)
         {
