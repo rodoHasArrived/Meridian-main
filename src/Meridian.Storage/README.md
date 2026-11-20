@@ -20,6 +20,13 @@ Storage primitives.
 Position snapshots preserve reviewed preparation lineages alongside economic-state history.
 Historical reads still exclude lineage effective after their requested date.
 
+`IInstrumentPositionProjectionStore.GetBookAsync` enumerates retained holdings begun by an observation
+date, including expired holdings with potentially unpaid receipts. Its in-memory and PostgreSQL
+implementations bound economic-state history by that date and isolate the exact book; PostgreSQL
+uses a repeatable-read transaction. The shared receipt source separately verifies canonical book
+ownership and accepted projection evidence before deriving amounts. These source paths compile in
+`Meridian.Storage.Accounting`. See [book receipt operations](../../docs/operators/book-receipt-queue.md).
+
 `FileBondMarketDataStore` retains host-local typed bond market observations in hashed tenant
 partitions with process-wide file leases, atomic publication, content validation and immutable
 source revision identity. This store does not publish prices or post journals. Signed curves use

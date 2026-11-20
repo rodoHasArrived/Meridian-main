@@ -11,6 +11,13 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Strategies
 
+Book receipt observations reuse `IReconciliationBreakQueueRepository` for assignment and disposition.
+Its dedicated reversal command reopens only a closed `BookReceipt` exception in the exact scope and
+book, with retained source identities, version/idempotency checks and audit evidence. Backdated
+observations and retained close freezes cannot bypass governed casework; ordinary operator-only
+approval, resolution and sign-off rules remain unchanged. See
+[book receipt operations](../../docs/operators/book-receipt-queue.md).
+
 Scoped paper/live run ledger reads use an optional `IStrategyRunLedgerSource` to rebuild from
 posted journals with the exact retained run identity. The source authorizes the financial account
 and book independently; terminal metrics are not required. Backtests retain their recorded books.

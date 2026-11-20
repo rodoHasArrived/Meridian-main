@@ -11,6 +11,15 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.FinancialOperations
 
+Mapped CSV intake preserves the `coupon`, `interest` and `principal` classifications and explicit
+receipt metadata through `StatementCanonicalRecord` into the canonical artifact. Reversal references
+retain the original provider payment ID; splits name an obligation or projected flow rather than
+guessing by an amount alone. The artifact writer keeps the legacy column order and emits the extended
+receipt suffix only when needed. New optional DTO fields omit null from JSON, preserving legacy
+serialization when absent. Canonical ingestion then validates identity and payment conservation before
+the queue can consume this evidence. This transport does not approve an expectation or post a journal.
+See [receipt import evidence](../../docs/operators/reconciliation-operations.md).
+
 Mapped statement CSV rejects malformed quotes, null characters and rows whose field count differs
 from the reviewed header. Validation and preview report blocking diagnostics, and commit refuses the
 whole document before retaining evidence. Valid quoted delimiters and escaped quotes retain their

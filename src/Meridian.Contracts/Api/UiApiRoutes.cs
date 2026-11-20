@@ -800,6 +800,9 @@ public static class UiApiRoutes
     public const string WorkstationProviderIntegrationQuarantineReplay = "/api/workstation/provider-integrations/quarantine/replay";
     public const string WorkstationGovernance = "/api/workstation/governance";
     public const string WorkstationAccounting = "/api/workstation/accounting";
+    public const string WorkstationBookReceiptQueue = "/api/workstation/accounting/receipt-queue";
+    public const string WorkstationBookReceiptRuns = "/api/workstation/accounting/receipt-queue/runs";
+    public const string WorkstationBookReceiptRun = "/api/workstation/accounting/receipt-queue/runs/{runId}";
     public const string WorkstationReporting = "/api/workstation/reporting";
     public const string WorkstationReportingStructuredExport = "/api/workstation/reporting/structured-exports/{exportId}";
     public const string WorkstationPortfolio = "/api/workstation/portfolio";

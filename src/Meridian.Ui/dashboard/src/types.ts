@@ -5,6 +5,7 @@ export * from "./types/accounting-integration";
 export * from "./types/audit-integrity";
 export * from "./types/account-oversight";
 export * from "./types/instrument-accounting";
+export * from "./types/income-receipt-queue.types";
 export type * from "./types/intercompany-agreements";
 export type * from "./types/intercompany-obligations";
 export type * from "./types/intercompany-fees";

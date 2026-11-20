@@ -58,6 +58,7 @@ import { BondCutoverConsolePanel } from "@/screens/accounting-screen.bond-cutove
 import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
 import { AccountingOnboardingPanel } from "@/screens/accounting-screen.onboarding-panel";
 import { ReconciliationWorkbench, ReconciliationStatementRuns, ThreeWayReconciliationWorkbench } from "./accounting-screen.reconciliation-workbench";
+import { IncomeReceiptQueuePanel } from "./income-receipt-queue-panel";
 import { useReconciliationViewState } from "./reconciliation-view-state";
 import { AccountOversightPanel } from "@/screens/accounting-screen.account-oversight";
 import { buildAccountingSectionVisibility, buildAccountingTaskMode, resolveAccountingWorkstream } from "@/screens/accounting-screen.task-mode-view-model";
@@ -796,6 +797,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice}
             runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />}
           />
+          <IncomeReceiptQueuePanel operatorIdentity={operatorIdentity} />
           <section aria-label="Break aging" className="space-y-2"><h3 className="text-sm font-semibold">Break aging</h3><ReconciliationAgingChart breaks={reconciliation.sourceRows} /></section>
           <TechnicalDetails label="Account oversight"><AccountOversightPanel /></TechnicalDetails>
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} /></TechnicalDetails>

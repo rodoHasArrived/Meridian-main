@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using System.Globalization;
 using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
@@ -260,6 +262,8 @@ public sealed class CsvStatementConnector(
                 var record = StatementRecordMapper.MapRecord(
                     mappedValues, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
                 if (record is not null)
+                    record = WithReceiptMetadata(record, detectedColumns, values, rowNumber, issues);
+                if (record is not null)
                 {
                     // Stop accumulating at the bound rather than building the whole set and having the
                     // import service reject it afterwards: a compact CSV inside the byte cap can still
@@ -302,6 +306,65 @@ public sealed class CsvStatementConnector(
             issues,
             fingerprint)
         { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForProfile(ConnectorId, profile) };
+    }
+
+    private static StatementCanonicalRecord? WithReceiptMetadata(StatementCanonicalRecord record,
+        IReadOnlyList<string> columns, IReadOnlyList<string> values, int row, List<StatementParseIssue> issues)
+    {
+        try
+        {
+            string? Read(string name)
+            {
+                var matching = Enumerable.Range(0, columns.Count)
+                    .Where(index => string.Equals(columns[index], name, StringComparison.OrdinalIgnoreCase)).ToArray();
+                if (matching.Length > 1)
+                    throw new InvalidDataException("Receipt metadata columns must have unique names.");
+                return matching.Length == 0 || string.IsNullOrWhiteSpace(values[matching[0]]) ? null : values[matching[0]].Trim();
+            }
+            Guid? Identity(string name)
+            {
+                var text = Read(name);
+                if (text is null) return null;
+                if (!Guid.TryParse(text, out var value) || value == Guid.Empty)
+                    throw new InvalidDataException($"Receipt metadata '{name}' requires a nonempty GUID.");
+                return value;
+            }
+            var related = Read("relatedTransactionId");
+            var reverses = Read("reversesTransactionId");
+            if (related is not null && reverses is not null && !string.Equals(related, reverses, StringComparison.Ordinal))
+                throw new InvalidDataException("Receipt reversal identity fields disagree.");
+            var allocations = Read("receiptAllocations");
+            if (allocations is not null)
+            {
+                using var document = JsonDocument.Parse(allocations);
+                if (document.RootElement.ValueKind != JsonValueKind.Array || document.RootElement.GetArrayLength() == 0)
+                    throw new InvalidDataException("Receipt allocations require a nonempty JSON array.");
+                foreach (var leg in document.RootElement.EnumerateArray())
+                {
+                    var key = leg.TryGetProperty("obligationKey", out var keyValue) && keyValue.ValueKind == JsonValueKind.String
+                        ? keyValue.GetString() : null;
+                    var hasProjection = leg.TryGetProperty("projectedCashFlowId", out var projection)
+                        && projection.ValueKind == JsonValueKind.String && Guid.TryParse(projection.GetString(), out var id) && id != Guid.Empty;
+                    if (string.IsNullOrWhiteSpace(key) && !hasProjection)
+                        throw new InvalidDataException("Each receipt allocation requires an obligation key or projected cash-flow GUID.");
+                    if (!leg.TryGetProperty("amount", out var amount))
+                        throw new InvalidDataException("Each receipt allocation requires an amount.");
+                    var parsed = amount.ValueKind == JsonValueKind.Number ? amount.TryGetDecimal(out var numeric) ? numeric : 0m
+                        : amount.ValueKind == JsonValueKind.String && decimal.TryParse(amount.GetString(),
+                            NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out numeric) ? numeric : 0m;
+                    if (parsed <= 0m)
+                        throw new InvalidDataException("Receipt allocation amounts must be positive exact decimals.");
+                }
+            }
+            return record with { RelatedTransactionId = related ?? reverses ?? record.RelatedTransactionId,
+                SecurityId = Identity("securityId"), ReceiptAllocations = allocations,
+                ObligationKey = Read("obligationKey"), ProjectedCashFlowId = Identity("projectedCashFlowId") };
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidDataException or InvalidOperationException)
+        {
+            issues.Add(StatementParseIssue.Error("ROW_INVALID_RECEIPT_METADATA", exception.Message, row));
+            return null;
+        }
     }
 
     private static (char Delimiter, StatementParseIssue? Issue) ResolveDelimiter(

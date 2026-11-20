@@ -11,6 +11,14 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui.Shared
 
+The book receipt queue composes approved historical positions, accepted Asset Operations schedules,
+canonical statement cash and retained reconciliation/journal links. Expected, received and posted
+amounts stay separate; missing account/provider coverage remains incomplete. Explicit capture commands
+retain dated, content-addressed observations and reuse the canonical exception queue, including
+version-checked reversal reopening that respects close freezes. Scoped GETs only read saved runs.
+No queue action creates a payment or journal. See
+[book receipt operations](../../docs/operators/book-receipt-queue.md) for authority and recovery.
+
 Receipt-backed Long bond acquisitions built through the asset-accounting candidate endpoint now
 enter the immutable journal review queue. Intake requires face-value per-100 terms, an explicit
 amortization method, matching acquisition/functional currency and reconciled settlement; the
