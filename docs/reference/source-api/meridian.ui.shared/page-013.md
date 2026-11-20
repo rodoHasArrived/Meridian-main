@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IGovernanceReportPackRepository
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IGovernanceReportPackRepository</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:14](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L14).
+
+Retains report-pack snapshots, artifacts, history, and evidence bundles.
+
+```csharp
+public interface IGovernanceReportPackRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;FundReportPackSnapshotDto&gt; SaveAsync(FundReportPackSnapshotDto snapshot, IReadOnlyList&lt;GovernanceReportPackArtifactContent&gt; artifacts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:16](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L16) |  |
+| <code>Task&lt;IReadOnlyList&lt;FundReportPackHistoryItemDto&gt;&gt; GetHistoryAsync(string fundProfileId, int limit, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:21](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L21) |  |
+| <code>Task&lt;FundReportPackSnapshotDto?&gt; GetAsync(Guid reportId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:26](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L26) |  |
+| <code>Task&lt;FundReportPackSnapshotDto?&gt; FindLatestByRunIdAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:28](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L28) |  |
+| <code>Task&lt;FundReportPackEvidenceBundleDto&gt; SaveEvidenceBundleAsync(FundReportPackSnapshotDto snapshot, FundReportPackEvidenceBundleDto bundle, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:30](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L30) |  |
+
 ## IIntercompanyInterestAccrualDrafter
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IIntercompanyInterestAccrualDrafter</code>. Kind: `interface`.
@@ -904,7 +926,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1689](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1689).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1692](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1692).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -916,7 +938,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1691](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1691) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1694](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1694) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -954,21 +976,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:127](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L127) |  |
-
-## IReportingProviderReceiptAuthenticator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingProviderReceiptAuthenticator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L20).
-
-Authenticates provider callbacks before reporting delivery receipts are retained.
-
-```csharp
-public interface IReportingProviderReceiptAuthenticator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ValueTask&lt;bool&gt; AuthenticateAsync(ReportingProviderReceiptAuthenticationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L22) |  |

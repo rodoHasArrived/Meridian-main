@@ -6,6 +6,206 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBondPerformanceSourceVerifier
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondPerformanceSourceVerifier</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:72](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L72).
+
+Rechecks current retained source bytes and accepted review before using cached cash or FX economics.
+
+```csharp
+public interface IBondPerformanceSourceVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:74](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L74) |  |
+| <code>Task VerifyFxAsync(AccountCashForecastScopeDto scope, IReadOnlyList&lt;AccountCashFxConversionDto&gt; conversions, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:75](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L75) |  |
+
+## IBondPerformanceTransactionPopulationStore
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondPerformanceTransactionPopulationStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:35](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L35).
+
+```csharp
+public interface IBondPerformanceTransactionPopulationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondPerformanceTransactionPopulationDto&gt; AppendAsync(BondPerformanceTransactionPopulationDto population, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:37](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L37) |  |
+| <code>Task&lt;IReadOnlyList&lt;BondPerformanceTransactionPopulationDto&gt;&gt; ReadAsync(AccountCashForecastScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:38](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L38) |  |
+
+## IBondPerformanceTransactionSource
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondPerformanceTransactionSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:65](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L65).
+
+```csharp
+public interface IBondPerformanceTransactionSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondPerformanceTransactionEvidenceDto&gt; GetAsync(AccountCashForecastScopeDto scope, DateOnly from, DateOnly through, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:67](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L67) |  |
+
+## IBondPortfolioRiskService
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondPortfolioRiskService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs:41](../../../../src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs#L41).
+
+```csharp
+public interface IBondPortfolioRiskService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondPortfolioRiskResult&gt; CalculateAsync(AccountCashForecastScopeDto scope, BondPortfolioRiskRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs:43](../../../../src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs#L43) |  |
+
+## IBondProviderResponseStore
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondProviderResponseStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:26](../../../../src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs#L26).
+
+```csharp
+public interface IBondProviderResponseStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondProviderResponseDto&gt; RetainAsync(string tenantId, string companyId, string providerId, string rawResponseJson, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:28](../../../../src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs#L28) |  |
+| <code>Task&lt;BondProviderResponseDto?&gt; GetAsync(string tenantId, string companyId, string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:30](../../../../src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs#L30) |  |
+
+## IBondScreeningService
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondScreeningService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:18](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L18).
+
+```csharp
+public interface IBondScreeningService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondScreeningPageDto&gt; ScreenAsync(string tenantId, BondScreeningQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:20](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L20) |  |
+
+## IBondSettlementConsiderationService
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:84](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L84).
+
+```csharp
+public interface IBondSettlementConsiderationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondSettlementPreparationResult&gt; PrepareAsync(BondSettlementConsiderationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:86](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L86) |  |
+| <code>Task&lt;IReadOnlyList&lt;BondAnalyticsBlocker&gt;&gt; VerifyAsync(BondSettlementConsiderationDto settlement, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:90](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L90) | Recomputes a retained receipt against its actual pinned/versioned analytics inputs. |
+
+## IBondWorkflowObservationSource
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:111](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L111).
+
+Only retained, dated observations eligible at the explicit knowledge cutoff.
+
+```csharp
+public interface IBondWorkflowObservationSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;BondWorkflowRateObservation&gt;&gt; GetAsync(string indexName, DateOnly from, DateOnly to, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:113](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L113) |  |
+
+## IBondWorkflowQuoteSource
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowQuoteSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:126](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L126).
+
+Authenticated tenant-scoped access to an exact retained quote observation.
+
+```csharp
+public interface IBondWorkflowQuoteSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondMarketObservationDto?&gt; GetAsync(Guid observationId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:128](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L128) |  |
+
+## IBondWorkflowService
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:91](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L91).
+
+```csharp
+public interface IBondWorkflowService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondWorkflowResult?&gt; CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:93](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L93) |  |
+| <code>Task&lt;BondWorkflowResult?&gt; CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:94](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L94) |  |
+| <code>Task&lt;BondWorkflowResult?&gt; ReplayAsync(BondWorkflowResult retained, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:96](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L96) |  |
+
+## IBondWorkflowTypedObservationSource
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowTypedObservationSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:119](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L119).
+
+Typed retained sources bind the requested economic role independently of a series name. Existing custom observation sources retain the legacy interface and its explicit source contract.
+
+```csharp
+public interface IBondWorkflowTypedObservationSource : IBondWorkflowObservationSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;BondWorkflowRateObservation&gt;&gt; GetAsync(string indexName, BondMarketObservationKind kind, DateOnly from, DateOnly to, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:121](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L121) |  |
+
+## RetainBondObservedFixingRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.RetainBondObservedFixingRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs:15](../../../../src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs#L15).
+
+```csharp
+public sealed record RetainBondObservedFixingRequest(long ExpectedSecurityVersion, DateOnly ResetDate, SecurityRateObservationDto Observation, string Justification);
+```
+
 ## AccountBalanceSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto</code>. Kind: `record`.
@@ -546,164 +746,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:655](../../..
 
 ```csharp
 public sealed record CashReconciliationBreakDto(Guid BreakId, Guid AccountId, DateOnly AsOfDate, string Currency, decimal ExpectedBalance, decimal ActualBalance, decimal BalanceVariance, string Reason);
-```
-
-## CashTransferDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CashTransferDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:441](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L441).
-
-Provider or operator supplied cash transfer between accounts.
-
-```csharp
-public sealed record CashTransferDto(Guid TransferId, Guid? FromAccountId, Guid? ToAccountId, decimal Amount, string Currency, DateOnly TradeDate, DateOnly? SettlementDate, CashTransferStatusDto Status, string? ProviderId, string? ExternalTransferId, string? TransferType, string? EvidencePath);
-```
-
-## CashTransferStatusDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CashTransferStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:431](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L431).
-
-Cash transfer status for cross-account movement matching.
-
-```csharp
-public enum CashTransferStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:433](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L433) |  |
-| <code>Settled = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:434](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L434) |  |
-| <code>Failed = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:435](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L435) |  |
-| <code>Cancelled = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:436](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L436) |  |
-| <code>Reversed = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:437](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L437) |  |
-
-## ClientSegmentKind
-
-Qualified name: <code>Meridian.Contracts.FundStructure.ClientSegmentKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:28](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L28).
-
-```csharp
-public enum ClientSegmentKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:30](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L30) |  |
-| <code>IndividualInvestor</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:31](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L31) |  |
-| <code>FamilyOffice</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:32](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L32) |  |
-
-## ClientSummaryDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.ClientSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:162](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L162).
-
-```csharp
-public sealed record ClientSummaryDto(Guid ClientId, Guid BusinessId, string Code, string Name, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<Guid> InvestmentPortfolioIds, string? Description = null, ClientSegmentKind ClientSegmentKind = ClientSegmentKind.Unspecified);
-```
-
-## CollateralAgreementDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CollateralAgreementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:419](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L419).
-
-Collateral agreement metadata linking pledged assets to legal evidence.
-
-```csharp
-public sealed record CollateralAgreementDto(Guid CollateralAgreementId, Guid AccountId, string AgreementReference, string Counterparty, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? SecuredObligationReference, string? EvidencePath);
-```
-
-## CollateralEligibilityDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CollateralEligibilityDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:390](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L390).
-
-Collateral eligibility for account-level pledge and margin workflows.
-
-```csharp
-public enum CollateralEligibilityDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:392](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L392) |  |
-| <code>Eligible = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:393](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L393) |  |
-| <code>Ineligible = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:394](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L394) |  |
-| <code>Restricted = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:395](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L395) |  |
-| <code>PendingReview = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:396](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L396) |  |
-
-## CollateralPositionDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CollateralPositionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:400](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L400).
-
-Account-level collateral or pledged asset position.
-
-```csharp
-public sealed record CollateralPositionDto(Guid CollateralPositionId, Guid AccountId, string? SecurityId, string? Symbol, decimal Quantity, decimal MarketValue, string Currency, bool IsPledged, string? RestrictionType, decimal? Haircut, decimal? CollateralValue, CollateralEligibilityDto Eligibility, DateTimeOffset ValuationTimestamp, string? LienReference = null, string? SecuredObligationReference = null, string? AgreementEvidencePath = null);
-```
-
-## CreateAccountRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CreateAccountRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:516](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L516).
-
-Request to create a new fund account.
-
-```csharp
-public sealed record CreateAccountRequest(Guid AccountId, AccountTypeDto AccountType, string AccountCode, string DisplayName, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, Guid? FundId = null, Guid? EntityId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? Institution = null, string? PortfolioId = null, string? LedgerReference = null, string? StrategyId = null, string? RunId = null, AccountOperationalStatusDto OperationalStatus = AccountOperationalStatusDto.Active, CustodianAccountDetailsDto? CustodianDetails = null, BankAccountDetailsDto? BankDetails = null);
-```
-
-## CreateBusinessRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CreateBusinessRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:12](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L12).
-
-```csharp
-public sealed record CreateBusinessRequest(Guid BusinessId, Guid OrganizationId, BusinessKindDto BusinessKind, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null);
-```
-
-## CreateClientRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CreateClientRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:23](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L23).
-
-```csharp
-public sealed record CreateClientRequest(Guid ClientId, Guid BusinessId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null, ClientSegmentKind ClientSegmentKind = ClientSegmentKind.Unspecified);
-```
-
-## CreateFundRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CreateFundRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:34](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L34).
-
-```csharp
-public sealed record CreateFundRequest(Guid FundId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null, Guid? BusinessId = null);
-```
-
-## CreateIntercompanyAccountingArrangementRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:75](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L75).
-
-```csharp
-public sealed record CreateIntercompanyAccountingArrangementRequest(Guid RequestId, Guid ArrangementId, Guid OrganizationId, string ArrangementReference, IntercompanyAccountingTemplateKindDto TemplateKind, Guid CanonicalAgreementId, int CanonicalAgreementVersion, string CanonicalPayloadHash, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<IntercompanyPartyMappingDto> PartyMappings);
 ```

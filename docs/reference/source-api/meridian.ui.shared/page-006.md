@@ -1206,13 +1206,3 @@ Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:2
 ```csharp
 public sealed record AccountCashSourceReceiptRevision(string ExpectedFlowId, DateOnly ReceiptDate);
 ```
-
-## AccountCashSourceWatchObservation
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceWatchObservation</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:28](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L28).
-
-```csharp
-public sealed record AccountCashSourceWatchObservation(string ObservationId, Guid SecurityId, string Kind, DateOnly EffectiveDate, string Value, string? Agency, string? SupersedesObservationId);
-```

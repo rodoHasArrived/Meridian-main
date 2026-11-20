@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackSecurityLineMatcher
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineMatcher</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L13).
+
+Shared &quot;does this report line reference a security&quot; matcher for the report-pack restatement path. Extracted so the candidate resolver (ReportPackRestatementCandidateResolver) and the durable security→report-line index (IReportPackSecurityLineIndex) agree on exactly one membership rule: a report-line provenance entry references a security when its SecurityMasterId or SecurityDefinitionId parses to the security id, or when it carries a security-kind source whose SourceId parses to the security id.
+
+```csharp
+public static class ReportPackSecurityLineMatcher
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool LineReferencesSecurity(ReportPackLineProvenanceDto line, Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L16) | True when line ties a report line to securityId. |
+| <code>public static bool RecordReferencesSecurity(ReportPackWorkflowRecordDto record, Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L25) | True when record has any retained provenance line referencing the security. |
+| <code>public static IEnumerable&lt;Guid&gt; ReferencedSecurityIds(ReportPackLineProvenanceDto line);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L37) | The distinct security ids a single provenance line contributes — the reverse of LineReferencesSecurity: for any returned id s, LineReferencesSecurity(line, s) is true, and vice versa. Used to build the security→report-line index. |
+
 ## ReportPackValidationContext
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackValidationContext</code>. Kind: `record`.
@@ -872,23 +892,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string Code { get; } = code;</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:37](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L37) |  |
-
-## StatementReconciliationCaseworkHandoffService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationCaseworkHandoffService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:45](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L45).
-
-Synchronizes terminal governed queue casework back to its statement-owned break/case and then attaches the same evidence to the matching Operations Continuity workflow. It deliberately does not post, approve, close, release, or otherwise advance an accounting gate.
-
-```csharp
-public sealed class StatementReconciliationCaseworkHandoffService : IStatementReconciliationCaseworkHandoffService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementReconciliationCaseworkHandoffService(IReconciliationBreakQueueRepository queueRepository, IReconciliationBreakStore? statementBreakStore = null, IReconciliationCaseStore? statementCaseStore = null, IStatementRunWorkflowService? statementRuns = null, IOperationsContinuityWorkflowService? operationsContinuity = null, ILedgerJournalStore? ledgerJournalStore = null, IStatementCaseworkCommitStore? sourceCommitStore = null, IStatementCaseworkCommitFaultInjector? sourceCommitFaultInjector = null);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:57](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L57) |  |
-| <code>public async Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyAsync(ReconciliationBreakQueueScope scope, ReconciliationCaseworkCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:79](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L79) |  |
-| <code>public async Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkAsync(ReconciliationBreakQueueScope scope, ReconciliationBulkCaseworkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:110](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L110) |  |

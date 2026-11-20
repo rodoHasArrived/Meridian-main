@@ -6,6 +6,170 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ContractualCashFlowRunComparer
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:32](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L32).
+
+```csharp
+public static class ContractualCashFlowRunComparer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ContractualCashFlowRunComparison Compare(ContractualCashFlowRun left, ContractualCashFlowRun right);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:34](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L34) |  |
+
+## ContractualCashFlowRunComparison
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:16](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L16).
+
+Pure read comparing two retained runs of the same subject: per-date, per-stream net cash deltas, the symmetric difference of blockers, and whether each retained packet still replays to its own output hash. Nothing is recalculated against current terms; both sides are the retained packets.
+
+```csharp
+public sealed record ContractualCashFlowRunComparison(string SubjectKind, Guid SubjectId, Guid LeftRunId, Guid RightRunId, bool LeftReplayVerified, bool RightReplayVerified, bool SameRequest, string LeftOutputHash, string RightOutputHash, IReadOnlyList<CashFlowDateDelta> CashDeltas, IReadOnlyList<CashFlowBlockerDelta> BlockerDeltas)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal TotalDelta =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:29](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L29) |  |
+
+## ContractualCashFlowStream
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowStream</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:30](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L30).
+
+Explicit periods replace generation for this stream; no contract date is inferred.
+
+```csharp
+public sealed record ContractualCashFlowStream(string StreamId, decimal Principal, int PaymentMonths, [property : JsonConverter(typeof(JsonStringEnumConverter<DayCountConvention>))] DayCountConvention DayCount, decimal? FixedRate, [property : JsonConverter(typeof(JsonStringEnumConverter<CashFlowLegDirection>))] CashFlowLegDirection Direction = CashFlowLegDirection.Receive, bool ExchangesPrincipal = true, ScheduleConventionTerms? Conventions = null, IReadOnlyList<SchedulePeriod>? CouponPeriods = null, IReadOnlyList<StructuredPrincipalScheduleEntry>? PrincipalSchedule = null, IReadOnlyList<StructuredCashFlowNotionalStep>? NotionalSchedule = null, IReadOnlyList<StructuredStepCouponEntry>? RateSteps = null, IReadOnlyList<ContractualCouponAmount>? CouponAmounts = null, string? IndexName = null, decimal SpreadBps = 0m, IReadOnlyList<StructuredCashFlowResetFixing>? Resets = null, decimal? Floor = null, decimal? Cap = null, decimal PikFraction = 0m, CashFlowAmortization Amortization = CashFlowAmortization.Bullet, bool PrepaymentAllowed = false, decimal PrepaymentPenaltyRate = 0m, decimal? OpeningBalance = null, DateOnly? OpeningBalanceDate = null);
+```
+
+## ContractualCashFlowSubjectKinds
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowSubjectKinds</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs:7](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs#L7).
+
+Retained subject kinds for contractual cash-flow runs. These strings are persisted inside replay packets and their storage paths, so they are stable identifiers rather than an enum.
+
+```csharp
+public static class ContractualCashFlowSubjectKinds
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Security = &quot;Security&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs:9](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs#L9) |  |
+| <code>public const string Loan = &quot;Loan&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs#L10) |  |
+| <code>public static bool IsSupported(string? kind) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs#L12) |  |
+
+## ContractualCashFlowVersions
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowVersions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:119](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L119).
+
+```csharp
+public static class ContractualCashFlowVersions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Engine = &quot;contractual-cashflow-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:121](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L121) |  |
+| <code>public const string Mapping = &quot;contractual-cashflow-mapping-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:122](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L122) |  |
+| <code>public const string Prepayment = &quot;survival-cpr-smm-psa-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:123](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L123) |  |
+
+## ContractualCouponAmount
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCouponAmount</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:56](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L56).
+
+```csharp
+public sealed record ContractualCouponAmount(DateOnly PaymentDate, decimal Amount);
+```
+
+## ContractualExerciseEntry
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualExerciseEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:59](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L59).
+
+Companion to the frozen call/put entry, identified by side and unadjusted start.
+
+```csharp
+public sealed record ContractualExerciseEntry(CashFlowExerciseSide Side, DateOnly StartDate, DateOnly? EndDate, CashFlowExerciseStyle Style, decimal? CleanPrice, string StreamId, int? ExerciseMonths = null, string? PartialRedemption = null, int? MinimumNoticeDays = null, int? MaximumNoticeDays = null, string? NoticeDayType = null, string PriceBasis = "PercentOfPar", decimal? AccretedValue = null, ContractualMakeWholeTerms? MakeWhole = null);
+```
+
+## ContractualMakeWholeTerms
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualMakeWholeTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:75](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L75).
+
+```csharp
+public sealed record ContractualMakeWholeTerms(MakeWholeFormula Formula, string BenchmarkKey, decimal SpreadBps, int CompoundsPerYear, [property : JsonConverter(typeof(JsonStringEnumConverter<DayCountConvention>))] DayCountConvention DayCount, DateOnly? ParCallDate = null, string AccruedInterestTreatment = "CleanFloorAddAccrued");
+```
+
+## CreateContractualCashFlowRunRequest
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:189](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L189).
+
+```csharp
+public sealed record CreateContractualCashFlowRunRequest(Guid RunId, ContractualCashFlowRequest Projection);
+```
+
+## ExerciseNoticeApprovalState
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:6](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L6).
+
+```csharp
+public enum ExerciseNoticeApprovalState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Recorded = 0</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:8](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L8) |  |
+| <code>Approved = 1</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:9](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L9) |  |
+| <code>Rejected = 2</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:10](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L10) |  |
+
+## ExerciseNoticeDecisionRequest
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ExerciseNoticeDecisionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:85](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L85).
+
+```csharp
+public sealed record ExerciseNoticeDecisionRequest(bool Approve, string? Reason = null);
+```
+
+## ExerciseNoticeVerification
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ExerciseNoticeVerification</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:87](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L87).
+
+```csharp
+public sealed record ExerciseNoticeVerification(bool Verified, string Reason, BondExerciseNoticeDto? Notice = null);
+```
+
 ## IBondExerciseNoticeStore
 
 Qualified name: <code>Meridian.Contracts.CashFlows.IBondExerciseNoticeStore</code>. Kind: `interface`.
@@ -780,275 +944,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;isActive&quot;)] public bool IsActive { get; set; } = true;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:255](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L255) | Whether this alias is still valid. |
 | <code>[JsonPropertyName(&quot;validFrom&quot;)] public DateTime? ValidFrom { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:261](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L261) | When this alias was valid from. |
 | <code>[JsonPropertyName(&quot;validTo&quot;)] public DateTime? ValidTo { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:267](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L267) | When this alias stopped being valid. |
-
-## SymbolCatalogEntry
-
-Qualified name: <code>Meridian.Contracts.Catalog.SymbolCatalogEntry</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/StorageCatalog.cs:183](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L183).
-
-Per-symbol catalog entry.
-
-```csharp
-public sealed class SymbolCatalogEntry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:189](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L189) | Canonical symbol name. |
-| <code>[JsonPropertyName(&quot;aliases&quot;)] public string[]? Aliases { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:195](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L195) | Known aliases for this symbol. |
-| <code>[JsonPropertyName(&quot;assetClass&quot;)] public string? AssetClass { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:201](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L201) | Asset class (equity, option, future, forex, crypto). |
-| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:207](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L207) | Primary exchange. |
-| <code>[JsonPropertyName(&quot;dateRange&quot;)] public CatalogDateRange? DateRange { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:213](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L213) | Date range for this symbol&#x27;s data. |
-| <code>[JsonPropertyName(&quot;fileCount&quot;)] public int FileCount { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:219](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L219) | Number of files for this symbol. |
-| <code>[JsonPropertyName(&quot;eventCount&quot;)] public long EventCount { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:225](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L225) | Total events for this symbol. |
-| <code>[JsonPropertyName(&quot;totalBytes&quot;)] public long TotalBytes { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:231](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L231) | Total bytes for this symbol. |
-| <code>[JsonPropertyName(&quot;eventTypes&quot;)] public string[] EventTypes { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:237](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L237) | Available event types for this symbol. |
-| <code>[JsonPropertyName(&quot;sources&quot;)] public string[] Sources { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:243](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L243) | Data sources for this symbol. |
-| <code>[JsonPropertyName(&quot;lastUpdated&quot;)] public DateTime LastUpdated { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:249](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L249) | Last updated timestamp. |
-| <code>[JsonPropertyName(&quot;sequenceRange&quot;)] public SequenceRange? SequenceRange { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:255](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L255) | Sequence range tracking. |
-
-## SymbolClassification
-
-Qualified name: <code>Meridian.Contracts.Catalog.SymbolClassification</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:339](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L339).
-
-Symbol classification information.
-
-```csharp
-public sealed class SymbolClassification
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;sector&quot;)] public string? Sector { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:345](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L345) | GICS Sector. |
-| <code>[JsonPropertyName(&quot;industryGroup&quot;)] public string? IndustryGroup { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:351](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L351) | GICS Industry Group. |
-| <code>[JsonPropertyName(&quot;industry&quot;)] public string? Industry { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:357](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L357) | GICS Industry. |
-| <code>[JsonPropertyName(&quot;subIndustry&quot;)] public string? SubIndustry { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:363](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L363) | GICS Sub-Industry. |
-| <code>[JsonPropertyName(&quot;marketCapCategory&quot;)] public string? MarketCapCategory { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:369](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L369) | Market cap category (mega, large, mid, small, micro). |
-| <code>[JsonPropertyName(&quot;indexMemberships&quot;)] public string[]? IndexMemberships { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:375](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L375) | Index memberships. |
-
-## SymbolIdentifiers
-
-Qualified name: <code>Meridian.Contracts.Catalog.SymbolIdentifiers</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:273](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L273).
-
-Industry standard identifiers for a symbol.
-
-```csharp
-public sealed class SymbolIdentifiers
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;isin&quot;)] public string? Isin { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:279](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L279) | ISIN (International Securities Identification Number). |
-| <code>[JsonPropertyName(&quot;figi&quot;)] public string? Figi { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:285](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L285) | FIGI (Financial Instrument Global Identifier). |
-| <code>[JsonPropertyName(&quot;compositeFigi&quot;)] public string? CompositeFigi { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:291](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L291) | Composite FIGI. |
-| <code>[JsonPropertyName(&quot;shareClassFigi&quot;)] public string? ShareClassFigi { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:297](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L297) | Share class FIGI. |
-| <code>[JsonPropertyName(&quot;sedol&quot;)] public string? Sedol { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:303](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L303) | SEDOL (Stock Exchange Daily Official List). |
-| <code>[JsonPropertyName(&quot;cusip&quot;)] public string? Cusip { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:309](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L309) | CUSIP (Committee on Uniform Securities Identification Procedures). |
-| <code>[JsonPropertyName(&quot;cik&quot;)] public string? Cik { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:315](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L315) | CIK (SEC Central Index Key). |
-| <code>[JsonPropertyName(&quot;lei&quot;)] public string? Lei { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:321](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L321) | LEI (Legal Entity Identifier). |
-| <code>[JsonPropertyName(&quot;bloombergId&quot;)] public string? BloombergId { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:327](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L327) | Bloomberg ID. |
-| <code>[JsonPropertyName(&quot;ric&quot;)] public string? Ric { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:333](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L333) | Reuters RIC. |
-
-## SymbolLookupResult
-
-Qualified name: <code>Meridian.Contracts.Catalog.SymbolLookupResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:495](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L495).
-
-Result of a symbol lookup operation.
-
-```csharp
-public sealed class SymbolLookupResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;found&quot;)] public bool Found { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:501](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L501) | Whether a match was found. |
-| <code>[JsonPropertyName(&quot;query&quot;)] public string Query { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:507](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L507) | The query that was searched. |
-| <code>[JsonPropertyName(&quot;matchType&quot;)] public string? MatchType { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:513](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L513) | How the match was made (canonical, alias, identifier, provider). |
-| <code>[JsonPropertyName(&quot;canonicalSymbol&quot;)] public string? CanonicalSymbol { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:519](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L519) | The canonical symbol if found. |
-| <code>[JsonPropertyName(&quot;entry&quot;)] public SymbolRegistryEntry? Entry { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:525](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L525) | The full symbol entry if found. |
-| <code>[JsonPropertyName(&quot;suggestions&quot;)] public string[]? Suggestions { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:531](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L531) | Similar symbols if exact match not found. |
-
-## SymbolMappingSources
-
-Qualified name: <code>Meridian.Contracts.Catalog.SymbolMappingSources</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:297](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L297).
-
-Stable provenance values and precedence used by the canonical symbol registry.
-
-```csharp
-public static class SymbolMappingSources
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Operator = &quot;operator&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:299](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L299) |  |
-| <code>public const string SecurityMaster = &quot;security-master&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:300](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L300) |  |
-| <code>public const string SecurityMasterIdentifier = &quot;security-master-identifier&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:305](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L305) | A Security Master-owned alias emitted from the security&#x27;s ISIN, CUSIP, FIGI or SEDOL field, as distinct from an ordinary Security Master alias that happens to share the value. |
-| <code>public const string LegacyConfig = &quot;legacy-config&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:306](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L306) |  |
-| <code>public const string OpenFigi = &quot;openfigi&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:307](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L307) |  |
-| <code>public const string Registry = &quot;registry&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:308](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L308) |  |
-| <code>public const string FormattingFallback = &quot;formatting-fallback&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:309](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L309) |  |
-
-## SymbolRegistry
-
-Qualified name: <code>Meridian.Contracts.Catalog.SymbolRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:9](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L9).
-
-Symbol registry for alias resolution across providers. Stored at _catalog/symbols.json.
-
-```csharp
-public sealed class SymbolRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;registryVersion&quot;)] public string RegistryVersion { get; set; } = &quot;1.0.0&quot;;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:15](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L15) | Registry format version. |
-| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:21](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L21) | When the registry was created. |
-| <code>[JsonPropertyName(&quot;lastUpdatedAt&quot;)] public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:27](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L27) | When the registry was last updated. |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public Dictionary&lt;string, SymbolRegistryEntry&gt; Symbols { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:33](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L33) | Symbol entries keyed by canonical symbol name. |
-| <code>[JsonPropertyName(&quot;aliasIndex&quot;)] public Dictionary&lt;string, string&gt; AliasIndex { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:39](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L39) | Alias lookup table mapping aliases to canonical symbols. |
-| <code>[JsonPropertyName(&quot;providerMappings&quot;)] public Dictionary&lt;string, Dictionary&lt;string, string&gt;&gt; ProviderMappings { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:46](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L46) | Provider-specific symbol mappings. Key: provider name, Value: provider symbol to canonical symbol mapping. |
-| <code>[JsonPropertyName(&quot;identifierIndex&quot;)] public IdentifierIndex IdentifierIndex { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:52](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L52) | Industry identifiers index (ISIN, FIGI, SEDOL to canonical symbol). |
-| <code>[JsonPropertyName(&quot;statistics&quot;)] public SymbolRegistryStatistics Statistics { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:58](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L58) | Statistics about the registry. |
-| <code>[JsonPropertyName(&quot;migrationMarkers&quot;)] public Dictionary&lt;string, string&gt; MigrationMarkers { get; set; } = new (StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:65](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L65) | Idempotent migration receipts keyed by migration identifier with the source fingerprint. Legacy inputs are retained outside the registry for rollback. |
-| <code>[JsonPropertyName(&quot;legacyIdentifierCleanupReceipts&quot;)] public Dictionary&lt;string, SecurityMasterLegacyIdentifierCleanupReceipt&gt; LegacyIdentifierCleanupReceipts { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:72](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L72) | Exact manifests and evidence references for explicitly selected legacy identifier cleanup. A receipt records the requested cleanup; it does not establish independent approval. |
-
-## SymbolRegistryEntry
-
-Qualified name: <code>Meridian.Contracts.Catalog.SymbolRegistryEntry</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:78](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L78).
-
-Individual symbol entry in the registry.
-
-```csharp
-public sealed class SymbolRegistryEntry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;securityId&quot;)] public Guid? SecurityId { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:84](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L84) | Durable Security Master identity. The canonical ticker is a lookup projection, not identity. |
-| <code>[JsonPropertyName(&quot;canonical&quot;)] public string Canonical { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:90](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L90) | Canonical symbol name used internally. |
-| <code>[JsonPropertyName(&quot;securityMasterOwnsCanonical&quot;)][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool SecurityMasterOwnsCanonical { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:98](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L98) | True only when the canonical ticker was introduced solely by Security Master reconciliation. Missing historical provenance defaults to independent authority. |
-| <code>[JsonPropertyName(&quot;securityMasterCanonicalWithdrawn&quot;)][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool SecurityMasterCanonicalWithdrawn { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:106](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L106) | Security Master withdrew this canonical spelling while independently owned mappings retain the definition. The internal canonical key is not itself lookup authority. |
-| <code>[JsonPropertyName(&quot;displayName&quot;)] public string? DisplayName { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:112](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L112) | Display name (e.g., &quot;Apple Inc.&quot;). |
-| <code>[JsonPropertyName(&quot;assetClass&quot;)] public string AssetClass { get; set; } = &quot;equity&quot;;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:118](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L118) | Asset class (equity, option, future, forex, crypto, index). |
-| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:124](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L124) | Primary exchange. |
-| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:130](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L130) | Base currency. |
-| <code>[JsonPropertyName(&quot;country&quot;)] public string? Country { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:136](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L136) | Country of listing. |
-| <code>[JsonPropertyName(&quot;aliases&quot;)] public List&lt;SymbolAlias&gt; Aliases { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:142](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L142) | All known aliases for this symbol. |
-| <code>[JsonPropertyName(&quot;identifiers&quot;)] public SymbolIdentifiers Identifiers { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:148](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L148) | Industry identifiers. |
-| <code>[JsonPropertyName(&quot;providerSymbols&quot;)] public Dictionary&lt;string, string&gt; ProviderSymbols { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:154](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L154) | Provider-specific symbols. |
-| <code>[JsonPropertyName(&quot;providerSymbolMetadata&quot;)] public Dictionary&lt;string, ProviderSymbolMetadata&gt; ProviderSymbolMetadata { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:161](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L161) | Additive provenance for ProviderSymbols. Kept separate so existing registry JSON containing string values remains readable. |
-| <code>[JsonPropertyName(&quot;classification&quot;)] public SymbolClassification? Classification { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:167](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L167) | Classification information. |
-| <code>[JsonPropertyName(&quot;corporateActions&quot;)] public List&lt;CorporateActionRef&gt;? CorporateActions { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:173](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L173) | Corporate action history affecting symbol. |
-| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:179](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L179) | When this entry was created. |
-| <code>[JsonPropertyName(&quot;lastUpdatedAt&quot;)] public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:185](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L185) | When this entry was last updated. |
-| <code>[JsonPropertyName(&quot;isActive&quot;)] public bool IsActive { get; set; } = true;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:191](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L191) | Whether this symbol is currently active. |
-| <code>[JsonPropertyName(&quot;delistedAt&quot;)] public DateTime? DelistedAt { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:197](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L197) | Date when symbol was delisted (if applicable). |
-| <code>[JsonPropertyName(&quot;metadata&quot;)] public Dictionary&lt;string, string&gt;? Metadata { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:203](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L203) | Additional metadata. |
-
-## SymbolRegistryStatistics
-
-Qualified name: <code>Meridian.Contracts.Catalog.SymbolRegistryStatistics</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:447](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L447).
-
-Statistics about the symbol registry.
-
-```csharp
-public sealed class SymbolRegistryStatistics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;totalSymbols&quot;)] public int TotalSymbols { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:453](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L453) | Total number of symbols. |
-| <code>[JsonPropertyName(&quot;activeSymbols&quot;)] public int ActiveSymbols { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:459](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L459) | Number of active symbols. |
-| <code>[JsonPropertyName(&quot;delistedSymbols&quot;)] public int DelistedSymbols { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:465](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L465) | Number of delisted symbols. |
-| <code>[JsonPropertyName(&quot;totalAliases&quot;)] public int TotalAliases { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:471](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L471) | Total number of aliases. |
-| <code>[JsonPropertyName(&quot;providerCount&quot;)] public int ProviderCount { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:477](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L477) | Number of providers with mappings. |
-| <code>[JsonPropertyName(&quot;byAssetClass&quot;)] public Dictionary&lt;string, int&gt; ByAssetClass { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:483](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L483) | Breakdown by asset class. |
-| <code>[JsonPropertyName(&quot;byExchange&quot;)] public Dictionary&lt;string, int&gt; ByExchange { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:489](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L489) | Breakdown by exchange. |
-
-## SymbolResolutionMismatch
-
-Qualified name: <code>Meridian.Contracts.Catalog.SymbolResolutionMismatch</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:329](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L329).
-
-Structured evidence emitted when comparison mode observes different legacy and canonical results.
-
-```csharp
-public sealed record SymbolResolutionMismatch(string Input, string FromProvider, string ToProvider, string? LegacyResult, string? CanonicalResult, Guid? SecurityId, DateTimeOffset ObservedAt);
-```
-
-## SymbolResolutionMode
-
-Qualified name: <code>Meridian.Contracts.Catalog.SymbolResolutionMode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:316](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L316).
-
-Controls migration from legacy symbol translation to the canonical registry.
-
-```csharp
-public enum SymbolResolutionMode
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Legacy</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:319](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L319) | Return the legacy resolver result. |
-| <code>Compare</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:321](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L321) | Return the legacy result and report disagreements with the registry. |
-| <code>Canonical</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:323](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L323) | Return the canonical-registry result, falling back only when unknown. |
-
-## CertificateOfDepositReferenceDto
-
-Qualified name: <code>Meridian.Contracts.CertificatesOfDeposit.CertificateOfDepositReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CertificatesOfDeposit/CertificateOfDepositReferenceDtos.cs:5](../../../../src/Meridian.Contracts/CertificatesOfDeposit/CertificateOfDepositReferenceDtos.cs#L5).
-
-```csharp
-public sealed record CertificateOfDepositReferenceDto(Guid SecurityId, string DisplayName, string Currency, string IssuerName, DateOnly Maturity, decimal? CouponRate, DateOnly? CallableDate, string? DayCount, string PrimaryIdentifier, long Version)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Meridian.Contracts.SecurityMaster.DayCountConvention? DayCountConvention =&gt; …;</code> | [src/Meridian.Contracts/CertificatesOfDeposit/CertificateOfDepositReferenceDtos.cs:21](../../../../src/Meridian.Contracts/CertificatesOfDeposit/CertificateOfDepositReferenceDtos.cs#L21) | DayCount as a typed convention, or null when the stored text is absent or names no recognized basis. The raw text stays on DayCount. |
-
-## CommodityReferenceDto
-
-Qualified name: <code>Meridian.Contracts.Commodities.CommodityReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Commodities/CommodityDtos.cs:3](../../../../src/Meridian.Contracts/Commodities/CommodityDtos.cs#L3).
-
-```csharp
-public sealed record CommodityReferenceDto(Guid SecurityId, string DisplayName, string Currency, string CommodityType, string? Denomination, decimal? ContractSize, string? ExchangeCode, string? DeliveryCountry, string PrimaryIdentifier, long Version);
-```

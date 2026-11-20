@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernedArtifactProduction
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernedArtifactProduction</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:58](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L58).
+
+```csharp
+public sealed record ReportingGovernedArtifactProduction(string RunId, string ManifestArtifactId, ReportingAuthoritativeAsOfCertification Certification, ImmutableArray<ReportingRenderedArtifact> Artifacts);
+```
+
 ## ReportingHttpRelayClientOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingHttpRelayClientOptions</code>. Kind: `record`.
@@ -902,23 +912,3 @@ One report pack&#x27;s contribution to a security in the security→report-line 
 ```csharp
 public sealed record ReportPackSecurityLineIndexEntry(Guid SecurityId, Guid ReportId, string FundProfileId, ReportPackWorkflowStateDto State, IReadOnlyList<string> LineKeys);
 ```
-
-## ReportPackSecurityLineMatcher
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineMatcher</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L13).
-
-Shared &quot;does this report line reference a security&quot; matcher for the report-pack restatement path. Extracted so the candidate resolver (ReportPackRestatementCandidateResolver) and the durable security→report-line index (IReportPackSecurityLineIndex) agree on exactly one membership rule: a report-line provenance entry references a security when its SecurityMasterId or SecurityDefinitionId parses to the security id, or when it carries a security-kind source whose SourceId parses to the security id.
-
-```csharp
-public static class ReportPackSecurityLineMatcher
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool LineReferencesSecurity(ReportPackLineProvenanceDto line, Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L16) | True when line ties a report line to securityId. |
-| <code>public static bool RecordReferencesSecurity(ReportPackWorkflowRecordDto record, Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L25) | True when record has any retained provenance line referencing the security. |
-| <code>public static IEnumerable&lt;Guid&gt; ReferencedSecurityIds(ReportPackLineProvenanceDto line);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L37) | The distinct security ids a single provenance line contributes — the reverse of LineReferencesSecurity: for any returned id s, LineReferencesSecurity(line, s) is true, and vice versa. Used to build the security→report-line index. |
