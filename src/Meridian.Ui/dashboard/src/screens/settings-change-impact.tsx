@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { apiGetJson } from "@/lib/api/http-client";
 import { describeConfigurationApply } from "@/lib/configuration-apply";
+import { formatTimestamp } from "@/lib/format";
 
 export type ConfigurationChangeImpact = "Live" | "ReconnectProvider" | "RestartHost";
 export interface ConfigurationFieldChange { path: string; impact: ConfigurationChangeImpact }
@@ -126,7 +127,9 @@ export function SettingsChangeImpactBanner({ loadStatus = loadConfigurationChang
                 <p>Saved revision <code>{status.revision.id}</code></p>
                 <p>SHA-256 <code>{status.revision.contentHash}</code></p>
                 {acknowledgement ? <>
-                  <p>Collector <code>{acknowledgement.collectorInstanceId}</code> acknowledged at <time dateTime={acknowledgement.appliedAtUtc}>{acknowledgement.appliedAtUtc}</time></p>
+                  <p>Collector <code>{acknowledgement.collectorInstanceId}</code> acknowledged at{" "}
+                    <time dateTime={acknowledgement.appliedAtUtc}>{formatTimestamp(acknowledgement.appliedAtUtc, { precision: "second" })}</time>
+                  </p>
                   <ul className="mt-2 space-y-1">
                     {acknowledgement.entries.map(entry => <li key={entry.path}><code>{entry.path}</code> · {applyLabels[entry.kind]}</li>)}
                   </ul>

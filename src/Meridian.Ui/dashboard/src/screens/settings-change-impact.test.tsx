@@ -1,5 +1,6 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { formatTimestamp } from "@/lib/format";
 import { SettingsChangeImpactBanner, type ConfigurationChangeStatus } from "./settings-change-impact";
 
 const status = (overrides: Partial<ConfigurationChangeStatus> = {}): ConfigurationChangeStatus => ({
@@ -38,11 +39,12 @@ describe("SettingsChangeImpactBanner", () => {
   it("shows only the latest collector acknowledgement and identifies an unconfirmed revision", async () => {
     const oldRevision = { id: "revision-old", contentHash: "old-hash" };
     const latestRevision = { id: "revision-current", contentHash: "current-hash" };
+    const appliedAtUtc = "2026-11-20T12:00:00Z";
     const loadStatus = vi.fn().mockResolvedValueOnce(status({
       pendingChanges: [], requiresRestart: false, revision: oldRevision, runtimeState: "AppliedLive",
-      lastApply: { entries: [{ path: "dataSources.healthCheckIntervalSeconds", kind: "AppliedLive" }], appliedAtUtc: "2026-11-20T12:00:00Z" },
+      lastApply: { entries: [{ path: "dataSources.healthCheckIntervalSeconds", kind: "AppliedLive" }], appliedAtUtc },
       collectorAcknowledgement: {
-        revision: oldRevision, collectorInstanceId: "collector-one", appliedAtUtc: "2026-11-20T12:00:00Z",
+        revision: oldRevision, collectorInstanceId: "collector-one", appliedAtUtc,
         entries: [{ path: "dataSources.healthCheckIntervalSeconds", kind: "AppliedLive" }]
       }
     })).mockResolvedValueOnce(status({ revision: latestRevision, runtimeState: "Unknown" }));
@@ -50,6 +52,7 @@ describe("SettingsChangeImpactBanner", () => {
 
     expect(await screen.findByText("Applied live")).toBeInTheDocument();
     expect(screen.getByText("collector-one")).toBeInTheDocument();
+    expect(screen.getByText(formatTimestamp(appliedAtUtc, { precision: "second" }))).toHaveAttribute("datetime", appliedAtUtc);
     act(() => window.dispatchEvent(new Event("meridian:configuration-saved")));
     expect(await screen.findByText("Collector application unconfirmed")).toBeInTheDocument();
     expect(screen.getByText("revision-current")).toBeInTheDocument();
