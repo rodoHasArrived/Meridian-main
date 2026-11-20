@@ -4,6 +4,7 @@
 import { AXIS_LABEL_STYLE } from "./axis-ticks";
 import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
 import { useChartSize } from "./use-chart-size";
+import { ChartEvidenceMark, type ChartInspection } from "./chart-evidence";
 
 export interface DepthLevel {
   price: number;
@@ -12,9 +13,9 @@ export interface DepthLevel {
 
 export interface DepthChartProps extends ChartA11yProps {
   /** Bid levels — any order; cumulated outward from the mid. */
-  bids: DepthLevel[];
+  bids?: DepthLevel[];
   /** Ask levels — any order; cumulated outward from the mid. */
-  asks: DepthLevel[];
+  asks?: DepthLevel[];
   /** Mid price. @default midpoint of best bid / best ask */
   mid?: number | null;
   /** Format for price-axis values. @default p => p.toFixed(2) */
@@ -27,6 +28,8 @@ export interface DepthChartProps extends ChartA11yProps {
   priceTicks?: number;
   /** Read-only displayed-depth coverage illustration; never an execution estimate. */
   illustration?: { side: "Buy" | "Sell"; quantity: number; terminalPrice: number | null } | null;
+  profile?: ReturnType<typeof buildDepthProfile>;
+  inspection?: ChartInspection;
 }
 
 const PLOT = "var(--chart-plot, #F8F7F3)";
@@ -36,6 +39,29 @@ const BORDER = "var(--chart-border, #AAA49A)";
 const CROSSHAIR = "var(--chart-crosshair, #C56343)";
 const UP = "var(--chart-equity, #2E7655)";
 const DOWN = "var(--chart-drawdown, #B54B42)";
+
+export function buildDepthProfile<T extends DepthLevel>(bids: readonly T[], asks: readonly T[], mid: number | null = null) {
+  const cumulative = (levels: readonly T[], direction: number) => {
+    let depth = 0;
+    return [...levels].sort((a, b) => direction * (a.price - b.price)).map((level) => {
+      depth += level.size;
+      return { ...level, depth };
+    });
+  };
+  const bidPoints = cumulative(bids, -1);
+  const askPoints = cumulative(asks, 1);
+  const bestBid = bidPoints[0]?.price;
+  const bestAsk = askPoints[0]?.price;
+  const twoSided = bestBid !== undefined && bestAsk !== undefined;
+  return {
+    bidPoints,
+    askPoints,
+    midPrice: mid ?? (twoSided ? (bestBid + bestAsk) / 2 : bestBid ?? bestAsk ?? 0),
+    midBasis: mid !== null ? "Mid price supplied by the order-book snapshot."
+      : twoSided ? "Average of the best bid and best ask."
+      : "Best available price in a one-sided book."
+  };
+}
 
 export function DepthChart({
   bids = [],
@@ -48,7 +74,9 @@ export function DepthChart({
   illustration = null,
   ariaLabel = "Order-book depth chart",
   ariaDescription,
-  accessibleData
+  accessibleData,
+  profile = buildDepthProfile(bids, asks, mid),
+  inspection
 }: DepthChartProps) {
   const [plotRef, size] = useChartSize({ width: 960, height: 360 });
   const W = size.width;
@@ -62,27 +90,11 @@ export function DepthChart({
   const plotT = padT;
   const plotB = H - axisB;
 
-  // sort outward from the mid
-  const bidsS = [...bids].sort((a, b) => b.price - a.price); // best (highest) first
-  const asksS = [...asks].sort((a, b) => a.price - b.price); // best (lowest) first
-  const bestBid = bidsS.length ? bidsS[0].price : null;
-  const bestAsk = asksS.length ? asksS[0].price : null;
-  const midPrice =
-    mid != null ? mid : bestBid != null && bestAsk != null ? (bestBid + bestAsk) / 2 : bestBid ?? bestAsk ?? 0;
-
-  // cumulative depth outward from mid
-  let cum = 0;
-  const bidPts = bidsS.map((b) => {
-    cum += b.size;
-    return { price: b.price, depth: cum };
-  });
-  cum = 0;
-  const askPts = asksS.map((a) => {
-    cum += a.size;
-    return { price: a.price, depth: cum };
-  });
-
-  const allP = [...bids, ...asks].map((d) => d.price);
+  const { bidPoints: bidPts, askPoints: askPts, midPrice } = profile;
+  const bestBid = bidPts[0]?.price;
+  const bestAsk = askPts[0]?.price;
+  const levelPoints = [...bidPts, ...askPts];
+  const allP = levelPoints.map((d) => d.price);
   const pLo = allP.length ? Math.min(...allP) : midPrice - 1;
   const pHi = allP.length ? Math.max(...allP) : midPrice + 1;
   const pSpan = pHi - pLo || 1;
@@ -120,6 +132,22 @@ export function DepthChart({
       ariaLabel={ariaLabel}
       ariaDescription={ariaDescription}
       accessibleData={accessibleData}
+      overlayHintId={inspection?.hintId}
+      overlay={inspection ? (
+        <>
+          {levelPoints.map((point, index) => (
+            <ChartEvidenceMark key={inspection.pointId(index)} inspection={inspection} index={index} geometry={{ x: x(point.price), y: y(point.depth), radius: 9 }} />
+          ))}
+          <ChartEvidenceMark inspection={inspection} index={levelPoints.length} geometry={{ x: x(midPrice) - 38, y: plotT - 2, width: 76, height: 17 }} />
+          {illustration?.terminalPrice != null ? (
+            <ChartEvidenceMark
+              inspection={inspection}
+              index={levelPoints.length + 1}
+              geometry={{ x: x(illustration.terminalPrice) - 3, y: plotT, width: 6, height: plotB - plotT }}
+            />
+          ) : null}
+        </>
+      ) : null}
     >
       <rect x="0" y="0" width={W} height={H} fill={PLOT} />
       {[...new Set(sTicks)].map((s, k) => (
