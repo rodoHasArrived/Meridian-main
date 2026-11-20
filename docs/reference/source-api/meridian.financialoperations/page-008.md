@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IStatementMatchResultRepository
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementMatchResultRepository</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L42).
+
+Saves and retrieves statement matching result artifacts by run.
+
+```csharp
+public interface IStatementMatchResultRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task SaveAsync(string runId, StatementMatchResultArtifact result, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L44) |  |
+| <code>Task&lt;StatementMatchResultArtifact?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:45](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L45) |  |
+
+## IStatementNormalizedEntityRepository
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementNormalizedEntityRepository</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L33).
+
+Saves and retrieves normalized statement entities for a run.
+
+```csharp
+public interface IStatementNormalizedEntityRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task SaveAsync(string runId, StatementNormalizedEntities entities, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L35) |  |
+| <code>Task&lt;StatementNormalizedEntities?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:36](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L36) |  |
+
 ## IStatementReconciliationCheckpointStore
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementReconciliationCheckpointStore</code>. Kind: `interface`.
@@ -823,45 +861,3 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfile
 ```csharp
 public sealed record StatementFieldMapping(StatementCanonicalField CanonicalField, string SourceColumn, bool Required = true);
 ```
-
-## StatementMappingProfile
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMappingProfile</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:36](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L36).
-
-```csharp
-public sealed record StatementMappingProfile(string ProfileId, string DisplayName, IReadOnlyList<StatementFieldMapping> FieldMappings, IReadOnlyList<StatementTransactionCodeMapping> TransactionCodeMappings)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementFieldMapping? FindField(StatementCanonicalField field) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L42) |  |
-| <code>public string MapActivityType(string activityType);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:45](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L45) |  |
-
-## StatementMappingProfileRegistry
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMappingProfileRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L56).
-
-Resolves supported statement mapping profiles and supplies the built-in profile registry.
-
-```csharp
-public sealed class StatementMappingProfileRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string CanonicalCsvV1ProfileId = &quot;canonical-csv-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:58](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L58) |  |
-| <code>public const string SampleBrokerCsvV1ProfileId = &quot;sample-broker-csv-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:59](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L59) |  |
-| <code>public const string IbFlexV1ProfileId = &quot;ib-flex-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L60) |  |
-| <code>public StatementMappingProfileRegistry(IEnumerable&lt;StatementMappingProfile&gt; profiles);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:64](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L64) |  |
-| <code>public static StatementMappingProfileRegistry Defaults { get; } = new (CreateDefaultProfiles());</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:69](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L69) |  |
-| <code>public StatementMappingProfile Resolve(string? profileId);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:71](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L71) |  |
-| <code>public StatementMappingProfile ResolveForSourceKind(string normalizedSourceKind, string? profileId = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:82](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L82) |  |
-| <code>public IReadOnlyList&lt;StatementMappingProfile&gt; ListProfiles() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:97](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L97) |  |

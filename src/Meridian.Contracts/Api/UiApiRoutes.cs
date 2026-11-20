@@ -160,6 +160,7 @@ public static class UiApiRoutes
     public const string AccountingSystemImportLatest = "/api/accounting-system/import/latest";
     public const string AccountingSystemReconciliationLatest = "/api/accounting-system/reconciliation/latest";
     public const string AccountingSystemMappingProfiles = "/api/accounting-system/mapping-profiles";
+    public const string ExternalGlPosting = "/api/accounting-system/posting/{fundProfileId}/{ledgerBookId:guid}";
     public const string AccountingSystemExportPackages = "/api/accounting-system/export-packages";
     public const string AccountingSystemExportPackageManifest = "/api/accounting-system/export-packages/{exportPackageId}/manifest";
     public const string AccountingSystemExportPackageCertification = "/api/accounting-system/export-packages/certification";
@@ -821,6 +822,7 @@ public static class UiApiRoutes
     // Strategy run comparison and diff endpoints
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
     public const string WorkstationWorkflowLibrary = "/api/workstation/workflows";
+    public const string WorkstationRecordSearch = "/api/workstation/search/records";
     public const string WorkstationWorkflowPresets = "/api/workstation/workflows/presets";
     public const string WorkstationWorkflowPresetById = "/api/workstation/workflows/presets/{presetId}";
     public const string WorkstationWorkflowPresetPin = "/api/workstation/workflows/presets/{presetId}/pin";
@@ -861,6 +863,7 @@ public static class UiApiRoutes
     public const string WorkstationOperatorSurfaceVisit = "/api/workstation/operator/visits/{surface}";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
     public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";
+    public const string WorkstationAmountPassport = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/amount-passport";
     public const string WorkstationEvidenceSubjectGraph = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/graph";
     public const string WorkstationEvidenceSubjectValidate = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/validate";
     public const string WorkstationEvidenceSubjectExportManifest = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/export-manifest";

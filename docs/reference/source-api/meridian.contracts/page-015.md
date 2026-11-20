@@ -6,6 +6,201 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConnectivityProbeOptions
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConnectivityProbeOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs:7](../../../../src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs#L7).
+
+Operator-tunable timing for connectivity probes shared by setup and diagnostics flows. Bind from configuration using the SectionKey section.
+
+```csharp
+public sealed class ConnectivityProbeOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionKey = &quot;Connectivity:Probes&quot;;</code> | [src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs:10](../../../../src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs#L10) | Configuration section key for options binding. |
+| <code>public int TcpConnectTimeoutMs { get; set; } = 5000;</code> | [src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs:16](../../../../src/Meridian.Contracts/Configuration/ConnectivityProbeOptions.cs#L16) | Timeout applied to TCP connect probes when testing provider or gateway reachability (for example TWS/IB Gateway socket checks). |
+
+## DataSourceConfigDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.DataSourceConfigDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:524](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L524).
+
+Individual data source configuration.
+
+```csharp
+public sealed class DataSourceConfigDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonExtensionData] public Dictionary&lt;string, JsonElement&gt;? AdditionalProperties { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:528](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L528) | Retains host-owned fields this settings view does not model during load/save. |
+| <code>[JsonPropertyName(&quot;id&quot;)] public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:531](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L531) |  |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:534](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L534) |  |
+| <code>[JsonPropertyName(&quot;provider&quot;)] public string Provider { get; set; } = &quot;IB&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:537](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L537) |  |
+| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:540](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L540) |  |
+| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = &quot;RealTime&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:543](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L543) |  |
+| <code>[JsonPropertyName(&quot;priority&quot;)] public int Priority { get; set; } = 100;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:546](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L546) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:549](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L549) |  |
+| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:552](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L552) |  |
+| <code>[JsonPropertyName(&quot;alpaca&quot;)] public AlpacaOptionsDto? Alpaca { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:555](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L555) |  |
+| <code>[JsonPropertyName(&quot;polygon&quot;)] public PolygonOptionsDto? Polygon { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:558](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L558) |  |
+| <code>[JsonPropertyName(&quot;ib&quot;)] public IBOptionsDto? IB { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:561](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L561) |  |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[]? Symbols { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:564](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L564) |  |
+
+## DataSourcesConfigDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.DataSourcesConfigDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:473](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L473).
+
+Multiple data source configuration.
+
+```csharp
+public sealed class DataSourcesConfigDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonExtensionData] public Dictionary&lt;string, JsonElement&gt;? AdditionalProperties { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:477](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L477) | Retains host-owned fields this settings view does not model during load/save. |
+| <code>[JsonPropertyName(&quot;sources&quot;)] public DataSourceConfigDto[]? Sources { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:480](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L480) |  |
+| <code>[JsonPropertyName(&quot;defaultRealTimeSourceId&quot;)] public string? DefaultRealTimeSourceId { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:483](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L483) |  |
+| <code>[JsonPropertyName(&quot;defaultHistoricalSourceId&quot;)] public string? DefaultHistoricalSourceId { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:486](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L486) |  |
+| <code>[JsonPropertyName(&quot;enableFailover&quot;)] public bool EnableFailover { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:489](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L489) |  |
+| <code>[JsonPropertyName(&quot;failoverTimeoutSeconds&quot;)] public int FailoverTimeoutSeconds { get; set; } = 30;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:492](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L492) |  |
+| <code>[JsonPropertyName(&quot;symbolMappings&quot;)] public SymbolMappingsConfigDto? SymbolMappings { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:495](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L495) |  |
+
+## DemoWorkspaceIsolationException
+
+Qualified name: <code>Meridian.Contracts.Configuration.DemoWorkspaceIsolationException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:211](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L211).
+
+Raised when a demo-workspace path fails the isolation guard — i.e. it is not the dedicated, correctly-named demo root derived from the active data root, or lacks the demo sentinel.
+
+```csharp
+public sealed class DemoWorkspaceIsolationException : Exception
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DemoWorkspaceIsolationException(string message) : base(message);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:213](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L213) |  |
+
+## DemoWorkspaceLayout
+
+Qualified name: <code>Meridian.Contracts.Configuration.DemoWorkspaceLayout</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:18](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L18).
+
+Shared, host-agnostic rules for the isolated Meridian demo workspace that the --seed-demo / --reset-demo CLI verbs and the --demo serve mode operate on.
+
+```csharp
+public static class DemoWorkspaceLayout
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string DemoWorkspaceFolderName = &quot;demo-workspace&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:21](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L21) | The dedicated folder name for the demo workspace, nested under the active data root. |
+| <code>public const string SentinelFileName = &quot;.meridian-demo-workspace.json&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:28](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L28) | Marker file written into the demo root at seed time. EnsureSafeToDelete refuses to tear down a directory that does not carry it, so --reset-demo can only ever remove a workspace Meridian itself seeded. |
+| <code>public const string DemoModeEnvironmentVariable = &quot;MERIDIAN_DEMO&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:31](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L31) | Environment variable that activates demo mode for the serving host. |
+| <code>public const string SeedDemoFlag = &quot;--seed-demo&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:34](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L34) | Seeds the isolated demo workspace (and, unless SeedOnlyFlag is set, serves it). |
+| <code>public const string ResetDemoFlag = &quot;--reset-demo&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:37](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L37) | Tears down the isolated demo workspace only. |
+| <code>public const string DemoFlag = &quot;--demo&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:40](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L40) | Serves an already-seeded demo workspace by redirecting the active data root to the demo root. |
+| <code>public const string SeedOnlyFlag = &quot;--seed-only&quot;;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:43](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L43) | Seeds without continuing to serve — used by CI and scripted seeding. |
+| <code>public static string ResolveDemoRoot(string baseDataRoot);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:48](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L48) | Resolves the absolute demo workspace root nested under baseDataRoot. |
+| <code>public static string ResolveSentinelPath(string demoRoot);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:55](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L55) | Absolute path of the sentinel marker inside a demo root. |
+| <code>public static bool HasFlag(IReadOnlyList&lt;string&gt; args, string flag);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:62](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L62) | Returns true when flag is present (case-insensitive). |
+| <code>public static bool HasSeedDemoFlag(IReadOnlyList&lt;string&gt; args) =&gt; …;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:77](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L77) | True when the CLI is asking to seed the demo workspace. |
+| <code>public static bool HasResetDemoFlag(IReadOnlyList&lt;string&gt; args) =&gt; …;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:80](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L80) | True when the CLI is asking to tear down the demo workspace. |
+| <code>public static bool HasSeedOnlyFlag(IReadOnlyList&lt;string&gt; args) =&gt; …;</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:83](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L83) | True when seeding should stop before serving (CI / scripted use). |
+| <code>public static bool IsDemoModeRequested(IReadOnlyList&lt;string&gt; args);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:90](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L90) | True when the serving host should redirect its data root to the isolated demo root. This is requested explicitly with --demo / --seed-demo, or ambiently via the MERIDIAN_DEMO environment variable. |
+| <code>public static string EnsureIsolatedDemoRoot(string candidate, string baseDataRoot);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:123](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L123) | Validates that candidate is the isolated demo root derived from baseDataRoot — a distinct, correctly-named direct child. Throws DemoWorkspaceIsolationException otherwise. This is the structural half of the teardown guard and never touches the filesystem, so it is safe to call before the directory exists. |
+| <code>public static string EnsureSafeToDelete(string candidate, string baseDataRoot);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:172](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L172) | Validates that candidate is safe to delete: it must pass EnsureIsolatedDemoRoot and carry the demo sentinel marker. Returns the validated absolute path. Throws DemoWorkspaceIsolationException if the guard fails. |
+
+## DerivativesConfigDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.DerivativesConfigDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:8](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L8).
+
+Configuration for derivatives (options and futures) data collection.
+
+```csharp
+public sealed class DerivativesConfigDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:14](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L14) | Whether derivatives tracking is enabled. |
+| <code>[JsonPropertyName(&quot;underlyings&quot;)] public string[]? Underlyings { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:20](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L20) | Underlying symbols to track options for (e.g., &#91;&quot;SPX&quot;, &quot;SPY&quot;, &quot;QQQ&quot;, &quot;AAPL&quot;&#93;). |
+| <code>[JsonPropertyName(&quot;maxDaysToExpiration&quot;)] public int MaxDaysToExpiration { get; set; } = 90;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:27](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L27) | Maximum days to expiration for tracked contracts (0 = no limit). Default: 90 (only track near-term options). |
+| <code>[JsonPropertyName(&quot;strikeRange&quot;)] public int StrikeRange { get; set; } = 20;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:34](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L34) | Number of strikes above and below ATM to track (0 = all strikes). Default: 20 (±20 strikes from at-the-money). |
+| <code>[JsonPropertyName(&quot;captureGreeks&quot;)] public bool CaptureGreeks { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:40](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L40) | Whether to capture greeks (delta, gamma, theta, vega, rho, IV). |
+| <code>[JsonPropertyName(&quot;captureChainSnapshots&quot;)] public bool CaptureChainSnapshots { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:46](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L46) | Whether to capture periodic chain snapshots. |
+| <code>[JsonPropertyName(&quot;chainSnapshotIntervalSeconds&quot;)] public int ChainSnapshotIntervalSeconds { get; set; } = 300;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:52](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L52) | Interval in seconds between chain snapshots (default: 300 = 5 minutes). |
+| <code>[JsonPropertyName(&quot;captureOpenInterest&quot;)] public bool CaptureOpenInterest { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:58](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L58) | Whether to capture open interest updates (typically daily). |
+| <code>[JsonPropertyName(&quot;expirationFilter&quot;)] public string[]? ExpirationFilter { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:66](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L66) | Filter for expiration types to track. Values: &quot;Weekly&quot;, &quot;Monthly&quot;, &quot;Quarterly&quot;, &quot;LEAPS&quot;, &quot;All&quot;. Default: &#91;&quot;Weekly&quot;, &quot;Monthly&quot;&#93; — skip quarterlies and LEAPS unless needed. |
+| <code>[JsonPropertyName(&quot;indexOptions&quot;)] public IndexOptionsConfigDto? IndexOptions { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:73](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L73) | Index options configuration (SPX, NDX, RUT, VIX). These are European-style and cash-settled. |
+
+## ExtendedSymbolConfigDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ExtendedSymbolConfigDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:726](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L726).
+
+Extended symbol configuration with group membership and status.
+
+```csharp
+public sealed class ExtendedSymbolConfigDto : SymbolConfigDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;groupIds&quot;)] public string[]? GroupIds { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:729](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L729) |  |
+| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:732](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L732) |  |
+| <code>[JsonPropertyName(&quot;notes&quot;)] public string? Notes { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:735](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L735) |  |
+| <code>[JsonPropertyName(&quot;addedAt&quot;)] public DateTime AddedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:738](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L738) |  |
+| <code>[JsonPropertyName(&quot;lastModified&quot;)] public DateTime LastModified { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:741](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L741) |  |
+| <code>[JsonPropertyName(&quot;isFavorite&quot;)] public bool IsFavorite { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:744](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L744) |  |
+| <code>[JsonPropertyName(&quot;customColor&quot;)] public string? CustomColor { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:747](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L747) |  |
+
+## IBClientPortalOptionsDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.IBClientPortalOptionsDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:621](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L621).
+
+Interactive Brokers Client Portal HTTP configuration.
+
+```csharp
+public sealed class IBClientPortalOptionsDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:624](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L624) |  |
+| <code>[JsonPropertyName(&quot;baseUrl&quot;)] public string BaseUrl { get; set; } = ApiEndpointDefaults.IbClientPortalBaseUrl;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:627](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L627) |  |
+| <code>[JsonPropertyName(&quot;allowSelfSignedCertificates&quot;)] public bool AllowSelfSignedCertificates { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:630](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L630) |  |
+
 ## IBOptionsDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.IBOptionsDto</code>. Kind: `class`.
@@ -864,174 +1059,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;LeaseAcquireResult&gt; TryAcquireAsync(string providerId, string kind, string symbol, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ISubscriptionOwnershipService.cs:8](../../../../src/Meridian.Contracts/Coordination/ISubscriptionOwnershipService.cs#L8) |  |
 | <code>Task&lt;bool&gt; ReleaseAsync(string providerId, string kind, string symbol, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ISubscriptionOwnershipService.cs:14](../../../../src/Meridian.Contracts/Coordination/ISubscriptionOwnershipService.cs#L14) |  |
-
-## LeadershipChangedEventArgs
-
-Qualified name: <code>Meridian.Contracts.Coordination.LeadershipChangedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:4](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L4).
-
-Event data raised when this instance gains or loses the coordinator role.
-
-```csharp
-public sealed class LeadershipChangedEventArgs(bool isLeader, string instanceId) : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsLeader { get; } = isLeader;</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:7](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L7) | Whether this instance now holds coordinator leadership. |
-| <code>public string InstanceId { get; } = instanceId;</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:10](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L10) | The instance identifier that changed leadership state. |
-
-## LeaseAcquireResult
-
-Qualified name: <code>Meridian.Contracts.Coordination.LeaseAcquireResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Coordination/LeaseAcquireResult.cs:3](../../../../src/Meridian.Contracts/Coordination/LeaseAcquireResult.cs#L3).
-
-```csharp
-public sealed record LeaseAcquireResult(bool Acquired, bool TakenOver, LeaseRecord? Lease, string? CurrentOwner, DateTimeOffset? CurrentExpiryUtc, string? Reason);
-```
-
-## LeaseRecord
-
-Qualified name: <code>Meridian.Contracts.Coordination.LeaseRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Coordination/LeaseRecord.cs:6](../../../../src/Meridian.Contracts/Coordination/LeaseRecord.cs#L6).
-
-Durable lease record used for shared-storage resource ownership.
-
-```csharp
-public sealed record LeaseRecord(string ResourceId, string InstanceId, long LeaseVersion, DateTimeOffset AcquiredAtUtc, DateTimeOffset ExpiresAtUtc, DateTimeOffset LastRenewedAtUtc);
-```
-
-## CredentialInfo
-
-Qualified name: <code>Meridian.Contracts.Credentials.CredentialInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:65](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L65).
-
-Extended credential information with metadata for tracking expiration and authentication status.
-
-```csharp
-public sealed class CredentialInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:68](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L68) |  |
-| <code>[JsonPropertyName(&quot;resource&quot;)] public string Resource { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:71](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L71) |  |
-| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:74](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L74) |  |
-| <code>[JsonPropertyName(&quot;credentialType&quot;)] public CredentialType CredentialType { get; set; } = CredentialType.ApiKey;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:77](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L77) |  |
-| <code>[JsonPropertyName(&quot;expiresAt&quot;)] public DateTime? ExpiresAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:80](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L80) |  |
-| <code>[JsonPropertyName(&quot;lastAuthenticatedAt&quot;)] public DateTime? LastAuthenticatedAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:83](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L83) |  |
-| <code>[JsonPropertyName(&quot;lastTestedAt&quot;)] public DateTime? LastTestedAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:86](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L86) |  |
-| <code>[JsonPropertyName(&quot;testStatus&quot;)] public CredentialTestStatus TestStatus { get; set; } = CredentialTestStatus.Unknown;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:89](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L89) |  |
-| <code>[JsonPropertyName(&quot;isExpiringSoon&quot;)] public bool IsExpiringSoon =&gt; …;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:92](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L92) |  |
-| <code>[JsonPropertyName(&quot;isExpired&quot;)] public bool IsExpired =&gt; …;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:97](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L97) |  |
-| <code>[JsonPropertyName(&quot;canAutoRefresh&quot;)] public bool CanAutoRefresh { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:100](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L100) |  |
-| <code>[JsonIgnore] public string? RefreshToken { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:103](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L103) |  |
-| <code>[JsonIgnore] public string ExpirationDisplay { get; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:109](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L109) | Gets a friendly display string for the expiration status. |
-| <code>[JsonIgnore] public string LastAuthDisplay { get; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:134](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L134) | Gets a friendly display string for the last authentication time. |
-
-## CredentialMetadata
-
-Qualified name: <code>Meridian.Contracts.Credentials.CredentialMetadata</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:210](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L210).
-
-Metadata stored alongside credentials for tracking expiration and auth status.
-
-```csharp
-public sealed class CredentialMetadata
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;resource&quot;)] public string Resource { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:213](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L213) |  |
-| <code>[JsonPropertyName(&quot;credentialType&quot;)] public CredentialType CredentialType { get; set; } = CredentialType.ApiKey;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:216](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L216) |  |
-| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:219](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L219) |  |
-| <code>[JsonPropertyName(&quot;expiresAt&quot;)] public DateTime? ExpiresAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:222](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L222) |  |
-| <code>[JsonPropertyName(&quot;lastAuthenticatedAt&quot;)] public DateTime? LastAuthenticatedAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:225](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L225) |  |
-| <code>[JsonPropertyName(&quot;lastTestedAt&quot;)] public DateTime? LastTestedAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:228](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L228) |  |
-| <code>[JsonPropertyName(&quot;testStatus&quot;)] public CredentialTestStatus TestStatus { get; set; } = CredentialTestStatus.Unknown;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:231](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L231) |  |
-| <code>[JsonIgnore] public string? RefreshToken { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:234](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L234) |  |
-| <code>[JsonPropertyName(&quot;tokenEndpoint&quot;)] public string? TokenEndpoint { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:237](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L237) |  |
-| <code>[JsonPropertyName(&quot;clientId&quot;)] public string? ClientId { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:240](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L240) |  |
-| <code>[JsonPropertyName(&quot;autoRefreshEnabled&quot;)] public bool AutoRefreshEnabled { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:243](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L243) |  |
-| <code>[JsonPropertyName(&quot;lastRefreshAttemptAt&quot;)] public DateTime? LastRefreshAttemptAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:246](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L246) |  |
-| <code>[JsonPropertyName(&quot;refreshFailureCount&quot;)] public int RefreshFailureCount { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:249](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L249) |  |
-
-## CredentialTestResult
-
-Qualified name: <code>Meridian.Contracts.Credentials.CredentialTestResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:158](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L158).
-
-Result of a credential test operation.
-
-```csharp
-public sealed class CredentialTestResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;success&quot;)] public bool Success { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:161](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L161) |  |
-| <code>[JsonPropertyName(&quot;message&quot;)] public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:164](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L164) |  |
-| <code>[JsonPropertyName(&quot;testedAt&quot;)] public DateTime TestedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:167](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L167) |  |
-| <code>[JsonPropertyName(&quot;responseTimeMs&quot;)] public long ResponseTimeMs { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:170](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L170) |  |
-| <code>[JsonPropertyName(&quot;serverInfo&quot;)] public string? ServerInfo { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:173](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L173) |  |
-| <code>[JsonPropertyName(&quot;expiresAt&quot;)] public DateTime? ExpiresAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:176](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L176) |  |
-| <code>[JsonPropertyName(&quot;scopes&quot;)] public string[]? Scopes { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:179](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L179) |  |
-| <code>public static CredentialTestResult CreateSuccess(string message, long responseTimeMs = 0);</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:184](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L184) | Creates a successful test result. |
-| <code>public static CredentialTestResult CreateFailure(string message);</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:197](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L197) | Creates a failed test result. |
-
-## CredentialTestStatus
-
-Qualified name: <code>Meridian.Contracts.Credentials.CredentialTestStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:34](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L34).
-
-Status of the last credential test.
-
-```csharp
-public enum CredentialTestStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:39](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L39) | Credential has not been tested. |
-| <code>Testing</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:44](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L44) | Credential test is in progress. |
-| <code>Success</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:49](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L49) | Credential test succeeded. |
-| <code>Failed</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:54](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L54) | Credential test failed. |
-| <code>Expired</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:59](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L59) | Credential has expired. |
-
-## CredentialType
-
-Qualified name: <code>Meridian.Contracts.Credentials.CredentialType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:8](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L8).
-
-Types of credentials supported by the system.
-
-```csharp
-public enum CredentialType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ApiKey</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:13](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L13) | Simple API key (non-expiring). |
-| <code>ApiKeyWithSecret</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:18](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L18) | API key with secret (e.g., Alpaca KeyId + SecretKey). |
-| <code>OAuth2Token</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:23](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L23) | OAuth 2.0 access token (typically time-limited). |
-| <code>BearerToken</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:28](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L28) | Bearer token for API authentication. |

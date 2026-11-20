@@ -677,6 +677,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   dimension-scoped package requests, certification state, validation issues, retained package
   history, evidence-backed package certification, independent certifier enforcement, and
   restatement workflow metadata.
+- `AccountingClose/AccountingReportPackageService.Dimensions.cs` - the report package service's
+  dimension normalization, matching, conflict detection, scoped keys, and retained scope hash.
+  The partial shares package certification state without changing dimension or hash semantics.
 - Ledger/AccountingPolicyService.cs - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
 - Ledger/AccountingJournalDraftService.cs - source-backed journal draft construction, ledger-book scope propagation, treasury-context validation, typed evidence metadata, and posting-command preparation before durable ledger append.
@@ -686,6 +689,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
+- `AccountingSystem/ExternalGlPostingService.cs` and `ExternalGlPostingDispatcher.cs` retain exact approved journal packages and reconcile provider receipts. The dispatcher queries the retained provider key before replay.
 - `AccountingSystem/AccountingSystemIntegrationStateStore.cs` - optional atomic file retention of latest imports, mapping profiles and export packages across restarts; without it the service keeps them for the process lifetime only.
 - `AccountingSystem/AccountingSystemIntegrationService.Reconciliation.cs` - provider report balance projection, requested-period activity, currency identity checks, and reconciliation read models.
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.

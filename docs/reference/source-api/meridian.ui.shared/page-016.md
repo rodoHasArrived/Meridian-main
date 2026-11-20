@@ -6,50 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ProviderModuleStatusDto
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L7).
-
-Status of a configured provider module — returned by the module setup API. Credential values are NEVER included; only key names + hasValue flag.
-
-```csharp
-public sealed record ProviderModuleStatusDto(string ModuleId, string DisplayName, bool Enabled, int Priority, bool IsConfigured, bool IsRunning, IReadOnlyList<CredentialKeyStatusDto> CredentialStatus, IReadOnlyList<string> CapabilityNames, string? LastTestResult = null, DateTimeOffset? LastTestedAt = null);
-```
-
-## ProviderModuleTestResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleTestResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:55](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L55).
-
-Result from the test-module endpoint.
-
-```csharp
-public sealed record ProviderModuleTestResult(bool Success, bool CredentialConfigValid, bool ConnectionVerified, string? FailureReason = null, double? LatencyMs = null, string? ProbeDetail = null);
-```
-
-## ProviderNewsReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderNewsReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L22).
-
-```csharp
-public sealed record ProviderNewsReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderNewsItem Item);
-```
-
-## ProviderPnlReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderPnlReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L24).
-
-```csharp
-public sealed record ProviderPnlReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderAccountPnl Item);
-```
-
 ## ProviderProjectionAvailability
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProviderProjectionAvailability</code>. Kind: `record`.
@@ -448,7 +404,7 @@ public sealed record ReportingAuthoritativeAsOfCertification(DateOnly AsOfDate, 
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCapture</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L15).
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L16).
 
 ```csharp
 public sealed record ReportingAuthoritativeSourceCapture(ReportingAuthoritativeSourceCheckpoint Checkpoint, ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows, ReportingCertifiedLedgerPresentationInput? CertifiedLedgerPresentation = null);
@@ -458,7 +414,7 @@ public sealed record ReportingAuthoritativeSourceCapture(ReportingAuthoritativeS
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCaptureIntent</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:24](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L24).
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:25](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L25).
 
 Template identity supplied by the governed certification/revalidation path when an authoritative source capture may require template-specific presentation evidence.
 
@@ -470,14 +426,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool RequiresCertifiedLedgerPresentation { get; init; }</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L27) |  |
-| <code>public static ReportingAuthoritativeSourceCaptureIntent FromTemplate(ReportingTemplateMetadata template);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:29](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L29) |  |
+| <code>public bool RequiresCertifiedLedgerPresentation { get; init; }</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:28](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L28) |  |
+| <code>public static ReportingAuthoritativeSourceCaptureIntent FromTemplate(ReportingTemplateMetadata template);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:30](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L30) |  |
 
 ## ReportingAuthoritativeSourceUnavailableException
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceUnavailableException</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:71](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L71).
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:72](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L72).
 
 Indicates that an authoritative source required for reporting is unavailable.
 
@@ -489,7 +445,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingAuthoritativeSourceUnavailableException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:73](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L73) |  |
+| <code>public ReportingAuthoritativeSourceUnavailableException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:74](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L74) |  |
 
 ## ReportingCertifiedLedgerPresentationInput
 
@@ -697,7 +653,7 @@ Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.A
 public sealed partial class ReportingGovernanceCoordinatorService
 ```
 
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:411](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L411).
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:418](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L418).
 
 Coordinates the completed renderer manifest with the canonical reporting governance aggregate, immutable artifact vault, and server-owned certification/readiness evidence. The legacy orchestration approval state is intentionally not mutated; governance has one authoritative lifecycle here.
 
@@ -709,21 +665,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingGovernanceCoordinatorService(ReportingGovernanceService governance, IReportingGovernanceRepository repository, ReportingRunCertificationService certification, IReportingOrchestrationService orchestration, ReportingArtifactVaultService artifactVault, IReportingCertifiedArtifactProducer artifactProducer, IReportingArtifactRetentionAuthorityProvider retentionAuthorityProvider, IReportingRestatementChangedLineResolver restatementChangedLineResolver, IReportingRestatementCertificationInputProvider restatementCertificationProvider, IReportingReleaseConsistencyGate releaseConsistencyGate);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:434](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L434) |  |
-| <code>public async Task&lt;GovernedReportingRun&gt; GetAsync(string runId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:462](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L462) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingGovernedArtifactDescriptor&gt;&gt; ListRetainedArtifactsAsync(string runId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:481](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L481) |  |
-| <code>public async Task&lt;ReportingGovernedArtifactDownload&gt; DownloadRetainedArtifactAsync(string runId, string artifactId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:517](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L517) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;GovernedReportingRun&gt;&gt; ListAsync(string seriesId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:550](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L550) |  |
-| <code>public async Task&lt;ReportingGovernanceSeriesHistory&gt; GetSeriesHistoryAsync(string seriesId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:572](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L572) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingRestatementRequest&gt;&gt; ListRestatementRequestsAsync(string predecessorRunId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:604](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L604) |  |
-| <code>public async Task&lt;ReportingRestatementRequest&gt; GetRestatementRequestAsync(string requestId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:627](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L627) |  |
-| <code>public async Task&lt;GovernedReportingRun&gt; CreateFromCompletedCertifiedManifestAsync(string manifestRunId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:647](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L647) |  |
-| <code>public async Task&lt;GovernedReportingRun&gt; ValidateAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:809](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L809) |  |
-| <code>public async Task&lt;GovernedReportingRun&gt; SubmitAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:833](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L833) |  |
-| <code>public async Task&lt;GovernedReportingRun&gt; ApproveAsync(string runId, long expectedVersion, string decisionNote, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:845](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L845) |  |
-| <code>public async Task&lt;GovernedReportingRun&gt; ReleaseAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:864](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L864) |  |
-| <code>public async Task&lt;ReportingRestatementRequest&gt; RequestRestatementAsync(string predecessorRunId, long expectedPredecessorVersion, string reason, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:932](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L932) |  |
-| <code>public async Task&lt;ReportingRestatementApprovalResult&gt; ApproveRestatementAsync(string requestId, long expectedRequestVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:958](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L958) |  |
+| <code>public ReportingGovernanceCoordinatorService(ReportingGovernanceService governance, IReportingGovernanceRepository repository, ReportingRunCertificationService certification, IReportingOrchestrationService orchestration, ReportingArtifactVaultService artifactVault, IReportingCertifiedArtifactProducer artifactProducer, IReportingArtifactRetentionAuthorityProvider retentionAuthorityProvider, IReportingRestatementChangedLineResolver restatementChangedLineResolver, IReportingRestatementCertificationInputProvider restatementCertificationProvider, IReportingReleaseConsistencyGate releaseConsistencyGate);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:441](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L441) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; GetAsync(string runId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:469](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L469) |  |
+| <code>public Task&lt;IReadOnlyList&lt;GovernedReportingRun&gt;&gt; SearchRunsAsync(string query, int limit, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:488](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L488) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingGovernedArtifactDescriptor&gt;&gt; ListRetainedArtifactsAsync(string runId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:529](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L529) |  |
+| <code>public async Task&lt;ReportingGovernedArtifactDownload&gt; DownloadRetainedArtifactAsync(string runId, string artifactId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:565](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L565) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;GovernedReportingRun&gt;&gt; ListAsync(string seriesId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:598](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L598) |  |
+| <code>public async Task&lt;ReportingGovernanceSeriesHistory&gt; GetSeriesHistoryAsync(string seriesId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:620](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L620) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingRestatementRequest&gt;&gt; ListRestatementRequestsAsync(string predecessorRunId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:652](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L652) |  |
+| <code>public async Task&lt;ReportingRestatementRequest&gt; GetRestatementRequestAsync(string requestId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:675](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L675) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; CreateFromCompletedCertifiedManifestAsync(string manifestRunId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:695](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L695) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; ValidateAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:857](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L857) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; SubmitAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:881](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L881) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; ApproveAsync(string runId, long expectedVersion, string decisionNote, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:893](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L893) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; ReleaseAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:912](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L912) |  |
+| <code>public async Task&lt;ReportingRestatementRequest&gt; RequestRestatementAsync(string predecessorRunId, long expectedPredecessorVersion, string reason, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:980](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L980) |  |
+| <code>public async Task&lt;ReportingRestatementApprovalResult&gt; ApproveRestatementAsync(string requestId, long expectedRequestVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:1006](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L1006) |  |
 
 ## ReportingGovernanceSeriesHistory
 
@@ -815,3 +772,51 @@ Declared public members:
 | <code>public string StatePath { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:59](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L59) |  |
 | <code>public string RecordKind { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L61) |  |
 | <code>public int RecordCount { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:63](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L63) |  |
+
+## ReportingMigrationReadinessState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingMigrationReadinessState</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L33).
+
+Process-local receipt that the hosted migration prerequisite completed successfully. Merely registering a migration runner is not evidence that migrations ran.
+
+```csharp
+public sealed class ReportingMigrationReadinessState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L37) |  |
+
+## ReportingProviderReceiptAuthentication
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingProviderReceiptAuthentication</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L7).
+
+```csharp
+public sealed record ReportingProviderReceiptAuthentication(string Timestamp, string Signature);
+```
+
+## ReportingProviderReceiptAuthenticationRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingProviderReceiptAuthenticationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L11).
+
+```csharp
+public sealed record ReportingProviderReceiptAuthenticationRequest(string TransportId, string JobId, SecureReportingDeliveryReceiptCommand Receipt, ReportingProviderReceiptAuthentication Authentication);
+```
+
+## ReportingRecipientDestinationBinding
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRecipientDestinationBinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:133](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L133).
+
+```csharp
+public sealed record ReportingRecipientDestinationBinding(string TenantId, string? CompanyId, string PrincipalId, string TransportId, string Destination, ReportingAccessPrincipalKind PrincipalKind = ReportingAccessPrincipalKind.User);
+```

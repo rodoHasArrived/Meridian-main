@@ -55,6 +55,10 @@ is not repaired by guessing or editing a normalized sidecar; it remains incomple
 | Aging | Calendar days after the due date, with zero before or on that date. |
 | Owner | Assignee of the linked reconciliation exception at capture time. |
 
+Posted means retained Meridian journal cash. External GL delivery and provider confirmation are
+separate controls: accepting an export does not add another receipt or posting. A reconciled row
+can still await external GL confirmation required by the book's close or report-release policy.
+
 Amounts stay in their own currencies. Receipt splits must conserve the payment; canonical payment
 identity prevents reimports from counting twice. Retained receipt and journal allocations remain
 pinned when schedules change. Explicit older projection references resolve only to one retained

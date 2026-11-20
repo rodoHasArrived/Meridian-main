@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { formatCount as formatCountValue, formatDecimal, formatFixed, formatNumber, formatRelativeTime, formatTimestamp, pluralizeCount } from "@/lib/format";
 import type { ChartEvidence } from "@/components/charts/chart-evidence";
-import { liveQuoteTradeId, liveTradeChartEvidence } from "./live-quotes-screen.chart-evidence";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
 import { useQuickTradeTicket, type QuickTradeTicketViewModel } from "./live-quotes-screen.quick-trade";
+import { liveQuoteTradeId, liveTradeChartEvidence } from "./live-quotes-screen.trade-evidence";
 import type {
   OrderBookLevelDto,
   OrderBookResponse,

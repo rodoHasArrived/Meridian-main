@@ -1024,6 +1024,11 @@ journal and retained wash-sale deferrals. They do not invent a source execution 
 an explicit retained quote exactly, while old unversioned batches keep the legacy allocator.
 Unsupported versions or inconsistent retained economics block reporting.
 
+Migration `V_ledger_082__external_gl_posting.sql` retains scoped mapping revisions, immutable
+packages, decisions and receipt observations. Approval atomically reserves a journal at the
+external destination and enqueues it. Worker leases fence receipt writes. Hard close checks
+required external-GL coverage under the existing period lock.
+
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period
 authority and this actor for blocked-occurrence evidence; its file-backed schedule store never
@@ -1664,6 +1669,9 @@ connection so production journal reads stay explicitly scoped. Account and line-
 first identify matching journal entries, then rehydrate every retained leg for those entries, so
 durable scoped reads do not return unbalanced partial journals to close, reporting, reconciliation,
 or export consumers.
+The `PostgresLedgerJournalStore.TenantReads.cs` partial keeps caller resolution, read predicates,
+and unscoped-read refusal together. It shares the existing store fields and preserves both
+deployment-boundary and fail-closed tenant enforcement.
 `LedgerJournalEntryQuery.SourceEventId` also filters the existing indexed
 `journal_entries.source_event_id` column, allowing a book/event proof chain to find its immutable
 journal without scanning unrelated metadata. No projection-event-to-journal link table, alternate

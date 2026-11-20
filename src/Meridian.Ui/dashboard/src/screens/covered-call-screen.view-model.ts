@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ChartEvidence } from "@/components/charts/chart-evidence";
 import * as coveredCallApi from "@/lib/api/covered-call.api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
-import { buildCoveredCallPayoffChart } from "./covered-call-screen.payoff-chart";
 import type {
   CoveredCallBacktestRequest,
   CoveredCallChainPreview,
@@ -26,6 +24,9 @@ import {
   formatPrice,
   formatCoveredCallDateTime
 } from "@/screens/covered-call-screen.formatters";
+import { buildCoveredCallPayoffChart, type CoveredCallPayoffChartViewModel } from "./covered-call-screen.payoff-chart";
+
+export type { CoveredCallPayoffChartLineViewModel, CoveredCallPayoffChartViewModel } from "./covered-call-screen.payoff-chart";
 
 export type CoveredCallStage = "configure" | "run" | "results";
 
@@ -279,23 +280,6 @@ export interface CoveredCallPayoffPositionOptionViewModel {
   selected: boolean;
   buttonVariant: "secondary" | "outline";
   ariaLabel: string;
-}
-
-export interface CoveredCallPayoffChartLineViewModel {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-}
-
-export interface CoveredCallPayoffChartViewModel {
-  viewBox: string;
-  ariaLabel: string;
-  zeroLine: CoveredCallPayoffChartLineViewModel;
-  strikeLine: CoveredCallPayoffChartLineViewModel;
-  path: string;
-  observations: (ChartEvidence & { x: number; y: number })[];
-  references: ChartEvidence[];
 }
 
 export interface CoveredCallPayoffPanelViewModel {

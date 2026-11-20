@@ -6,6 +6,149 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IFundProfileTenancyRegistry
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:13](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L13).
+
+Authoritative registry mapping a fund profile to its owning tenant/company — the storage-enforced source of truth for fund-scoped tenant isolation (security backlog SEC-005). Once a fund profile is bound to a tenant, data keyed by that fund (strategy runs, ledger books, report packs) must only be served to callers in the owning tenant. Ownership is established on first authoritative use under a tenant scope (trust-on-first-use); the first owner wins and is never silently reassigned. Under a single-company-per-deployment runtime every fund binds to the one tenant, so nothing is ever foreign and behavior is unchanged.
+
+```csharp
+public interface IFundProfileTenancyRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;FundProfileOwnership&gt; BindAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:21](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L21) | Claims fundProfileId for the given tenant/company if it is currently unbound, then returns the effective owner. Idempotent and first-owner-wins: a fund already bound to a different tenant is left unchanged and that existing owner is returned, so the caller can compare it to detect a foreign fund. |
+| <code>Task&lt;FundProfileOwnership?&gt; ResolveAsync(string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:28](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L28) | Resolves the owning tenant/company for a fund profile, or null when it is unbound. |
+| <code>Task&lt;bool&gt; IsAccessibleAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:34](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L34) | True when the caller&#x27;s tenant may use the fund: it is unbound (unknown) or bound to the caller. False only when the fund is bound to a different tenant. A read-only check — it never binds. |
+
+## IFundScopeTenantAccessor
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IFundScopeTenantAccessor</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:52](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L52).
+
+Resolves the caller&#x27;s server-side tenant for the current ambient scope (e.g. the active HTTP request), so storage can apply SEC-005 slice 4c-ii tenant read predicates without threading a caller-tenant argument through every read method and intermediate service. Returns null when there is no tenant in scope — a non-request/background caller, or the single-company-per-deployment runtime where the legacy tenantless admin profile has no company. A null result is the fail-open signal: reads are not tenant-scoped and every row passes, matching the deployment-boundary posture. The web layer supplies an IHttpContextAccessor-backed implementation; the storage layer depends only on this abstraction (no ASP.NET Core coupling).
+
+```csharp
+public interface IFundScopeTenantAccessor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string? ResolveCallerTenant();</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:57](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L57) | The caller&#x27;s resolved tenant id for the current scope, or null when none is in scope (fail-open). |
+
+## IScopeAssignmentProvider
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IScopeAssignmentProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:149](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L149).
+
+One authority over a slice of the scope-assignment graph (custodied holdings, ledger books, mandates, …). Providers are composed by IAuthoritativeScopeFanOutService; each is individually responsible for failing closed rather than under-reporting.
+
+```csharp
+public interface IScopeAssignmentProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string AuthorityId { get; }</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:152](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L152) | Stable id stamped onto every assignment this provider asserts. |
+| <code>Task&lt;ScopeAssignmentProviderResult&gt; ResolveAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:159](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L159) | Resolves the scopes this authority can attribute the fact to. Implementations must report IsAuthoritative = false with a stated blocker whenever they cannot see the whole of their own slice, and must not throw for expected unavailability. |
+
+## ScopeAssignmentProviderResult
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:168](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L168).
+
+One authority&#x27;s contribution to a fan-out resolution.
+
+```csharp
+public sealed record ScopeAssignmentProviderResult(bool IsAuthoritative, IReadOnlyList<AuthoritativeScopeAssignment> Scopes, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScopeAssignmentProviderResult NotAuthoritative(string blocker) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:174](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L174) | A fail-closed contribution carrying a single stated reason. |
+| <code>public static ScopeAssignmentProviderResult Authoritative(IReadOnlyList&lt;AuthoritativeScopeAssignment&gt; scopes) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:178](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L178) | A complete contribution over the supplied scopes (possibly none). |
+
+## ScopeFanOutIdentifier
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutIdentifier</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:66](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L66).
+
+One identifier a holdings record may carry for the security under decision.
+
+```csharp
+public sealed record ScopeFanOutIdentifier(string IdentifierType, string Value);
+```
+
+## ScopeFanOutRequest
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:78](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L78).
+
+A request to enumerate every accounting scope affected by a security-level fact.
+
+```csharp
+public sealed record ScopeFanOutRequest(Guid SecurityId, IReadOnlyList<ScopeFanOutIdentifier> Identifiers, DateOnly EffectiveDate);
+```
+
+## ScopeFanOutResult
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:97](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L97).
+
+The result of a fan-out resolution. IsAuthoritative is the only field a caller may gate a mutation on. Scopes is meaningful only when it is true: a non-authoritative result may still carry partially resolved scopes for diagnostics, and acting on those would apply a decision to some affected scopes while silently missing others.
+
+```csharp
+public sealed record ScopeFanOutResult(bool IsAuthoritative, IReadOnlyList<AuthoritativeScopeAssignment> Scopes, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScopeFanOutResult NotAuthoritative(string blocker) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:103](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L103) | A fail-closed result carrying a single stated reason. |
+| <code>public static ScopeFanOutResult Authoritative(IReadOnlyList&lt;AuthoritativeScopeAssignment&gt; scopes) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:107](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L107) | An authoritative result over the supplied affected scopes (possibly none). |
+
+## TenantReadPredicate
+
+Qualified name: <code>Meridian.Contracts.Tenancy.TenantReadPredicate</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:31](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L31).
+
+SEC-005 slice 4c-ii read-predicate decision, extended for W9-GOV-008 criterion 2. Centralizes whether a fund-scoped read filters by the stamped tenant_id column and the SQL fragment that does so, so the decision is unit-testable without a database and is shared across every fund-scoped store (ledger, fund accounts, operations-continuity) rather than re-derived per store.
+
+```csharp
+public static class TenantReadPredicate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ParameterName = &quot;caller_tenant&quot;;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:34](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L34) | The conventional bind-parameter name for the caller&#x27;s tenant. |
+| <code>public static bool IsResolvedTenant(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:37](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L37) | A concrete tenant excludes the legacy unscoped all sentinel. |
+| <code>public static bool ShouldFilter(string? callerTenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:51](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L51) | True when the caller has a resolved tenant and the read must be scoped to it. |
+| <code>public static bool ShouldRejectRead(string? callerTenantId, TenantScopeEnforcementMode mode) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:64](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L64) | True when the read must be refused outright rather than served. |
+| <code>public static string NormalizeParameter(string callerTenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:71](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L71) | The normalized tenant value to bind as the predicate parameter, trimmed to match the write-side stamp. Only meaningful when ShouldFilter is true. |
+| <code>public static string FilterClause(string tenantColumnExpression, TenantScopeEnforcementMode mode);</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:79](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L79) | The tenant predicate for a row whose tenant column is given by tenantColumnExpression (e.g. tenant_id or p.tenant_id). Prefixed with and for direct concatenation onto a where 1 = 1 clause. |
+| <code>public static string PeriodExistsClause(string periodsTable, string periodIdColumnExpression, TenantScopeEnforcementMode mode);</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:93](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L93) | The tenant predicate for a journal-entry read with no period join in its main query: scopes the entry by the tenant stamped on its accounting period via an EXISTS subquery. |
+
 ## TenantScopeEnforcementMode
 
 Qualified name: <code>Meridian.Contracts.Tenancy.TenantScopeEnforcementMode</code>. Kind: `enum`.
@@ -207,7 +350,7 @@ public sealed record AccountBalanceHistoryPointDto(Guid SnapshotId, Guid Account
 
 Qualified name: <code>Meridian.Contracts.Workstation.AccountingPreparerAttestationDisclosureDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L56).
+Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L64).
 
 A classification of an immutable native accounting decision, not independent approval or source proof. Complete entitlement operands remain in the separately authorized native receipt.
 
@@ -219,19 +362,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Guid? AttestationId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L64) |  |
-| <code>public Guid? CaseId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L65) |  |
-| <code>public Guid? ProjectionId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L66) |  |
-| <code>public Guid? EventId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:67](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L67) |  |
-| <code>public long? EventVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L68) |  |
-| <code>public string? Actor { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L69) |  |
-| <code>public DateTimeOffset? RecordedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L70) |  |
-| <code>public string? PolicyVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:71](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L71) |  |
-| <code>public string? PolicyHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:72](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L72) |  |
-| <code>public Guid? DeclarationId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L73) |  |
-| <code>public long? DeclarationRevision { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L74) |  |
-| <code>public string? DraftedCandidateFingerprint { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L75) |  |
-| <code>public string? PostingIntentHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L76) |  |
+| <code>public Guid? AttestationId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:72](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L72) |  |
+| <code>public Guid? CaseId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L73) |  |
+| <code>public Guid? ProjectionId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L74) |  |
+| <code>public Guid? EventId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L75) |  |
+| <code>public long? EventVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L76) |  |
+| <code>public string? Actor { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:77](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L77) |  |
+| <code>public DateTimeOffset? RecordedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L78) |  |
+| <code>public string? PolicyVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:79](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L79) |  |
+| <code>public string? PolicyHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:80](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L80) |  |
+| <code>public Guid? DeclarationId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:81](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L81) |  |
+| <code>public long? DeclarationRevision { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L82) |  |
+| <code>public string? DraftedCandidateFingerprint { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:83](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L83) |  |
+| <code>public string? PostingIntentHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L84) |  |
 
 ## AccrualCalculationResultDto
 
@@ -275,6 +418,98 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:104](../../../.
 
 ```csharp
 public sealed record AlpacaBrokerageConnectionRequestDto(string? KeyId, string? SecretKey, string? Environment = "paper");
+```
+
+## AmountPassportComponentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportComponentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L42).
+
+```csharp
+public sealed record AmountPassportComponentDto(string Component, string Status, string Detail);
+```
+
+## AmountPassportDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L53).
+
+Server-resolved facts. ExactValue is a decimal string and may be absent for unavailable evidence.
+
+```csharp
+public sealed record AmountPassportDto(AmountPassportReferenceDto Reference, string Label, string? ExactValue, string Status, string? EffectiveDate, string? Calculation, string? ExchangeRateRule, AmountPassportFreshnessDto Freshness, AmountPassportPermissionsDto Permissions, IReadOnlyList<AmountPassportComponentDto> Components, IReadOnlyList<AmountPassportRecordDto> Sources, IReadOnlyList<AmountPassportRecordDto> Evidence, IReadOnlyList<AmountPassportRecordDto> History, IReadOnlyList<string> Gaps)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountingPreparerAttestationDisclosureDto&gt;? AccountingPreparerAttestations { get; init; }</code> | [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L70) |  |
+
+## AmountPassportFreshnessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportFreshnessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L32).
+
+```csharp
+public sealed record AmountPassportFreshnessDto(string Status, DateTimeOffset EvaluatedAt, string Policy, string Detail, DateTimeOffset? ObservedAt = null, long? AgeMinutes = null);
+```
+
+## AmountPassportIdentityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportIdentityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L4).
+
+An immutable amount address. Tenant and company are checked against the authenticated request.
+
+```csharp
+public sealed record AmountPassportIdentityDto(string SubjectKind, string SubjectId, AmountPassportScopeDto Scope, string AsOf, string Revision);
+```
+
+## AmountPassportPermissionsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportPermissionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L40).
+
+```csharp
+public sealed record AmountPassportPermissionsDto(string View, string Amend, string Detail, string? PeriodStatus = null);
+```
+
+## AmountPassportRecordDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportRecordDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L44).
+
+```csharp
+public sealed record AmountPassportRecordDto(string Kind, string Id, string Label, string? Href = null, AmountPassportIdentityDto? Passport = null, string? ContentHash = null);
+```
+
+## AmountPassportReferenceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L23).
+
+Small server-issued handle projected beside an amount in its source view.
+
+```csharp
+public sealed record AmountPassportReferenceDto(AmountPassportIdentityDto Identity, string? Currency, string Unit, string Origin, bool IsZero, string? Freshness = null, string? ExactValue = null);
+```
+
+## AmountPassportScopeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L11).
+
+```csharp
+public sealed record AmountPassportScopeDto(string TenantId, string CompanyId, string Basis, string? FundProfileId = null, Guid? LedgerBookId = null, Guid? PeriodId = null, string? EntityId = null, string? AccountId = null, string? OrganizationId = null);
 ```
 
 ## ApprovalDecision
@@ -497,200 +732,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L74) |  |
 | <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L76) |  |
 | <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L78) |  |
-
-## BankAccountSnapshot
-
-Qualified name: <code>Meridian.Contracts.Workstation.BankAccountSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:103](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L103).
-
-Banking-focused projection for statement and balance review tabs.
-
-```csharp
-public sealed record BankAccountSnapshot(Guid AccountId, string DisplayName, string AccountCode, string BankName, string Currency, decimal? CurrentBalance, decimal PendingSettlement, DateOnly? LastStatementDate, int StatementLineCount, string? LatestTransactionType, decimal? LatestTransactionAmount);
-```
-
-## BankStatementImportResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BankStatementImportResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L74).
-
-Result returned after a retained bank-statement source file is applied as account evidence.
-
-```csharp
-public sealed record BankStatementImportResultDto(string UploadId, Guid BatchId, Guid AccountId, string AccountCode, string BankName, DateOnly StatementDate, string FileName, long FileSizeBytes, string ImportedBy, DateTimeOffset ImportedAtUtc, string RetainedPath, int LineCount, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status, string NextAction);
-```
-
-## BiasDisclosureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:280](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L280).
-
-Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
-
-```csharp
-public sealed record BiasDisclosureDto(string FillTiming, string FillConservatism, string DelistingPolicy, string UniverseSource, bool CorporateActionsAdjusted, string MaxSeverity, IReadOnlyList<BiasDisclosureItemDto> Items);
-```
-
-## BiasDisclosureItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:269](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L269).
-
-One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
-
-```csharp
-public sealed record BiasDisclosureItemDto(string Code, string Severity, string Title, string Detail);
-```
-
-## BookOfRecordStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BookOfRecordStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:140](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L140).
-
-Whether a ledger book may act as the book of record (publish, release, hard-close).
-
-```csharp
-public sealed record BookOfRecordStatusDto(Guid LedgerBookId, bool IsBookOfRecord, string? ShadowState, string? ShadowWorkspaceId, string Reason, int? CleanPeriodCount = null, int? RequiredPeriodCount = null, int? UnexplainedDifferenceCount = null);
-```
-
-## BooksBeforeBrokerReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L63).
-
-```csharp
-public sealed record BooksBeforeBrokerReadinessDto(bool IsBooksBeforeBrokerMode, bool CanStageBrokerAction, string ExpectedBrokerAction, string BrokerInstructionSummary, IReadOnlyList<string> RequiredApprovals, IReadOnlyList<string> Blockers, IReadOnlyList<string> EvidenceIds);
-```
-
-## BrokerageAccountKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAccountKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L18).
-
-```csharp
-public enum BrokerageAccountKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L20) |  |
-| <code>TaxableBrokerage = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L21) |  |
-| <code>RothIra = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L22) |  |
-| <code>TraditionalIra = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L23) |  |
-
-## BrokerageAccountLinkRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L62).
-
-```csharp
-public sealed record BrokerageAccountLinkRequestDto(string ProviderId, string ExternalAccountId, string? DisplayName = null, string? LinkedBy = null, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
-```
-
-## BrokerageCashFlowEntryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageCashFlowEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L135).
-
-```csharp
-public sealed record BrokerageCashFlowEntryDto(string TransactionId, string TransactionType, string Category, decimal Amount, string Currency, DateTimeOffset PostedAt, string? Symbol = null, string? Description = null);
-```
-
-## BrokerageCashFlowSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageCashFlowSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:145](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L145).
-
-```csharp
-public sealed record BrokerageCashFlowSummaryDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, BrokerageAccountKindDto AccountKind, DateOnly? From, DateOnly? To, decimal TotalInflows, decimal TotalOutflows, decimal NetCashFlow, string Currency, int TransactionCount, IReadOnlyList<BrokerageCashFlowEntryDto> Entries, IReadOnlyList<string> Warnings);
-```
-
-## BrokerageConnectionStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageConnectionStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L27).
-
-```csharp
-public enum BrokerageConnectionStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotConfigured = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L29) |  |
-| <code>Disconnected = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L30) |  |
-| <code>AuthorizationPending = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L31) |  |
-| <code>Connected = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L32) |  |
-| <code>ReauthorizationRequired = 4</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L33) |  |
-| <code>Degraded = 5</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L34) |  |
-
-## BrokerageConnectionStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageConnectionStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L87).
-
-```csharp
-public sealed record BrokerageConnectionStatusDto(string ProviderId, string DisplayName, BrokerageConnectionStateDto State, bool IsConfigured, bool IsConnected, string? AuthorizationUrl, DateTimeOffset? ConnectedAt, DateTimeOffset? ExpiresAt, string? LastError, IReadOnlyList<string> Warnings, IReadOnlyList<string> Scopes, string? Environment = null, string? ExternalAccountId = null, DateTimeOffset? VerifiedAt = null, string? MaskedKeyId = null);
-```
-
-## BrokerageHouseholdAccountDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdAccountDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:160](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L160).
-
-```csharp
-public sealed record BrokerageHouseholdAccountDto(Guid FundAccountId, string ProviderId, string ExternalAccountId, string DisplayName, BrokerageAccountKindDto AccountKind, WorkstationBrokerageSyncHealth Health, decimal Cash, decimal Equity, decimal BuyingPower, string Currency, DateTimeOffset SyncedAt, int PositionCount, int CashTransactionCount, IReadOnlyList<string> Warnings);
-```
-
-## BrokerageHouseholdPortfolioDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdPortfolioDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:201](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L201).
-
-```csharp
-public sealed record BrokerageHouseholdPortfolioDto(string ProviderId, DateTimeOffset AsOf, decimal TotalCash, decimal TotalEquity, decimal TotalBuyingPower, string Currency, IReadOnlyList<BrokerageHouseholdAccountDto> Accounts, IReadOnlyList<BrokerageHouseholdPositionDto> Positions, IReadOnlyList<string> Warnings);
-```
-
-## BrokerageHouseholdPositionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdPositionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:176](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L176).
-
-```csharp
-public sealed record BrokerageHouseholdPositionDto(Guid FundAccountId, string ProviderId, string ExternalAccountId, BrokerageAccountKindDto AccountKind, string Symbol, decimal Quantity, decimal AverageEntryPrice, decimal MarketPrice, decimal MarketValue, decimal UnrealizedPnl, string AssetClass, WorkstationSecurityReference? Security, string? Description = null, string? PositionId = null, string? Currency = null, MarkFreshnessAssessmentDto? MarkFreshness = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:195](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L195) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? ValuationBasis { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:198](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L198) | ProviderReported, CostDerived, or Unavailable; a cost proxy is not an observed mark. |
-
-## BrokeragePortfolioPerformanceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokeragePortfolioPerformanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:115](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L115).
-
-```csharp
-public sealed record BrokeragePortfolioPerformanceDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, BrokerageAccountKindDto AccountKind, DateOnly? From, DateOnly? To, bool HasSufficientHistory, decimal? BeginningEquity, decimal? EndingEquity, decimal NetCashFlow, decimal? CashAdjustedReturn, decimal? CashAdjustedReturnPercent, IReadOnlyList<BrokeragePortfolioPerformancePointDto> Points, IReadOnlyList<string> Warnings, IReadOnlyList<PerformanceReturnFigureDto>? ReturnFigures = null);
-```

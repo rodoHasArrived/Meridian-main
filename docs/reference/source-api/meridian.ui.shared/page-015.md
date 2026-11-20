@@ -6,77 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## OptionAssessmentImportService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OptionAssessmentImportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:10](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L10).
-
-Retains imported broker claims and their exact source bytes. No broker or OMS is called.
-
-```csharp
-public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArtifactStore evidence, TimeProvider clock)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaxSourceBytes = 8 * 1024 * 1024;</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:12](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L12) |  |
-| <code>public OptionAssessmentImportPreview Preview(OptionAssessmentImportRequest request);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:16](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L16) |  |
-| <code>public async Task&lt;RetainedOptionAssessment&gt; AcceptAsync(string tenant, string company, string actor, Guid accountId, AcceptOptionAssessmentImportRequest command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L40) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;RetainedOptionAssessment&gt;&gt; ListAsync(string tenant, string company, Guid account, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:100](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L100) |  |
-
-## OptionScreeningService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OptionScreeningService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:9](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L9).
-
-Bounded, current-snapshot option exploration. Does not evaluate account or execution permission.
-
-```csharp
-public sealed class OptionScreeningService(OptionsChainService chains, TimeProvider timeProvider)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaximumExpirations = 12;</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:11](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L11) |  |
-| <code>public async Task&lt;OptionScreenResult&gt; ScreenAsync(OptionScreenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:13](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L13) |  |
-
-## OwnedProviderConnection
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:683](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L683).
-
-Identity of a retained connection one tenant owns; carries no credential material.
-
-```csharp
-public sealed record OwnedProviderConnection(string ConnectionId, string CredentialEnvironment);
-```
-
-## PaperFinancingAccountingSourceReader
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaperFinancingAccountingSourceReader</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:354](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L354).
-
-Reads independent financing assessments for the same exhaustive retained session population.
-
-```csharp
-public sealed class PaperFinancingAccountingSourceReader(IPaperSessionStore store, PaperSessionAccountingBinding binding, PaperFinancingPostingService financing) : ILedgerAccountingSourceReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:358](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L358) |  |
-| <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:360](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L360) |  |
-
 ## PaperFuturesSettlementOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementOptions</code>. Kind: `class`.
@@ -453,20 +382,26 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PostedLedgerAmountProvenanceService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:13](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L13).
+Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L14).
 
 Resolves immutable posted-line identities without account-name, symbol, or case searches.
 
 ```csharp
-public sealed class PostedLedgerAmountProvenanceService(ILedgerJournalStore? journals, ILedgerBookService? books, IFundProfileTenancyRegistry? tenancy, IEvidenceArtifactStore? artifacts)
+public sealed partial class PostedLedgerAmountProvenanceService(ILedgerJournalStore? journals, ILedgerBookService? books, IFundProfileTenancyRegistry? tenancy, IEvidenceArtifactStore? artifacts)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static string BuildRetainedSubjectId(string subjectId, LedgerAmountScopeDto scope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:19](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L19) |  |
-| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:22](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L22) |  |
+| <code>public static string BuildRetainedSubjectId(string subjectId, LedgerAmountScopeDto scope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:20](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L20) |  |
+| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default, AmountPassportIdentityDto? passport = null);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:23](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L23) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.Passport.cs:11](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.Passport.cs#L11).
+
+```csharp
+public sealed partial class PostedLedgerAmountProvenanceService
+```
 
 ## PostedPeriodComparisonService
 
@@ -682,6 +617,12 @@ Declared public members:
 | <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; SaveCredentialsAsync(string providerId, ProviderCredentialUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:210](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L210) |  |
 | <code>public async Task&lt;ProviderCredentialVerificationResultDto&gt; VerifyAsync(string providerId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:231](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L231) |  |
 | <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; DeleteCredentialsAsync(string providerId, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:339](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L339) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.ExternalGl.cs:6](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.ExternalGl.cs#L6).
+
+```csharp
+public sealed partial class ProviderConnectionLifecycleService : IQuickBooksPostingConnectionResolver
+```
 
 Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L7).
 
@@ -921,3 +862,47 @@ Declared public members:
 | <code>public async Task&lt;ProviderModuleSetupResult&gt; SetEnabledAsync(string moduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:190](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L190) |  |
 | <code>public async Task&lt;ProviderModuleSetupResult&gt; RemoveModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:225](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L225) |  |
 | <code>public async Task&lt;ProviderModuleTestResult&gt; TestModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:265](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L265) |  |
+
+## ProviderModuleStatusDto
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L7).
+
+Status of a configured provider module — returned by the module setup API. Credential values are NEVER included; only key names + hasValue flag.
+
+```csharp
+public sealed record ProviderModuleStatusDto(string ModuleId, string DisplayName, bool Enabled, int Priority, bool IsConfigured, bool IsRunning, IReadOnlyList<CredentialKeyStatusDto> CredentialStatus, IReadOnlyList<string> CapabilityNames, string? LastTestResult = null, DateTimeOffset? LastTestedAt = null);
+```
+
+## ProviderModuleTestResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleTestResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:55](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L55).
+
+Result from the test-module endpoint.
+
+```csharp
+public sealed record ProviderModuleTestResult(bool Success, bool CredentialConfigValid, bool ConnectionVerified, string? FailureReason = null, double? LatencyMs = null, string? ProbeDetail = null);
+```
+
+## ProviderNewsReadModel
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderNewsReadModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L22).
+
+```csharp
+public sealed record ProviderNewsReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderNewsItem Item);
+```
+
+## ProviderPnlReadModel
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderPnlReadModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L24).
+
+```csharp
+public sealed record ProviderPnlReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderAccountPnl Item);
+```

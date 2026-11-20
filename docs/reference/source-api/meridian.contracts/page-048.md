@@ -6,6 +6,164 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateSecurityRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CreateSecurityRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:5](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L5).
+
+```csharp
+public sealed record CreateSecurityRequest(Guid SecurityId, string AssetClass, JsonElement CommonTerms, JsonElement AssetSpecificTerms, IReadOnlyList<SecurityIdentifierDto> Identifiers, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
+```
+
+## DataQualityRuleCategory
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L7).
+
+```csharp
+public enum DataQualityRuleCategory
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>FileMappingSufficiency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L9) |  |
+| <code>DataTypeRestriction</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L10) |  |
+| <code>MinimumAttribute</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L11) |  |
+| <code>TaxonomyCheck</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L12) |  |
+| <code>ValueConsistency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L13) |  |
+| <code>RefreshControl</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L14) |  |
+| <code>StalenessMonitor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L15) |  |
+| <code>ExternalComparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L16) |  |
+
+## DataQualityRuleSeverity
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L20).
+
+```csharp
+public enum DataQualityRuleSeverity
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Warning</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L22) |  |
+| <code>Error</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L23) |  |
+| <code>HardBlock</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L24) |  |
+
+## DataQualityRuleViolationDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleViolationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L27).
+
+```csharp
+public sealed record DataQualityRuleViolationDto(string RuleId, string RuleName, DataQualityRuleCategory Category, Guid SecurityId, string? FieldPath, string Message, DataQualityRuleSeverity Severity, DateTimeOffset DetectedAt);
+```
+
+## DataVendorDataType
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorDataType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L16).
+
+```csharp
+public enum DataVendorDataType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Identifiers</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L18) |  |
+| <code>TermsAndConditions</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L19) |  |
+| <code>CreditRatings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L20) |  |
+| <code>Pricing</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L21) |  |
+| <code>CashFlows</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L22) |  |
+| <code>FxRates</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L23) |  |
+| <code>CreditRisk</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L24) |  |
+| <code>Classification</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L25) |  |
+| <code>RateFixings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L26) |  |
+| <code>InflationIndexes</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L27) |  |
+| <code>Curves</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L28) |  |
+| <code>Holdings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L29) |  |
+
+## DataVendorEntitlementDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorEntitlementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L32).
+
+```csharp
+public sealed record DataVendorEntitlementDto(Guid EntitlementId, string VendorName, DataVendorDataType DataType, string? ContractReference, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, decimal? AumThresholdUsd, bool RequiresDirectClientContract, string? ContactEmail, int RenewalReminderDays, DataVendorEntitlementStatus Status, string CreatedBy, DateTimeOffset CreatedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? ClientId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L47) |  |
+| <code>public string? AccountId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L48) |  |
+| <code>public string? FundProfileId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L49) |  |
+| <code>public Guid? SecurityId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L50) |  |
+| <code>public string? SourceCategory { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L51) |  |
+| <code>public string? ExpectedRefreshCadence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L52) |  |
+| <code>public int? DefaultMaxDaysStale { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L53) |  |
+| <code>public string? OperatorMetadata { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L54) |  |
+
+## DataVendorEntitlementStatus
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorEntitlementStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L7).
+
+```csharp
+public enum DataVendorEntitlementStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Active</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L9) |  |
+| <code>ExpiringSoon</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L10) |  |
+| <code>Expired</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L11) |  |
+| <code>PendingRenewal</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L12) |  |
+
+## DayCountConvention
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DayCountConvention</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L10).
+
+Canonical day-count basis for fixed-income accrual, coupon, amortization, and cost-basis math. Unknown is a real, non-throwing member: unrecognized raw conventions parse to it and evaluate through a documented Actual/365 fallback instead of failing a posting.
+
+```csharp
+public enum DayCountConvention
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Actual360</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L13) | Actual calendar days over a 360-day year (money-market: CP, CD, repo, T-bills). |
+| <code>Actual365</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L16) | Actual calendar days over a 365-day year, ignoring leap days in the denominator (UK gilts, CAD/AUD money markets). |
+| <code>Thirty360</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L19) | 30/360 US &quot;Bond Basis&quot; per ISDA 2006 §4.16(f) (US corporates, munis, agencies). |
+| <code>Business252</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L22) | Business/252 — Brazilian convention; business days over 252. Needs a business-day calendar; without one it degrades to Actual/365. |
+| <code>ActualActualIsda</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L25) | Actual/Actual (ISDA) per ISDA 2006 §4.16(b) — actual days per calendar year weighted by that year&#x27;s length (US Treasuries, many sovereigns). |
+| <code>ThirtyE360</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L28) | 30E/360 &quot;Eurobond Basis&quot; per ISDA 2006 §4.16(g) — both D1 and D2 of 31 become 30 unconditionally. |
+| <code>ThirtyE360Isda</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L31) | 30E/360 (ISDA) per ISDA 2006 §4.16(h) — D1/D2 snap to 30 when they are the last day of their month, including February. |
+| <code>ActualActualIcma</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L34) | Actual/Actual (ICMA) per ISDA 2006 §4.16(c) — needs the coupon period; without period context it degrades to Actual/Actual (ISDA). |
+| <code>Nl365</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L37) | NL/365 (Actual/365 No-Leap) — actual days excluding any 29 February, over 365. |
+| <code>Actual36525</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L40) | Actual/365.25 — actual days over the mean Julian year; used by some analytics and insurance conventions. |
+| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L43) | Unrecognized or absent convention; evaluated through the Actual/365 safe fallback. |
+
 ## DayCountConventions
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.DayCountConventions</code>. Kind: `class`.
@@ -689,176 +847,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>AssetFamily</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:527](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L527) |  |
 | <code>SubType</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:528](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L528) |  |
-
-## IOtcCollateralStore
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IOtcCollateralStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:151](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L151).
-
-Persistence for exposure snapshots, collateral balances and margin calls.
-
-```csharp
-public interface IOtcCollateralStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OtcExposureSnapshotDto&gt; AppendExposureSnapshotAsync(OtcExposureSnapshotDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:154](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L154) | Appends the snapshot as the next version for its netting set and date, assigning the version and the digest. |
-| <code>Task&lt;OtcExposureSnapshotDto?&gt; GetExposureSnapshotAsync(Guid snapshotId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:155](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L155) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcExposureSnapshotDto&gt;&gt; ListExposureSnapshotsAsync(Guid nettingSetId, DateOnly? asOfDate = null, bool latestVersionOnly = true, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:156](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L156) |  |
-| <code>Task&lt;OtcCollateralBalanceDto&gt; UpsertCollateralBalanceAsync(UpsertOtcCollateralBalanceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:158](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L158) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcCollateralBalanceDto&gt;&gt; ListCollateralBalancesAsync(Guid collateralAgreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:159](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L159) |  |
-| <code>Task&lt;IReadOnlyList&lt;Guid&gt;&gt; ListNettingSetsUnderCollateralAgreementAsync(Guid collateralAgreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:165](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L165) | The netting sets that reference a collateral agreement, in id order. More than one means the agreement&#x27;s balances would be credited to each, which a computation refuses to do. |
-| <code>Task&lt;OtcMarginCallDto&gt; IssueMarginCallAsync(IssueOtcMarginCallRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L175) | Issues the call for one movement of a snapshot. Besides OtcMarginCallRules.Issue, the store refuses a snapshot that is not the netting set&#x27;s latest valuation (a later version for its date, or a snapshot for a later date no later than the current one) and one whose terms, recorded inputs or market data no longer match what it holds (OtcMarginCallRules.RequireUnchangedInputs), and keeps the terms, contracts and balances from changing until the call is recorded. |
-| <code>Task&lt;OtcMarginCallDto&gt; TransitionMarginCallAsync(TransitionOtcMarginCallRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L176) |  |
-| <code>Task&lt;OtcMarginCallDto?&gt; GetMarginCallAsync(Guid callId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:177](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L177) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcMarginCallDto&gt;&gt; ListMarginCallsAsync(Guid nettingSetId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:178](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L178) |  |
-
-## IOtcContractStore
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IOtcContractStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:201](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L201).
-
-Persistence for master agreements, collateral agreements, netting sets and bilateral contracts.
-
-```csharp
-public interface IOtcContractStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OtcMasterAgreementDto&gt; UpsertMasterAgreementAsync(UpsertOtcMasterAgreementRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:203](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L203) |  |
-| <code>Task&lt;OtcMasterAgreementDto?&gt; GetMasterAgreementAsync(Guid agreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L204) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcMasterAgreementDto&gt;&gt; ListMasterAgreementsAsync(string? counterparty = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:205](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L205) |  |
-| <code>Task&lt;OtcCollateralAgreementDto&gt; UpsertCollateralAgreementAsync(UpsertOtcCollateralAgreementRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:207](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L207) |  |
-| <code>Task&lt;OtcCollateralAgreementDto?&gt; GetCollateralAgreementAsync(Guid collateralAgreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L208) |  |
-| <code>Task&lt;OtcNettingSetDto&gt; UpsertNettingSetAsync(UpsertOtcNettingSetRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:210](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L210) |  |
-| <code>Task&lt;OtcNettingSetViewDto?&gt; GetNettingSetAsync(Guid nettingSetId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:211](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L211) |  |
-| <code>Task&lt;OtcContractDto&gt; UpsertContractAsync(UpsertOtcContractRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:213](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L213) |  |
-| <code>Task&lt;OtcContractDto?&gt; GetContractAsync(Guid contractId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:214](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L214) |  |
-| <code>Task&lt;IReadOnlyList&lt;OtcContractDto&gt;&gt; ListContractsForSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:215](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L215) |  |
-| <code>Task&lt;OtcContractLifecycleEventDto&gt; AppendLifecycleEventAsync(AppendOtcContractLifecycleRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L218) | Atomically records a typed lifecycle event and its next contract version. Compatibility stores fail closed. |
-| <code>Task&lt;IReadOnlyList&lt;OtcContractLifecycleEventDto&gt;&gt; GetLifecycleEventsAsync(Guid contractId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:222](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L222) | Reads immutable lifecycle history in contract-version order; unsupported stores do not substitute an empty history. |
-
-## IOtcContractValuationSource
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IOtcContractValuationSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L14).
-
-Values one bilateral contract as of a date in a stated currency, with provenance, or says why it cannot. The mark is signed from the fund&#x27;s side with the contract&#x27;s direction applied: positive means the counterparty owes the fund. An unvalued result carries no mark and at least one blocker, never zero.
-
-```csharp
-public interface IOtcContractValuationSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OtcContractValuationDto&gt; ValueAsync(OtcContractValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L16) |  |
-
-## IOtcExposureService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IOtcExposureService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:246](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L246).
-
-Computes and records exposure snapshots for a netting set.
-
-```csharp
-public interface IOtcExposureService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OtcExposureSnapshotDto?&gt; ComputeAsync(Guid nettingSetId, DateOnly asOfDate, string actor, DateTimeOffset? knowledgeAsOf = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:258](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L258) | Values the netting set&#x27;s open contracts as of asOfDate, applies its credit support terms and appends the result as the next snapshot version for that date. Every contract is valued at one knowledge time: knowledgeAsOf, else the instant the snapshot is stamped as computed. A knowledge time earlier than that instant replays what was known then: the snapshot is recorded as evidence, and no call is issued from it. Returns null when the netting set does not exist; an empty netting set id, a default as-of date, an as-of date after the current UTC date or a blank actor is an ArgumentException, refused before anything is read. |
-
-## ISecurityCashFlowReceiptStore
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityCashFlowReceiptStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs#L21).
-
-Immutable content-addressed retained calculation evidence.
-
-```csharp
-public interface ISecurityCashFlowReceiptStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task RetainAsync(SecurityCashFlowCalculationReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs#L23) |  |
-| <code>Task&lt;SecurityCashFlowCalculationReceipt?&gt; GetAsync(string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs#L24) |  |
-
-## ISecurityCorporateActionsQueryService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityCorporateActionsQueryService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityCorporateActionsQueryService.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityCorporateActionsQueryService.cs#L6).
-
-Reads corporate actions without requiring unrelated Security Master queries.
-
-```csharp
-public interface ISecurityCorporateActionsQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityCorporateActionsQueryService.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityCorporateActionsQueryService.cs#L12) | Returns the time-ordered list of corporate action events for a security. Returns an empty list when no corporate actions are recorded. |
-
-## ISecurityCoverageSymbolSource
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityCoverageSymbolSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs#L9).
-
-Supplies the set of symbols currently active in one platform surface (streaming subscriptions, ledger positions, strategy definitions, backfill manifests, ...) so the security-master coverage sweep can find symbols that lack a validated master record. Implementations are registered in DI and unioned by the data quality service.
-
-```csharp
-public interface ISecurityCoverageSymbolSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string SourceName { get; }</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs#L12) | Stable kebab-case name of the surface, e.g. &quot;configured-streaming&quot;. |
-| <code>Task&lt;IReadOnlyCollection&lt;string&gt;&gt; GetActiveSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs#L14) |  |
-
-## ISecurityCurveStore
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityCurveStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L117).
-
-Persistence for stored curves and their append-only versions.
-
-```csharp
-public interface ISecurityCurveStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityCurveDefinitionDto&gt; DefineAsync(DefineSecurityCurveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:120](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L120) | Defines a curve; an existing key with identical facts returns the stored definition. Throws InvalidOperationException when the key exists with different facts. |
-| <code>Task&lt;SecurityCurveDefinitionDto?&gt; GetDefinitionAsync(Guid curveId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:122](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L122) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityCurveDefinitionDto&gt;&gt; ListDefinitionsAsync(SecurityCurveKind? kind = null, string? currency = null, string? indexName = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L124) |  |
-| <code>Task&lt;SecurityCurveVersionDto&gt; PublishVersionAsync(PublishSecurityCurveVersionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:131](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L131) | Appends a version; identical content for the same curve and as-of returns the retained version and writes nothing. |
-| <code>Task&lt;SecurityCurveVersionDto?&gt; GetVersionAsync(Guid curveId, long version, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:133](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L133) |  |
-| <code>Task&lt;SecurityCurveVersionDto?&gt; GetVersionByIdAsync(Guid curveId, Guid curveVersionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:136](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L136) | The version with id curveVersionId when it belongs to curveId; null otherwise. |
-| <code>Task&lt;SecurityCurveVersionDto?&gt; GetLatestVersionAsOfAsync(Guid curveId, DateOnly asOf, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:139](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L139) | The latest version whose as-of is on or before asOf and that was recorded by knownAt (now when null). |
-| <code>Task&lt;IReadOnlyList&lt;SecurityCurveVersionDto&gt;&gt; ListVersionsAsync(Guid curveId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L141) |  |

@@ -87,6 +87,10 @@ public sealed partial class PostgresLedgerJournalStore : IFiscalYearCloseReceipt
         if (plan.ProposedClosingTransfers.Count > 0)
             throw new InvalidOperationException("The plan still needs closing transfers. Post them through a governed period re-close, then review the revised plan.");
 
+        foreach (var period in plan.Periods)
+            await RequireExternalGlConfirmationAsync(connection, transaction, ledgerBookId, period.PeriodId, ct)
+                .ConfigureAwait(false);
+
         // Reusing an earlier, already-replaced population is an approval conflict, even when
         // the caller supplies the current head as the predecessor.
         var revision = checked((head?.Revision ?? 0) + 1);

@@ -146,7 +146,7 @@ public sealed partial class BookReceiptEvidenceSource(
                     || artifact.SourceComparisonPopulationKinds?.Contains("Transaction", StringComparer.OrdinalIgnoreCase) != true)
                     coverage.Add(new("posting-comparison", false, "The retained internal transaction comparison is incomplete; provider cash remains separately observed."));
                 ProjectPostings(artifact.MatchGroups, runReceipts, ledger, book.BaseCurrency, authority.FundAccountId,
-                    import.ExternalAccountId, expectations, postings, coverage);
+                    import.ExternalAccountId, query.AsOfDate, expectations, postings, coverage);
             }
             await AddProviderCoverageAsync(book, query, windows, expectations, coverage, ct).ConfigureAwait(false);
             var merged = receipts.GroupBy(r => r.ReceiptId, StringComparer.Ordinal)

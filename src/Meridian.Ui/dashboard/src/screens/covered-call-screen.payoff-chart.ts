@@ -1,9 +1,26 @@
+import type { ChartEvidence } from "@/components/charts/chart-evidence";
 import type { CoveredCallOpenPosition, CoveredCallRunResult } from "@/lib/covered-call";
 import { buildShortCallPayoffCurve } from "@/lib/covered-call/payoff";
 import { formatFixed } from "@/lib/format";
 import { coveredCallRunResultEndpoint } from "@/lib/workstation-endpoints";
 import { formatPrice } from "./covered-call-screen.formatters";
-import type { CoveredCallPayoffChartViewModel } from "./covered-call-screen.view-model";
+
+export interface CoveredCallPayoffChartLineViewModel {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
+export interface CoveredCallPayoffChartViewModel {
+  viewBox: string;
+  ariaLabel: string;
+  zeroLine: CoveredCallPayoffChartLineViewModel;
+  strikeLine: CoveredCallPayoffChartLineViewModel;
+  path: string;
+  observations: (ChartEvidence & { x: number; y: number })[];
+  references: ChartEvidence[];
+}
 
 export function buildCoveredCallPayoffChart(
   position: CoveredCallOpenPosition,
@@ -67,4 +84,3 @@ export function buildCoveredCallPayoffChart(
     ]
   };
 }
-

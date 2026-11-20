@@ -16,4 +16,3 @@ export function liveTradeChartEvidence(trade: TradeDataResponse, price: number, 
     sourceDetail: `Venue ${trade.venue ?? "unreported"} · stream ${trade.streamId ?? "unreported"}`
   };
 }
-

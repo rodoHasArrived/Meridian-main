@@ -67,6 +67,13 @@ replacing an existing local extract requires `OverwriteIfExists`.
 
 ## External GL providers
 
+`QuickBooksOnlinePostingProvider` creates and queries journals through the provider-neutral
+posting contract. It uses the exact tenant-owned vault connection, a stable Intuit request ID,
+and a searchable journal number. Receipt reconciliation verifies line markers, accounts,
+dimensions and amounts from the provider. The initial lane covers US single-currency USD realms.
+See the [operator workflow](../../docs/operators/external-gl-providers.md#post-meridian-journals-to-quickbooks-online).
+Provider evidence is synthetic-verified and live-untested.
+
 `AccountingSystem/XeroAccountingProvider.cs` and `NetSuiteAccountingProvider.cs`
 import credentialed read-only evidence through `CredentialedAccountingProvider`.
 The shared base serializes token rotation, persists rotated refresh tokens in the

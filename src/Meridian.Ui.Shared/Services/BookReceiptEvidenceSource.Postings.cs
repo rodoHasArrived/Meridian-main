@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Ledger;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Ledger;
@@ -12,11 +13,10 @@ public sealed partial class BookReceiptEvidenceSource
 {
     private static void ProjectPostings(IReadOnlyList<StatementRunMatchGroupRecord> groups,
         IReadOnlyDictionary<string, BookReceiptDto> byEvidence, IReadOnlyList<LedgerJournalEntryRecord> ledger,
-        string baseCurrency, Guid fundAccount, string externalAccount, IReadOnlyList<BookReceiptExpectationDto> expectations,
+        string baseCurrency, Guid fundAccount, string externalAccount, DateOnly asOfDate, IReadOnlyList<BookReceiptExpectationDto> expectations,
         List<BookReceiptPostingDto> postings, List<BookReceiptCoverageDto> coverage)
     {
-        var reversed = ledger.Select(r => Tag(r.Entry.Metadata, LedgerJournalReversal.ReversalOfTag))
-            .Where(s => Guid.TryParse(s, out _)).Select(s => Guid.Parse(s!)).ToHashSet();
+        var reversed = ReversedJournals(ledger, asOfDate);
         foreach (var group in groups)
         {
             var linked = group.StatementEvidenceReferences.Where(byEvidence.ContainsKey).Select(e => byEvidence[e])
@@ -74,6 +74,28 @@ public sealed partial class BookReceiptEvidenceSource
             }
             postings.AddRange(candidate);
         }
+    }
+
+    private static HashSet<Guid> ReversedJournals(IReadOnlyList<LedgerJournalEntryRecord> ledger, DateOnly asOfDate)
+    {
+        var reversed = ledger.Select(r => Tag(r.Entry.Metadata, LedgerJournalReversal.ReversalOfTag))
+            .Where(s => Guid.TryParse(s, out _)).Select(s => Guid.Parse(s!)).ToHashSet();
+        var byId = ledger.ToDictionary(r => r.Entry.JournalEntryId);
+        // ReadLedgerAsync already restricts posted records to this book and daily cutoff.
+        // Governed adjustments can retain their predecessor without the older reversal.of tag;
+        // neither a predecessor link nor a reason label alone establishes a cash reversal.
+        foreach (var candidate in ledger)
+        {
+            if (candidate.PostingKind != LedgerPostingKindDto.Adjustment
+                || candidate.SourceJournalEntryId is not { } originalId || originalId == candidate.Entry.JournalEntryId
+                || candidate.AdjustmentApproval is not { Status: LedgerAdjustmentApprovalStatusDto.Approved } approval
+                || approval.ApprovedAt == default || DateOnly.FromDateTime(approval.ApprovedAt.UtcDateTime) > asOfDate
+                || !byId.TryGetValue(originalId, out var original) || candidate.AccountingBasis != original.AccountingBasis)
+                continue;
+            if (IntercompanyJournalCorrectionEvidence.IsExactInverse(candidate.Entry, original.Entry))
+                reversed.Add(originalId);
+        }
+        return reversed;
     }
 
     private static BookReceiptPostingDto Posting(LedgerJournalEntryRecord record, BookReceiptDto receipt,

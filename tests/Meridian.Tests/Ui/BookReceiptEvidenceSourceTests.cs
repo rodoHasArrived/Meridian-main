@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Reconciliation;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Tenancy;
@@ -74,6 +75,29 @@ public sealed class BookReceiptEvidenceSourceTests
         result.Receipts.Should().HaveCount(2);
         result.Postings.Should().BeEmpty();
         result.Coverage.Should().Contain(c => c.Area == "Postings" && !c.IsComplete);
+    }
+
+    [Theory]
+    [InlineData("amount")]
+    [InlineData("dimensions")]
+    [InlineData("currency")]
+    [InlineData("pending")]
+    [InlineData("originating")]
+    [InlineData("other-book")]
+    [InlineData("future")]
+    [InlineData("future-approval")]
+    [InlineData("unknown-original")]
+    public async Task Linked_adjustment_is_not_a_reversal_without_exact_approved_scoped_inverse(string defect)
+    {
+        var f = new Fixture();
+        var original = f.Journal(100m);
+        f.Ledger.Add(original);
+        var correction = f.GovernedInverse(original, defect);
+        f.Ledger.Add(correction);
+        f.Import("one", [f.Row("payment", 100m)], [original]);
+        var result = await f.Load();
+        result.Receipts.Should().ContainSingle().Which.Amount.Should().Be(100m);
+        result.Postings.Should().ContainSingle().Which.IsReversed.Should().BeFalse();
     }
 
     [Fact]
@@ -294,8 +318,10 @@ public sealed class BookReceiptEvidenceSourceTests
         }
     }
 
-    [Fact]
-    public async Task Adapter_and_queue_preserve_cash_through_terms_amendment_omission_and_journal_reversal()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Adapter_and_queue_preserve_cash_through_terms_amendment_omission_and_journal_reversal(bool governedTagless)
     {
         var root = Path.Combine(Path.GetTempPath(), "book-receipt-adapter-" + Guid.NewGuid().ToString("N"));
         try
@@ -339,7 +365,10 @@ public sealed class BookReceiptEvidenceSourceTests
             amended.Items.Single().PostedAmount.Should().Be(100m);
             amended.Items.Single().ExpectationHistory.Should().HaveCount(2);
             source.Expectations = [];
-            f.Reverse(firstJournal);
+            if (governedTagless)
+                f.Ledger.Add(f.GovernedInverse(firstJournal));
+            else
+                f.Reverse(firstJournal);
             var reversed = await queue.RunAsync(query);
             reversed.Items.Single().ReceivedAmount.Should().Be(100m);
             reversed.Items.Single().PostedAmount.Should().Be(60m);
@@ -426,6 +455,32 @@ public sealed class BookReceiptEvidenceSourceTests
         }
         public void Reverse(LedgerJournalEntryRecord journal) => Ledger.Add(journal with
         { Entry = LedgerJournalReversal.Reverse(journal.Entry, Guid.NewGuid(), RecordedAt.AddHours(1)), GlobalSequence = 2 });
+        public LedgerJournalEntryRecord GovernedInverse(LedgerJournalEntryRecord original, string? defect = null)
+        {
+            var id = Guid.NewGuid();
+            var timestamp = RecordedAt.AddHours(1);
+            const string description = "Approved journal adjustment";
+            var lines = original.Entry.Lines.Reverse().Select(line => new LedgerEntry(
+                Guid.NewGuid(), id, timestamp, line.Account,
+                line.Credit * (defect == "amount" ? .5m : 1m), line.Debit * (defect == "amount" ? .5m : 1m), description,
+                defect == "dimensions" ? new LedgerLineDimensionSet(EntityId: "other-entity") : line.Dimensions,
+                defect == "currency" ? new LedgerEntryCurrency("EUR", "USD", line.Credit, line.Debit, 1m)
+                    : line.Currency is { } currency ? new LedgerEntryCurrency(currency.TransactionCurrency,
+                        currency.FunctionalCurrency, currency.TransactionCredit, currency.TransactionDebit, currency.FxRateToFunctional) : null)).ToArray();
+            var entry = new JournalEntry(id, timestamp, description, lines, original.Entry.Metadata);
+            (entry.Metadata.Tags?.ContainsKey(LedgerJournalReversal.ReversalOfTag) ?? false).Should().BeFalse();
+            return original with
+            {
+                Entry = entry,
+                GlobalSequence = 3,
+                CreatedAt = defect == "future" ? timestamp.AddDays(1) : timestamp,
+                PeriodId = defect == "other-book" ? Guid.NewGuid() : original.PeriodId,
+                SourceJournalEntryId = defect == "unknown-original" ? Guid.NewGuid() : original.Entry.JournalEntryId,
+                PostingKind = defect == "originating" ? LedgerPostingKindDto.Originating : LedgerPostingKindDto.Adjustment,
+                AdjustmentApproval = new("approved-inverse", defect == "pending" ? LedgerAdjustmentApprovalStatusDto.Pending : LedgerAdjustmentApprovalStatusDto.Approved,
+                    "reviewer", defect == "future-approval" ? timestamp.AddDays(1) : timestamp, "approved-reversal", GovernanceCaseId: "receipt-case")
+            };
+        }
         public void Import(string id, IReadOnlyList<CanonicalStatementRow> rows, IReadOnlyList<LedgerJournalEntryRecord> journals,
             DateTimeOffset? importedAt = null, bool comparisonComplete = true)
         {
