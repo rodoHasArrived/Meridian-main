@@ -2980,6 +2980,7 @@ Meridian-main
 │   │   │   │   └── working-memory.yml
 │   │   │   ├── next-work-20261029
 │   │   │   │   ├── accounting-expansion.md
+│   │   │   │   ├── bond-lot-golden-case.md
 │   │   │   │   ├── README.md
 │   │   │   │   └── release-readiness.json
 │   │   │   ├── program-state-20261014
@@ -13264,6 +13265,7 @@ Meridian-main
 │   │   │   ├── AssetAccountingEventSpineContractTests.PreparationRevision.cs
 │   │   │   ├── AssetAccountingEventSpineContractTests.PreparationRevisionCompatibility.cs
 │   │   │   ├── AssetAccountingEvidenceSubjectContractTests.cs
+│   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.BondSettlement.cs
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.Completion.cs
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.cs
 │   │   │   ├── AssetAmortizationPostgresRoundTripTests.cs
@@ -13520,6 +13522,7 @@ Meridian-main
 │   │   │   ├── OrderStateTableTests.cs
 │   │   │   ├── OrderSubmissionAuthorityTests.cs
 │   │   │   ├── PaperBondAccruedInterestTests.cs
+│   │   │   ├── PaperBondAccruedInterestTests.RequiredSettlement.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
 │   │   │   ├── PaperFillEnvelopeRegressionTests.cs
 │   │   │   ├── PaperFinancingPostingTests.cs
@@ -15322,6 +15325,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.ApprovalCollaboration.cs
 │   │   │   ├── WorkstationEndpointsTests.AuditIntegrity.cs
 │   │   │   ├── WorkstationEndpointsTests.AutomatedPostingGrants.cs
+│   │   │   ├── WorkstationEndpointsTests.BondAcquisitionIntake.cs
 │   │   │   ├── WorkstationEndpointsTests.BondWorkflows.cs
 │   │   │   ├── WorkstationEndpointsTests.BulkCasework.cs
 │   │   │   ├── WorkstationEndpointsTests.CanonicalAmortization.cs

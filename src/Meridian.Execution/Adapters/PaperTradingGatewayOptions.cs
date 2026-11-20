@@ -34,4 +34,12 @@ public sealed class PaperTradingGatewayOptions
     /// positive when set. See <see cref="PaperMatching.PaperObservationFreshnessPolicy"/>.
     /// </summary>
     public int? MaxObservationAgeSeconds { get; set; }
+
+    /// <summary>
+    /// Reject face-value bond fills unless shared analytics supplies reconciled clean/dirty
+    /// prices and purchased accrued interest for the exact security and settlement date.
+    /// Opt in for supported bond demonstrations; unset preserves legacy clean-only fallback.
+    /// This does not enable canonical bond accounting or change short-sale entitlement rules.
+    /// </summary>
+    public bool RequireBondAccruedInterest { get; set; }
 }
