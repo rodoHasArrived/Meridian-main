@@ -251,6 +251,10 @@ from upgrade attestations. See the [migration procedure](../../docs/operators/se
 
 `BackfillStatusStore` keeps a verified coverage sidecar (`_status/backfill-symbol-coverage.json`, atomic write): per symbol, granularity, provider and feed, the session ranges whose bars were written. Backfill resume reads only this sidecar; the date-only checkpoint and bar-count sidecars remain for status surfaces and are not evidence for skipping. An unreadable or newer-format coverage file is treated as no coverage. `BackfillCoverageMath` owns the range merge and missing-range arithmetic.
 
+For a batch interrupted between sink confirmation and receipt publication, the durable dedup
+ledger can confirm each exact versioned row while its entry is retained. Replay discovers
+market-data files using the storage catalog's reserved-directory exclusions.
+
 Each durable historical response has a content-addressed batch receipt. It records the request,
 actual provider, row count, hash, and observed sessions. An identified exchange calendar supplies
 expected sessions. Incomplete intervals can resume around already verified sessions, including
