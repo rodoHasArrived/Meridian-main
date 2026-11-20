@@ -9,6 +9,8 @@
 .reconciliation-case-facts > div { min-width: 0; }
 .reconciliation-case-facts dt { font-size: .75rem; color: hsl(var(--muted-foreground)); }
 .reconciliation-case-facts dd { font-size: .875rem; overflow-wrap: anywhere; }
+.reconciliation-statement-records { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: .75rem; }
+.reconciliation-case-section .dense-data-table :is(th, td) { white-space: normal; overflow-wrap: anywhere; }
 @container (min-width: 44rem) {
   .reconciliation-case-layout { grid-template-columns: minmax(0, 1fr) minmax(16rem, 36%); }
   .reconciliation-case-rail { border-top: 0; padding-top: 0; border-left: 1px solid var(--ws-border); padding-left: .75rem; }

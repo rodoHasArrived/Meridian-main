@@ -1,9 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
-import type { ReconciliationBreakLineage, ReconciliationBreakQueueItem } from "@/types";
-import { ReconciliationCaseEvidence } from "./reconciliation-case-evidence";
+import { describe, expect, it, vi } from "vitest";
+import type { ReconciliationBreakLineage, ReconciliationBreakQueueItem, RetainedStatementCaseEvidence } from "@/types";
+import { ReconciliationCaseEvidence, ReconciliationMatchCandidate } from "./reconciliation-case-evidence";
 
 const lineage: ReconciliationBreakLineage = {
   lineageId: "cash-lineage", comparisonScopeId: "comparison-v1", occurrenceId: "first-cash-break", occurrenceNumber: 1,
@@ -23,7 +23,56 @@ const item: ReconciliationBreakQueueItem = {
   ]
 };
 
+const record = { instrument: "ABC", recordDate: "2026-11-20", settlementDate: null, quantity: "6", currency: "USD", transactionType: "trade" };
+const retainedMatch: RetainedStatementCaseEvidence = {
+  runId: "import-20", matchArtifactSha256: "a".repeat(64),
+  tolerancePolicy: { profileId: "cash-policy", version: 7, effectiveDate: "2026-11-20", comparisonPolicyFingerprint: "b".repeat(64) },
+  match: {
+    tier: "Candidate", explanation: "The same external ID has different execution prices.", confidence: "0.50", amountMeasure: "Net amount",
+    ruleIds: ["transaction-external-id"],
+    sourceAllocations: [{ ...record, recordId: "source", evidenceReference: "import-20:12", amount: "-9007199254740992.123456", unitPrice: "15.31" }],
+    ledgerAllocations: [{ ...record, recordId: "trade-a", evidenceReference: "journal:a", amount: "-9007199254740992.123450", unitPrice: "15.32" }],
+    residuals: [{ measure: "Net amount", unit: "USD", sourceTotal: "-9007199254740992.123456", ledgerTotal: "-9007199254740992.123450", residual: "-0.000006", tolerance: "0.000001" }]
+  }
+};
+
 describe("retained reconciliation case evidence", () => {
+  it("renders candidate price, basis and signed decimal evidence at exactly the retained precision", async () => {
+    const user = userEvent.setup();
+    const candidate = { ...item, statementEvidence: retainedMatch };
+    render(<MemoryRouter><ReconciliationCaseEvidence item={candidate} /><ReconciliationMatchCandidate item={candidate} /></MemoryRouter>);
+    const comparison = within(screen.getByRole("table", { name: "Exact residual components" }));
+    expect(comparison.getByText("−9,007,199,254,740,992.123456")).toBeInTheDocument();
+    expect(comparison.getByText("−0.000006")).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "Ledger records" })).getByText("15.32 USD")).toBeInTheDocument();
+    const suggestion = within(screen.getByRole("region", { name: "Match candidate" }));
+    expect(suggestion.getByText(/Review required/)).toBeInTheDocument();
+    await user.click(suggestion.getByText("Candidate rules"));
+    expect(suggestion.getByText("transaction-external-id")).toBeVisible();
+    expect(screen.getByText("cash-policy · Version 7")).toBeInTheDocument();
+  });
+
+  it("renders a confirmed merge separately and opens the prior cases it actually joined", async () => {
+    const user = userEvent.setup();
+    const openCase = vi.fn();
+    const merged: ReconciliationBreakQueueItem = { ...item, statementEvidence: retainedMatch, lineage: { ...lineage,
+      observationState: "Cleared", clearedByRunId: "import-21", regrouping: {
+        kind: "Merged", priorRunId: "import-20", priorBreakIds: [item.breakId, "other-break"], group: {
+          matchGroupId: "verified-group", sourceSubjects: [], evidence: { ...retainedMatch, runId: "import-21", match: {
+            ...retainedMatch.match, tier: "Exact", explanation: "Two source movements cleared against one ledger posting.",
+            sourceAllocations: [...retainedMatch.match.sourceAllocations, { ...record, recordId: "source-2", evidenceReference: "import-21:22", amount: "-20" }]
+          } }
+        }
+      }
+    } };
+    render(<MemoryRouter><ReconciliationCaseEvidence item={merged} onOpenCase={openCase} /></MemoryRouter>);
+    expect(screen.getByText("Merged into one ledger record")).toBeInTheDocument();
+    const group = within(screen.getByRole("region", { name: "Confirmed run match group" }));
+    expect(group.getByRole("table", { name: "Confirmed group residual components" })).toBeInTheDocument();
+    expect(group.getByText("import-21:22")).toBeInTheDocument();
+    await user.click(group.getByRole("button", { name: "Open case other-break" }));
+    expect(openCase).toHaveBeenCalledWith("other-break");
+  });
   it("shows both operands and each server residual in its supplied unit and with its sign", () => {
     render(<MemoryRouter><ReconciliationCaseEvidence item={item} /></MemoryRouter>);
     const comparison = within(screen.getByRole("table", { name: "Retained residual components" }));

@@ -18,6 +18,47 @@ import type {
   ReconciliationCaseworkAction,
 } from "../types";
 
+export interface StatementMatchAllocation {
+  recordId: string;
+  evidenceReference: string;
+  instrument: string | null;
+  recordDate: string | null;
+  settlementDate: string | null;
+  quantity: string | null;
+  amount: string | null;
+  currency: string | null;
+  unitPrice?: string | null;
+  transactionType?: string | null;
+  externalTransactionId?: string | null;
+}
+
+export interface StatementMatchResidual {
+  measure: string;
+  unit: string;
+  sourceTotal: string;
+  ledgerTotal: string;
+  residual: string;
+  tolerance: string | null;
+}
+
+export interface RetainedStatementMatchEvidence {
+  tier: "Exact" | "Tolerance" | "Candidate" | "Unmatched";
+  explanation: string;
+  confidence: string | null;
+  amountMeasure: string | null;
+  ruleIds: string[];
+  sourceAllocations: StatementMatchAllocation[];
+  ledgerAllocations: StatementMatchAllocation[];
+  residuals: StatementMatchResidual[];
+}
+
+export interface RetainedStatementCaseEvidence {
+  runId: string;
+  matchArtifactSha256: string;
+  tolerancePolicy: { profileId: string; version: number; effectiveDate: string; comparisonPolicyFingerprint: string };
+  match: RetainedStatementMatchEvidence;
+}
+
 export interface ReconciliationBreakLineage {
   identityScopeId?: string | null;
   lineageId: string;
@@ -31,10 +72,21 @@ export interface ReconciliationBreakLineage {
   lastObservedRunId: string;
   clearedAt?: string | null;
   clearedByRunId?: string | null;
+  regrouping?: {
+    kind: "Split" | "Merged";
+    priorRunId: string;
+    priorBreakIds: string[];
+    group: {
+      matchGroupId: string;
+      sourceSubjects: { evidenceReference: string; sourceSubjectId: string }[];
+      evidence: RetainedStatementCaseEvidence;
+    };
+  } | null;
 }
 
 export interface ReconciliationBreakQueueItem {
   lineage?: ReconciliationBreakLineage | null;
+  statementEvidence?: RetainedStatementCaseEvidence | null;
   breakId: string;
   runId: string;
   strategyName: string;
@@ -218,12 +270,14 @@ export interface ReconciliationBulkCaseworkRequest {
   supersedingBreakId?: string | null;
   /** Bulk "assign to me": the server names the authenticated operator as the assignee. */
   assignToCurrentOperator?: boolean;
+  previewBulkActionId?: string;
 }
 
 export interface ReconciliationBulkCaseworkResult {
   bulkActionId: string;
   idempotencyKey: string;
   dryRun: boolean;
+  reviewProtocol?: number | null;
   requestedCount: number;
   succeededCount: number;
   failedCount: number;

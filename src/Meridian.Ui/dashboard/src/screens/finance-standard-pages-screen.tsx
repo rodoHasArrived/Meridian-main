@@ -35,7 +35,7 @@ import {
 } from "@/lib/reporting-workspace";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
-import { ReconciliationCaseEvidence } from "@/screens/reconciliation-case-evidence";
+import { ReconciliationCaseEvidence, ReconciliationMatchCandidate } from "@/screens/reconciliation-case-evidence";
 import { formatAccountingDate, formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
@@ -925,7 +925,12 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
         </CardHeader>
         <CardContent>
           {selectedBreak ? (
-            <ReconciliationCaseEvidence key={selectedBreak.breakId} item={selectedBreak} relatedRows={breaks} />
+            <div className="reconciliation-case-layout">
+              <ReconciliationCaseEvidence key={selectedBreak.breakId} item={selectedBreak} relatedRows={breaks} />
+              {selectedBreak.sourceType === "statement" ? <aside className="reconciliation-case-rail">
+                <ReconciliationMatchCandidate item={selectedBreak} />
+              </aside> : null}
+            </div>
           ) : (
             <StatusBanner role="status" tone="info" title={emptyState.title} detail={emptyState.detail} />
           )}

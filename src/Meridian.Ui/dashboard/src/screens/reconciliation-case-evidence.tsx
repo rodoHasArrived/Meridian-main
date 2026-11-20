@@ -8,7 +8,7 @@ import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian
 import { formatExactMagnitude, parseExactDecimal } from "@/lib/exact-decimal";
 import { getReconciliationBreakAudit } from "@/lib/api/statement-connectors.api";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
-import type { ReconciliationBreakMeasure, ReconciliationBreakQueueItem } from "@/types";
+import type { ReconciliationBreakMeasure, ReconciliationBreakQueueItem, RetainedStatementCaseEvidence, StatementMatchAllocation, StatementMatchResidual } from "@/types";
 import { formatAccountingDate, formatDateTimeLabel } from "./accounting-screen.formatting";
 import { lifecycleStateLabel } from "./reconciliation-break-lifecycle";
 import { isStatementHandoffMarker } from "./reconciliation-casework-command";
@@ -21,7 +21,7 @@ const MEASURE_LABELS: Record<ReconciliationBreakMeasure["kind"], string> = {
   CostBasis: "Cost basis"
 };
 
-function displayAmount(value: number | null, signed = false): string {
+function displayAmount(value: string | number | null, signed = false): string {
   const decimal = parseExactDecimal(value);
   if (!decimal) return "Unavailable";
   const sign = decimal.units === 0n ? "" : decimal.negative ? "−" : signed ? "+" : "";
@@ -38,6 +38,12 @@ function measureUnit(unit: string): string {
 }
 
 export function caseQueueResidual(item: ReconciliationBreakQueueItem): { amount: string; unit: string | null } {
+  if (item.statementEvidence) {
+    const { residuals } = item.statementEvidence.match;
+    if (residuals.length > 1) return { amount: "Multiple", unit: null };
+    if (residuals.length === 1) return { amount: displayAmount(residuals[0].residual, true), unit: residuals[0].unit };
+    return { amount: "Unavailable", unit: null };
+  }
   const measures = item.measures ?? [];
   const reported = measures.filter((measure) => retainedResidual(measure) != null);
   if (reported.length > 1) return { amount: "Multiple", unit: null };
@@ -49,6 +55,85 @@ export function caseQueueResidual(item: ReconciliationBreakQueueItem): { amount:
 
 function CaseFact({ label, children }: { label: string; children?: ReactNode }) {
   return <div><dt>{label}</dt><dd>{children ?? "Unavailable"}</dd></div>;
+}
+
+export function ReconciliationMatchCandidate({ item }: { item: ReconciliationBreakQueueItem }) {
+  const match = item.statementEvidence?.match;
+  if (match?.tier !== "Candidate") {
+    return item.sourceType === "statement" ? <p className="text-sm text-muted-foreground">No match candidate retained.</p> : null;
+  }
+  const historical = item.status === "Resolved" || item.status === "Dismissed" || item.lineage?.observationState === "Cleared";
+  return <section aria-label="Match candidate" className="grid gap-2">
+    <h3 className="text-sm font-semibold">Match candidate</h3>
+    <p className="text-sm text-muted-foreground">{historical ? "Retained from the originating run." : "Review required."} {match.explanation}</p>
+    <dl className="reconciliation-case-facts">
+      {match.confidence !== null ? <CaseFact label="Rule confidence (0–1)">{match.confidence}</CaseFact> : null}
+      <CaseFact label="Ledger evidence">{[...new Set(match.ledgerAllocations.map((record) => record.evidenceReference))].join(", ") || null}</CaseFact>
+    </dl>
+    {match.ruleIds.length > 0 ? <TechnicalDetails label="Candidate rules">
+      <ul className="space-y-1 break-all text-xs">{match.ruleIds.map((rule) => <li key={rule}>{rule}</li>)}</ul>
+    </TechnicalDetails> : null}
+  </section>;
+}
+
+function exactResidualColumns(prior?: RetainedStatementCaseEvidence | null): DenseDataTableColumn<StatementMatchResidual>[] {
+  const columns: DenseDataTableColumn<StatementMatchResidual>[] = [
+    { id: "measure", label: "Measure", rowHeader: true, render: (row) => <>{row.measure}<span className="block text-xs text-muted-foreground">{row.unit}</span></> },
+    { id: "source", label: "Statement", numeric: true, render: (row) => displayAmount(row.sourceTotal) },
+    { id: "ledger", label: "Ledger", numeric: true, render: (row) => displayAmount(row.ledgerTotal) },
+    { id: "residual", label: "Residual", numeric: true, render: (row) => <>
+      {displayAmount(row.residual, true)}
+      {row.tolerance !== null ? <span className="block text-xs text-muted-foreground">Tolerance {displayAmount(row.tolerance)}</span> : null}
+    </> }
+  ];
+  if (prior) columns.push({ id: "prior", label: "Prior residual", numeric: true, render: (row) => {
+    const previous = prior.match.residuals.find((measure) => measure.measure === row.measure && measure.unit === row.unit);
+    const canonical = (value: string) => value.replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "");
+    return <>{displayAmount(previous?.residual ?? null, true)}{previous && canonical(previous.residual) !== canonical(row.residual)
+      ? <span className="block text-xs text-muted-foreground">Residual changed</span> : null}</>;
+  } });
+  return columns;
+}
+
+function StatementAllocations({ heading, allocations, amountMeasure }: {
+  heading: string; allocations: readonly StatementMatchAllocation[]; amountMeasure: string | null;
+}) {
+  return <section aria-label={heading} className="grid min-w-0 content-start gap-2">
+    <h4 className="text-xs font-semibold">{heading}</h4>
+    {allocations.length === 0 ? <p className="text-sm text-muted-foreground">Observation unavailable</p> : <ul className="space-y-2">
+      {allocations.map((allocation) => <li key={allocation.recordId} className="min-w-0 break-all rounded-sm border border-border/60 p-2 text-xs">
+        <p className="font-mono font-medium">{allocation.evidenceReference}</p>
+        {allocations.some((other) => other !== allocation && other.evidenceReference === allocation.evidenceReference) ?
+          <p className="text-muted-foreground">{allocation.recordId}</p> : null}
+        {allocation.instrument || allocation.recordDate || allocation.transactionType ? <p className="mt-1 break-words text-muted-foreground">
+          {[allocation.instrument, allocation.transactionType, allocation.recordDate ? formatAccountingDate(allocation.recordDate) : null,
+            allocation.settlementDate ? `Settlement ${formatAccountingDate(allocation.settlementDate)}` : null].filter(Boolean).join(" · ")}
+        </p> : null}
+        <dl className="mt-1 flex flex-wrap gap-x-3 gap-y-1 tabular-nums">
+          {allocation.externalTransactionId ? <CaseFact label="External transaction ID">{allocation.externalTransactionId}</CaseFact> : null}
+          {allocation.quantity !== null ? <CaseFact label="Quantity">{displayAmount(allocation.quantity)} units</CaseFact> : null}
+          <CaseFact label={amountMeasure ?? "Amount"}>{allocation.amount !== null ? `${displayAmount(allocation.amount)} ${allocation.currency ?? "Currency unavailable"}` : null}</CaseFact>
+          {allocation.unitPrice != null ? <CaseFact label="Unit price">{displayAmount(allocation.unitPrice)} {allocation.currency ?? "Currency unavailable"}</CaseFact> : null}
+        </dl>
+      </li>)}
+    </ul>}
+  </section>;
+}
+
+function StatementMatchComparison({ evidence, prior, grouped = false }: {
+  evidence: RetainedStatementCaseEvidence; prior?: RetainedStatementCaseEvidence | null; grouped?: boolean;
+}) {
+  const { match } = evidence;
+  return <>
+    <div className="reconciliation-statement-records">
+      <StatementAllocations heading={grouped ? "Statement allocations" : "Statement records"} allocations={match.sourceAllocations} amountMeasure={match.amountMeasure} />
+      <StatementAllocations heading={grouped ? "Ledger allocations" : "Ledger records"} allocations={match.ledgerAllocations} amountMeasure={match.amountMeasure} />
+    </div>
+    {match.residuals.length > 0 ? <DenseDataTable columns={exactResidualColumns(prior)} rows={match.residuals}
+      getRowId={(row) => `${row.measure}:${row.unit}`} ariaLabel={grouped ? "Confirmed group residual components" : "Exact residual components"}
+      emptyText="No exact residual components." caption="Residual equals the retained statement total minus the ledger total in the same unit." />
+      : <p className="text-sm text-muted-foreground">An exact residual requires comparable statement and ledger observations.</p>}
+  </>;
 }
 
 function compareColumns(statement: boolean, prior: ReconciliationBreakQueueItem | null): DenseDataTableColumn<ReconciliationBreakMeasure>[] {
@@ -127,6 +212,9 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
   const evidence = [...new Set([...(item.evidenceLinks ?? []), ...(item.breakExplanation?.evidenceLinks ?? [])])]
     .filter((reference) => !isStatementHandoffMarker(reference));
   const ledgerEvidence = evidence.filter((reference) => reference.startsWith("journal:") || reference.startsWith("ledger:"));
+  const statementEvidence = item.statementEvidence;
+  const policy = statementEvidence?.tolerancePolicy;
+  const regrouping = lineage?.regrouping;
 
   return (
     <div className="reconciliation-case-evidence">
@@ -144,9 +232,9 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
       <section aria-labelledby={`${id}-compare`} className="reconciliation-case-section">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 id={`${id}-compare`} className="text-sm font-semibold">{statement ? "Statement and ledger" : "Observed and expected"}</h3>
-          {measures.length > 0 ? <p className="text-xs text-muted-foreground">Residual = {statement ? "statement − ledger" : "observed − expected"}</p> : null}
+          {(statementEvidence?.match.residuals.length ?? measures.length) > 0 ? <p className="text-xs text-muted-foreground">Residual = {statement ? "statement − ledger" : "observed − expected"}</p> : null}
         </div>
-        {measures.length > 0 ? <>
+        {statementEvidence ? <StatementMatchComparison evidence={statementEvidence} prior={comparable ? baseline?.statementEvidence : null} /> : measures.length > 0 ? <>
           <DenseDataTable columns={compareColumns(statement, comparable ? baseline : null)} rows={measures}
             getRowId={(measure) => `${measure.kind}:${measure.unit}:${measures.indexOf(measure)}`} ariaLabel="Retained residual components"
             emptyText="No retained residual components."
@@ -164,7 +252,9 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
           <CaseFact label="Source record">{item.sourceReference}</CaseFact>
           {ledgerEvidence.length > 0 ? <CaseFact label="Ledger evidence">{ledgerEvidence.join(", ")}</CaseFact> : null}
           <CaseFact label={item.sourceImportId ? "Source import" : "Source run"}>{sourceRun}</CaseFact>
-          <CaseFact label="Tolerance policy">{item.toleranceProfileId ? `${item.toleranceProfileId} · Version unavailable` : null}</CaseFact>
+          <CaseFact label="Tolerance policy">{policy ? `${policy.profileId} · Version ${policy.version}`
+            : item.toleranceProfileId ? `${item.toleranceProfileId} · Version unavailable` : null}</CaseFact>
+          {policy ? <CaseFact label="Policy applied as of">{formatAccountingDate(policy.effectiveDate)}</CaseFact> : null}
         </dl>
         {earlier.length > 0 ? <label className="grid gap-1 text-sm">
           Compare with an earlier retained case
@@ -191,6 +281,22 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
           {lineage.clearedByRunId ? <CaseFact label="Cleared by run">{lineage.clearedByRunId}</CaseFact> : null}
           {lineage.clearedAt ? <CaseFact label="Source cleared at">{formatDateTimeLabel(lineage.clearedAt)}</CaseFact> : null}
         </dl> : null}
+        {regrouping ? <section className="grid min-w-0 gap-2" aria-label="Confirmed run match group">
+          <h4 className="text-sm font-semibold">Confirmed match group</h4>
+          <p className="text-sm text-muted-foreground">{regrouping.group.evidence.match.explanation}</p>
+          <dl className="reconciliation-case-facts">
+            <CaseFact label="Prior run">{regrouping.priorRunId}</CaseFact>
+            <CaseFact label="Match run">{regrouping.group.evidence.runId}</CaseFact>
+            <CaseFact label="Match tier">{regrouping.group.evidence.match.tier === "Exact" ? "Exact" : "Within tolerance"}</CaseFact>
+            <CaseFact label="Group policy version">{regrouping.group.evidence.tolerancePolicy.version}</CaseFact>
+          </dl>
+          <StatementMatchComparison evidence={regrouping.group.evidence} grouped />
+          {regrouping.priorBreakIds.some((caseId) => caseId !== item.breakId) ? <ul aria-label="Related cases from the prior run" className="space-y-1">
+            {regrouping.priorBreakIds.filter((caseId) => caseId !== item.breakId).map((caseId) => <li key={caseId} className="break-all text-sm">
+              {onOpenCase ? <Button size="sm" variant="outline" className="h-auto whitespace-normal text-left" onClick={() => onOpenCase(caseId)}>Open case {caseId}</Button> : caseId}
+            </li>)}
+          </ul> : null}
+        </section> : null}
         {item.reopenedAt ? <p className="text-sm">Reopened {formatDateTimeLabel(item.reopenedAt)}{item.reopenReason ? ` · ${item.reopenReason}` : null}</p> : null}
         {item.supersedingBreakId ? <p className="break-words text-sm">Superseded by {item.supersedingBreakId}{item.dispositionReason ? ` · ${item.dispositionReason}` : null}</p> : null}
         {onOpenCase && (baseline || successor) ? <div className="flex flex-wrap gap-2">
@@ -204,6 +310,14 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
             <CaseFact label="Latest lineage scope">{lineage?.comparisonScopeId}</CaseFact>
             <CaseFact label="Source break ID">{item.sourceBreakId}</CaseFact>
             <CaseFact label="Source fingerprint">{item.sourceFingerprint}</CaseFact>
+            {statementEvidence ? <>
+              <CaseFact label="Match artifact SHA-256">{statementEvidence.matchArtifactSha256}</CaseFact>
+              <CaseFact label="Executed comparison policy fingerprint">{policy?.comparisonPolicyFingerprint}</CaseFact>
+            </> : null}
+            {regrouping ? <>
+              <CaseFact label="Match group ID">{regrouping.group.matchGroupId}</CaseFact>
+              <CaseFact label="Match group artifact SHA-256">{regrouping.group.evidence.matchArtifactSha256}</CaseFact>
+            </> : null}
           </dl>
           {evidence.length > 0 ? <ul aria-label="Retained evidence references" className="mt-2 space-y-1 break-all font-mono text-xs">
             {evidence.map((reference) => <li key={reference}>{reference}</li>)}

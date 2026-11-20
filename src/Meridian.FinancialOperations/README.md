@@ -680,6 +680,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `AccountingSystem/AccountingSystemIntegrationStateStore.cs` - optional atomic file retention of latest imports, mapping profiles and export packages across restarts; without it the service keeps them for the process lifetime only.
 - `AccountingSystem/AccountingSystemIntegrationService.Reconciliation.cs` - provider report balance projection, requested-period activity, currency identity checks, and reconciliation read models.
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.
+- `Reconciliation/StatementMatchEvidenceBuilder.cs` retains signed normalized operands, rule evidence,
+  and exact decimal residuals for candidates and accepted groups. The run retains the executed
+  tolerance profile by ID, version, statement date, and comparison fingerprint. The v4 comparison
+  revision covers external transaction identity, date-window, ambiguity, and execution-price rules.
+  Legacy v3 runs retain their original evidence and comparison fingerprint.
 - `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
 - `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
 - `Reconciliation/Connectors/StatementIngressLimits.cs` - the single PRD-010 ingress bound shared by

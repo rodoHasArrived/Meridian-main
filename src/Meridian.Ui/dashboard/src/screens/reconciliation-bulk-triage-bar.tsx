@@ -46,6 +46,7 @@ interface BulkTriageMessage {
 
 interface CheckedPreview extends BulkTriagePreview {
   operationId: string;
+  bulkActionId: string;
   breakIds: string[];
   /** The draft the dry run checked; the execute sends exactly this. */
   draft: BulkTriageDraft;
@@ -213,8 +214,12 @@ export function useReconciliationBulkTriage({
       if (!matchesResult(result, request.commandId, breakIds, true)) {
         throw new Error("The returned check does not cover the selected break IDs.");
       }
-      setPreview({ ...summarizeBulkDryRun(nextDraft.kind, result), operationId, breakIds, draft: nextDraft,
-        eligible: result.results.filter((entry) => entry.wouldSucceed) });
+      if (result.reviewProtocol !== 1) throw new Error("The server did not retain a version-bound bulk preview.");
+      const eligible = result.results.filter((entry) => entry.wouldSucceed && !entry.error);
+      if (eligible.some((entry) => !Number.isSafeInteger(entry.item?.version) || (entry.item?.version ?? 0) <= 0)) {
+        throw new Error("The bulk preview is missing a reviewed case version.");
+      }
+      setPreview({ ...summarizeBulkDryRun(nextDraft.kind, result), operationId, bulkActionId: result.bulkActionId, breakIds, draft: nextDraft, eligible });
     } catch (err) {
       if (checkRevision.current !== revision) return;
       const display = describeApiError(err, "The bulk check failed. Nothing was changed.");
@@ -303,7 +308,7 @@ export function useReconciliationBulkTriage({
   const execute = async () => {
     if (hasUnconfirmed || !preview || !previewIsCurrent || preview.passedIds.length === 0) return;
     await sendReviewed(buildBulkCaseworkRequest(preview.draft, preview.passedIds, {
-      operationId: preview.operationId, dryRun: false, operator: null
+      operationId: preview.operationId, dryRun: false, operator: null, previewBulkActionId: preview.bulkActionId
     }), preview.draft.kind);
   };
 

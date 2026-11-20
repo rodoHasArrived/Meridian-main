@@ -30,7 +30,7 @@ import {
   type SurfaceVisitServices
 } from "@/lib/since-last-visit";
 import { ReconciliationCaseDiscussion } from "./accounting-screen.case-discussion";
-import { ReconciliationCaseEvidence, caseQueueResidual } from "./reconciliation-case-evidence";
+import { ReconciliationCaseEvidence, ReconciliationMatchCandidate, caseQueueResidual } from "./reconciliation-case-evidence";
 import { BreakLifecyclePanel, type BreakLifecycleServices } from "./accounting-screen.reconciliation-lifecycle";
 import { BreakAuditTimeline, type BreakAuditLoader } from "./accounting-screen.reconciliation-audit-timeline";
 import { cn } from "@/lib/utils";
@@ -473,7 +473,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
               </div>
               <section className="reconciliation-case-rail" aria-label="Case actions and history">
                 <h3 className="text-sm font-semibold">Case actions</h3>
-                <p className="text-sm text-muted-foreground">Match candidates unavailable for this case.</p>
+                <ReconciliationMatchCandidate item={selectedSource ?? selectedRow} />
                 {requiredSignoff ? <AccountingValue label="Required sign-off" value={requiredSignoff} /> : null}
                 {selectedRow.resolutionNote ? <AccountingValue label="Decision note" value={selectedRow.resolutionNote} /> : null}
                 {selectedRow.signOffNote ? <AccountingValue label="Sign-off note" value={selectedRow.signOffNote} /> : null}

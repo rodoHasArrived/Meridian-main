@@ -1542,6 +1542,90 @@ public sealed class ReconciliationBreakQueueRepositoryTests
     }
 
     [Fact]
+    public async Task Reviewed_bulk_receipt_binds_scope_actor_action_and_the_complete_eligible_set_after_restart()
+    {
+        var repo = CreateRepository(out var root);
+        var scope = new ReconciliationBreakQueueScope("tenant", "company");
+        var a = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        { BreakId = "reviewed-a", TenantId = scope.TenantId, CompanyId = scope.CompanyId };
+        var b = a with { BreakId = "reviewed-b" };
+        await repo.CreateIfMissingAsync(scope, a);
+        await repo.CreateIfMissingAsync(scope, b);
+        var dryRun = new ReconciliationBulkCaseworkRequest([a.BreakId, "missing", b.BreakId],
+            ReconciliationCaseworkAction.Assign, "operator", "bound-preview", "bound-review-session", "unit-test",
+            "bound-preview-key", DryRun: true, AllowPartialSuccess: true, Assignee: "owner");
+        var preview = await repo.ApplyBulkCaseworkAsync(scope, dryRun);
+        preview.ReviewProtocol.Should().Be(1);
+        preview.Outcome.State.Should().Be(OperationTerminalState.CompletedWithWarnings);
+        preview.Results.Where(result => result.WouldSucceed).Select(result => result.BreakId).Should().Equal(a.BreakId, b.BreakId);
+
+        var execute = dryRun with
+        {
+            BreakIds = [a.BreakId, b.BreakId], DryRun = false, AllowPartialSuccess = false,
+            CommandId = "bound-execute", IdempotencyKey = "bound-execute-key",
+            PreviewBulkActionId = preview.BulkActionId, RequireReviewedPreview = true
+        };
+        repo = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        foreach (var invalid in new[]
+        {
+            execute with { BreakIds = [a.BreakId] }, execute with { BreakIds = dryRun.BreakIds },
+            execute with { Assignee = "other" }, execute with { Actor = "other-operator" },
+            execute with { AllowPartialSuccess = true }, execute with { PreviewBulkActionId = null }
+        })
+            (await repo.ApplyBulkCaseworkAsync(scope, invalid)).Outcome.State.Should().Be(OperationTerminalState.Blocked);
+        (await repo.ApplyBulkCaseworkAsync(new ReconciliationBreakQueueScope("other-tenant", "company"), execute))
+            .Outcome.State.Should().Be(OperationTerminalState.Blocked);
+
+        var second = execute with { CommandId = "competing-execute", IdempotencyKey = "competing-key" };
+        var competingRepo = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var concurrent = await Task.WhenAll(repo.ApplyBulkCaseworkAsync(scope, execute), competingRepo.ApplyBulkCaseworkAsync(scope, second));
+        var committed = concurrent.Should().ContainSingle(item => item.SucceededCount == 2).Subject;
+        concurrent.Should().ContainSingle(item => item.Outcome.State == OperationTerminalState.Blocked);
+        repo = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var retainedRequest = committed.BulkActionId == execute.CommandId ? execute : second;
+        (await repo.ApplyBulkCaseworkAsync(scope, retainedRequest)).Should().BeEquivalentTo(committed);
+        (await repo.ApplyBulkCaseworkAsync(scope, execute with { CommandId = "another", IdempotencyKey = "another" }))
+            .Outcome.State.Should().Be(OperationTerminalState.Blocked);
+        (await repo.GetAuditHistoryAsync(a.BreakId)).Should().ContainSingle(entry => entry.EventType == "BulkActionCaseSucceeded");
+    }
+
+    [Fact]
+    public async Task Reviewed_bulk_supersession_blocks_when_the_unselected_successor_version_changes()
+    {
+        var repo = CreateRepository(out var root);
+        var scope = new ReconciliationBreakQueueScope("tenant", "company");
+        var source = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "supersession-source", TenantId = scope.TenantId, CompanyId = scope.CompanyId,
+            FundAccountId = "account", ExternalAccountId = "custodian", LedgerBookId = Guid.NewGuid(),
+            AccountingPeriodId = "period", AsOfDate = new DateOnly(2026, 7, 19)
+        };
+        var successor = source with { BreakId = "supersession-successor", LifecycleState = ReconciliationCaseLifecycleState.Investigating };
+        await repo.CreateIfMissingAsync(scope, source);
+        await repo.CreateIfMissingAsync(scope, successor);
+        var dryRun = new ReconciliationBulkCaseworkRequest([source.BreakId], ReconciliationCaseworkAction.Supersede,
+            "operator", "supersession-preview", "supersession-review", "unit-test", "supersession-preview-key", DryRun: true, AllowPartialSuccess: true,
+            Reason: "The retained successor replaced the original source record.", EvidenceLinks: ["evidence:source"],
+            ApprovalActor: "controller", ApprovalReference: "approval:successor", SupersedingBreakId: successor.BreakId);
+        var preview = await repo.ApplyBulkCaseworkAsync(scope, dryRun);
+        var target = (await repo.GetByIdAsync(scope, successor.BreakId))!;
+        preview.ReviewedSuccessor.Should().Be(new ReconciliationBulkReviewedCaseVersion(target.BreakId, target.Version));
+
+        repo = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var changed = await repo.ApplyCaseworkCommandAsync(scope, Command(target, ReconciliationCaseworkAction.ChangePriority) with
+        { Priority = ReconciliationCasePriority.High });
+        changed.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        var result = await repo.ApplyBulkCaseworkAsync(scope, dryRun with
+        {
+            DryRun = false, AllowPartialSuccess = false, CommandId = "supersession-execute", IdempotencyKey = "supersession-execute-key",
+            PreviewBulkActionId = preview.BulkActionId, RequireReviewedPreview = true
+        });
+        result.Outcome.State.Should().Be(OperationTerminalState.Blocked);
+        result.Results.Should().ContainSingle(item => item.Error!.Contains("superseding case version changed"));
+        (await repo.GetByIdAsync(scope, source.BreakId))!.Disposition.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Bulk_without_partial_success_rolls_back_valid_cases_when_any_case_is_blocked()
     {
         var repo = CreateRepository(out _);

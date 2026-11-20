@@ -1451,10 +1451,15 @@ not been recorded.
   breaks the current filters show. Assign to me, Route to owner and Resolve with reason go through
   the governed casework endpoints: a dry run checks the whole selection and lists each blocked
   break with its reason, and the operator then confirms an execute of only the breaks that passed,
-  applied all or nothing. The server stamps the actor (Assign to me sets
+  applied all or nothing. The preview shows sampled case versions. Confirming sends the retained
+  preview ID, and the server checks every eligible version. The server stamps the actor (Assign to me sets
   `assignToCurrentOperator`, so it names the login user, not the display name) and writes an
   audit entry for each case. Resolve takes a reason, a root cause and a resolution from the
   taxonomy endpoint, plus an optional evidence reference.
+- **Retained match evidence.** Casework and the Match Workbench show both statement and ledger
+  contributions, exact decimal residuals, and the executed tolerance policy version. The candidate
+  rail states the rule basis and requires review. Split and merge labels open confirmed group
+  allocations and link the prior cases that participated in the group.
 - **Since your last visit.** `lib/since-last-visit.ts` records the operator's visit to the break
   queue (`POST /api/workstation/operator/visits/reconciliation-breaks`) once per browser tab. The
   visit it replaces is the baseline: a break detected after it is marked New, a break whose

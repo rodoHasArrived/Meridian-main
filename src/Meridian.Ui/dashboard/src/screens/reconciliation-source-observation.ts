@@ -3,11 +3,15 @@ import type { ReconciliationBreakLineage, ReconciliationBreakQueueAuditEvent, Re
 
 export function sourceObservationLabel(lineage?: ReconciliationBreakLineage | null): string {
   if (!lineage) return "Identity not established";
+  if (lineage.regrouping?.kind === "Split") return "Source split";
+  if (lineage.regrouping?.kind === "Merged") return "Source merged";
   return lineage.observationState === "Cleared" ? "Source cleared" : lineage.observationState;
 }
 
 export function sourceRunChangeLabel(lineage?: ReconciliationBreakLineage | null): string {
   if (!lineage) return "Comparison unavailable";
+  if (lineage.regrouping?.kind === "Split") return "Split across ledger records";
+  if (lineage.regrouping?.kind === "Merged") return "Merged into one ledger record";
   switch (lineage.observationState) {
     case "New": return "New observation";
     case "Aging": return "Persisted";
