@@ -150,7 +150,7 @@
 
   <ItemGroup Label="Testing">
     <PackageVersion Include="Bogus" Version="35.6.5" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.14" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="10.0.14" />
     <PackageVersion Include="xunit" Version="2.9.3" />
@@ -160,9 +160,9 @@
     <PackageVersion Include="FsCheck.Xunit" Version="3.6.0" />
     <!-- Moq 4.21.0 pulls Castle.Core 5.2.1, breaking NSubstitute 5.3.0 default interface
          members (castleproject/Core#684). Retain the compatible proxy graph; see PR #3061. -->
-    <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="Moq" Version="4.21.0" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
-    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.1" />
     <PackageVersion Include="FSharp.Core" Version="11.0.100" />
     <PackageVersion Include="FsUnit.xUnit" Version="7.1.1" />
     <PackageVersion Include="TngTech.ArchUnitNET" Version="0.13.3" />
