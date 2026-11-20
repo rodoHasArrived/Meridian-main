@@ -90,7 +90,7 @@ public sealed record SubmitSecurityMasterRevisionRequest(Guid SecurityId, Guid R
 
 Qualified name: <code>Meridian.Contracts.Workstation.SymbolAttributionEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:937](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L937).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:942](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L942).
 
 Per-symbol P&amp;L attribution for one run.
 
