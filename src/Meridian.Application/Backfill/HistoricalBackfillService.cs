@@ -22,7 +22,7 @@ namespace Meridian.Application.Backfill;
 /// <summary>
 /// Orchestrates historical backfills from free/public data providers into the storage pipeline.
 /// </summary>
-public sealed class HistoricalBackfillService
+public sealed class HistoricalBackfillService : IDisposable
 {
     private readonly IReadOnlyDictionary<string, IHistoricalDataProvider> _providers;
     private readonly ILogger _log;
@@ -33,6 +33,7 @@ public sealed class HistoricalBackfillService
     private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
     private readonly TimeZoneInfo _intradaySessionTimeZone;
     private readonly IReadOnlyDictionary<string, ProviderValidationProfile>? _validationProfiles;
+    private readonly IDisposable? _ownedProvider;
 
     public HistoricalBackfillService(
         IEnumerable<IHistoricalDataProvider> providers,
@@ -42,7 +43,8 @@ public sealed class HistoricalBackfillService
         BackfillStatusStore? checkpointStore = null,
         Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null,
         TimeZoneInfo? intradaySessionTimeZone = null,
-        IReadOnlyDictionary<string, ProviderValidationProfile>? validationProfiles = null)
+        IReadOnlyDictionary<string, ProviderValidationProfile>? validationProfiles = null,
+        IDisposable? ownedProvider = null)
     {
         _providers = providers.ToDictionary(p => p.Name.ToLowerInvariant());
         _log = logger ?? LoggingSetup.ForContext<HistoricalBackfillService>();
@@ -54,6 +56,7 @@ public sealed class HistoricalBackfillService
         // The current intraday backfill providers serve US equity sessions. Keep the
         // session zone explicit so other markets can supply their own date convention.
         _intradaySessionTimeZone = intradaySessionTimeZone ?? TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+        _ownedProvider = ownedProvider;
     }
 
     public IReadOnlyCollection<IHistoricalDataProvider> Providers => _providers.Values.ToList();
@@ -63,6 +66,8 @@ public sealed class HistoricalBackfillService
 
     private static string? FormatLogDate(DateOnly? value) =>
         value is { } date ? SanitizeLogText(date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)) : null;
+
+    public void Dispose() => _ownedProvider?.Dispose();
 
     public void ValidateRequest(BackfillRequest request)
     {
@@ -103,6 +108,7 @@ public sealed class HistoricalBackfillService
         ValidateRequest(request);
         var provider = _providers[request.Provider.ToLowerInvariant()];
         var aggregateProvider = provider as IHistoricalAggregateBarProvider;
+        var observation = HistoricalBackfillRequestScope.Current;
 
         // Resume skips only dates recorded as durably written by this provider and feed. A
         // date-only checkpoint (symbol + granularity) cannot say which provider wrote it or where
@@ -191,7 +197,6 @@ public sealed class HistoricalBackfillService
             try
             {
                 ct.ThrowIfCancellationRequested();
-
                 // Fetch only the parts of the requested range that verified coverage does not
                 // contain: dates before it, gaps inside it, and dates after it.
                 IReadOnlyList<(DateOnly? From, DateOnly? To)> fetchRanges = [(request.From, request.To)];
@@ -272,19 +277,19 @@ public sealed class HistoricalBackfillService
                         {
                             foreach (var partition in executionPartitions)
                             {
-                                var bars = await aggregateProvider.GetAggregateBarsAsync(
+                                var bars = await FetchWithQuotaAsync(provider, () => aggregateProvider.GetAggregateBarsAsync(
                                     symbol,
                                     request.Granularity,
                                     partition.From,
                                     BackfillPartitionPlanner.ToInclusiveEnd(partition),
-                                    ct).ConfigureAwait(false);
+                                    ct), ct).ConfigureAwait(false);
 
                                 await PublishAggregateBarsAsync(bars).ConfigureAwait(false);
                             }
                         }
                         else
                         {
-                            var bars = await aggregateProvider.GetAggregateBarsAsync(symbol, request.Granularity, rangeFrom, rangeTo, ct).ConfigureAwait(false);
+                            var bars = await FetchWithQuotaAsync(provider, () => aggregateProvider.GetAggregateBarsAsync(symbol, request.Granularity, rangeFrom, rangeTo, ct), ct).ConfigureAwait(false);
                             await PublishAggregateBarsAsync(bars).ConfigureAwait(false);
                         }
                     }
@@ -297,11 +302,11 @@ public sealed class HistoricalBackfillService
                                 // A range spanning a ticker rename must query the provider with the
                                 // era-correct symbol per chunk, then land under the requested symbol.
                                 var eraSymbol = await ResolveEraSymbolAsync(symbol, partition.From, ct).ConfigureAwait(false);
-                                var bars = await provider.GetDailyBarsAsync(
+                                var bars = await FetchWithQuotaAsync(provider, () => provider.GetDailyBarsAsync(
                                     eraSymbol,
                                     partition.From,
                                     BackfillPartitionPlanner.ToInclusiveEnd(partition),
-                                    ct).ConfigureAwait(false);
+                                    ct), ct).ConfigureAwait(false);
 
                                 await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol)).ConfigureAwait(false);
                             }
@@ -311,7 +316,7 @@ public sealed class HistoricalBackfillService
                             var eraSymbol = rangeFrom.HasValue
                                 ? await ResolveEraSymbolAsync(symbol, rangeFrom.Value, ct).ConfigureAwait(false)
                                 : symbol;
-                            var bars = await provider.GetDailyBarsAsync(eraSymbol, rangeFrom, rangeTo, ct).ConfigureAwait(false);
+                            var bars = await FetchWithQuotaAsync(provider, () => provider.GetDailyBarsAsync(eraSymbol, rangeFrom, rangeTo, ct), ct).ConfigureAwait(false);
                             await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol)).ConfigureAwait(false);
                         }
                     }
@@ -445,7 +450,8 @@ public sealed class HistoricalBackfillService
                 {
                     symbolBars++;
                     rangeBars++;
-                    servedBy.Add(eventSource);
+                    if (servedBy.Add(eventSource))
+                        observation?.BarsPublished(eventSource);
                     if (firstBarDate is null || barDate < firstBarDate.Value)
                         firstBarDate = barDate;
                     if (lastBarDate is null || barDate > lastBarDate.Value)
@@ -614,6 +620,38 @@ public sealed class HistoricalBackfillService
         => string.IsNullOrWhiteSpace(barSource) || string.Equals(barSource, "composite", StringComparison.OrdinalIgnoreCase)
             ? providerName
             : barSource!;
+
+    private static async Task<IReadOnlyList<T>> FetchWithQuotaAsync<T>(
+        IHistoricalDataProvider provider, Func<Task<IReadOnlyList<T>>> fetch, CancellationToken ct)
+    {
+        var scope = HistoricalBackfillRequestScope.Current;
+        if (scope is null || provider is CompositeHistoricalDataProvider)
+            return await fetch().ConfigureAwait(false);
+
+        for (var attempt = 0; ; attempt++)
+        {
+            if (provider is not IBackfillRequestMeteredProvider)
+                await scope.BeforeUnmeteredFetch(provider, ct).ConfigureAwait(false);
+
+            try
+            {
+                return await fetch().ConfigureAwait(false);
+            }
+            catch (RateLimitException ex)
+            {
+                var retry = attempt == 0 && scope.RetryRateLimited;
+                var wait = ex.RetryAfter is { } retryAfter && retryAfter > TimeSpan.Zero
+                    ? retryAfter : TimeSpan.FromMinutes(1);
+                scope.Throttled(provider.Name, "provider-rate-limit", retry ? wait : null);
+                if (!retry)
+                    throw;
+
+                // The adapter hasn't returned any bars for this partition, so retrying here
+                // cannot publish the same partition twice.
+                await Task.Delay(wait, ct).ConfigureAwait(false);
+            }
+        }
+    }
 
     private static IReadOnlyList<BackfillPartitionEstimate>? BuildExecutionPartitions(
         IHistoricalDataProvider provider,

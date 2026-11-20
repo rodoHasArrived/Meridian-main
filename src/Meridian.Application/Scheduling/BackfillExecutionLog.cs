@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Application.Backfill;
+using Meridian.Contracts.Backfill;
 using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
 using Serilog;
@@ -12,8 +13,28 @@ namespace Meridian.Application.Scheduling;
 /// Records the execution history of scheduled backfill jobs.
 /// Provides visibility into past runs, successes, failures, and performance metrics.
 /// </summary>
-public sealed class BackfillExecutionLog
+public sealed record BackfillExecutionLog
 {
+    private long _throttledUntilUtcTicks;
+
+    public WorkstationBackfillSubmission? WorkstationSubmission { get; init; }
+    public BackfillQuotaReceipt? QuotaReceipt { get; init; }
+
+    [JsonIgnore]
+    public DateTimeOffset ThrottledUntil => new(Interlocked.Read(ref _throttledUntilUtcTicks), TimeSpan.Zero);
+
+    internal void ReportThrottle(DateTimeOffset until)
+    {
+        long current;
+        do
+        {
+            current = Interlocked.Read(ref _throttledUntilUtcTicks);
+            if (current >= until.UtcTicks)
+                return;
+        }
+        while (Interlocked.CompareExchange(ref _throttledUntilUtcTicks, until.UtcTicks, current) != current);
+    }
+
     /// <summary>
     /// Unique identifier for this execution.
     /// </summary>
@@ -139,6 +160,10 @@ public sealed class BackfillExecutionLog
     /// </summary>
     public BackfillRemediationSlaMetadata? AutoRemediationSla { get; set; }
 }
+
+public sealed record WorkstationBackfillSubmission(
+    string TenantId, BackfillRequest Request, DateTimeOffset SubmittedAt, DateTimeOffset? RunAt,
+    string? AlternativeFor, BackfillQuotaEstimate Estimate);
 
 /// <summary>
 /// How a scheduled execution was triggered.
@@ -330,7 +355,7 @@ public sealed class BackfillExecutionHistory
     public IReadOnlyList<BackfillExecutionLog> GetExecutionsForSchedule(string scheduleId, int limit = 50)
     {
         return _executions.Values
-            .Where(e => e.ScheduleId == scheduleId)
+            .Where(e => e.WorkstationSubmission is null && e.ScheduleId == scheduleId)
             .OrderByDescending(e => e.ScheduledAt)
             .Take(limit)
             .ToList();
@@ -339,13 +364,37 @@ public sealed class BackfillExecutionHistory
     /// <summary>
     /// Get recent executions across all schedules.
     /// </summary>
-    public IReadOnlyList<BackfillExecutionLog> GetRecentExecutions(int limit = 50)
+    public IReadOnlyList<BackfillExecutionLog> GetRecentExecutions(int limit = 50, string? workstationTenant = null)
     {
         return _executions.Values
+            .Where(e => e.WorkstationSubmission is null ||
+                workstationTenant is not null && string.Equals(e.WorkstationSubmission.TenantId, workstationTenant, StringComparison.Ordinal))
             .OrderByDescending(e => e.ScheduledAt)
             .Take(limit)
             .ToList();
     }
+
+    internal IReadOnlyList<BackfillExecutionLog> GetWorkstationQueue() => _executions.Values
+        .Where(IsOutstandingWorkstationExecution)
+        .OrderBy(e => e.ScheduledAt)
+        .ThenBy(e => e.WorkstationSubmission!.SubmittedAt)
+        .ToArray();
+
+    internal void RecordWorkstationExecution(BackfillExecutionLog execution)
+    {
+        lock (_lock)
+        {
+            var snapshot = Retain(_executions.Values.Where(e => e.ExecutionId != execution.ExecutionId).Append(execution)).ToArray();
+            // Publish the transition only after it has been committed to disk. An admission
+            // failure must not return a job ID for work the host cannot recover.
+            WriteSnapshot(snapshot);
+            _executions[execution.ExecutionId] = execution;
+            TrimToBoundLocked();
+        }
+    }
+
+    private static bool IsOutstandingWorkstationExecution(BackfillExecutionLog execution) =>
+        execution.WorkstationSubmission is not null && execution.Status is ExecutionStatus.Pending or ExecutionStatus.Running;
 
     /// <summary>
     /// Get failed executions.
@@ -450,10 +499,7 @@ public sealed class BackfillExecutionHistory
             var snapshot = JsonSerializer.Deserialize<BackfillExecutionHistorySnapshot>(
                 json,
                 PersistenceJsonOptions);
-            foreach (var execution in (snapshot?.Executions ?? [])
-                         .OfType<BackfillExecutionLog>()
-                         .OrderByDescending(static execution => execution.ScheduledAt)
-                         .Take(MaxHistoryEntries))
+            foreach (var execution in Retain((snapshot?.Executions ?? []).OfType<BackfillExecutionLog>()))
             {
                 _executions[execution.ExecutionId] = execution;
             }
@@ -470,14 +516,17 @@ public sealed class BackfillExecutionHistory
         if (excess <= 0)
             return;
 
-        var toRemove = _executions.Values
-            .OrderBy(static execution => execution.ScheduledAt)
-            .Take(excess)
-            .Select(static execution => execution.ExecutionId)
-            .ToArray();
-        foreach (var id in toRemove)
-            _executions.TryRemove(id, out _);
+        var kept = Retain(_executions.Values).Select(execution => execution.ExecutionId).ToHashSet(StringComparer.Ordinal);
+        foreach (var id in _executions.Keys)
+            if (!kept.Contains(id))
+                _executions.TryRemove(id, out _);
     }
+
+    private static IEnumerable<BackfillExecutionLog> Retain(IEnumerable<BackfillExecutionLog> executions) => executions
+        .OrderByDescending(IsOutstandingWorkstationExecution)
+        .ThenByDescending(execution => execution.WorkstationSubmission?.SubmittedAt ?? execution.ScheduledAt)
+        .ThenBy(execution => execution.ExecutionId, StringComparer.Ordinal)
+        .Take(MaxHistoryEntries);
 
     private void PersistSnapshotLocked()
     {
@@ -486,19 +535,21 @@ public sealed class BackfillExecutionHistory
 
         try
         {
-            var snapshot = new BackfillExecutionHistorySnapshot(
-                Version: 1,
-                Executions: _executions.Values
-                    .OrderByDescending(static execution => execution.ScheduledAt)
-                    .Take(MaxHistoryEntries)
-                    .ToArray());
-            var json = JsonSerializer.Serialize(snapshot, PersistenceJsonOptions);
-            AtomicFileWriter.Write(_persistencePath, json);
+            WriteSnapshot(Retain(_executions.Values).ToArray());
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             _log.Error(ex, "Could not persist backfill execution history to {Path}", _persistencePath);
         }
+    }
+
+    private void WriteSnapshot(IReadOnlyList<BackfillExecutionLog> executions)
+    {
+        if (_persistencePath is null)
+            return;
+
+        var json = JsonSerializer.Serialize(new BackfillExecutionHistorySnapshot(Version: 1, executions), PersistenceJsonOptions);
+        AtomicFileWriter.Write(_persistencePath, json);
     }
 
     private static JsonSerializerOptions CreatePersistenceJsonOptions()

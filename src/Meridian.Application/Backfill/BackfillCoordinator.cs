@@ -44,6 +44,7 @@ public sealed class BackfillCoordinator : IDisposable
     private readonly ILogger _log = LoggingSetup.ForContext<BackfillCoordinator>();
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly BackfillProgressTracker _progressTracker = new();
+    private readonly RateLimiterRegistry _quotaLimiters = new();
     private readonly ISymbolResolver? _symbolResolver;
     private readonly OpenFigiSymbolResolver? _ownedSymbolResolver;
     private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
@@ -118,7 +119,7 @@ public sealed class BackfillCoordinator : IDisposable
 
     public void ValidateRequest(BackfillRequest request)
     {
-        var service = CreateService();
+        using var service = CreateService(request.Provider);
         service.ValidateRequest(request);
     }
 
@@ -218,21 +219,51 @@ public sealed class BackfillCoordinator : IDisposable
         return await _symbolResolver.ResolveAsync(symbol, ct: ct).ConfigureAwait(false);
     }
 
-    public async Task<BackfillResult> RunAsync(BackfillRequest request, CancellationToken ct = default)
+    public Task<BackfillResult> RunAsync(BackfillRequest request, CancellationToken ct = default) =>
+        RunCoreAsync(request, null, null, null, null, ct);
+
+    internal Task<BackfillResult> RunQueuedAsync(
+        BackfillRequest request, BackfillQuotaEstimate estimate, string? alternativeFor,
+        Action onStarted, Action<DateTimeOffset> onThrottled, CancellationToken ct) =>
+        RunCoreAsync(request, estimate, alternativeFor, onStarted, onThrottled, ct);
+
+    private async Task<BackfillResult> RunCoreAsync(
+        BackfillRequest request, BackfillQuotaEstimate? submissionEstimate, string? alternativeFor,
+        Action? onStarted, Action<DateTimeOffset>? onThrottled, CancellationToken ct)
     {
-        if (!await _gate.WaitAsync(TimeSpan.Zero, ct).ConfigureAwait(false))
+        var queued = submissionEstimate is not null;
+        if (!await _gate.WaitAsync(queued ? Timeout.InfiniteTimeSpan : TimeSpan.Zero, ct).ConfigureAwait(false))
             throw new InvalidOperationException("A backfill is already running. Please try again after it completes.");
 
+        using var queuedTracker = queued ? new BackfillProgressTracker() : null;
+        var tracker = queuedTracker ?? _progressTracker;
         try
         {
-            var normalizedSymbols = BackfillSymbolNormalizer.Normalize(request.Symbols);
-            _progressTracker.Clear();
-            foreach (var symbol in normalizedSymbols)
-                _progressTracker.RegisterSymbol(symbol, request.From, request.To);
-
-            var cfg = _store.Load();
-            var compressionEnabled = cfg.Compress ?? false;
+            var cfg = LoadOperationConfig();
+            var serviceProviders = await CreateProvidersAsync(ct).ConfigureAwait(false);
             var dataRoot = _store.GetDataRoot(cfg);
+            var statusStore = new BackfillStatusStore(dataRoot);
+            // Workstation jobs have their own receipts and do not own the global resume sidecar.
+            using var service = CreateService(request.Provider, queued ? null : statusStore, serviceProviders, tracker, cfg.Backfill);
+            var requestedProvider = FindProvider(request.Provider, service.Providers);
+            ValidateAlternative(request, alternativeFor, cfg.Backfill, serviceProviders);
+            var estimate = submissionEstimate ?? BackfillQuotaPlanner.Estimate(request, requestedProvider, cfg.Backfill, DateTimeOffset.UtcNow);
+            var policyProviders = requestedProvider is CompositeHistoricalDataProvider
+                ? serviceProviders.Where(provider => provider is not CompositeHistoricalDataProvider)
+                : [requestedProvider];
+            var concurrency = Math.Max(1, request.MaxConcurrentSymbols ?? cfg.Backfill?.Jobs?.MaxConcurrentRequests ?? new BackfillJobsConfig().MaxConcurrentRequests);
+            foreach (var provider in policyProviders)
+                if (BackfillQuotaPlanner.GetPolicy(cfg.Backfill, provider.Name).MaxConcurrentRequests is { } maximum)
+                    concurrency = Math.Min(concurrency, maximum);
+            request = request with { MaxConcurrentSymbols = concurrency };
+
+            onStarted?.Invoke();
+            var normalizedSymbols = BackfillSymbolNormalizer.Normalize(request.Symbols);
+            tracker.Clear();
+            foreach (var symbol in normalizedSymbols)
+                tracker.RegisterSymbol(symbol, request.From, request.To);
+
+            var compressionEnabled = cfg.Compress ?? false;
             var baseStorageOptions = cfg.Storage?.ToStorageOptions(dataRoot, compressionEnabled)
                 ?? StorageProfilePresets.CreateFromProfile(null, dataRoot, compressionEnabled);
             var storageOpt = CreateStorageOptionsForRequest(baseStorageOptions, request);
@@ -251,22 +282,26 @@ public sealed class BackfillCoordinator : IDisposable
             // Keep pipeline counters scoped per run
             _metrics.Reset();
 
-            var statusStore = new BackfillStatusStore(_store.GetDataRoot(cfg));
-            var service = CreateService(statusStore, await CreateProvidersAsync(ct).ConfigureAwait(false));
+            var activity = new BackfillQuotaActivity(cfg.Backfill, _quotaLimiters, onThrottled);
+            using var observation = activity.Observe(retryRateLimited: queued);
             var result = await service.RunAsync(request, pipeline, ct).ConfigureAwait(false);
+            result = result with { QuotaReceipt = activity.BuildReceipt(estimate, result.CompletedUtc - result.StartedUtc) };
 
-            await statusStore.WriteAsync(result).ConfigureAwait(false);
-            _lastRun = result;
+            if (!queued)
+            {
+                await statusStore.WriteAsync(result).ConfigureAwait(false);
+                _lastRun = result;
+            }
 
             var skipped = result.SkippedSymbols.ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach (var symbol in normalizedSymbols)
             {
                 if (skipped.Contains(symbol))
-                    _progressTracker.MarkSkipped(symbol);
+                    tracker.MarkSkipped(symbol);
                 else if (result.Success)
-                    _progressTracker.MarkCompleted(symbol);
+                    tracker.MarkCompleted(symbol);
                 else
-                    _progressTracker.MarkFailed(symbol, result.Error);
+                    tracker.MarkFailed(symbol, result.Error);
             }
 
             return result;
@@ -274,7 +309,7 @@ public sealed class BackfillCoordinator : IDisposable
         catch (Exception ex)
         {
             foreach (var symbol in BackfillSymbolNormalizer.Normalize(request.Symbols))
-                _progressTracker.MarkFailed(symbol, ex.Message);
+                tracker.MarkFailed(symbol, ex.Message);
             _log.Error(ex, "Backfill failed");
             throw;
         }
@@ -290,26 +325,73 @@ public sealed class BackfillCoordinator : IDisposable
     /// </summary>
     public async Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, CancellationToken ct = default)
     {
-        // Validation needs the providers too; create them once, with credentials read ahead.
+        ct.ThrowIfCancellationRequested();
+        var cfg = LoadOperationConfig();
         var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
-        CreateService(createdProviders: providers).ValidateRequest(request);
-
-        var provider = providers
-            .FirstOrDefault(p => p.Name.Equals(request.Provider, StringComparison.OrdinalIgnoreCase));
-        var cfg = _store.Load();
-        var dataRoot = _store.GetDataRoot(cfg);
-
-        return BackfillPreviewPlanner.BuildPreview(request, provider, dataRoot, _providerCatalog);
+        var plan = PlanSubmission(request, null, cfg.Backfill, providers, DateTimeOffset.UtcNow);
+        var provider = plan.Provider;
+        var alternatives = BackfillQuotaPlanner.GetApprovedAlternatives(cfg.Backfill, provider.Name, request.Granularity, providers)
+            .Select(candidate => new BackfillProviderAlternative(candidate.Name, candidate.DisplayName)).ToArray();
+        return BackfillPreviewPlanner.BuildPreview(plan.Request, provider, _store.GetDataRoot(cfg),
+            _providerCatalog, plan.Quota, alternatives);
     }
+
+    internal async Task<(BackfillRequest Request, BackfillQuotaEstimate Quota, DateTimeOffset PlannedAt)> PlanSubmissionAsync(
+        BackfillRequest request, string? alternativeFor, TimeProvider clock, CancellationToken ct)
+    {
+        var config = LoadOperationConfig().Backfill;
+        var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
+        var now = clock.GetUtcNow();
+        var plan = PlanSubmission(request, alternativeFor, config, providers, now);
+        return (plan.Request, plan.Quota, now);
+    }
+
+    private AppConfig LoadOperationConfig()
+    {
+        try
+        {
+            return _store.LoadRequired();
+        }
+        catch (FileNotFoundException)
+        {
+            return _store.Load();
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return _store.Load();
+        }
+    }
+
+    private (BackfillRequest Request, BackfillQuotaEstimate Quota, IHistoricalDataProvider Provider) PlanSubmission(
+        BackfillRequest request, string? alternativeFor, BackfillConfig? config,
+        List<IHistoricalDataProvider> providers, DateTimeOffset now)
+    {
+        request = BackfillQuotaPlanner.ResolveDates(request, now);
+        ValidateAlternative(request, alternativeFor, config, providers);
+        using var service = CreateService(request.Provider, providers: providers, backfillCfg: config);
+        service.ValidateRequest(request);
+        var provider = FindProvider(request.Provider, service.Providers);
+        return (request with { Provider = provider.Name }, BackfillQuotaPlanner.Estimate(request, provider, config, now), provider);
+    }
+
+    private static void ValidateAlternative(BackfillRequest request, string? alternativeFor, BackfillConfig? config,
+        List<IHistoricalDataProvider> providers)
+    {
+        if (alternativeFor is not null && !BackfillQuotaPlanner.GetApprovedAlternatives(config, alternativeFor, request.Granularity, providers)
+            .Any(candidate => candidate.Name.Equals(request.Provider, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException("This provider is no longer approved as an equivalent for the selected scope.");
+    }
+
+    private static IHistoricalDataProvider FindProvider(string name, IEnumerable<IHistoricalDataProvider> providers) =>
+        providers.FirstOrDefault(provider => provider.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+        ?? throw new InvalidOperationException($"Unknown backfill provider '{name}'.");
 
     /// <summary>
     /// Creates backfill providers using a priority-based discovery approach:
     /// 1. ProviderRegistry.GetBackfillProviders() - unified registry
     /// 2. ProviderFactory.CreateBackfillProviders() - factory with credential resolution
     /// 3. Manual instantiation - backwards compatibility fallback
-    /// </summary>
-    /// <summary>
-    /// <see cref="CreateProviders"/> for asynchronous callers. When the factory has to construct
+    /// For asynchronous callers, When the factory has to construct
     /// the providers, their credentials are read first so the construction does not wait on
     /// credential storage. A populated registry needs no read.
     /// </summary>
@@ -418,27 +500,29 @@ public sealed class BackfillCoordinator : IDisposable
             .ToList();
     }
 
-    private HistoricalBackfillService CreateService(
-        BackfillStatusStore? checkpointStore = null,
-        List<IHistoricalDataProvider>? createdProviders = null)
+    private HistoricalBackfillService CreateService(string providerId, BackfillStatusStore? checkpointStore = null,
+        List<IHistoricalDataProvider>? providers = null, BackfillProgressTracker? tracker = null, BackfillConfig? backfillCfg = null)
     {
-        var cfg = _store.Load();
-        var backfillCfg = cfg.Backfill;
-
-        var providers = createdProviders ?? CreateProviders();
+        backfillCfg ??= _store.Load().Backfill;
+        providers ??= CreateProviders();
 
         // If composite provider requested, wrap all providers
-        if (string.Equals(backfillCfg?.Provider, "composite", StringComparison.OrdinalIgnoreCase)
-            || (backfillCfg?.EnableFallback ?? true))
+        CompositeHistoricalDataProvider? composite = null;
+        if (providerId.Equals("composite", StringComparison.OrdinalIgnoreCase) &&
+            !providers.Any(provider => provider.Name.Equals(providerId, StringComparison.OrdinalIgnoreCase)) &&
+            providers.Count > 0 &&
+            (string.Equals(backfillCfg?.Provider, "composite", StringComparison.OrdinalIgnoreCase)
+            || (backfillCfg?.EnableFallback ?? true)))
         {
-            var composite = new CompositeHistoricalDataProvider(
+            composite = new CompositeHistoricalDataProvider(
                 providers,
                 backfillCfg?.EnableSymbolResolution ?? true ? _symbolResolver : null,
                 enableCrossValidation: false,
                 log: _log,
-                progressTracker: _progressTracker,
+                progressTracker: tracker ?? _progressTracker,
                 validationProfiles: backfillCfg?.ValidationProfiles,
-                crossValidationPolicy: () => CrossProviderTolerancePolicy.FromConfig(_store.Load())
+                crossValidationPolicy: () => CrossProviderTolerancePolicy.FromConfig(_store.Load()),
+                ownsProviders: false
             );
 
             // Combine composite (for fallback routing) with individual providers (for direct selection)
@@ -450,9 +534,11 @@ public sealed class BackfillCoordinator : IDisposable
         return new HistoricalBackfillService(
             providers,
             _log,
+            jobsConfig: backfillCfg?.Jobs,
             checkpointStore: checkpointStore,
             symbolTimelineResolver: _symbolTimelineResolver,
-            validationProfiles: backfillCfg?.ValidationProfiles);
+            validationProfiles: backfillCfg?.ValidationProfiles,
+            ownedProvider: composite);
     }
 
     private static string[] GetSupportedGranularityValues(IHistoricalDataProvider provider)
@@ -531,6 +617,7 @@ public sealed class BackfillCoordinator : IDisposable
 
         _ownedSymbolResolver?.Dispose();
         _progressTracker.Dispose();
+        _quotaLimiters.Dispose();
         _gate.Dispose();
     }
 

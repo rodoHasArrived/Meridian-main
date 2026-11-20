@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { BackfillCoverageChart } from "@/components/meridian/backfill-coverage-chart";
+import { WorkstationBackfillReceipts } from "@/screens/data-screen.backfill-quota";
 import type { DataQueryPanelViewModel } from "@/screens/data-screen.query-panel.view-model";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
@@ -229,6 +230,7 @@ export function DataBackfillWorkstream({ vm }: { vm: DataOperationsVm }) {
             emptyState={vm.backfillDetailEmptyState ?? vm.backfillSection.emptyState}
           />
         </div>
+        <WorkstationBackfillReceipts rows={vm.queuedBackfills} error={vm.queuedBackfills.length > 0 ? vm.remediationHistoryError : null} />
         {vm.retainedBackfillHistory && !vm.remediationHistoryError && !vm.remediationHistoryLoading ? <BackfillCoverageChart history={vm.retainedBackfillHistory} /> : null}
         <section aria-labelledby="backfill-remediation-sla-title" className="mt-5 space-y-3 border-t border-border/70 pt-4">
           <div className="flex flex-wrap items-start justify-between gap-2">

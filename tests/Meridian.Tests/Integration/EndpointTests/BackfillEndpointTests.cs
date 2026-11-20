@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
@@ -291,6 +292,35 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
     #endregion
 
     #region Provider planning configuration
+
+    [Fact]
+    public async Task WorkstationBackfill_PreviewWithoutQuotaCanBeScheduledAndReadBack()
+    {
+        var scheduledAt = DateTimeOffset.UtcNow.AddHours(2);
+        var symbols = new[] { "QUOTATEST" };
+        using var preview = await _client.PostAsJsonAsync("/api/backfill/run/preview", new { provider = "stooq", symbols });
+        preview.StatusCode.Should().Be(HttpStatusCode.OK);
+        var plan = await preview.Content.ReadFromJsonAsync<JsonElement>();
+        plan.GetProperty("quota").GetProperty("requestsPerWindow").ValueKind.Should().Be(JsonValueKind.Null);
+        plan.GetProperty("estimatedDurationSeconds").ValueKind.Should().Be(JsonValueKind.Null);
+
+        var submissionId = Guid.NewGuid();
+        using var submitted = await _client.PostAsJsonAsync("/api/backfill/run", new
+        {
+            provider = "stooq", symbols, executionPolicy = "scheduled", scheduledAt, submissionId
+        });
+        submitted.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        var receipt = await submitted.Content.ReadFromJsonAsync<JsonElement>();
+        receipt.GetProperty("executionId").GetString().Should().Be(submissionId.ToString("N"));
+        receipt.GetProperty("status").GetString().Should().Be("Scheduled");
+
+        var history = await _client.GetFromJsonAsync<JsonElement>("/api/backfill/executions");
+        var row = history.GetProperty("executions").EnumerateArray()
+            .Single(item => item.GetProperty("executionId").GetString() == submissionId.ToString("N"));
+        row.GetProperty("status").GetString().Should().Be("Scheduled");
+        row.GetProperty("requestedProvider").GetString().Should().Be("stooq");
+        row.GetProperty("quotaReceipt").ValueKind.Should().Be(JsonValueKind.Null);
+    }
 
     [Fact]
     public void ProviderPlanning_DefaultAlphaVantageMapping_UsesCoreEnabledDefault()

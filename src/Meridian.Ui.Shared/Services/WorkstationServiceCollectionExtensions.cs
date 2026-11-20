@@ -147,6 +147,13 @@ public static class WorkstationServiceCollectionExtensions
                 providerCatalog: sp.GetService<Meridian.Contracts.Api.IProviderCatalog>());
         });
 
+        if (services.Any(descriptor => descriptor.ServiceType == typeof(Meridian.Application.Scheduling.BackfillExecutionHistory)) &&
+            services.Any(descriptor => descriptor.ServiceType == typeof(Meridian.Application.Backfill.BackfillCoordinator)))
+        {
+            services.TryAddSingleton<Meridian.Application.Backfill.WorkstationBackfillQueue>();
+            services.AddHostedService(sp => sp.GetRequiredService<Meridian.Application.Backfill.WorkstationBackfillQueue>());
+        }
+
         services.AddHttpClient();
         services.AddHttpContextAccessor();
         services.AddMemoryCache();

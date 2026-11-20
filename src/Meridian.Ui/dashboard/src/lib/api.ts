@@ -19,6 +19,7 @@ export { executeCell, extractQuantParameters, fetchQuantData, getQuantTemplates,
 export { getLatestRuntimeShutdownReceipt, getReferenceDataWorkbenchCoverage, getRuntimeLifecycle, getRuntimeShutdownOperation, getSystemStatus, requestRuntimeShutdown } from "@/lib/api/system-overview.api";
 export { type HistoricalBarsRequest, addSymbol, archiveSymbol, bulkAddSymbols, getCanonicalSymbolRegistry, getHistoricalBars, getLiveOrderbook, getLiveQuote, getLiveQuotesSnapshot, getLiveTrades, getQualityDashboard, getQualityGaps, getSymbols, getSymbolsStatistics, remediateQualityGap, removeSymbol, searchSymbolsQuery } from "@/lib/api/market-data.api";
 export { createFundStructureSetupDraft, validateFundStructureSetupDraft } from "@/lib/api/fund-structure-setup.api";
+export { submitBackfill } from "@/lib/api/provider-management.api";
 
 export type {
   FundStructureSetupDraft,

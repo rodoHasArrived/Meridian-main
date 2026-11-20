@@ -36,6 +36,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     private readonly TimeSpan _maxRateLimitRetryBudget;
     private readonly BackfillProgressTracker _progressTracker;
     private readonly bool _ownsProgressTracker;
+    private readonly bool _ownsProviders;
     private readonly ILogger _log;
     private readonly IReadOnlyDictionary<string, ProviderValidationProfile>? _validationProfiles;
     private bool _disposed;
@@ -117,7 +118,8 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         BackfillProgressTracker? progressTracker = null,
         IReadOnlyDictionary<string, ProviderValidationProfile>? validationProfiles = null,
         ProviderRateLimitHistory? rateLimitHistory = null,
-        Func<CrossProviderTolerancePolicy>? crossValidationPolicy = null)
+        Func<CrossProviderTolerancePolicy>? crossValidationPolicy = null,
+        bool ownsProviders = true)
     {
         // Fabricated bars are a last resort even when their numeric priority is lower.
         _providers = providers
@@ -139,6 +141,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         _log = log ?? LoggingSetup.ForContext<CompositeHistoricalDataProvider>();
         _progressTracker = progressTracker ?? new BackfillProgressTracker();
         _ownsProgressTracker = progressTracker is null;
+        _ownsProviders = ownsProviders;
 
         // Rate-limit aware rotation policy, backed by a per-provider rate-limit state tracker.
         var rateLimitTracker = new ProviderRateLimitTracker(_log);
@@ -315,6 +318,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                         retryAfter: resetTime);
                     errors.Add((provider.Name, unavailable));
                     rateLimitedCandidates.Add(provider);
+                    HistoricalBackfillRequestScope.Current?.Throttled(provider.Name, "provider-rotation", null);
                     Report(provider.Name, "skipped-rate-limited", error: unavailable.Message);
                     continue;
                 }
@@ -342,6 +346,9 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                         provider.Name, validationProfile.StaleToleranceDays, validationProfile.FutureSkewSeconds, validationProfile.StaleThresholdSeconds, validationProfile.MaxLatencyMs);
                     // Record the request attempt
                     _rotation.RecordRequest(provider.Name);
+
+                    if (provider is not IBackfillRequestMeteredProvider && HistoricalBackfillRequestScope.Current is { } observation)
+                        await observation.BeforeUnmeteredFetch(provider, ct).ConfigureAwait(false);
 
                     var results = await fetchAsync(provider, resolvedSymbol, ct).ConfigureAwait(false);
                     ct.ThrowIfCancellationRequested();
@@ -400,6 +407,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     if (IsRateLimitException(ex))
                     {
                         var retryAfter = ExtractRetryAfter(ex);
+                        HistoricalBackfillRequestScope.Current?.Throttled(provider.Name, "provider-rate-limit", null);
                         _rotation.RecordRateLimitHit(provider.Name, retryAfter,
                             HasHttpTooManyRequestsStatus(ex) ? 429 : null);
                         throttledProvider = provider.Name;
@@ -671,7 +679,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 "Failed to dispose the owned backfill progress tracker.");
         }
 
-        foreach (var provider in _providers)
+        foreach (var provider in _ownsProviders ? _providers : [])
         {
             CaptureDisposalFailure(
                 failures,
