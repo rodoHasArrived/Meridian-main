@@ -27,17 +27,19 @@ export function useRecordWorkspaceContext(
 export function RecordIdentitySpine({
   record,
   context,
-  showName = false
+  showName = false,
+  showRecordId = true
 }: {
   record: RecordIdentity;
   context: RecordWorkspaceContext | null;
   showName?: boolean;
+  showRecordId?: boolean;
 }) {
   const { pathname } = useLocation();
   return (
     <section className="record-identity-spine" aria-label={`${kindLabels[record.kind]} identity`}>
       {showName ? <RecordName record={record} /> : null}
-      <IdentityFacts record={record} />
+      <IdentityFacts record={record} showRecordId={showRecordId} />
       {context ? <RelatedWork context={context} pathname={pathname} /> : null}
     </section>
   );
@@ -87,10 +89,16 @@ function RecordName({ record, originWorkspace }: { record: RecordIdentity; origi
   );
 }
 
-function IdentityFacts({ record, captured = false }: { record: RecordIdentity; captured?: boolean }) {
+function IdentityFacts({ record, captured = false, showRecordId = true }: {
+  record: RecordIdentity;
+  captured?: boolean;
+  showRecordId?: boolean;
+}) {
+  const identifiers = [record.identifier, showRecordId ? record.id : null]
+    .filter((value, index, all) => value && all.indexOf(value) === index).join(" · ");
   return (
     <dl className="record-identity-facts">
-      <IdentityFact label="Identifiers" value={[record.identifier, record.id].filter((value, index, all) => value && all.indexOf(value) === index).join(" · ")} mono />
+      <IdentityFact label="Identifiers" value={identifiers} mono />
       <IdentityFact label="Asset class" value={record.assetClass} />
       <IdentityFact label="Entity / book" value={[record.entity, record.book].filter(Boolean).join(" / ")} />
       <IdentityFact label={captured ? "Origin status" : "Status"} value={record.status} />

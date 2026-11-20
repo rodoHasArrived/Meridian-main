@@ -178,6 +178,10 @@ describe("AssetDetailScreen", () => {
     expect(screen.getByText("Active")).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByText("No corporate actions recorded for this security.")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Instrument identity" })).not.toHaveTextContent(entry.securityId);
+    const technicalIdentity = screen.getByText("Technical identity").closest("details");
+    expect(technicalIdentity).not.toHaveAttribute("open");
+    expect(technicalIdentity).toHaveTextContent(entry.securityId);
 
     const user = userEvent.setup();
     await user.click(screen.getByRole("tab", { name: "Passport" }));

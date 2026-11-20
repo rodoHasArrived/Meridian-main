@@ -53,6 +53,9 @@ describe("Cash Ladder request scope", () => {
     const user = userEvent.setup();
     const { container } = render(view("account-a"));
     await user.click(await screen.findByRole("button", { name: /Week A/ }));
+    const engineDetails = screen.getByText("Projection engine", { exact: true }).closest("details");
+    expect(engineDetails).not.toHaveAttribute("open");
+    expect(engineDetails).toHaveTextContent(projection.engineVersion);
     const table = within(screen.getByRole("table", { name: "Cash ladder contributing flows" }));
     expect(table.getByRole("link", { name: "Bond A" })).toHaveAttribute("href", "/portfolio/asset-detail?securityId=bond");
     expect(table.getByRole("link", { name: "Security Master evidence" })).toHaveAttribute("href", "/accounting/security-master?securityId=bond&tab=evidence");
