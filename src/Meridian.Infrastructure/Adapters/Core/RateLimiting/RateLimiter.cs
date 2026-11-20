@@ -71,8 +71,15 @@ public sealed class RateLimiter : IDisposable
     /// Atomically reserve the complete request cost against short and daily limits. A wait
     /// cancelled before admission charges neither limit. No HTTP timeout runs during admission.
     /// </summary>
-    public async Task<TimeSpan> WaitForUnitsAsync(int units, CancellationToken ct = default)
+    public Task<TimeSpan> WaitForUnitsAsync(int units, CancellationToken ct = default) =>
+        WaitForUnitsAsync(units, 0, null, ct);
+
+    /// <summary>Admit a backfill request against the same vendor quota with optional operational headroom.</summary>
+    public async Task<TimeSpan> WaitForUnitsAsync(int units, int reserveHeadroomPercent, Action<TimeSpan>? onWait,
+        CancellationToken ct = default)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(reserveHeadroomPercent);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(reserveHeadroomPercent, 99);
         CancellationTokenSource linked;
         lock (_sync)
         {
@@ -96,7 +103,7 @@ public sealed class RateLimiter : IDisposable
                         var now = _timeProvider.GetUtcNow();
                         CleanupOldTimestamps(now);
                         ValidateCost(units);
-                        var next = NextAdmissionAt(now, units);
+                        var next = NextAdmissionAt(now, units, reserveHeadroomPercent);
                         wait = next - now;
                         if (wait <= TimeSpan.Zero)
                         {
@@ -106,6 +113,7 @@ public sealed class RateLimiter : IDisposable
                     }
 
                     _log.Debug("Rate limit reached, waiting {WaitMs}ms", wait.TotalMilliseconds);
+                    onWait?.Invoke(wait);
                     // Task.Delay truncates fractional milliseconds, including positive waits
                     // below one millisecond. Round up so a frozen clock cannot spin at zero.
                     var delay = TimeSpan.FromMilliseconds(Math.Ceiling(wait.TotalMilliseconds));
@@ -241,18 +249,26 @@ public sealed class RateLimiter : IDisposable
         _lastRequest = now;
     }
 
-    private DateTimeOffset NextAdmissionAt(DateTimeOffset now, int units)
+    private DateTimeOffset NextAdmissionAt(DateTimeOffset now, int units, int reserveHeadroomPercent = 0)
     {
         var next = _lastRequest == DateTimeOffset.MinValue ? now : _lastRequest + _limits.MinimumDelay;
-        next = Max(next, CapacityAvailableAt(_requestTimestamps, _unitsInWindow, _limits.Maximum, units, _limits.Window, now));
-        if (_limits.DailyMaximum is { } daily && (long)_dailyUnits + units > daily)
-            next = Max(next, _limits.DailyReset == DailyQuotaResetMode.UtcMidnight
-                ? NextUtcMidnight(now)
-                : CapacityAvailableAt(_dailyTimestamps, _dailyUnits, daily, units, TimeSpan.FromDays(1), now));
+        var maximum = CapacityAfterHeadroom(_limits.Maximum, units, reserveHeadroomPercent);
+        next = Max(next, CapacityAvailableAt(_requestTimestamps, _unitsInWindow, maximum, units, _limits.Window, now));
+        if (_limits.DailyMaximum is { } daily)
+        {
+            var dailyMaximum = CapacityAfterHeadroom(daily, units, reserveHeadroomPercent);
+            if ((long)_dailyUnits + units > dailyMaximum)
+                next = Max(next, _limits.DailyReset == DailyQuotaResetMode.UtcMidnight
+                    ? NextUtcMidnight(now)
+                    : CapacityAvailableAt(_dailyTimestamps, _dailyUnits, dailyMaximum, units, TimeSpan.FromDays(1), now));
+        }
         if (_cooldownUntil is { } cooldown)
             next = Max(next, cooldown);
         return next;
     }
+
+    private static int CapacityAfterHeadroom(int maximum, int minimum, int percentage) => maximum == int.MaxValue
+        ? maximum : Math.Max(minimum, (int)((long)maximum * (100 - percentage) / 100));
 
     private static DateTimeOffset CapacityAvailableAt(Queue<Charge> charges, int used, int maximum, int units, TimeSpan window, DateTimeOffset now)
     {

@@ -6,18 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SymbolTradingEligibility
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolTradingEligibility</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:119](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L119).
-
-Provider-supplied borrow and order-increment evidence for a symbol.
-
-```csharp
-public sealed record SymbolTradingEligibility(bool? IsTradable, bool? IsMarginable, bool? IsShortable, bool? IsEasyToBorrow, bool? IsFractionable, decimal? MaintenanceMarginRequirement, decimal? MinimumOrderSize, decimal? MinimumTradeIncrement, decimal? PriceIncrement, string? Source);
-```
-
 ## TemplateCategory
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.TemplateCategory</code>. Kind: `enum`.

@@ -17,6 +17,29 @@ public sealed record BackfillBatchReceipt(
     IReadOnlyList<DateOnly>? ExpectedSessions,
     IReadOnlyList<DateOnly> ReceivedSessions);
 
+/// <summary>Batch evidence for execution history. The revision retains the underlying session dates.</summary>
+public sealed record BackfillBatchReceiptSummary(
+    string RevisionId,
+    string RequestedProvider,
+    string? ServingProvider,
+    string Feed,
+    string Instrument,
+    string Granularity,
+    DateOnly? From,
+    DateOnly? To,
+    string Status,
+    int RowCount,
+    string ContentHash,
+    string? Calendar,
+    int? ExpectedSessionCount,
+    int ReceivedSessionCount)
+{
+    public static BackfillBatchReceiptSummary FromReceipt(BackfillBatchReceipt receipt) =>
+        new(receipt.RevisionId, receipt.RequestedProvider, receipt.ServingProvider, receipt.Feed,
+            receipt.Instrument, receipt.Granularity, receipt.From, receipt.To, receipt.Status, receipt.RowCount,
+            receipt.ContentHash, receipt.Calendar, receipt.ExpectedSessions?.Count, receipt.ReceivedSessions.Count);
+}
+
 /// <summary>Sources of expected exchange sessions for historical coverage, when available.</summary>
 public static class HistoricalSessionEvidence
 {

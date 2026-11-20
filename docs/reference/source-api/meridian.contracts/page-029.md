@@ -6,103 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## IntercompanyAgreementProposalDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementProposalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:44](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L44).
-
-```csharp
-public sealed record IntercompanyAgreementProposalDto(Guid ProposalId, IntercompanyAgreementActionDto Action, IntercompanyAgreementProposalStateDto State, IntercompanyAgreementDraftDto Draft, int? BaseAgreementVersion, IReadOnlyList<string> Authors, string? Submitter, DateTimeOffset? SubmittedAtUtc, string? SubmittedHash, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, string? Rationale)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:51](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L51) |  |
-
-## IntercompanyAgreementProposalStateDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementProposalStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:10](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L10).
-
-```csharp
-public enum IntercompanyAgreementProposalStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Draft</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:10](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L10) |  |
-| <code>Submitted</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:10](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L10) |  |
-| <code>Approved</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:10](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L10) |  |
-| <code>Rejected</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:10](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L10) |  |
-| <code>Withdrawn</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:10](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L10) |  |
-
-## IntercompanyAgreementQueryDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementQueryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:103](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L103).
-
-```csharp
-public sealed record IntercompanyAgreementQueryDto(Guid? EntityId = null, IntercompanyAgreementTypeDto? AgreementType = null, IntercompanyAgreementStatusDto? Status = null, DateOnly? AsOf = null, DateTimeOffset? KnownAtUtc = null, string? Cursor = null, int PageSize = 50);
-```
-
-## IntercompanyAgreementReviewIntegrity
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementReviewIntegrity</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:19](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L19).
-
-Retained legal review authority is either an independent actor or an explicit external attestation.
-
-```csharp
-public static class IntercompanyAgreementReviewIntegrity
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void Validate(IntercompanyAgreementRevisionDto revision);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs:21](../../../../src/Meridian.Contracts/FundStructure/IntercompanyExternalReviewDtos.cs#L21) |  |
-
-## IntercompanyAgreementReviewPayloadDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementReviewPayloadDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:113](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L113).
-
-```csharp
-public sealed record IntercompanyAgreementReviewPayloadDto(IntercompanyAgreementDraftDto Draft, int? BaseAgreementVersion, int? PredecessorAgreementVersion, string? Rationale)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Guid AgreementId { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:116](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L116) |  |
-| <code>public Guid ProposalId { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:117](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L117) |  |
-
-## IntercompanyAgreementRevisionDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementRevisionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:54](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L54).
-
-```csharp
-public sealed record IntercompanyAgreementRevisionDto(Guid AgreementId, int AgreementVersion, int? PredecessorAgreementVersion, int? BaseAgreementVersion, IntercompanyAgreementActionDto Action, IntercompanyAgreementDraftDto Terms, Guid ProposalId, string PayloadHash, IReadOnlyList<string> Authors, string Submitter, string Approver, DateTimeOffset ApprovedAtUtc, string Rationale)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:61](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L61) |  |
-
 ## IntercompanyAgreementStatusDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementStatusDto</code>. Kind: `enum`.
@@ -697,4 +600,122 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:462](../../..
 
 ```csharp
 public sealed record LedgerMappingWorkbenchDto(DateTimeOffset AsOf, OrganizationSummaryDto? Organization, BusinessSummaryDto? Business, int AccountCount, int MappedAccountCount, int UnmappedAccountCount, IReadOnlyList<LedgerGroupSummaryDto> LedgerGroups, IReadOnlyList<LedgerMappingAccountDto> Accounts, FundStructureSharedDataAccessDto? SharedDataAccess = null);
+```
+
+## LegalEntityFormDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntityFormDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:50](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L50).
+
+```csharp
+public enum LegalEntityFormDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unspecified</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:52](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L52) |  |
+| <code>LimitedLiabilityCompany</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:53](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L53) |  |
+| <code>SeriesLimitedLiabilityCompany</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:54](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L54) |  |
+| <code>LimitedPartnership</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:55](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L55) |  |
+| <code>GeneralPartnership</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:56](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L56) |  |
+| <code>Corporation</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:57](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L57) |  |
+| <code>StatutoryTrust</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:58](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L58) |  |
+| <code>Trust</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:59](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L59) |  |
+| <code>Foundation</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:60](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L60) |  |
+| <code>SegregatedPortfolioCompany</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:61](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L61) |  |
+| <code>ExemptedCompany</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:62](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L62) |  |
+| <code>Other</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:63](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L63) |  |
+
+## LegalEntityLifecycleEventDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntityLifecycleEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:244](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L244).
+
+```csharp
+public sealed record LegalEntityLifecycleEventDto(Guid EventId, LegalEntityLifecycleEventKindDto EventKind, DateTimeOffset OccurredAt, string RecordedBy, string Summary, string? EvidenceReference = null, DateTimeOffset? EffectiveFrom = null, DateTimeOffset? EffectiveTo = null);
+```
+
+## LegalEntityLifecycleEventKindDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntityLifecycleEventKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:80](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L80).
+
+```csharp
+public enum LegalEntityLifecycleEventKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Formation</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:82](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L82) |  |
+| <code>LegalFormChange</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:83](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L83) |  |
+| <code>NameChange</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:84](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L84) |  |
+| <code>JurisdictionChange</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:85](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L85) |  |
+| <code>Amendment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:86](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L86) |  |
+| <code>Restructure</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:87](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L87) |  |
+| <code>SpvRollup</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:88](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L88) |  |
+| <code>BeneficialOwnershipChange</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:89](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L89) |  |
+| <code>Dissolution</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:90](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L90) |  |
+| <code>Reactivation</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:91](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L91) |  |
+| <code>Other</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:92](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L92) |  |
+
+## LegalEntityLifecycleStatusDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntityLifecycleStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:67](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L67).
+
+```csharp
+public enum LegalEntityLifecycleStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Draft</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:69](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L69) |  |
+| <code>Forming</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:70](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L70) |  |
+| <code>Active</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:71](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L71) |  |
+| <code>AmendmentPending</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:72](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L72) |  |
+| <code>Restructuring</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:73](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L73) |  |
+| <code>WindingDown</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:74](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L74) |  |
+| <code>Dissolved</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:75](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L75) |  |
+| <code>Merged</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:76](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L76) |  |
+
+## LegalEntityReadAuthorityProof
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntityReadAuthorityProof</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:5](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L5).
+
+Invocation-bound proof of a live PostgreSQL legal-entity read fence.
+
+```csharp
+public sealed class LegalEntityReadAuthorityProof
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Host { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:16](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L16) |  |
+| <code>public int Port { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:17](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L17) |  |
+| <code>public string Database { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:18](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L18) |  |
+| <code>public string Schema { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:19](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L19) |  |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:20](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L20) |  |
+
+## LegalEntitySummaryDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntitySummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:218](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L218).
+
+```csharp
+public sealed record LegalEntitySummaryDto(Guid EntityId, LegalEntityTypeDto EntityType, string Code, string Name, string Jurisdiction, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? Description = null, LegalEntityFormDto LegalForm = LegalEntityFormDto.Unspecified, LegalEntityLifecycleStatusDto LifecycleStatus = LegalEntityLifecycleStatusDto.Active, string? RegistrationNumber = null, IReadOnlyList<BeneficialOwnerSummaryDto>? BeneficialOwners = null, IReadOnlyList<LegalEntityLifecycleEventDto>? LifecycleEvents = null);
 ```

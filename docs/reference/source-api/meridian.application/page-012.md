@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WebhookType
+
+Qualified name: <code>Meridian.Application.Services.WebhookType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:701](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L701).
+
+Supported webhook types.
+
+```csharp
+public enum WebhookType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Generic</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:704](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L704) | Generic JSON webhook. |
+| <code>Slack</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:707](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L707) | Slack incoming webhook. |
+| <code>Discord</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:710](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L710) | Discord webhook. |
+| <code>Teams</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:713](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L713) | Microsoft Teams webhook connector. |
+
+## WizardResult
+
+Qualified name: <code>Meridian.Application.Services.WizardResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:331](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L331).
+
+Result of running the configuration wizard.
+
+```csharp
+public sealed record WizardResult(bool Success, AppConfig? Config, string? ConfigPath);
+```
+
 ## ApplyTemplateResult
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.ApplyTemplateResult</code>. Kind: `record`.
@@ -725,18 +758,18 @@ Declared public members:
 | <code>public ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:115](../../../../src/Meridian.Application/Http/ConfigStore.cs#L115) | Saved setting impacts and host-lifetime pending activation; contains no setting values. |
 | <code>public static ConfigurationChangeImpact GetSettingImpact(string path) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:118](../../../../src/Meridian.Application/Http/ConfigStore.cs#L118) | Conservative activation requirement for a configuration field, also exposed by effective settings. |
 | <code>public AppConfig LoadRequired();</code> | [src/Meridian.Application/Http/ConfigStore.cs:121](../../../../src/Meridian.Application/Http/ConfigStore.cs#L121) | Loads existing configuration without substituting defaults when authoritative state cannot be read. |
-| <code>public Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;AppConfig, (AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:159](../../../../src/Meridian.Application/Http/ConfigStore.cs#L159) | Read-modify-write of the configuration document under the cross-process configuration lock (PRD-002: concurrent configuration writes). The current document is loaded inside the lock, handed to update, and the returned document is written atomically before the lock is released, so two writers editing different sections can never lose each other&#x27;s change the way a Load() + SaveAsync pair can. |
-| <code>public Task UpdateAsync(Func&lt;AppConfig, AppConfig&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:163](../../../../src/Meridian.Application/Http/ConfigStore.cs#L163) | Result-less form of UpdateAsync{T}. |
-| <code>public async Task&lt;IDisposable&gt; AcquireWriteLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:198](../../../../src/Meridian.Application/Http/ConfigStore.cs#L198) | Holds the cross-process configuration write lock (the .lock sidecar beside the file) until the returned lease is disposed. For writers that persist the document through their own serializer, such as the WPF shell&#x27;s configuration service, so the installed two-process workstation shares one lock with every UpdateAsync{T} caller. Not reentrant. |
-| <code>public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:220](../../../../src/Meridian.Application/Http/ConfigStore.cs#L220) | Whole-document replacement: the caller&#x27;s snapshot becomes the configuration, last writer wins. Reserved for callers that own the entire document (the CLI &quot;save this configuration&quot; path and the setup wizard&#x27;s generated output). Section-level edits use UpdateAsync{T}, which reads the current document under the same lock and cannot drop a concurrent change. |
-| <code>public async Task SaveFeatureCapabilityOverridesAsync(IReadOnlyDictionary&lt;string, bool&gt; overrides, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:304](../../../../src/Meridian.Application/Http/ConfigStore.cs#L304) |  |
-| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:360](../../../../src/Meridian.Application/Http/ConfigStore.cs#L360) |  |
-| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:377](../../../../src/Meridian.Application/Http/ConfigStore.cs#L377) |  |
-| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:384](../../../../src/Meridian.Application/Http/ConfigStore.cs#L384) |  |
-| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:391](../../../../src/Meridian.Application/Http/ConfigStore.cs#L391) |  |
-| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:398](../../../../src/Meridian.Application/Http/ConfigStore.cs#L398) |  |
-| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:404](../../../../src/Meridian.Application/Http/ConfigStore.cs#L404) |  |
-| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:411](../../../../src/Meridian.Application/Http/ConfigStore.cs#L411) |  |
+| <code>public Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;AppConfig, (AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:146](../../../../src/Meridian.Application/Http/ConfigStore.cs#L146) | Read-modify-write of the configuration document under the cross-process configuration lock (PRD-002: concurrent configuration writes). The current document is loaded inside the lock, handed to update, and the returned document is written atomically before the lock is released, so two writers editing different sections can never lose each other&#x27;s change the way a Load() + SaveAsync pair can. |
+| <code>public Task UpdateAsync(Func&lt;AppConfig, AppConfig&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:150](../../../../src/Meridian.Application/Http/ConfigStore.cs#L150) | Result-less form of UpdateAsync{T}. |
+| <code>public async Task&lt;IDisposable&gt; AcquireWriteLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:185](../../../../src/Meridian.Application/Http/ConfigStore.cs#L185) | Holds the cross-process configuration write lock (the .lock sidecar beside the file) until the returned lease is disposed. For writers that persist the document through their own serializer, such as the WPF shell&#x27;s configuration service, so the installed two-process workstation shares one lock with every UpdateAsync{T} caller. Not reentrant. |
+| <code>public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:207](../../../../src/Meridian.Application/Http/ConfigStore.cs#L207) | Whole-document replacement: the caller&#x27;s snapshot becomes the configuration, last writer wins. Reserved for callers that own the entire document (the CLI &quot;save this configuration&quot; path and the setup wizard&#x27;s generated output). Section-level edits use UpdateAsync{T}, which reads the current document under the same lock and cannot drop a concurrent change. |
+| <code>public async Task SaveFeatureCapabilityOverridesAsync(IReadOnlyDictionary&lt;string, bool&gt; overrides, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:291](../../../../src/Meridian.Application/Http/ConfigStore.cs#L291) |  |
+| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:347](../../../../src/Meridian.Application/Http/ConfigStore.cs#L347) |  |
+| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:364](../../../../src/Meridian.Application/Http/ConfigStore.cs#L364) |  |
+| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:371](../../../../src/Meridian.Application/Http/ConfigStore.cs#L371) |  |
+| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:378](../../../../src/Meridian.Application/Http/ConfigStore.cs#L378) |  |
+| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:385](../../../../src/Meridian.Application/Http/ConfigStore.cs#L385) |  |
+| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:391](../../../../src/Meridian.Application/Http/ConfigStore.cs#L391) |  |
+| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:398](../../../../src/Meridian.Application/Http/ConfigStore.cs#L398) |  |
 
 ## ConfigurationRuntimeAppliers
 
@@ -1037,43 +1070,3 @@ Declared public members:
 | <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L16) |  |
 | <code>public ConfigureBackfillStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L18) |  |
 | <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L24) |  |
-
-## ConfigureDataSourceStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureDataSourceStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L12).
-
-Step 4: Selects the primary real-time data source and configures provider options. Writes WizardContext.DataSource.
-
-```csharp
-public sealed class ConfigureDataSourceStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L17) |  |
-| <code>public ConfigureDataSourceStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L19) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L25) |  |
-
-## ConfigureStorageStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureStorageStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L12).
-
-Step 7: Lets the user pick a storage profile or configure advanced settings. Writes WizardContext.Storage.
-
-```csharp
-public sealed class ConfigureStorageStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L17) |  |
-| <code>public ConfigureStorageStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L19) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L25) |  |

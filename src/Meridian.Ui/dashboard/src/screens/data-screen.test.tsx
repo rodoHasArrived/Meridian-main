@@ -1252,6 +1252,57 @@ describe("DataScreen", () => {
       expect(previewStatus).toHaveTextContent("2024-01-01 to 2024-01-31");
     });
     expect(screen.getByText("Preview is ready. Review the summary before running.")).toBeInTheDocument();
+    expect(screen.getByText("Limit unavailable")).toBeInTheDocument();
+    expect(screen.queryByText("Estimated duration")).not.toBeInTheDocument();
+  });
+
+  it("shows observed quota and submits an over-budget plan with explicit throttling", async () => {
+    const user = userEvent.setup();
+    const quota = {
+      expectedRequests: 5,
+      requestsPerWindow: 5,
+      windowSeconds: 60,
+      observedRemainingRequests: 2,
+      observedAt: "2024-01-31T10:00:00Z",
+      resetAt: null,
+      backfillRequestsPerWindow: 4,
+      backfillRemainingRequests: 1,
+      reservedHeadroomPercent: 20,
+      maxConcurrentRequests: 1,
+      estimatedDurationSeconds: 65,
+      exceedsBudget: true,
+      uncertainty: "Pagination and retries can increase usage."
+    };
+    vi.spyOn(api, "previewBackfill").mockResolvedValueOnce({
+      provider: "polygon", providerDisplayName: "Polygon", from: "2024-01-01", to: "2024-01-31",
+      totalDays: 31, estimatedTradingDays: 21, symbols: [], estimatedDurationSeconds: 65, notes: [], quota
+    });
+    const submit = vi.spyOn(api, "submitBackfill").mockResolvedValueOnce({
+      executionId: "admission-1", status: "Queued", provider: "polygon", scheduledAt: "2024-01-31T10:00:00Z", quota
+    });
+    vi.spyOn(api, "getBackfillExecutionHistory").mockResolvedValue({
+      executions: [], total: 0, autoRemediation: { total: 0, withReason: 0, lastOutcome: null, defaultProvider: "stooq" },
+      timestamp: "2024-01-31T10:00:00Z"
+    });
+
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
+    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "AAPL");
+    await user.click(screen.getByRole("button", { name: "Preview backfill request" }));
+    const quotaPanel = await screen.findByRole("region", { name: "Provider quota" });
+    expect(quotaPanel).toHaveTextContent("Expected requests");
+    expect(quotaPanel).toHaveTextContent("5 requests / 1 min");
+    expect(quotaPanel).toHaveTextContent("Observed remaining2 requests");
+    expect(quotaPanel).toHaveTextContent("20% headroom target");
+    expect(quotaPanel).toHaveTextContent("Pagination and retries can increase usage.");
+    expect(screen.getByRole("checkbox", { name: "Schedule for later" })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "Queue with throttling" }));
+    expect(submit).toHaveBeenCalledWith(expect.objectContaining({
+      provider: "polygon", symbols: ["AAPL"], executionPolicy: "queued", scheduledAt: null,
+      from: "2024-01-01", to: "2024-01-31", submissionId: expect.any(String)
+    }));
+    expect(await screen.findByText("Queued · polygon")).toBeInTheDocument();
+    expect(screen.getByText("Requests are paced to the shared provider budget.")).toBeInTheDocument();
   });
 
   it("locks backfill request fields while preview is pending", async () => {

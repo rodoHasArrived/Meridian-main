@@ -27,7 +27,7 @@ Use this page when you need to map configuration sections to high-impact operati
 | Section | Why it matters | Typical env override path |
 |---|---|---|
 | `DataSource` / `DataSources` | Chooses live/offline provider routing and failover posture. | `MDC_DATASOURCE` |
-| `Backfill` | Controls historical import behavior, retry policy, and scheduling. | Explicit aliases such as `MDC_BACKFILL_ENABLED`, `MDC_BACKFILL_PROVIDER`, `MDC_BACKFILL_FROM`, and `MDC_BACKFILL_TO`. |
+| `Backfill` | Controls historical import, retry policy, scheduling, and [shared provider budgets](../operators/provider-backfill-operations.md#provider-administrator-budgets). | Explicit aliases such as `MDC_BACKFILL_ENABLED`, `MDC_BACKFILL_PROVIDER`, `MDC_BACKFILL_FROM`, and `MDC_BACKFILL_TO`. |
 | `Storage` | Controls retention, partitioning, and storage pressure behavior. | `MDC_STORAGE_NAMING`, `MDC_STORAGE_PARTITION`, `MDC_STORAGE_RETENTION_DAYS`, `MDC_STORAGE_MAX_MB`. |
 | `Compress` | Top-level JSONL gzip setting; this is not `Storage.CompressOutput`. | `MDC_COMPRESS`. |
 | `TenantScopeEnforcement` | Defaults to `fail-closed`; retained-data readiness must pass before serving scoped work. Explicit `deployment-boundary` is temporary single-company migration compatibility. Requires restart. | `MERIDIAN_TENANT_SCOPE_ENFORCEMENT` |

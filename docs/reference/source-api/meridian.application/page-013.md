@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConfigureDataSourceStep
+
+Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureDataSourceStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L12).
+
+Step 4: Selects the primary real-time data source and configures provider options. Writes WizardContext.DataSource.
+
+```csharp
+public sealed class ConfigureDataSourceStep : IWizardStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L17) |  |
+| <code>public ConfigureDataSourceStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L19) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L25) |  |
+
+## ConfigureStorageStep
+
+Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureStorageStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L12).
+
+Step 7: Lets the user pick a storage profile or configure advanced settings. Writes WizardContext.Storage.
+
+```csharp
+public sealed class ConfigureStorageStep : IWizardStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L17) |  |
+| <code>public ConfigureStorageStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L19) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L25) |  |
+
 ## ConfigureSymbolsStep
 
 Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureSymbolsStep</code>. Kind: `class`.

@@ -396,7 +396,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.ProviderSdk.IProviderRateLimitDiagnosticsSource</code>. Kind: `interface`.
 
-Source: [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:44](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L44).
+Source: [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:47](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L47).
 
 Implemented by provider runtimes that can expose a coherent rate-limit snapshot.
 
@@ -408,7 +408,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:46](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L46) |  |
+| <code>ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:49](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L49) |  |
 
 ## IProviderScannerService
 
