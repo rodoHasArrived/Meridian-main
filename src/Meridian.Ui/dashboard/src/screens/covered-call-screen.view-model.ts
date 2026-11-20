@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ChartEvidence } from "@/components/charts/chart-evidence";
 import * as coveredCallApi from "@/lib/api/covered-call.api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { coveredCallRunResultEndpoint } from "@/lib/workstation-endpoints";
 import type {
   CoveredCallBacktestRequest,
   CoveredCallChainPreview,
@@ -292,6 +294,8 @@ export interface CoveredCallPayoffChartViewModel {
   zeroLine: CoveredCallPayoffChartLineViewModel;
   strikeLine: CoveredCallPayoffChartLineViewModel;
   path: string;
+  observations: (ChartEvidence & { x: number; y: number })[];
+  references: ChartEvidence[];
 }
 
 export interface CoveredCallPayoffPanelViewModel {
@@ -1138,7 +1142,7 @@ export function buildCoveredCallPayoffPanel(
     positionOptions: result.openPositionsAtEnd.map((position, index) =>
       buildCoveredCallPayoffPositionOption(result.underlyingSymbol, position, index, selectedPositionIndex)
     ),
-    chart: buildCoveredCallPayoffChart(selectedPosition, result.underlyingSymbol)
+    chart: buildCoveredCallPayoffChart(selectedPosition, result)
   };
 }
 
@@ -1164,8 +1168,9 @@ function buildCoveredCallPayoffPositionOption(
 
 function buildCoveredCallPayoffChart(
   position: CoveredCallOpenPosition,
-  underlyingSymbol: string
-): CoveredCallPayoffChartViewModel {
+  result: CoveredCallRunResult
+): CoveredCallPayoffChartViewModel | null {
+  const { underlyingSymbol } = result;
   const width = 320;
   const height = 180;
   const spotMin = position.strike * 0.75;
@@ -1182,16 +1187,24 @@ function buildCoveredCallPayoffChart(
   const xScale = (spot: number) => ((spot - spotMin) / Math.max(spotMax - spotMin, 1e-6)) * width;
   const yScale = (value: number) => height - ((value - yMin) / Math.max(yMax - yMin, 1e-6)) * height;
   if (samples.length === 0 || !Number.isFinite(yMin) || !Number.isFinite(yMax)) {
-    return {
-      viewBox: `0 0 ${width} ${height}`,
-      ariaLabel: `${underlyingSymbol} ${formatPrice(position.strike)} short-call payoff diagram unavailable`,
-      zeroLine: { x1: 0, y1: height / 2, x2: width, y2: height / 2 },
-      strikeLine: { x1: width / 2, y1: 0, x2: width / 2, y2: height },
-      path: `M0,${height / 2} L${width},${height / 2}`
-    };
+    return null;
   }
-  const path = samples
-    .map((sample, index) => `${index === 0 ? "M" : "L"}${formatFixed(xScale(sample.spot), 1)},${formatFixed(yScale(sample.payoff), 1)}`)
+  const proof = { href: coveredCallRunResultEndpoint(result.runId), label: "Open run result and position inputs" };
+  const sourceDetail = `Position ${position.positionId} at run end ${result.to} · strike ${position.strike} · entry credit ${position.entryCredit} · ${position.contracts} contracts × ${position.multiplier}.`;
+  const observations = samples.map(({ spot, payoff }, index) => ({
+    id: `${result.runId}:${position.positionId}:point-${index}`,
+    label: `Short-call expiration scenario ${index + 1}`,
+    asOf: position.expiration,
+    x: xScale(spot), y: yScale(payoff),
+    values: [
+      { series: `${underlyingSymbol} expiry spot`, value: spot, unit: "Model currency per share", basis: "Sampled underlying price at expiration." },
+      { series: "Short-call payoff", value: payoff, unit: "Model currency units", basis: "(Entry credit − max(expiry spot − strike, 0)) × contracts × multiplier." }
+    ],
+    proof,
+    sourceDetail
+  }));
+  const path = observations
+    .map(({ x, y }, index) => `${index === 0 ? "M" : "L"}${formatFixed(x, 1)},${formatFixed(y, 1)}`)
     .join(" ");
 
   return {
@@ -1199,7 +1212,20 @@ function buildCoveredCallPayoffChart(
     ariaLabel: `${underlyingSymbol} ${formatPrice(position.strike)} short-call payoff diagram`,
     zeroLine: { x1: 0, y1: yScale(0), x2: width, y2: yScale(0) },
     strikeLine: { x1: xScale(position.strike), y1: 0, x2: xScale(position.strike), y2: height },
-    path
+    path,
+    observations,
+    references: [
+      {
+        id: `${result.runId}:${position.positionId}:strike`, label: "Strike marker", asOf: position.expiration,
+        values: [{ series: "Strike", value: position.strike, unit: "Model currency per share", basis: "Exercise price in the retained option position." }],
+        proof, sourceDetail
+      },
+      {
+        id: `${result.runId}:${position.positionId}:zero`, label: "Zero payoff reference", asOf: "Fixed reference",
+        values: [{ series: "Short-call payoff", value: 0, unit: "Model currency units", basis: "Zero net P&L reference." }],
+        proof, sourceDetail
+      }
+    ]
   };
 }
 
