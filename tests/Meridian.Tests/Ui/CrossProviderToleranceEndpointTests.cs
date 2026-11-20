@@ -214,7 +214,7 @@ public sealed class CrossProviderToleranceEndpointTests
             using var response = await app.GetTestClient().PostAsJsonAsync(UiApiRoutes.QualityCrossProviderPreview,
                 new CrossProviderTolerancePreviewRequest(symbol, "stooq", "tiingo", 1, AssetClass: "bond"));
 
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest, await response.Content.ReadAsStringAsync());
             var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
             problem.GetProperty("errors").GetProperty("assetClass")[0].GetString().Should().Contain(evidence);
             foreach (var provider in app.Services.GetRequiredService<IEnumerable<IHistoricalDataProvider>>())
@@ -307,6 +307,7 @@ public sealed class CrossProviderToleranceEndpointTests
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(store);
+        builder.Services.AddSingleton(store.CoreStore);
         if (policy is not null)
         {
             var registry = new SymbolRegistryService(directory);
