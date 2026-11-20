@@ -6344,6 +6344,7 @@ Meridian-main
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   ├── Workstation
 │   │   │   ├── AccountBalanceHistoryDtos.cs
+│   │   │   ├── AmountPassportDtos.cs
 │   │   │   ├── AuditTrailExplorerDtos.cs
 │   │   │   ├── AutomatedJournalScheduleDtos.cs
 │   │   │   ├── BrokerageSyncDtos.cs
@@ -9177,6 +9178,9 @@ Meridian-main
 │   │   │   │   │   │   ├── accounting-preparer-attestation.test.tsx
 │   │   │   │   │   │   ├── accounting-preparer-attestation.tsx
 │   │   │   │   │   │   ├── activity-center.tsx
+│   │   │   │   │   │   ├── amount-passport-drawer.tsx
+│   │   │   │   │   │   ├── amount-passport.test.tsx
+│   │   │   │   │   │   ├── amount-passport.tsx
 │   │   │   │   │   │   ├── approval-collaboration-panel.test.tsx
 │   │   │   │   │   │   ├── approval-collaboration-panel.tsx
 │   │   │   │   │   │   ├── attention-pill.test.tsx
@@ -9796,6 +9800,7 @@ Meridian-main
 │   │   │   │   │   │   └── use-provider-setup.ts
 │   │   │   │   │   ├── accounting-navigation.test.ts
 │   │   │   │   │   ├── accounting-navigation.ts
+│   │   │   │   │   ├── amount-passport-api.ts
 │   │   │   │   │   ├── api-errors.test.ts
 │   │   │   │   │   ├── api-errors.ts
 │   │   │   │   │   ├── api.corporate-actions.test.ts
@@ -10665,6 +10670,7 @@ Meridian-main
 │   │   │   │   │   │   ├── loan-portfolio.host.json
 │   │   │   │   │   │   ├── quant-run-response.json
 │   │   │   │   │   │   └── security-asset-term-form-parity.json
+│   │   │   │   │   ├── amount-passport-fixtures.ts
 │   │   │   │   │   ├── asset-approval-fixtures.ts
 │   │   │   │   │   ├── cash-dividend-attestation-fixtures.ts
 │   │   │   │   │   ├── fixtures.ts
@@ -10678,6 +10684,7 @@ Meridian-main
 │   │   │   │   │   ├── account-oversight.ts
 │   │   │   │   │   ├── accounting-integration.ts
 │   │   │   │   │   ├── accounting-onboarding.ts
+│   │   │   │   │   ├── amount-passport.ts
 │   │   │   │   │   ├── archive-maintenance.types.ts
 │   │   │   │   │   ├── asset-accounting-workflow.ts
 │   │   │   │   │   ├── audit-integrity.ts
@@ -11031,6 +11038,7 @@ Meridian-main
 │   │   │   ├── EndpointHelpers.cs
 │   │   │   ├── EnvironmentDesignerEndpoints.cs
 │   │   │   ├── EquityReferenceEndpoints.cs
+│   │   │   ├── EvidenceEndpoints.AmountPassport.cs
 │   │   │   ├── EvidenceEndpoints.cs
 │   │   │   ├── EvidenceEndpoints.SinglePrincipalAttestation.cs
 │   │   │   ├── ExecutionEndpointDtos.cs
@@ -11326,6 +11334,7 @@ Meridian-main
 │   │   │   ├── AccountingWorkspaceReadScope.cs
 │   │   │   ├── AggregatePortfolioExposureProvider.cs
 │   │   │   ├── AlpacaBrokerageConnectionService.cs
+│   │   │   ├── AmountPassportFacts.cs
 │   │   │   ├── AuditTrailExplorerService.cs
 │   │   │   ├── AuditTrailHttpAuthority.cs
 │   │   │   ├── AutomatedJournalDividendPositionResolver.cs
@@ -11351,6 +11360,7 @@ Meridian-main
 │   │   │   ├── BondWorkflowServiceRegistration.cs
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioState.cs
+│   │   │   ├── BrokeragePortfolioSyncService.AmountPassport.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
 │   │   │   ├── BrokeragePortfolioSyncService.Performance.cs
 │   │   │   ├── BrokerageSyncActualCashActivitySource.cs
@@ -11505,6 +11515,7 @@ Meridian-main
 │   │   │   ├── PortfolioOpeningBalanceQueue.cs
 │   │   │   ├── PostedLedgerAccountReconciliationSource.cs
 │   │   │   ├── PostedLedgerAmountProvenanceService.cs
+│   │   │   ├── PostedLedgerAmountProvenanceService.Passport.cs
 │   │   │   ├── PostedPeriodComparisonService.cs
 │   │   │   ├── PostedStrategyRunLedgerSource.cs
 │   │   │   ├── PostgresManualJournalMutationRecoveryStore.cs
@@ -11574,6 +11585,7 @@ Meridian-main
 │   │   │   ├── ReportingWorkflowService.AccessibleRecords.cs
 │   │   │   ├── ReportingWorkflowService.cs
 │   │   │   ├── ReportLedgerAmountProvenanceService.cs
+│   │   │   ├── ReportLedgerAmountProvenanceService.Passport.cs
 │   │   │   ├── ReportPackDeliveryService.cs
 │   │   │   ├── ReportPackDeliveryService.Evidence.cs
 │   │   │   ├── ReportPackDeliveryService.Guards.cs
@@ -14998,6 +15010,7 @@ Meridian-main
 │   │   │   ├── ActivityCapturingPublisher.cs
 │   │   │   ├── ActivityTestListenerFactory.cs
 │   │   │   ├── AlphaVantageTestBudget.cs
+│   │   │   ├── AmountPassportTestRoutes.cs
 │   │   │   ├── LiveRunOrderAuthority.cs
 │   │   │   ├── MarketScenarioBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
