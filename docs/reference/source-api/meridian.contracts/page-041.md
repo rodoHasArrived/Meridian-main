@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RuntimeLifecycleState
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.RuntimeLifecycleState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:6](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L6).
+
+```csharp
+public enum RuntimeLifecycleState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Created</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:8](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L8) |  |
+| <code>Bootstrapping</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:9](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L9) |  |
+| <code>Validating</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:10](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L10) |  |
+| <code>StartingHost</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:11](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L11) |  |
+| <code>EvaluatingReadiness</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:12](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L12) |  |
+| <code>Ready</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:13](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L13) |  |
+| <code>Degraded</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:14](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L14) |  |
+| <code>ShutdownRequested</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:15](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L15) |  |
+| <code>Draining</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:16](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L16) |  |
+| <code>Flushing</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:17](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L17) |  |
+| <code>StoppingHost</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:18](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L18) |  |
+| <code>Stopped</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:19](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L19) |  |
+| <code>Failed</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:20](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L20) |  |
+
+## RuntimeReadinessStatus
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.RuntimeReadinessStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:24](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L24).
+
+```csharp
+public enum RuntimeReadinessStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Starting</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:26](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L26) |  |
+| <code>Ready</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:27](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L27) |  |
+| <code>Degraded</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:28](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L28) |  |
+| <code>NotReady</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:29](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L29) |  |
+| <code>Stopping</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:30](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L30) |  |
+| <code>Failed</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:31](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L31) |  |
+
 ## DataManifest
 
 Qualified name: <code>Meridian.Contracts.Manifest.DataManifest</code>. Kind: `class`.
@@ -753,6 +802,108 @@ Declared public members:
 | <code>public static bool IsReservedReference(string? reference);</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:40](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L40) | Unknown versions in the reserved namespace are also refused as ordinary authority. |
 | <code>public static void RequireOrdinaryReference(string? reference, string parameterName);</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:52](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L52) |  |
 
+## ProviderProvenanceAccess
+
+Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceAccess</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:81](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L81).
+
+Storage-only ownership and runtime revision checks. This is never part of an exported receipt.
+
+```csharp
+public sealed record ProviderProvenanceAccess(ImmutableArray<string> TenantIds, ImmutableDictionary<string, string> RuntimeRevisions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ProviderProvenanceAccess Public { get; } = new ([], ImmutableDictionary&lt;string, string&gt;.Empty);</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:85](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L85) |  |
+| <code>public bool IsVisibleTo(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:87](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L87) |  |
+| <code>public ProviderProvenanceAccess ForRequestTenant(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:90](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L90) |  |
+
+## ProviderProvenanceLabels
+
+Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceLabels</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:95](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L95).
+
+```csharp
+public static class ProviderProvenanceLabels
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Unknown = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:97](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L97) |  |
+| <code>public static string? PublicProviderId(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:101](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L101) |  |
+| <code>public static string ProviderId(string value) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:110](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L110) |  |
+| <code>public static string ConnectionId(string providerId, string tenantId, string connectionId) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:114](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L114) |  |
+| <code>public static string? RuntimeRevision(string? generation) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:117](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L117) |  |
+| <code>public static string Environment(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:120](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L120) |  |
+| <code>public static bool IsSymbol(string? value);</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:131](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L131) |  |
+
+## ProviderProvenanceReceipt
+
+Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:8](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L8).
+
+Versioned, allowlisted evidence captured from a single terminal execution.
+
+```csharp
+public sealed record ProviderProvenanceReceipt(int SchemaVersion, Guid ReceiptId, string Capability, string RoutingDecision, ImmutableArray<ProviderProvenanceSource> Providers, ImmutableArray<string> FallbackChain, bool FallbackOccurred, ProviderProvenanceValidation ValidationProfile, ProviderProvenanceRequest Request, DateTimeOffset StartedUtc, DateTimeOffset CompletedUtc, string DataSemantics, string? ReproductionUnavailableReason = null, bool RoutingHistoryComplete = true)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:24](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L24) |  |
+
+## ProviderProvenanceRequest
+
+Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:62](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L62).
+
+```csharp
+public sealed record ProviderProvenanceRequest(DateOnly? From, DateOnly? To, ImmutableArray<string> Symbols, string? Granularity = null, int? MaxConcurrentSymbols = null, ImmutableArray<ProviderProvenanceSymbolPriority>? SymbolPriorities = null, bool? ResumeFromCheckpoint = null, decimal? InitialCash = null, bool? AdjustForCorporateActions = null, bool? FailOnUnknownSymbols = null, int WithheldSymbolCount = 0, bool UsesDiscoveredUniverse = false, bool? SkipExistingData = null, bool? FillGapsOnly = null);
+```
+
+## ProviderProvenanceSource
+
+Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceSource</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:27](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L27).
+
+```csharp
+public sealed record ProviderProvenanceSource(string ProviderId, string? ConnectionId, string Environment, string FeedLabel, string EntitlementLabel, string DataSemantics, int? Priority = null, long Requests = 0, long ResponsesWithData = 0, long Unavailable = 0, long EmptyResponses = 0, long StaleResponses = 0, long StaleResponsesAccepted = 0, long ReplayEvents = 0, int? StaleToleranceDays = null);
+```
+
+## ProviderProvenanceSymbolPriority
+
+Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceSymbolPriority</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:78](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L78).
+
+```csharp
+public sealed record ProviderProvenanceSymbolPriority(string Symbol, int Priority);
+```
+
+## ProviderProvenanceValidation
+
+Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceValidation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:45](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L45).
+
+Only typed execution settings belong in a receipt. Free-form configuration stays in its owner.
+
+```csharp
+public sealed record ProviderProvenanceValidation(string Version, int? StaleToleranceDays = null, int? FutureToleranceDays = null, bool? TryOtherProvidersForStaleBars = null, bool? SymbolResolution = null, bool? CrossValidation = null, bool? RateLimitRotation = null, double? RateLimitRotationThreshold = null, int? RateLimitRetries = null, double? RateLimitRetryBudgetSeconds = null, double? FailureBackoffSeconds = null, bool? PreflightEnabled = null, bool? CorporateActionsApplied = null, bool? FailOnUnknownSymbols = null, int? OptionsStrikeRange = null);
+```
+
 ## VerifiedOperationOutcome
 
 Qualified name: <code>Meridian.Contracts.Operations.VerifiedOperationOutcome</code>. Kind: `record`.
@@ -823,120 +974,4 @@ Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:40](../../../
 
 ```csharp
 public sealed record OptionAssessmentBasket(string Quantity, string OrderType, string PriceEffect, string? LimitPrice, string Currency, IReadOnlyList<OptionAssessmentLeg> Legs);
-```
-
-## OptionAssessmentImportPreview
-
-Qualified name: <code>Meridian.Contracts.Options.OptionAssessmentImportPreview</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:62](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L62).
-
-```csharp
-public sealed record OptionAssessmentImportPreview(BrokerOptionAssessment Assessment, string BasketFingerprint, string PreviewFingerprint, string SourceSha256, long SourceBytes, string? CorrectsAssessmentId, IReadOnlyList<string> Warnings);
-```
-
-## OptionAssessmentImportRequest
-
-Qualified name: <code>Meridian.Contracts.Options.OptionAssessmentImportRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:57](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L57).
-
-The CSV alternative replaces Basket.Legs and uses the same validated header.
-
-```csharp
-public sealed record OptionAssessmentImportRequest(BrokerOptionAssessment Assessment, string SourceFileName, string SourceContentBase64, string SourceContentType = "application/octet-stream", string? LegsCsv = null, string? CorrectsAssessmentId = null);
-```
-
-## OptionAssessmentLeg
-
-Qualified name: <code>Meridian.Contracts.Options.OptionAssessmentLeg</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:34](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L34).
-
-Exact proposed basket terms; unrestricted strategy names do not confer support.
-
-```csharp
-public sealed record OptionAssessmentLeg(string LegId, string InstrumentType, string Symbol, string Side, string PositionIntent, string Ratio, string Currency, string? UnderlyingSymbol = null, string? Right = null, string? Expiration = null, string? Strike = null, string? Multiplier = null, string? Exchange = null, string? Deliverable = null);
-```
-
-## OptionAssessmentValidation
-
-Qualified name: <code>Meridian.Contracts.Options.OptionAssessmentValidation</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:10](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L10).
-
-Canonical matching and format validation only. Never computes option margin or permission.
-
-```csharp
-public static partial class OptionAssessmentValidation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaxLegs = 50;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:12](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L12) |  |
-| <code>public static string ExactDecimal(string? value, string name, bool positive = false);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:24](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L24) |  |
-| <code>public static BrokerOptionAssessment Normalize(BrokerOptionAssessment value, string? legsCsv = null);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:46](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L46) |  |
-| <code>public static string BasketFingerprint(BrokerOptionAssessment assessment) =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:110](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L110) |  |
-| <code>public static string Digest(byte[] bytes);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:113](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L113) |  |
-| <code>public static byte[] CanonicalBytes&lt;T&gt;(T value) =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:118](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L118) |  |
-| <code>public static IReadOnlyList&lt;OptionAssessmentLeg&gt; ParseLegsCsv(string csv);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:175](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L175) |  |
-
-## OptionChainSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Options.OptionChainSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:33](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L33).
-
-```csharp
-public sealed record OptionChainSnapshotDto(string OptionChainId, string UnderlyingSymbol, DateOnly ExpiryDate, DateTimeOffset LastUpdatedUtc, int ContractCount, IReadOnlyList<OptionSeriesDto> Series);
-```
-
-## OptionContractReferenceDto
-
-Qualified name: <code>Meridian.Contracts.Options.OptionContractReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:5](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L5).
-
-```csharp
-public sealed record OptionContractReferenceDto(string ContractSymbol, Guid? SecurityId, string OptionChainId, string UnderlyingSymbol, Guid? UnderlyingSecurityId, string PutCall, decimal Strike, DateOnly ExpiryDate, decimal Multiplier, bool IsAdjusted, DateOnly? LastTradingDate, long Version)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityOptionRight? Right =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:23](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L23) | PutCall as a typed right, or null when the stored text names neither. The raw text stays on PutCall. |
-
-## OptionScreenCandidate
-
-Qualified name: <code>Meridian.Contracts.Options.OptionScreenCandidate</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:18](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L18).
-
-```csharp
-public sealed record OptionScreenCandidate(string Id, string Symbol, string UnderlyingSymbol, string Right, string Expiration, int DaysToExpiration, string Strike, string? Delta, string Bid, string Ask, string? Mid, string? SpreadFraction, long? OpenInterest, long? Volume, string Multiplier, string Currency, string Exchange, string Style, string Source, DateTimeOffset ObservedAt, bool PassesScreen, IReadOnlyList<string> RejectionReasons);
-```
-
-## OptionScreenRequest
-
-Qualified name: <code>Meridian.Contracts.Options.OptionScreenRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:4](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L4).
-
-Neutral single-contract criteria. Passing these criteria is not trading permission.
-
-```csharp
-public sealed record OptionScreenRequest(string UnderlyingSymbol, int MinDte = 0, int MaxDte = 365, decimal MinDelta = - 1m, decimal MaxDelta = 1m, string Right = "Both", long MinOpenInterest = 0, long MinVolume = 0, decimal? MaxSpreadFraction = null, decimal? MinPremium = null, string PremiumBasis = "Bid", int StrikeRange = 20);
-```
-
-## OptionScreenResult
-
-Qualified name: <code>Meridian.Contracts.Options.OptionScreenResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:26](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L26).
-
-```csharp
-public sealed record OptionScreenResult(OptionScreenRequest Criteria, DateTimeOffset ScreenedAt, IReadOnlyList<OptionScreenCandidate> Candidates, IReadOnlyList<string> LoadedExpirations, IReadOnlyList<string> FailedExpirations, IReadOnlyList<string> OmittedExpirations, int StrikeRange, string CoverageNote, string AuthorityNote);
 ```

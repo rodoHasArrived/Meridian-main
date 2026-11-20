@@ -5,6 +5,7 @@ using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Portfolio;
 using Meridian.Contracts.Backtesting;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Core.Serialization;
@@ -77,6 +78,7 @@ public sealed class BacktestEngine(
             throw new InvalidOperationException("Canonical settlement mode cannot be combined with PopulateAssetEventsFromSecurityMaster; select one source accounting mode.");
         await using var rawCapture = new CanonicalReplayCapture();
 
+        var startedUtc = DateTimeOffset.UtcNow;
         var sw = Stopwatch.StartNew();
         var stageTimer = new StageTimer(BacktestStage.ValidatingRequest);
         logger.LogInformation("Backtesting '{Strategy}' from {From} to {To} in {DataRoot}",
@@ -125,7 +127,11 @@ public sealed class BacktestEngine(
             logger.LogWarning("No symbols found in data root '{DataRoot}' for the requested date range", request.DataRoot);
             stageTimer.Transition(BacktestStage.Completed);
             stageTimer.Stop();
-            return CreateEmptyResult(request, universe, sw.Elapsed);
+            return CreateEmptyResult(request, universe, sw.Elapsed) with
+            {
+                ProviderProvenance = ResearchProviderProvenance.Create(request, startedUtc, DateTimeOffset.UtcNow,
+                    preflightEnabled: backtestPreflightService is not null, corporateActionsApplied: false)
+            };
         }
 
         logger.LogInformation("Universe contains {Count} symbols: {Symbols}",
@@ -247,6 +253,7 @@ public sealed class BacktestEngine(
         stageTimer.Transition(BacktestStage.Replaying);
         var currentDay = request.From;
         long eventsProcessed = 0;
+        var sourceCounts = new Dictionary<string, long>(StringComparer.Ordinal);
         var totalDays = (request.To.ToDateTime(TimeOnly.MinValue) - request.From.ToDateTime(TimeOnly.MinValue)).Days + 1;
         var rollingState = new RollingMetricsState(portfolio.ComputeCurrentEquity());
         var lastEventTimestamps = new Dictionary<string, DateTimeOffset>(StringComparer.OrdinalIgnoreCase);
@@ -274,6 +281,8 @@ public sealed class BacktestEngine(
             ctx.CurrentTime = evt.Timestamp;
             ctx.CurrentDate = evtDate;
             eventsProcessed++;
+            var providerId = ProviderProvenanceLabels.PublicProviderId(evt.Source) ?? "unrecorded";
+            sourceCounts[providerId] = sourceCounts.GetValueOrDefault(providerId) + 1;
             delistingMonitor.RecordEvent(evt.EffectiveSymbol, evtDate);
             lastEventTimestamps[evt.EffectiveSymbol] = evt.Timestamp;
 
@@ -352,7 +361,11 @@ public sealed class BacktestEngine(
         return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, BiasDisclosure: biasDisclosure)
         {
             LedgerIntegrityBreaks = ledgerIntegrityBreaks,
-            CanonicalCorporateActions = canonicalActions?.Snapshot
+            CanonicalCorporateActions = canonicalActions?.Snapshot,
+            ProviderProvenance = ResearchProviderProvenance.Create(request, startedUtc, DateTimeOffset.UtcNow, sourceCounts,
+                preflightEnabled: backtestPreflightService is not null,
+                corporateActionsApplied: rawCanonical || portfolioActionAccounting ||
+                    (request.AdjustForCorporateActions && corporateActionAdjustment is not null))
         };
     }
 

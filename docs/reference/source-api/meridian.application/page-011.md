@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutoConfigResult
+
+Qualified name: <code>Meridian.Application.Services.AutoConfigurationService.AutoConfigResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:35](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L35).
+
+Result of auto-configuration analysis.
+
+```csharp
+public sealed record AutoConfigResult(bool Success, AppConfig Config, IReadOnlyList<DetectedProvider> DetectedProviders, IReadOnlyList<string> AppliedFixes, IReadOnlyList<string> Recommendations, IReadOnlyList<string> Warnings);
+```
+
 ## DetectedProvider
 
 Qualified name: <code>Meridian.Application.Services.AutoConfigurationService.DetectedProvider</code>. Kind: `record`.
@@ -761,7 +773,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Services.StoredProviderCredentialResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:13](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L13).
+Source: [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:14](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L14).
 
 Resolves catalog-managed provider credentials exclusively through the credential store. Unmanaged provider types retain their legacy resolver; managed records never mix sources.
 
@@ -773,11 +785,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:22](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L22) |  |
-| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, UI.ConfigStore configStore, ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:31](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L31) | Resolves host defaults from the current retained configuration at provider construction. |
-| <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:44](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L44) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
-| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:53](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L53) |  |
-| <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:110](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L110) |  |
+| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:23](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L23) |  |
+| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, UI.ConfigStore configStore, ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:32](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L32) | Resolves host defaults from the current retained configuration at provider construction. |
+| <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:45](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L45) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
+| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:54](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L54) |  |
+| <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:113](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L113) |  |
 
 ## SymbolPreset
 
@@ -956,16 +968,4 @@ Information about archived data for a symbol.
 
 ```csharp
 public sealed record ArchivedSymbolInfo(string Symbol, int FileCount, long TotalSizeBytes, DateOnly? OldestData, DateOnly? NewestData, string[] DataTypes, string[] Sources);
-```
-
-## ArchivedSymbolsOptions
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:756](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L756).
-
-Options for scanning archived symbols.
-
-```csharp
-public sealed record ArchivedSymbolsOptions(string[]? FilterSymbols = null, bool IncludeCompressed = true);
 ```

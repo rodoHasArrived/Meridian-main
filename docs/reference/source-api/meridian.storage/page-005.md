@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AtomicLotReferenceVersions
+
+Qualified name: <code>Meridian.Storage.Ledger.AtomicLotReferenceVersions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:500](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L500).
+
+Approved reference versions bound to a new acquisition or disposal command.
+
+```csharp
+public sealed record AtomicLotReferenceVersions(long SecurityMasterVersion, long BookPositionVersion);
+```
+
 ## AtomicTaxLotJournalCommand
 
 Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotJournalCommand</code>. Kind: `record`.
@@ -933,21 +945,3 @@ Declared public members:
 | <code>Task&lt;LedgerBookControlProfileDto?&gt; GetBookControlsAsync(Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:45](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L45) |  |
 | <code>Task&lt;LedgerBookControlPreflightDto&gt; PrepareBookControlsAsync(Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:46](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L46) |  |
 | <code>Task&lt;LedgerBookControlProfileDto&gt; ActivateBookControlsAsync(Guid bookId, long expectedVersion, string preflightDigest, string actor, string reason, string evidenceReference, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:47](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L47) |  |
-
-## ILedgerEntityControlJournalValidation
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerEntityControlJournalValidation</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:21](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L21).
-
-Read-only journal review using the same retained entity/legal/mapping authority as durable append.
-
-```csharp
-public interface ILedgerEntityControlJournalValidation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task ValidateEntityPostingControlsAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:23](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L23) |  |

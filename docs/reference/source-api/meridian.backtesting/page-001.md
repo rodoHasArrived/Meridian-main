@@ -266,7 +266,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Engine.BacktestEngine</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/Engine/BacktestEngine.cs:22](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L22).
+Source: [src/Meridian.Backtesting/Engine/BacktestEngine.cs:23](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L23).
 
 Core backtesting engine. Drives a multi-symbol chronological merge over locally-stored JSONL data, dispatches events to the strategy, processes fills, and records cash flows.
 
@@ -278,11 +278,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BacktestEngine(ILogger&lt;BacktestEngine&gt; logger, StorageCatalogService catalogService, ISecurityMasterQueryService? securityMasterQueryService = null, ICorporateActionAdjustmentService? corporateActionAdjustment = null, IBacktestPreflightService? backtestPreflightService = null) : this(logger, catalogService, (ISecurityTradingParametersQueryService?) securityMasterQueryService, corporateActionAdjustment, backtestPreflightService, securityMasterQueryService);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:32](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L32) | Retains the aggregate-query constructor used by compiled consumers. |
-| <code>public ISecurityCorporateActionsQueryService? CanonicalCorporateActionQueries { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:47](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L47) | Optional canonical settlement query port; ignored by legacy replay and existing mapped event sources. |
-| <code>public IBacktestAssetEventSource? AssetEventSource { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:50](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L50) | Optional authoritative action source; aggregate-query callers also receive the built-in bridge. |
-| <code>public ILedgerJournalLogFactory? LedgerJournals { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:56](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L56) | Optional durable journal store. When set, runs whose request names a BacktestRequest.LedgerJournalScopeId write every posted journal to it as they go. |
-| <code>public async Task&lt;BacktestResult&gt; RunAsync(BacktestRequest request, IBacktestStrategy strategy, IProgress&lt;BacktestProgressEvent&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:65](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L65) | Runs a complete backtest, replaying all events in the requested date/symbol range. |
+| <code>public BacktestEngine(ILogger&lt;BacktestEngine&gt; logger, StorageCatalogService catalogService, ISecurityMasterQueryService? securityMasterQueryService = null, ICorporateActionAdjustmentService? corporateActionAdjustment = null, IBacktestPreflightService? backtestPreflightService = null) : this(logger, catalogService, (ISecurityTradingParametersQueryService?) securityMasterQueryService, corporateActionAdjustment, backtestPreflightService, securityMasterQueryService);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:33](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L33) | Retains the aggregate-query constructor used by compiled consumers. |
+| <code>public ISecurityCorporateActionsQueryService? CanonicalCorporateActionQueries { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:48](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L48) | Optional canonical settlement query port; ignored by legacy replay and existing mapped event sources. |
+| <code>public IBacktestAssetEventSource? AssetEventSource { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:51](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L51) | Optional authoritative action source; aggregate-query callers also receive the built-in bridge. |
+| <code>public ILedgerJournalLogFactory? LedgerJournals { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:57](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L57) | Optional durable journal store. When set, runs whose request names a BacktestRequest.LedgerJournalScopeId write every posted journal to it as they go. |
+| <code>public async Task&lt;BacktestResult&gt; RunAsync(BacktestRequest request, IBacktestStrategy strategy, IProgress&lt;BacktestProgressEvent&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:66](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L66) | Runs a complete backtest, replaying all events in the requested date/symbol range. |
 
 ## IBacktestAssetEventSource
 

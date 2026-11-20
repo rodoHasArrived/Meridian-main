@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationQuarantineIssueGroupDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationQuarantineIssueGroupDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:336](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L336).
+
+```csharp
+public sealed record ProviderIntegrationQuarantineIssueGroupDto(string IssueCode, ProviderIntegrationIssueSeverityDto Severity, string? TargetField, string Message, string? SuggestedFix, int RecordCount);
+```
+
+## ProviderIntegrationQuarantineReplayRequestDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationQuarantineReplayRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:384](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L384).
+
+```csharp
+public sealed record ProviderIntegrationQuarantineReplayRequestDto(string ReplaySyncRunId, string SourceSyncRunId, string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, IReadOnlyList<string> QuarantineRecordIds, string RequestedBy, DateTimeOffset RequestedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationReplayModeDto Mode { get; init; } = ProviderIntegrationReplayModeDto.Original;</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:394](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L394) |  |
+| <code>public int? TargetManifestVersion { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:396](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L396) |  |
+| <code>public string? TargetManifestDigest { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:398](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L398) |  |
+
 ## ProviderIntegrationQuarantineReplayResultDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationQuarantineReplayResultDto</code>. Kind: `record`.
@@ -661,27 +689,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool IsValid =&gt; …;</code> | [src/Meridian.Contracts/Ledger/AccountingAuditChain.cs:145](../../../../src/Meridian.Contracts/Ledger/AccountingAuditChain.cs#L145) |  |
-
-## AccountingAuditIntegrityReportDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingAuditIntegrityReportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:134](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L134).
-
-Read-only integrity report over every accounting and ledger audit chain this composition retains.
-
-```csharp
-public sealed record AccountingAuditIntegrityReportDto(DateTimeOffset VerifiedAtUtc, bool AllVerified, IReadOnlyList<AuditChainIntegrityResultDto> Chains);
-```
-
-## AccountingAuditPendingMarker
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingAuditPendingMarker</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:50](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L50).
-
-A declared-but-unconfirmed audit append: the event a mutation is about to be audited with, recorded durably before the mutation runs.
-
-```csharp
-public sealed record AccountingAuditPendingMarker(AccountingActionAuditEventDto AuditEvent, DateTimeOffset DeclaredAtUtc, bool BeforeStateRetained = true, AccountingAuditPendingMarkerPhase Phase = AccountingAuditPendingMarkerPhase.Declared);
-```

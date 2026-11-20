@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ApplyRateResetRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ApplyRateResetRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:336](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L336).
+
+```csharp
+public sealed record ApplyRateResetRequest(DateOnly EffectiveDate, decimal ObservedRate, decimal? SpreadBps, string? SourceRef);
+```
+
+## ApplyScheduledRateResetRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ApplyScheduledRateResetRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:141](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L141).
+
+Applies the reset scheduled for ResetDate from the fixing store.
+
+```csharp
+public sealed record ApplyScheduledRateResetRequest(DateOnly ResetDate);
+```
+
 ## ApplyUnappliedCashRequest
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ApplyUnappliedCashRequest</code>. Kind: `record`.
@@ -646,23 +668,3 @@ Enum declarations:
 | <code>Draft = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:171](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L171) |  |
 | <code>Posted = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:172](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L172) |  |
 | <code>Failed = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:173](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L173) |  |
-
-## JournalLineDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.JournalLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:176](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L176).
-
-```csharp
-public sealed record JournalLineDto(Guid JournalLineId, int LineNumber, string AccountCode, decimal DebitAmount, decimal CreditAmount, CurrencyCode Currency, string? DimensionsJson);
-```
-
-## LoanAggregateSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.LoanAggregateSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:221](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L221).
-
-```csharp
-public sealed record LoanAggregateSnapshotDto(Guid LoanId, long AggregateVersion, LoanContractDetailDto Contract, LoanServicingStateDto Servicing);
-```

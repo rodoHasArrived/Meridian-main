@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CollateralEligibilityDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CollateralEligibilityDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:390](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L390).
+
+Collateral eligibility for account-level pledge and margin workflows.
+
+```csharp
+public enum CollateralEligibilityDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:392](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L392) |  |
+| <code>Eligible = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:393](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L393) |  |
+| <code>Ineligible = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:394](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L394) |  |
+| <code>Restricted = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:395](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L395) |  |
+| <code>PendingReview = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:396](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L396) |  |
+
+## CollateralPositionDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CollateralPositionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:400](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L400).
+
+Account-level collateral or pledged asset position.
+
+```csharp
+public sealed record CollateralPositionDto(Guid CollateralPositionId, Guid AccountId, string? SecurityId, string? Symbol, decimal Quantity, decimal MarketValue, string Currency, bool IsPledged, string? RestrictionType, decimal? Haircut, decimal? CollateralValue, CollateralEligibilityDto Eligibility, DateTimeOffset ValuationTimestamp, string? LienReference = null, string? SecuredObligationReference = null, string? AgreementEvidencePath = null);
+```
+
 ## CreateAccountRequest
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CreateAccountRequest</code>. Kind: `record`.
@@ -588,24 +622,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:
 
 ```csharp
 public sealed record FundStructureSetupOrganizationDraftDto(Guid? OrganizationId, string Code, string Name, string BaseCurrency, string? Description = null);
-```
-
-## FundStructureSetupOwnershipLinkDraftDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupOwnershipLinkDraftDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:82](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L82).
-
-```csharp
-public sealed record FundStructureSetupOwnershipLinkDraftDto(Guid? OwnershipLinkId, FundStructureSetupNodeAlias Parent, FundStructureSetupNodeAlias Child, OwnershipRelationshipTypeDto RelationshipType, decimal? OwnershipPercent = null, bool IsPrimary = false, string? Notes = null);
-```
-
-## FundStructureSetupPreviewDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:120](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L120).
-
-```csharp
-public sealed record FundStructureSetupPreviewDto(IReadOnlyList<FundStructureNodeDto> Nodes, IReadOnlyList<FundStructureSetupPreviewLinkDto> OwnershipLinks, FundStructureSetupValidationSummaryDto ValidationSummary);
 ```

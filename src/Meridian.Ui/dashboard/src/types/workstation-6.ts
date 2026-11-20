@@ -1489,6 +1489,7 @@ export interface StrategyRunDetail {
   governance?: unknown | null;
   governanceHooks?: unknown[] | null;
   biasDisclosure?: BiasDisclosure | null;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
   evidenceLoop?: StrategyRunEvidenceLoop | null;
   acceptanceChecklist?: StrategyRunAcceptanceChecklistItem[] | null;
 }

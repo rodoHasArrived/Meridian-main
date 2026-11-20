@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderCredentialStateDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:15](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L15).
+
+```csharp
+public enum ProviderCredentialStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotRequired</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:17](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L17) |  |
+| <code>Missing</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:18](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L18) |  |
+| <code>Partial</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:19](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L19) |  |
+| <code>Configured</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:20](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L20) |  |
+| <code>Verified</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:21](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L21) |  |
+| <code>Invalid</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:22](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L22) |  |
+
+## ProviderCredentialUpsertRequestDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialUpsertRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:99](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L99).
+
+```csharp
+public sealed record ProviderCredentialUpsertRequestDto(IReadOnlyDictionary<string, string?>? Credentials, string? Environment = null, string? RequestedBy = null);
+```
+
 ## ProviderCredentialVerificationResultDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialVerificationResultDto</code>. Kind: `record`.
@@ -899,26 +930,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:342](../../..
 
 ```csharp
 public sealed record ApplyPrincipalPaymentRequest(decimal Amount, DateOnly EffectiveDate, string? ExternalRef);
-```
-
-## ApplyRateResetRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ApplyRateResetRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:336](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L336).
-
-```csharp
-public sealed record ApplyRateResetRequest(DateOnly EffectiveDate, decimal ObservedRate, decimal? SpreadBps, string? SourceRef);
-```
-
-## ApplyScheduledRateResetRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ApplyScheduledRateResetRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:141](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L141).
-
-Applies the reset scheduled for ResetDate from the fixing store.
-
-```csharp
-public sealed record ApplyScheduledRateResetRequest(DateOnly ResetDate);
 ```

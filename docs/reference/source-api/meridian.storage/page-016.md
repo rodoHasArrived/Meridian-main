@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JsonFileIBDataResultStore
+
+Qualified name: <code>Meridian.Storage.Store.JsonFileIBDataResultStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:16](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L16).
+
+Crash-safe IB result store. Each upsert replaces one complete atomic snapshot, so an interrupted write leaves either the previous valid result set or the new valid result set available at restart.
+
+```csharp
+public sealed class JsonFileIBDataResultStore : IIBDataResultStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonFileIBDataResultStore(IBDataResultStoreOptions options);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:22](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L22) |  |
+| <code>public async ValueTask UpsertAsync(IBDataResult result, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:29](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L29) |  |
+| <code>public async ValueTask&lt;IReadOnlyList&lt;IBDataResult&gt;&gt; QueryAsync(IBDataResultQuery query, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:57](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L57) |  |
+
 ## JsonFileSnapshotStore (generic arity 1)
 
 Qualified name: <code>Meridian.Storage.Store.JsonFileSnapshotStore</code>. Kind: `class`.

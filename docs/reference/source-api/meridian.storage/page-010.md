@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DirectLoanPrincipalPaymentRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanPrincipalPaymentRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:58](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L58).
+
+```csharp
+public sealed record DirectLoanPrincipalPaymentRow(Guid SecurityId, int Ordinal, DateOnly PaymentDate, decimal Amount);
+```
+
 ## DirectLoanProjectionRow
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanProjectionRow</code>. Kind: `record`.
@@ -951,16 +961,4 @@ OtcCollateral / CollateralBalanceRecorded or CollateralBalanceAmended.
 
 ```csharp
 public sealed record OtcCollateralBalanceChangedPayload(Guid MasterAgreementId, OtcCollateralBalancePayload Balance, OtcCollateralBalancePayload? Previous, IReadOnlyList<string> Changes) : ISecurityGovernancePayload;
-```
-
-## OtcCollateralBalancePayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralBalancePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:147](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L147).
-
-A collateral balance as the OtcCollateral stream records it.
-
-```csharp
-public sealed record OtcCollateralBalancePayload(Guid BalanceId, Guid CollateralAgreementId, string Direction, string Kind, string EligibleCollateralDescription, Guid? SecurityId, string Currency, decimal Quantity, decimal UnitValue, decimal ValuedAmount, decimal HaircutPercent, DateOnly ValuedAsOf, string? Reference, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
 ```

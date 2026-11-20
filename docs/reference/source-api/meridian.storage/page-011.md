@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcCollateralBalancePayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralBalancePayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:147](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L147).
+
+A collateral balance as the OtcCollateral stream records it.
+
+```csharp
+public sealed record OtcCollateralBalancePayload(Guid BalanceId, Guid CollateralAgreementId, string Direction, string Kind, string EligibleCollateralDescription, Guid? SecurityId, string Currency, decimal Quantity, decimal UnitValue, decimal ValuedAmount, decimal HaircutPercent, DateOnly ValuedAsOf, string? Reference, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
+```
+
 ## OtcCollateralMovementPayload
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralMovementPayload</code>. Kind: `record`.
@@ -1213,26 +1225,3 @@ Declared public members:
 | <code>public string Stream { get; } = stream;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:398](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L398) |  |
 | <code>public string EventType { get; } = eventType;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:399](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L399) |  |
 | <code>public int PayloadVersion { get; } = payloadVersion;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:400](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L400) |  |
-
-## SecurityGovernanceStreams
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceStreams</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:9](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L9).
-
-The governance streams recorded in security_governance_events.
-
-```csharp
-public static class SecurityGovernanceStreams
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string OperatorOverrides = &quot;OperatorOverrides&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:11](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L11) |  |
-| <code>public const string Aliases = &quot;Aliases&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:12](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L12) |  |
-| <code>public const string ProjectionRebuild = &quot;ProjectionRebuild&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:13](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L13) |  |
-| <code>public const string UnderlyingGraph = &quot;UnderlyingGraph&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:16](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L16) | Declared underlying-graph links: declaration, amendment and removal (migration 051). |
-| <code>public const string Curves = &quot;Curves&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:19](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L19) | Stored market curves: definitions and published versions (migration 053). Events carry no security id; the curve id is in the payload. |
-| <code>public const string OtcCollateral = &quot;OtcCollateral&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:22](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L22) | OTC exposure snapshots, collateral balances and margin calls (migrations 054 and 055); events carry no security id and name a netting set (snapshots, calls) or a collateral agreement (balances). |

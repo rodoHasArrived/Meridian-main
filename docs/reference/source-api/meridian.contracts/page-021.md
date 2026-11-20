@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataAggregation
+
+Qualified name: <code>Meridian.Contracts.Export.DataAggregation</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:326](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L326).
+
+```csharp
+public enum DataAggregation : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Tick</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:328](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L328) |  |
+| <code>Second</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:329](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L329) |  |
+| <code>Minute</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:330](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L330) |  |
+| <code>FiveMinute</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:331](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L331) |  |
+| <code>FifteenMinute</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:332](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L332) |  |
+| <code>ThirtyMinute</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:333](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L333) |  |
+| <code>Hour</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:334](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L334) |  |
+| <code>Daily</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:335](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L335) |  |
+| <code>Weekly</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:336](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L336) |  |
+| <code>Monthly</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:337](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L337) |  |
+
+## DataTypeInclusion
+
+Qualified name: <code>Meridian.Contracts.Export.DataTypeInclusion</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:99](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L99).
+
+Selects which market data categories a research package includes.
+
+```csharp
+public sealed class DataTypeInclusion
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Trades { get; set; } = true;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:101](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L101) |  |
+| <code>public bool Quotes { get; set; } = true;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:102](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L102) |  |
+| <code>public bool Bars { get; set; } = true;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:103](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L103) |  |
+| <code>public bool OrderBook { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:104](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L104) |  |
+| <code>public bool OrderFlow { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:105](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L105) |  |
+
 ## DateRangeType
 
 Qualified name: <code>Meridian.Contracts.Export.DateRangeType</code>. Kind: `enum`.
@@ -866,39 +913,3 @@ Source: [src/Meridian.Contracts/FixedIncome/AccountBondIncomePlanningDtos.cs:5](
 ```csharp
 public sealed record AccountBondIncomePlanningRequest(AccountCashForecastScopeDto Scope, DateOnly PeriodStart, DateOnly PeriodEnd, BondCalculationContext Context, IReadOnlyList<AccountSettledCashObservationDto> OpeningBalances, IReadOnlyList<AccountCashFxConversionDto> FxConversions, decimal MinimumCashThreshold = 0m, int BucketDays = 7);
 ```
-
-## BondAccrualConventionDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondAccrualConventionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:59](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L59).
-
-```csharp
-public sealed record BondAccrualConventionDto(Guid SecurityId, string? DayCountConvention, int? SettlementCycleDays, string? HolidayCalendarId, string? CouponKind, decimal? FixedCouponRate, string? FloatingRateIndex, decimal? FloatingSpreadBps, long Version)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Meridian.Contracts.SecurityMaster.DayCountConvention? DayCount =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:74](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L74) | DayCountConvention as a typed basis, or null when the stored text is absent or names no recognized convention. The raw text stays on DayCountConvention. |
-
-## BondAmortizationMethod
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondAmortizationMethod</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:20](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L20).
-
-```csharp
-public enum BondAmortizationMethod
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ConstantYield</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:23](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L23) |  |
-| <code>StraightLine</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:25](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L25) |  |
-| <code>NoAmortization</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L27) |  |
-| <code>AuctionRate</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:29](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L29) |  |
-| <code>PurchasedCreditImpaired</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:31](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L31) |  |

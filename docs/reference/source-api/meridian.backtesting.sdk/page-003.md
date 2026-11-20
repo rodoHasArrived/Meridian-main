@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolTcaSummary
+
+Qualified name: <code>Meridian.Backtesting.Sdk.SymbolTcaSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/TcaReportModels.cs:31](../../../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs#L31).
+
+Per-symbol execution cost breakdown for a simulation run.
+
+```csharp
+public sealed record SymbolTcaSummary(string Symbol, decimal TotalBuyNotional, decimal TotalSellNotional, decimal AvgBuyPrice, decimal AvgSellPrice, decimal TotalCommission, double CommissionRateBps, int TotalFills);
+```
+
 ## TcaCostSummary
 
 Qualified name: <code>Meridian.Backtesting.Sdk.TcaCostSummary</code>. Kind: `record`.

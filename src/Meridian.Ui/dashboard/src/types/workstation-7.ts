@@ -1152,6 +1152,7 @@ export interface BackfillTriggerResult {
   startedUtc: string;
   completedUtc: string;
   error: string | null;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
 }
 
 export interface BackfillPreviewSymbol {

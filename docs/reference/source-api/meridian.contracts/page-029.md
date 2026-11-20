@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyStructuredTermsJsonContext
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsJsonContext.cs:10](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsJsonContext.cs#L10).
+
+```csharp
+public partial class IntercompanyStructuredTermsJsonContext : JsonSerializerContext;
+```
+
+## IntercompanyStructuredTermsPreviewDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:51](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L51).
+
+```csharp
+public sealed record IntercompanyStructuredTermsPreviewDto(string Status, string TermsFormat, string SubjectHash, string KernelVersion, string? CalendarId, string? CalendarHash, IReadOnlyList<IntercompanyDatePeriodDto> Periods, IReadOnlyList<string> Diagnostics);
+```
+
 ## IntercompanyStructuredTermsPreviewRequestDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsPreviewRequestDto</code>. Kind: `record`.
@@ -691,24 +711,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:124](../.
 
 ```csharp
 public sealed record UpdateOwnershipLinkRequest(Guid OwnershipLinkId, OwnershipRelationshipTypeDto RelationshipType, DateTimeOffset EffectiveFrom, string UpdatedBy, decimal? OwnershipPercent = null, bool IsPrimary = false, DateTimeOffset? EffectiveTo = null, string? Notes = null);
-```
-
-## ValidateOwnershipGraphRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.ValidateOwnershipGraphRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:153](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L153).
-
-```csharp
-public sealed record ValidateOwnershipGraphRequest(DateTimeOffset? AsOf = null, bool ActiveOnly = true);
-```
-
-## VehicleOperatingViewDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.VehicleOperatingViewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:391](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L391).
-
-```csharp
-public sealed record VehicleOperatingViewDto(VehicleSummaryDto Vehicle, LegalEntitySummaryDto? LegalEntity, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<AccountSummaryDto> Accounts);
 ```

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureTenantBackfillEvidence
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:10](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L10).
+
+```csharp
+public sealed record FundStructureTenantBackfillEvidence(Guid BookId, string FundProfileId, Guid NodeId, string? TenantId, string? CompanyId, JsonElement RetainedBook, JsonElement? RetainedRegistryEntry);
+```
+
 ## FundStructureTenantBackfillException
 
 Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillException</code>. Kind: `record`.
@@ -1099,15 +1109,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static LedgerJournalEntryWrite NormalizeAndValidate(LedgerJournalEntryWrite write, bool requirePostingCommand = false, bool requireExpectedVersion = false, bool allowPreparerAttestation = false);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:22](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L22) |  |
 | <code>public static string? ReadRetainedPostingActor(JournalEntryMetadata metadata);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:843](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L843) | Unversioned legacy metadata never supplies command actor attribution. |
-
-## AtomicLotReferenceVersions
-
-Qualified name: <code>Meridian.Storage.Ledger.AtomicLotReferenceVersions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:500](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L500).
-
-Approved reference versions bound to a new acquisition or disposal command.
-
-```csharp
-public sealed record AtomicLotReferenceVersions(long SecurityMasterVersion, long BookPositionVersion);
-```

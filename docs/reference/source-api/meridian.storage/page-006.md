@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILedgerEntityControlJournalValidation
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerEntityControlJournalValidation</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:21](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L21).
+
+Read-only journal review using the same retained entity/legal/mapping authority as durable append.
+
+```csharp
+public interface ILedgerEntityControlJournalValidation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task ValidateEntityPostingControlsAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:23](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L23) |  |
+
 ## ILedgerJournalLog
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerJournalLog</code>. Kind: `interface`.
@@ -872,21 +890,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static LedgerPostingIdentity FromWrite(LedgerJournalEntryWrite write);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:233](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L233) |  |
-
-## LedgerPostingIdentityCollisionLookupExtensions
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingIdentityCollisionLookupExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:253](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L253).
-
-Compatibility lookup for journal stores that predate the optimized collision contract. Aggregate reads still enforce all aggregate-scoped identities and any global identity retained by that aggregate. Durable stores should implement ILedgerPostingIdentityCollisionLookup so journal-entry and command identities are checked across every aggregate efficiently.
-
-```csharp
-public static class LedgerPostingIdentityCollisionLookupExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(this ILedgerJournalStore store, LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:255](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L255) |  |

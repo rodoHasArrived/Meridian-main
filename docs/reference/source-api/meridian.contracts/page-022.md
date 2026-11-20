@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondAccrualConventionDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondAccrualConventionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:59](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L59).
+
+```csharp
+public sealed record BondAccrualConventionDto(Guid SecurityId, string? DayCountConvention, int? SettlementCycleDays, string? HolidayCalendarId, string? CouponKind, decimal? FixedCouponRate, string? FloatingRateIndex, decimal? FloatingSpreadBps, long Version)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Meridian.Contracts.SecurityMaster.DayCountConvention? DayCount =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:74](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L74) | DayCountConvention as a typed basis, or null when the stored text is absent or names no recognized convention. The raw text stays on DayCountConvention. |
+
+## BondAmortizationMethod
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondAmortizationMethod</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:20](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L20).
+
+```csharp
+public enum BondAmortizationMethod
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ConstantYield</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:23](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L23) |  |
+| <code>StraightLine</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:25](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L25) |  |
+| <code>NoAmortization</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L27) |  |
+| <code>AuctionRate</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:29](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L29) |  |
+| <code>PurchasedCreditImpaired</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:31](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L31) |  |
+
 ## BondAnalyticsBlocker
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsBlocker</code>. Kind: `record`.
@@ -712,26 +748,4 @@ Full active Security Master inventory read; not a transaction-visibility certifi
 
 ```csharp
 public sealed record BondMigrationInventoryDto(string InventorySha256, IReadOnlyList<BondMigrationInventoryRowDto> Bonds, bool CutoverEnabled, bool RequiresLegacyCalculations, string? CurrentReceiptSha256 = null);
-```
-
-## BondMigrationInventoryRowDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationInventoryRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:36](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L36).
-
-```csharp
-public sealed record BondMigrationInventoryRowDto(Guid SecurityId, long Version, string SecurityContentSha256, string DisplayName, bool HasDeclaredConventions, string? BlockedReason);
-```
-
-## BondMigrationPreviewDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:23](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L23).
-
-Retained-input-bound preview, never permission to change a security or a posted journal.
-
-```csharp
-public sealed record BondMigrationPreviewDto(BondMigrationPreviewRequest Request, string SecurityContentSha256, string PreviewSha256, StructuredCashFlowProjectionDto? PreviousProjection, StructuredCashFlowProjectionDto? CandidateProjection, IReadOnlyList<BondMigrationCashDifference> CashDifferences, IReadOnlyList<string> Gaps, bool CanStage);
 ```

@@ -168,6 +168,27 @@ Declared public members:
 | <code>public long AbsoluteQuantity =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Position.cs:42](../../../../src/Meridian.Backtesting.Sdk/Position.cs#L42) | Absolute number of shares. |
 | <code>public decimal NotionalValue(decimal lastPrice) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Position.cs:45](../../../../src/Meridian.Backtesting.Sdk/Position.cs#L45) | Notional market value (signed). |
 
+## ResearchProviderProvenance
+
+Qualified name: <code>Meridian.Backtesting.Sdk.ResearchProviderProvenance</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs:7](../../../../src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs#L7).
+
+Projects research inputs without copying a data path, a script, or account configuration.
+
+```csharp
+public static class ResearchProviderProvenance
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string MissingRevision = &quot;The exact dataset and strategy revision were not retained for reproduction.&quot;;</code> | [src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs:10](../../../../src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs#L10) |  |
+| <code>public static ProviderProvenanceReceipt Create(BacktestRequest request, DateTimeOffset startedUtc, DateTimeOffset completedUtc, IReadOnlyDictionary&lt;string, long&gt;? sourceCounts = null, bool? preflightEnabled = null, bool? corporateActionsApplied = null);</code> | [src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs:12](../../../../src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs#L12) |  |
+| <code>public static ProviderProvenanceReceipt FromWorkerResult(BacktestResult result, DateTimeOffset completedUtc);</code> | [src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs:43](../../../../src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs#L43) | Rebuilds a worker-produced receipt at the host boundary using only recognized IDs and typed values. |
+| <code>public static DateTimeOffset StartFromElapsed(DateTimeOffset end, TimeSpan elapsed) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs:61](../../../../src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs#L61) |  |
+
 ## ResearchRunDescriptor
 
 Qualified name: <code>Meridian.Backtesting.Sdk.ResearchRunDescriptor</code>. Kind: `record`.
@@ -886,16 +907,4 @@ Per-symbol trade attribution.
 
 ```csharp
 public sealed record SymbolAttribution(string Symbol, decimal RealizedPnl, decimal UnrealizedPnl, int TradeCount, decimal Commissions, decimal MarginInterestAllocated);
-```
-
-## SymbolTcaSummary
-
-Qualified name: <code>Meridian.Backtesting.Sdk.SymbolTcaSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/TcaReportModels.cs:31](../../../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs#L31).
-
-Per-symbol execution cost breakdown for a simulation run.
-
-```csharp
-public sealed record SymbolTcaSummary(string Symbol, decimal TotalBuyNotional, decimal TotalSellNotional, decimal AvgBuyPrice, decimal AvgSellPrice, decimal TotalCommission, double CommissionRateBps, int TotalFills);
 ```

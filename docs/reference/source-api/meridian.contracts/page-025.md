@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBondScreeningService
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondScreeningService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:18](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L18).
+
+```csharp
+public interface IBondScreeningService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondScreeningPageDto&gt; ScreenAsync(string tenantId, BondScreeningQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:20](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L20) |  |
+
+## IBondSettlementConsiderationService
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:84](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L84).
+
+```csharp
+public interface IBondSettlementConsiderationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondSettlementPreparationResult&gt; PrepareAsync(BondSettlementConsiderationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:86](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L86) |  |
+| <code>Task&lt;IReadOnlyList&lt;BondAnalyticsBlocker&gt;&gt; VerifyAsync(BondSettlementConsiderationDto settlement, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:90](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L90) | Recomputes a retained receipt against its actual pinned/versioned analytics inputs. |
+
 ## IBondWorkflowObservationSource
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource</code>. Kind: `interface`.
@@ -702,38 +735,4 @@ Collateral agreement metadata linking pledged assets to legal evidence.
 
 ```csharp
 public sealed record CollateralAgreementDto(Guid CollateralAgreementId, Guid AccountId, string AgreementReference, string Counterparty, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? SecuredObligationReference, string? EvidencePath);
-```
-
-## CollateralEligibilityDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CollateralEligibilityDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:390](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L390).
-
-Collateral eligibility for account-level pledge and margin workflows.
-
-```csharp
-public enum CollateralEligibilityDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:392](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L392) |  |
-| <code>Eligible = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:393](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L393) |  |
-| <code>Ineligible = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:394](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L394) |  |
-| <code>Restricted = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:395](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L395) |  |
-| <code>PendingReview = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:396](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L396) |  |
-
-## CollateralPositionDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CollateralPositionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:400](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L400).
-
-Account-level collateral or pledged asset position.
-
-```csharp
-public sealed record CollateralPositionDto(Guid CollateralPositionId, Guid AccountId, string? SecurityId, string? Symbol, decimal Quantity, decimal MarketValue, string Currency, bool IsPledged, string? RestrictionType, decimal? Haircut, decimal? CollateralValue, CollateralEligibilityDto Eligibility, DateTimeOffset ValuationTimestamp, string? LienReference = null, string? SecuredObligationReference = null, string? AgreementEvidencePath = null);
 ```

@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerEventAuditVerification
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerEventAuditVerification</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:20](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L20).
+
+Outcome of verifying the ledger-event audit chain: the verified suffix is protected; genesis facts were retained before this guarantee.
+
+```csharp
+public sealed record LedgerEventAuditVerification(long ChainedEvents, long UnprotectedGenesisFacts, DateTimeOffset GenesisAtUtc);
+```
+
+## LedgerJournalEntryDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerJournalEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:386](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L386).
+
+```csharp
+public sealed record LedgerJournalEntryDto(Guid JournalEntryId, Guid PeriodId, Guid? LedgerBookId, Guid AggregateId, Guid? CommandId, Guid? CorrelationId, long GlobalSequence, DateTimeOffset CreatedAt, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, bool IsBalanced, IReadOnlyList<LedgerJournalEntryLineDto> Lines, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] LedgerJournalExecutionLineageDto? Execution = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;LedgerJournalEntryLineDto&gt; Lines { get; init; } = Lines??[];</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:412](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L412) |  |
+
 ## LedgerJournalEntryLineDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerJournalEntryLineDto</code>. Kind: `record`.
@@ -724,24 +752,4 @@ Recomputed posted-journal population, with explicit cutoffs; never a strategy-ru
 
 ```csharp
 public sealed record PostedPeriodComparisonDto(string Status, string? Reason, DateTimeOffset GeneratedAt, DateTimeOffset AsOf, Guid LedgerBookId, string FundProfileId, string BookName, AccountingBasisKindDto AccountingBasis, string Currency, string AccountingPolicyId, string AccountingPolicyVersion, PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, IReadOnlyList<PostedPeriodComparisonLineDto> Lines, IReadOnlyList<Guid> CurrentJournalIds, IReadOnlyList<Guid> BaselineJournalIds, string? PopulationHash, LedgerDimensionSetDto? Dimensions, PostedComparisonMeasureDto Measure = PostedComparisonMeasureDto.Movements);
-```
-
-## PostedPeriodComparisonLineDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PostedPeriodComparisonLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:7](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L7).
-
-```csharp
-public sealed record PostedPeriodComparisonLineDto(string AccountKey, string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal CurrentDebit, decimal CurrentCredit, decimal CurrentBalance, decimal PriorDebit, decimal PriorCredit, decimal PriorBalance, decimal Change, decimal? PercentChange, LedgerDimensionSetDto? Dimensions);
-```
-
-## PostedPeriodComparisonRangeDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PostedPeriodComparisonRangeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:3](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L3).
-
-```csharp
-public sealed record PostedPeriodComparisonRangeDto(Guid PeriodId, string Label, DateOnly PeriodStart, DateOnly PeriodEnd, DateOnly RangeStart, DateOnly RangeEnd, bool IsPartial, string Status);
 ```

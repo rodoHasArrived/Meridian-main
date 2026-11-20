@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InstrumentAccountingSides
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.InstrumentAccountingSides</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:22](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L22).
+
+Defines the debit and credit classifications carried by instrument roles.
+
+```csharp
+public static class InstrumentAccountingSides
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Debit = &quot;Debit&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:24](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L24) |  |
+| <code>public const string Credit = &quot;Credit&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:25](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L25) |  |
+
+## InstrumentEconomicSides
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.InstrumentEconomicSides</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:31](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L31).
+
+Defines asset, liability, inflow, and outflow classifications for instrument roles.
+
+```csharp
+public static class InstrumentEconomicSides
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Asset = &quot;Asset&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:33](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L33) |  |
+| <code>public const string Liability = &quot;Liability&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:34](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L34) |  |
+| <code>public const string Inflow = &quot;Inflow&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:35](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L35) |  |
+| <code>public const string Outflow = &quot;Outflow&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:36](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L36) |  |
+
 ## InstrumentRoleDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.InstrumentRoleDto</code>. Kind: `record`.
@@ -585,7 +625,7 @@ public sealed record BackfillProviderSymbolProgressDto(string Symbol, DateOnly? 
 
 Qualified name: <code>Meridian.Contracts.Backfill.BackfillResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Backfill/BackfillResult.cs:8](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L8).
+Source: [src/Meridian.Contracts/Backfill/BackfillResult.cs:10](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L10).
 
 Shared outcome payload for a single historical backfill run.
 
@@ -597,9 +637,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string[] SkippedSymbols { get; init; } = SkippedSymbols??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:26](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L26) | Symbols skipped because their checkpoint already covered the requested date range. Only populated when resume-from-checkpoint mode is enabled on the backfill request. |
-| <code>public SymbolValidationSignal[] SymbolValidationSignals { get; init; } = SymbolValidationSignals??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:32](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L32) | Per-symbol completeness signals (pass / warn / fail) produced at the end of the run. Provides operator-visible trust data for each symbol in Symbols. |
-| <code>public static BackfillResult Failed(string provider, IReadOnlyList&lt;string&gt; symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:34](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L34) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public ProviderProvenanceReceipt? ProviderProvenance { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:25](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L25) |  |
+| <code>[JsonIgnore] public ProviderProvenanceAccess? ProvenanceAccess { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:28](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L28) |  |
+| <code>public BackfillResult ForTenant(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:30](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L30) |  |
+| <code>public string[] SkippedSymbols { get; init; } = SkippedSymbols??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:37](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L37) | Symbols skipped because their checkpoint already covered the requested date range. Only populated when resume-from-checkpoint mode is enabled on the backfill request. |
+| <code>public SymbolValidationSignal[] SymbolValidationSignals { get; init; } = SymbolValidationSignals??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:43](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L43) | Per-symbol completeness signals (pass / warn / fail) produced at the end of the run. Provides operator-visible trust data for each symbol in Symbols. |
+| <code>public static BackfillResult Failed(string provider, IReadOnlyList&lt;string&gt; symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:45](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L45) |  |
 
 ## BackfillRunProgressResponse
 
@@ -772,33 +815,3 @@ Request to seed representative bank transactions for one or more entities. When 
 ```csharp
 public sealed record BankTransactionSeedRequest(IReadOnlyList<Guid>? EntityIds, int CountPerEntity, DateOnly? FromDate, DateOnly? ToDate);
 ```
-
-## BankTransactionSeedResultDto
-
-Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:140](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L140).
-
-Result returned after seeding bank transactions.
-
-```csharp
-public sealed record BankTransactionSeedResultDto(int EntitiesProcessed, int TransactionsSeeded, IReadOnlyList<Guid> ProcessedEntityIds);
-```
-
-## IBankTransactionSource
-
-Qualified name: <code>Meridian.Contracts.Banking.IBankTransactionSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:154](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L154).
-
-Read-only banking data source for cross-domain integrations such as reconciliation. Services outside the Banking module can depend on this narrow interface instead of the full IBankingService.
-
-```csharp
-public interface IBankTransactionSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;BankTransactionDto&gt;&gt; GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:160](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L160) | Return bank transactions. When entityId is provided the result is scoped to that entity; otherwise all transactions are returned. |

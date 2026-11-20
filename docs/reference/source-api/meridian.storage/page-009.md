@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RetainedDataQueryStore
+
+Qualified name: <code>Meridian.Storage.Query.RetainedDataQueryStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:35](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L35).
+
+Immutable, owner-bound executions, outside the DuckDB-readable root. Atomic publication and cross-process reservation accounting prevent a partial or over-quota spool becoming an export.
+
+```csharp
+public sealed class RetainedDataQueryStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string RootPath { get; }</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:40](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L40) |  |
+| <code>public RetainedDataQueryStore(DataQueryOptions options, string queryableRoot, TimeProvider? clock = null);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:42](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L42) |  |
+| <code>public async Task&lt;IDataQueryResultSink&gt; CreateAsync(DataQueryOwner owner, CancellationToken ct = default);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:70](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L70) |  |
+| <code>public async Task&lt;RetainedDataQuerySnapshot&gt; ReadAsync(DataQueryOwner owner, string executionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:95](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L95) |  |
+
 ## SqlStatementGuard
 
 Qualified name: <code>Meridian.Storage.Query.SqlStatementGuard</code>. Kind: `class`.
@@ -904,14 +925,4 @@ One projected covenant. Threshold carries the value exactly as contracted (&quot
 
 ```csharp
 public sealed record DirectLoanCovenantRow(Guid SecurityId, int Ordinal, string CovenantType, string Threshold, string? Notes);
-```
-
-## DirectLoanPrincipalPaymentRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanPrincipalPaymentRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:58](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L58).
-
-```csharp
-public sealed record DirectLoanPrincipalPaymentRow(Guid SecurityId, int Ordinal, DateOnly PaymentDate, decimal Amount);
 ```

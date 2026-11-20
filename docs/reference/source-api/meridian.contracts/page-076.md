@@ -6,6 +6,113 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunTimelineProjection
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunTimelineProjection</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:708](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L708).
+
+Projection mode for workstation run timeline queries.
+
+```csharp
+public enum StrategyRunTimelineProjection : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Flat</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:710](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L710) |  |
+| <code>Lineage</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:711](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L711) |  |
+
+## StrategySavedComparison
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategySavedComparison</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:48](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L48).
+
+Saved strategy comparison summary surfaced from the briefing home.
+
+```csharp
+public sealed record StrategySavedComparison(string ComparisonId, string StrategyName, string ModeSummary, string Summary, string? AnchorRunId, IReadOnlyList<StrategySavedComparisonMode> Modes);
+```
+
+## StrategySavedComparisonMode
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategySavedComparisonMode</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L37).
+
+Single mode participating in a saved strategy comparison package.
+
+```csharp
+public sealed record StrategySavedComparisonMode(string RunId, StrategyRunMode Mode, StrategyRunStatus Status, decimal? NetPnl, decimal? TotalReturn, StrategyRunDrillInLinks DrillIn);
+```
+
+## StrategySweepObjectiveRanking
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategySweepObjectiveRanking</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:244](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L244).
+
+```csharp
+public sealed record StrategySweepObjectiveRanking(string RunId, string StrategyName, decimal? ObjectiveValue, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, DateTimeOffset LastUpdatedAt);
+```
+
+## StrategySweepResultGroup
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategySweepResultGroup</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:253](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L253).
+
+```csharp
+public sealed record StrategySweepResultGroup(string SweepId, string SweepDefinitionHash, string? Objective, DateTimeOffset StartedAt, int RunCount, IReadOnlyList<StrategyRunSummary> Runs, IReadOnlyList<StrategySweepObjectiveRanking> ObjectiveRankings, bool ComparisonContextVerified = false, bool HistoryMayBeTruncated = false, string CoverageDescription = "Expected grid was not retained; missing cells are inferred from observed parameter values.");
+```
+
+## StrategyWhatChangedItem
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyWhatChangedItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L70).
+
+&quot;What changed&quot; entry summarizing recent run or workflow movement.
+
+```csharp
+public sealed record StrategyWhatChangedItem(string ChangeId, string Title, string Summary, string Category, DateTimeOffset Timestamp, string RelativeTime, string? RunId = null);
+```
+
+## StructuredReportingExportColumnDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportColumnDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:387](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L387).
+
+```csharp
+public sealed record StructuredReportingExportColumnDto(string Name, string DataType, string? Description = null);
+```
+
+## StructuredReportingExportDataDictionaryFieldDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportDataDictionaryFieldDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:392](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L392).
+
+```csharp
+public sealed record StructuredReportingExportDataDictionaryFieldDto(string Name, string DataType, string? Description, int Ordinal, bool Required = true);
+```
+
+## StructuredReportingExportDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:360](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L360).
+
+Structured export descriptor for governed downstream reporting consumers.
+
+```csharp
+public sealed record StructuredReportingExportDto(string ExportId, string Label, StructuredReportingExportPurposeDto Purpose, GovernanceReportArtifactFormatDto Format, string Dataset, string Consumer, int SchemaVersion, int RowCount, int FieldCount, int SourceCount, string Currency, DateTimeOffset AsOf, bool IsReady, string RetainedPath, string Route, string? DataDictionaryRoute = null, string? ValidationSummary = null, string? EvidenceRoute = null, string? VersionStamp = null, IReadOnlyList<string>? Tags = null, IReadOnlyList<string>? ReadinessBlockers = null, string? RetainedManifestPath = null, string? IntegrityHashSha256 = null, string? IntegritySummary = null, int? RowLineageCount = null);
+```
+
 ## StructuredReportingExportPayloadDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportPayloadDto</code>. Kind: `record`.
@@ -90,7 +197,7 @@ public sealed record SubmitSecurityMasterRevisionRequest(Guid SecurityId, Guid R
 
 Qualified name: <code>Meridian.Contracts.Workstation.SymbolAttributionEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:937](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L937).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:940](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L940).
 
 Per-symbol P&amp;L attribution for one run.
 
@@ -521,101 +628,3 @@ Declared public members:
 | <code>public string? CalibrationVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:317](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L317) |  |
 | <code>public DateTimeOffset? CalibrationValidatedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:319](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L319) |  |
 | <code>public string? PromotionPosture { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L321) |  |
-
-## TradingTrustGateSampleReviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingTrustGateSampleReviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:263](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L263).
-
-```csharp
-public sealed record TradingTrustGateSampleReviewDto(string SampleId, string Provider, string RequiredStep, string StepStatus, string Status, bool Observed, IReadOnlyList<string> MissingRequirements, IReadOnlyList<string> EvidenceAnchors, string AcceptanceCheck);
-```
-
-## UpdateOnboardingCriteriaRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.UpdateOnboardingCriteriaRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L24).
-
-```csharp
-public sealed record UpdateOnboardingCriteriaRequestDto(int ExpectedVersion, OnboardingCriteriaDto Criteria);
-```
-
-## UpdateSecurityFieldRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.UpdateSecurityFieldRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L41).
-
-Operator-authored, effective-dated edit to a single passport field. A non-empty Justification is required for operator-origin edits — missing provider data stays review-required and is never fabricated as complete.
-
-```csharp
-public sealed record UpdateSecurityFieldRequest(Guid SecurityId, long ExpectedVersion, string FieldPath, string? NewValue, DateTimeOffset EffectiveFrom, string Actor, string Justification, string? SourceRecordId = null, string? FundProfileId = null, string? CorrelationId = null);
-```
-
-## ValidateLedgerDraft
-
-Qualified name: <code>Meridian.Contracts.Workstation.ValidateLedgerDraft</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:24](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L24).
-
-```csharp
-public sealed record ValidateLedgerDraft(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## ValuationFreshnessPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ValuationFreshnessPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs#L16).
-
-Read-only impact preview; no draft, approval, schedule, or journal is retained.
-
-```csharp
-public sealed record ValuationFreshnessPreviewDto(string PolicyVersion, int AssessedPositionCount, int BlockedPositionCount, int AffectedValuationCount, IReadOnlyList<MarkFreshnessAssessmentDto> Positions, DateTimeOffset EvaluatedAtUtc);
-```
-
-## VersionedReportTemplateIdDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.VersionedReportTemplateIdDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1428](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1428).
-
-```csharp
-public sealed record VersionedReportTemplateIdDto(string Name, int Version);
-```
-
-## WithdrawShadowBookRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L44).
-
-```csharp
-public sealed record WithdrawShadowBookRequestDto(int ExpectedVersion, string Reason);
-```
-
-## WorkflowActionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowActionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L29).
-
-Reusable action target that can be used by summaries, inbox routing, and workflow UI.
-
-```csharp
-public sealed record WorkflowActionDto(string ActionId, string Label, string Detail, string TargetPageTag, string Tone, OperatorWorkItemKindDto? WorkItemKind, IReadOnlyList<string> RoutePrefixes, IReadOnlyList<string> RouteContains, IReadOnlyList<string> Aliases);
-```
-
-## WorkflowBlockerSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowBlockerSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L42).
-
-Primary blocker that explains why the operator cannot progress smoothly.
-
-```csharp
-public sealed record WorkflowBlockerSummary(string Code, string Label, string Detail, string Tone, bool IsBlocking);
-```

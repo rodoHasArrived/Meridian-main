@@ -1,3 +1,4 @@
+import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { AlertCircle, ArrowLeft, ArrowRight, CircleX, FileText, Info, Layers, LineChart, Play, RotateCw, SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -578,6 +579,7 @@ function ResultsStage({ vm }: { vm: CoveredCallScreenViewModel }) {
     <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
       <div className="space-y-4">
         <MetricsTable result={result} />
+        <ProviderProvenancePanel receipt={result.providerProvenance} />
         <EquityCurve result={result} />
         <PositionTimeline vm={vm} />
       </div>

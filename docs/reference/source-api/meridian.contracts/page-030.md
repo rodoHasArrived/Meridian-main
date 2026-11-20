@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ValidateOwnershipGraphRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.ValidateOwnershipGraphRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:153](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L153).
+
+```csharp
+public sealed record ValidateOwnershipGraphRequest(DateTimeOffset? AsOf = null, bool ActiveOnly = true);
+```
+
+## VehicleOperatingViewDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.VehicleOperatingViewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:391](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L391).
+
+```csharp
+public sealed record VehicleOperatingViewDto(VehicleSummaryDto Vehicle, LegalEntitySummaryDto? LegalEntity, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<AccountSummaryDto> Accounts);
+```
+
 ## VehicleSummaryDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.VehicleSummaryDto</code>. Kind: `record`.
@@ -723,31 +743,3 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:344
 ```csharp
 public sealed record ProviderIntegrationQuarantineDecisionDto(string DecisionId, string SyncRunId, string QuarantineRecordId, string ConnectionId, ProviderIntegrationQuarantineResolutionActionDto Action, string ReviewedBy, DateTimeOffset ReviewedAt, string? Note);
 ```
-
-## ProviderIntegrationQuarantineIssueGroupDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationQuarantineIssueGroupDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:336](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L336).
-
-```csharp
-public sealed record ProviderIntegrationQuarantineIssueGroupDto(string IssueCode, ProviderIntegrationIssueSeverityDto Severity, string? TargetField, string Message, string? SuggestedFix, int RecordCount);
-```
-
-## ProviderIntegrationQuarantineReplayRequestDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationQuarantineReplayRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:384](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L384).
-
-```csharp
-public sealed record ProviderIntegrationQuarantineReplayRequestDto(string ReplaySyncRunId, string SourceSyncRunId, string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, IReadOnlyList<string> QuarantineRecordIds, string RequestedBy, DateTimeOffset RequestedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderIntegrationReplayModeDto Mode { get; init; } = ProviderIntegrationReplayModeDto.Original;</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:394](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L394) |  |
-| <code>public int? TargetManifestVersion { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:396](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L396) |  |
-| <code>public string? TargetManifestDigest { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:398](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L398) |  |

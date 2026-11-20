@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportVerificationResult
+
+Qualified name: <code>Meridian.Storage.Export.ExportVerificationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportVerificationReport.cs:204](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L204).
+
+Aggregate result of an export verification run.
+
+```csharp
+public sealed class ExportVerificationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;isValid&quot;)] public bool IsValid { get; init; }</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:210](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L210) | true when every file passed all checks. |
+| <code>[JsonPropertyName(&quot;checksumsValid&quot;)] public bool ChecksumsValid { get; init; }</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:216](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L216) | true when all file checksums matched the manifest. |
+| <code>[JsonPropertyName(&quot;recordCountsValid&quot;)] public bool RecordCountsValid { get; init; }</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:222](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L222) | true when all record counts matched the manifest. |
+| <code>[JsonPropertyName(&quot;schemaValid&quot;)] public bool SchemaValid { get; init; }</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:229](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L229) | true when schema checks passed. Currently always true (advisory — reserved for future schema-level validation). |
+| <code>[JsonPropertyName(&quot;issues&quot;)] public IReadOnlyList&lt;string&gt; Issues { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:235](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L235) | Human-readable descriptions of every issue found. |
+| <code>[JsonPropertyName(&quot;fileResults&quot;)] public IReadOnlyList&lt;ExportFileVerificationResult&gt; FileResults { get; init; } = Array.Empty&lt;ExportFileVerificationResult&gt;();</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:241](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L241) | Per-file verification details. |
+| <code>public static ExportVerificationResult Failure(string reason) =&gt; …;</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:247](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L247) | Creates a result that represents a top-level failure (e.g. missing manifest). |
+
 ## ExportVerifier
 
 Qualified name: <code>Meridian.Storage.Export.ExportVerifier</code>. Kind: `class`.
@@ -957,13 +981,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L8) |  |
 | <code>public string Schema { get; set; } = &quot;fund_structure&quot;;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:9](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L9) |  |
-
-## FundStructureTenantBackfillEvidence
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:10](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L10).
-
-```csharp
-public sealed record FundStructureTenantBackfillEvidence(Guid BookId, string FundProfileId, Guid NodeId, string? TenantId, string? CompanyId, JsonElement RetainedBook, JsonElement? RetainedRegistryEntry);
-```

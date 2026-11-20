@@ -240,7 +240,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService.CoveredCallCommand.Start</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1130](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1130).
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1155](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1155).
 
 ```csharp
 public sealed record Start(string RunId) : CoveredCallCommand(RunId);
@@ -250,7 +250,7 @@ public sealed record Start(string RunId) : CoveredCallCommand(RunId);
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallChainPreviewResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:36](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L36).
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:40](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L40).
 
 Result returned by ICoveredCallChainProviderFactory.PreviewAsync.
 
@@ -262,17 +262,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool CoverageKnown { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:40](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L40) |  |
-| <code>public IReadOnlyList&lt;DateOnly&gt; RequestedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:41](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L41) |  |
-| <code>public IReadOnlyList&lt;DateOnly&gt; LoadedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:42](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L42) |  |
-| <code>public IReadOnlyList&lt;DateTimeOffset&gt; SnapshotTimes { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:43](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L43) |  |
-| <code>public int? MaxStrikesPerExpiration { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:44](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L44) |  |
+| <code>public bool CoverageKnown { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:44](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L44) |  |
+| <code>public IReadOnlyList&lt;DateOnly&gt; RequestedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:45](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L45) |  |
+| <code>public IReadOnlyList&lt;DateOnly&gt; LoadedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:46](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L46) |  |
+| <code>public IReadOnlyList&lt;DateTimeOffset&gt; SnapshotTimes { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:47](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L47) |  |
+| <code>public int? MaxStrikesPerExpiration { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:48](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L48) |  |
 
 ## CoveredCallChainProviderAdapter
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallChainProviderAdapter</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:13](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L13).
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:14](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L14).
 
 Adapts an eagerly-materialised set of option chain snapshots into the synchronous IOptionChainProvider contract that CoveredCallOverwriteStrategy expects. One instance per backtest run.
 
@@ -284,10 +284,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int TotalCandidates { get; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:19](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L19) | Total candidates across all snapshot dates (for diagnostics). |
-| <code>public IReadOnlyCollection&lt;DateOnly&gt; KnownDates =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:22](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L22) | Snapshot dates the adapter knows about. |
-| <code>public CoveredCallChainProviderAdapter(IReadOnlyDictionary&lt;DateOnly, IReadOnlyList&lt;OptionCandidateInfo&gt;&gt; snapshotsByDate, ILogger&lt;CoveredCallChainProviderAdapter&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:25](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L25) | Creates a new adapter from a pre-built map of scan-date → call candidates. |
-| <code>public IReadOnlyList&lt;OptionCandidateInfo&gt; GetCalls(string underlyingSymbol, DateOnly asOf, decimal underlyingPrice);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:36](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L36) |  |
+| <code>public int TotalCandidates { get; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:20](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L20) | Total candidates across all snapshot dates (for diagnostics). |
+| <code>public IReadOnlyCollection&lt;DateOnly&gt; KnownDates =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:24](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L24) | Snapshot dates the adapter knows about. |
+| <code>public CoveredCallChainProviderAdapter(IReadOnlyDictionary&lt;DateOnly, IReadOnlyList&lt;OptionCandidateInfo&gt;&gt; snapshotsByDate, ILogger&lt;CoveredCallChainProviderAdapter&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:27](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L27) | Creates a new adapter from a pre-built map of scan-date → call candidates. |
+| <code>public IReadOnlyList&lt;OptionCandidateInfo&gt; GetCalls(string underlyingSymbol, DateOnly asOf, decimal underlyingPrice);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:38](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L38) |  |
 
 ## CoveredCallChainProviderFactory
 
@@ -306,9 +306,10 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public CoveredCallChainProviderFactory(OptionsChainService chainService, IOptionsMonitor&lt;CoveredCallBacktestOptions&gt; options, ILoggerFactory loggerFactory);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:25](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L25) |  |
-| <code>public async ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:37](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L37) |  |
-| <code>public async ValueTask&lt;CoveredCallChainPreviewResult&gt; PreviewAsync(string underlyingSymbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:161](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L161) |  |
-| <code>public static List&lt;OptionCandidateInfo&gt; ConvertCalls(OptionChainSnapshot snapshot, DateOnly scanDate);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:239](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L239) | Converts the calls in an OptionChainSnapshot into strategy-side OptionCandidateInfo records. Surfaces only fields that are well-defined from a chain quote. |
+| <code>public ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:37](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L37) |  |
+| <code>public async ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, string? tenantId, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:40](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L40) |  |
+| <code>public async ValueTask&lt;CoveredCallChainPreviewResult&gt; PreviewAsync(string underlyingSymbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:166](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L166) |  |
+| <code>public static List&lt;OptionCandidateInfo&gt; ConvertCalls(OptionChainSnapshot snapshot, DateOnly scanDate);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:244](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L244) | Converts the calls in an OptionChainSnapshot into strategy-side OptionCandidateInfo records. Surfaces only fields that are well-defined from a chain quote. |
 
 ## ICoveredCallBacktestService
 
@@ -350,7 +351,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:18](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L18) | Materialises a chain provider that supplies call-option candidates for each scan date in &#91;from, to&#93;. The factory may consult any registered IOptionsChainProvider implementations to gather chain snapshots. |
-| <code>ValueTask&lt;CoveredCallChainPreviewResult&gt; PreviewAsync(string underlyingSymbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:29](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L29) | Materialises a single-date chain (for the configure-form preview). Underlying price is resolved from the latest available snapshot. Returns a tuple of (underlyingPrice, candidates). |
+| <code>ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:25](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L25) |  |
+| <code>ValueTask&lt;CoveredCallChainPreviewResult&gt; PreviewAsync(string underlyingSymbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:33](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L33) | Materialises a single-date chain (for the configure-form preview). Underlying price is resolved from the latest available snapshot. Returns a tuple of (underlyingPrice, candidates). |
 
 ## CredentialKeyStatusDto
 

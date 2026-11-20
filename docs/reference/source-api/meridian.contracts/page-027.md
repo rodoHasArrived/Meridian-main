@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureSetupOwnershipLinkDraftDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupOwnershipLinkDraftDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:82](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L82).
+
+```csharp
+public sealed record FundStructureSetupOwnershipLinkDraftDto(Guid? OwnershipLinkId, FundStructureSetupNodeAlias Parent, FundStructureSetupNodeAlias Child, OwnershipRelationshipTypeDto RelationshipType, decimal? OwnershipPercent = null, bool IsPrimary = false, string? Notes = null);
+```
+
+## FundStructureSetupPreviewDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:120](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L120).
+
+```csharp
+public sealed record FundStructureSetupPreviewDto(IReadOnlyList<FundStructureNodeDto> Nodes, IReadOnlyList<FundStructureSetupPreviewLinkDto> OwnershipLinks, FundStructureSetupValidationSummaryDto ValidationSummary);
+```
+
 ## FundStructureSetupPreviewLinkDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupPreviewLinkDto</code>. Kind: `record`.
@@ -697,32 +717,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;string&gt;? MigrationWarnings { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:69](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L69) |  |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:71](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L71) |  |
-
-## IntercompanyAgreementCallContext
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementCallContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:121](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L121).
-
-Trusted server context, never deserialize this from a command body.
-
-```csharp
-public sealed record IntercompanyAgreementCallContext(string TenantId, string Actor);
-```
-
-## IntercompanyAgreementCapabilitiesDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementCapabilitiesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:74](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L74).
-
-```csharp
-public sealed record IntercompanyAgreementCapabilitiesDto(bool CanEdit, bool CanSubmit, bool CanApprove, bool CanReject, bool CanWithdraw, bool CanAmend, bool CanTerminate, string? BlockingReason = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool CanCreateProposal { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:78](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L78) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool CanAttestExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:80](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L80) |  |

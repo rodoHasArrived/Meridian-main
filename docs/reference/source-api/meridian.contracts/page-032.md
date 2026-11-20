@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingAuditIntegrityReportDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingAuditIntegrityReportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:134](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L134).
+
+Read-only integrity report over every accounting and ledger audit chain this composition retains.
+
+```csharp
+public sealed record AccountingAuditIntegrityReportDto(DateTimeOffset VerifiedAtUtc, bool AllVerified, IReadOnlyList<AuditChainIntegrityResultDto> Chains);
+```
+
+## AccountingAuditPendingMarker
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingAuditPendingMarker</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:50](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L50).
+
+A declared-but-unconfirmed audit append: the event a mutation is about to be audited with, recorded durably before the mutation runs.
+
+```csharp
+public sealed record AccountingAuditPendingMarker(AccountingActionAuditEventDto AuditEvent, DateTimeOffset DeclaredAtUtc, bool BeforeStateRetained = true, AccountingAuditPendingMarkerPhase Phase = AccountingAuditPendingMarkerPhase.Declared);
+```
+
 ## AccountingAuditPendingMarkerPhase
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingAuditPendingMarkerPhase</code>. Kind: `enum`.
@@ -741,42 +765,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Debit = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:28](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L28) |  |
 | <code>Credit = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:29](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L29) |  |
-
-## AccountingTreatmentKindDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingTreatmentKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:66](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L66).
-
-```csharp
-public enum AccountingTreatmentKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>General = 0</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:68](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L68) |  |
-| <code>Accrual = 1</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:69](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L69) |  |
-| <code>Expense = 2</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:70](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L70) |  |
-| <code>PrepaidExpense = 3</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:71](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L71) |  |
-| <code>Amortization = 4</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:72](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L72) |  |
-| <code>Deferral = 5</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:73](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L73) |  |
-| <code>Reclassification = 6</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:74](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L74) |  |
-| <code>Reversal = 7</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:75](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L75) |  |
-| <code>FxTranslation = 8</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:76](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L76) |  |
-| <code>TaxLotRelief = 9</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:77](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L77) |  |
-| <code>DirectLendingAccrual = 10</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:78](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L78) |  |
-| <code>EquityMethodInvestment = 11</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:79](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L79) |  |
-| <code>Intercompany = 12</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:80](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L80) |  |
-| <code>ConsolidationElimination = 13</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:81](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L81) |  |
-
-## ActivateAccountingConfigurationRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.ActivateAccountingConfigurationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:996](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L996).
-
-```csharp
-public sealed record ActivateAccountingConfigurationRequest(string FundProfileId, string Actor, Guid? LedgerBookId = null, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? TenantId = null);
-```

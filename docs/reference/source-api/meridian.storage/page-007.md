@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerPostingIdentityCollisionLookupExtensions
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingIdentityCollisionLookupExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:253](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L253).
+
+Compatibility lookup for journal stores that predate the optimized collision contract. Aggregate reads still enforce all aggregate-scoped identities and any global identity retained by that aggregate. Durable stores should implement ILedgerPostingIdentityCollisionLookup so journal-entry and command identities are checked across every aggregate efficiently.
+
+```csharp
+public static class LedgerPostingIdentityCollisionLookupExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(this ILedgerJournalStore store, LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:255](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L255) |  |
+
 ## LedgerReportingInventoryCoverageBlocker
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerReportingInventoryCoverageBlocker</code>. Kind: `record`.
@@ -1471,49 +1489,3 @@ Statistics summary for archive maintenance.
 ```csharp
 public sealed record MaintenanceStatistics(DateTimeOffset GeneratedAt, int TotalSchedules, int EnabledSchedules, int DisabledSchedules, int TotalExecutions, int SuccessfulExecutions, int FailedExecutions, int ExecutionsLast24Hours, int ExecutionsLast7Days, long TotalBytesProcessed, long TotalBytesSaved, int TotalIssuesFound, int TotalIssuesResolved, TimeSpan AverageExecutionDuration, DateTimeOffset? LastExecutionAt, DateTimeOffset? NextScheduledExecution);
 ```
-
-## MaintenanceTaskOptions
-
-Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceTaskOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:286](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L286).
-
-Configuration options for maintenance tasks.
-
-```csharp
-public sealed class MaintenanceTaskOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool ValidateChecksums { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:289](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L289) |  |
-| <code>public bool CheckSequenceContinuity { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:290](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L290) |  |
-| <code>public bool IdentifyCorruption { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:291](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L291) |  |
-| <code>public bool CheckFilePermissions { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:292](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L292) |  |
-| <code>public int ParallelOperations { get; set; } = 4;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:293](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L293) |  |
-| <code>public bool DeleteOrphans { get; set; } = false;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:296](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L296) |  |
-| <code>public bool DeleteTemporaryFiles { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:297](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L297) |  |
-| <code>public bool DeleteEmptyDirectories { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:298](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L298) |  |
-| <code>public int OrphanAgeDays { get; set; } = 7;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:299](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L299) |  |
-| <code>public long MinFileSizeBytes { get; set; } = 1_048_576;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:302](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L302) |  |
-| <code>public int MaxFilesPerMerge { get; set; } = 100;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:303](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L303) |  |
-| <code>public int FileAgeDaysThreshold { get; set; } = 1;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:304](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L304) |  |
-| <code>public bool DryRun { get; set; } = false;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:307](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L307) |  |
-| <code>public bool DeleteSourceAfterMigration { get; set; } = false;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:308](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L308) |  |
-| <code>public bool VerifyAfterMigration { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:309](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L309) |  |
-| <code>public int MaxMigrationsPerRun { get; set; } = 250;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:310](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L310) |  |
-| <code>public long? MaxMigrationBytesPerRun { get; set; } = 2L * 1024 * 1024 * 1024;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:311](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L311) |  |
-| <code>public bool RunOnlyDuringMarketClosedHours { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:312](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L312) |  |
-| <code>public string MarketTimeZoneId { get; set; } = &quot;America/New_York&quot;;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:313](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L313) |  |
-| <code>public TimeSpan MarketOpenTime { get; set; } = new (9, 30, 0);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:314](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L314) |  |
-| <code>public TimeSpan MarketCloseTime { get; set; } = new (16, 0, 0);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:315](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L315) |  |
-| <code>public string? TargetCompressionCodec { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:318](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L318) |  |
-| <code>public int? CompressionLevel { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:319](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L319) |  |
-| <code>public bool RecompressExisting { get; set; } = false;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:320](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L320) |  |
-| <code>public bool BackupBeforeRepair { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:323](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L323) |  |
-| <code>public string? BackupPath { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:324](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L324) |  |
-| <code>public bool TruncateCorrupted { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:325](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L325) |  |
-| <code>public int? OverrideRetentionDays { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:328](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L328) |  |
-| <code>public bool SkipCriticalData { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:329](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L329) |  |

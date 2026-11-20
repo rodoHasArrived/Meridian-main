@@ -6,11 +6,113 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationRunDrillInLinks
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRunDrillInLinks</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L43).
+
+Shared drill-in links attached to strategy, trading, and accounting run records.
+
+```csharp
+public sealed record WorkstationRunDrillInLinks(string EquityCurve, string Fills, string Attribution, string? Ledger, string CashFlows, string Continuity, string Comparison);
+```
+
+## WorkstationScopeAccountOptionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L56).
+
+A fund account the caller may scope to. FundId and EntityId are null when the account has no such relationship or when it points at a fund or entity the caller may not see; FundWithheld and EntityWithheld tell the two apart.
+
+```csharp
+public sealed record WorkstationScopeAccountOptionDto(Guid AccountId, string DisplayName, Guid? FundId, Guid? EntityId, bool FundWithheld = false, bool EntityWithheld = false);
+```
+
+## WorkstationScopeEntityOptionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeEntityOptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L23).
+
+A legal entity the caller may scope to.
+
+```csharp
+public sealed record WorkstationScopeEntityOptionDto(Guid EntityId, string Name);
+```
+
+## WorkstationScopeFundOptionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeFundOptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L31).
+
+A fund the caller may scope to, with the visible legal entities it holds. Entities the caller may not see are left out of EntityIds.
+
+```csharp
+public sealed record WorkstationScopeFundOptionDto(Guid FundId, string Name, IReadOnlyList<Guid> EntityIds);
+```
+
+## WorkstationScopeOptionsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeOptionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L17).
+
+The entities, funds and fund accounts the calling operator may choose as an operating scope (GET /api/workstation/scope-options), with the account → fund → entity relationships between them. The host fills it only with nodes the caller is authorized to see, and drops any relationship that would name a fund or entity outside that set. Field names deliberately match the entity, fund and account summaries in Meridian.Contracts.FundStructure.OrganizationStructureGraphDto, so a client can read either payload with one parser. Every list may be empty; an empty list means &quot;none visible to this caller&quot;, never &quot;not loaded&quot;.
+
+```csharp
+public sealed record WorkstationScopeOptionsDto(IReadOnlyList<WorkstationScopeEntityOptionDto> Entities, IReadOnlyList<WorkstationScopeFundOptionDto> Funds, IReadOnlyList<WorkstationScopeAccountOptionDto> Accounts);
+```
+
+## WorkstationScopeOptionsJsonContext
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L75).
+
+Provides source-generated JSON metadata for the workstation scope-option contracts. Null relationships are written explicitly so clients can tell &quot;no fund&quot; from a missing field.
+
+```csharp
+public sealed partial class WorkstationScopeOptionsJsonContext : JsonSerializerContext;
+```
+
+## WorkstationSecurityCoverageGapPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageGapPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L69).
+
+```csharp
+public sealed record WorkstationSecurityCoverageGapPayload(string Source, string Symbol, string? AccountName, string Reason);
+```
+
+## WorkstationSecurityCoveragePayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoveragePayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L75).
+
+```csharp
+public sealed record WorkstationSecurityCoveragePayload(int PortfolioResolved, int PortfolioMissing, int LedgerResolved, int LedgerMissing, bool HasIssues, string Tone, string Summary, IReadOnlyList<WorkstationSecurityCoverageReferencePayload> ResolvedReferences, IReadOnlyList<WorkstationSecurityCoverageGapPayload> MissingReferences);
+```
+
+## WorkstationSecurityCoverageReferencePayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageReferencePayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L52).
+
+```csharp
+public sealed record WorkstationSecurityCoverageReferencePayload(string Source, string Symbol, string? AccountName, string? SecurityId, string DisplayName, string? AssetClass, string? SubType, string? Currency, string? Status, string? PrimaryIdentifier, string CoverageStatus, string? CoverageReason, string? MatchedIdentifierKind, string? MatchedIdentifierValue, string? MatchedProvider);
+```
+
 ## WorkstationSecurityCoverageStatus
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:495](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L495).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:498](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L498).
 
 Security Master coverage state associated with a workstation security reference.
 
@@ -22,16 +124,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Resolved</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:497](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L497) |  |
-| <code>Partial</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:498](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L498) |  |
-| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:499](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L499) |  |
-| <code>Unavailable</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:500](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L500) |  |
+| <code>Resolved</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:500](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L500) |  |
+| <code>Partial</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:501](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L501) |  |
+| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:502](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L502) |  |
+| <code>Unavailable</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:503](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L503) |  |
 
 ## WorkstationSecurityReference
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityReference</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:512](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L512).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:515](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L515).
 
 Lightweight Security Master reference used by workstation portfolio and ledger surfaces. SubType is the most specific classification available at query time (e.g. &quot;CommonShare&quot;, &quot;Bond&quot;, &quot;OptionContract&quot;). It is derived from the security&#x27;s asset class and is null when the asset class does not map to a unique sub-type. RiskCountry is extracted from the CommonTerms JSON blob when available. IssuerType is only populated by full workbench queries; the lightweight symbol-lookup path leaves it null to avoid an extra round-trip.
 

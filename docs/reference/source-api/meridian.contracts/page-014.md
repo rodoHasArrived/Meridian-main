@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolMappingSources
+
+Qualified name: <code>Meridian.Contracts.Catalog.SymbolMappingSources</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:297](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L297).
+
+Stable provenance values and precedence used by the canonical symbol registry.
+
+```csharp
+public static class SymbolMappingSources
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Operator = &quot;operator&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:299](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L299) |  |
+| <code>public const string SecurityMaster = &quot;security-master&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:300](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L300) |  |
+| <code>public const string SecurityMasterIdentifier = &quot;security-master-identifier&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:305](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L305) | A Security Master-owned alias emitted from the security&#x27;s ISIN, CUSIP, FIGI or SEDOL field, as distinct from an ordinary Security Master alias that happens to share the value. |
+| <code>public const string LegacyConfig = &quot;legacy-config&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:306](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L306) |  |
+| <code>public const string OpenFigi = &quot;openfigi&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:307](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L307) |  |
+| <code>public const string Registry = &quot;registry&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:308](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L308) |  |
+| <code>public const string FormattingFallback = &quot;formatting-fallback&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:309](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L309) |  |
+
+## SymbolRegistry
+
+Qualified name: <code>Meridian.Contracts.Catalog.SymbolRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:9](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L9).
+
+Symbol registry for alias resolution across providers. Stored at _catalog/symbols.json.
+
+```csharp
+public sealed class SymbolRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;registryVersion&quot;)] public string RegistryVersion { get; set; } = &quot;1.0.0&quot;;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:15](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L15) | Registry format version. |
+| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:21](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L21) | When the registry was created. |
+| <code>[JsonPropertyName(&quot;lastUpdatedAt&quot;)] public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:27](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L27) | When the registry was last updated. |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public Dictionary&lt;string, SymbolRegistryEntry&gt; Symbols { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:33](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L33) | Symbol entries keyed by canonical symbol name. |
+| <code>[JsonPropertyName(&quot;aliasIndex&quot;)] public Dictionary&lt;string, string&gt; AliasIndex { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:39](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L39) | Alias lookup table mapping aliases to canonical symbols. |
+| <code>[JsonPropertyName(&quot;providerMappings&quot;)] public Dictionary&lt;string, Dictionary&lt;string, string&gt;&gt; ProviderMappings { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:46](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L46) | Provider-specific symbol mappings. Key: provider name, Value: provider symbol to canonical symbol mapping. |
+| <code>[JsonPropertyName(&quot;identifierIndex&quot;)] public IdentifierIndex IdentifierIndex { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:52](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L52) | Industry identifiers index (ISIN, FIGI, SEDOL to canonical symbol). |
+| <code>[JsonPropertyName(&quot;statistics&quot;)] public SymbolRegistryStatistics Statistics { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:58](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L58) | Statistics about the registry. |
+| <code>[JsonPropertyName(&quot;migrationMarkers&quot;)] public Dictionary&lt;string, string&gt; MigrationMarkers { get; set; } = new (StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:65](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L65) | Idempotent migration receipts keyed by migration identifier with the source fingerprint. Legacy inputs are retained outside the registry for rollback. |
+| <code>[JsonPropertyName(&quot;legacyIdentifierCleanupReceipts&quot;)] public Dictionary&lt;string, SecurityMasterLegacyIdentifierCleanupReceipt&gt; LegacyIdentifierCleanupReceipts { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:72](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L72) | Exact manifests and evidence references for explicitly selected legacy identifier cleanup. A receipt records the requested cleanup; it does not establish independent approval. |
+
 ## SymbolRegistryEntry
 
 Qualified name: <code>Meridian.Contracts.Catalog.SymbolRegistryEntry</code>. Kind: `class`.
@@ -1045,34 +1096,3 @@ Enum declarations:
 | <code>Environment</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:30](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L30) |  |
 | <code>ExternalVaultReference</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:31](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L31) |  |
 | <code>NotRequired</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:32](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L32) |  |
-
-## ProviderCredentialStateDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:15](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L15).
-
-```csharp
-public enum ProviderCredentialStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotRequired</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:17](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L17) |  |
-| <code>Missing</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:18](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L18) |  |
-| <code>Partial</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:19](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L19) |  |
-| <code>Configured</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:20](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L20) |  |
-| <code>Verified</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:21](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L21) |  |
-| <code>Invalid</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:22](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L22) |  |
-
-## ProviderCredentialUpsertRequestDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialUpsertRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:99](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L99).
-
-```csharp
-public sealed record ProviderCredentialUpsertRequestDto(IReadOnlyDictionary<string, string?>? Credentials, string? Environment = null, string? RequestedBy = null);
-```

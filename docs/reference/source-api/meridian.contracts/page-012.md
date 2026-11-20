@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BankTransactionSeedResultDto
+
+Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:140](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L140).
+
+Result returned after seeding bank transactions.
+
+```csharp
+public sealed record BankTransactionSeedResultDto(int EntitiesProcessed, int TransactionsSeeded, IReadOnlyList<Guid> ProcessedEntityIds);
+```
+
+## IBankTransactionSource
+
+Qualified name: <code>Meridian.Contracts.Banking.IBankTransactionSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:154](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L154).
+
+Read-only banking data source for cross-domain integrations such as reconciliation. Services outside the Banking module can depend on this narrow interface instead of the full IBankingService.
+
+```csharp
+public interface IBankTransactionSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;BankTransactionDto&gt;&gt; GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:160](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L160) | Return bank transactions. When entityId is provided the result is scoped to that entity; otherwise all transactions are returned. |
+
 ## InitiatePaymentRequest
 
 Qualified name: <code>Meridian.Contracts.Banking.InitiatePaymentRequest</code>. Kind: `record`.
@@ -780,31 +810,3 @@ Declared public members:
 | <code>public const string Security = &quot;Security&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs:9](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs#L9) |  |
 | <code>public const string Loan = &quot;Loan&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs#L10) |  |
 | <code>public static bool IsSupported(string? kind) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs#L12) |  |
-
-## ContractualCashFlowVersions
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowVersions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:119](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L119).
-
-```csharp
-public static class ContractualCashFlowVersions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Engine = &quot;contractual-cashflow-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:121](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L121) |  |
-| <code>public const string Mapping = &quot;contractual-cashflow-mapping-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:122](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L122) |  |
-| <code>public const string Prepayment = &quot;survival-cpr-smm-psa-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:123](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L123) |  |
-
-## ContractualCouponAmount
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCouponAmount</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:56](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L56).
-
-```csharp
-public sealed record ContractualCouponAmount(DateOnly PaymentDate, decimal Amount);
-```
