@@ -16,11 +16,13 @@ export interface ReconciliationSelectionState {
 const queryKeys = {
   selectedRunId: "reconciliationRun",
   selectedBreakId: "reconciliationBreak",
+  comparisonBreakId: "reconciliationCompare",
   queueSearch: "reconciliationSearch",
   queueStatus: "reconciliationStatus",
   queueSort: "reconciliationSort",
   hiddenColumns: "reconciliationColumns"
 } as const;
+export const RECONCILIATION_VIEW_QUERY_KEYS = Object.values(queryKeys);
 /** The break queue's hideable columns (C4); hidden ones travel in the link so saved views keep them. */
 export const RECONCILIATION_QUEUE_HIDEABLE_COLUMNS = ["category", "owner", "updated", "source"] as const;
 const scopeKeys = ["fundAccountId", "symbol", "runId", "provider", "from", "to", "date", "asOf"];
@@ -32,6 +34,7 @@ export function readReconciliationViewState(search: string) {
   return {
     selectedRunId: params.get(queryKeys.selectedRunId)?.trim() || null,
     selectedBreakId: params.get(queryKeys.selectedBreakId)?.trim() || null,
+    comparisonBreakId: params.get(queryKeys.comparisonBreakId)?.trim() || null,
     queueSearch: params.get(queryKeys.queueSearch) ?? "",
     queueStatus: (["Open", "InReview", "Resolved", "Dismissed", "SignedOff"].includes(status ?? "") ? status : "all") as ReconciliationQueueStatus,
     queueSort: (["oldest", "newest", "severity"].includes(sort ?? "") ? sort : "default") as ReconciliationQueueSort,
@@ -70,22 +73,24 @@ export function useReconciliationViewState(enabled = true) {
     const hash = ownsBrowserHistory.current ? window.location.hash : current.location.hash;
     if (readReconciliationViewState(search).scopeKey !== view.scopeKey) return;
     const params = new URLSearchParams(search);
+    const previousSearch = params.toString();
     Object.entries(patch).forEach(([key, value]) => {
       const queryKey = queryKeys[key as keyof typeof queryKeys];
       const text = Array.isArray(value) ? value.join(",") : value;
-      if (text === null || text === undefined || text === "" || text === "all" || text === "default") params.delete(queryKey);
+      if (text == null || text === "" || (key === "queueStatus" && text === "all") || (key === "queueSort" && text === "default")) params.delete(queryKey);
       else params.set(queryKey, text);
     });
     // The queue records scroll on the current history entry without rerendering Router.
     // Preserve that state when navigating from this entry; MemoryRouter keeps its own state.
     const navigationState = ownsBrowserHistory.current || currentEntry?.key === current.location.key ? currentEntry?.usr : current.location.state;
-    navigate({ pathname: current.location.pathname, search: params.toString(), hash }, { replace, state: navigationState });
+    const nextSearch = params.toString();
+    if (nextSearch !== previousSearch) navigate({ pathname: current.location.pathname, search: nextSearch, hash }, { replace, state: navigationState });
   }, [location.pathname, navigate, view.scopeKey]);
 
   useEffect(() => {
     previous.current = view;
     if (enabled && scopeChangedWithRetainedSelection && (view.selectedRunId || view.selectedBreakId)) {
-      update({ selectedRunId: null, selectedBreakId: null }, true);
+      update({ selectedRunId: null, selectedBreakId: null, comparisonBreakId: null }, true);
     }
   }, [enabled, scopeChangedWithRetainedSelection, update, view]);
 
@@ -93,9 +98,13 @@ export function useReconciliationViewState(enabled = true) {
     ...view,
     selectedRunId: scopeChangedWithRetainedSelection ? null : view.selectedRunId,
     selectedBreakId: scopeChangedWithRetainedSelection ? null : view.selectedBreakId,
-    replaceSelection: (selectedRunId: string | null, selectedBreakId: string | null) => update({ selectedRunId, selectedBreakId }, true),
-    selectRun: (selectedRunId: string | null) => update({ selectedRunId, selectedBreakId: null }),
-    selectBreak: (selectedBreakId: string | null, selectedRunId?: string | null) => update({ selectedBreakId, ...(selectedRunId ? { selectedRunId } : {}) }),
+    comparisonBreakId: scopeChangedWithRetainedSelection ? null : view.comparisonBreakId,
+    replaceSelection: (selectedRunId: string | null, selectedBreakId: string | null) => update({ selectedRunId, selectedBreakId,
+      ...(selectedBreakId !== view.selectedBreakId ? { comparisonBreakId: null } : {}) }, true),
+    selectRun: (selectedRunId: string | null) => update({ selectedRunId, selectedBreakId: null, comparisonBreakId: null }),
+    selectBreak: (selectedBreakId: string | null, selectedRunId?: string | null) => update({ selectedBreakId,
+      ...(selectedBreakId !== view.selectedBreakId ? { comparisonBreakId: null } : {}), ...(selectedRunId ? { selectedRunId } : {}) }),
+    setComparisonBreakId: (comparisonBreakId: string | null) => update({ comparisonBreakId }),
     clearQueueFilters: () => update({ queueSearch: "", queueStatus: "all" }),
     setQueueSearch: (queueSearch: string) => update({ queueSearch }, true),
     setQueueStatus: (queueStatus: ReconciliationQueueStatus) => update({ queueStatus }),

@@ -355,6 +355,14 @@ changes; absence clears only its current comparison policy. Verified legacy rece
 original lineage IDs, reject changed replays, and refuse ambiguous historical forks. Optional fields
 are omitted from legacy JSON. Source clearing never resolves governed casework.
 
+Statement case evidence identifies the originating run, the immutable match artifact, and the
+executed tolerance policy with its version and statement date. The matched operands carry separate
+record IDs and evidence references. Amounts, quantities, prices, and residuals are invariant decimal
+text so clients can retain the precision supplied to the matcher. Split and merge observations carry
+the completed match group and the affected prior case IDs. Reviewed bulk execution names a retained
+dry run through `PreviewBulkActionId`. Its results carry the reviewed case versions and a reviewed
+successor version when supersession affects a separate case.
+
 `Meridian.Contracts.SecurityMaster` owns `ISecurityResolver`, the identity, trading-parameter and
 corporate-action query interfaces, and `ILivePositionCorporateActionAdjuster` with its result record.
 Execution and Backtesting consume these contracts without referencing Application. The aggregate

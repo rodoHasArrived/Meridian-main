@@ -749,7 +749,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
 
       {workstream === "reconciliation" ? (
         <ThreeWayReconciliationWorkbench>
-          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice}
+          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice} operatorId={operatorIdentity}
             runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />}
           />
           <IncomeReceiptQueuePanel operatorIdentity={operatorIdentity} />
@@ -2048,7 +2048,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
 
       {sectionVisibility.showReconciliationActions && workstream !== "reconciliation" ? (
         <>
-          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice} runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />} />
+          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice} operatorId={operatorIdentity} runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />} />
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} compact={workstream === "exceptions"} /></TechnicalDetails>
         </>
       ) : null}

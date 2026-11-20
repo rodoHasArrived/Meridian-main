@@ -74,6 +74,13 @@ IDs, conflicting allocation forms, and nonconserving amounts are refused during 
 fields retain source attribution; the receipt queue still verifies the canonical security,
 accepted obligation, currency, and original receipt before counting money.
 
+In Casework, use **Previous case** and **Next case** or press **K** and **J** to traverse the filtered
+queue. Press **Escape** to return to the queue. Use **Compare with an earlier retained case** when
+the lineage includes an earlier observation. The copied case link carries the selected comparison.
+The case rail holds the decision preview, affected outputs and retained activity. If the case changes
+during review, reload it and open a fresh preview. If a request ends before confirmation, use
+**Check outcome** with the retained command ID or **Check batch outcome** for a batch receipt.
+
 Statement ingress is bounded, and a breach is refused rather than truncated — no partially imported
 statement is ever committed. A refusal surfaces as a blocking issue on preview and validate, and as a
 failed commit, carrying one of `STATEMENT_DOCUMENT_TOO_LARGE` (over 20 MiB),

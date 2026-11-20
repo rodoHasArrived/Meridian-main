@@ -103,6 +103,19 @@ describe("reconciliation URL view state", () => {
     expect(result.current.view).toMatchObject({ selectedRunId: "run-a", selectedBreakId: "break-a", queueSearch: "cash", queueStatus: "Open", queueSort: "oldest" });
   });
 
+  it("retains an earlier case comparison in the link and clears it when opening another case", async () => {
+    const { result } = renderHook(useHarness, { wrapper });
+    act(() => result.current.view.setComparisonBreakId("prior-break"));
+    await waitFor(() => expect(result.current.view.comparisonBreakId).toBe("prior-break"));
+    expect(result.current.location.search).toContain("reconciliationCompare=prior-break");
+    act(() => result.current.view.selectBreak("break-b", "run-b"));
+    await waitFor(() => expect(result.current.view.selectedBreakId).toBe("break-b"));
+    expect(result.current.view.comparisonBreakId).toBeNull();
+    act(() => result.current.navigate(-1));
+    await waitFor(() => expect(result.current.view.comparisonBreakId).toBe("prior-break"));
+    expect(result.current.view.selectedBreakId).toBe("break-a");
+  });
+
   it("clears retained selection when operating scope changes", async () => {
     const { result } = renderHook(useHarness, { wrapper });
     act(() => result.current.navigate(result.current.location.pathname + result.current.location.search.replace("fund-a", "fund-b")));
