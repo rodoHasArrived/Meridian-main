@@ -31,7 +31,8 @@ public sealed partial class BookReceiptQueueService
                 continue;
             }
             var row = distinct[0];
-            if (string.IsNullOrWhiteSpace(row.ObligationKey) || row.SecurityId == Guid.Empty || row.PositionId == Guid.Empty ||
+            if (string.IsNullOrWhiteSpace(row.ObligationKey) || row.ObligationKey.StartsWith(BookReceiptProjectionIdentity.Prefix, StringComparison.Ordinal) ||
+                row.SecurityId == Guid.Empty || row.PositionId == Guid.Empty ||
                 string.IsNullOrWhiteSpace(row.Currency) || row.Quantity <= 0m || row.ExpectedAmount <= 0m ||
                 row.TermsVersionId == Guid.Empty || row.ProjectionRunId == Guid.Empty || row.ProjectedCashFlowId == Guid.Empty ||
                 string.IsNullOrWhiteSpace(row.TermsHash) || row.RetainedEvidence.Count == 0 ||

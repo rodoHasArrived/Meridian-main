@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
@@ -39,7 +37,6 @@ public sealed partial class BookReceiptEvidenceSource(
     ISecurityReferenceLookup? securities = null,
     IFundProfileTenancyRegistry? tenancy = null,
     IAccountQueryService? accounts = null,
-    IStatementNormalizedEntityRepository? normalized = null,
     IStatementRunRecoveryRepository? recovery = null) : IBookReceiptEvidenceSource
 {
     public async Task<BookReceiptSourceSnapshotDto> LoadAsync(BookReceiptQueryDto query,
@@ -100,7 +97,6 @@ public sealed partial class BookReceiptEvidenceSource(
                     continue;
                 }
                 windows.Add((authority.FundAccountId, authority.PeriodStart, authority.PeriodEnd));
-                var entities = normalized is null ? null : await normalized.GetAsync(run.RunId, ct).ConfigureAwait(false);
                 var runReceipts = new Dictionary<string, BookReceiptDto>(StringComparer.Ordinal);
                 foreach (var row in retained.Rows.OrderBy(r => r.SourceRowNumber))
                 {
@@ -121,12 +117,7 @@ public sealed partial class BookReceiptEvidenceSource(
                         coverage.Add(new("receipt-identity", false, "A provider receipt lacks a stable payment identity or exact account attribution."));
                         continue;
                     }
-                    var source = entities?.RunId == run.RunId && entities.ImportId == import.ImportId
-                        ? entities.Transactions.SingleOrDefault(t => t.SourceRowNumber == row.SourceRowNumber
-                            && t.SourceRowHash == row.RawChecksum && t.Amount == row.CashAmount
-                            && Equal(t.Currency, row.Currency) && t.ExternalReference == row.ExternalTransactionId)
-                        : null;
-                    var security = await ResolveSecurityAsync(row, source, ct).ConfigureAwait(false);
+                    var security = await ResolveSecurityAsync(row, ct).ConfigureAwait(false);
                     if (security is null)
                     {
                         coverage.Add(new("receipt-security", false, "A provider receipt has no authoritative security identity."));
@@ -134,7 +125,7 @@ public sealed partial class BookReceiptEvidenceSource(
                     }
                     // Keep the provider kind immutable. Coupon compatibility belongs to
                     // allocation, not a rewrite of cash evidence when accepted terms change.
-                    var related = Raw(source, "relatedTransactionId", "reversesTransactionId");
+                    var related = row.RelatedTransactionId;
                     if (row.CashAmount <= 0m && string.IsNullOrWhiteSpace(related))
                     {
                         coverage.Add(new("receipt-reversal", false, "A nonpositive provider receipt has no retained original-payment link."));
@@ -145,7 +136,7 @@ public sealed partial class BookReceiptEvidenceSource(
                         security.Value, effective, row.Currency.Trim().ToUpperInvariant(), row.CashAmount,
                         import.SourceInstitution.Trim().ToLowerInvariant(),
                         JsonSerializer.Serialize(new[] { import.ExternalAccountId.Trim().ToUpperInvariant(), row.ExternalTransactionId.Trim() }),
-                        ExplicitAllocations(source, row.CashAmount, security.Value, row.Currency, expectations),
+                        ExplicitAllocations(row, row.CashAmount, security.Value, row.Currency, expectations),
                         string.IsNullOrWhiteSpace(related) ? null : PaymentId(import.SourceInstitution, import.ExternalAccountId, related),
                         [UiApiRoutes.ReconciliationStatementRunById.Replace("{runId}", Uri.EscapeDataString(run.RunId), StringComparison.Ordinal), $"statement:{evidence}"], flow);
                     receipts.Add(receipt);
@@ -207,9 +198,9 @@ public sealed partial class BookReceiptEvidenceSource(
         }
     }
 
-    private async Task<Guid?> ResolveSecurityAsync(CanonicalStatementRow row, StatementTransaction? source, CancellationToken ct)
+    private async Task<Guid?> ResolveSecurityAsync(CanonicalStatementRow row, CancellationToken ct)
     {
-        var requested = Guid.TryParse(source?.SecurityId, out var id) && id != Guid.Empty ? (Guid?)id : null;
+        var requested = row.SecurityId is { } id && id != Guid.Empty ? (Guid?)id : null;
         if (securities is null || (requested is null && string.IsNullOrWhiteSpace(row.Symbol)))
             return null;
         var security = await securities.GetByCanonicalAsync(new SecurityReferenceLookupRequest(SecurityId: requested,
@@ -257,14 +248,12 @@ public sealed partial class BookReceiptEvidenceSource(
 
     private static bool Equal(string? left, string? right) => !string.IsNullOrWhiteSpace(left) && !string.IsNullOrWhiteSpace(right)
         && string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
-    private static string? Raw(StatementTransaction? source, params string[] keys)
-        => source?.RawSnapshot.FirstOrDefault(p => keys.Any(k => Equal(p.Key, k))).Value;
     private static string? Tag(JournalEntryMetadata metadata, string key) => metadata.Tags?.FirstOrDefault(p => Equal(p.Key, key)).Value;
     private static DateOnly EffectiveDate(LedgerJournalEntryRecord record)
         => record.Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime);
     private static string PaymentId(string provider, string account, string transaction)
-        => "provider-payment:" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(
-            new[] { provider.Trim().ToUpperInvariant(), account.Trim().ToUpperInvariant(), transaction.Trim() })))).ToLowerInvariant();
+        => "provider-payment:" + Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(
+            new[] { provider.Trim().ToUpperInvariant(), account.Trim().ToUpperInvariant(), transaction.Trim() }));
     private static string? FlowType(string activity) => new string(activity.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant() switch
     {
         "coupon" or "couponpayment" or "couponreceipt" or "couponreversal" => "coupon",

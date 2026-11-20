@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.FinancialOperations

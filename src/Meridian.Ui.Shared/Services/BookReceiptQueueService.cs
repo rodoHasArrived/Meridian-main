@@ -52,7 +52,8 @@ public sealed partial class BookReceiptQueueService(
         var histories = BuildHistories(prior, captured.Expectations, query.AsOfDate, issues);
         var expectations = histories.ToDictionary(static pair => pair.Key, static pair => pair.Value[^1].Expectation, StringComparer.Ordinal);
         var rawReceipts = MergeReceipts(prior.LastOrDefault()?.SourceSnapshot.Receipts ?? [], captured.Receipts);
-        var allocatable = PinRetainedReceiptAllocations(prior, rawReceipts, issues);
+        var resolvedReceipts = ResolveReceiptProjectionReferences(rawReceipts, histories, issues);
+        var allocatable = PinRetainedReceiptAllocations(prior, resolvedReceipts, issues);
         var receipts = ValidateReceipts(allocatable, query.AsOfDate, issues, out var aliases);
         string CanonicalReceipt(string id) => aliases.GetValueOrDefault(id) ?? id;
         var incomingGroups = captured.Postings.Select(row => (row.JournalEntryId, Receipt: CanonicalReceipt(row.ReceiptId))).ToHashSet();
@@ -61,7 +62,8 @@ public sealed partial class BookReceiptQueueService(
                 !captured.Postings.Any(current => current.PostingId == old.PostingId))
             .Concat(captured.Postings).OrderBy(static row => row.PostingId, StringComparer.Ordinal).ToArray();
         var allocations = Allocate(receipts, expectations, issues);
-        var recognized = PinRetainedPostingAllocations(prior, rawPostings, aliases, issues);
+        var resolvedPostings = ResolvePostingProjectionReferences(rawPostings, receipts, aliases, histories, issues);
+        var recognized = PinRetainedPostingAllocations(prior, resolvedPostings, aliases, issues);
         var postings = ValidatePostings(recognized, allocations, receipts, expectations, query.AsOfDate, issues);
         if (issues.Count > 0)
             coverage.Add(new BookReceiptCoverageDto("Validation", false, string.Join(" ", issues.Distinct(StringComparer.Ordinal))));
@@ -144,11 +146,22 @@ public sealed partial class BookReceiptQueueService(
                 status is "Overdue" or "PartiallyReceived" or "Disputed" or "ReceivedButUnposted")
             {
                 var observedAt = new DateTimeOffset(query.AsOfDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+                var receiptDiscrepancy = received - expected.ExpectedAmount;
+                var postingDiscrepancy = posted - received;
+                var compareReceipts = Math.Abs(receiptDiscrepancy) >= Math.Abs(postingDiscrepancy);
+                var variance = compareReceipts ? receiptDiscrepancy : postingDiscrepancy;
+                var comparison = compareReceipts ? "expected versus received" : "received versus posted";
+                var comparisonSummary = string.Create(CultureInfo.InvariantCulture,
+                    $"Dominant comparison: {comparison}; expected={expected.ExpectedAmount}, received={received}, posted={posted} {expected.Currency}; variance is actual minus expected.");
                 var item = new ReconciliationBreakQueueItem(exceptionId, $"book-receipts:{query.AsOfDate:yyyy-MM-dd}",
                     expected.DisplayName, ReconciliationBreakCategory.CashMismatch, ReconciliationBreakQueueStatus.Open,
-                    remaining, $"{expected.FlowType} receipt is {status}.", null, observedAt, observedAt,
+                    variance, $"{expected.FlowType} receipt is {status}.", null, observedAt, observedAt,
+                    ExplainabilitySummary: comparisonSummary,
                     EvidenceLinks: links, SourceType: "BookReceipt", SourceSystem: EngineVersion, SourceReference: key,
-                    LedgerBookId: query.Scope.LedgerBookId, AsOfDate: query.AsOfDate)
+                    LedgerBookId: query.Scope.LedgerBookId, AsOfDate: query.AsOfDate,
+                    Measures: [new ReconciliationBreakMeasureDto(ReconciliationBreakMeasureKindDto.Value,
+                        compareReceipts ? expected.ExpectedAmount : received, compareReceipts ? received : posted,
+                        variance, Tolerance: null, Unit: expected.Currency)])
                 { TenantId = query.Scope.TenantId, CompanyId = query.Scope.CompanyId };
                 await exceptions.CreateIfMissingAsync(scope, item, ct).ConfigureAwait(false);
                 existing = await exceptions.GetByIdAsync(scope, exceptionId, ct).ConfigureAwait(false);

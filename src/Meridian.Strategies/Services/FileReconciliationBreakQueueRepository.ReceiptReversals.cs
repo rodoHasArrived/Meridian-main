@@ -68,6 +68,12 @@ public sealed partial class FileReconciliationBreakQueueRepository
             if (!item.AsOfDate.HasValue || request.AsOfDate < item.AsOfDate.Value)
                 return Invalid(item, "A backdated receipt observation cannot reopen later casework.",
                     ReconciliationBreakQueueTransitionErrorCode.InvalidRequest);
+            // The casework snapshot can commit even when the subsequent queue-run save fails.
+            // Consume source events from that durable audit, so retrying after a later human
+            // disposition cannot reopen the same reversal under a different case version.
+            var consumed = ReadConsumedBookReceiptReversals(scope, request);
+            if (reversalIds.All(consumed.Contains))
+                return new(ReconciliationBreakQueueTransitionStatus.Success, item);
             var closeValidation = ValidateCloseScopeMutation(item, command);
             if (closeValidation is not null)
                 return closeValidation;
@@ -114,4 +120,29 @@ public sealed partial class FileReconciliationBreakQueueRepository
             _gate.Release();
         }
     }
+
+    private HashSet<string> ReadConsumedBookReceiptReversals(
+        ReconciliationBreakQueueScope scope, BookReceiptReversalCommand request)
+    {
+        var result = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var audit in _auditEvents.Where(row => row.BreakId == request.BreakId
+            && row.EventType == "ReceiptReversalReopened" && row.Actor == "book-receipt-source"
+            && row.Source == "book-receipts-v1" && row.TenantId == scope.TenantId && row.CompanyId == scope.CompanyId))
+        {
+            if (audit.CommandId is null || !_commandReceipts.TryGetValue(audit.CommandId, out var receipt)
+                || receipt.LegacyUnverified || receipt.Outcome is null || !AccessScopeEquals(receipt.AccessScope, scope)
+                || receipt.BreakId != request.BreakId || receipt.Action != ReconciliationCaseworkAction.Reopen)
+                throw new InvalidDataException("A retained receipt reversal is missing its verified command receipt.");
+            var observation = JsonSerializer.Deserialize<BookReceiptReversalObservation>(audit.Note ?? "null", _jsonOptions);
+            if (observation is null || observation.TenantId != scope.TenantId || observation.CompanyId != scope.CompanyId
+                || observation.LedgerBookId != request.LedgerBookId || observation.ReversalIds is not { Length: > 0 }
+                || observation.ReversalIds.Any(string.IsNullOrWhiteSpace))
+                throw new InvalidDataException("A retained receipt reversal observation failed identity verification.");
+            result.UnionWith(observation.ReversalIds);
+        }
+        return result;
+    }
+
+    private sealed record BookReceiptReversalObservation(
+        string TenantId, string CompanyId, Guid LedgerBookId, DateOnly AsOfDate, string[] ReversalIds);
 }

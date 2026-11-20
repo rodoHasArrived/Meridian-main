@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { formatCount as formatCountValue, formatDecimal, formatFixed, formatNumber, formatRelativeTime, formatTimestamp, pluralizeCount } from "@/lib/format";
 import type { ChartEvidence } from "@/components/charts/chart-evidence";
+import { liveQuoteTradeId, liveTradeChartEvidence } from "./live-quotes-screen.chart-evidence";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
@@ -1753,10 +1754,6 @@ function buildDepthLevelDetail(
   };
 }
 
-function liveQuoteTradeId(trade: TradeDataResponse): string {
-  return `${trade.sequenceNumber}-${trade.timestamp}`;
-}
-
 function buildTradeRow(trade: TradeDataResponse, detailPanelId: string): LiveQuotesTradeRowViewModel {
   const aggressor = trade.aggressor?.toLowerCase();
   const id = liveQuoteTradeId(trade);
@@ -1926,25 +1923,13 @@ export function buildPriceSparklineViewModel(
           ...source,
           id: `trade-${key}:${series[0]!.trade.symbol}`,
           label: `Recent trade ${key}`,
-          x: (width - padX).toFixed(2),
-          y: yFor(value).toFixed(2),
+          x: formatFixed(width - padX, 2),
+          y: formatFixed(yFor(value), 2),
           values: [{ series: `Trade ${key}`, value, unit: "Price per unit (currency unreported)", basis: `Window ${key} across buffered trade prices.` }]
         };
       })
     ],
     latestIndex: observations.length - 1
-  };
-}
-
-function liveTradeChartEvidence(trade: TradeDataResponse, price: number, selectTrade?: (id: string) => void, panelId?: string): ChartEvidence {
-  const tradeId = liveQuoteTradeId(trade);
-  return {
-    id: `${trade.symbol}:${tradeId}`,
-    label: `${trade.symbol} print ${trade.sequenceNumber}`,
-    asOf: trade.timestamp,
-    values: [{ series: `${trade.symbol} trade price`, value: price, unit: "Price per unit (currency unreported)", basis: "Price of the individual print received by the live pipeline." }],
-    proof: selectTrade && panelId ? { href: `#${panelId}`, label: `Open trade print ${trade.sequenceNumber}`, onOpen: () => selectTrade(tradeId) } : null,
-    sourceDetail: `Venue ${trade.venue ?? "unreported"} · stream ${trade.streamId ?? "unreported"}`
   };
 }
 

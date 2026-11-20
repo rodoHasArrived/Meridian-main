@@ -6,7 +6,7 @@ module_id: SRC-DOMAIN
 path: src/Meridian.Domain
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-07-25
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Domain

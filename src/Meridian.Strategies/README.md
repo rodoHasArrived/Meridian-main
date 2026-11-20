@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Strategies

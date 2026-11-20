@@ -118,7 +118,8 @@ public sealed class BookReceiptQueueServiceTests : IDisposable
         var payment = Receipt("payment-a", 100m) with { SourceReference = "bank-transaction-123" };
         var reversal = Receipt("reversal-a", 100m, []) with
         {
-            SourceReference = "bank-reversal-123", ReversesReceiptId = "payment-a"
+            SourceReference = "bank-reversal-123",
+            ReversesReceiptId = "payment-a"
         };
         var source = Source(receipts:
         [
@@ -610,7 +611,8 @@ public sealed class BookReceiptQueueServiceTests : IDisposable
         await SeedResolvedCaseAsync(repository, exceptionId);
         var firstReversal = Receipt("reversal-one", 40m, []) with
         {
-            ReversesReceiptId = "payment", EffectiveDate = AsOfDate.AddDays(2)
+            ReversesReceiptId = "payment",
+            EffectiveDate = AsOfDate.AddDays(2)
         };
         source.Snapshot = source.Snapshot with { Receipts = [payment, firstReversal] };
         await service.RunAsync(Query with { AsOfDate = AsOfDate.AddDays(2) });
@@ -655,8 +657,11 @@ public sealed class BookReceiptQueueServiceTests : IDisposable
             .Should().Be(2);
     }
 
-    [Fact]
-    public async Task A_failed_daily_run_save_does_not_lose_the_reversal_or_repeat_its_exception_mutation_on_retry()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task A_failed_daily_run_save_does_not_lose_the_reversal_or_repeat_its_exception_mutation_on_retry(
+        bool laterOperatorDisposition)
     {
         var repository = Repository();
         var source = Source();
@@ -689,6 +694,9 @@ public sealed class BookReceiptQueueServiceTests : IDisposable
 
         (await service.GetRunsAsync(Scope)).Should().HaveCount(2);
         (await Repository().GetByIdAsync(exceptionId))!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Reopened);
+        if (laterOperatorDisposition)
+            await SeedResolvedCaseAsync(Repository(), exceptionId);
+        var retainedCase = (await Repository().GetByIdAsync(exceptionId))!;
         var restarted = Service(source, Repository());
         var retry = await restarted.RunAsync(query);
         var replay = await restarted.RunAsync(query);
@@ -697,6 +705,11 @@ public sealed class BookReceiptQueueServiceTests : IDisposable
         retry.Items.Single().ExceptionId.Should().Be(exceptionId);
         replay.RunId.Should().Be(retry.RunId);
         (await restarted.GetRunsAsync(Scope)).Should().HaveCount(3);
+        var caseAfterRetry = (await Repository().GetByIdAsync(exceptionId))!;
+        caseAfterRetry.Status.Should().Be(retainedCase.Status);
+        caseAfterRetry.LifecycleState.Should().Be(retainedCase.LifecycleState);
+        caseAfterRetry.Version.Should().Be(retainedCase.Version);
+        caseAfterRetry.AssignedTo.Should().Be(retainedCase.AssignedTo);
         (await Repository().GetAuditHistoryAsync(exceptionId)).Should()
             .ContainSingle(entry => entry.EventType == "ReceiptReversalReopened");
     }

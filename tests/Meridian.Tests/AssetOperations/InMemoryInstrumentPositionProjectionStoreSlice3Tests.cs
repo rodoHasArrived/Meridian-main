@@ -33,7 +33,9 @@ public sealed class InMemoryInstrumentPositionProjectionStoreSlice3Tests
         var future = CreateState(PositionId, 2, new DateOnly(2026, 10, 25), 0.98m, 0.94m);
         await store.UpsertAsync(role, position with
         {
-            Version = 2, CurrentEconomicState = future, ProjectionLineage = future.ProjectionLineage
+            Version = 2,
+            CurrentEconomicState = future,
+            ProjectionLineage = future.ProjectionLineage
         }, future, 1, Approval);
         var otherId = Guid.NewGuid();
         var otherState = CreateState(otherId, 1, new DateOnly(2026, 1, 25), 1m, 0.99m);

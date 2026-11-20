@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.DataIntegration

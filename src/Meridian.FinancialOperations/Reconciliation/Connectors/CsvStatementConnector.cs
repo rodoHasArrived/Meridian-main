@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using System.Globalization;
 using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
@@ -334,33 +333,56 @@ public sealed class CsvStatementConnector(
             if (related is not null && reverses is not null && !string.Equals(related, reverses, StringComparison.Ordinal))
                 throw new InvalidDataException("Receipt reversal identity fields disagree.");
             var allocations = Read("receiptAllocations");
+            var obligationKey = Read("obligationKey");
+            var projectedCashFlowId = Identity("projectedCashFlowId");
+            if ((allocations is not null && (obligationKey is not null || projectedCashFlowId.HasValue))
+                || (obligationKey is not null && projectedCashFlowId.HasValue))
+                throw new InvalidDataException("Receipt allocation identities are ambiguous.");
             if (allocations is not null)
             {
                 using var document = JsonDocument.Parse(allocations);
                 if (document.RootElement.ValueKind != JsonValueKind.Array || document.RootElement.GetArrayLength() == 0)
                     throw new InvalidDataException("Receipt allocations require a nonempty JSON array.");
+                var identities = new HashSet<string>(StringComparer.Ordinal);
+                var total = 0m;
                 foreach (var leg in document.RootElement.EnumerateArray())
                 {
-                    var key = leg.TryGetProperty("obligationKey", out var keyValue) && keyValue.ValueKind == JsonValueKind.String
-                        ? keyValue.GetString() : null;
-                    var hasProjection = leg.TryGetProperty("projectedCashFlowId", out var projection)
-                        && projection.ValueKind == JsonValueKind.String && Guid.TryParse(projection.GetString(), out var id) && id != Guid.Empty;
-                    if (string.IsNullOrWhiteSpace(key) && !hasProjection)
-                        throw new InvalidDataException("Each receipt allocation requires an obligation key or projected cash-flow GUID.");
-                    if (!leg.TryGetProperty("amount", out var amount))
-                        throw new InvalidDataException("Each receipt allocation requires an amount.");
-                    var parsed = amount.ValueKind == JsonValueKind.Number ? amount.TryGetDecimal(out var numeric) ? numeric : 0m
-                        : amount.ValueKind == JsonValueKind.String && decimal.TryParse(amount.GetString(),
-                            NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out numeric) ? numeric : 0m;
-                    if (parsed <= 0m)
-                        throw new InvalidDataException("Receipt allocation amounts must be positive exact decimals.");
+                    if (leg.ValueKind != JsonValueKind.Object)
+                        throw new InvalidDataException("Receipt allocation legs require objects.");
+                    var properties = leg.EnumerateObject().ToArray();
+                    if (properties.Select(property => property.Name).Distinct(StringComparer.Ordinal).Count() != properties.Length
+                        || properties.Any(property => property.Name is not ("obligationKey" or "projectedCashFlowId" or "amount")))
+                        throw new InvalidDataException("Receipt allocation properties are duplicated or unsupported.");
+                    var hasKey = leg.TryGetProperty("obligationKey", out var key);
+                    var hasFlow = leg.TryGetProperty("projectedCashFlowId", out var flow);
+                    if (hasKey == hasFlow || !leg.TryGetProperty("amount", out var amount)
+                        || amount.ValueKind != JsonValueKind.Number || !amount.TryGetDecimal(out var value) || value <= 0m)
+                        throw new InvalidDataException("Receipt allocation requires one identity and a positive exact amount.");
+                    string identity;
+                    if (hasKey)
+                    {
+                        if (key.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(key.GetString()))
+                            throw new InvalidDataException("Receipt obligation identity is invalid.");
+                        identity = "obligation:" + key.GetString()!.Trim();
+                    }
+                    else
+                    {
+                        if (flow.ValueKind != JsonValueKind.String || !Guid.TryParse(flow.GetString(), out var id) || id == Guid.Empty)
+                            throw new InvalidDataException("Receipt projected flow identity is invalid.");
+                        identity = "flow:" + id.ToString("D");
+                    }
+                    if (!identities.Add(identity))
+                        throw new InvalidDataException("Receipt allocation identity is duplicated.");
+                    total += value;
                 }
+                if (total != Math.Abs(record.CashAmount))
+                    throw new InvalidDataException("Receipt allocations must conserve the entire source payment.");
             }
             return record with { RelatedTransactionId = related ?? reverses ?? record.RelatedTransactionId,
                 SecurityId = Identity("securityId"), ReceiptAllocations = allocations,
-                ObligationKey = Read("obligationKey"), ProjectedCashFlowId = Identity("projectedCashFlowId") };
+                ObligationKey = obligationKey, ProjectedCashFlowId = projectedCashFlowId };
         }
-        catch (Exception exception) when (exception is JsonException or InvalidDataException or InvalidOperationException)
+        catch (Exception exception) when (exception is JsonException or InvalidDataException or InvalidOperationException or OverflowException)
         {
             issues.Add(StatementParseIssue.Error("ROW_INVALID_RECEIPT_METADATA", exception.Message, row));
             return null;

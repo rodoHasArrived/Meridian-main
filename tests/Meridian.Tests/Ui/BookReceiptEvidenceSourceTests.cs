@@ -175,15 +175,41 @@ public sealed class BookReceiptEvidenceSourceTests
     public async Task Explicit_past_allocation_survives_missing_current_projection(bool split)
     {
         var f = new Fixture();
-        var row = f.Row("payment", 100m);
+        var row = f.Row("payment", 100m) with
+        {
+            SecurityId = f.SecurityId,
+            ReceiptAllocations = split ? "[{\"obligationKey\":\"past-interest\",\"amount\":100}]" : null,
+            ObligationKey = split ? null : "past-interest"
+        };
         var journal = f.Journal(100m);
         f.Ledger.Add(journal);
         f.Import("late", [row], [journal]);
-        var raw = split ? new Dictionary<string, string> { ["receiptAllocations"] = "[{\"obligationKey\":\"past-interest\",\"amount\":100}]" }
-            : new Dictionary<string, string> { ["obligationKey"] = "past-interest" };
-        var result = await f.Load(f.Normalized("late", row, raw), expectations: []);
+        var result = await f.Load(expectations: []);
         result.Receipts.Should().ContainSingle().Which.Allocations.Should().ContainSingle().Which.ObligationKey.Should().Be("past-interest");
         result.Postings.Should().ContainSingle().Which.ObligationKey.Should().Be("past-interest");
+        result.Postings[0].IsInferredAllocation.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Explicit_projected_flow_identity_cannot_fall_back_to_a_different_current_obligation(bool split)
+    {
+        var f = new Fixture();
+        var retainedProjection = Guid.NewGuid();
+        var row = f.Row("payment", 100m) with
+        {
+            ProjectedCashFlowId = split ? null : retainedProjection,
+            ReceiptAllocations = split
+                ? $"[{{\"projectedCashFlowId\":\"{retainedProjection:D}\",\"amount\":100}}]" : null
+        };
+        var journal = f.Journal(100m);
+        f.Ledger.Add(journal);
+        f.Import("explicit-projection", [row], [journal]);
+        var result = await f.Load();
+        var marker = BookReceiptProjectionIdentity.For(retainedProjection);
+        result.Receipts.Should().ContainSingle().Which.Allocations.Should().ContainSingle().Which.ObligationKey.Should().Be(marker);
+        result.Postings.Should().ContainSingle().Which.ObligationKey.Should().Be(marker);
         result.Postings[0].IsInferredAllocation.Should().BeFalse();
     }
 
@@ -191,11 +217,10 @@ public sealed class BookReceiptEvidenceSourceTests
     public async Task Provider_reversal_links_original_identity_and_positive_allocation_magnitude()
     {
         var f = new Fixture();
-        var row = f.Row("reversal", -100m);
+        var row = f.Row("reversal", -100m) with { RelatedTransactionId = "original", ObligationKey = "interest-due" };
         f.Import("original", [f.Row("original", 100m)], []);
         f.Import("reversed", [row], []);
-        var result = await f.Load(f.Normalized("reversed", row, new Dictionary<string, string>
-            { ["relatedTransactionId"] = "original", ["obligationKey"] = "interest-due" }));
+        var result = await f.Load();
         var reversal = result.Receipts.Single(r => r.Amount < 0m);
         reversal.ReversesReceiptId.Should().Be(result.Receipts.Single(r => r.Amount > 0m).ReceiptId);
         reversal.Allocations.Should().ContainSingle().Which.Amount.Should().Be(100m);
@@ -247,12 +272,16 @@ public sealed class BookReceiptEvidenceSourceTests
         var f = new Fixture();
         f.Securities.Setup(s => s.GetByCanonicalAsync(It.IsAny<SecurityReferenceLookupRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new WorkstationSecurityReference(f.SecurityId, "Matured bond", "Bond", "USD", SecurityStatusDto.Inactive, "BOND"));
-        var row = f.Row("redemption", 100m) with { ActivityType = "principal" };
+        var row = f.Row("redemption", 100m) with
+        {
+            ActivityType = "principal",
+            SecurityId = retainedIdentity ? f.SecurityId : null,
+            ObligationKey = "past-principal"
+        };
         var journal = f.Journal(100m);
         f.Ledger.Add(journal);
         f.Import("redemption", [row], [journal]);
-        var normalized = retainedIdentity ? f.Normalized("redemption", row, new Dictionary<string, string> { ["obligationKey"] = "past-principal" }) : null;
-        var result = await f.Load(normalized, expectations: []);
+        var result = await f.Load(expectations: []);
         if (retainedIdentity)
         {
             result.Receipts.Should().ContainSingle().Which.SecurityId.Should().Be(f.SecurityId);
@@ -272,9 +301,13 @@ public sealed class BookReceiptEvidenceSourceTests
         try
         {
             var f = new Fixture();
-            var expectation = f.Expectation() with { FlowType = "Coupon", RetainedEvidence =
+            var expectation = f.Expectation() with
+            {
+                FlowType = "Coupon",
+                RetainedEvidence =
                 [new RetainedEvidenceIdentityDto("accepted", "evidence://accepted", new string('a', 64), "custodian", "position", "Accepted",
-                    "reviewer", f.RecordedAt, f.Date, 1, f.RecordedAt, "ingestion", "InstrumentPosition", f.PositionId.ToString("D"))] };
+                    "reviewer", f.RecordedAt, f.Date, 1, f.RecordedAt, "ingestion", "InstrumentPosition", f.PositionId.ToString("D"))]
+            };
             var source = new AdapterSource(f, [expectation]);
             var cases = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
             var queue = new BookReceiptQueueService(source, new FileBookReceiptRunStore(root), cases);
@@ -291,9 +324,15 @@ public sealed class BookReceiptEvidenceSourceTests
             var settled = await queue.RunAsync(query);
             settled.Items.Single().Status.Should().Be("Reconciled");
             var existing = (await cases.GetByIdAsync(exceptionId!))!;
-            await cases.SaveAsync(existing with { Status = ReconciliationBreakQueueStatus.Resolved,
-                LifecycleState = ReconciliationCaseLifecycleState.Resolved, AssignedTo = "cash-owner", ResolvedBy = "reviewer",
-                ResolvedAt = f.RecordedAt, ResolutionNote = "Receipt and posting verified." });
+            await cases.SaveAsync(existing with
+            {
+                Status = ReconciliationBreakQueueStatus.Resolved,
+                LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+                AssignedTo = "cash-owner",
+                ResolvedBy = "reviewer",
+                ResolvedAt = f.RecordedAt,
+                ResolutionNote = "Receipt and posting verified."
+            });
             source.Expectations = [expectation with { DueDate = f.Date.AddDays(7), TermsVersionId = Guid.NewGuid(), TermsHash = new string('b', 64) }];
             var amended = await queue.RunAsync(query);
             amended.Items.Single().ReceivedAmount.Should().Be(100m);
@@ -322,8 +361,11 @@ public sealed class BookReceiptEvidenceSourceTests
         public async Task<BookReceiptSourceSnapshotDto> LoadAsync(BookReceiptQueryDto query, CancellationToken ct = default)
         {
             var result = await fixture.Load(expectations: Expectations);
-            return result with { Expectations = Expectations,
-                Coverage = [.. result.Coverage, new("Holdings", true), new("Projections", true)] };
+            return result with
+            {
+                Expectations = Expectations,
+                Coverage = [.. result.Coverage, new("Holdings", true), new("Projections", true)]
+            };
         }
     }
 
@@ -383,14 +425,17 @@ public sealed class BookReceiptEvidenceSourceTests
             return new(entry, FundId, PeriodId, null, null, 1, RecordedAt);
         }
         public void Reverse(LedgerJournalEntryRecord journal) => Ledger.Add(journal with
-            { Entry = LedgerJournalReversal.Reverse(journal.Entry, Guid.NewGuid(), RecordedAt.AddHours(1)), GlobalSequence = 2 });
+        { Entry = LedgerJournalReversal.Reverse(journal.Entry, Guid.NewGuid(), RecordedAt.AddHours(1)), GlobalSequence = 2 });
         public void Import(string id, IReadOnlyList<CanonicalStatementRow> rows, IReadOnlyList<LedgerJournalEntryRecord> journals,
             DateTimeOffset? importedAt = null, bool comparisonComplete = true)
         {
             var import = new CanonicalStatementImport(id, "provider", Date, importedAt ?? RecordedAt, "retained.csv", Hash, rows.Count, rows.Count)
             {
-                SourceInstitution = "provider", FundAccountId = AccountId.ToString("D"), ExternalAccountId = "provider-account",
-                StatementPeriodStart = new(2026, 11, 1), StatementPeriodEnd = Date,
+                SourceInstitution = "provider",
+                FundAccountId = AccountId.ToString("D"),
+                ExternalAccountId = "provider-account",
+                StatementPeriodStart = new(2026, 11, 1),
+                StatementPeriodEnd = Date,
                 AccountingScope = new StatementAccountingScope(FundId.ToString("D"), BookId, PeriodId, Date),
                 ExecutedMappingFingerprint = Hash
             };
@@ -403,8 +448,10 @@ public sealed class BookReceiptEvidenceSourceTests
             {
                 MatchGroups = journals.Count == 0 ? [] : [new StatementRunMatchGroupRecord($"match-{id}", "Transaction", "Exact", ["exact"],
                     rows.Select(r => $"{id}:{r.SourceRowNumber}").ToArray(), journals.Select(j => $"internal:journal:{j.Entry.JournalEntryId:D}").ToArray(), 1m)],
-                SourceComparisonComplete = comparisonComplete, SourceComparisonMappingFingerprint = Hash,
-                SourceComparisonPolicyFingerprint = Hash, SourceComparisonPopulationKinds = ["Transaction"]
+                SourceComparisonComplete = comparisonComplete,
+                SourceComparisonMappingFingerprint = Hash,
+                SourceComparisonPolicyFingerprint = Hash,
+                SourceComparisonPopulationKinds = ["Transaction"]
             };
             Matches.Setup(m => m.GetAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(artifact);
             Recovery.Setup(r => r.GetAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(new StatementRunRecoveryCheckpoint(
@@ -414,20 +461,11 @@ public sealed class BookReceiptEvidenceSourceTests
                 new(StatementDurabilityHashing.Hash(artifact), artifact.MatchCount), null, null, artifact.MatchCount,
                 null, null, null, RecordedAt, RecordedAt));
         }
-        public IStatementNormalizedEntityRepository Normalized(string id, CanonicalStatementRow row, Dictionary<string, string> raw)
-        {
-            var mock = new Mock<IStatementNormalizedEntityRepository>();
-            mock.Setup(m => m.GetAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(new StatementNormalizedEntities(id, id, [], [],
-                [new StatementTransaction(id, row.SourceRowNumber, row.RawChecksum, raw, AccountId.ToString("D"), "provider-account",
-                    SecurityId.ToString("D"), null, "USD", 0m, 0m, 0m, Date, null, row.CashAmount, 0m, "interest", row.ExternalTransactionId)], [], []));
-            return mock.Object;
-        }
         public BookReceiptExpectationDto Expectation(decimal amount = 100m, string key = "interest-due")
             => new(key, PositionId, SecurityId, "Bond", "Interest", Date, "USD", 1m, amount, Guid.NewGuid(), "terms", Guid.NewGuid(), Guid.NewGuid(), [], []);
-        public Task<BookReceiptSourceSnapshotDto> Load(IStatementNormalizedEntityRepository? normalized = null,
-            IReadOnlyList<BookReceiptExpectationDto>? expectations = null)
+        public Task<BookReceiptSourceSnapshotDto> Load(IReadOnlyList<BookReceiptExpectationDto>? expectations = null)
             => new BookReceiptEvidenceSource(Reconciliation.Object, Statements.Object, Matches.Object, Journals.Object,
-                Securities.Object, Tenancy.Object, Accounts.Object, normalized, Recovery.Object)
+                Securities.Object, Tenancy.Object, Accounts.Object, Recovery.Object)
                 .LoadAsync(new(new("tenant", "company", BookId), Date), expectations ?? [Expectation()]);
     }
 }

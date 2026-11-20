@@ -17,10 +17,13 @@ public sealed class BookReceiptSourceTests
     public async Task AcceptedScheduleUsesHistoricalHoldingAndKeepsMissingProviderEvidenceIncomplete()
     {
         var fixture = new Fixture();
-        fixture.Snapshot = fixture.Snapshot with { PositionEconomicStates = [fixture.State, fixture.State with
+        fixture.Snapshot = fixture.Snapshot with
+        {
+            PositionEconomicStates = [fixture.State, fixture.State with
         {
             EconomicStateId = Guid.NewGuid(), AsOfDate = new DateOnly(2026, 6, 20), ParAmount = 1000m, Version = 2
-        }] };
+        }]
+        };
 
         var result = await fixture.LoadAsync();
 
@@ -81,14 +84,17 @@ public sealed class BookReceiptSourceTests
     public async Task AcceptanceMustBindTheExactTypedSchedule(string status, string type, bool foreignSubject)
     {
         var fixture = new Fixture();
-        fixture.Detail = fixture.Detail! with { CashFlowProjectionRuns = [fixture.Run with
+        fixture.Detail = fixture.Detail! with
+        {
+            CashFlowProjectionRuns = [fixture.Run with
         {
             RetainedEvidence = [fixture.Run.RetainedEvidence[0] with
             {
                 ReviewStatus = status, SubjectType = type,
                 SubjectId = foreignSubject ? Guid.NewGuid().ToString("D") : fixture.Run.ProjectionRunId.ToString("D")
             }]
-        }] };
+        }]
+        };
         var result = await fixture.LoadAsync();
         result.Expectations.Should().BeEmpty();
         result.Coverage.Single(row => row.Area == "Projections").IsComplete.Should().BeFalse();
@@ -98,10 +104,13 @@ public sealed class BookReceiptSourceTests
     public async Task GenericAcceptedSecurityEvidenceDoesNotApproveScheduleEconomics()
     {
         var fixture = new Fixture();
-        fixture.Detail = fixture.Detail! with { CashFlowProjectionRuns = [fixture.Run with
+        fixture.Detail = fixture.Detail! with
+        {
+            CashFlowProjectionRuns = [fixture.Run with
         {
             RetainedEvidence = [fixture.Run.RetainedEvidence[0] with { SubjectType = "Security", SubjectId = fixture.SecurityId.ToString("D") }]
-        }] };
+        }]
+        };
         (await fixture.LoadAsync()).Expectations.Should().BeEmpty();
     }
 
@@ -109,10 +118,13 @@ public sealed class BookReceiptSourceTests
     public async Task ForeignPositionOwnerAndMissingSizingBasisCannotSupplyExpectedAmounts()
     {
         var fixture = new Fixture();
-        fixture.Snapshot = fixture.Snapshot with { BookPositions = [fixture.Position with
+        fixture.Snapshot = fixture.Snapshot with
+        {
+            BookPositions = [fixture.Position with
         {
             BookContext = fixture.Position.BookContext with { FundProfileId = "other-fund" }
-        }] };
+        }]
+        };
         var foreign = await fixture.LoadAsync();
         foreign.Expectations.Should().BeEmpty();
         foreign.Coverage.Single(row => row.Area == "Holdings").IsComplete.Should().BeFalse();
@@ -129,13 +141,16 @@ public sealed class BookReceiptSourceTests
     public async Task FutureApprovalAndGeneratedRunsCannotEnterEarlierObservation()
     {
         var fixture = new Fixture();
-        fixture.Detail = fixture.Detail! with { CashFlowProjectionRuns = [fixture.Run with
+        fixture.Detail = fixture.Detail! with
+        {
+            CashFlowProjectionRuns = [fixture.Run with
         {
             RetainedEvidence = [fixture.Run.RetainedEvidence[0] with
             {
                 ReviewedAtUtc = Fixture.Timestamp.AddMonths(2), RetainedAtUtc = Fixture.Timestamp.AddMonths(2)
             }]
-        }] };
+        }]
+        };
         (await fixture.LoadAsync()).Expectations.Should().BeEmpty();
         fixture.Detail = fixture.Detail with { CashFlowProjectionRuns = [fixture.Run with { GeneratedAt = Fixture.Timestamp.AddMonths(2) }] };
         (await fixture.LoadAsync()).Expectations.Should().BeEmpty();
@@ -147,8 +162,11 @@ public sealed class BookReceiptSourceTests
         var fixture = new Fixture();
         var terms = fixture.Terms with
         {
-            TermsVersionId = Guid.NewGuid(), TermsHash = "terms-amended", VersionNumber = 2,
-            EffectiveDate = new DateOnly(2026, 6, 20), RecordedAt = Fixture.Timestamp.AddDays(19)
+            TermsVersionId = Guid.NewGuid(),
+            TermsHash = "terms-amended",
+            VersionNumber = 2,
+            EffectiveDate = new DateOnly(2026, 6, 20),
+            RecordedAt = Fixture.Timestamp.AddDays(19)
         };
         var amended = fixture.AcceptedRun(new DateOnly(2026, 6, 20)) with
         {
@@ -156,7 +174,8 @@ public sealed class BookReceiptSourceTests
         };
         fixture.Detail = fixture.Detail! with
         {
-            TermsHistory = [fixture.Terms, terms], CashFlowProjectionRuns = [fixture.Run, amended],
+            TermsHistory = [fixture.Terms, terms],
+            CashFlowProjectionRuns = [fixture.Run, amended],
             ProjectedCashFlows = [fixture.Flow, fixture.Flow with
             {
                 ProjectionRunId = amended.ProjectionRunId, ProjectedCashFlowId = Guid.NewGuid(), Amount = 100m
@@ -171,10 +190,13 @@ public sealed class BookReceiptSourceTests
     public async Task AmbiguousTermsRequireExplicitProjectionLineage()
     {
         var fixture = new Fixture();
-        fixture.Detail = fixture.Detail! with { TermsHistory = [fixture.Terms, fixture.Terms with
+        fixture.Detail = fixture.Detail! with
+        {
+            TermsHistory = [fixture.Terms, fixture.Terms with
         {
             TermsVersionId = Guid.NewGuid(), VersionNumber = 2, TermsHash = "different-terms"
-        }] };
+        }]
+        };
         var result = await fixture.LoadAsync();
         result.Expectations.Should().BeEmpty();
         result.Coverage.Single(row => row.Area == "Projections").IsComplete.Should().BeFalse();
@@ -220,12 +242,15 @@ public sealed class BookReceiptSourceTests
     public async Task FutureAmortizationKeepsCurrentOwnershipShareForLaterCoupons()
     {
         var fixture = new Fixture();
-        fixture.Detail = fixture.Detail! with { ProjectedCashFlows =
+        fixture.Detail = fixture.Detail! with
+        {
+            ProjectedCashFlows =
         [
             fixture.Flow with { DueDate = new DateOnly(2026, 7, 15) },
             fixture.Flow with { ProjectedCashFlowId = Guid.NewGuid(), SequenceNumber = 2,
                 DueDate = new DateOnly(2026, 8, 15), PrincipalBasis = 800m, Amount = 40m }
-        ] };
+        ]
+        };
         var result = await fixture.LoadAsync();
         result.Expectations.Single(row => row.DueDate == new DateOnly(2026, 8, 15)).ExpectedAmount.Should().Be(20m);
     }
@@ -237,8 +262,10 @@ public sealed class BookReceiptSourceTests
         var laterId = Guid.NewGuid();
         var later = fixture.Flow with
         {
-            ProjectedCashFlowId = laterId, DueDate = new DateOnly(2026, 8, 15),
-            PrincipalBasis = 800m, Amount = 40m,
+            ProjectedCashFlowId = laterId,
+            DueDate = new DateOnly(2026, 8, 15),
+            PrincipalBasis = 800m,
+            Amount = 40m,
             RetainedEvidence = [fixture.Run.RetainedEvidence[0] with
             {
                 SubjectType = "ProjectedCashFlow", SubjectId = laterId.ToString("D")
@@ -262,12 +289,14 @@ public sealed class BookReceiptSourceTests
         var fixture = new Fixture();
         var trigger = fixture.State.SourceEvent! with
         {
-            BookPositionId = fixture.Position.PositionId, SecurityId = fixture.SecurityId,
+            BookPositionId = fixture.Position.PositionId,
+            SecurityId = fixture.SecurityId,
             OccurredAtUtc = futureRecorded ? Fixture.Timestamp : Fixture.Timestamp.AddMonths(2)
         };
         var lineage = new ProjectionLineageDto(fixture.Run.ProjectionRunId, null, "model", "1", "engine", "Base",
             fixture.Run.ProjectionAsOf, futureRecorded ? Fixture.Timestamp.AddMonths(2) : Fixture.Timestamp,
-            "Servicer", "schedule", trigger, TermsHash: "future-terms") { BookPositionId = fixture.Position.PositionId };
+            "Servicer", "schedule", trigger, TermsHash: "future-terms")
+        { BookPositionId = fixture.Position.PositionId };
         fixture.Snapshot = fixture.Snapshot with { ProjectionLineages = [lineage] };
 
         var result = await fixture.LoadAsync();
@@ -295,10 +324,13 @@ public sealed class BookReceiptSourceTests
     public async Task AcceptedExplicitPositionScheduleIsNotScaledTwice()
     {
         var fixture = new Fixture();
-        fixture.Detail = fixture.Detail! with { ProjectedCashFlows = [fixture.Flow with
+        fixture.Detail = fixture.Detail! with
+        {
+            ProjectedCashFlows = [fixture.Flow with
         {
             ExtensionPayload = JsonSerializer.SerializeToElement(new { bookPositionId = fixture.Position.PositionId })
-        }] };
+        }]
+        };
         (await fixture.LoadAsync()).Expectations.Should().ContainSingle().Which.ExpectedAmount.Should().Be(50m);
     }
 
@@ -322,10 +354,13 @@ public sealed class BookReceiptSourceTests
     public async Task SameRunDuplicateSemanticObligationsAreIncompleteRatherThanCountedTwice()
     {
         var fixture = new Fixture();
-        fixture.Detail = fixture.Detail! with { ProjectedCashFlows = [fixture.Flow, fixture.Flow with
+        fixture.Detail = fixture.Detail! with
+        {
+            ProjectedCashFlows = [fixture.Flow, fixture.Flow with
         {
             ProjectedCashFlowId = Guid.NewGuid(), SequenceNumber = 2
-        }] };
+        }]
+        };
         var result = await fixture.LoadAsync();
         result.Expectations.Should().BeEmpty();
         result.Coverage.Single(row => row.Area == "Projections").IsComplete.Should().BeFalse();
@@ -363,14 +398,16 @@ public sealed class BookReceiptSourceTests
             var role = new InstrumentRoleDto(roleId, SecurityId, "fund", "Fund", "Holder", "Debit", "Asset", new DateOnly(2026, 6, 1));
             Snapshot = new InstrumentPositionProjectionSnapshot(SecurityId, [role], [Position], [State], [])
             {
-                LedgerBookId = BookId, AsOfDate = Query.AsOfDate
+                LedgerBookId = BookId,
+                AsOfDate = Query.AsOfDate
             };
             var runId = Guid.NewGuid();
             var evidence = new RetainedEvidenceIdentityDto("schedule-1", "evidence://schedule/1", new string('a', 64),
                 "Servicer", "schedule-1", "Accepted", "reviewer", Timestamp, new DateOnly(2026, 6, 1),
                 1, Timestamp, "retainer", "CashFlowProjectionRun", runId.ToString("D"));
             Run = new AssetCashFlowProjectionRunDto(runId, SecurityId, new DateOnly(2026, 6, 1), "engine-v1",
-                "Completed", Timestamp, "Servicer", "schedule-1") { RetainedEvidence = [evidence] };
+                "Completed", Timestamp, "Servicer", "schedule-1")
+            { RetainedEvidence = [evidence] };
             Flow = new AssetProjectedCashFlowDto(Guid.NewGuid(), runId, SecurityId, 1, "Coupon",
                 new DateOnly(2026, 6, 15), 50m, "USD", "Expected", PrincipalBasis: 1000m);
             Terms = new AssetTermsVersionDto(Guid.NewGuid(), SecurityId, 1, "terms-v1", new DateOnly(2026, 6, 1),
@@ -384,9 +421,14 @@ public sealed class BookReceiptSourceTests
         {
             var id = Guid.NewGuid();
             var timestamp = new DateTimeOffset(asOf.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
-            return Run with { ProjectionRunId = id, ProjectionAsOf = asOf, GeneratedAt = timestamp,
+            return Run with
+            {
+                ProjectionRunId = id,
+                ProjectionAsOf = asOf,
+                GeneratedAt = timestamp,
                 RetainedEvidence = [Run.RetainedEvidence[0] with { EvidenceId = $"run-{id:D}", SubjectId = id.ToString("D"),
-                    ReviewedAtUtc = timestamp, RetainedAtUtc = timestamp }] };
+                    ReviewedAtUtc = timestamp, RetainedAtUtc = timestamp }]
+            };
         }
 
         public async Task<BookReceiptSourceSnapshotDto> LoadAsync()

@@ -57,7 +57,9 @@ is not repaired by guessing or editing a normalized sidecar; it remains incomple
 
 Amounts stay in their own currencies. Receipt splits must conserve the payment; canonical payment
 identity prevents reimports from counting twice. Retained receipt and journal allocations remain
-pinned when schedules change. Conflicting, excessive or ambiguous allocations produce evidence
+pinned when schedules change. Explicit older projection references resolve only to one retained
+accepted obligation for the same security and currency. Unknown or ambiguous references remain
+incomplete. Conflicting, excessive or ambiguous allocations produce evidence
 issues rather than additional money.
 
 | Status | Operator interpretation |
@@ -101,7 +103,9 @@ Agreement of the three amounts does not automatically resolve or sign off a case
 
 A linked receipt or journal reversal that breaks reconciliation reopens a closed receipt exception
 through the source-observation path, with a version check, retained reversal evidence and an audit
-receipt. A historical observation cannot reopen later casework. A retained close freeze blocks this
+receipt. Each source reversal is consumed once, including when saving the subsequent daily run
+fails; a later operator disposition is preserved unless new reversal evidence arrives. A historical
+observation cannot reopen later casework. A retained close freeze blocks this
 transition: the capture reports a conflict and requires the existing governed period-reopen workflow.
 This queue cannot override the freeze, approve a case, execute a payment or create/post a journal.
 

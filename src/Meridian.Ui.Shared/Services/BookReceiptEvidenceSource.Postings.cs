@@ -107,10 +107,10 @@ public sealed partial class BookReceiptEvidenceSource
             ? split.Select(s => new BookReceiptAllocationDto(s.Id, s.Amount)).ToArray() : [];
     }
 
-    private static IReadOnlyList<BookReceiptAllocationDto> ExplicitAllocations(StatementTransaction? source,
+    private static IReadOnlyList<BookReceiptAllocationDto> ExplicitAllocations(CanonicalStatementRow source,
         decimal amount, Guid security, string currency, IReadOnlyList<BookReceiptExpectationDto> expectations)
     {
-        var split = Raw(source, "receiptAllocations");
+        var split = source.ReceiptAllocations;
         if (!string.IsNullOrWhiteSpace(split))
         {
             using var document = JsonDocument.Parse(split);
@@ -131,9 +131,7 @@ public sealed partial class BookReceiptEvidenceSource
                 throw new InvalidDataException("Retained receipt allocations do not conserve the provider payment.");
             return allocations.OrderBy(a => a.ObligationKey, StringComparer.Ordinal).ToArray();
         }
-        var rawKey = Raw(source, "obligationKey");
-        var rawProjection = Raw(source, "projectedCashFlowId");
-        var resolvedKey = ExplicitKey(rawKey, Guid.TryParse(rawProjection, out var projected) ? projected : Guid.Empty,
+        var resolvedKey = ExplicitKey(source.ObligationKey, source.ProjectedCashFlowId ?? Guid.Empty,
             security, currency, expectations);
         return resolvedKey is null ? [] : [new(resolvedKey, Math.Abs(amount))];
     }
@@ -153,7 +151,9 @@ public sealed partial class BookReceiptEvidenceSource
         }
         var matches = expectations.Where(e => projection != Guid.Empty && e.ProjectedCashFlowId == projection
             && e.SecurityId == security && Equal(e.Currency, currency)).ToArray();
-        return matches.Length == 1 ? matches[0].ObligationKey : null;
+        if (projection == Guid.Empty)
+            return null;
+        return matches.Length == 1 ? matches[0].ObligationKey : BookReceiptProjectionIdentity.For(projection);
     }
 
     private static bool IsCashLine(LedgerEntry line) => line.Account.AccountType == LedgerAccountType.Asset
