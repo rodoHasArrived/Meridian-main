@@ -230,7 +230,7 @@ public sealed class BackfillStatusStore
 
     /// <summary>
     /// Removes all per-symbol checkpoints, bar-count data and verified coverage.
-    /// Call when starting a fresh (non-resume) backfill run.
+    /// Fresh backfill runs reset progress through <see cref="ResetSymbolCheckpointStatusAsync"/>.
     /// </summary>
     public async Task ClearSymbolCheckpointsAsync(CancellationToken ct = default)
     {
@@ -260,7 +260,16 @@ public sealed class BackfillStatusStore
     /// Removes only the checkpoints, bar-count data and verified coverage associated with the requested
     /// <paramref name="granularity"/>, preserving resume state for other backfill lanes.
     /// </summary>
-    public async Task ClearSymbolCheckpointsAsync(DataGranularity granularity, CancellationToken ct = default)
+    public Task ClearSymbolCheckpointsAsync(DataGranularity granularity, CancellationToken ct = default)
+        => ClearSymbolCheckpointsAsync(granularity, includeVerifiedCoverage: true, ct);
+
+    /// <summary>
+    /// Resets date and bar-count status for the requested granularity while retaining verified coverage.
+    /// </summary>
+    public Task ResetSymbolCheckpointStatusAsync(DataGranularity granularity, CancellationToken ct = default)
+        => ClearSymbolCheckpointsAsync(granularity, includeVerifiedCoverage: false, ct);
+
+    private async Task ClearSymbolCheckpointsAsync(DataGranularity granularity, bool includeVerifiedCoverage, CancellationToken ct)
     {
         await _checkpointLock.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -289,8 +298,7 @@ public sealed class BackfillStatusStore
                 await AtomicFileWriter.WriteAsync(_symbolBarCountsPath, barCountJson, ct);
             }
 
-            var coverage = TryReadCoverageDocument();
-            if (coverage is not null)
+            if (includeVerifiedCoverage && TryReadCoverageDocument() is { } coverage)
             {
                 var lane = granularity.ToUiValue();
                 coverage.Entries.RemoveAll(entry => string.Equals(entry.Granularity, lane, StringComparison.OrdinalIgnoreCase));

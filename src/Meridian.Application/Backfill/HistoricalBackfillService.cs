@@ -138,6 +138,11 @@ public sealed class HistoricalBackfillService
                     coverageFeed);
             }
         }
+        else if (_checkpointStore is not null)
+        {
+            await _checkpointStore.ResetSymbolCheckpointStatusAsync(request.Granularity, ct).ConfigureAwait(false);
+        }
+
         // Determine concurrency: per-request override → config default (floor: 1)
         int maxConcurrent = Math.Max(1, request.MaxConcurrentSymbols ?? _jobsConfig.MaxConcurrentRequests);
 
