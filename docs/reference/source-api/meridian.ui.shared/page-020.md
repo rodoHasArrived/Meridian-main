@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorScopePreferenceSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorScopePreferenceSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:145](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L145).
+
+```csharp
+public sealed record OperatorScopePreferenceSnapshot(int Version, IReadOnlyList<OperatorScopePreferenceRecord> Operators);
+```
+
 ## OperatorSurfaceVisitRecord
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorSurfaceVisitRecord</code>. Kind: `record`.
