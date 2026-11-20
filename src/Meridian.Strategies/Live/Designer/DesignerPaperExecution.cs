@@ -74,9 +74,19 @@ public sealed class DesignerPaperExecution(
         if (await oms.HasRetainedPaperIntentForRunAsync(run.RunId, ct).ConfigureAwait(false))
             return (null, "The paper session has retained orders. Reconcile them before restarting this strategy.");
 
-        var session = await sessions.EnsureStrategyRunSessionAsync(run.RunId,
-            new CreatePaperSessionDto(run.StrategyId, run.StrategyName, source.Metrics.Request.InitialCash, universe), ct)
-            .ConfigureAwait(false);
+        PaperSessionSummaryDto session;
+        try
+        {
+            session = await sessions.EnsureStrategyRunSessionAsync(run.RunId, target.StartedAt,
+                new CreatePaperSessionDto(run.StrategyId, run.StrategyName, source.Metrics.Request.InitialCash, universe)
+                {
+                    FinancialAccountId = accountId.ToString("D")
+                }, ct).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or InvalidDataException or IOException)
+        {
+            return (null, "The reviewed account's durable USD paper session is unavailable. Check the account and reconcile any retained session before retrying.");
+        }
         if (!session.IsActive)
             return (null, "The retained paper session has already closed.");
 

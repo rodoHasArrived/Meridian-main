@@ -107,7 +107,8 @@ public sealed class DesignerPaperRehearsalTests
             new ExecutionAuditTrailOptions(Path.Combine(root, "audit")), NullLogger<ExecutionAuditTrailService>.Instance);
         await using var sessions = new PaperSessionPersistenceService(
             NullLogger<PaperSessionPersistenceService>.Instance,
-            new JsonlFilePaperSessionStore(Path.Combine(root, "paper"), NullLogger<JsonlFilePaperSessionStore>.Instance), audit);
+            new JsonlFilePaperSessionStore(Path.Combine(root, "paper"), NullLogger<JsonlFilePaperSessionStore>.Instance), audit,
+            resolveAccountCurrency: static (id, _) => Task.FromResult<string?>(id == AccountId ? "USD" : null));
         var cache = new LiveCache();
         var hub = new LiveMarketEventHub();
         await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, liveFeed: cache);
@@ -118,7 +119,7 @@ public sealed class DesignerPaperRehearsalTests
             tradeEventPublisher: canonicalPublisher, orderIntentHistory: history, options: new OrderManagementSystemOptions
             {
                 PaperIntentScope = new PaperOrderIntentScope { TenantId = Tenant, CompanyId = Company, FundAccountId = AccountId }
-            });
+            }) { BindNativePaperSessions = true };
         await oms.StartAsync();
 
         var builder = WebApplication.CreateBuilder();
@@ -256,13 +257,19 @@ public sealed class DesignerPaperRehearsalTests
         stopped!.State.Should().Be(OperationTerminalState.Succeeded,
             string.Join(" ", stopped.Issues.Select(static issue => issue.Message)));
         var session = sessions.GetSession(sessionId)!;
+        session.Summary.FundAccountId.Should().Be(AccountId);
+        session.Summary.JournalCurrency.Should().Be("USD");
         session.Portfolio!.Cash.Should().Be(100_000m - 10m * 102m - 1m);
         session.Portfolio.Positions.Should().ContainSingle().Which.Quantity.Should().Be(10);
         session.OrderHistory.Should().Contain(order => order.IntentId.HasValue && order.FilledQuantity == 10m);
+        sessions.GetLedger(sessionId)!.Journal.Should().Contain(entry =>
+            entry.Metadata.FillId.HasValue && entry.Metadata.FinancialAccountId == AccountId.ToString("D") &&
+            entry.Metadata.Tags != null && entry.Metadata.Tags.ContainsKey("runId") && entry.Metadata.Tags["runId"] == paper.RunId);
         var retainedOrders = await orderEvidence.ReadForRunAsync(paper.RunId, AccountId, outcome.StrategyVersionSha256!, timeout.Token);
         retainedOrders.Should().ContainSingle().Which.Admission!.AuthorityDecision!.Origin.Should().Be(ExecutionSdk.OrderCommandOrigin.StrategyRun);
         await canonicalPublisher.DidNotReceive().PublishAsync(Arg.Any<TradeExecutedEvent>());
         (await client.GetAsync($"/api/execution/sessions/{sessionId}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await client.GetAsync($"/api/execution/sessions/{sessionId}/reconciliation")).StatusCode.Should().Be(HttpStatusCode.NotFound);
 
         var packetRoute = $"/api/workstation/evidence/subjects/strategy-run/{sourceRun.RunId}";
         using var reporter = app.GetTestClient();
@@ -302,6 +309,10 @@ public sealed class DesignerPaperRehearsalTests
             Quantity = 1,
             Type = ExecutionSdk.OrderType.Market
         };
+        (await client.PostAsJsonAsync($"/api/execution/orders/submit?paperSessionId={sessionId}", manual, Json))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsJsonAsync("/api/execution/orders/submit?paperSessionId=selected-session", manual, Json))
+            .StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var concurrent = await Task.WhenAll(
             client.PostAsJsonAsync("/api/execution/orders/submit", manual, Json),
             client.PostAsJsonAsync("/api/execution/orders/submit", manual, Json));

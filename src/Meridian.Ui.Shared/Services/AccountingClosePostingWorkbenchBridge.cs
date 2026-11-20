@@ -9,6 +9,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Ledger;
 using Meridian.Reporting;
 using Meridian.Strategies.Services;
 

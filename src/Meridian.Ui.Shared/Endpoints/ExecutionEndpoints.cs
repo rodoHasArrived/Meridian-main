@@ -167,7 +167,7 @@ public static partial class ExecutionEndpoints
         .Produces(404)
         .Produces(503);
 
-        group.MapPost("/orders/submit", async (OrderRequest request, HttpContext context) =>
+        group.MapPost("/orders/submit", async (OrderRequest request, string? paperSessionId, HttpContext context) =>
         {
             if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
             {
@@ -203,8 +203,15 @@ public static partial class ExecutionEndpoints
                 return brokerAccountFailure;
             }
 
+            if (PaperSessionPersistenceService.IsStrategyRunSessionId(paperSessionId?.Trim()))
+                return EndpointHelpers.Forbidden();
+
             if (request.IntentId is { } intentId)
+            {
+                if (!string.IsNullOrWhiteSpace(paperSessionId))
+                    return Results.BadRequest(new { error = "Scoped manual paper intents use the account's default session." });
                 return await SubmitPaperIntentAsync(request, intentId, actor, oms, context, jsonOptions).ConfigureAwait(false);
+            }
 
             if (request.FundAccountId is { } fundAccountId
                 && await RequireExecutionFundAccountAccessAsync(
@@ -214,6 +221,25 @@ public static partial class ExecutionEndpoints
                     jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
             {
                 return accountScopeFailure;
+            }
+
+            string? approvedPaperSessionId = null;
+            if (!string.IsNullOrWhiteSpace(paperSessionId))
+            {
+                if (!string.Equals(activeGatewayId, "paper", StringComparison.OrdinalIgnoreCase))
+                    return EndpointHelpers.Forbidden();
+
+                var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
+                if (persistence is null)
+                    return ExecutionPreDispatchUnavailable("Paper session management is not available.");
+
+                await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
+                var selection = paperSessionId.Trim();
+                var expectedAccount = request.FundAccountId?.ToString("D") ?? PaperTradingPortfolio.DefaultAccountId;
+                if (!string.Equals(persistence.GetSessionAccountId(selection), expectedAccount, StringComparison.OrdinalIgnoreCase))
+                    return EndpointHelpers.Forbidden();
+
+                approvedPaperSessionId = selection;
             }
 
             // The correlation id is minted here: it identifies the order in the authority, journal,
@@ -229,6 +255,7 @@ public static partial class ExecutionEndpoints
                     request.Metadata,
                     ("actor", actor),
                     ("correlationId", ticketCorrelationId),
+                    ("sessionId", approvedPaperSessionId),
                     ("clientCorrelationId", string.IsNullOrWhiteSpace(clientCorrelationId) ? null : clientCorrelationId.Trim()))
             };
 
@@ -238,7 +265,8 @@ public static partial class ExecutionEndpoints
                 ? OrderSubmissionAuthority.ForOperatorTicket(
                     actor,
                     HttpPrincipalAccountGrant(grantedAccount, actor),
-                    ticketCorrelationId)
+                    ticketCorrelationId,
+                    approvedPaperSessionId)
                 : null;
 
             OrderResult result;
@@ -713,6 +741,7 @@ public static partial class ExecutionEndpoints
         // --- Session management ---
 
         MapPaperSessionEndpoints(group, jsonOptions);
+        MapPaperSessionReconciliationEndpoints(group, jsonOptions);
 
         // --- Multi-account endpoints ---
 

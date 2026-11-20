@@ -243,6 +243,9 @@ public sealed record ExecutionReport
     /// <summary>Broker-reported external account that owns the order, never caller routing metadata.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? BrokerAccountId { get; init; }
+    /// <summary>Exact account-activity identifier supplied by the broker for this fill.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? BrokerActivityId { get; init; }
     /// <summary>The client-provided order ID from the original <see cref="OrderRequest"/>.</summary>
     public string? ClientOrderId { get; init; }
     /// <summary>Broker identity superseded by this replacement, when explicitly reported.</summary>

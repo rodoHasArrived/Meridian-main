@@ -6,8 +6,13 @@ internal sealed partial class SimulatedPortfolio
 {
     private CanonicalBacktestActions? _canonicalActions;
     private readonly HashSet<(Guid Id, string Stage)> _appliedCanonicalStages = [];
+    private DateTimeOffset _canonicalEvidenceRetainedAt;
 
-    public void ConfigureCanonicalActions(CanonicalBacktestActions actions) => _canonicalActions = actions;
+    public void ConfigureCanonicalActions(CanonicalBacktestActions actions)
+    {
+        _canonicalActions = actions;
+        _canonicalEvidenceRetainedAt = DateTimeOffset.UtcNow;
+    }
 
     public void ApplyCanonicalActions(DateOnly date, IReadOnlyList<Order>? pendingOrders = null) => _canonicalActions?.Apply(date, this, pendingOrders);
 
@@ -22,7 +27,10 @@ internal sealed partial class SimulatedPortfolio
             throw new NotSupportedException($"Split '{item.Action.CorpActId}' requires integral long-share entitlements in canonical replay.");
         ApplyAssetEvent(new AssetEvent(
             At(item.Action.ExDate), item.Symbol, AssetEventType.Split,
-            PositionFactor: factor, Description: $"Canonical split {item.Action.CorpActId:D}; snapshot {contentHash}"));
+            PositionFactor: factor, Description: $"Canonical split {item.Action.CorpActId:D}; snapshot {contentHash}")
+        {
+            EvidenceReferences = [SecurityMasterBacktestAssetEventSource.ActionEvidence(item.Action, _canonicalEvidenceRetainedAt)]
+        });
         _appliedCanonicalStages.Add((item.Action.CorpActId, "split"));
     }
 
@@ -84,6 +92,7 @@ internal sealed partial class SimulatedPortfolio
                 SecurityId: item.Action.SecurityId, FinancialAccountId: account.Account.AccountId,
                 EffectiveDate: date,
                 IdempotencyKey: $"backtest-corporate-action/{item.Action.CorpActId:D}/{account.Account.AccountId}/{stage}",
+                EvidenceReferences: [SecurityMasterBacktestAssetEventSource.ActionEvidence(item.Action, _canonicalEvidenceRetainedAt)],
                 Tags: new Dictionary<string, string>
                 {
                     ["corporateActionId"] = item.Action.CorpActId.ToString("D"),

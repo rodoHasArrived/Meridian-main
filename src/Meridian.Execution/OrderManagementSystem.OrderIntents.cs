@@ -73,6 +73,7 @@ public sealed partial class OrderManagementSystem
                 !string.Equals(terms.StrategyId, authority.StrategyId, StringComparison.Ordinal) ||
                 authority.PaperSessionId != Services.PaperSessionPersistenceService.GetStrategyRunSessionId(authority.RunId) ||
                 _sessionPersistence?.GetSession(authority.PaperSessionId)?.Summary is not { IsActive: true } session ||
+                session.FundAccountId != intent.FundAccountId ||
                 !string.Equals(session.StrategyId, authority.StrategyId, StringComparison.Ordinal)))
             return BlockIntent(intent, "The paper strategy has no matching reviewed run and active session.");
 

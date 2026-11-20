@@ -92,6 +92,11 @@ public static class OrderManagementSystemFactory
             instrumentCoverage: services.GetService<IOrderInstrumentCoverageSource>(),
             strategyRunAuthority: services.GetService<IStrategyRunAuthoritySource>(),
             authorityOptions: services.GetService<OrderAuthorityOptions>(),
-            orderIntentHistory: services.GetService<IOperationalCaseHistoryStore>());
+            orderIntentHistory: services.GetService<IOperationalCaseHistoryStore>())
+        {
+            BindNativePaperSessions = hosted && gateway is PaperTradingGateway
+                && portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: false }
+                && sessionPersistence is { SupportsNativeOrderRouting: true }
+        };
     }
 }

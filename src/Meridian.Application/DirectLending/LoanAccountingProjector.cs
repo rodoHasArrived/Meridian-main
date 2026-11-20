@@ -158,8 +158,7 @@ public sealed class LoanAccountingProjector
 
         var securityLineage = await ResolveSecurityMasterPostingLineageAsync(securityReference, eventType, ct).ConfigureAwait(false);
         instrumentSymbol = securityLineage.Symbol;
-        lines = ApplyAuthoritativeInstrumentSymbol(lines, instrumentSymbol);
-        lines = ApplyLineDimensions(lines, contract, loanId, securityLineage.SecurityId, period.LedgerBookId);
+        lines = ApplyLedgerScope(lines, contract, loanId, instrumentSymbol, securityLineage.SecurityId, period.LedgerBookId);
         if (configuredBook is not null)
         {
             lines = await ResolveConfiguredAccountsAsync(lines, period, configuredBook, currency, ct).ConfigureAwait(false);
@@ -306,31 +305,11 @@ public sealed class LoanAccountingProjector
                string.Equals(status, "SoftClosed", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static List<LedgerEntry> ApplyAuthoritativeInstrumentSymbol(
-        IReadOnlyList<LedgerEntry> lines,
-        string instrumentSymbol) =>
-        lines
-            .Select(line => new LedgerEntry(
-                line.EntryId,
-                line.JournalEntryId,
-                line.Timestamp,
-                line.Account with
-                {
-                    Symbol = IsDirectLendingInstrumentAccount(line.Account.Name)
-                        ? instrumentSymbol
-                        : null
-                },
-                line.Debit,
-                line.Credit,
-                line.Description,
-                line.Dimensions,
-                line.Currency))
-            .ToList();
-
-    private static List<LedgerEntry> ApplyLineDimensions(
+    private List<LedgerEntry> ApplyLedgerScope(
         IReadOnlyList<LedgerEntry> lines,
         LoanContractDetailDto contract,
         Guid loanId,
+        string instrumentSymbol,
         Guid securityId,
         Guid? ledgerBookId)
     {
@@ -341,18 +320,19 @@ public sealed class LoanAccountingProjector
             BookId: ledgerBookId?.ToString("D"),
             AccountId: loanId.ToString("D"));
 
-        return lines
-            .Select(line => new LedgerEntry(
-                line.EntryId,
-                line.JournalEntryId,
-                line.Timestamp,
-                line.Account,
-                line.Debit,
-                line.Credit,
-                line.Description,
-                dimensions,
-                line.Currency))
-            .ToList();
+        return lines.Select(line =>
+        {
+            var account = line.Account with
+            {
+                Symbol = IsDirectLendingInstrumentAccount(line.Account.Name) ? instrumentSymbol : null
+            };
+            return new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp, account,
+                line.Debit, line.Credit, line.Description, dimensions, line.Currency)
+            {
+                Memo = line.Memo,
+                ChartAccount = _chartOfAccounts.GetPostingReference(account)
+            };
+        }).ToList();
     }
 
     private async Task<List<LedgerEntry>> ResolveConfiguredAccountsAsync(
@@ -362,8 +342,8 @@ public sealed class LoanAccountingProjector
         string currency,
         CancellationToken ct)
     {
-        if (_accountResolver is null || _tenancyRegistry is null ||
-            string.IsNullOrWhiteSpace(_options.LedgerChartMappingRevision))
+        var mappingRevision = _options.LedgerChartMappingRevision;
+        if (_accountResolver is null || _tenancyRegistry is null || string.IsNullOrWhiteSpace(mappingRevision))
             throw new LedgerValidationException("Configured loan posting requires a chart resolver, retained ownership and pinned mapping revision.");
 
         if (period.LedgerBookId != book.LedgerBookId || currency != "USD" || book.BaseCurrency != "USD")
@@ -381,13 +361,17 @@ public sealed class LoanAccountingProjector
                 throw new LedgerValidationException($"No configured chart mapping exists for loan account role '{line.Account.Name}'.");
             var node = await _accountResolver.ResolveAsync(new ConfiguredLedgerAccountRequestDto(
                 owner.TenantId, owner.CompanyId, book.FundProfileId, book.LedgerBookId,
-                path, line.Account.AccountType.ToString(), _options.LedgerChartMappingRevision,
+                path, line.Account.AccountType.ToString(), mappingRevision,
                 line.Account.Symbol, line.Account.FinancialAccountId), ct).ConfigureAwait(false);
             if (line.Account.Name == "Cash" && !node.AccountName.StartsWith("Cash", StringComparison.OrdinalIgnoreCase))
                 throw new LedgerValidationException("Configured loan cash account must retain the supported Cash account classification.");
             resolved.Add(new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp,
                 line.Account with { Name = node.AccountName }, line.Debit, line.Credit,
-                line.Description, line.Dimensions, line.Currency));
+                line.Description, line.Dimensions, line.Currency)
+            {
+                Memo = line.Memo,
+                ChartAccount = new LedgerAccountChartReference(node.NodeId, mappingRevision, node.AccountCode)
+            });
         }
         return resolved;
     }

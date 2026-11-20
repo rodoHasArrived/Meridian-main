@@ -498,6 +498,8 @@ public static class WorkstationServiceCollectionExtensions
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "execution", gatewayPath, "broker-orders.json"), gatewayId);
         });
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
+        services.TryAddSingleton(sp => new PaperSessionDailyReconciliationStore(
+            Path.Combine(ResolveWorkstationDataDirectory(sp), "paper-reconciliation")));
         services.TryAddSingleton(sp =>
         {
             var daily = new ProviderLedgerDailyReconciliationOptions();

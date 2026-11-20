@@ -99,6 +99,17 @@ public sealed class FiscalYearClosePlanBuilderTests
     }
 
     [Fact]
+    public void MissingFinalPeriod_CannotShortenTheFiscalYear()
+    {
+        var year = SyntheticYear.Create();
+        var final = year.Quarter(4);
+
+        var plan = year.Build(periods: year.Periods.Where(period => period.PeriodId != final.PeriodId).ToArray());
+
+        AssertBlocked(plan, Codes.CoverageGap);
+    }
+
+    [Fact]
     public void NoPeriods_Blocks()
         => AssertBlocked(SyntheticYear.Create().Build(fiscalYear: 2030), Codes.NoPeriods);
 

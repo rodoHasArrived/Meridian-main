@@ -139,8 +139,10 @@ set `Execution:OrderManagement:PaperIntentScope` with `TenantId`, `CompanyId`, a
 scoped strategy orders use the same sizing, risk, and gateway admission. A retained matching
 intent returns the existing receipt. A terms mismatch returns a conflict, and an interrupted
 receipt requires reconciliation. The browser retains the pending intent ID and terms across a
-reload in the same tab. The dedicated paper book holds simulated handoffs under their
-fill IDs, outside the ordinary ledger publisher. A versioned strategy with retained order activity
+reload in the same tab. The OMS reserves the reviewed run's account-bound USD paper session
+before dispatch. The session retains its journal and the intent retains the simulated handoff
+under the same fill ID. The evidence packet provides access to the run's reconciliation.
+A versioned strategy with retained order activity
 requires reconciliation before restart. Operator tickets follow governed risk approval. A parked
 Designer strategy order requires withdrawal because a risk release could race run shutdown.
 

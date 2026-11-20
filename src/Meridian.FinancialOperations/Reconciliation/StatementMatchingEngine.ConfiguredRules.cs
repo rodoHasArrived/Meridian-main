@@ -68,34 +68,34 @@ public sealed partial class StatementMatchingEngine
         StatementMatchingRequest request, HashSet<string> statements, HashSet<string> internalItems,
         TransactionToleranceRule rule, List<StatementMatchResult> results)
     {
-        MatchStage(request.StatementTransactions, request.InternalLedgerTransactions, statements, internalItems,
+        MatchUniqueTransactionPairs(request, statements, internalItems,
             (statement, transaction) => SameSplitIdentity(statement, transaction, rule)
                 && statement.Quantity == transaction.Quantity
                 && AllowsTransaction(rule, transaction.NetAmount, statement.NetAmount,
                     DateDelta(statement.SettlementDate, transaction.SettlementDate),
                     TransactionPrice(transaction), TransactionPrice(statement)),
-            (statement, transaction) => NormalizedVariance(statement.NetAmount, transaction.NetAmount, rule.AbsoluteCashTolerance)
-                + NormalizedPriceVariance(TransactionPrice(statement), TransactionPrice(transaction), rule.PriceTolerance)
-                + NormalizedVariance(DateDelta(statement.SettlementDate, transaction.SettlementDate).Ticks, 0m,
-                    rule.SettlementDateTolerance.Ticks),
-            (statement, transaction) => CreateTransactionResult(statement, transaction,
-                StatementMatchTier.Tolerance,
-                ConfidenceFromVariance(Abs(statement.NetAmount - transaction.NetAmount), Math.Abs(rule.AbsoluteCashTolerance)),
-                [rule.RuleId, TransactionToleranceRuleId], TransactionVariance(statement, transaction),
-                new StatementMatchTolerance(0m, Math.Abs(rule.AbsoluteCashTolerance)),
-                "Transaction matched the configured amount, settlement-window, and price rule."),
+            (statement, transaction) => CreateConfiguredTransactionResult(statement, transaction, rule),
             results);
     }
 
+    private static StatementMatchResult CreateConfiguredTransactionResult(NormalizedStatementTransaction statement,
+        InternalLedgerTransaction transaction, TransactionToleranceRule rule) =>
+        CreateTransactionResult(statement, transaction, StatementMatchTier.Tolerance,
+            ConfidenceFromVariance(Abs(statement.NetAmount - transaction.NetAmount), Math.Abs(rule.AbsoluteCashTolerance)),
+            [rule.RuleId, TransactionToleranceRuleId], TransactionVariance(statement, transaction),
+            new StatementMatchTolerance(0m, Math.Abs(rule.AbsoluteCashTolerance)),
+            "Transaction matched the configured amount, settlement-window, and price rule.");
+
     private static bool SameSplitIdentity(NormalizedStatementTransaction statement,
         InternalLedgerTransaction transaction, TransactionToleranceRule? rule) =>
-        rule is null ? SameTransactionIdentity(statement, transaction)
+        CanUseTransactionFallback(statement, transaction) &&
+        (rule is null ? SameTransactionIdentity(statement, transaction)
             : SameText(statement.Account, transaction.Account)
                 && SameTransactionInstrumentAndCurrency(statement, transaction)
                 && statement.TradeDate == transaction.TradeDate
                 && SameText(statement.TransactionType, transaction.TransactionType)
                 && DateDelta(statement.SettlementDate, transaction.SettlementDate).Duration()
-                    <= rule.SettlementDateTolerance.Duration();
+                    <= rule.SettlementDateTolerance.Duration());
 
     private static TimeSpan DateDelta(DateOnly left, DateOnly right) => TimeSpan.FromDays(left.DayNumber - right.DayNumber);
 

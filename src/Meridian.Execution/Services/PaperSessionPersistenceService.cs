@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using Meridian.Contracts.Integrity;
 using Meridian.Execution.Models;
 using Meridian.Execution.Events;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using Meridian.Ledger;
 using Microsoft.Extensions.Logging;
@@ -38,6 +39,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
     private readonly CancellationTokenSource _lifetimeCts = new();
     private readonly IPaperSessionStore? _store;
     private readonly PaperFinancingPostingService? _financing;
+    private readonly ResolvePaperAccountCurrency? _resolveAccountCurrency;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger<PaperSessionPersistenceService> _logger;
     private Task? _initialisationTask;
@@ -50,12 +52,14 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         ILogger<PaperSessionPersistenceService> logger,
         IPaperSessionStore? store = null,
         ExecutionAuditTrailService? auditTrail = null,
-        PaperFinancingPostingService? financing = null)
+        PaperFinancingPostingService? financing = null,
+        ResolvePaperAccountCurrency? resolveAccountCurrency = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _store = store;
         _auditTrail = auditTrail;
         _financing = financing;
+        _resolveAccountCurrency = resolveAccountCurrency;
     }
 
     // ------------------------------------------------------------------
@@ -146,6 +150,13 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
             {
                 throw new InvalidDataException(
                     $"Paper-session store returned duplicate metadata for '{record.SessionId}'.");
+            }
+
+            if (record.JournalSchemaVersion != 0 || record.JournalCurrency is not null)
+            {
+                var durable = await LoadDurableSessionAsync(record, ct).ConfigureAwait(false);
+                candidate.TryAdd(record.SessionId, durable);
+                continue;
             }
 
             var fillRecords = await _store.LoadFillRecordsAsync(record.SessionId, ct).ConfigureAwait(false);
@@ -284,7 +295,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
 
     /// <summary>Creates a new paper trading session and returns its summary.</summary>
     public Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, CancellationToken ct = default)
-        => CreateSessionCoreAsync(request, runSessionId: null, ct);
+        => CreateSessionAsync(request, isAccountDefault: false, ct);
 
     /// <summary>Resolves the stable paper session used by a retained strategy run.</summary>
     public static string GetStrategyRunSessionId(string runId) =>
@@ -294,11 +305,11 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         sessionId?.StartsWith("PAPER-RUN-", StringComparison.OrdinalIgnoreCase) == true;
 
     public Task<PaperSessionSummaryDto> EnsureStrategyRunSessionAsync(
-        string runId, CreatePaperSessionDto request, CancellationToken ct = default) =>
-        CreateSessionCoreAsync(request, GetStrategyRunSessionId(runId), ct);
+        string runId, DateTimeOffset runStartedAt, CreatePaperSessionDto request, CancellationToken ct = default) =>
+        CreateSessionAsync(request, isAccountDefault: false, ct, GetStrategyRunSessionId(runId), runStartedAt.ToUniversalTime());
 
-    private async Task<PaperSessionSummaryDto> CreateSessionCoreAsync(
-        CreatePaperSessionDto request, string? runSessionId, CancellationToken ct)
+    private async Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, bool isAccountDefault,
+        CancellationToken ct, string? runSessionId = null, DateTimeOffset? runStartedAt = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         using var operation = EnterOperation(ct);
@@ -306,6 +317,8 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         await InitialiseAsync(ct).ConfigureAwait(false);
         ThrowIfDisposed();
         ValidateCreateRequest(request);
+        if (Guid.TryParseExact(request.FinancialAccountId, "D", out var accountId))
+            await RequireNativeAccountCurrencyAsync(accountId, ct).ConfigureAwait(false);
         await _catalogGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -313,26 +326,29 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
             if (runSessionId is not null && sessions.TryGetValue(runSessionId, out var retained))
             {
                 if (!string.Equals(retained.StrategyId, request.StrategyId, StringComparison.Ordinal) ||
+                    !string.Equals(retained.FinancialAccountId, request.FinancialAccountId, StringComparison.OrdinalIgnoreCase) ||
                     retained.InitialCash != request.InitialCash ||
                     !retained.Symbols.SequenceEqual(request.Symbols ?? [], StringComparer.OrdinalIgnoreCase))
                     throw new InvalidOperationException("The retained paper session belongs to different run inputs.");
 
                 return ToSummarySnapshot(retained);
             }
-
+            if (isAccountDefault && sessions.Values.SingleOrDefault(session => session.IsAccountDefault && session.IsActive
+                && session.FinancialAccountId == request.FinancialAccountId) is { } existing)
+                return ToSummarySnapshot(existing);
             TrimClosedSessionsIfNeeded(sessions);
             if (sessions.Count >= MaxRetainedSessions)
             {
                 throw new InvalidOperationException($"Paper session limit reached ({MaxRetainedSessions}). Close existing sessions and retry.");
             }
 
-            var createdAt = DateTimeOffset.UtcNow;
+            // Reusing the retained run timestamp keeps the opening journal identical on retry.
+            var createdAt = runStartedAt ?? DateTimeOffset.UtcNow;
             var sessionId = runSessionId ?? $"PAPER-{createdAt:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
             // Retain an empty source checkpoint before publishing a bound session, so a
             // future historical read can prove that no financing was accepted.
             if (_financing is not null)
                 await _financing.LoadSourcesAsync(sessionId, ct).ConfigureAwait(false);
-            var ledger = new Meridian.Ledger.Ledger();
             var session = new PaperSession
             {
                 SessionId = sessionId,
@@ -341,18 +357,31 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 InitialCash = request.InitialCash,
                 CreatedAt = createdAt,
                 Symbols = request.Symbols?.ToList() ?? [],
-                Portfolio = new PaperTradingPortfolio(request.InitialCash, ledger, createdAt),
                 // New sessions record the matching and cost policies in effect so promotion
                 // evidence can cite exactly which paper execution model produced them.
                 MatchingModelVersion = PaperMatching.PaperOrderMatchingPolicy.MatchingModelVersion,
                 CostModelVersion = PaperMatching.PaperTradingCostModel.CostModelVersion,
                 AccountingContext = _financing?.PostingContext,
-                FinancialAccountId = _financing is null ? null : PaperTradingPortfolio.DefaultAccountId,
+                FinancialAccountId = _financing is null ? request.FinancialAccountId : PaperTradingPortfolio.DefaultAccountId,
+                JournalCurrency = _store is { SupportsJournalBatches: true } && _financing is null ? NativeJournalCurrency : null,
+                IsAccountDefault = isAccountDefault
             };
+
+            if (session.JournalCurrency is not null)
+            {
+                var (portfolio, journal) = ProjectDurableSession(session, [], [], []);
+                var receipt = await AppendVerifiedBatchAsync(journal.Batches.Single(), ct).ConfigureAwait(false);
+                PublishDurableEffect(session, portfolio, journal, receipt);
+            }
+            else
+            {
+                session.Portfolio = new PaperTradingPortfolio(request.InitialCash, new Meridian.Ledger.Ledger(), createdAt);
+                if (_store is not null)
+                    await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
+            }
 
             if (_store is not null)
             {
-                await PersistSessionLedgerAsync(session, ct).ConfigureAwait(false);
                 // Metadata is the final durable create candidate. It must succeed before the
                 // session becomes observable; no fallible persistence follows this write.
                 await _store.SaveSessionMetadataAsync(ToPersistedRecord(session), ct).ConfigureAwait(false);
@@ -377,6 +406,13 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
 
     private void ValidateCreateRequest(CreatePaperSessionDto request)
     {
+        if (request.FinancialAccountId is { } accountId
+            && accountId != PaperTradingPortfolio.DefaultAccountId
+            && (!Guid.TryParseExact(accountId, "D", out var accountGuid) || accountGuid == Guid.Empty || !SupportsNativeOrderRouting))
+        {
+            throw new ArgumentException("A scoped paper session requires a supported financial account binding.", nameof(request));
+        }
+
         if (request.InitialCash < 0m)
         {
             throw new ArgumentOutOfRangeException(
@@ -474,6 +510,9 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                     return true;
                 EnsureCurrentAccountingScope(session);
                 EnsureFinancingRecovered(session);
+                EnsureDurableEffectCanProceed(session);
+                if (session.NativeOrderReservations.Count > 0)
+                    throw new InvalidOperationException("Cancel or fill the working paper orders before closing this session.");
 
                 var integrityBreaks = session.Portfolio?.CheckLedgerIntegrity() ?? [];
                 if (integrityBreaks.Count > 0)
@@ -491,8 +530,10 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
 
             if (_store is not null)
             {
+                if (session.JournalCurrency is not null)
+                    _ = await ReadVerifiedDurableProjectionAsync(session, ct).ConfigureAwait(false);
                 var ledger = session.Portfolio?.Ledger;
-                if (ledger is not null && ledger.JournalEntryCount > 0)
+                if (session.JournalCurrency is null && ledger is not null && ledger.JournalEntryCount > 0)
                 {
                     // A closed session prefers its persisted journal after restart. Publishing
                     // closed metadata without the final journal would therefore make a stale
@@ -555,6 +596,15 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         return BuildSessionDetailDto(session);
     }
 
+    /// <summary>Scope for callers to authorize a session lookup before reading its evidence.</summary>
+    public string? GetSessionAccountId(string sessionId)
+    {
+        ThrowIfDisposed();
+        return CurrentSessions.TryGetValue(sessionId, out var session)
+            ? session.FinancialAccountId ?? PaperTradingPortfolio.DefaultAccountId
+            : null;
+    }
+
     /// <summary>Detached execution-report evidence without rebuilding the session portfolio or ledger.</summary>
     public IReadOnlyList<ExecutionReport> GetSessionFillHistory(string sessionId)
     {
@@ -601,9 +651,9 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         {
             // For active sessions return the replay-built live ledger. Closed sessions prefer the
             // exact persisted journal but fall back to the fill-rebuilt ledger after crash recovery.
-            var ledger = session.IsActive
+            var ledger = session.DurableLedger ?? (session.IsActive
                 ? session.Portfolio?.Ledger ?? session.ReconstructedLedger
-                : session.ReconstructedLedger ?? session.Portfolio?.Ledger;
+                : session.ReconstructedLedger ?? session.Portfolio?.Ledger);
             journalSnapshot = ledger?.Journal.ToArray();
         }
 
@@ -746,7 +796,11 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
 
             ct.ThrowIfCancellationRequested();
             lock (session.SyncRoot)
+            {
                 session.OrderHistory.Add(orderSnapshot);
+                if (OrderStatusFacts.IsTerminal(orderSnapshot.Status))
+                    session.NativeOrderReservations.Remove(orderSnapshot.OrderId);
+            }
         }
         finally
         {
@@ -787,7 +841,9 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         ExecutionReport fill,
         int accountingEvidenceVersion,
         string? financialAccountId,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? strategyId = null,
+        string? runId = null)
     {
         ArgumentNullException.ThrowIfNull(fill);
         if (fillId == Guid.Empty)
@@ -816,7 +872,9 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
             var record = (PaperSessionFillRecord.Create(fillId, fillSnapshot, DateTimeOffset.UtcNow) with
             {
                 AccountingEvidenceVersion = accountingEvidenceVersion,
-                FinancialAccountId = string.IsNullOrWhiteSpace(financialAccountId) ? null : financialAccountId.Trim()
+                FinancialAccountId = string.IsNullOrWhiteSpace(financialAccountId) ? null : financialAccountId.Trim(),
+                StrategyId = string.IsNullOrWhiteSpace(strategyId) ? null : strategyId.Trim(),
+                RunId = string.IsNullOrWhiteSpace(runId) ? null : runId.Trim()
             }).Validate();
             if (!sessions.TryGetValue(sessionId, out var session))
             {
@@ -828,10 +886,20 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
             {
                 // The session gate defines close-vs-fill ordering. A fill that claims the gate
                 // before close is committed first; a fill that arrives after close is ignored.
-                if (!session.IsActive)
+                if (!session.IsActive && session.JournalCurrency is null)
                     return;
                 EnsureCurrentAccountingScope(session);
                 EnsureFinancingRecovered(session);
+            }
+
+            if (session.JournalCurrency is not null)
+            {
+                if (session.FinancialAccountId is { } owner
+                    && !string.Equals(owner, record.FinancialAccountId ?? PaperTradingPortfolio.DefaultAccountId,
+                        StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("The fill belongs to a different paper-session account.");
+                await RecordDurableFillAsync(session, record, ct).ConfigureAwait(false);
+                return;
             }
 
             var appendResult = _store is null
@@ -941,6 +1009,12 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
             if (!sessions.TryGetValue(sessionId, out session))
                 return null;
 
+            if (session.JournalCurrency is not null)
+            {
+                var verified = await ReadVerifiedDurableProjectionAsync(session, ct).ConfigureAwait(false);
+                return CreatePortfolioSnapshot(verified.Portfolio);
+            }
+
             var fills = await _store.LoadFillRecordsAsync(sessionId, ct).ConfigureAwait(false);
             var settlements = await LoadValidatedSettlementsAsync(sessionId, ct).ConfigureAwait(false);
             var portfolio = new PaperTradingPortfolio(session.InitialCash, new Meridian.Ledger.Ledger(), session.CreatedAt);
@@ -1005,9 +1079,10 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         var persistedOrders = _store is null
             ? []
             : await _store.LoadOrderHistoryAsync(sessionId, ct).ConfigureAwait(false);
-        var persistedLedgerEntries = _store is null
-            ? []
-            : await _store.LoadLedgerJournalAsync(sessionId, ct).ConfigureAwait(false);
+        var persistedLedgerEntries = _store is null ? [] : session.JournalCurrency is null
+            ? await _store.LoadLedgerJournalAsync(sessionId, ct).ConfigureAwait(false)
+            : (await _store.LoadJournalBatchesAsync(sessionId, ct).ConfigureAwait(false))
+                .SelectMany(receipt => SerializeLedgerJournal(receipt.Batch.Entries, sessionId)).ToArray();
 
         var mismatchReasons = ComparePortfolios(detail.Portfolio, replayPortfolio);
         foreach (var ledgerBreak in session.Portfolio?.CheckLedgerIntegrity() ?? [])
@@ -1138,11 +1213,14 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
     // ------------------------------------------------------------------
 
     private static IReadOnlyList<PersistedJournalEntryDto> SerializeLedgerJournal(
-        IReadOnlyLedger ledger,
+        IReadOnlyLedger ledger, string strategyId) => SerializeLedgerJournal(ledger.Journal, strategyId);
+
+    private static IReadOnlyList<PersistedJournalEntryDto> SerializeLedgerJournal(
+        IReadOnlyList<JournalEntry> entries,
         string strategyId)
     {
-        var dtos = new List<PersistedJournalEntryDto>(ledger.JournalEntryCount);
-        foreach (var entry in ledger.Journal)
+        var dtos = new List<PersistedJournalEntryDto>(entries.Count);
+        foreach (var entry in entries)
         {
             var lines = entry.Lines.Select(line => new PersistedLedgerLineDto(
                 EntryId: line.EntryId,
@@ -1155,7 +1233,13 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                     FinancialAccountId: line.Account.FinancialAccountId),
                 Debit: line.Debit,
                 Credit: line.Credit,
-                Description: line.Description)).ToArray();
+                Description: line.Description)
+            {
+                Currency = line.Currency,
+                Dimensions = line.Dimensions,
+                Memo = line.Memo,
+                ChartAccount = line.ChartAccount
+            }).ToArray();
 
             dtos.Add(new PersistedJournalEntryDto(
                 JournalEntryId: entry.JournalEntryId,
@@ -1232,16 +1316,22 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         {
             try
             {
-                var lines = dto.Lines.Select(line =>
+                var retainedLines = dto.Lines ?? throw new InvalidDataException("The retained journal entry has no lines.");
+                var lines = retainedLines.Select(line =>
                 {
-                    var accountType = Enum.TryParse<LedgerAccountType>(line.Account.AccountType, out var at)
-                        ? at : LedgerAccountType.Asset;
+                    if (!Enum.TryParse<LedgerAccountType>(line.Account.AccountType, out var accountType)
+                        || !Enum.IsDefined(accountType))
+                        throw new InvalidDataException("The retained ledger line has an unknown account type.");
                     var account = new LedgerAccount(
                         line.Account.Name, accountType,
                         line.Account.Symbol, line.Account.FinancialAccountId);
                     return new LedgerEntry(
                         line.EntryId, line.JournalEntryId, line.Timestamp,
-                        account, line.Debit, line.Credit, line.Description);
+                        account, line.Debit, line.Credit, line.Description, line.Dimensions, line.Currency)
+                    {
+                        Memo = line.Memo,
+                        ChartAccount = line.ChartAccount
+                    };
                 }).ToArray();
 
                 var entry = new JournalEntry(
@@ -1301,7 +1391,12 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 ClosedAt: session.ClosedAt,
                 IsActive: session.IsActive,
                 MatchingModelVersion: session.MatchingModelVersion,
-                CostModelVersion: session.CostModelVersion);
+                CostModelVersion: session.CostModelVersion)
+            {
+                FundAccountId = Guid.TryParseExact(session.FinancialAccountId, "D", out var fundAccountId)
+                    ? fundAccountId : null,
+                JournalCurrency = session.JournalCurrency
+            };
         }
     }
 
@@ -1324,7 +1419,12 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 MatchingModelVersion: session.MatchingModelVersion,
                 CostModelVersion: session.CostModelVersion,
                 AccountingContext: session.AccountingContext,
-                FinancialAccountId: session.FinancialAccountId);
+                FinancialAccountId: session.FinancialAccountId)
+            {
+                JournalSchemaVersion = session.JournalCurrency is null ? 0 : PaperSessionJournalBatch.CurrentSchemaVersion,
+                JournalCurrency = session.JournalCurrency,
+                IsAccountDefault = session.IsAccountDefault
+            };
         }
     }
 
@@ -1379,13 +1479,22 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         IReadOnlyList<ExecutionReport> fills,
         IReadOnlyList<PaperSessionSettlementRecord> settlements,
         IReadOnlyDictionary<Guid, (int Version, string? FinancialAccountId)>? accountingProvenance = null,
-        IReadOnlyList<PaperFinancingCharge>? financingCharges = null)
+        IReadOnlyList<PaperFinancingCharge>? financingCharges = null,
+        PaperSessionJournalProjection? journal = null)
     {
         var ordered = settlements.Select(settlement => (Time: settlement.SettledAt,
-                Apply: (Action)(() => portfolio.ApplyVariationMarginSettlement(
-                    settlement.AccountId, settlement.Symbol, settlement.SettlementPrice, settlement.SettledAt))))
+                Apply: (Action)(() =>
+                {
+                    portfolio.ApplyVariationMarginSettlement(settlement.AccountId, settlement.Symbol,
+                        settlement.SettlementPrice, settlement.SettledAt);
+                    journal?.CaptureSettlement(settlement);
+                })))
             .Concat((financingCharges ?? []).Select(charge => (Time: charge.OccurredAt,
-                Apply: (Action)(() => portfolio.ApplyFinancingCharge(charge)))))
+                Apply: (Action)(() =>
+                {
+                    portfolio.ApplyFinancingCharge(charge);
+                    journal?.CaptureFinancing(charge);
+                }))))
             .OrderBy(static item => item.Time)
             .ToArray();
         var next = 0;
@@ -1393,9 +1502,11 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         {
             while (next < ordered.Length && ordered[next].Time < fill.Timestamp)
                 ordered[next++].Apply();
-            var provenance = accountingProvenance?.GetValueOrDefault(PaperSessionFillRecord.ComputeCanonicalFillId(fill))
+            var fillId = PaperSessionFillRecord.ComputeCanonicalFillId(fill);
+            var provenance = accountingProvenance?.GetValueOrDefault(fillId)
                 ?? (Version: 0, FinancialAccountId: (string?)null);
             portfolio.ApplyRecordedFill(fill, provenance.Version, provenance.FinancialAccountId);
+            journal?.CaptureFill(fillId);
         }
 
         while (next < ordered.Length)
@@ -1862,6 +1973,13 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         public string? CostModelVersion { get; init; }
         public TradeFillLedgerPostingContext? AccountingContext { get; init; }
         public string? FinancialAccountId { get; init; }
+        public string? JournalCurrency { get; init; }
+        public bool IsAccountDefault { get; init; }
+        public HashSet<string> NativeOrderReservations { get; } = new(StringComparer.OrdinalIgnoreCase);
+        public IReadOnlyLedger? DurableLedger { get; set; }
+        public Dictionary<Guid, PaperSessionJournalReceipt> DurableReceipts { get; set; } = [];
+        public List<PaperSessionFillRecord> DurableFills { get; } = [];
+        public Guid? PendingDurableEffect { get; set; }
         public string? AccountingUnavailableReason { get; init; }
         public PaperTradingPortfolio? Portfolio { get; set; }
         public List<OrderState> OrderHistory { get; } = [];
@@ -1879,99 +1997,4 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         public IReadOnlyLedger? ReconstructedLedger { get; init; }
         public LedgerReconstructionResult Reconstruction { get; init; } = LedgerReconstructionResult.Empty;
     }
-}
-
-
-// --- DTOs used by the service (decoupled from endpoint DTOs) ---
-
-/// <summary>Request to create a new paper session.</summary>
-public sealed record CreatePaperSessionDto(
-    string StrategyId,
-    string? StrategyName,
-    decimal InitialCash = 100_000m,
-    IReadOnlyList<string>? Symbols = null);
-
-/// <summary>Session summary DTO.</summary>
-public sealed record PaperSessionSummaryDto(
-    string SessionId,
-    string StrategyId,
-    string? StrategyName,
-    decimal InitialCash,
-    DateTimeOffset CreatedAt,
-    DateTimeOffset? ClosedAt,
-    bool IsActive,
-    string? MatchingModelVersion = null,
-    string? CostModelVersion = null);
-
-/// <summary>
-/// Detailed session DTO. <see cref="TradingCosts"/> is the session's total explicit
-/// transaction cost (commission + fees + modeled slippage) across all fills.
-/// </summary>
-public sealed record PaperSessionDetailDto(
-    PaperSessionSummaryDto Summary,
-    IReadOnlyList<string> Symbols,
-    ExecutionPortfolioSnapshotDto? Portfolio,
-    IReadOnlyList<OrderState>? OrderHistory,
-    int FillCount,
-    int LedgerEntryCount,
-    DateTimeOffset? LastFillAt,
-    DateTimeOffset? LastOrderUpdatedAt,
-    IReadOnlyList<ExecutionReport>? FillHistory = null,
-    decimal TradingCosts = 0m,
-    string? AccountingUnavailableReason = null);
-
-/// <summary>Portfolio snapshot DTO for session detail.</summary>
-public sealed record ExecutionPortfolioSnapshotDto(
-    decimal Cash,
-    decimal PortfolioValue,
-    decimal UnrealisedPnl,
-    decimal RealisedPnl,
-    IReadOnlyList<ExecutionPosition> Positions,
-    DateTimeOffset AsOf)
-{
-    /// <summary>Alias for <see cref="Cash"/> using the naming used in operator-facing surfaces.</summary>
-    public decimal CashBalance => Cash;
-}
-
-internal sealed record LedgerReconstructionResult(
-    Meridian.Ledger.Ledger? Ledger,
-    IReadOnlyList<string> CorruptEntryIds)
-{
-    public static LedgerReconstructionResult Empty { get; } = new(null, []);
-    public int CorruptEntryCount => CorruptEntryIds.Count;
-}
-
-/// <summary>
-/// Result of replaying a paper session and comparing the replayed state to the
-/// currently tracked portfolio snapshot.
-/// </summary>
-public sealed record PaperSessionReplayVerificationDto(
-    PaperSessionSummaryDto Summary,
-    IReadOnlyList<string> Symbols,
-    string ReplaySource,
-    bool IsConsistent,
-    IReadOnlyList<string> MismatchReasons,
-    ExecutionPortfolioSnapshotDto? CurrentPortfolio,
-    ExecutionPortfolioSnapshotDto ReplayPortfolio,
-    DateTimeOffset VerifiedAt,
-    int ComparedFillCount,
-    int ComparedOrderCount,
-    int ComparedLedgerEntryCount,
-    int CorruptLedgerEntryCount,
-    IReadOnlyList<string> CorruptLedgerEntryIds,
-    DateTimeOffset? LastPersistedFillAt,
-    DateTimeOffset? LastPersistedOrderUpdateAt,
-    string? VerificationAuditId)
-{
-    /// <summary>Alias for <see cref="ComparedFillCount"/> using the paper-cockpit acceptance naming.</summary>
-    public int VerifiedFilledCount => ComparedFillCount;
-
-    /// <summary>Alias for <see cref="ComparedOrderCount"/> using the paper-cockpit acceptance naming.</summary>
-    public int VerifiedOrderCount => ComparedOrderCount;
-
-    /// <summary>Alias for <see cref="ComparedLedgerEntryCount"/> using the paper-cockpit acceptance naming.</summary>
-    public int VerifiedLedgerEntriesCount => ComparedLedgerEntryCount;
-
-    /// <summary>Alias for <see cref="VerifiedAt"/> using the paper-cockpit acceptance naming.</summary>
-    public DateTimeOffset LastVerifiedAt => VerifiedAt;
 }

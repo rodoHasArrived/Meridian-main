@@ -244,6 +244,19 @@ internal sealed class OrderFillProcessor(
             // durable session record all read the same classification.
             var usesFaceValuePercentageOfPar = fillIncrement.UsesFaceValuePercentageOfPar;
 
+            // Native simulation owns an independent session journal. Confirm this scope before the
+            // hosted portfolio or execution subscribers can observe an accepted fill.
+            if (!progress.SessionRecorded && progress.IsTrackedOrder && sessionId is not null
+                && _portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: false }
+                && _sessionPersistence is { } persistence && persistence.IsNativeDurableSession(sessionId))
+            {
+                _context.TryGetOrder(orderId!, out var trackedOrder);
+                await persistence.RecordFillAsync(sessionId, PaperSessionFillRecord.ComputeCanonicalFillId(fillIncrement),
+                    fillIncrement, accountingEvidenceVersion: 0, ResolveFinancialAccountId(orderId), CancellationToken.None,
+                    trackedOrder?.StrategyId, trackedOrder?.RunId).ConfigureAwait(false);
+                progress.SessionRecorded = true;
+            }
+
             if (!progress.PortfolioApplied)
             {
                 // Only fills for orders this OMS placed may mutate the paper portfolio;
@@ -512,7 +525,11 @@ internal sealed class OrderFillProcessor(
             financialAccountId,
             usesFaceValuePercentageOfPar,
             contractMultiplier,
-            fillIncrement.BookedVariationMargin == true);
+            fillIncrement.BookedVariationMargin == true)
+        {
+            BrokerActivityId = string.IsNullOrWhiteSpace(fillIncrement.BrokerActivityId)
+                ? null : fillIncrement.BrokerActivityId.Trim()
+        };
     }
 
     /// <summary>
