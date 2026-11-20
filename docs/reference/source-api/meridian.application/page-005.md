@@ -6,6 +6,93 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LifecycleLedgerPostingAuthority
+
+Qualified name: <code>Meridian.Application.FundStructure.LifecycleLedgerPostingAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:11](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L11).
+
+Resolves entity identity and lifecycle from authoritative structure and retained revisions.
+
+```csharp
+public sealed class LifecycleLedgerPostingAuthority(IFundStructureService structure, IEntityLifecycleStore history, Func<IControlledCloseAuthorizationStore?> closeAuthorizations, Func<CancellationToken, Task<IAsyncDisposable>>? structureAuthority = null) : ILedgerPostingAuthority, ILedgerBookControlPreflight, ILedgerStructurePostingAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ControlName =&gt; …;</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:15](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L15) |  |
+| <code>public Task&lt;IAsyncDisposable&gt; AcquireStructureAuthorityAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L16) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:18](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L18) |  |
+| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:128](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L128) |  |
+
+## PostgresFundStructureService
+
+Qualified name: <code>Meridian.Application.FundStructure.PostgresFundStructureService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:19](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L19).
+
+PostgreSQL-backed implementation of IFundStructureService. On each mutation the full snapshot is loaded from the store, updated in-memory, and the changed rows are written back.
+
+```csharp
+public sealed partial class PostgresFundStructureService : IFundStructureService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresFundStructureService(IFundStructureStore store, IFundAccountService fundAccountService, IFundStructurePolicyService policyService, IGovernanceSharedDataAccessService? sharedDataAccessService = null, ISecurityMasterQueryService? securityMasterQueryService = null, IFundScopeTenantAccessor? tenantAccessor = null, TenantScopeEnforcementOptions? tenantScope = null, IEntityLifecycleStore? entityLifecycleStore = null);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:42](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L42) |  |
+| <code>public async Task&lt;OrganizationSummaryDto&gt; CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:64](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L64) |  |
+| <code>public async Task&lt;BusinessSummaryDto&gt; CreateBusinessAsync(CreateBusinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:98](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L98) |  |
+| <code>public async Task&lt;ClientSummaryDto&gt; CreateClientAsync(CreateClientRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:138](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L138) |  |
+| <code>public async Task&lt;FundSummaryDto&gt; CreateFundAsync(CreateFundRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:176](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L176) |  |
+| <code>public async Task&lt;SleeveSummaryDto&gt; CreateSleeveAsync(CreateSleeveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:221](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L221) |  |
+| <code>public async Task&lt;VehicleSummaryDto&gt; CreateVehicleAsync(CreateVehicleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:259](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L259) |  |
+| <code>public async Task&lt;LegalEntitySummaryDto&gt; CreateLegalEntityAsync(CreateLegalEntityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:303](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L303) |  |
+| <code>public async Task&lt;LegalEntitySummaryDto&gt; UpdateLegalEntityProfileAsync(UpdateLegalEntityProfileRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:349](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L349) |  |
+| <code>public async Task&lt;InvestmentPortfolioSummaryDto&gt; CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:400](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L400) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; LinkNodesAsync(LinkFundStructureNodesRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:470](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L470) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; UpdateOwnershipLinkAsync(UpdateOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:524](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L524) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; ExpireOwnershipLinkAsync(ExpireOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:566](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L566) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; ReplaceOwnershipLinkAsync(ReplaceOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:591](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L591) |  |
+| <code>public async Task&lt;OwnershipGraphValidationResultDto&gt; ValidateOwnershipGraphAsync(ValidateOwnershipGraphRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:651](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L651) |  |
+| <code>public async Task&lt;FundStructureAssignmentDto&gt; AssignNodeAsync(AssignFundStructureNodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:664](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L664) |  |
+| <code>public async Task&lt;OrganizationStructureGraphDto&gt; GetOrganizationStructureAsync(OrganizationStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:715](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L715) |  |
+| <code>public async Task&lt;FundStructureGraphDto&gt; GetFundStructureGraphAsync(FundStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:733](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L733) |  |
+| <code>public async Task&lt;AdvisoryStructureViewDto?&gt; GetAdvisoryViewAsync(AdvisoryStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:747](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L747) |  |
+| <code>public async Task&lt;FundOperatingViewDto?&gt; GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:763](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L763) |  |
+| <code>public async Task&lt;AccountingStructureViewDto&gt; GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:779](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L779) |  |
+| <code>public async Task&lt;GovernanceCashFlowViewDto?&gt; GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:795](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L795) |  |
+
+Source: [src/Meridian.Application/FundStructure/PostgresFundStructureService.Tenancy.cs:16](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.Tenancy.cs#L16).
+
+The tenant half of PostgresFundStructureService: what a caller may see, what they may claim, and what identity means across tenants (W9-GOV-008 criterion 2).
+
+```csharp
+public sealed partial class PostgresFundStructureService
+```
+
+## PostgresIntercompanyAgreementPostingAuthority
+
+Qualified name: <code>Meridian.Application.FundStructure.PostgresIntercompanyAgreementPostingAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:9](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L9).
+
+Validates exact approved provenance while retaining structure locks through ledger commit.
+
+```csharp
+public sealed class PostgresIntercompanyAgreementPostingAuthority(IIntercompanyAgreementStore store) : IIntercompanyAgreementBatchPostingAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:12](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L12) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireValidatedBatchLeaseAsync(IReadOnlyList&lt;IntercompanyAgreementPostingRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L16) |  |
+
 ## BondHoldingImportService
 
 Qualified name: <code>Meridian.Application.Integrations.BondHoldingImportService</code>. Kind: `class`.
@@ -914,80 +1001,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public long AuditRecordsNotWritten { get; init; }</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:157](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L157) | Dropped events counted above that have no line in the audit file. |
-
-## DualPathEventPipeline
-
-Qualified name: <code>Meridian.Application.Pipeline.DualPathEventPipeline</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:77](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L77).
-
-A dual-path event pipeline that routes high-volume MarketEventType.Trade and MarketEventType.BboQuote events through a zero-allocation hot path (struct ring buffer), while routing all other event types through the standard record-based EventPipeline.
-
-```csharp
-public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressureSignal, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DualPathEventPipeline(EventPipeline slowPath, SymbolTable symbolTable, int ringBufferCapacity = 4_096, int batchDrainSize = 256, bool startConsumers = true, ILogger&lt;DualPathEventPipeline&gt;? logger = null, TimeSpan? shutdownTimeout = null);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:162](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L162) | Creates a DualPathEventPipeline that wraps an existing EventPipeline slow path. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryPublish(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:230](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L230) | Routes the event to the hot path (ring buffer) for trades and quotes, or to the slow path for all other event types. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryPublishTrade(in RawTradeEvent trade);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:263](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L263) | Writes a RawTradeEvent struct directly into the trade ring buffer without any heap allocation on the calling (producer) thread. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryPublishQuote(in RawQuoteEvent quote);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:291](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L291) | Writes a RawQuoteEvent struct directly into the quote ring buffer without any heap allocation on the calling (producer) thread. |
-| <code>public bool IsUnderPressure =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:315](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L315) |  |
-| <code>public double QueueUtilization =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:318](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L318) |  |
-| <code>public long HotTradePublished =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:325](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L325) | Gets the total number of trade events written to the hot-path ring buffer. |
-| <code>public long HotTradeDropped =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:328](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L328) | Gets the total number of trade events that were rejected or could not be handed off after hot-path acceptance. |
-| <code>public long HotTradeConsumed =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:331](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L331) | Gets the total number of trade events drained from the ring buffer and accepted by the slow-path pipeline. |
-| <code>public long HotTradeFallbacks =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:334](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L334) | Gets the number of trade events that bypassed the ring buffer and fell back to the slow path. |
-| <code>public long HotTradeInFlight =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:337](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L337) | Gets the number of trade events currently owned by a consumer batch. |
-| <code>public long HotQuotePublished =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:340](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L340) | Gets the total number of quote events written to the hot-path ring buffer. |
-| <code>public long HotQuoteDropped =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:343](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L343) | Gets the total number of quote events that were rejected or could not be handed off after hot-path acceptance. |
-| <code>public long HotQuoteConsumed =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:346](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L346) | Gets the total number of quote events drained from the ring buffer and accepted by the slow-path pipeline. |
-| <code>public long HotQuoteFallbacks =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:349](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L349) | Gets the number of quote events that bypassed the ring buffer and fell back to the slow path. |
-| <code>public long HotQuoteInFlight =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:352](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L352) | Gets the number of quote events currently owned by a consumer batch. |
-| <code>public int TradeBufferCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:355](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L355) | Gets the current number of trade events waiting in the ring buffer. |
-| <code>public int QuoteBufferCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:358](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L358) | Gets the current number of quote events waiting in the ring buffer. |
-| <code>public Task&lt;DualPathPipelineStopOutcome&gt; StopAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:374](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L374) | Closes producer admission and drains all events accepted by the hot path. |
-| <code>public async Task AwaitTerminalCleanupAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:399](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L399) | Waits until all pipeline-owned consumers and any publishers admitted before shutdown have stopped using the caller-owned slow path. |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:417](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L417) |  |
-
-## DualPathPipelineStopOutcome
-
-Qualified name: <code>Meridian.Application.Pipeline.DualPathPipelineStopOutcome</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:28](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L28).
-
-Reports whether shutdown quiesced the hot-path consumers and accounts for every event that had already been accepted by a ring buffer.
-
-```csharp
-public sealed record DualPathPipelineStopOutcome(DualPathPipelineStopStatus Status, bool Quiesced, long TradeConsumed, long TradeDropped, long TradePending, long QuoteConsumed, long QuoteDropped, long QuotePending, Exception? Failure)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Succeeded =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:40](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L40) | Gets whether shutdown completed without cancellation, timeout, or publication failure. |
-
-## DualPathPipelineStopStatus
-
-Qualified name: <code>Meridian.Application.Pipeline.DualPathPipelineStopStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:16](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L16).
-
-Describes the terminal state reached by a dual-path pipeline shutdown.
-
-```csharp
-public enum DualPathPipelineStopStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Succeeded</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:18](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L18) |  |
-| <code>Failed</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:19](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L19) |  |
-| <code>Cancelled</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:20](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L20) |  |
-| <code>TimedOut</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:21](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L21) |  |

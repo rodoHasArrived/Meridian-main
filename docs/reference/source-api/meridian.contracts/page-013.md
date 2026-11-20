@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashFlowBlockerDelta
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowBlockerDelta</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:9](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L9).
+
+Side is &quot;LeftOnly&quot; or &quot;RightOnly&quot;; a blocker present in both runs is not a delta.
+
+```csharp
+public sealed record CashFlowBlockerDelta(string Side, string Code, string Message, string? StreamId);
+```
+
+## CashFlowCalculationBlocker
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowCalculationBlocker</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:126](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L126).
+
+```csharp
+public sealed record CashFlowCalculationBlocker(string Code, string Message, string? StreamId = null);
+```
+
+## CashFlowCalendarSnapshot
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowCalendarSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:148](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L148).
+
+```csharp
+public sealed record CashFlowCalendarSnapshot(string CalendarId, string ContentHash, DateOnly CoverageStart, DateOnly CoverageEnd, IReadOnlyList<DateOnly> NonBusinessDays, DateOnly? SourceCoverageStart = null, DateOnly? SourceCoverageEnd = null);
+```
+
+## CashFlowCurvePin
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowCurvePin</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:105](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L105).
+
+```csharp
+public sealed record CashFlowCurvePin(string BenchmarkKey, Guid CurveId, Guid CurveVersionId);
+```
+
+## CashFlowCurveSnapshot
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowCurveSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:152](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L152).
+
+```csharp
+public sealed record CashFlowCurveSnapshot(SecurityCurveDefinitionDto Definition, SecurityCurveVersionDto Version);
+```
+
 ## CashFlowDateDelta
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowDateDelta</code>. Kind: `record`.
@@ -719,118 +771,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;latest&quot;)] public DateTime Latest { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:105](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L105) | Latest data timestamp. |
 | <code>[JsonPropertyName(&quot;calendarDays&quot;)] public int CalendarDays { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:111](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L111) | Total calendar days covered. |
 | <code>[JsonPropertyName(&quot;tradingDays&quot;)] public int TradingDays { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:117](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L117) | Estimated trading days covered. |
-
-## CatalogIntegrity
-
-Qualified name: <code>Meridian.Contracts.Catalog.CatalogIntegrity</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/StorageCatalog.cs:333](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L333).
-
-Catalog integrity verification information.
-
-```csharp
-public sealed class CatalogIntegrity
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; } = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:339](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L339) | Overall verification status. |
-| <code>[JsonPropertyName(&quot;lastVerifiedAt&quot;)] public DateTime? LastVerifiedAt { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:345](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L345) | When verification was last run. |
-| <code>[JsonPropertyName(&quot;filesVerified&quot;)] public int FilesVerified { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:351](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L351) | Number of files verified. |
-| <code>[JsonPropertyName(&quot;checksumFailures&quot;)] public int ChecksumFailures { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:357](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L357) | Number of files with checksum mismatches. |
-| <code>[JsonPropertyName(&quot;missingFiles&quot;)] public int MissingFiles { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:363](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L363) | Number of missing files. |
-| <code>[JsonPropertyName(&quot;catalogChecksum&quot;)] public string? CatalogChecksum { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:369](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L369) | SHA256 checksum of the catalog itself. |
-| <code>[JsonPropertyName(&quot;issues&quot;)] public List&lt;CatalogIntegrityIssue&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:375](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L375) | Integrity issues found. |
-
-## CatalogIntegrityIssue
-
-Qualified name: <code>Meridian.Contracts.Catalog.CatalogIntegrityIssue</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/StorageCatalog.cs:381](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L381).
-
-Individual integrity issue.
-
-```csharp
-public sealed class CatalogIntegrityIssue
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;severity&quot;)] public string Severity { get; set; } = &quot;Warning&quot;;</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:387](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L387) | Issue severity (Warning, Error, Critical). |
-| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:393](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L393) | Issue type. |
-| <code>[JsonPropertyName(&quot;path&quot;)] public string? Path { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:399](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L399) | Affected file path. |
-| <code>[JsonPropertyName(&quot;message&quot;)] public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:405](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L405) | Issue description. |
-| <code>[JsonPropertyName(&quot;detectedAt&quot;)] public DateTime DetectedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:411](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L411) | When the issue was detected. |
-
-## CatalogStatistics
-
-Qualified name: <code>Meridian.Contracts.Catalog.CatalogStatistics</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/StorageCatalog.cs:123](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L123).
-
-Aggregate statistics for the storage catalog.
-
-```csharp
-public sealed class CatalogStatistics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;totalFiles&quot;)] public long TotalFiles { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:129](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L129) | Total number of data files. |
-| <code>[JsonPropertyName(&quot;totalEvents&quot;)] public long TotalEvents { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:135](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L135) | Total number of events across all files. |
-| <code>[JsonPropertyName(&quot;totalBytesCompressed&quot;)] public long TotalBytesCompressed { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:141](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L141) | Total size in bytes (compressed on disk). |
-| <code>[JsonPropertyName(&quot;totalBytesRaw&quot;)] public long TotalBytesRaw { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:147](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L147) | Total uncompressed size in bytes. |
-| <code>[JsonPropertyName(&quot;compressionRatio&quot;)] public float CompressionRatio { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:153](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L153) | Compression ratio (raw / compressed). |
-| <code>[JsonPropertyName(&quot;uniqueSymbols&quot;)] public int UniqueSymbols { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:159](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L159) | Number of unique symbols. |
-| <code>[JsonPropertyName(&quot;uniqueSources&quot;)] public int UniqueSources { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:165](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L165) | Number of unique data sources. |
-| <code>[JsonPropertyName(&quot;eventTypeCounts&quot;)] public Dictionary&lt;string, long&gt; EventTypeCounts { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:171](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L171) | Event type breakdown. |
-| <code>[JsonPropertyName(&quot;tierSizes&quot;)] public Dictionary&lt;string, long&gt; TierSizes { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:177](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L177) | Storage tier breakdown. |
-
-## CorporateActionRef
-
-Qualified name: <code>Meridian.Contracts.Catalog.CorporateActionRef</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:381](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L381).
-
-Reference to a corporate action affecting the symbol.
-
-```csharp
-public sealed class CorporateActionRef
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:387](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L387) | Type of corporate action (split, merger, spinoff, rename). |
-| <code>[JsonPropertyName(&quot;effectiveDate&quot;)] public DateTime EffectiveDate { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:393](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L393) | Effective date of the action. |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:399](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L399) | Description of the action. |
-| <code>[JsonPropertyName(&quot;previousSymbol&quot;)] public string? PreviousSymbol { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:405](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L405) | Previous symbol (for renames). |
-| <code>[JsonPropertyName(&quot;splitRatio&quot;)] public string? SplitRatio { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:411](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L411) | Split ratio (e.g., &quot;4:1&quot; for 4-for-1 split). |
-
-## DirectoryDateRange
-
-Qualified name: <code>Meridian.Contracts.Catalog.DirectoryDateRange</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:279](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L279).
-
-Date range for a directory.
-
-```csharp
-public sealed class DirectoryDateRange
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;earliest&quot;)] public DateTime Earliest { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:285](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L285) | Earliest timestamp in this directory. |
-| <code>[JsonPropertyName(&quot;latest&quot;)] public DateTime Latest { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:291](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L291) | Latest timestamp in this directory. |
-| <code>[JsonPropertyName(&quot;granularity&quot;)] public string? Granularity { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:297](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L297) | Date granularity (Daily, Hourly, Monthly). |
-| <code>[JsonPropertyName(&quot;datesWithData&quot;)] public string[]? DatesWithData { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:303](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L303) | Dates with data in this directory. |
