@@ -202,7 +202,7 @@ export function AccountingSystemReconciliationPanel({
               {activeProvider ? presentExternalGlProviderEvidenceLabel(activeProvider.displayName) : "External GL evidence"}
             </CardTitle>
             <CardDescription className="mt-1">
-              Read-only external GL evidence · Meridian ledger is authoritative · External posting disabled.
+              Imported provider records are reconciliation evidence for Meridian's ledger.
             </CardDescription>
             {selectedCompanyLabel ? (
               <div className="mt-2 text-xs text-muted-foreground">
@@ -213,6 +213,7 @@ export function AccountingSystemReconciliationPanel({
           <div className="flex flex-wrap items-center gap-2">
             {activeProvider ? <Badge variant="success">{presentExternalGlProviderStatus(activeProvider.statusLabel)}</Badge> : null}
             {quickBooksProvider && quickBooksProvider !== activeProvider ? <Badge variant="outline">{presentExternalGlProviderStatus(quickBooksProvider.statusLabel)}</Badge> : null}
+            <Button asChild size="sm" variant="outline"><a href="#external-gl-posting">Review journal posting</a></Button>
             <Button size="sm" variant="outline" onClick={onRefresh} disabled={loading} busy={loading} busyLabel="Refreshing GL evidence">
               <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
               Refresh

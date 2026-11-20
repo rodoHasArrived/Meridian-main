@@ -1423,6 +1423,15 @@
       "sha256": "ed82952bf9c5f7f3276b59788a9f9f7b18c3bf6217e0f2badf83397dc1d1daa6"
     },
     {
+      "filename": "V_ledger_082__external_gl_posting.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_082__external_gl_posting.sql",
+      "schema": "ledger",
+      "sha256": "507b6512c2c48c05793fdae97ebcaf6c4ab46d705e33d7ea06c29a70d5d118a1"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1766,7 +1775,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "436ba152a1c50ccda9688413ac9484605a1a4773f6ac7680c3e5496dd11e5cee",
+  "fingerprint": "fab6dd537c7c9708c422f73806e34b41db37e1843e9618efe216cf2966548a9a",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2028,7 +2037,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 196,
+    "files": 197,
     "migration_sets": 11,
     "waivers": 56,
     "warnings": 0

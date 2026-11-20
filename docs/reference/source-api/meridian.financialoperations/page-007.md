@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementProfileActivityCode
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementProfileActivityCode</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:43](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L43).
+
+```csharp
+public sealed record StatementProfileActivityCode(string SourceCode, string CanonicalActivityType);
+```
+
+## StatementProfileCsvOptions
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementProfileCsvOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L28).
+
+```csharp
+public sealed record StatementProfileCsvOptions(string Delimiter = ",", string Quote = "\"", bool HasHeader = true);
+```
+
 ## StatementProfileFieldMapping
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementProfileFieldMapping</code>. Kind: `record`.
@@ -855,41 +875,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>string MatchId { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1039](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1039) |  |
 | <code>string EvidenceReference { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1047](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1047) | The durable evidence reference the item contributes to a match or break. Also the final pair-ordering tie-breaker: match ids are expected to be unique per side, but a population that repeats one must still order totally, or the assignment would fall back to input enumeration order. |
-
-## IStatementMatchResultRepository
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementMatchResultRepository</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L42).
-
-Saves and retrieves statement matching result artifacts by run.
-
-```csharp
-public interface IStatementMatchResultRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task SaveAsync(string runId, StatementMatchResultArtifact result, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L44) |  |
-| <code>Task&lt;StatementMatchResultArtifact?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:45](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L45) |  |
-
-## IStatementNormalizedEntityRepository
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementNormalizedEntityRepository</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L33).
-
-Saves and retrieves normalized statement entities for a run.
-
-```csharp
-public interface IStatementNormalizedEntityRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task SaveAsync(string runId, StatementNormalizedEntities entities, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L35) |  |
-| <code>Task&lt;StatementNormalizedEntities?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:36](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L36) |  |

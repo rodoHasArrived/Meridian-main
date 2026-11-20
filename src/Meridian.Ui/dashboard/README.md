@@ -3709,3 +3709,10 @@ previous scope's response. Missing book currency remains explicitly unavailable 
 defaulting to dollars. Legacy API callers that omit accounting basis retain an unfiltered read. The
 route helper lives in `src/lib/ledger-reports-api.ts` rather than `workstation-endpoints.ts`,
 which is at its file-size limit.
+
+### External GL posting
+
+The Accounting External GL workspace reviews exact journal export packages, mapping versions,
+scoped amounts, and provider receipts. The book policy defaults to optional confirmation.
+Operators certify and approve the reviewed payload, download its audit snapshot, and prepare
+corrective or reversal packages from retained outcomes.
