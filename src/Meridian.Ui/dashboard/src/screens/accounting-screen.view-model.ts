@@ -1612,7 +1612,7 @@ export interface ReconciliationComparisonViewState {
   statementBalanceLabel: string;
   ledgerBalanceLabel: string;
   varianceLabel: string;
-  varianceTone: "success" | "warning";
+  varianceTone: "default" | "success" | "warning";
   rows: ReconciliationComparisonRowViewModel[];
   /** Per-line statement side. Transaction-level when an external GL reconciliation is loaded, else one line per run. */
   statementLines: ReconciliationLineItemViewModel[];
