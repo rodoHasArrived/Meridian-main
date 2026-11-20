@@ -20,6 +20,9 @@ public sealed record BackfillExecutionLog
     public WorkstationBackfillSubmission? WorkstationSubmission { get; init; }
     public BackfillQuotaReceipt? QuotaReceipt { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BackfillBatchReceipt>? BatchReceipts { get; init; }
+
     [JsonIgnore]
     public DateTimeOffset ThrottledUntil => new(Interlocked.Read(ref _throttledUntilUtcTicks), TimeSpan.Zero);
 

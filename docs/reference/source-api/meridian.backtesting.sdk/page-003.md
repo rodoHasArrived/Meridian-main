@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyParameterAttribute
+
+Qualified name: <code>Meridian.Backtesting.Sdk.StrategyParameterAttribute</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs:8](../../../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs#L8).
+
+Marks a public property on an IBacktestStrategy implementation as a user-configurable parameter. The backtesting UI discovers these via reflection to render a dynamic parameter form.
+
+```csharp
+public sealed class StrategyParameterAttribute(string displayName, string? description = null) : Attribute
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string DisplayName { get; } = displayName;</code> | [src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs:11](../../../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs#L11) | Human-readable label shown in the UI. |
+| <code>public string? Description { get; } = description;</code> | [src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs:14](../../../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs#L14) | Optional longer description / tooltip text. |
+
+## SymbolAttribution
+
+Qualified name: <code>Meridian.Backtesting.Sdk.SymbolAttribution</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:7](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L7).
+
+Per-symbol trade attribution.
+
+```csharp
+public sealed record SymbolAttribution(string Symbol, decimal RealizedPnl, decimal UnrealizedPnl, int TradeCount, decimal Commissions, decimal MarginInterestAllocated);
+```
+
+## SymbolTcaSummary
+
+Qualified name: <code>Meridian.Backtesting.Sdk.SymbolTcaSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/TcaReportModels.cs:31](../../../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs#L31).
+
+Per-symbol execution cost breakdown for a simulation run.
+
+```csharp
+public sealed record SymbolTcaSummary(string Symbol, decimal TotalBuyNotional, decimal TotalSellNotional, decimal AvgBuyPrice, decimal AvgSellPrice, decimal TotalCommission, double CommissionRateBps, int TotalFills);
+```
+
 ## TcaCostSummary
 
 Qualified name: <code>Meridian.Backtesting.Sdk.TcaCostSummary</code>. Kind: `record`.

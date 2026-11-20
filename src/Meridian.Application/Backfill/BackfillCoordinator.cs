@@ -51,6 +51,8 @@ public sealed class BackfillCoordinator : IDisposable
     private BackfillResult? _lastRun;
     private bool _disposed;
 
+    public Func<string, DateOnly, DateOnly, CancellationToken, Task<HistoricalSessionSchedule?>>? ResolveSessionsAsync { get; init; }
+
     /// <summary>
     /// Creates a BackfillCoordinator using the unified ProviderRegistry for provider discovery.
     /// </summary>
@@ -243,8 +245,8 @@ public sealed class BackfillCoordinator : IDisposable
             var serviceProviders = await CreateProvidersAsync(ct).ConfigureAwait(false);
             var dataRoot = _store.GetDataRoot(cfg);
             var statusStore = new BackfillStatusStore(dataRoot);
-            // Workstation jobs have their own receipts and do not own the global resume sidecar.
-            using var service = CreateService(request.Provider, queued ? null : statusStore, serviceProviders, tracker, cfg.Backfill);
+            using var service = CreateService(request.Provider, statusStore, serviceProviders, tracker, cfg.Backfill,
+                publishCheckpointStatus: !queued);
             var requestedProvider = FindProvider(request.Provider, service.Providers);
             ValidateAlternative(request, alternativeFor, cfg.Backfill, serviceProviders);
             var estimate = submissionEstimate ?? BackfillQuotaPlanner.Estimate(request, requestedProvider, cfg.Backfill, DateTimeOffset.UtcNow);
@@ -501,7 +503,8 @@ public sealed class BackfillCoordinator : IDisposable
     }
 
     private HistoricalBackfillService CreateService(string providerId, BackfillStatusStore? checkpointStore = null,
-        List<IHistoricalDataProvider>? providers = null, BackfillProgressTracker? tracker = null, BackfillConfig? backfillCfg = null)
+        List<IHistoricalDataProvider>? providers = null, BackfillProgressTracker? tracker = null,
+        BackfillConfig? backfillCfg = null, bool publishCheckpointStatus = true)
     {
         backfillCfg ??= _store.Load().Backfill;
         providers ??= CreateProviders();
@@ -538,7 +541,11 @@ public sealed class BackfillCoordinator : IDisposable
             checkpointStore: checkpointStore,
             symbolTimelineResolver: _symbolTimelineResolver,
             validationProfiles: backfillCfg?.ValidationProfiles,
-            ownedProvider: composite);
+            ownedProvider: composite)
+        {
+            ResolveSessionsAsync = ResolveSessionsAsync,
+            PublishCheckpointStatus = publishCheckpointStatus
+        };
     }
 
     private static string[] GetSupportedGranularityValues(IHistoricalDataProvider provider)

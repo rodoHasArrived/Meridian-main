@@ -187,7 +187,7 @@ public sealed record ReportingArtifactCatalogWriteResult(bool AlreadyExisted);
 
 Qualified name: <code>Meridian.Reporting.ReportingArtifactDeclaration</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:29](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L29).
+Source: [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:31](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L31).
 
 Single source of truth for orchestration declarations and certified artifact production. A manifest may only name artifacts this catalog can deterministically produce.
 
@@ -199,8 +199,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ImmutableArray&lt;ReportingDeclaredArtifact&gt; Build(string runId, ReportingTemplateMetadata template, ReportingRunParametersDto? parameters, bool includeCertifiedSourceSchedule = false);</code> | [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:31](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L31) |  |
-| <code>public static ImmutableArray&lt;ReportingDeclaredArtifact&gt; Build(ReportingOutputManifest manifest);</code> | [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:55](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L55) | Reconstructs the same declaration set from a completed manifest. This is the producer/release path and deliberately avoids a mutable template-catalog lookup after orchestration. |
+| <code>public static ImmutableArray&lt;ReportingDeclaredArtifact&gt; Build(string runId, ReportingTemplateMetadata template, ReportingRunParametersDto? parameters, bool includeCertifiedSourceSchedule = false);</code> | [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:33](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L33) |  |
+| <code>public static ImmutableArray&lt;ReportingDeclaredArtifact&gt; Build(ReportingOutputManifest manifest);</code> | [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:58](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L58) | Reconstructs the same declaration set from a completed manifest. This is the producer/release path and deliberately avoids a mutable template-catalog lookup after orchestration. |
 
 ## ReportingArtifactIdentity
 
@@ -447,7 +447,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Reporting.ReportingDeclaredArtifact</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:18](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L18).
+Source: [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:20](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L20).
 
 One exact byte-producing artifact declared by the orchestration manifest.
 
@@ -476,6 +476,8 @@ Enum declarations:
 | <code>SupportingSchedules</code> | [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:12](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L12) |  |
 | <code>EvidenceAppendix</code> | [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:13](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L13) |  |
 | <code>ReportWriterGrid</code> | [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:14](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L14) |  |
+| <code>StatementControlManifest</code> | [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:15](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L15) |  |
+| <code>StatementControlParquet</code> | [src/Meridian.Reporting/ReportingArtifactDeclaration.cs:16](../../../../src/Meridian.Reporting/ReportingArtifactDeclaration.cs#L16) |  |
 
 ## ReportingDeliveryAccessPolicy
 

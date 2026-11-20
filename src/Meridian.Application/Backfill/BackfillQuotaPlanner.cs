@@ -89,6 +89,7 @@ internal static class BackfillQuotaPlanner
             observed?.ResetAt, budget, usable.HasValue ? available : null, policy.ReserveHeadroomPercent, policy.MaxConcurrentRequests,
             duration, calls > available,
             "One request per symbol and date window before pagination or retries. Timing assumes about one second per request and excludes queue time. " +
+            (request.ResumeFromCheckpoint ? "The estimate covers the full range. Retained coverage may reduce requests and duration. " : "") +
             (sample.QuotaUnit == "credits" ? "The historical adapter uses one credit per request. " : "") +
             (observed is null ? "Current usage is unavailable." : "The remaining budget reflects the host's observations. Other clients may use the same quota."))
         {

@@ -1396,6 +1396,33 @@
       "sha256": "1065f84b9843a822cc60ba5211727ad193ce128ca0c0715972f883263b609224"
     },
     {
+      "filename": "V_ledger_079__chart_codes_and_journal_memos.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_079__chart_codes_and_journal_memos.sql",
+      "schema": "ledger",
+      "sha256": "7993e3eda307955cc8284a85baae2dd80fc1904eff8f8f7963123937f135346e"
+    },
+    {
+      "filename": "V_ledger_080__fiscal_year_close_receipts.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_080__fiscal_year_close_receipts.sql",
+      "schema": "ledger",
+      "sha256": "1525d65283188ed4c99bbb41fc85b5dbfe6b03affa726acf3b464e2542290ae0"
+    },
+    {
+      "filename": "V_ledger_081__book_fx_settlement_receipts.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_081__book_fx_settlement_receipts.sql",
+      "schema": "ledger",
+      "sha256": "ed82952bf9c5f7f3276b59788a9f9f7b18c3bf6217e0f2badf83397dc1d1daa6"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1739,7 +1766,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "01fdc07cbd52fe72dc48f1900e8fe1b678014380dc1e1af3cd68708dc947a125",
+  "fingerprint": "436ba152a1c50ccda9688413ac9484605a1a4773f6ac7680c3e5496dd11e5cee",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2001,7 +2028,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 193,
+    "files": 196,
     "migration_sets": 11,
     "waivers": 56,
     "warnings": 0

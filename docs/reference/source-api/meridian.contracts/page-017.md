@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JournalEntryStatus
+
+Qualified name: <code>Meridian.Contracts.DirectLending.JournalEntryStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:169](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L169).
+
+```csharp
+public enum JournalEntryStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Draft = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:171](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L171) |  |
+| <code>Posted = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:172](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L172) |  |
+| <code>Failed = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:173](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L173) |  |
+
+## JournalLineDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.JournalLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:176](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L176).
+
+```csharp
+public sealed record JournalLineDto(Guid JournalLineId, int LineNumber, string AccountCode, decimal DebitAmount, decimal CreditAmount, CurrencyCode Currency, string? DimensionsJson);
+```
+
+## LoanAggregateSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.LoanAggregateSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:221](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L221).
+
+```csharp
+public sealed record LoanAggregateSnapshotDto(Guid LoanId, long AggregateVersion, LoanContractDetailDto Contract, LoanServicingStateDto Servicing);
+```
+
 ## LoanContractDetailDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.LoanContractDetailDto</code>. Kind: `record`.
@@ -647,44 +685,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:403](
 
 ```csharp
 public sealed record ServicerPositionReportLineImportDto(Guid LoanId, decimal? PrincipalOutstanding, decimal? InterestAccruedUnpaid, decimal? FeesAccruedUnpaid, decimal? PenaltyAccruedUnpaid, decimal? CommitmentAvailable, DateOnly? NextDueDate, decimal? NextDueAmount, string? DelinquencyStatus, string RawPayloadJson);
-```
-
-## ServicerReportBatchDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ServicerReportBatchDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:265](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L265).
-
-```csharp
-public sealed record ServicerReportBatchDto(Guid ServicerReportBatchId, string ServicerName, string ReportType, string SourceFormat, DateOnly ReportAsOfDate, DateTimeOffset ReceivedAt, string? FileName, string? FileHash, int RowCount, string Status, string? LoadedBy, string? Notes);
-```
-
-## ServicerStatementApplyMode
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementApplyMode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:296](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L296).
-
-```csharp
-public enum ServicerStatementApplyMode
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>CreateCashOnly = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:298](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L298) |  |
-| <code>ApplyMixedPayment = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:299](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L299) |  |
-| <code>ApplyPrincipalPayment = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:300](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L300) |  |
-| <code>AssessFee = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:301](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L301) |  |
-| <code>ChargePenalty = 4</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:302](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L302) |  |
-
-## ServicerStatementApplyRequestDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementApplyRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:388](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L388).
-
-```csharp
-public sealed record ServicerStatementApplyRequestDto(IReadOnlyList<string> RowIds, ServicerStatementApplyMode? DefaultMode = null, string? AppliedBy = null, string? Rationale = null);
 ```

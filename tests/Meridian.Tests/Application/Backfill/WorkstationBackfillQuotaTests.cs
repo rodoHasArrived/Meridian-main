@@ -57,6 +57,9 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
         var submitted = await queue.SubmitAsync(submissionId, Tenant, plan, null, null);
         submitted.Status.Should().Be("Queued");
         (await queue.SubmitAsync(submissionId, Tenant, plan, null, null)).ExecutionId.Should().Be(submitted.ExecutionId);
+        var resumedPlan = plan with { ResumeFromCheckpoint = true };
+        var differentResumeSetting = () => queue.SubmitAsync(submissionId, Tenant, resumedPlan, null, null);
+        await differentResumeSetting.Should().ThrowAsync<BackfillSubmissionConflictException>();
         var otherTenantAttempt = () => queue.SubmitAsync(submissionId, "other-tenant", plan, null, null);
         await otherTenantAttempt.Should().ThrowAsync<BackfillSubmissionConflictException>();
         history.GetRecentExecutions(workstationTenant: "other-tenant").Should().BeEmpty();
@@ -67,6 +70,15 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
             using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(20));
             while (history.GetExecution(submitted.ExecutionId)?.CompletedAt is null)
                 await Task.Delay(20, deadline.Token);
+
+            var resumed = await queue.SubmitAsync(Guid.NewGuid(), Tenant, resumedPlan, null, null, deadline.Token);
+            resumed.Quota.Uncertainty.Should().Contain("Retained coverage may reduce requests and duration");
+            while (history.GetExecution(resumed.ExecutionId)?.CompletedAt is null)
+                await Task.Delay(20, deadline.Token);
+            var resumedResult = history.GetExecution(resumed.ExecutionId)!;
+            resumedResult.Status.Should().Be(ExecutionStatus.Completed);
+            resumedResult.QuotaReceipt!.ActualRequests.Should().Be(0);
+            resumedResult.Statistics.TotalBarsRetrieved.Should().Be(0);
         }
         finally
         {
@@ -74,9 +86,11 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
         }
 
         var durableHistory = new BackfillExecutionHistory(HistoryPath);
-        var completed = durableHistory.GetRecentExecutions(workstationTenant: Tenant).Should().ContainSingle().Which;
+        var completed = durableHistory.GetRecentExecutions(workstationTenant: Tenant)
+            .Should().ContainSingle(execution => execution.ExecutionId == submitted.ExecutionId).Which;
         completed.Status.Should().Be(ExecutionStatus.Completed);
         completed.Statistics.TotalBarsRetrieved.Should().Be(2);
+        completed.BatchReceipts.Should().HaveCount(2).And.OnlyContain(batch => batch.ServingProvider == "quota-test");
         completed.QuotaReceipt.Should().NotBeNull();
         var receipt = completed.QuotaReceipt!;
         receipt.ObservedProviders.Should().Equal("quota-test");
@@ -93,6 +107,7 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
 
         var projected = BackfillExecutionContractProjection.Build([completed], "stooq").Executions.Single();
         projected.QuotaReceipt!.ActualRequests.Should().Be(3);
+        projected.BatchReceipts.Should().BeEquivalentTo(completed.BatchReceipts);
     }
 
     [Fact]

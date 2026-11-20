@@ -111,7 +111,8 @@ public sealed class WorkstationBackfillQueue(
                 CompletedAt = result.CompletedUtc,
                 ErrorMessage = result.Success ? null : "One or more symbols could not be completed.",
                 Statistics = new ExecutionStatistics { TotalSymbols = result.Symbols.Length, TotalBarsRetrieved = result.BarsWritten },
-                QuotaReceipt = result.QuotaReceipt
+                QuotaReceipt = result.QuotaReceipt,
+                BatchReceipts = result.BatchReceipts
             };
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -166,6 +167,7 @@ public sealed class WorkstationBackfillQueue(
         var prior = existing.Request;
         return prior.Provider.Equals(normalized.Provider, StringComparison.OrdinalIgnoreCase) && prior.From == normalized.From &&
             prior.To == normalized.To && prior.Granularity == normalized.Granularity &&
+            prior.ResumeFromCheckpoint == normalized.ResumeFromCheckpoint &&
             prior.Symbols.SequenceEqual(normalized.Symbols, StringComparer.OrdinalIgnoreCase);
     }
 }

@@ -3,6 +3,7 @@ import { TimeText } from "@/components/ui/time-text";
 import { formatCount, formatNumber, pluralizeCount } from "@/lib/format";
 import type { ReactNode } from "react";
 import type { BackfillExecutionHistoryRow, BackfillPreviewResult, BackfillProviderAlternative, BackfillQuotaEstimate, BackfillQuotaReceipt } from "@/types";
+import { BackfillBatchReceipts } from "@/screens/data-screen.backfill-batch-receipts";
 
 function duration(seconds: number) {
   if (seconds >= 3600) return `${formatNumber(seconds / 3600, { maximumFractionDigits: 1 })} hr`;
@@ -152,6 +153,7 @@ export function WorkstationBackfillReceipts({ rows, error }: { rows: BackfillExe
               </p>
             )}
             {row.errorMessage && <p className="text-xs text-muted-foreground">{row.errorMessage}</p>}
+            {row.batchReceipts?.length ? <BackfillBatchReceipts receipts={row.batchReceipts} /> : null}
           </div>
         </details>
       ))}

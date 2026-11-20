@@ -76,6 +76,9 @@ public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? F
     public DateTimeOffset? ScheduledAt { get; init; }
     public Guid? SubmissionId { get; init; }
     public string? ApprovedAlternativeFor { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool ResumeFromCheckpoint { get; init; }
 }
 
 /// <summary>Request to generate a dry-run backfill plan.</summary>

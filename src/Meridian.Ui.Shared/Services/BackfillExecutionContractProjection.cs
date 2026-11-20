@@ -83,6 +83,7 @@ public static class BackfillExecutionContractProjection
             ThrottledUntil = execution.Status == ExecutionStatus.Running && execution.ThrottledUntil > evaluatedAt ? execution.ThrottledUntil : null,
             SubmissionEstimate = execution.WorkstationSubmission?.Estimate,
             QuotaReceipt = execution.QuotaReceipt,
+            BatchReceipts = execution.BatchReceipts,
             AutoRemediationTriggerReason = execution.AutoRemediationTriggerReason,
             AutoRemediationAttemptCount = execution.AutoRemediationAttemptCount,
             AutoRemediationLastOutcome = execution.AutoRemediationLastOutcome,

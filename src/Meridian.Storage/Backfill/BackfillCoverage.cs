@@ -29,6 +29,28 @@ public sealed record BackfillCoverageUpdate(
 /// <summary>Interval arithmetic for verified backfill coverage.</summary>
 public static class BackfillCoverageMath
 {
+    /// <summary>Builds contiguous coverage only from observed dates or confirmed market closures.</summary>
+    public static IReadOnlyList<BackfillCoverageRange> ObservedRanges(
+        DateOnly? from, DateOnly? to, IReadOnlyDictionary<DateOnly, long> observed,
+        IReadOnlyList<DateOnly>? expected)
+    {
+        var observations = observed.Where(pair => (from is null || pair.Key >= from) && (to is null || pair.Key <= to))
+            .ToDictionary();
+        if (expected is null || from is null || to is null)
+            return Merge(observations.Select(static pair => new BackfillCoverageRange(pair.Key, pair.Key, pair.Value)));
+
+        var expectedSet = expected.ToHashSet();
+        var covered = new List<BackfillCoverageRange>();
+        for (var day = from.Value.DayNumber; day <= to.Value.DayNumber; day++)
+        {
+            var date = DateOnly.FromDayNumber(day);
+            if (observations.TryGetValue(date, out var rows) || !expectedSet.Contains(date))
+                covered.Add(new BackfillCoverageRange(date, date, rows));
+        }
+
+        return Merge(covered);
+    }
+
     /// <summary>
     /// A fetch that starts on a non-session day (weekend, holiday, a short market closure) returns
     /// its first bar a few days later. A gap of at most this many calendar days between the
@@ -149,6 +171,8 @@ public static class BackfillCoverageMath
             {
                 if (range.From != BackfillCoverageRange.OpenStart)
                     missing.Add((null, range.From.AddDays(-1)));
+                if (range.To == DateOnly.MaxValue)
+                    return missing;
                 cursor = range.To.AddDays(1);
                 continue;
             }
@@ -157,6 +181,8 @@ public static class BackfillCoverageMath
                 continue;
             if (range.From > cursor.Value)
                 missing.Add((cursor, range.From.AddDays(-1)));
+            if (range.To == DateOnly.MaxValue)
+                return missing;
             cursor = range.To.AddDays(1);
         }
 
@@ -170,7 +196,8 @@ public static class BackfillCoverageMath
 /// <summary>Persisted coverage sidecar. Unknown versions are ignored, which only causes a refetch.</summary>
 internal sealed class BackfillCoverageDocument
 {
-    public const int CurrentVersion = 1;
+    // Version 1 inferred interior coverage from the first and last observed dates.
+    public const int CurrentVersion = 2;
 
     [JsonPropertyName("version")]
     public int Version { get; set; } = CurrentVersion;

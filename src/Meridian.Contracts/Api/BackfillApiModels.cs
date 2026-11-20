@@ -146,6 +146,9 @@ public sealed class BackfillExecution
     public BackfillQuotaEstimate? SubmissionEstimate { get; set; }
     public BackfillQuotaReceipt? QuotaReceipt { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BackfillBatchReceipt>? BatchReceipts { get; set; }
+
     /// <summary>
     /// Gets or sets the unique execution identifier.
     /// </summary>

@@ -4,22 +4,33 @@ namespace Meridian.FinancialOperations.Ledger;
 
 public sealed class ConfiguredLedgerAccountResolver(IAccountingConfigurationService configuration) : IConfiguredLedgerAccountResolver
 {
+    private static readonly HashSet<string> SupportedAccountTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Asset", "Liability", "Equity", "Revenue", "Expense"
+    };
+
     public async Task<ChartOfAccountsNodeDto> ResolveAsync(ConfiguredLedgerAccountRequestDto request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.TenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.FundProfileId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.AccountPath);
         var workspace = await configuration.GetWorkspaceAsync(request.FundProfileId, request.LedgerBookId, ct,
             request.TenantId, request.CompanyId).ConfigureAwait(false);
         if (workspace.LedgerBookId != request.LedgerBookId || workspace.TenantId != request.TenantId
             || workspace.CompanyId != request.CompanyId
-            || (request.ConfigurationVersion is not null && workspace.ConfigurationVersion != request.ConfigurationVersion))
+            || !string.Equals(workspace.FundProfileId, request.FundProfileId.Trim(), StringComparison.OrdinalIgnoreCase)
+            || (request.ConfigurationVersion is not null &&
+                (workspace.Status != AccountingConfigurationStatusDto.Active || workspace.ConfigurationVersion != request.ConfigurationVersion)))
             throw new InvalidOperationException("Accounting mapping scope or configuration revision differs from the retained posting authority.");
-        var matches = workspace.ChartOfAccounts.Where(node => string.Equals(node.Path.Trim(), request.AccountPath.Trim(), StringComparison.OrdinalIgnoreCase)).ToArray();
+        var selector = request.AccountPath.Trim();
+        var matches = workspace.ChartOfAccounts.Where(node =>
+            string.Equals(node.Path.Trim(), selector, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(node.AccountCode?.Trim(), selector, StringComparison.OrdinalIgnoreCase)).ToArray();
         if (matches.Length != 1 || matches[0].IsArchived)
             throw new InvalidOperationException($"Account mapping '{request.AccountPath}' must identify exactly one active chart account.");
         var node = matches[0];
-        if (!new[] { "Asset", "Liability", "Equity", "Revenue", "Expense" }.Contains(node.AccountType, StringComparer.OrdinalIgnoreCase)
+        if (!SupportedAccountTypes.Contains(node.AccountType)
             || !string.Equals(node.AccountType, request.ExpectedAccountType, StringComparison.OrdinalIgnoreCase)
             || (node.Symbol is not null && !string.Equals(node.Symbol, request.Symbol, StringComparison.OrdinalIgnoreCase))
             || (node.FinancialAccountId is not null && !string.Equals(node.FinancialAccountId, request.FinancialAccountId, StringComparison.OrdinalIgnoreCase)))

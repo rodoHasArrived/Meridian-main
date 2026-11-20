@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using Meridian.Contracts.Integrity;
 using Meridian.Storage.Archival;
+using Meridian.Storage.Interfaces;
 
 namespace Meridian.Storage.Replay;
 
@@ -15,6 +16,8 @@ internal static class JsonlArchiveFiles
 {
     private static readonly StringComparer PathComparer = OperatingSystem.IsWindows()
         ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+    private static readonly HashSet<string> InternalDirectories = new(
+        new CatalogRebuildOptions().ExcludePaths, StringComparer.OrdinalIgnoreCase);
 
     internal static bool IsCanonicalArchivePath(string path) =>
         path.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase) ||
@@ -26,7 +29,9 @@ internal static class JsonlArchiveFiles
 
     internal static IReadOnlyList<string> Enumerate(string root) =>
         Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
-            .Where(IsCanonicalArchivePath)
+            .Where(file => IsCanonicalArchivePath(file) && !Path.GetRelativePath(root, file)
+                .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Any(InternalDirectories.Contains))
             .Distinct(PathComparer)
             // Snapshot logical identities before yielding. A scan can observe both names
             // while publication proceeds; filename-level grouping must precede replay.

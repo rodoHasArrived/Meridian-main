@@ -341,7 +341,7 @@ public sealed class RecurringJournalRunner(
                 // The schedule's dimensions fill whatever the calculation left unset on a line.
                 [new AutomatedJournalDraft(calculatedEvent, description,
                     (calculated?.Lines ?? []).Select(line => (line.account, line.debit, line.credit, WithScheduleDimensions(line.dimensions, schedule.Dimensions))).ToArray(),
-                    calculatedMetadata.Normalize())],
+                    calculatedMetadata.Normalize()) { LineMemos = calculated?.LineMemos }],
                 definition.RegisteredBy, scope.LedgerBookId, period.PeriodId, scope.EntityId, scope.TenantId,
                 scope.CompanyId, RecurringJournalEntryId: claim.DraftId);
         }
@@ -352,7 +352,8 @@ public sealed class RecurringJournalRunner(
             SourceEventId: claim.OccurrenceKey, EffectiveDate: claim.EffectiveDate, IdempotencyKey: key,
             EvidenceReferences: definition.Evidence);
         return new(scope.FundProfileId, scope.Currency,
-            [new AutomatedJournalDraft(journalEvent, instance.Description, instance.Lines, instance.Metadata)],
+            [new AutomatedJournalDraft(journalEvent, instance.Description, instance.Lines, instance.Metadata)
+                { LineMemos = instance.LineMemos }],
             definition.RegisteredBy, scope.LedgerBookId, period.PeriodId, scope.EntityId, scope.TenantId,
             scope.CompanyId, RecurringJournalEntryId: claim.DraftId);
     }
