@@ -424,7 +424,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderValidationEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L13).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L15).
 
 Non-secret provider-boundary validation settings and before/after change evidence.
 
@@ -436,17 +436,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderValidationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L15) |  |
-| <code>public static (AppConfig Config, ProviderValidationProfileAudit Result) ApplyProfile(AppConfig config, string provider, ProviderValidationProfileRequest request, string actor);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:70](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L70) |  |
+| <code>public static void MapProviderValidationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L19) |  |
+| <code>public static (AppConfig Config, ProviderValidationProfileAudit Result) ApplyProfile(AppConfig config, string provider, ProviderValidationProfileRequest request, string actor);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:102](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L102) |  |
 
 ## ProviderValidationProfileRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderValidationProfileRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:97](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L97).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:202](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L202).
 
 ```csharp
-public sealed record ProviderValidationProfileRequest(ProviderValidationProfile Profile, string? Reason = null);
+public sealed record ProviderValidationProfileRequest(ProviderValidationProfile? Profile = null, string? Reason = null, bool ConfirmLoosening = false, bool ResetToDefault = false, string? ExpectedRevision = null);
 ```
 
 ## QuantDiagnosticDto

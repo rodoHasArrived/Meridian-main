@@ -66,7 +66,12 @@ public static class ProviderValidationEndpoints
                     audit.After.FutureSkewSeconds, audit.After.StaleThresholdSeconds, audit.After.MaxLatencyMs);
                 return Results.Json(new
                 {
-                    saved = true, snapshot.Impact, snapshot.PendingRestart, profile = audit.After, audit, snapshot
+                    saved = true,
+                    snapshot.Impact,
+                    snapshot.PendingRestart,
+                    profile = audit.After,
+                    audit,
+                    snapshot
                 }, jsonOptions);
             }
             catch (StaleProfileException)
@@ -169,8 +174,14 @@ public static class ProviderValidationEndpoints
 
     private static AppConfig LoadProfileConfig(ConfigStore store)
     {
-        try { return store.CoreStore.LoadRequired(); }
-        catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException) { return store.Load(); }
+        try
+        {
+            return store.CoreStore.LoadRequired();
+        }
+        catch (Exception error) when (error is FileNotFoundException or DirectoryNotFoundException)
+        {
+            return store.Load();
+        }
     }
 
     private static IResult ProfileUnavailable(HttpContext context, Exception error, string detail)

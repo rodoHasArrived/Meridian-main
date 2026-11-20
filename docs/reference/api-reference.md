@@ -1739,8 +1739,8 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs](../../
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/providers/{providerName}/validation-profile` | GET | `(string providerName, [FromServices]ConfigStore store) => …` | `Results.Json` | `WithName("GetProviderValidationProfile")` | [L19](../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L19) |
-| `/api/providers/{providerName}/validation-profile` | PUT | `async (string providerName, ProviderValidationProfileRequest request, HttpContext context, [FromServices]ConfigStore store, [FromServices]ILoggerFactory loggerFactory, CancellationToken ct) => …` | `Results.Unauthorized`; `Results.Json` | `WithName("UpdateProviderValidationProfile")` | [L33](../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L33) |
+| `/api/providers/{providerName}/validation-profile` | GET | `(string providerName, HttpContext context, [FromServices]ConfigStore store) => …` | `Results.Json` | `WithName("GetProviderValidationProfile")` | [L23](../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L23) |
+| `/api/providers/{providerName}/validation-profile` | PUT | `async (string providerName, ProviderValidationProfileRequest request, HttpContext context, [FromServices]ConfigStore store, [FromServices]ILoggerFactory loggerFactory, CancellationToken ct) => …` | `Results.Unauthorized`; `Results.Json` | `WithName("UpdateProviderValidationProfile")` | [L44](../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L44) |
 
 ### RiskEndpoints
 

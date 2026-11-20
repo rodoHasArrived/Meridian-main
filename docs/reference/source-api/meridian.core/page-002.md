@@ -663,7 +663,7 @@ public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string 
 
 Qualified name: <code>Meridian.Core.Config.ProviderValidationProfile</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderValidationProfile.cs:4](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L4).
+Source: [src/Meridian.Core/Config/ProviderValidationProfile.cs:6](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L6).
 
 Provider-specific, non-secret validation tolerances. Zero latency disables that check.
 
@@ -675,21 +675,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ProviderValidationProfile Default { get; } = new ();</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:10](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L10) |  |
-| <code>public void Validate();</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:12](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L12) |  |
-| <code>public bool Loosens(ProviderValidationProfile previous) =&gt; …;</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:20](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L20) |  |
-| <code>public static ProviderValidationProfile Resolve(BackfillConfig? config, string providerName) =&gt; …;</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:26](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L26) |  |
+| <code>public static ProviderValidationProfile Default { get; } = new ();</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:12](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L12) |  |
+| <code>public void Validate();</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:14](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L14) |  |
+| <code>public bool Loosens(ProviderValidationProfile previous) =&gt; …;</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:22](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L22) |  |
+| <code>public static ProviderValidationProfile Resolve(BackfillConfig? config, string providerName) =&gt; …;</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:28](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L28) |  |
+| <code>public static ProviderValidationProfile ResolveProfiles(IReadOnlyDictionary&lt;string, ProviderValidationProfile&gt;? profiles, string? providerName);</code> | [src/Meridian.Core/Config/ProviderValidationProfile.cs:32](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L32) | Resolves canonical provider IDs, with fallback to an existing alias entry. |
 
 ## ProviderValidationProfileAudit
 
 Qualified name: <code>Meridian.Core.Config.ProviderValidationProfileAudit</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderValidationProfile.cs:32](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L32).
+Source: [src/Meridian.Core/Config/ProviderValidationProfile.cs:45](../../../../src/Meridian.Core/Config/ProviderValidationProfile.cs#L45).
 
 Before/after evidence saved atomically with each profile change.
 
 ```csharp
-public sealed record ProviderValidationProfileAudit(Guid Id, string Provider, DateTimeOffset ChangedAt, string Actor, string? Reason, bool Loosened, ProviderValidationProfile Before, ProviderValidationProfile After);
+public sealed record ProviderValidationProfileAudit(Guid Id, string Provider, DateTimeOffset ChangedAt, string Actor, string? Reason, bool Loosened, ProviderValidationProfile Before, ProviderValidationProfile After, bool ResetToDefault = false);
 ```
 
 ## RobinhoodConfig
