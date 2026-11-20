@@ -7,7 +7,7 @@ import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workben
 import type { KeyboardEvent } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { PositionValueGraphic } from "@/components/meridian/position-value-graphic";
@@ -42,6 +42,7 @@ import { ChartEvidenceView, type ChartEvidence } from "@/components/charts/chart
 import { buildHistogramBins } from "@/components/charts/Histogram";
 import { workstationRunEquityCurveEndpoint } from "@/lib/workstation-endpoints";
 import {
+  getBrokerageHouseholdPortfolio,
   getFinancialRecordExplorer,
   getRunAttribution,
   getRunCashFlows,
@@ -401,12 +402,15 @@ function PortfolioScreenContent({
 }: PortfolioScreenProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const figureContext = useWorkspaceFigureContext();
   const routeView = resolvePortfolioRouteView(location.pathname);
   const routeCopy = portfolioRouteViewCopy[routeView];
   const showOverview = routeView === "overview";
   const showAttribution = routeView === "attribution";
   const showBrokerageSync = routeView === "brokerage-sync";
+  const linkedAccount = showBrokerageSync ? searchParams.get("fundAccountId") : null;
+  const positionProvider = linkedAccount ? searchParams.get("positionProvider") : null;
   const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusBrokerageAccount = useRef(false);
   const drillInRequestId = useRef(0);
@@ -420,6 +424,35 @@ function PortfolioScreenContent({
   const retainedRunLabel = retainedRunId ? formatRetainedRunLabel(retainedRunId) : "Retained run";
   const retainedSourceLabel = retainedRunLabel === "Retained run" ? "Retained run records" : `${retainedRunLabel} records`;
   const retainedAsOf = portfolioExplorer?.scopeItems.find((item) => item.label.trim().toLowerCase() === "as of")?.value;
+  const [linkedSnapshot, setLinkedSnapshot] = useState<{
+    provider: string;
+    account: string;
+    portfolio: BrokerageHouseholdPortfolio | null;
+  } | null>(null);
+  const activeLinkedSnapshot = linkedSnapshot?.provider === positionProvider && linkedSnapshot.account === linkedAccount
+    ? linkedSnapshot : null;
+  const household = positionProvider ? activeLinkedSnapshot?.portfolio : brokeragePortfolio;
+
+  useEffect(() => {
+    setLinkedSnapshot(null);
+    if (!positionProvider || !linkedAccount) return;
+    const controller = new AbortController();
+    void getBrokerageHouseholdPortfolio(positionProvider, {
+      fundAccountId: linkedAccount,
+      signal: controller.signal,
+      allowDevelopmentFallback: false
+    }).then((payload) => {
+      if (!controller.signal.aborted) {
+        setLinkedSnapshot({ provider: positionProvider, account: linkedAccount, portfolio: payload });
+      }
+    }).catch(() => {
+      if (!controller.signal.aborted) {
+        setLinkedSnapshot({ provider: positionProvider, account: linkedAccount, portfolio: null });
+      }
+    });
+    return () => controller.abort();
+  }, [positionProvider, linkedAccount]);
+
   // On the brokerage route the household is narrowed to the scope's fund (or entity) when the
   // organization graph places its accounts; accounts it does not place are counted, never hidden
   // silently. Other Portfolio routes keep the whole household (the bar shows the fund retained).
@@ -427,20 +460,32 @@ function PortfolioScreenContent({
   const brokerageFundScope = useMemo(() => {
     if (!showBrokerageSync || !fundScope) return null;
     const narrowed = narrowHouseholdPortfolioToFundScope(
-      brokeragePortfolio,
+      household,
       fundScope.structure,
       { entityId: fundScope.entityId, fundId: fundScope.fundId },
       fundScope.loading
     );
     return { ...narrowed, note: describeFundScopeNarrowing(narrowed.accounts, "brokerage accounts", fundScope.names) };
-  }, [showBrokerageSync, fundScope, brokeragePortfolio]);
-  const scopedBrokeragePortfolio = brokerageFundScope ? brokerageFundScope.portfolio : brokeragePortfolio;
-  const recordParams = new URLSearchParams(location.search);
-  const requestedPositionRef = recordParams.get("positionRef");
-  const requestedBrokerageAccount = recordParams.get("brokerageAccount");
-  const requestedBrokeragePositionId = recordParams.get("brokeragePosition");
+  }, [showBrokerageSync, fundScope, household]);
+  const scopedBrokeragePortfolio = brokerageFundScope ? brokerageFundScope.portfolio : household;
+  const requestedPositionRef = searchParams.get("positionRef");
+  const requestedBrokerageAccount = searchParams.get("brokerageAccount") ?? (positionProvider ? linkedAccount : null);
+  const requestedBrokeragePositionId = searchParams.get("brokeragePosition");
   const [brokeragePanel, setBrokerageInspector] = useLinkedRecordSelection<"account" | "position">(requestedBrokeragePositionId);
   const brokerageInspector = brokeragePanel ?? (requestedBrokeragePositionId ? "position" : "account");
+  const updateLinkedBrokerageAccount = (key: string) => setSearchParams((current) => {
+    const next = new URLSearchParams(current);
+    if (key === "all") {
+      next.delete("fundAccountId");
+      next.delete("positionProvider");
+      next.delete("recordScope");
+    } else {
+      next.set("fundAccountId", key);
+    }
+    next.delete("brokerageAccount");
+    next.delete("brokeragePosition");
+    return next;
+  }, { replace: true });
   const vm = usePortfolioScreenViewModel({
     portfolio,
     trading,
@@ -448,6 +493,7 @@ function PortfolioScreenContent({
     accounting,
     brokerageConnection,
     brokeragePortfolio: scopedBrokeragePortfolio,
+    onBrokerageAccountChange: positionProvider ? updateLinkedBrokerageAccount : undefined,
     multiAssetCoverage,
     selectedRunDrillIn,
     requestedPositionRef,
@@ -1215,7 +1261,12 @@ function PortfolioScreenContent({
               shownInRow={brokerageInspector === "position" ? ["Mark readiness", "Account", "Quantity", "Market value", "Unrealized P&L"] : []}
               status={brokerageInspector === "position" ? vm.selectedBrokeragePosition ? { label: vm.selectedBrokeragePosition.statusBadgeLabel, tone: vm.selectedBrokeragePosition.statusBadgeVariant } : null
                 : { label: vm.selectedBrokerageAccount.statusBadgeLabel, tone: vm.selectedBrokerageAccount.statusBadgeVariant }}
-              empty={{ title: "No brokerage position selected", text: requestedBrokeragePositionId ? "The linked brokerage position is unavailable in the current account scope." : vm.brokerageEmptyText }}
+              empty={positionProvider && !activeLinkedSnapshot ? {
+                title: "Loading position", text: "Loading the selected brokerage position."
+              } : {
+                title: "No brokerage position selected",
+                text: requestedBrokeragePositionId ? "The linked brokerage position is unavailable in the current account scope." : vm.brokerageEmptyText
+              }}
               actions={brokerageInspector === "position" && vm.selectedBrokeragePosition?.bondSecurityId ? (
                 <div className="flex flex-wrap gap-2" aria-label="Selected bond workflows">
                   <Button asChild size="sm" variant="outline">

@@ -55,7 +55,7 @@ public sealed record ReportingGovernanceAuditEntry(string EventId, ReportingGove
 
 Qualified name: <code>Meridian.Reporting.ReportingGovernanceAuthorizationException</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingGovernanceContracts.cs:521](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L521).
+Source: [src/Meridian.Reporting/ReportingGovernanceContracts.cs:531](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L531).
 
 Indicates that the caller lacks authority for a reporting governance operation.
 
@@ -67,7 +67,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingGovernanceAuthorizationException(string message) : base(message);</code> | [src/Meridian.Reporting/ReportingGovernanceContracts.cs:523](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L523) |  |
+| <code>public ReportingGovernanceAuthorizationException(string message) : base(message);</code> | [src/Meridian.Reporting/ReportingGovernanceContracts.cs:533](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L533) |  |
 
 ## ReportingGovernanceCanonicalValidation
 
@@ -114,7 +114,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.ReportingGovernanceConcurrencyException</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingGovernanceContracts.cs:529](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L529).
+Source: [src/Meridian.Reporting/ReportingGovernanceContracts.cs:539](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L539).
 
 Indicates a conflicting concurrent change to reporting governance state.
 
@@ -126,13 +126,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingGovernanceConcurrencyException(string message) : base(message);</code> | [src/Meridian.Reporting/ReportingGovernanceContracts.cs:531](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L531) |  |
+| <code>public ReportingGovernanceConcurrencyException(string message) : base(message);</code> | [src/Meridian.Reporting/ReportingGovernanceContracts.cs:541](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L541) |  |
 
 ## ReportingGovernanceException
 
 Qualified name: <code>Meridian.Reporting.ReportingGovernanceException</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingGovernanceContracts.cs:508](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L508).
+Source: [src/Meridian.Reporting/ReportingGovernanceContracts.cs:518](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L518).
 
 Represents a rejected or failed reporting governance operation.
 
@@ -144,14 +144,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingGovernanceException(string message) : base(message);</code> | [src/Meridian.Reporting/ReportingGovernanceContracts.cs:510](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L510) |  |
-| <code>public ReportingGovernanceException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Reporting/ReportingGovernanceContracts.cs:514](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L514) |  |
+| <code>public ReportingGovernanceException(string message) : base(message);</code> | [src/Meridian.Reporting/ReportingGovernanceContracts.cs:520](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L520) |  |
+| <code>public ReportingGovernanceException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Reporting/ReportingGovernanceContracts.cs:524](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L524) |  |
 
 ## ReportingGovernanceNotFoundException
 
 Qualified name: <code>Meridian.Reporting.ReportingGovernanceNotFoundException</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingGovernanceContracts.cs:537](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L537).
+Source: [src/Meridian.Reporting/ReportingGovernanceContracts.cs:547](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L547).
 
 Indicates that the requested reporting governance resource was not found.
 
@@ -163,7 +163,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingGovernanceNotFoundException(string message) : base(message);</code> | [src/Meridian.Reporting/ReportingGovernanceContracts.cs:539](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L539) |  |
+| <code>public ReportingGovernanceNotFoundException(string message) : base(message);</code> | [src/Meridian.Reporting/ReportingGovernanceContracts.cs:549](../../../../src/Meridian.Reporting/ReportingGovernanceContracts.cs#L549) |  |
 
 ## ReportingGovernancePermission
 
