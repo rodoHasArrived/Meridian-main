@@ -73,15 +73,18 @@ public sealed partial class WorkstationEndpointsTests
         submitted.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
         var selfApproval = () => workbench.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             submitted.JournalEntryId, submitted.FundProfileId, JournalEntryLifecycleActionDto.Approve, "ops-user", submitted.Version,
+            Notes: "Review the synthetic clean acquisition cost and purchased interest.",
             LedgerBookId: draft.LedgerBookId, TenantId: draft.TenantId, CompanyId: draft.CompanyId));
         await selfApproval.Should().ThrowAsync<InvalidOperationException>().WithMessage("*independent*");
         var approved = (await workbench.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             submitted.JournalEntryId, submitted.FundProfileId, JournalEntryLifecycleActionDto.Approve, "independent-controller", submitted.Version,
+            Notes: "Review the synthetic clean acquisition cost and purchased interest.",
             LedgerBookId: draft.LedgerBookId, TenantId: draft.TenantId, CompanyId: draft.CompanyId))).JournalEntry;
         approved.AssetAccountingApproval.Should().NotBeNull();
         approved.AssetAccountingPostingResult.Should().BeNull();
         var genericPost = () => workbench.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             approved.JournalEntryId, approved.FundProfileId, JournalEntryLifecycleActionDto.Post, "independent-controller", approved.Version,
+            Notes: "Post the independently reviewed synthetic bond acquisition.",
             LedgerBookId: draft.LedgerBookId, TenantId: draft.TenantId, CompanyId: draft.CompanyId));
         await genericPost.Should().ThrowAsync<InvalidOperationException>().WithMessage("*governed asset posting workflow*");
     }
