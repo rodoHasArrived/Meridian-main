@@ -25,6 +25,16 @@ unchanged; operational logs do not carry those payloads or storage paths.
 Paper mode has one paper book: the DI-resolved `IOrderGateway` is `OmsGovernedExecutionOrderGateway`, a read-only view over the OMS's own paper `IExecutionGateway`, so direct submit/cancel through `IOrderGateway` is refused in paper as well as live mode. Its order-update stream reads `OrderManagementSystem.SubscribeOrderStateChanges()`: the OMS order table publishes every order-state transition (acceptance, fills, amendment, cancellation, rejection) at write time, in write order. Each subscription keeps only the latest unread state per order incarnation (a token issued when an order id is registered or a terminal id is reused), so a slow subscriber never blocks the OMS, skips only intermediate states, and still receives every order's final state, including orders already evicted from retention. Terminal order-status checks share `OrderManagement.OrderStatusFacts.IsTerminal`.
 
 Paper matching reads the live feed cache as it is by default, however old the last quote or print.
+`PaperTrading:Gateway:RequireBondAccruedInterest=true` opts the hosted execution gateway into
+required bond settlement economics. Before emitting an immediate or resting face-value fill,
+shared analytics must return matching security, as-of, settlement date, clean/dirty prices and
+nonnegative accrued interest (zero is valid). Missing, refused, inconsistent or failed calculations
+produce a terminal rejection with no fill quantity, price or fees. Declared face-value orders
+without a resolvable security are also rejected. The default retains legacy clean-only fallback,
+and old persisted fills retain their original replay economics. This option does not enable
+canonical bond paper accounting, short-side accrued-interest treatment or holiday calendars.
+See the [synthetic LOT golden case](../../docs/testing/evidence/next-work-20261029/bond-lot-golden-case.md).
+
 Setting `PaperTrading:Gateway:MaxObservationAgeSeconds` opts into a freshness window
 (`PaperObservationFreshnessPolicy`): a quote or print outside it is dropped, and when a symbol has
 tick data but none is current the whole observation is withheld, including any cached bar. A market
