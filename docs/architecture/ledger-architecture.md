@@ -66,6 +66,11 @@ move to bound ledgers area by area. `JournalEntry` itself does not enforce balan
 because reporting builds dimension-filtered journal slices that deliberately do not balance;
 balance is enforced when an entry is posted, and therefore before it is stored.
 
+Book-scoped chart nodes can carry a stable account code. Resolution validates the exact node,
+book, type, and financial scope and retains the chart revision on the posting line. New postings
+can carry a line memo separately from the journal description. The posted-journal views and
+audit exports expose those fields and transaction and functional currency evidence.
+
 #### Durable run journals (`Meridian.Storage.Ledger`)
 
 `FileLedgerJournalLog` is an append-only, hash-chained journal of posted entries.
@@ -92,6 +97,11 @@ engine journals every run whose request sets `LedgerJournalScopeId`. The native 
 engine and the covered-call service set it to the run id. `GET
 /api/workstation/runs/{runId}/ledger/integrity` and the MCP tool `get_run_ledger_integrity`
 re-verify a run's journal read-only, alongside its writer.
+
+Hosted native paper sessions keep separate append-only journal batches for opening balances,
+fills, settlements, and assessed financing. Each batch binds the session, account, source and
+posting purpose. Replay verifies the immutable receipt before acknowledging the source. The daily
+paper comparison retains the cash and lot evidence at an exchange-session cutoff.
 
 The chain makes tampering evident; it does not stop someone who can rewrite both the log and its
 head. Completed runs are also archived write-once by `JsonlStrategyRunLedgerArchive`.

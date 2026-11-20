@@ -98,12 +98,25 @@ public sealed class StandardChartOfAccountsTests
         foreach (var role in Enum.GetValues<LedgerAccountRole>())
         {
             var symbol = role is LedgerAccountRole.Securities or LedgerAccountRole.ShortSecuritiesPayable
-                or LedgerAccountRole.FuturesMtmSettlement or LedgerAccountRole.DividendReceivable ? "AAPL" : null;
+                or LedgerAccountRole.FuturesMtmSettlement or LedgerAccountRole.DividendReceivable
+                or LedgerAccountRole.AccruedInterestReceivable ? "AAPL" : null;
             var account = _chart.Resolve(role, "broker-1", symbol);
 
             _chart.TryGetRegistered(account, out var registered).Should().BeTrue(role.ToString());
             _chart.GetDefinition(registered).Should().Be(_chart.GetDefinition(role), role.ToString());
+            var reference = _chart.GetPostingReference(account);
+            reference.Should().NotBeNull();
+            StandardChartOfAccounts.Instance.ResolveCode(reference!.AccountCode!, "broker-1", symbol).Should().Be(account);
         }
+    }
+
+    [Theory]
+    [InlineData("7999")]
+    [InlineData("not-registered")]
+    public void ResolveCode_DoesNotInferAnAccountFromItsCode(string code)
+    {
+        var resolve = () => StandardChartOfAccounts.Instance.ResolveCode(code);
+        resolve.Should().Throw<ArgumentException>().WithParameterName("code");
     }
 
     [Fact]

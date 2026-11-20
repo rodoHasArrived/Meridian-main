@@ -16,6 +16,8 @@ public static class FiscalYearClosePlanService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(store);
+        if (store is IFiscalYearCloseReceiptStore fiscalStore)
+            return await fiscalStore.GetFiscalYearClosePlanAsync(ledgerBookId, fiscalYear, ct).ConfigureAwait(false);
         if (store is not IAtomicLedgerPeriodCloseStore snapshots)
             throw new NotSupportedException("This ledger store does not retain close snapshots.");
 

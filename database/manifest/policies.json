@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 312,
-    "warning": 312
+    "total": 317,
+    "warning": 317
   },
   "failed": false,
   "findings": [
@@ -610,6 +610,26 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "book_fx_settlement_receipts"
+      },
+      "message": "Business table ledger.book_fx_settlement_receipts does not have a table comment.",
+      "object": "ledger.book_fx_settlement_receipts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "book_fx_settlement_sets"
+      },
+      "message": "Business table ledger.book_fx_settlement_sets does not have a table comment.",
+      "object": "ledger.book_fx_settlement_sets",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "consolidation_fx_book_configurations"
       },
       "message": "Business table ledger.consolidation_fx_book_configurations does not have a table comment.",
@@ -654,6 +674,16 @@
       },
       "message": "Business table ledger.entity_controlled_close_authorization does not have a table comment.",
       "object": "ledger.entity_controlled_close_authorization",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "fiscal_year_close_receipts"
+      },
+      "message": "Business table ledger.fiscal_year_close_receipts does not have a table comment.",
+      "object": "ledger.fiscal_year_close_receipts",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -2321,6 +2351,34 @@
     {
       "details": {
         "columns": [
+          "cash_book_id"
+        ],
+        "constraint": "book_fx_settlement_sets_cash_book_id_fkey",
+        "schema": "ledger",
+        "table": "book_fx_settlement_sets"
+      },
+      "message": "Foreign key ledger.book_fx_settlement_sets.book_fx_settlement_sets_cash_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.book_fx_settlement_sets.book_fx_settlement_sets_cash_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "gaap_book_id"
+        ],
+        "constraint": "book_fx_settlement_sets_gaap_book_id_fkey",
+        "schema": "ledger",
+        "table": "book_fx_settlement_sets"
+      },
+      "message": "Foreign key ledger.book_fx_settlement_sets.book_fx_settlement_sets_gaap_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.book_fx_settlement_sets.book_fx_settlement_sets_gaap_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "tenant_id",
           "company_id",
           "rate_set_id",
@@ -3478,5 +3536,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "608caa574e46deab33225d287b3ccb879ea729a3d8907fbc8ddca7a9188cc085"
+  "fingerprint": "6e99f1960a179d3c3b793471da23175ff03e73e327cf657545b1d5dffd7d2e87"
 }

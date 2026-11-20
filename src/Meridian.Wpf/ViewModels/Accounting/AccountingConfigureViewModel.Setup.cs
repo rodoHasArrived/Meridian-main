@@ -235,7 +235,11 @@ public sealed partial class AccountingConfigureViewModel
     {
         ApplyEntityConsolidationBooks(workspace.LedgerBooks);
         ChartRows.ReplaceWith(workspace.ChartOfAccounts.Select(node =>
-            new AccountingWorkbenchRow(node.Path, node.AccountType, node.AccountName, node.IsArchived ? "Archived" : "Active")));
+            new AccountingWorkbenchRow(node.Path, node.AccountType,
+                node.AccountCode is { } code ? $"{code} · {node.AccountName}" : node.AccountName,
+                node.IsArchived ? "Archived" : "Active")));
+        OnPropertyChanged(nameof(ChartAccountCode));
+        OnPropertyChanged(nameof(IsChartAccountCodeReadOnly));
         TemplateRows.ReplaceWith(workspace.JournalTemplates.Select(template =>
             new AccountingWorkbenchRow(template.TemplateId, template.Version, template.DisplayName, $"{template.Lines.Count} line(s)")));
         PostingRuleRows.ReplaceWith(workspace.PostingRules.Select(rule =>

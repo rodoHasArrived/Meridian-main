@@ -61,7 +61,7 @@ public static class ReconciliationMatchKernel
         return selected;
     }
 
-    /// <summary>One candidate leg offered to <see cref="TryFindSplit"/>.</summary>
+    /// <summary>One candidate leg in a bounded split search.</summary>
     public sealed record SplitCandidate(string Id, decimal Amount);
 
     /// <summary>
@@ -95,11 +95,38 @@ public static class ReconciliationMatchKernel
         int maxLegs,
         Func<IReadOnlyList<SplitCandidate>, bool>? accept,
         out IReadOnlyList<SplitCandidate> legs,
-        out decimal residual)
+        out decimal residual) =>
+        FindSplit(targetAmount, candidates, tolerance, maxLegs, accept, requireUnique: false,
+            out legs, out residual, out _);
+
+    /// <summary>Finds a single admissible split. More than one split, or a truncated search, requires review.</summary>
+    internal static bool TryFindUniqueSplit(
+        decimal targetAmount,
+        IReadOnlyList<SplitCandidate> candidates,
+        decimal tolerance,
+        int maxLegs,
+        Func<IReadOnlyList<SplitCandidate>, bool>? accept,
+        out IReadOnlyList<SplitCandidate> legs,
+        out decimal residual,
+        out bool ambiguous) =>
+        FindSplit(targetAmount, candidates, tolerance, maxLegs, accept, requireUnique: true,
+            out legs, out residual, out ambiguous);
+
+    private static bool FindSplit(
+        decimal targetAmount,
+        IReadOnlyList<SplitCandidate> candidates,
+        decimal tolerance,
+        int maxLegs,
+        Func<IReadOnlyList<SplitCandidate>, bool>? accept,
+        bool requireUnique,
+        out IReadOnlyList<SplitCandidate> legs,
+        out decimal residual,
+        out bool ambiguous)
     {
         ArgumentNullException.ThrowIfNull(candidates);
         legs = [];
         residual = 0m;
+        ambiguous = false;
         if (targetAmount == 0m || maxLegs < 2)
         {
             return false;
@@ -111,8 +138,13 @@ public static class ReconciliationMatchKernel
             .Where(candidate => candidate is not null && Math.Sign(candidate.Amount) == sign)
             .OrderByDescending(static candidate => Math.Abs(candidate.Amount))
             .ThenBy(static candidate => candidate.Id, StringComparer.Ordinal)
-            .Take(MaxSplitSearchCandidates)
+            .Take(MaxSplitSearchCandidates + (requireUnique ? 1 : 0))
             .ToArray();
+        if (pool.Length > MaxSplitSearchCandidates)
+        {
+            ambiguous = true;
+            return false;
+        }
         if (pool.Length < 2)
         {
             return false;
@@ -127,19 +159,29 @@ public static class ReconciliationMatchKernel
         var bestResidualAbs = 0m;
         var bestLegs = new List<int>();
         var current = new List<int>(maxLegs);
+        var multipleFound = false;
 
         void Search(int index, decimal sumAbs)
         {
+            if (multipleFound)
+                return;
+
             if (current.Count >= 2)
             {
                 var residualAbs = Math.Abs(targetAbs - sumAbs);
                 if (residualAbs <= tolerance
-                    && (!bestFound
+                    && (requireUnique || !bestFound
                         || residualAbs < bestResidualAbs
                         || (residualAbs == bestResidualAbs && current.Count < bestLegs.Count)
                         || (residualAbs == bestResidualAbs && current.Count == bestLegs.Count && CompareLegIds(current, bestLegs) < 0))
                     && (accept is null || accept(current.Select(i => pool[i]).ToArray())))
                 {
+                    if (requireUnique && bestFound && !current.SequenceEqual(bestLegs))
+                    {
+                        multipleFound = true;
+                        return;
+                    }
+
                     bestFound = true;
                     bestResidualAbs = residualAbs;
                     bestLegs = [.. current];
@@ -178,6 +220,12 @@ public static class ReconciliationMatchKernel
         }
 
         Search(0, 0m);
+        if (multipleFound)
+        {
+            ambiguous = true;
+            return false;
+        }
+
         if (!bestFound)
         {
             return false;

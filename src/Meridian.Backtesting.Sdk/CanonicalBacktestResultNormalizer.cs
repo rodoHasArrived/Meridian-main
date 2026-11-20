@@ -26,6 +26,7 @@ public static class CanonicalBacktestResultNormalizer
                 ResultKind: BacktestResultKinds.Full,
                 CoverageWarnings: result.EngineMetadata?.CoverageWarnings)
             {
+                InputCoverage = result.EngineMetadata?.InputCoverage,
                 FinancingCoverageStatus = result.EngineMetadata?.FinancingCoverageStatus,
                 RunAttributedMarginInterest = result.EngineMetadata?.RunAttributedMarginInterest
             }

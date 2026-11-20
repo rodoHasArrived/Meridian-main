@@ -145,6 +145,9 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
         ArgumentNullException.ThrowIfNull(accessContext);
         RequireBoundAccess(accessContext);
         ValidateParameterEnums(parameters);
+        var isStatementControl = ReportingCertifiedLedgerPresentationBinding.IsStatementControlTemplate(intent?.TemplateId);
+        if (isStatementControl && !ReportingCertifiedLedgerPresentationBinding.IsPrimaryDocumentFormat(parameters.OutputFormat))
+            throw Unavailable("Select PDF, XLSX, or Client Package for the Financial Statement Control Pack.");
         var isCapitalCallNotice = string.Equals(intent?.TemplateId,
             CapitalCallNoticeReportingService.TemplateId, StringComparison.OrdinalIgnoreCase);
         if (isCapitalCallNotice)
@@ -243,6 +246,10 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
             .OrderBy(static record => record.GlobalSequence)
             .ThenBy(static record => record.Entry.JournalEntryId)
             .ToArray();
+        var statementControl = isStatementControl
+            ? await ResolveStatementControlScopeAsync(parameters, book, period, cutoffUtc, orderedHistory,
+                tenantId, companyId, cancellationToken).ConfigureAwait(false)
+            : null;
         var ordered = orderedHistory.Where(record => record.PeriodId == period.PeriodId).ToArray();
         var completeJournals = ordered;
         ordered = FilterToCertifiedDimensions(
@@ -272,20 +279,30 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
                 "Final reporting is blocked because the exact fund/book/period/basis/as-of source contains no ledger rows.");
         }
 
-        var populationSnapshot = BuildLedgerPopulationSnapshot(
-            parameters, new LedgerAmountScopeDto(tenantId, companyId, fundId, book.LedgerBookId, period.PeriodId),
-            book, period, basis, cutoffUtc, requiredDimensions, orderedHistory, retainedTaxHistory,
-            retainedSuccessorHistory, cancellationToken);
-        populationSnapshot = populationSnapshot with
+        ReportingRetainedLedgerPopulation retainedPopulation;
+        LedgerFinancialReportPack? canonicalReportPack;
+        ReportingLedgerPopulationSnapshot populationSnapshot;
+        try
         {
-            PeriodVersion = period.Version,
-            DatasetRows = rows,
-            ReportAmounts = ReportAmountBindingBuilder.Build(populationSnapshot)
-        };
-        var retainedPopulation = populationSnapshot.Retain();
-        var canonicalReportPack = ReportingCertifiedLedgerPresentationBinding.IsRequired(intent, parameters.OutputFormat)
-            ? populationSnapshot.Replay()
-            : null;
+            populationSnapshot = BuildLedgerPopulationSnapshot(
+                parameters, new LedgerAmountScopeDto(tenantId, companyId, fundId, book.LedgerBookId, period.PeriodId),
+                book, period, basis, cutoffUtc, requiredDimensions, orderedHistory, retainedTaxHistory,
+                retainedSuccessorHistory, statementControl, cancellationToken);
+            canonicalReportPack = ReportingCertifiedLedgerPresentationBinding.IsRequired(intent, parameters.OutputFormat)
+                ? populationSnapshot.Replay()
+                : null;
+            populationSnapshot = populationSnapshot with
+            {
+                PeriodVersion = period.Version,
+                DatasetRows = rows,
+                ReportAmounts = ReportAmountBindingBuilder.Build(populationSnapshot, canonicalReportPack)
+            };
+            retainedPopulation = populationSnapshot.Retain();
+        }
+        catch (LedgerValidationException exception) when (isStatementControl)
+        {
+            throw Unavailable($"Financial statement controls did not pass: {exception.Message}");
+        }
         var highestSequence = retainedPopulation.HighestGlobalSequence;
         var capturedAtUtc = _timeProvider.GetUtcNow().ToUniversalTime();
         var sourceId = $"ledger:{book.LedgerBookId:D}:{period.PeriodId:D}";
@@ -340,6 +357,7 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
         LedgerJournalEntryRecord[] orderedHistory,
         IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>? retainedTaxHistory,
         IReadOnlyList<AtomicTaxLotJournalResult>? retainedSuccessorHistory,
+        StatementControlScope? statementControl,
         CancellationToken cancellationToken)
     {
         var fundId = scope.FundProfileId;
@@ -383,7 +401,7 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
             }
         }
 
-        var periodStart = StartOfUtcDate(period.StartDate);
+        var periodStart = StartOfUtcDate(statementControl?.PeriodStart ?? period.StartDate);
         var periodEnd = EndOfUtcDate(period.EndDate);
         var lockedPeriod = parameters.Finality == ReportingFinalityDto.Final
             ? new LockedAccountingPeriod(
@@ -408,7 +426,10 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
             generatedBy: "meridian-reporting-authority",
             generatedAtUtc,
             lockedPeriod,
-            lineDimensions: selectedDimensions);
+            lineDimensions: selectedDimensions)
+        {
+            StatementControl = statementControl?.Definition
+        };
 
         // The pack's tax-lot artifact has always accepted relief projections but never been given
         // any, so it shipped as a header with no rows. Rebuilding them from retained disposal
@@ -426,7 +447,8 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
         return new ReportingLedgerPopulationSnapshot(scope, reportRequest,
             orderedHistory.ToImmutableArray(), taxLotReliefProjections.ToImmutableArray())
         {
-            CorporateActionLotReports = corporateActionLotReports.ToImmutableArray()
+            CorporateActionLotReports = corporateActionLotReports.ToImmutableArray(),
+            ComparativeClose = statementControl?.ComparativeClose
         };
     }
 

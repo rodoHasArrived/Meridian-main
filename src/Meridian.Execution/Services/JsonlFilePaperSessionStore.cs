@@ -21,6 +21,7 @@ namespace Meridian.Execution.Services;
 ///       fills.applied.jsonl  — idempotent apply acknowledgements
 ///       orders.jsonl         — one OrderState JSON object per line (append-only)
 ///       settlements.jsonl    — one daily variation-margin settlement per line (append-only)
+///       journal-batches/     — immutable, crash-atomic journal effect receipts
 /// </code>
 /// Atomic writes for <c>session.json</c> use write-to-temp-then-rename semantics
 /// to guard against partial writes on crash. JSONL appends are serialised per base
@@ -28,7 +29,7 @@ namespace Meridian.Execution.Services;
 /// Exactly one process may write a base directory; cross-process transactional locking
 /// is intentionally outside this local-file store's contract.
 /// </summary>
-public sealed class JsonlFilePaperSessionStore : IPaperSessionStore
+public sealed partial class JsonlFilePaperSessionStore : IPaperSessionStore
 {
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> AppendLocks =
         new(StringComparer.OrdinalIgnoreCase);

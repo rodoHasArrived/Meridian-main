@@ -86,7 +86,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportAmountBindingBuilder</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs:9](../../../../src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs#L9).
+Source: [src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs:10](../../../../src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs#L10).
 
 Projects account amounts and exact line identities from the retained canonical ledger population.
 
@@ -98,8 +98,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; Build(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs:11](../../../../src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs#L11) |  |
-| <code>public static bool MatchesRetained(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs:39](../../../../src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs#L39) |  |
+| <code>public static ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; Build(ReportingLedgerPopulationSnapshot snapshot) =&gt; …;</code> | [src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs:12](../../../../src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs#L12) |  |
+| <code>public static ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; Build(ReportingLedgerPopulationSnapshot snapshot, LedgerFinancialReportPack? replayedPack);</code> | [src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs:15](../../../../src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs#L15) |  |
+| <code>public static bool MatchesRetained(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs:127](../../../../src/Meridian.Reporting.ReadModels/ReportAmountBindingBuilder.cs#L127) |  |
 
 ## ReportingIncomeComparisonService
 
@@ -126,7 +127,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingLedgerPopulationSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:12](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L12).
+Source: [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:13](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L13).
 
 Frozen journals, tax relief and corporate-action lot evidence used by both activity rows and financial statements.
 
@@ -138,14 +139,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; ReportAmounts { get; init; } = [];</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:18](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L18) |  |
-| <code>public long PeriodVersion { get; init; }</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:20](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L20) |  |
-| <code>public ImmutableArray&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; DatasetRows { get; init; } = [];</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:22](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L22) |  |
-| <code>public ImmutableArray&lt;CanonicalCorporateActionLotReport&gt; CorporateActionLotReports { get; init; } = [];</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:25](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L25) | Corporate-action lot evidence captured with the journals; empty for legacy populations. |
-| <code>public ReportingRetainedLedgerPopulation Retain();</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:33](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L33) |  |
-| <code>public static ReportingLedgerPopulationSnapshot Decode(ReportingAuthoritativeSourceCheckpoint checkpoint);</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:43](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L43) |  |
-| <code>public string ComputeCheckpointHash(ReportingAuthoritativeSourceCheckpoint checkpoint) =&gt; …;</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:100](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L100) |  |
-| <code>public LedgerFinancialReportPack Replay();</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:104](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L104) |  |
+| <code>public ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; ReportAmounts { get; init; } = [];</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:19](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L19) |  |
+| <code>public long PeriodVersion { get; init; }</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:21](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L21) |  |
+| <code>public ImmutableArray&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; DatasetRows { get; init; } = [];</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:23](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L23) |  |
+| <code>public ImmutableArray&lt;CanonicalCorporateActionLotReport&gt; CorporateActionLotReports { get; init; } = [];</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:26](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L26) | Corporate-action lot evidence captured with the journals; empty for legacy populations. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerPeriodCloseSnapshot? ComparativeClose { get; init; }</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:29](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L29) |  |
+| <code>public ReportingRetainedLedgerPopulation Retain();</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:37](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L37) |  |
+| <code>public static ReportingLedgerPopulationSnapshot Decode(ReportingAuthoritativeSourceCheckpoint checkpoint);</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:47](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L47) |  |
+| <code>public string ComputeCheckpointHash(ReportingAuthoritativeSourceCheckpoint checkpoint) =&gt; …;</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:104](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L104) |  |
+| <code>public LedgerFinancialReportPack Replay();</code> | [src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs:108](../../../../src/Meridian.Reporting.ReadModels/ReportingLedgerPopulationSnapshot.cs#L108) |  |
 
 ## ReportPeriodRange
 
