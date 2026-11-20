@@ -70,7 +70,11 @@ public record ForceFailoverRequest(string TargetProviderId);
 public sealed record FailoverRuleDeleteRequest(string? Reason);
 
 /// <summary>Request to run a backfill operation.</summary>
-public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To, string? Granularity = null);
+public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To, string? Granularity = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool ResumeFromCheckpoint { get; init; }
+}
 
 /// <summary>Request to generate a dry-run backfill plan.</summary>
 public record DryRunPlanRequest(string[] Symbols);

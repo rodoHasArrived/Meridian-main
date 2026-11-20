@@ -6,6 +6,130 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WelcomePageViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WelcomePageViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:19](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L19).
+
+ViewModel for the Welcome page. Owns overview data loading and navigation commands so that the code-behind is thinned to constructor DI and lifecycle wiring only.
+
+```csharp
+public sealed class WelcomePageViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ConnectionStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:31](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L31) |  |
+| <code>public Brush ConnectionStatusDotFill { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:34](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L34) |  |
+| <code>public string ConnectionProviderText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:37](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L37) |  |
+| <code>public string SymbolsCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:40](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L40) |  |
+| <code>public string StoragePathText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:43](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L43) |  |
+| <code>public string DataHealthIndicatorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:46](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L46) |  |
+| <code>public IReadOnlyList&lt;WelcomeWorkspaceCard&gt; WorkspaceCards { get; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:48](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L48) |  |
+| <code>public IReadOnlyList&lt;WelcomeReadinessItem&gt; ReadinessItems { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:50](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L50) |  |
+| <code>public string ReadinessProgressText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:57](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L57) |  |
+| <code>public string ReadinessSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L60) |  |
+| <code>public WelcomeNextAction NextAction { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L63) |  |
+| <code>public IRelayCommand&lt;string&gt; NavigateToPageCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:69](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L69) |  |
+| <code>public IRelayCommand&lt;string&gt; NavigateToWorkspaceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L70) |  |
+| <code>public IRelayCommand NavigateToProviderCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L71) |  |
+| <code>public IRelayCommand NavigateToSymbolsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L72) |  |
+| <code>public IRelayCommand NavigateToStorageCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L73) |  |
+| <code>public IRelayCommand NavigateToDataWorkspaceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L74) |  |
+| <code>public IRelayCommand NavigateToDataQualityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:75](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L75) |  |
+| <code>public IRelayCommand OpenDocumentationCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L76) |  |
+| <code>public WelcomePageViewModel(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService, WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.ConfigService configService, ILogger&lt;WelcomePageViewModel&gt; logger);</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:78](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L78) |  |
+| <code>public async Task LoadAsync();</code> | [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:112](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L112) |  |
+
+## WelcomeReadinessItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WelcomeReadinessItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:565](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L565).
+
+```csharp
+public sealed record WelcomeReadinessItem(string Title, string StatusLabel, string Detail, string ActionLabel, string ActionPageTag, string IconGlyph, Brush AccentBrush, Brush AccentBackgroundBrush);
+```
+
+## WelcomeReadinessSummary
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WelcomeReadinessSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:575](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L575).
+
+```csharp
+public sealed record WelcomeReadinessSummary(string ProgressText, string SummaryText);
+```
+
+## WelcomeWorkspaceCard
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WelcomeWorkspaceCard</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:554](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L554).
+
+```csharp
+public sealed record WelcomeWorkspaceCard(string Title, string ShellDisplayName, string Description, string TileSummary, string PageTag, string ActionLabel, string IconGlyph, Brush AccentBrush, Brush AccentBackgroundBrush);
+```
+
+## WorkflowLibraryActionItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WorkflowLibraryActionItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:270](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L270).
+
+Presents a workflow action with its detail, target page, and search matching behavior.
+
+```csharp
+public sealed class WorkflowLibraryActionItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowLibraryActionItem(WorkflowActionDto action);</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:272](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L272) |  |
+| <code>public WorkflowActionDto Action { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L277) |  |
+| <code>public string ActionId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:279](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L279) |  |
+| <code>public string Label =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:281](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L281) |  |
+| <code>public string Detail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L283) |  |
+| <code>public string TargetPageTag =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:285](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L285) |  |
+| <code>public string TargetText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:287](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L287) |  |
+| <code>public bool Matches(string query) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:289](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L289) |  |
+
+## WorkflowLibraryViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WorkflowLibraryViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:12](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L12).
+
+Presentation model for reusable workstation workflows.
+
+```csharp
+public sealed class WorkflowLibraryViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowLibraryViewModel(WorkflowLibraryService workflowLibraryService, NavigationService navigationService);</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:26](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L26) |  |
+| <code>public ReadOnlyObservableCollection&lt;WorkflowLibraryWorkflowItem&gt; Workflows { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:39](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L39) |  |
+| <code>public RelayCommand&lt;string&gt; OpenWorkflowCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:41](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L41) |  |
+| <code>public RelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:43](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L43) |  |
+| <code>public RelayCommand ClearSearchCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:45](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L45) |  |
+| <code>public string SearchQuery { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L47) |  |
+| <code>public string SummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:61](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L61) |  |
+| <code>public string ResultScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:67](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L67) |  |
+| <code>public string EmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L73) |  |
+| <code>public string EmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:79](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L79) |  |
+| <code>public string EmptyStateActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:85](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L85) |  |
+| <code>public bool HasWorkflows =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L91) |  |
+| <code>public bool HasActiveSearch =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:93](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L93) |  |
+| <code>public void Load();</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:95](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L95) |  |
+
 ## WorkflowLibraryWorkflowItem
 
 Qualified name: <code>Meridian.Wpf.ViewModels.WorkflowLibraryWorkflowItem</code>. Kind: `class`.
@@ -1053,133 +1177,3 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:86](../../../../src/Meridian.Wpf/Views/
 ```csharp
 public partial class DirectLendingPage : Page
 ```
-
-## EditScheduledJobDialog
-
-Qualified name: <code>Meridian.Wpf.Views.EditScheduledJobDialog</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs:12](../../../../src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs#L12).
-
-Dialog for editing or deleting a scheduled backfill job. Replaces the former imperative EditScheduledJobDialog Window class that was embedded in BackfillPage.xaml.cs.
-
-```csharp
-public partial class EditScheduledJobDialog : Window
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string JobName =&gt; …;</code> | [src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs:15](../../../../src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs#L15) | Gets the (possibly updated) job name. |
-| <code>public string NextRunText { get; private set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs:18](../../../../src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs#L18) | Gets the computed next-run display text based on frequency and time selections. |
-| <code>public bool ShouldDelete { get; private set; }</code> | [src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs:21](../../../../src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs#L21) | Gets whether the user requested deletion of this job. |
-| <code>public EditScheduledJobDialog(ScheduledJobInfo job);</code> | [src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs:23](../../../../src/Meridian.Wpf/Views/EditScheduledJobDialog.xaml.cs#L23) |  |
-
-## EditWatchlistDialog
-
-Qualified name: <code>Meridian.Wpf.Views.EditWatchlistDialog</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:11](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L11).
-
-Dialog for editing an existing watchlist.
-
-```csharp
-public sealed class EditWatchlistDialog : Window
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string WatchlistName =&gt; …;</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:17](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L17) |  |
-| <code>public string Symbols =&gt; …;</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:18](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L18) |  |
-| <code>public string? SelectedColor =&gt; …;</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:19](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L19) |  |
-| <code>public bool ShouldDelete { get; private set; }</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:20](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L20) |  |
-| <code>public EditWatchlistDialog(Watchlist watchlist);</code> | [src/Meridian.Wpf/Views/EditWatchlistDialog.cs:34](../../../../src/Meridian.Wpf/Views/EditWatchlistDialog.cs#L34) |  |
-
-## EntityConsolidationControl
-
-Qualified name: <code>Meridian.Wpf.Views.EntityConsolidationControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs:6](../../../../src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs#L6).
-
-```csharp
-public partial class EntityConsolidationControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EntityConsolidationControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs:8](../../../../src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs#L8) |  |
-| <code>public event RoutedEventHandler? ReviewDraftsRequested;</code> | [src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/EntityConsolidationControl.xaml.cs#L9) |  |
-
-## EnvironmentDesignerPage
-
-Qualified name: <code>Meridian.Wpf.Views.EnvironmentDesignerPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L17).
-
-Coordinates environment draft and version selection, JSON editing, validation, and version comparison.
-
-```csharp
-public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EnvironmentDesignerPage(IEnvironmentDesignService designService, IEnvironmentValidationService validationService, IEnvironmentPublishService publishService);</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:32](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L32) |  |
-| <code>public event PropertyChangedEventHandler? PropertyChanged;</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:44](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L44) |  |
-| <code>public ObservableCollection&lt;EnvironmentDraftDto&gt; Drafts { get; } = [];</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:46](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L46) |  |
-| <code>public ObservableCollection&lt;PublishedEnvironmentVersionDto&gt; Versions { get; } = [];</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:48](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L48) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:50](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L50) |  |
-| <code>public string DraftJson { get; set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:56](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L56) |  |
-| <code>public string DraftSummaryText { get; private set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:62](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L62) |  |
-| <code>public string ValidationAndDiffText { get; private set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:68](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L68) |  |
-| <code>public EnvironmentDraftDto? SelectedDraft { get; set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:74](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L74) |  |
-| <code>public PublishedEnvironmentVersionDto? SelectedVersion { get; set; }</code> | [src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs:80](../../../../src/Meridian.Wpf/Views/EnvironmentDesignerPage.xaml.cs#L80) |  |
-
-## EventReplayPage
-
-Qualified name: <code>Meridian.Wpf.Views.EventReplayPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/EventReplayPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/EventReplayPage.xaml.cs#L10).
-
-Provides the desktop page to replay event streams to review sequence and signal behavior.
-
-```csharp
-public partial class EventReplayPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EventReplayPage();</code> | [src/Meridian.Wpf/Views/EventReplayPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/EventReplayPage.xaml.cs#L14) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:43](../../../../src/Meridian.Wpf/Views/Pages.cs#L43).
-
-```csharp
-public partial class EventReplayPage : Page
-```
-
-## EvidenceWorkbenchPage
-
-Qualified name: <code>Meridian.Wpf.Views.EvidenceWorkbenchPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs#L12).
-
-Provides the desktop page to review evidence packets, proof chains, lineage, and retained vault documents.
-
-```csharp
-public partial class EvidenceWorkbenchPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EvidenceWorkbenchPage() : this(new EvidenceWorkbenchViewModel(new WpfServices.EvidenceWorkbenchApiClient(ApiClientService.Instance)));</code> | [src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs#L16) |  |
-| <code>public EvidenceWorkbenchPage(EvidenceWorkbenchViewModel viewModel);</code> | [src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs#L21) |  |

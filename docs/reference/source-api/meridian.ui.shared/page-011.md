@@ -6,22 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## EntityTimelineService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.EntityTimelineService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/EntityTimelineService.cs:10](../../../../src/Meridian.Ui.Shared/Services/EntityTimelineService.cs#L10).
-
-```csharp
-public sealed class EntityTimelineService(IFundStructureService structures, IEntityLifecycleStore lifecycle, IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAgreementService agreements, IEntityTimelineAccessAuthority access)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;EntityTimelineDto&gt; GetAsync(string tenant, Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default, string actor = &quot;entity-timeline&quot;);</code> | [src/Meridian.Ui.Shared/Services/EntityTimelineService.cs:13](../../../../src/Meridian.Ui.Shared/Services/EntityTimelineService.cs#L13) |  |
-
 ## EquityOrderSessionPolicy
 
 Qualified name: <code>Meridian.Ui.Shared.Services.EquityOrderSessionPolicy</code>. Kind: `class`.
@@ -243,7 +227,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingConfigurationStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:123](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L123).
+Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:132](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L132).
 
 Persists accounting workspaces and audit history with audit-chain verification.
 
@@ -255,20 +239,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FileAccountingConfigurationStore(string snapshotPath) : this(snapshotPath, anchorPath : null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:160](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L160) |  |
-| <code>public FileAccountingConfigurationStore(string snapshotPath, string? anchorPath) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Accounting configuration snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:170](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L170) |  |
-| <code>public string AuditChainAnchorPath =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:185](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L185) | Path of the head journal that anchors this store&#x27;s audit chain. |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto?&gt; GetAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:190](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L190) |  |
-| <code>public async Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:217](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L217) |  |
-| <code>public async Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:277](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L277) | Appends an audit event and extends the tamper-evident chain over it. |
-| <code>public async Task&lt;AccountingAuditChainVerification&gt; VerifyAuditChainAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:408](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L408) | Verifies the retained audit chain against its events and its external head. |
-| <code>public async Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:424](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L424) |  |
+| <code>public FileAccountingConfigurationStore(string snapshotPath) : this(snapshotPath, anchorPath : null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:169](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L169) |  |
+| <code>public FileAccountingConfigurationStore(string snapshotPath, string? anchorPath) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Accounting configuration snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:179](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L179) |  |
+| <code>public string AuditChainAnchorPath =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:194](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L194) | Path of the head journal that anchors this store&#x27;s audit chain. |
+| <code>public async Task&lt;AccountingConfigurationWorkspaceDto?&gt; GetAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:199](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L199) |  |
+| <code>public async Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:226](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L226) |  |
+| <code>public async Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:290](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L290) | Appends an audit event and extends the tamper-evident chain over it. |
+| <code>public async Task&lt;AccountingAuditChainVerification&gt; VerifyAuditChainAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:421](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L421) | Verifies the retained audit chain against its events and its external head. |
+| <code>public async Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:437](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L437) |  |
 
 ## AccountingConfigurationSnapshot
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingConfigurationStore.AccountingConfigurationSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:459](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L459).
+Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:472](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L472).
 
 ```csharp
 public sealed record AccountingConfigurationSnapshot(IReadOnlyList<AccountingConfigurationWorkspaceDto> Workspaces, IReadOnlyList<AccountingActionAuditEventDto> AuditEvents, AccountingAuditChainState? AuditChain = null)
@@ -278,7 +262,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static AccountingConfigurationSnapshot Empty { get; } = new ([], []);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:464](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L464) |  |
+| <code>public static AccountingConfigurationSnapshot Empty { get; } = new ([], []);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:477](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L477) |  |
 
 ## FileAccountingMigrationRunArtifactStore
 
@@ -1028,3 +1012,21 @@ Declared public members:
 | <code>public async Task&lt;FirstRunStatusDto&gt; GetAsync(string username, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:37](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L37) |  |
 | <code>public async Task&lt;FirstRunStatusDto&gt; CompleteAsync(string username, CompleteFirstRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:43](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L43) |  |
 | <code>public async Task&lt;FirstRunStatusDto&gt; CompleteOutcomeAsync(string username, string key, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:90](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L90) |  |
+
+## FiscalYearClosePlanBuilder
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FiscalYearClosePlanBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:9](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L9).
+
+Compatibility entry point for fiscal close projection from supplied retained snapshots.
+
+```csharp
+public static class FiscalYearClosePlanBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FiscalYearClosePlanDto Build(Guid ledgerBookId, int fiscalYear, IReadOnlyList&lt;LedgerAccountingPeriod&gt; bookPeriods, IReadOnlyDictionary&lt;Guid, FiscalYearCloseSnapshotRead&gt; snapshots) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:11](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L11) |  |

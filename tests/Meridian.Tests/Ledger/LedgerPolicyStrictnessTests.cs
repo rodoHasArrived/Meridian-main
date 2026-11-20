@@ -29,6 +29,8 @@ public sealed class LedgerPolicyStrictnessTests
 
         ledger.Policy!.FunctionalCurrency.Should().Be("USD");
         var lines = ledger.Journal.Single().Lines;
+        lines.Select(line => line.ChartAccount!.AccountCode).Should().Equal("1100", "1000");
+        lines.Should().OnlyContain(line => line.ChartAccount!.Revision == StandardChartOfAccounts.Revision);
         lines.Should().OnlyContain(line =>
             line.Currency != null &&
             line.Currency.FunctionalCurrency == "USD" &&

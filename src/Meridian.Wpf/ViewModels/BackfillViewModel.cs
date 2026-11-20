@@ -804,6 +804,14 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             .Count() ?? 0;
     }
 
+    private bool _resumeFromRetainedCoverage;
+
+    public bool ResumeFromRetainedCoverage
+    {
+        get => _resumeFromRetainedCoverage;
+        set => SetProperty(ref _resumeFromRetainedCoverage, value);
+    }
+
     public async Task StartBackfillAsync(
         string[] symbols,
         string provider,
@@ -856,7 +864,9 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
                 provider,
                 fromDate,
                 toDate,
-                granularity);
+                granularity,
+                ResumeFromRetainedCoverage,
+                ct: ct);
         }
         catch (OperationCanceledException)
         {

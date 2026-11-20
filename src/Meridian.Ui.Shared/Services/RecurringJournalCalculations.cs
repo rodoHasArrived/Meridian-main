@@ -471,7 +471,7 @@ public sealed class FxRevaluationCalculation(
         return new(new AutomatedJournalDraft(journalEvent, description, lines, metadata), description);
     }
 
-    private static bool IsPriorRevaluation(JournalEntryMetadata metadata)
+    internal static bool IsPriorRevaluation(JournalEntryMetadata metadata)
     {
         if (metadata.ActivityType == CalculationKind)
             return true;

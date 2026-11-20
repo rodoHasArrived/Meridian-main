@@ -212,6 +212,16 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Account" Binding="{Binding AccountName}" Width="*" />
                             <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="90" />
+                            <DataGridTemplateColumn Header="Line evidence" Width="2*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding RetainedLineEvidence}" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTemplateColumn Header="Debit" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

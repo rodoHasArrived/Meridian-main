@@ -982,7 +982,7 @@ public sealed partial class LedgerReportingAuthoritativeSourceTests
     private sealed class QueryFilteringJournalStore(
         LedgerBookRecord book,
         LedgerAccountingPeriod period) : ILedgerJournalStore, ILedgerTaxLotDisposalHistory, ILedgerOpenLotSuccessorHistory,
-            ILedgerReportingSnapshotSource
+            ILedgerReportingSnapshotSource, IAtomicLedgerPeriodCloseStore
     {
         public List<LedgerJournalEntryRecord> Records { get; } = [];
         public List<LedgerTaxLotDisposalHistoryRecord> Disposals { get; } = [];
@@ -1001,6 +1001,20 @@ public sealed partial class LedgerReportingAuthoritativeSourceTests
         public Func<Task>? AfterFirstQuerySnapshot { get; set; }
         public LedgerAccountingPeriod SnapshotPeriod { get; set; } = period;
         public Exception? SnapshotCaptureException { get; set; }
+        public LedgerPeriodCloseSnapshot? RetainedClose { get; set; }
+        public LedgerAccountingPeriod? ComparisonPeriod { get; set; }
+        public LedgerPeriodCloseSnapshot? RetainedComparisonClose { get; set; }
+
+        public Task<LedgerPeriodCloseSnapshot?> GetCloseSnapshotAsync(Guid periodId, long? periodVersion = null,
+            CancellationToken ct = default)
+        {
+            var close = periodId == period.PeriodId ? RetainedClose : RetainedComparisonClose;
+            return Task.FromResult(close is not null && close.PeriodId == periodId
+                && (periodVersion is null || close.PeriodVersion == periodVersion) ? close : null);
+        }
+
+        public Task<LedgerAccountingPeriod> SaveHardClosedPeriodAsync(LedgerAccountingPeriod value, long expectedVersion,
+            PeriodCloseEventRecord closeEvent, CancellationToken ct = default) => throw new NotSupportedException();
 
         public async Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
             LedgerJournalEntryQuery query,
@@ -1063,7 +1077,8 @@ public sealed partial class LedgerReportingAuthoritativeSourceTests
             Task.FromResult<LedgerBookRecord?>(ledgerBookId == book.LedgerBookId ? book : null);
 
         public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default) =>
-            Task.FromResult<LedgerAccountingPeriod?>(periodId == period.PeriodId ? period : null);
+            Task.FromResult<LedgerAccountingPeriod?>(periodId == period.PeriodId ? period
+                : ComparisonPeriod?.PeriodId == periodId ? ComparisonPeriod : null);
 
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
         {

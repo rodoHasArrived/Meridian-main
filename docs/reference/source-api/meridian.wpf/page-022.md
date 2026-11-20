@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EmptyStatePanelControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.EmptyStatePanelControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:124](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L124).
+
+Provides a content surface for an empty-state explanation and action.
+
+```csharp
+public sealed class EmptyStatePanelControl : ContentControl
+```
+
+## ErrorStatePanelControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.ErrorStatePanelControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:131](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L131).
+
+Provides a content surface for an error explanation and recovery action.
+
+```csharp
+public sealed class ErrorStatePanelControl : ContentControl
+```
+
+## HealthBadgeControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.HealthBadgeControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:96](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L96).
+
+Provides a styled content surface for health-status presentation.
+
+```csharp
+public sealed class HealthBadgeControl : ContentControl
+```
+
+## LoadingOverlayControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.LoadingOverlayControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:117](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L117).
+
+Provides a content surface for loading overlays.
+
+```csharp
+public sealed class LoadingOverlayControl : ContentControl
+```
+
+## MetricTileControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.MetricTileControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:89](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L89).
+
+Provides a styled content surface for metric values.
+
+```csharp
+public sealed class MetricTileControl : ContentControl
+```
+
+## StatusRibbonControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.StatusRibbonControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:82](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L82).
+
+Provides an items-control surface for workstation status indicators.
+
+```csharp
+public sealed class StatusRibbonControl : ItemsControl
+```
+
 ## TrustBadgeControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Primitives.TrustBadgeControl</code>. Kind: `class`.

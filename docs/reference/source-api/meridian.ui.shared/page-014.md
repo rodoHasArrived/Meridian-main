@@ -349,6 +349,20 @@ Declared public members:
 | <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:115](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L115) |  |
 | <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingAuthoritativeSourceCaptureIntent intent, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:121](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L121) |  |
 
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs:10](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs#L10).
+
+```csharp
+public sealed partial class LedgerReportingAuthoritativeSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string FiscalYearCloseReceiptParameter = &quot;fiscalYearCloseReceiptId&quot;;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs:12](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs#L12) |  |
+| <code>public const string BookFxSettlementSetParameter = &quot;bookFxSettlementSetId&quot;;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs:13](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs#L13) |  |
+| <code>public const string ComparisonPeriodParameter = &quot;comparisonPeriodId&quot;;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs:14](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs#L14) |  |
+
 Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:11](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L11).
 
 ```csharp

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
@@ -13,7 +14,6 @@ import {
 } from "@/lib/api/provider-connection-templates.api";
 import type { ProviderRoutingConnection } from "@/types";
 
-const selectClass = "h-9 w-full rounded-md border border-border bg-background px-3 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40";
 const buttonRow = "flex flex-wrap justify-end gap-2";
 
 export function ProviderConnectionTemplatesDialog({ connections, onClose, onManual, onSaved }: {
@@ -193,11 +193,11 @@ export function ProviderConnectionTemplatesDialog({ connections, onClose, onManu
           </div> : null}
           <div className="grid gap-1 text-sm">
             <label htmlFor={`${id}-template`}>Connection template</label>
-            <select id={`${id}-template`} className={selectClass} value={selectedName} disabled={loading || busy || !catalogue.length}
+            <Select id={`${id}-template`} value={selectedName} disabled={loading || busy || !catalogue.length}
               onChange={event => setSelectedName(event.target.value)}>
               {catalogue.length ? catalogue.map(item => <option key={item.template.name}>{item.template.name}</option>)
                 : <option value="">{loading ? "Loading templates…" : "No templates available"}</option>}
-            </select>
+            </Select>
           </div>
           <div className="flex flex-wrap justify-between gap-2">
             <Button disabled={!selected || busy || loading} onClick={() => { setError(null); setReviewed(selected ?? null); }}>Use template</Button>
@@ -216,12 +216,12 @@ export function ProviderConnectionTemplatesDialog({ connections, onClose, onManu
               </label>
               <div className="grid gap-1 text-sm">
                 <label htmlFor={`${id}-source`}>Source connection</label>
-                <select id={`${id}-source`} className={selectClass} value={sourceId} disabled={busy || !connections.length} onChange={event => setSourceId(event.target.value)}>
+                <Select id={`${id}-source`} value={sourceId} disabled={busy || !connections.length} onChange={event => setSourceId(event.target.value)}>
                   <option value="">{connections.length ? "Select an owned connection" : "No owned connections available"}</option>
                   {connections.map(row => <option key={row.connectionId} value={row.connectionId}>
                     {row.displayName} · {row.credentialEnvironment} · {row.connectionId.slice(0, 8)}
                   </option>)}
-                </select>
+                </Select>
               </div>
               <label className="grid gap-1 text-sm">New template name
                 <Input value={newName} onChange={event => setNewName(event.target.value)} maxLength={64} disabled={busy} />

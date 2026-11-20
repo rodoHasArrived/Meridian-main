@@ -284,7 +284,7 @@ Declared public members:
 | <code>public TradingOperatorReadinessDto? Observe(Guid accountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L22) |  |
 | <code>public TradingOperatorReadinessService(IServiceProvider services, ILogger&lt;TradingOperatorReadinessService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:51](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L51) |  |
 | <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:59](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L59) |  |
-| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:64](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L64) |  |
+| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId, StrategyRunReadScope scope, CancellationToken ct = default, Guid? authorizedPaperAccountId = null);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:64](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L64) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs:8](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs#L8).
 
@@ -422,7 +422,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:90](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L90) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1608](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1608) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1607](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1607) |  |
 
 ## WorkstationWorkflowReadScope
 

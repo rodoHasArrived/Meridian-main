@@ -629,7 +629,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalCashBalance</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:963](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L963).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:935](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L935).
 
 ```csharp
 public sealed record InternalCashBalance(string CashBalanceId, string Account, string Currency, decimal Balance, string EvidenceReference, DateOnly AsOfDate) : IStatementMatchItem
@@ -639,7 +639,7 @@ public sealed record InternalCashBalance(string CashBalanceId, string Account, s
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalLedgerTransaction</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:974](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L974).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:946](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L946).
 
 ```csharp
 public sealed record InternalLedgerTransaction(string TransactionId, string? ExternalTransactionId, string Account, string? SecurityId, string? Currency, DateOnly TradeDate, DateOnly SettlementDate, string TransactionType, decimal Quantity, decimal NetAmount, string EvidenceReference) : IStatementMatchItem
@@ -649,13 +649,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:988](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L988) | Unit price in the same currency as the monetary amount, when explicitly available. |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:960](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L960) | Unit price in the same currency as the monetary amount, when explicitly available. |
 
 ## InternalPortfolioPosition
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalPortfolioPosition</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:940](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L940).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:912](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L912).
 
 ```csharp
 public sealed record InternalPortfolioPosition(string PositionId, string Account, string SecurityId, DateOnly AsOfDate, decimal Quantity, decimal? MarketValue, string EvidenceReference) : IStatementMatchItem
@@ -665,8 +665,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:950](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L950) | Unit price in the same currency as the monetary amount, when explicitly available. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:958](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L958) | Meridian&#x27;s accrued interest receivable for the holding (absolute, in the run&#x27;s base currency), when the internal book carries one. Null means the book states no accrued interest; a custodian row that states accrued interest against such a holding is a break, not a match. |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:922](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L922) | Unit price in the same currency as the monetary amount, when explicitly available. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:930](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L930) | Meridian&#x27;s accrued interest receivable for the holding (absolute, in the run&#x27;s base currency), when the internal book carries one. Null means the book states no accrued interest; a custodian row that states accrued interest against such a holding is a break, not a match. |
 
 ## InternalReconciliationBook
 
@@ -841,7 +841,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementMatchItem</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1061](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1061).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1037](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1037).
 
 Exposes normalized statement item fields used by matching rules.
 
@@ -853,8 +853,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string MatchId { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1063](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1063) |  |
-| <code>string EvidenceReference { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1071](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1071) | The durable evidence reference the item contributes to a match or break. Also the final pair-ordering tie-breaker: match ids are expected to be unique per side, but a population that repeats one must still order totally, or the assignment would fall back to input enumeration order. |
+| <code>string MatchId { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1039](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1039) |  |
+| <code>string EvidenceReference { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1047](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1047) | The durable evidence reference the item contributes to a match or break. Also the final pair-ordering tie-breaker: match ids are expected to be unique per side, but a population that repeats one must still order totally, or the assignment would fall back to input enumeration order. |
 
 ## IStatementMatchResultRepository
 

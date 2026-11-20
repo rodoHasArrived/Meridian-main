@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IConsolidationDraftGuard
+
+Qualified name: <code>Meridian.Contracts.Ledger.IConsolidationDraftGuard</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:50](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L50).
+
+Checks that a consolidation draft&#x27;s source authority is still current before it proceeds.
+
+```csharp
+public interface IConsolidationDraftGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task ValidateCurrentAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:52](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L52) |  |
+
 ## IIntercompanyAccountBindingStore
 
 Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyAccountBindingStore</code>. Kind: `interface`.
@@ -109,7 +127,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.ILedgerBookService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:542](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L542).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:557](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L557).
 
 Creates and queries ledger books and manages their accounting periods and rollout assessments.
 
@@ -121,16 +139,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;LedgerBookDto&gt; CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:544](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L544) |  |
-| <code>Task&lt;LedgerBookDto?&gt; GetBookAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:546](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L546) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerBookDto&gt;&gt; ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:548](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L548) |  |
-| <code>Task&lt;LedgerBookRolloutAssessmentDto&gt; AssessRolloutAsync(LedgerBookRolloutAssessmentRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:550](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L550) |  |
-| <code>Task&lt;LedgerPeriodDto&gt; CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:556](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L556) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:558](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L558) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:560](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L560) |  |
-| <code>Task&lt;LedgerPeriodSummaryDto?&gt; GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:562](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L562) |  |
-| <code>Task&lt;LedgerPeriodCloseResultDto&gt; ClosePeriodAsync(Guid periodId, CloseLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:564](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L564) |  |
-| <code>Task&lt;LedgerPeriodReopenResultDto&gt; ReopenPeriodAsync(Guid periodId, ReopenLedgerPeriodRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:569](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L569) |  |
+| <code>Task&lt;LedgerBookDto&gt; CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:559](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L559) |  |
+| <code>Task&lt;LedgerBookDto?&gt; GetBookAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:561](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L561) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerBookDto&gt;&gt; ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:563](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L563) |  |
+| <code>Task&lt;LedgerBookRolloutAssessmentDto&gt; AssessRolloutAsync(LedgerBookRolloutAssessmentRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:565](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L565) |  |
+| <code>Task&lt;LedgerPeriodDto&gt; CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:571](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L571) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:573](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L573) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:575](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L575) |  |
+| <code>Task&lt;LedgerPeriodSummaryDto?&gt; GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:577](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L577) |  |
+| <code>Task&lt;LedgerPeriodCloseResultDto&gt; ClosePeriodAsync(Guid periodId, CloseLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:579](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L579) |  |
+| <code>Task&lt;LedgerPeriodReopenResultDto&gt; ReopenPeriodAsync(Guid periodId, ReopenLedgerPeriodRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:584](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L584) |  |
 
 ## ILedgerEventAuditVerifier
 
@@ -796,14 +814,4 @@ An opt-in, reviewed close policy for one ledger book (ADR-032). While active, th
 
 ```csharp
 public sealed record IntercompanyConfirmationClosePolicyDto(Guid PolicyId, string TenantId, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? CompanyId, Guid LedgerBookId, IReadOnlyList<string> BlockingCodes, long Version, IntercompanyConfirmationClosePolicyStatusDto Status, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? ActiveFrom, IReadOnlyList<IntercompanyConfirmationClosePolicyEventDto> Events);
-```
-
-## IntercompanyConfirmationClosePolicyEventDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyConfirmationClosePolicyEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L11).
-
-```csharp
-public sealed record IntercompanyConfirmationClosePolicyEventDto(Guid EventId, Guid RequestId, IntercompanyConfirmationClosePolicyActionDto Action, string Actor, DateTimeOffset RecordedAt, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Reason = null);
 ```

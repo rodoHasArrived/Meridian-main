@@ -37,6 +37,18 @@ Declared public members:
 | <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:308](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L308) |  |
 | <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:310](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L310) |  |
 
+## PaperSessionDailyReconciliationStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperSessionDailyReconciliationStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PaperSessionDailyReconciliationStore.cs:11](../../../../src/Meridian.Ui.Shared/Services/PaperSessionDailyReconciliationStore.cs#L11).
+
+Retains the first completed comparison for each paper session, account, and cutoff.
+
+```csharp
+public sealed class PaperSessionDailyReconciliationStore(string root)
+```
+
 ## PaymentInstruction
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.
@@ -688,7 +700,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderLedgerDailyReconciliationWorker(IServiceScopeFactory scopes, ProviderLedgerDailyReconciliationOptions options, TimeProvider clock, ILogger&lt;ProviderLedgerDailyReconciliationWorker&gt; logger) : this(options, clock, logger, async(target, operationId, ct) =&gt;{ using var scope = scopes.CreateScope(); return await RunTargetAsync(scope.ServiceProvider, target, operationId, ct); });</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:35](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L35) |  |
+| <code>public ProviderLedgerDailyReconciliationWorker(IServiceScopeFactory scopes, ProviderLedgerDailyReconciliationOptions options, TimeProvider clock, ILogger&lt;ProviderLedgerDailyReconciliationWorker&gt; logger) : this(options, clock, logger, async(target, operationId, ct) =&gt;{ using var scope = scopes.CreateScope(); return await RunTargetAsync(scope.ServiceProvider, target, operationId, ct); }, async(now, ct) =&gt;{ using var scope = scopes.CreateScope(); return await PaperSessionDailyReconciliation.RunAsync(scope.ServiceProvider, now, logger, ct); });</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:36](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L36) |  |
 
 ## ProviderLedgerReconciliationService
 

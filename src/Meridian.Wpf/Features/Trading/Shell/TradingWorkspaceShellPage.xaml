@@ -632,6 +632,51 @@
                                             Click="OpenAlerts_Click"
                                             Style="{StaticResource GhostButtonStyle}" />
                                 </WrapPanel>
+                                <Expander Header="Paper daily reconciliation" Margin="0,12,0,0"
+                                          DataContext="{Binding PaperReconciliation}">
+                                    <StackPanel Margin="0,8,0,0">
+                                        <Button Content="Load paper sessions" HorizontalAlignment="Left"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Command="{Binding LoadSessionsCommand}" />
+                                        <ComboBox Margin="0,8,0,8" AutomationProperties.Name="Paper session"
+                                                  ItemsSource="{Binding Sessions}" SelectedItem="{Binding Session}">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding StrategyName, TargetNullValue=Paper session}" />
+                                                        <TextBlock Text="{Binding SessionId}" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <Button Content="Review daily reconciliation" HorizontalAlignment="Left"
+                                                Style="{StaticResource GhostButtonStyle}" Command="{Binding ReviewCommand}" />
+                                        <TextBlock Margin="0,8,0,0" Text="{Binding Status}" TextWrapping="Wrap"
+                                                   AutomationProperties.LiveSetting="Polite" />
+                                        <StackPanel Visibility="{Binding EvidenceVisibility}">
+                                            <StackPanel DataContext="{Binding Evidence}">
+                                                <TextBlock Text="{Binding Cutoff, StringFormat='Cutoff {0:u}'}" />
+                                                <TextBlock Text="{Binding Currency, StringFormat='Currency {0}'}" />
+                                                <TextBlock Text="{Binding JournalCash, StringFormat='Journal cash {0}', TargetNullValue=Journal cash unavailable}" />
+                                                <TextBlock Text="{Binding PortfolioCash, StringFormat='Portfolio cash {0}', TargetNullValue=Portfolio cash unavailable}" />
+                                                <ItemsControl ItemsSource="{Binding Breaks}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Margin="0,4,0,0" TextWrapping="Wrap">
+                                                                <Run Text="{Binding Check, Mode=OneWay}" />
+                                                                <Run Text="{Binding Expected, Mode=OneWay, StringFormat=' · expected {0}'}" />
+                                                                <Run Text="{Binding Actual, Mode=OneWay, StringFormat=' · actual {0}'}" />
+                                                                <Run Text="{Binding Difference, Mode=OneWay, StringFormat=' · difference {0}'}" />
+                                                            </TextBlock>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <TextBlock Text="{Binding SourceHashSha256}" TextWrapping="Wrap"
+                                                           AutomationProperties.Name="Reconciliation source hash" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Expander>
                             </StackPanel>
                         </Border>
                     </Grid>
