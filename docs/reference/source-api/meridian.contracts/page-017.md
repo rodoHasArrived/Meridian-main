@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CapitalizePikRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.CapitalizePikRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:144](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L144).
+
+Capitalizes accrued PIK interest on CapitalizationDate.
+
+```csharp
+public sealed record CapitalizePikRequest(DateOnly CapitalizationDate);
+```
+
 ## CashTransactionDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.CashTransactionDto</code>. Kind: `record`.
@@ -662,15 +674,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;LoanMaturityBucketDto&gt;? MaturityBuckets { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:397](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L397) | Current principal grouped by contractual maturity, never scheduled repayments. |
-
-## LoanServicingSchedulePreviewDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.LoanServicingSchedulePreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:156](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L156).
-
-Read-only view of a loan&#x27;s automatic servicing schedule.
-
-```csharp
-public sealed record LoanServicingSchedulePreviewDto(Guid LoanId, DateOnly From, DateOnly To, IReadOnlyList<ScheduledRateResetPreviewDto> RateResets, IReadOnlyList<DateOnly> PikCapitalizationDates, decimal PikInterestAccruedUnpaid);
-```

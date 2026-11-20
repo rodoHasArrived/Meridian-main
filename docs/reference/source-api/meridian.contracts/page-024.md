@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondMonitoringMarketWatchDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMonitoringMarketWatchDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:28](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L28).
+
+Tenant market-store evidence is separate from account Evidence Vault observations.
+
+```csharp
+public sealed record BondMonitoringMarketWatchDto(string HoldingsContentSha256, IReadOnlyList<BondMonitoringMarketHoldingDto> Holdings, IReadOnlyList<BondMarketObservationDto> Observations);
+```
+
 ## BondMonitoringObligationDto
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondMonitoringObligationDto</code>. Kind: `record`.
@@ -675,19 +687,3 @@ Prepares a held-bond settlement; fees are separately expensed, never capitalized
 ```csharp
 public sealed record BondSettlementConsiderationRequest(BondAnalyticsRequest Analytics, decimal OriginalFace, decimal BookedFactor, decimal Fees, decimal ObservedDirtyCash, string SourceEvidenceId, string CashAccountId, string AccruedInterestAccountId, string? FeesAccountId = null, string? FunctionalCurrency = null, decimal? SettlementFxRateToFunctional = null);
 ```
-
-## BondSettlementPreparationResult
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondSettlementPreparationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:77](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L77).
-
-```csharp
-public sealed record BondSettlementPreparationResult(BondSettlementConsiderationDto? Settlement, IReadOnlyList<BondAnalyticsBlocker> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:81](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L81) |  |

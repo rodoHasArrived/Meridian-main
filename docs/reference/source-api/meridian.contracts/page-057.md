@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredCashFlowTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L17).
+
+Strongly typed economic terms resolved once from a security&#x27;s raw term JSON, replacing the scattered fuzzy key-probing that previously lived inline in the projection math. All alias resolution and JSON traversal is centralized in StructuredCashFlowTermsResolver; downstream projection and ledger code consumes this typed shape only.
+
+```csharp
+public sealed record StructuredCashFlowTerms(DateOnly? MaturityDate, DateOnly? IssueDate, decimal? PrincipalFace, decimal? CurrentFactor, decimal? CouponRate, string? PaymentFrequency, string? DayCountConvention, IReadOnlyList<StructuredFactorScheduleEntry> FactorSchedule, IReadOnlyList<StructuredCashFlowLeg>? Legs = null, IReadOnlyList<StructuredPrincipalScheduleEntry>? PrincipalSchedule = null, IReadOnlyList<StructuredStepCouponEntry>? StepCouponSchedule = null, string? InflationIndex = null, decimal? InflationBaseIndexValue = null, decimal? InflationIndexRatio = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore] public SecurityCouponKind CouponKind { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L35) |  |
+| <code>[JsonIgnore] public SecurityCouponRateUnit CouponRateUnit { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L38) |  |
+| <code>[JsonIgnore] public RateUnit? RecordRateUnit { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L42) | Explicit scalar rate-unit declaration, independent of schedule conventions. |
+| <code>[JsonIgnore] public decimal? CapRate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L45) |  |
+| <code>[JsonIgnore] public decimal? FloorRate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L48) |  |
+| <code>public static StructuredCashFlowTerms Empty { get; } = new (MaturityDate : null, IssueDate : null, PrincipalFace : null, CurrentFactor : null, CouponRate : null, PaymentFrequency : null, DayCountConvention : null, FactorSchedule : Array.Empty&lt;StructuredFactorScheduleEntry&gt;());</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L51) | An empty term set used when a security carries no readable structured terms. |
+| <code>public bool HasFactorSchedule =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L62) | True when a typed, multi-point factor schedule was resolved from the terms. |
+| <code>public bool HasLegs =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L65) | True when typed cash-flow legs were resolved (multi-leg or floating-rate structure). |
+| <code>public bool HasPrincipalSchedule =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L68) | True when contractual principal payment dates and amounts were resolved. |
+| <code>public decimal? FactorAsOf(DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L76) | Returns the pool factor in effect on asOf — the latest scheduled factor dated on or before that day — falling back to the scalar CurrentFactor when no schedule point applies. This is how the typed factor schedule seeds amortization instead of a single free-text scalar. |
+| <code>public bool HasStepCouponSchedule =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L91) | True when a dated step-coupon schedule was resolved from the terms. |
+| <code>public decimal? CouponRateAsOf(DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L99) | Returns the coupon rate payable on asOf — for step coupons the latest scheduled step effective on or before that day, otherwise the scalar CouponRate. This is what makes a step-rate bond computable instead of a classified-but-inert label: accrual and projection math can ask for the rate per period. |
+
 ## StructuredCashFlowTermsResolver
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver</code>. Kind: `class`.
@@ -863,25 +892,3 @@ Declared public members:
 | <code>public const string Paused = &quot;Paused&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:125](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L125) | Session is temporarily paused. |
 | <code>public const string Completed = &quot;Completed&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:130](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L130) | Session has completed successfully. |
 | <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:135](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L135) | Session has failed due to an error. |
-
-## MarketDataQuery
-
-Qualified name: <code>Meridian.Contracts.Store.MarketDataQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Store/MarketDataQuery.cs:23](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L23).
-
-Immutable query specification for IMarketDataStore. All parameters are optional — an empty query returns all stored events up to Limit.
-
-```csharp
-public sealed record MarketDataQuery(SymbolId? Symbol = null, DateTimeOffset? From = null, DateTimeOffset? To = null, MarketEventType? EventType = null, string? Source = null, int? Limit = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MarketDataQuery WithSymbol(SymbolId symbol) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:32](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L32) | Returns a new query that adds a symbol filter. |
-| <code>public MarketDataQuery WithTimeRange(DateTimeOffset from, DateTimeOffset to) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:35](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L35) | Returns a new query restricted to a time window. |
-| <code>public MarketDataQuery WithEventType(MarketEventType type) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:39](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L39) | Returns a new query restricted to a specific event type. |
-| <code>public MarketDataQuery WithSource(string source) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:42](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L42) | Returns a new query restricted to a specific data source. |
-| <code>public MarketDataQuery WithLimit(int limit) =&gt; …;</code> | [src/Meridian.Contracts/Store/MarketDataQuery.cs:45](../../../../src/Meridian.Contracts/Store/MarketDataQuery.cs#L45) | Returns a new query with a maximum result count. |

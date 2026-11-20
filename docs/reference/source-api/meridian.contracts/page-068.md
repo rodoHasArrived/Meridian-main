@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorDesktopShortcutDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorDesktopShortcutDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L82).
+
+One WPF desktop shortcut&#x27;s difference from its default. Each value is optional: null keeps the default. Key and Modifiers use WPF enum names (for example D and Control, Shift) so this contract stays free of WPF types.
+
+```csharp
+public sealed record OperatorDesktopShortcutDto(string? Key = null, string? Modifiers = null, bool? IsEnabled = null);
+```
+
 ## OperatorInboxDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorInboxDto</code>. Kind: `record`.
@@ -708,15 +720,3 @@ Enum declarations:
 | <code>TopWinner = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:275](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L275) |  |
 | <code>TopLaggard = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:276](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L276) |  |
 | <code>Contribution = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:277](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L277) |  |
-
-## PortfolioReportingAnalyticsRowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PortfolioReportingAnalyticsRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:291](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L291).
-
-Top-N and contribution analytics row derived from retained portfolio P&amp;L sources.
-
-```csharp
-public sealed record PortfolioReportingAnalyticsRowDto(string AnalyticsId, PortfolioReportingAnalyticsKindDto Kind, PortfolioReportingAnalyticsScopeDto Scope, int Rank, string Label, string? Symbol, string? Classification, string Currency, decimal RealizedPnl, decimal UnrealizedPnl, decimal TotalPnl, decimal ContributionPercent, decimal HeatMapIntensity, int SourceCount, DateTimeOffset AsOf, string Route, string ReadinessSummary, IReadOnlyList<string> Tags, string? VersionStamp = null);
-```

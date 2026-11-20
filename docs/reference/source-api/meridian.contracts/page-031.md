@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EndpointDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.EndpointDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:188](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L188).
+
+```csharp
+public sealed record EndpointDefinitionDto(string EndpointKey, ProviderCapabilityKindDto Capability, ProviderIntegrationHttpMethodDto Method, string Path, IReadOnlyDictionary<string, string> Headers, IReadOnlyDictionary<string, string> Query, string? RequestBodyTemplate, EndpointDependencyDto? DependsOn, EndpointPaginationDto Pagination, EndpointResponseShapeDto Response);
+```
+
 ## EndpointDependencyDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.EndpointDependencyDto</code>. Kind: `record`.
@@ -734,14 +744,4 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:354
 
 ```csharp
 public sealed record ProviderIntegrationQuarantineReviewDto(string ConnectionId, IReadOnlyList<string> SyncRunIds, IReadOnlyList<QuarantinedRecordDto> Records, IReadOnlyList<ProviderIntegrationQuarantineIssueGroupDto> IssueGroups, IReadOnlyList<ProviderIntegrationQuarantineDecisionDto> Decisions, int TotalQuarantinedRecords, int CriticalIssueCount, int WarningIssueCount, int PendingReviewRecordCount, int DecisionedRecordCount, int ReplayRequestedRecordCount, int IgnoredRecordCount, int CashPositionCandidateCount);
-```
-
-## ProviderIntegrationReconciliationHandoffHistoryDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationReconciliationHandoffHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:540](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L540).
-
-```csharp
-public sealed record ProviderIntegrationReconciliationHandoffHistoryDto(string ConnectionId, IReadOnlyList<ProviderIntegrationReconciliationHandoffRecordDto> Records, int TotalRecords, int HandoffCount, DateTimeOffset? LastRequestedAt);
 ```

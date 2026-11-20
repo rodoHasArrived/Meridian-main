@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaymentIntentWorkflowDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PaymentIntentWorkflowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:228](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L228).
+
+```csharp
+public sealed record PaymentIntentWorkflowDto(string PaymentIntentId, string? SettlementReference, string FundProfileId, Guid? LedgerBookId, string FundEventId, Guid JournalEntryId, string Requester, DateTimeOffset RequestedAtUtc, PaymentIntentWorkflowStatusDto Status, string StatusLabel, string ReadinessReason, string ExecutionDeferredReason, PaymentIntentExpectedCashMovementDto ExpectedCashMovement, string EvidenceRoute, string WorkbenchRoute, IReadOnlyList<PaymentIntentApprovalStepDto>? ApprovalChain = null, IReadOnlyList<PaymentIntentBankEvidenceDto>? BankEvidence = null, IReadOnlyList<PaymentIntentReconciliationLinkDto>? ReconciliationLinks = null, IReadOnlyList<PaymentIntentAuditEventDto>? AuditHistory = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;PaymentIntentApprovalStepDto&gt; ApprovalChain { get; init; } = ApprovalChain??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:249](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L249) |  |
+| <code>public IReadOnlyList&lt;PaymentIntentBankEvidenceDto&gt; BankEvidence { get; init; } = BankEvidence??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:252](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L252) |  |
+| <code>public IReadOnlyList&lt;PaymentIntentReconciliationLinkDto&gt; ReconciliationLinks { get; init; } = ReconciliationLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:255](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L255) |  |
+| <code>public IReadOnlyList&lt;PaymentIntentAuditEventDto&gt; AuditHistory { get; init; } = AuditHistory??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:258](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L258) |  |
+
 ## PaymentIntentWorkflowStatusDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PaymentIntentWorkflowStatusDto</code>. Kind: `enum`.
@@ -718,14 +737,4 @@ Explicit authority scope shared by commitment, call, and receipt records.
 
 ```csharp
 public sealed record PrivateCapitalScopeDto(string TenantId, string CompanyId, string EntityId, string FundProfileId, Guid LedgerBookId, string Currency);
-```
-
-## PrivateCapitalUnitRegisterHoldingDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalUnitRegisterHoldingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalUnitRegisterDtos.cs:34](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalUnitRegisterDtos.cs#L34).
-
-```csharp
-public sealed record PrivateCapitalUnitRegisterHoldingDto(string InvestorId, decimal Units, decimal SubscribedAmount, decimal RedeemedAmount, decimal EqualisationCredit, decimal ContingentRedemption, decimal Value);
 ```

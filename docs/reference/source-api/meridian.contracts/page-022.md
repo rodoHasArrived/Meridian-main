@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportFormatsResponse
+
+Qualified name: <code>Meridian.Contracts.Export.ExportFormatsResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:289](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L289).
+
+Carries the export format choices returned by the API.
+
+```csharp
+public sealed class ExportFormatsResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;ExportFormatInfo&gt;? Formats { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:291](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L291) |  |
+
 ## ExportFormatsResult
 
 Qualified name: <code>Meridian.Contracts.Export.ExportFormatsResult</code>. Kind: `class`.
@@ -886,21 +904,3 @@ Declared public members:
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? MaturityDate { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:124](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L124) |  |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BondGoverningYieldScenario&gt;? GoverningYieldScenarios { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:127](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L127) |  |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? SpreadDv01 { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:134](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L134) | Floating-rate analytics only: the dirty-price change per 100 face for a one-basis-point increase in the coupon spread, repriced at the unchanged projected-flow yield. Omitted for fixed and zero-coupon models. |
-
-## BondCalculationContext
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondCalculationContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondCalculationContext.cs:9](../../../../src/Meridian.Contracts/FixedIncome/BondCalculationContext.cs#L9).
-
-Explicit economic and recorded-information cutoffs for bond calculations. Recorded timestamps describe eligibility among retained rows, not historical transaction visibility.
-
-```csharp
-public sealed record BondCalculationContext(DateTimeOffset AsOf, DateOnly? SettlementDate = null, DateTimeOffset? KnownAt = null, long? SecurityVersion = null, IReadOnlyList<BondPinnedCurveInput>? Curves = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Guid&gt;? ObservedFixingReceiptIds { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondCalculationContext.cs:18](../../../../src/Meridian.Contracts/FixedIncome/BondCalculationContext.cs#L18) | Explicit immutable observed-reset selections; absence never reads a changing latest fixing. |

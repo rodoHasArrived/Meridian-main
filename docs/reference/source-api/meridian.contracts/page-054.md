@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityDistributionCorporateActionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityDistributionCorporateActionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:163](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L163).
+
+New units of another security distributed per unit held (spin-off, rights distribution).
+
+```csharp
+public sealed record SecurityDistributionCorporateActionTerms(string EventType, Guid? DistributedSecurityId, decimal? UnitsPerHeldUnit) : CorporateActionTerms(EventType);
+```
+
 ## SecurityEconomicDefinitionRecord
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord</code>. Kind: `record`.
@@ -878,21 +890,3 @@ Request for bulk importing securities via the HTTP API.
 ```csharp
 public sealed record SecurityMasterImportRequest(string FileContent, string FileExtension);
 ```
-
-## SecurityMasterLedgerSymbol
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterLedgerSymbol</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs#L4).
-
-Resolves one dated ticker for instrument-bearing native ledger lines.
-
-```csharp
-public static class SecurityMasterLedgerSymbol
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string? ResolveUniqueActiveTicker(IReadOnlyList&lt;SecurityIdentifierDto&gt; identifiers, DateTimeOffset asOfUtc);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs#L6) |  |

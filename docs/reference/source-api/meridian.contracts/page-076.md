@@ -6,6 +6,33 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementRunStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L9).
+
+Lifecycle state for a statement reconciliation run shared by workstation clients.
+
+```csharp
+public enum StatementRunStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L11) |  |
+| <code>PendingValidation = 1</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L12) |  |
+| <code>Validating = 2</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L13) |  |
+| <code>ValidationFailed = 3</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L14) |  |
+| <code>Importing = 4</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L15) |  |
+| <code>Reconciling = 5</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L16) |  |
+| <code>ReviewRequired = 6</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L17) |  |
+| <code>Completed = 7</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L18) |  |
+| <code>Failed = 8</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L19) |  |
+| <code>Canceled = 9</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L20) |  |
+
 ## StatementRunSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunSummaryDto</code>. Kind: `record`.
@@ -626,15 +653,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:689](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L689) |  |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:691](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L691) |  |
-
-## StrategyRunContinuityDetail
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityDetail</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1127](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1127).
-
-Backward-compatible alias for StrategyRunContinuityDto.
-
-```csharp
-public sealed record StrategyRunContinuityDetail(StrategyRunDetail Run, StrategyRunContinuityLineage Lineage, StrategyRunCashFlowDigest? CashFlow, ReconciliationRunSummary? Reconciliation, StrategyRunContinuityStatus ContinuityStatus) : StrategyRunContinuityDto(Run, Lineage, CashFlow, Reconciliation, ContinuityStatus);
-```

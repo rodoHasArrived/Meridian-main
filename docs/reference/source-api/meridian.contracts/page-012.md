@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PortfolioCashLadderQuery
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.PortfolioCashLadderQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:127](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L127).
+
+Query parameters for the portfolio cash ladder read model.
+
+```csharp
+public sealed record PortfolioCashLadderQuery(string? ScenarioId = null, int HorizonDays = 90, decimal? MinimumCashThreshold = null, int BucketDays = 7, string? FundAccountId = null, string? EngineVersion = null);
+```
+
 ## PortfolioCashLadderSourceSliceDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.PortfolioCashLadderSourceSliceDto</code>. Kind: `record`.
@@ -766,24 +778,3 @@ Governed repair request for a legacy Pending payment whose currency was never re
 ```csharp
 public sealed record RemediatePaymentCurrencyRequest(string Currency, string Reason, string? RemediatedBy, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 ```
-
-## BusinessDayAdjustment
-
-Qualified name: <code>Meridian.Contracts.Calendars.BusinessDayAdjustment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs:13](../../../../src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs#L13).
-
-A business-day convention paired with the calendar it is applied against, as FpML&#x27;s BusinessDayAdjustments pairs a convention with its business centres.
-
-```csharp
-public sealed record BusinessDayAdjustment(BusinessDayConvention Convention, IBusinessDayCalendar? Calendar)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static BusinessDayAdjustment Unadjusted { get; } = new (BusinessDayConvention.Unadjusted, null);</code> | [src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs:16](../../../../src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs#L16) | The adjustment that keeps every date as it is. |
-| <code>public static BusinessDayAdjustment Of(BusinessDayConvention convention, IBusinessDayCalendar calendar);</code> | [src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs:20](../../../../src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs#L20) | Creates an adjustment with a required calendar. |
-| <code>public bool IsUnadjusted =&gt; …;</code> | [src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs:27](../../../../src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs#L27) | Whether this adjustment leaves every date unchanged. |
-| <code>public DateOnly Apply(DateOnly date);</code> | [src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs:31](../../../../src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs#L31) | Applies the convention to date. |

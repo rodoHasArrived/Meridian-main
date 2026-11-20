@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LoanServicingSchedulePreviewDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.LoanServicingSchedulePreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:156](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L156).
+
+Read-only view of a loan&#x27;s automatic servicing schedule.
+
+```csharp
+public sealed record LoanServicingSchedulePreviewDto(Guid LoanId, DateOnly From, DateOnly To, IReadOnlyList<ScheduledRateResetPreviewDto> RateResets, IReadOnlyList<DateOnly> PikCapitalizationDates, decimal PikInterestAccruedUnpaid);
+```
+
 ## LoanServicingStateDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.LoanServicingStateDto</code>. Kind: `record`.
@@ -673,14 +685,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:319](
 
 ```csharp
 public sealed record ServicerStatementPreviewDto(Guid? BatchId, ServicerStatementKind Kind, string ServicerName, DateOnly StatementDate, string SourceFormat, string? SourceFileName, string RawPayloadHash, int RowCount, int MappedRowCount, int UnmappedRowCount, int DuplicateRowCount, int ReadyToApplyRowCount, int AppliedRowCount, string Status, IReadOnlyList<ServicerStatementRowDto> Rows, IReadOnlyList<ServicerStatementValidationIssueDto> Issues, IReadOnlyList<string> SuggestedActions, string? EvidenceRoute = null, string? StatementRunId = null);
-```
-
-## ServicerStatementRowDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:348](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L348).
-
-```csharp
-public sealed record ServicerStatementRowDto(string RowId, ServicerStatementKind Kind, int RowNumber, ServicerStatementRowStatus Status, Guid? LoanId, Guid? SecurityId, string? SecuritySymbol, string? ExternalLoanReference, string? ServicerLoanNumber, string? BorrowerReference, string? FundAccountId, string? CashAccountId, DateOnly? StatementDate, DateOnly? EffectiveDate, DateOnly? SettlementDate, decimal? PrincipalOutstanding, decimal? InterestAccruedUnpaid, decimal? FeesAccruedUnpaid, decimal? PenaltyAccruedUnpaid, decimal? CommitmentAvailable, decimal? GrossAmount, decimal? PrincipalAmount, decimal? InterestAmount, decimal? FeeAmount, decimal? PenaltyAmount, CurrencyCode? Currency, string? ExternalRef, string RowHash, string RawPayloadJson, ServicerStatementApplyMode? SuggestedApplyMode = null, IReadOnlyList<ServicerStatementValidationIssueDto>? Issues = null, string? EvidenceRoute = null);
 ```

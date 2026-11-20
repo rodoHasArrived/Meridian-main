@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateInvestmentPortfolioRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:99](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L99).
+
+```csharp
+public sealed record CreateInvestmentPortfolioRequest(Guid InvestmentPortfolioId, Guid BusinessId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, Guid? ClientId = null, Guid? FundId = null, Guid? SleeveId = null, Guid? VehicleId = null, Guid? EntityId = null, string? Description = null);
+```
+
 ## CreateLegalEntityRequest
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CreateLegalEntityRequest</code>. Kind: `record`.
@@ -596,14 +606,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:
 
 ```csharp
 public sealed record FundStructureSetupVehicleDraftDto(Guid? VehicleId, string Code, string Name, string BaseCurrency, string? Description = null);
-```
-
-## FundStructureSharedDataAccessDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:295](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L295).
-
-```csharp
-public sealed record FundStructureSharedDataAccessDto(SecurityMasterAccessSummaryDto SecurityMaster, HistoricalPriceAccessSummaryDto HistoricalPrices, BackfillAccessSummaryDto Backfill);
 ```

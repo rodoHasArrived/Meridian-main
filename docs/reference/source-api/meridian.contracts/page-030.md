@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerMappingAccountDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingAccountDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:445](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L445).
+
+```csharp
+public sealed record LedgerMappingAccountDto(Guid AccountId, string AccountCode, string DisplayName, AccountTypeDto AccountType, AccountOperationalStatusDto OperationalStatus, string BaseCurrency, string? Institution, Guid? FundId, Guid? SleeveId, Guid? VehicleId, Guid? EntityId, string? PortfolioId, string? LedgerReference, LedgerMappingResolutionDto Mapping, string RecommendedAction);
+```
+
 ## LedgerMappingAssignmentAuditEventDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingAssignmentAuditEventDto</code>. Kind: `record`.
@@ -692,14 +702,4 @@ Source: [src/Meridian.Contracts/FxSpot/FxSpotReferenceDtos.cs:3](../../../../src
 
 ```csharp
 public sealed record FxSpotReferenceDto(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string PairCode, string PrimaryIdentifier, long Version);
-```
-
-## EndpointDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.EndpointDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:188](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L188).
-
-```csharp
-public sealed record EndpointDefinitionDto(string EndpointKey, ProviderCapabilityKindDto Capability, ProviderIntegrationHttpMethodDto Method, string Path, IReadOnlyDictionary<string, string> Headers, IReadOnlyDictionary<string, string> Query, string? RequestBodyTemplate, EndpointDependencyDto? DependsOn, EndpointPaginationDto Pagination, EndpointResponseShapeDto Response);
 ```

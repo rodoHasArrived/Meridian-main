@@ -6,24 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## CorporateActionLotMutationSetDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionLotMutationSetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:318](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L318).
-
-```csharp
-public sealed record CorporateActionLotMutationSetDto(Guid PositionId, long ExpectedPositionVersion, IReadOnlyList<CorporateActionLotMutationDto>? Mutations = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;CorporateActionLotMutationDto&gt; Mutations { get; init; } = Mutations??[];</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:323](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L323) |  |
-| <code>public bool RequiresAuthoritativeLotResolution =&gt; …;</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:325](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L325) |  |
-| <code>public bool HasAuthoritativeLotResolution =&gt; …;</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:327](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L327) |  |
-
 ## CorporateActionLotStateSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionLotStateSnapshotDto</code>. Kind: `record`.
@@ -548,6 +530,40 @@ Declared public members:
 | <code>bool SupportsTermsAsOf =&gt; …;</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:311](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L311) | True when GetOperationsAsOfAsync projects from the terms recorded as of the context&#x27;s cutoff. False means it falls back to the current projection. |
 | <code>Task&lt;AssetOperationsDetailDto?&gt; GetOperationsAsOfAsync(Guid securityId, Meridian.Contracts.FixedIncome.BondCalculationContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:318](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L318) | The operations projected at context&#x27;s cutoff, from the terms recorded by its KnownAt. The default implementation returns the current projection; check SupportsTermsAsOf before relying on historical terms. |
 
+## IBookReceiptQueueService
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.IBookReceiptQueueService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:126](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L126).
+
+```csharp
+public interface IBookReceiptQueueService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BookReceiptRunDto&gt; RunAsync(BookReceiptQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:128](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L128) |  |
+| <code>Task&lt;IReadOnlyList&lt;BookReceiptRunDto&gt;&gt; GetRunsAsync(BookReceiptScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:129](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L129) |  |
+| <code>Task&lt;BookReceiptRunDto?&gt; GetRunAsync(BookReceiptScopeDto scope, string runId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:130](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L130) |  |
+
+## IBookReceiptSource
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.IBookReceiptSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:77](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L77).
+
+```csharp
+public interface IBookReceiptSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BookReceiptSourceSnapshotDto&gt; LoadAsync(BookReceiptQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:79](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L79) |  |
+
 ## ICorporateActionRuleProfile
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile</code>. Kind: `interface`.
@@ -835,16 +851,4 @@ One held position fed into the portfolio cash ladder: the instrument&#x27;s asse
 
 ```csharp
 public sealed record PortfolioCashLadderPositionDto(AssetOperationsDetailDto Operations, decimal Quantity = 1m);
-```
-
-## PortfolioCashLadderQuery
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.PortfolioCashLadderQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:127](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L127).
-
-Query parameters for the portfolio cash ladder read model.
-
-```csharp
-public sealed record PortfolioCashLadderQuery(string? ScenarioId = null, int HorizonDays = 90, decimal? MinimumCashThreshold = null, int BucketDays = 7, string? FundAccountId = null, string? EngineVersion = null);
 ```

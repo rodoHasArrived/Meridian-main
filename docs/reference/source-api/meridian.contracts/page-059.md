@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AmountPassportComponentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportComponentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L42).
+
+```csharp
+public sealed record AmountPassportComponentDto(string Component, string Status, string Detail);
+```
+
 ## AmountPassportDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportDto</code>. Kind: `record`.
@@ -611,14 +621,4 @@ A single historical cash-flow entry from a strategy run.
 
 ```csharp
 public sealed record CashFlowEntryDto(DateTimeOffset Timestamp, decimal Amount, string EventKind, string? Symbol, string Currency, string? AccountId, string? Description);
-```
-
-## CashFlowProjectionPoint
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashFlowProjectionPoint</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L35).
-
-```csharp
-public sealed record CashFlowProjectionPoint(Guid AccountId, string Currency, DateOnly Date, decimal ExpectedInflow, decimal ExpectedOutflow, decimal NetFlow, decimal RunningBalance, bool LiquidityWarning, string WarningDetail);
 ```

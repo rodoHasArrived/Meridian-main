@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBondExerciseNoticeStore
+
+Qualified name: <code>Meridian.Contracts.CashFlows.IBondExerciseNoticeStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:100](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L100).
+
+```csharp
+public interface IBondExerciseNoticeStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondExerciseNoticeDto&gt; RecordAsync(BondExerciseNoticeDto notice, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:103](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L103) | Write-once; an identical retry returns the retained notice, a different payload under the same identity is refused. |
+| <code>Task&lt;BondExerciseNoticeDto?&gt; GetAsync(Guid securityId, Guid noticeId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:104](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L104) |  |
+| <code>Task&lt;IReadOnlyList&lt;BondExerciseNoticeDto&gt;&gt; ListAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:105](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L105) |  |
+| <code>Task&lt;BondExerciseNoticeDto&gt; DecideAsync(Guid securityId, Guid noticeId, bool approve, string actor, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:107](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L107) | Approves or rejects a recorded notice once; the deciding actor must differ from the recorder. |
+
 ## IContractualCashFlowPreviewService
 
 Qualified name: <code>Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService</code>. Kind: `interface`.
@@ -1033,26 +1052,3 @@ Source: [src/Meridian.Contracts/Commodities/CommodityDtos.cs:3](../../../../src/
 ```csharp
 public sealed record CommodityReferenceDto(Guid SecurityId, string DisplayName, string Currency, string CommodityType, string? Denomination, decimal? ContractSize, string? ExchangeCode, string? DeliveryCountry, string PrimaryIdentifier, long Version);
 ```
-
-## AlpacaOptionsDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.AlpacaOptionsDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:75](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L75).
-
-Alpaca provider configuration.
-
-```csharp
-public sealed class AlpacaOptionsDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonExtensionData] public Dictionary&lt;string, JsonElement&gt;? AdditionalProperties { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:79](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L79) | Retains host feed settings this common settings view does not model. |
-| <code>[JsonPropertyName(&quot;keyId&quot;)] public string? KeyId { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:82](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L82) |  |
-| <code>[JsonPropertyName(&quot;secretKey&quot;)] public string? SecretKey { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:85](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L85) |  |
-| <code>[JsonPropertyName(&quot;feed&quot;)] public string Feed { get; set; } = &quot;iex&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:88](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L88) |  |
-| <code>[JsonPropertyName(&quot;useSandbox&quot;)] public bool UseSandbox { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:91](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L91) |  |
-| <code>[JsonPropertyName(&quot;subscribeQuotes&quot;)] public bool SubscribeQuotes { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:94](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L94) |  |

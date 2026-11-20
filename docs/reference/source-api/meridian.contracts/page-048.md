@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionProcessingCaseDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:495](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L495).
+
+```csharp
+public sealed record CorporateActionProcessingCaseDto(Guid CaseId, Guid ProposalId, Guid CorporateActionId, Guid SecurityId, CorporateActionCaseScopeDto Scope, string State, long Version, string? MethodologyProfileId, string? AssignedTo, string? BlockedReason, string CreatedBy, DateTimeOffset CreatedAtUtc, string UpdatedBy, DateTimeOffset UpdatedAtUtc, CorporateActionCaseActionAvailabilityDto? ActionAvailability = null, CorporateActionCaseSourceSnapshotDto? SourceSnapshot = null, CorporateActionCaseAccountingStatusDto? AccountingStatus = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:514](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L514) |  |
+
 ## CorporateActionProcessingOptionDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionProcessingOptionDto</code>. Kind: `record`.
@@ -802,16 +818,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:142](../../
 
 ```csharp
 public sealed record EdgarFundHolding(string Cik, string AccessionNumber, string Form, string SourceDocument, string? HoldingName, string? IssuerName, string? Title, string? Cusip, string? Isin, string? Ticker, string? Lei, string? AssetCategory, string? IssuerCategory, string? Country, string? Currency, decimal? Balance, string? Units, decimal? ValueUsd, decimal? PercentageOfNetAssets, decimal? CouponRate, DateOnly? MaturityDate, bool? Restricted, string? FairValueLevel);
-```
-
-## EdgarIngestRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarIngestRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L6).
-
-Request for EDGAR reference-data ingest.
-
-```csharp
-public sealed record EdgarIngestRequest(string Scope = "all-filers", bool IncludeXbrl = false, string? Cik = null, int? MaxFilers = null, bool DryRun = false, bool IncludeFilingDocuments = false);
 ```

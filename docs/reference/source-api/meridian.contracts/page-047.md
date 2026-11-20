@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionCashDividendPostingResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:147](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L147).
+
+```csharp
+public sealed record CorporateActionCashDividendPostingResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCashDividendPostingDto Posting, CorporateActionCaseTransitionDto Transition, bool Replayed);
+```
+
 ## CorporateActionCashDividendPreviewDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPreviewDto</code>. Kind: `record`.
@@ -848,19 +858,3 @@ Declared public members:
 | <code>public const string DownstreamAuthorityRequired = &quot;corporate_action_downstream_authority_required&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:315](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L315) |  |
 | <code>public const string PersistenceUnavailable = &quot;corporate_action_persistence_unavailable&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:316](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L316) |  |
 | <code>public const string PermissionDenied = &quot;corporate_action_permission_denied&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:317](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L317) |  |
-
-## CorporateActionProcessingCaseDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:495](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L495).
-
-```csharp
-public sealed record CorporateActionProcessingCaseDto(Guid CaseId, Guid ProposalId, Guid CorporateActionId, Guid SecurityId, CorporateActionCaseScopeDto Scope, string State, long Version, string? MethodologyProfileId, string? AssignedTo, string? BlockedReason, string CreatedBy, DateTimeOffset CreatedAtUtc, string UpdatedBy, DateTimeOffset UpdatedAtUtc, CorporateActionCaseActionAvailabilityDto? ActionAvailability = null, CorporateActionCaseSourceSnapshotDto? SourceSnapshot = null, CorporateActionCaseAccountingStatusDto? AccountingStatus = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:514](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L514) |  |

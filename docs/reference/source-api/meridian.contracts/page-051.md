@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcMasterAgreementType
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMasterAgreementType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L8).
+
+The form of master agreement a counterparty relationship is documented under.
+
+```csharp
+public enum OtcMasterAgreementType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Isda1992</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L11) | ISDA 1992 Master Agreement. |
+| <code>Isda2002</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L14) | ISDA 2002 Master Agreement. |
+| <code>Gmra</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L17) | Global Master Repurchase Agreement (repo). |
+| <code>Gmsla</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L20) | Global Master Securities Lending Agreement. |
+| <code>Other</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L23) | Any other bilateral master or long-form confirmation. |
+
 ## OtcMovementKind
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMovementKind</code>. Kind: `enum`.
@@ -770,15 +792,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L11) | Generate from the effective date (or first regular date) towards termination; any stub is at the end. |
 | <code>Backward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L14) | Generate from the termination date (or last regular date) towards the effective date; any stub is at the start. |
-
-## ScheduleFailure
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L64).
-
-A refusal from the schedule kernel.
-
-```csharp
-public sealed record ScheduleFailure(ScheduleFailureCode Code, string Message, DateOnly? Date = null);
-```

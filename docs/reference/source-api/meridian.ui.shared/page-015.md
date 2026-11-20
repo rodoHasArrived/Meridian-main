@@ -6,6 +6,129 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsReportPackAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperationsReportPackAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:22](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L22).
+
+Resolves pre-close report support from retained packages, never a caller readiness flag.
+
+```csharp
+public sealed class OperationsReportPackAuthority(IAccountingReportPackageService? packages = null, ILedgerBookService? books = null, IFundProfileTenancyRegistry? ownership = null, ILedgerJournalStore? journals = null) : IOperationsReportPackAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool MatchesRetainedRevision(OperationsReportPackReadinessDto retained, OperationsReportPackReadinessDto current);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:30](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L30) |  |
+| <code>public async Task&lt;OperationsReportPackReadinessDto&gt; ResolveAsync(OperationsContinuityWorkflowDto workflow, string? packageId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:41](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L41) |  |
+
+## OperatorTriageException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriageException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:7](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L7).
+
+```csharp
+public sealed class OperatorTriageException(string status, string message) : InvalidOperationException(message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Status { get; } = status;</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:9](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L9) |  |
+
+## OperatorTriagePolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriagePolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:13](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L13).
+
+Triage changes attention metadata; it never advances the underlying readiness gate.
+
+```csharp
+public static class OperatorTriagePolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OperatorTriageState ObserveSeverity(OperatorTriageState state, OperatorWorkItemToneDto tone, DateTimeOffset now);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:15](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L15) |  |
+| <code>public static bool IsSnoozed(OperatorTriagePersonalState? personal, OperatorWorkItemToneDto tone, DateTimeOffset now) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:32](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L32) |  |
+| <code>public static OperatorTriageState Apply(OperatorTriageState state, string actorId, OperatorTriageCommand command, OperatorWorkItemToneDto tone, DateTimeOffset now, bool sourceOwnsAssignment, out bool replayed);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:35](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L35) |  |
+
+## OperatorTriageServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriageServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs#L10).
+
+```csharp
+public static class OperatorTriageServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddOperatorTriageStorage(this IServiceCollection services, CompositionConfiguration configuration, bool isProduction);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs#L12) |  |
+
+## OptionAssessmentImportService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OptionAssessmentImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:10](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L10).
+
+Retains imported broker claims and their exact source bytes. No broker or OMS is called.
+
+```csharp
+public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArtifactStore evidence, TimeProvider clock)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxSourceBytes = 8 * 1024 * 1024;</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:12](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L12) |  |
+| <code>public OptionAssessmentImportPreview Preview(OptionAssessmentImportRequest request);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:16](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L16) |  |
+| <code>public async Task&lt;RetainedOptionAssessment&gt; AcceptAsync(string tenant, string company, string actor, Guid accountId, AcceptOptionAssessmentImportRequest command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L40) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;RetainedOptionAssessment&gt;&gt; ListAsync(string tenant, string company, Guid account, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:100](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L100) |  |
+
+## OptionScreeningService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OptionScreeningService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:9](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L9).
+
+Bounded, current-snapshot option exploration. Does not evaluate account or execution permission.
+
+```csharp
+public sealed class OptionScreeningService(OptionsChainService chains, TimeProvider timeProvider)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumExpirations = 12;</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:11](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L11) |  |
+| <code>public async Task&lt;OptionScreenResult&gt; ScreenAsync(OptionScreenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:13](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L13) |  |
+
+## OwnedProviderConnection
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:683](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L683).
+
+Identity of a retained connection one tenant owns; carries no credential material.
+
+```csharp
+public sealed record OwnedProviderConnection(string ConnectionId, string CredentialEnvironment);
+```
+
 ## PaperFinancingAccountingSourceReader
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PaperFinancingAccountingSourceReader</code>. Kind: `class`.
@@ -627,15 +750,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderConnectionLifecycleService(IProviderCredentialStore credentialStore, ConfigStore configStore, ILogger&lt;ProviderConnectionLifecycleService&gt; logger, IHttpClientFactory? httpClientFactory = null, IEnumerable&lt;IAccountingSystemProvider&gt;? accountingSystemProviders = null, IProviderSetupRegistry? setupRegistry = null, ProviderCredentialScope? ownershipScope = null, Meridian.Application.ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null, Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L37) |  |
-| <code>public ProviderConnectionLifecycleService ForConnection(string connectionId, string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L76) | Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant. |
-| <code>public async Task&lt;ProviderConnectionRowDto&gt; GetConnectionStatusForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:93](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L93) | Reads one authorized connection without borrowing provider-wide health or credentials. |
-| <code>public IReadOnlyList&lt;OwnedProviderConnection&gt; GetOwnedConnectionsForTenant(string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:112](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L112) | Lists the retained connections of one provider family that tenantId owns completely (unique id, external account and environment). Other tenants&#x27; connections, unassigned connections and ambiguous duplicate ids are never returned. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsForTenantAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:144](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L144) | Provider-level readiness for one tenant. Each provider starts from its provider-wide row; when that row is not ready, the best credential state among the tenant&#x27;s own retained connections for the same provider replaces it. Other tenants&#x27; connections and unassigned connections never contribute. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:198](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L198) |  |
-| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; SaveCredentialsAsync(string providerId, ProviderCredentialUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:214](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L214) |  |
-| <code>public async Task&lt;ProviderCredentialVerificationResultDto&gt; VerifyAsync(string providerId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:235](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L235) |  |
-| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; DeleteCredentialsAsync(string providerId, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:343](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L343) |  |
+| <code>public ProviderConnectionLifecycleService(IProviderCredentialStore credentialStore, ConfigStore configStore, ILogger&lt;ProviderConnectionLifecycleService&gt; logger, IHttpClientFactory? httpClientFactory = null, IEnumerable&lt;IAccountingSystemProvider&gt;? accountingSystemProviders = null, IProviderSetupRegistry? setupRegistry = null, ProviderCredentialScope? ownershipScope = null, Meridian.Application.ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null, Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:35](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L35) |  |
+| <code>public ProviderConnectionLifecycleService ForConnection(string connectionId, string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:72](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L72) | Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant. |
+| <code>public async Task&lt;ProviderConnectionRowDto&gt; GetConnectionStatusForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:89](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L89) | Reads one authorized connection without borrowing provider-wide health or credentials. |
+| <code>public IReadOnlyList&lt;OwnedProviderConnection&gt; GetOwnedConnectionsForTenant(string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:108](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L108) | Lists the retained connections of one provider family that tenantId owns completely (unique id, external account and environment). Other tenants&#x27; connections, unassigned connections and ambiguous duplicate ids are never returned. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsForTenantAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:140](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L140) | Provider-level readiness for one tenant. Each provider starts from its provider-wide row; when that row is not ready, the best credential state among the tenant&#x27;s own retained connections for the same provider replaces it. Other tenants&#x27; connections and unassigned connections never contribute. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:194](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L194) |  |
+| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; SaveCredentialsAsync(string providerId, ProviderCredentialUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:210](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L210) |  |
+| <code>public async Task&lt;ProviderCredentialVerificationResultDto&gt; VerifyAsync(string providerId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:231](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L231) |  |
+| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; DeleteCredentialsAsync(string providerId, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:339](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L339) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.ExternalGl.cs:6](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.ExternalGl.cs#L6).
 
@@ -643,20 +766,7 @@ Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Exte
 public sealed partial class ProviderConnectionLifecycleService : IQuickBooksPostingConnectionResolver
 ```
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L8).
-
-```csharp
-public sealed partial class ProviderConnectionLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderConnectionLifecycleService ForTemplateSetup(Guid setupId, string tenantId, string actor, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:10](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L10) |  |
-| <code>public async Task&lt;ProviderTemplateSetupTestResult&gt; TestTemplateSetupAsync(string providerId, string actor, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:17](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L17) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.TemplateProbes.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.TemplateProbes.cs#L8).
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L7).
 
 ```csharp
 public sealed partial class ProviderConnectionLifecycleService
@@ -828,103 +938,4 @@ Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.Sec
 
 ```csharp
 public sealed partial class ProviderLedgerReconciliationService
-```
-
-## ProviderMarketRuleReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderMarketRuleReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:26](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L26).
-
-```csharp
-public sealed record ProviderMarketRuleReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderMarketRuleIncrement Item);
-```
-
-## ProviderModuleCatalogueEntry
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleCatalogueEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:28](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L28).
-
-A discoverable provider module type — returned by the catalogue endpoint.
-
-```csharp
-public sealed record ProviderModuleCatalogueEntry(string ModuleId, string DisplayName, IReadOnlyList<string> CapabilityNames, IReadOnlyList<string> CredentialKeyHints, bool RequiresExternalConfig, bool AlreadyConfigured);
-```
-
-## ProviderModuleSetupResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleSetupResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:48](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L48).
-
-Result from a create/update/remove operation.
-
-```csharp
-public sealed record ProviderModuleSetupResult(bool Success, string? Error = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ProviderModuleSetupResult Ok() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:50](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L50) |  |
-| <code>public static ProviderModuleSetupResult Fail(string error) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:51](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L51) |  |
-
-## ProviderModuleSetupService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleSetupService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:15](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L15).
-
-Manages provider module configuration lifecycle: discovery, upsert, enable/disable, remove, and test. All config load→mutate→save cycles run through ConfigStore.UpdateAsync so they execute under the cross-process configuration lock and cannot race with other writers.
-
-```csharp
-public sealed class ProviderModuleSetupService : IProviderModuleSetupService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderModuleSetupService(ConfigStore configStore, IProviderCredentialStore credentialStore, ILogger&lt;ProviderModuleSetupService&gt; logger, ProviderRegistry? providerRegistry = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:23](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L23) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderModuleStatusDto&gt;&gt; GetConfiguredModulesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:36](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L36) |  |
-| <code>public IReadOnlyList&lt;ProviderModuleCatalogueEntry&gt; GetDiscoveredModuleCatalogue();</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:98](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L98) |  |
-| <code>public async Task&lt;ProviderModuleSetupResult&gt; UpsertModuleAsync(UpsertProviderModuleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:122](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L122) |  |
-| <code>public async Task&lt;ProviderModuleSetupResult&gt; SetEnabledAsync(string moduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:190](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L190) |  |
-| <code>public async Task&lt;ProviderModuleSetupResult&gt; RemoveModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:225](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L225) |  |
-| <code>public async Task&lt;ProviderModuleTestResult&gt; TestModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:265](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L265) |  |
-
-## ProviderModuleStatusDto
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L7).
-
-Status of a configured provider module — returned by the module setup API. Credential values are NEVER included; only key names + hasValue flag.
-
-```csharp
-public sealed record ProviderModuleStatusDto(string ModuleId, string DisplayName, bool Enabled, int Priority, bool IsConfigured, bool IsRunning, IReadOnlyList<CredentialKeyStatusDto> CredentialStatus, IReadOnlyList<string> CapabilityNames, string? LastTestResult = null, DateTimeOffset? LastTestedAt = null);
-```
-
-## ProviderModuleTestResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleTestResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:55](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L55).
-
-Result from the test-module endpoint.
-
-```csharp
-public sealed record ProviderModuleTestResult(bool Success, bool CredentialConfigValid, bool ConnectionVerified, string? FailureReason = null, double? LatencyMs = null, string? ProbeDetail = null);
-```
-
-## ProviderNewsReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderNewsReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L22).
-
-```csharp
-public sealed record ProviderNewsReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderNewsItem Item);
 ```

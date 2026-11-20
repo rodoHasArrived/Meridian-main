@@ -628,6 +628,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AuditTableExport.
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs#L15).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ChartEvidence.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ChartEvidence.cs#L16).
 
 ```csharp
@@ -1010,6 +1016,16 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs:8](../../.
 
 ```csharp
 public static partial class WorkstationEndpoints
+```
+
+## BookReceiptRunRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationEndpoints.BookReceiptRunRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs#L17).
+
+```csharp
+public sealed record BookReceiptRunRequest(Guid LedgerBookId, DateOnly AsOfDate);
 ```
 
 ## WorkstationFundScopeTenantAccessor

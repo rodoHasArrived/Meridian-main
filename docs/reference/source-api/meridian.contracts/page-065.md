@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerAmountApprovalStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountApprovalStateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:683](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L683).
+
+```csharp
+public sealed record LedgerAmountApprovalStateDto(GovernanceReportPackStatusDto ReportStatus, string? LatestApprovalActor, DateTimeOffset? LatestApprovalAt, int LifecycleEventCount);
+```
+
 ## LedgerAmountProofDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProofDto</code>. Kind: `record`.
@@ -609,24 +619,3 @@ Governed opening-balance reconciliation: incumbent opening state side by side wi
 ```csharp
 public sealed record OnboardingOpeningBalanceReportDto(string ComparisonId, string SourceKind, DateOnly AsOfDate, string SourceContentHash, int MatchedCount, int ExplainedCount, int BreakCount, int MissingCount, bool IsReconciled, IReadOnlyList<OnboardingOpeningBalanceLineDto> Lines, IReadOnlyList<string> EvidenceIds, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingOpeningSourceSummaryDto>? Sources = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? UncoveredKinds = null);
 ```
-
-## OnboardingOpeningSourceKinds
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingOpeningSourceKinds</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L30).
-
-Incumbent opening-balance sources accepted by shadow onboarding.
-
-```csharp
-public static class OnboardingOpeningSourceKinds
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string StatementOpening = &quot;StatementOpening&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L33) | camt.053 opening booked balance (OPBD) or BAI2 opening ledger balance (010 only). |
-| <code>public const string AdministratorPack = &quot;AdministratorPack&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L35) | Administrator opening pack CSV of cash, position and NAV rows. |
-| <code>public const string GlTrialBalance = &quot;GlTrialBalance&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L37) | Retained external GL trial balance imported through an accounting-system provider. |
-| <code>public static readonly IReadOnlyList&lt;string&gt; All = [StatementOpening, AdministratorPack, GlTrialBalance];</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L39) |  |

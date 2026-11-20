@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureSharedDataAccessDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:295](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L295).
+
+```csharp
+public sealed record FundStructureSharedDataAccessDto(SecurityMasterAccessSummaryDto SecurityMaster, HistoricalPriceAccessSummaryDto HistoricalPrices, BackfillAccessSummaryDto Backfill);
+```
+
 ## FundSummaryDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.FundSummaryDto</code>. Kind: `record`.
@@ -730,13 +740,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;string&gt;? MigrationWarnings { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:95](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L95) |  |
-
-## IntercompanyAgreementDraftDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:27](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L27).
-
-```csharp
-public sealed record IntercompanyAgreementDraftDto(string Code, string Name, Guid PartyOneId, string PartyOneRole, Guid PartyTwoId, string PartyTwoRole, IntercompanyAgreementTypeDto AgreementType, string Currency, DateOnly EffectiveFrom, DateOnly? EffectiveTo = null, IntercompanyAgreementTermsDto? Terms = null, IReadOnlyList<IntercompanyAgreementEvidenceDto>? Evidence = null, IntercompanyAgreementActionDto Action = IntercompanyAgreementActionDto.Activate, DateOnly? TerminationEffectiveDate = null, string? Purpose = null);
-```

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerDisposalTaxResultDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs#L18).
+
+Server-derived tax results; absent evidence is null rather than a settled zero. Monetary values use invariant plain decimal text so clients retain every significant digit.
+
+```csharp
+public sealed record LedgerDisposalTaxResultDto(Guid MutationBatchId, Guid JournalEntryId, DateOnly SaleDate, string AccountName, string? Symbol, string ReliefMethod, string? PolicyRevision, DateTimeOffset? RecordedAt, string State, string StateReason, bool CanChange, bool ReEvaluationRequired, DateOnly? ReplacementWindowEnd, string? Character, string? EconomicGainOrLoss, string? RecognizedGainOrLoss, string? DeferredLoss, IReadOnlyList<LedgerDisposalTaxParcelDto> Parcels);
+```
+
 ## LedgerEventAuditFailureData
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerEventAuditFailureData</code>. Kind: `class`.
@@ -745,22 +757,3 @@ Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos
 ```csharp
 public sealed record PaymentIntentReconciliationLinkDto(string LinkId, string Status, string Summary, string? EvidenceRoute = null, string? ReconciliationCaseId = null, string? ReconciliationRunId = null);
 ```
-
-## PaymentIntentWorkflowDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PaymentIntentWorkflowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:228](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L228).
-
-```csharp
-public sealed record PaymentIntentWorkflowDto(string PaymentIntentId, string? SettlementReference, string FundProfileId, Guid? LedgerBookId, string FundEventId, Guid JournalEntryId, string Requester, DateTimeOffset RequestedAtUtc, PaymentIntentWorkflowStatusDto Status, string StatusLabel, string ReadinessReason, string ExecutionDeferredReason, PaymentIntentExpectedCashMovementDto ExpectedCashMovement, string EvidenceRoute, string WorkbenchRoute, IReadOnlyList<PaymentIntentApprovalStepDto>? ApprovalChain = null, IReadOnlyList<PaymentIntentBankEvidenceDto>? BankEvidence = null, IReadOnlyList<PaymentIntentReconciliationLinkDto>? ReconciliationLinks = null, IReadOnlyList<PaymentIntentAuditEventDto>? AuditHistory = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;PaymentIntentApprovalStepDto&gt; ApprovalChain { get; init; } = ApprovalChain??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:249](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L249) |  |
-| <code>public IReadOnlyList&lt;PaymentIntentBankEvidenceDto&gt; BankEvidence { get; init; } = BankEvidence??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:252](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L252) |  |
-| <code>public IReadOnlyList&lt;PaymentIntentReconciliationLinkDto&gt; ReconciliationLinks { get; init; } = ReconciliationLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:255](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L255) |  |
-| <code>public IReadOnlyList&lt;PaymentIntentAuditEventDto&gt; AuditHistory { get; init; } = AuditHistory??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:258](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L258) |  |

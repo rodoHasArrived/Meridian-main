@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondCalculationContext
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondCalculationContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondCalculationContext.cs:9](../../../../src/Meridian.Contracts/FixedIncome/BondCalculationContext.cs#L9).
+
+Explicit economic and recorded-information cutoffs for bond calculations. Recorded timestamps describe eligibility among retained rows, not historical transaction visibility.
+
+```csharp
+public sealed record BondCalculationContext(DateTimeOffset AsOf, DateOnly? SettlementDate = null, DateTimeOffset? KnownAt = null, long? SecurityVersion = null, IReadOnlyList<BondPinnedCurveInput>? Curves = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Guid&gt;? ObservedFixingReceiptIds { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondCalculationContext.cs:18](../../../../src/Meridian.Contracts/FixedIncome/BondCalculationContext.cs#L18) | Explicit immutable observed-reset selections; absence never reads a changing latest fixing. |
+
 ## BondCalculationInput
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondCalculationInput</code>. Kind: `record`.
@@ -698,16 +716,4 @@ Accepted holding factors; distinct conflicting values remain explicit.
 
 ```csharp
 public sealed record BondMonitoringMarketHoldingDto(Guid SecurityId, IReadOnlyList<decimal> PrincipalFactors);
-```
-
-## BondMonitoringMarketWatchDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMonitoringMarketWatchDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:28](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L28).
-
-Tenant market-store evidence is separate from account Evidence Vault observations.
-
-```csharp
-public sealed record BondMonitoringMarketWatchDto(string HoldingsContentSha256, IReadOnlyList<BondMonitoringMarketHoldingDto> Holdings, IReadOnlyList<BondMarketObservationDto> Observations);
 ```

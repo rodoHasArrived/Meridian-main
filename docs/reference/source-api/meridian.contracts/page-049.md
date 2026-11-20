@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EdgarIngestRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarIngestRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L6).
+
+Request for EDGAR reference-data ingest.
+
+```csharp
+public sealed record EdgarIngestRequest(string Scope = "all-filers", bool IncludeXbrl = false, string? Cik = null, int? MaxFilers = null, bool DryRun = false, bool IncludeFilingDocuments = false);
+```
+
 ## EdgarIngestResult
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarIngestResult</code>. Kind: `record`.
@@ -941,24 +953,3 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt;&gt; GetDependentsAsync(Guid underlyingSecurityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L106) | The links from every instrument that names underlyingSecurityId as a target. |
 | <code>Task&lt;SecurityUnderlyingLinkDto&gt; DeclareAsync(DeclareSecurityUnderlyingLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:114](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L114) | Declares (or re-declares) a link; the returned link carries the stored id and timestamps. A new edge, or a change to an existing one&#x27;s weight, window or notes, is recorded as a governance event naming DeclareSecurityUnderlyingLinkRequest.CreatedBy with the state it replaced. Re-declaring an edge unchanged writes nothing and returns it as stored. |
 | <code>Task&lt;bool&gt; RemoveDeclaredAsync(Guid securityId, Guid linkId, string removedBy, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L121) | Removes a declared link and records the removal, with the removed link and removedBy, as a governance event. Derived links cannot be removed; they follow the terms. |
-
-## ISecurityValuationModel
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityValuationModel</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:122](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L122).
-
-One valuation model. The service dispatches to the registered model whose Kind the request or catalog names.
-
-```csharp
-public interface ISecurityValuationModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>SecurityValuationModelKind Kind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L124) |  |
-| <code>string ModelKey { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:127](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L127) | A stable key such as quoted-price or discounted-cash-flow. |
-| <code>string ModelVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L130) | The model&#x27;s version, such as v1; changes when the arithmetic changes. |
-| <code>Task&lt;SecurityValuationResult&gt; ValueAsync(SecurityValuationRequest request, SecurityDetailDto security, CancellationToken ct);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:132](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L132) |  |

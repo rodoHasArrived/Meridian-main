@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AppendLegacyIntercompanyAttributionRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:37](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L37).
+
+```csharp
+public sealed record AppendLegacyIntercompanyAttributionRequest(LegacyIntercompanyAttributionDto Attribution, Guid? ExpectedPreviousAttributionId);
+```
+
 ## ApproveConsolidationTransitionRequestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ApproveConsolidationTransitionRequestDto</code>. Kind: `record`.
@@ -703,16 +713,4 @@ Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:26](../
 
 ```csharp
 public sealed record ClosePlanTemplateTaskDto(CloseTaskConfigurationDto Configuration, DateOnly SourceDueDate, CloseDeadlineRuleDto DeadlineRule);
-```
-
-## ClosePostingBalanceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ClosePostingBalanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:591](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L591).
-
-One non-zero temporary-account balance considered by the period-close posting gate. Dimensions remain attached so fund, entity, and sleeve close scopes never collapse.
-
-```csharp
-public sealed record ClosePostingBalanceDto(string AccountName, string AccountType, decimal Balance, string? Symbol = null, string? FinancialAccountId = null, LedgerDimensionSetDto? Dimensions = null);
 ```

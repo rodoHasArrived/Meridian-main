@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyFeeAccrualProposalDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyFeeAccrualProposalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:30](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L30).
+
+Preview and draft share one shape so the operator reviews exactly what would be retained.
+
+```csharp
+public sealed record IntercompanyFeeAccrualProposalDto(IntercompanyFeeAccrualPreviewDto Computation, IReadOnlyList<string> Diagnostics, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IntercompanyFeeAccrualEvidenceDto? Evidence = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? EvidenceDigest = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ManualJournalEntryDraftDto? Draft = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore] public bool IsReady =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:36](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L36) |  |
+
 ## IntercompanyFeeAccrualRequestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyFeeAccrualRequestDto</code>. Kind: `record`.
@@ -689,16 +707,4 @@ Retained parcel evidence with exact invariant decimal text for quantity and amou
 
 ```csharp
 public sealed record LedgerDisposalTaxParcelDto(string LotId, DateOnly AcquiredDate, DateOnly HoldingPeriodStart, int HoldingPeriodDays, bool HoldingPeriodCarried, string Character, string Quantity, string Proceeds, string CostBasis, string EconomicGainOrLoss, string? RecognizedGainOrLoss, string? DeferredLoss);
-```
-
-## LedgerDisposalTaxResultDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs#L18).
-
-Server-derived tax results; absent evidence is null rather than a settled zero. Monetary values use invariant plain decimal text so clients retain every significant digit.
-
-```csharp
-public sealed record LedgerDisposalTaxResultDto(Guid MutationBatchId, Guid JournalEntryId, DateOnly SaleDate, string AccountName, string? Symbol, string ReliefMethod, string? PolicyRevision, DateTimeOffset? RecordedAt, string State, string StateReason, bool CanChange, bool ReEvaluationRequired, DateOnly? ReplacementWindowEnd, string? Character, string? EconomicGainOrLoss, string? RecognizedGainOrLoss, string? DeferredLoss, IReadOnlyList<LedgerDisposalTaxParcelDto> Parcels);
 ```

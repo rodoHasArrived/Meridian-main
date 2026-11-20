@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BusinessDayAdjustment
+
+Qualified name: <code>Meridian.Contracts.Calendars.BusinessDayAdjustment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs:13](../../../../src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs#L13).
+
+A business-day convention paired with the calendar it is applied against, as FpML&#x27;s BusinessDayAdjustments pairs a convention with its business centres.
+
+```csharp
+public sealed record BusinessDayAdjustment(BusinessDayConvention Convention, IBusinessDayCalendar? Calendar)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static BusinessDayAdjustment Unadjusted { get; } = new (BusinessDayConvention.Unadjusted, null);</code> | [src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs:16](../../../../src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs#L16) | The adjustment that keeps every date as it is. |
+| <code>public static BusinessDayAdjustment Of(BusinessDayConvention convention, IBusinessDayCalendar calendar);</code> | [src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs:20](../../../../src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs#L20) | Creates an adjustment with a required calendar. |
+| <code>public bool IsUnadjusted =&gt; …;</code> | [src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs:27](../../../../src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs#L27) | Whether this adjustment leaves every date unchanged. |
+| <code>public DateOnly Apply(DateOnly date);</code> | [src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs:31](../../../../src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs#L31) | Applies the convention to date. |
+
 ## BusinessDayCalendars
 
 Qualified name: <code>Meridian.Contracts.Calendars.BusinessDayCalendars</code>. Kind: `class`.
@@ -776,22 +797,3 @@ Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:87](../../../../
 ```csharp
 public sealed record ExerciseNoticeVerification(bool Verified, string Reason, BondExerciseNoticeDto? Notice = null);
 ```
-
-## IBondExerciseNoticeStore
-
-Qualified name: <code>Meridian.Contracts.CashFlows.IBondExerciseNoticeStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:100](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L100).
-
-```csharp
-public interface IBondExerciseNoticeStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BondExerciseNoticeDto&gt; RecordAsync(BondExerciseNoticeDto notice, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:103](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L103) | Write-once; an identical retry returns the retained notice, a different payload under the same identity is refused. |
-| <code>Task&lt;BondExerciseNoticeDto?&gt; GetAsync(Guid securityId, Guid noticeId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:104](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L104) |  |
-| <code>Task&lt;IReadOnlyList&lt;BondExerciseNoticeDto&gt;&gt; ListAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:105](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L105) |  |
-| <code>Task&lt;BondExerciseNoticeDto&gt; DecideAsync(Guid securityId, Guid noticeId, bool approve, string actor, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:107](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L107) | Approves or rejects a recorded notice once; the deciding actor must differ from the recorder. |

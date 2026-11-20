@@ -6,10 +6,19 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.DataIntegration
+
+Canonical statement CSV retains receipt reversal links and optional instrument/allocation metadata.
+`CsvBrokerStatementService` appends `securityId`, `receiptAllocations`, `obligationKey` and
+`projectedCashFlowId` to the existing ordered optional suffix after `marketValue` and `accruedInterest`.
+It refuses conflicting allocation forms, duplicate identities/properties, invalid GUIDs and splits
+that do not conserve the absolute source payment. Present metadata remains in the retained canonical
+payload; absent fields are omitted from JSON so legacy retained row hashes remain unchanged.
+Existing imports are not backfilled with inferred links. See
+[receipt import evidence](../../docs/operators/reconciliation-operations.md).
 
 QuickBooks import and bound verification serialize refreshes, retain complete generation-checked
 rotations after caller cancellation, and refuse stale import success or failure updates after

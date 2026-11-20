@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationSlaPolicy
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSlaPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:645](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L645).
+
+```csharp
+public sealed record ReconciliationSlaPolicy(string PolicyId, string? FundId, string? AccountId, string? BreakType, ReconciliationBreakSeverity Severity, ReconciliationCasePriority Priority, string TimeZoneId, TimeOnly BusinessDayStart, TimeOnly BusinessDayEnd, int DueBusinessHours, int WarningBusinessHours, bool StopOnResolved = true, bool StopOnSignedOff = false, bool PauseAwaitingEvidence = true, string? BusinessCalendarId = null, IReadOnlyList<string>? HolidayCalendarIds = null, IReadOnlyList<string>? PauseRules = null, IReadOnlyList<string>? StopRules = null, IReadOnlyList<string>? EscalationRules = null);
+```
+
 ## ReconciliationSourceKind
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSourceKind</code>. Kind: `enum`.
@@ -638,14 +648,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1161]
 
 ```csharp
 public sealed record ReportingStarterKitProvisionResultDto(ReportingStarterKitDto Kit, ReportingStarterKitStateDto State, IReadOnlyList<ReportingScheduleRecordDto> SeededSchedules);
-```
-
-## ReportingStarterKitStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingStarterKitStateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1150](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1150).
-
-```csharp
-public sealed record ReportingStarterKitStateDto(bool IsProvisioned, string? SelectedKitId, string? Archetype, IReadOnlyList<string> EnabledTemplateIds, string? DefaultLayoutId, string? DefaultPeriod, IReadOnlyList<string> SeedScheduleIds, DateTimeOffset? ProvisionedAtUtc = null, string? ProvisionedBy = null);
 ```

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernanceAuthorityDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAuthorityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:69](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L69).
+
+```csharp
+public sealed record ReportingGovernanceAuthorityDto(string ActorId, string TenantId, string OrganizationId, string? CompanyId, IReadOnlyList<string> Permissions, string Origin, string CorrelationId, IReadOnlyList<string> PrincipalIds);
+```
+
 ## ReportingGovernanceCertifiedSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceCertifiedSnapshotDto</code>. Kind: `record`.
@@ -665,26 +675,3 @@ Descriptive metadata: one shared set of phrases for every pack, shown on the rea
 ```csharp
 public sealed record AssetPackValidationRules(IReadOnlyList<string> RequiredFields, IReadOnlyList<string> ExpectedSchedules, IReadOnlyList<string> ToleranceChecks, IReadOnlyList<string> IncompatibleCombinations);
 ```
-
-## AssetSpecificTermsSchema
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetSpecificTermsSchema</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L12).
-
-Schema versions for the asset-specific-terms payload family — the JSON stored in a security&#x27;s AssetSpecificTerms slot and validated by the mapping/deserialization guard. This family owns its own acceptance logic; versions from other payload families (e.g. EconomicTermsSchema) are never valid here and must be converted through SecurityAssetSpecificTermsUpcasterChain before reaching this slot.
-
-```csharp
-public static class AssetSpecificTermsSchema
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int Legacy = 1;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L15) | Flat per-asset-class term payloads (the original, pre-versioning shape). |
-| <code>public const int CustomAssetProfile = 3;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L25) | Custom-asset profile-backed term payloads (profileFields + customProfileId). |
-| <code>public const int Default = Legacy;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L31) | The version stamped on legacy payloads that predate explicit versioning. A payload with no schemaVersion is treated as this version on read (migrate-on-read). |
-| <code>public static bool IsAccepted(int schemaVersion, bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L38) | Single source of truth for whether an asset-specific-terms schemaVersion is accepted by the current compatibility adapter. Legacy terms are always accepted; the custom-asset-profile family is accepted only for profile-backed records. |
-| <code>public static IReadOnlyList&lt;int&gt; Accepted(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L43) | The accepted versions for the given record shape, ascending. |
-| <code>public static string DescribeAccepted(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L49) | Human-readable accepted-version list for validation messages (e.g. &quot;1&quot; or &quot;1 or 3&quot;). |

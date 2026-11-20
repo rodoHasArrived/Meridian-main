@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityValuationModel
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityValuationModel</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:122](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L122).
+
+One valuation model. The service dispatches to the registered model whose Kind the request or catalog names.
+
+```csharp
+public interface ISecurityValuationModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>SecurityValuationModelKind Kind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L124) |  |
+| <code>string ModelKey { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:127](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L127) | A stable key such as quoted-price or discounted-cash-flow. |
+| <code>string ModelVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L130) | The model&#x27;s version, such as v1; changes when the arithmetic changes. |
+| <code>Task&lt;SecurityValuationResult&gt; ValueAsync(SecurityValuationRequest request, SecurityDetailDto security, CancellationToken ct);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:132](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L132) |  |
+
 ## ISecurityValuationService
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityValuationService</code>. Kind: `interface`.
@@ -804,25 +825,3 @@ A master agreement (ISDA, GMRA, GMSLA) between one of the fund&#x27;s legal enti
 ```csharp
 public sealed record OtcMasterAgreementDto(Guid AgreementId, string Counterparty, string? CounterpartyLei, string OurEntity, Guid? OurEntityId, OtcMasterAgreementType AgreementType, DateOnly AgreementDate, string? GoverningLaw, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
 ```
-
-## OtcMasterAgreementType
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMasterAgreementType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L8).
-
-The form of master agreement a counterparty relationship is documented under.
-
-```csharp
-public enum OtcMasterAgreementType
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Isda1992</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L11) | ISDA 1992 Master Agreement. |
-| <code>Isda2002</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L14) | ISDA 2002 Master Agreement. |
-| <code>Gmra</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L17) | Global Master Repurchase Agreement (repo). |
-| <code>Gmsla</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L20) | Global Master Securities Lending Agreement. |
-| <code>Other</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L23) | Any other bilateral master or long-form confirmation. |

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ThreeWayAdjustmentProposalDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayAdjustmentProposalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L78).
+
+```csharp
+public sealed record ThreeWayAdjustmentProposalDto(string CheckId, string Status, string Description, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? Amount, string Currency, IReadOnlyList<string> EvidenceIds, string EvidenceHash);
+```
+
 ## ThreeWayCashActivityDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayCashActivityDto</code>. Kind: `record`.
@@ -614,14 +624,4 @@ Workflow posture for one top-level workstation workspace.
 
 ```csharp
 public sealed record WorkspaceWorkflowSummary(string WorkspaceId, string WorkspaceTitle, string StatusLabel, string StatusDetail, string StatusTone, WorkflowNextAction NextAction, WorkflowBlockerSummary PrimaryBlocker, IReadOnlyList<WorkflowEvidenceBadge> Evidence);
-```
-
-## WorkstationAccountingAgingBucketPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingAgingBucketPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:861](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L861).
-
-```csharp
-public sealed record WorkstationAccountingAgingBucketPayload(string Bucket, int Count);
 ```

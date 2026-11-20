@@ -6,11 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderProvenanceAccess
+
+Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceAccess</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:80](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L80).
+
+Storage-only ownership and runtime revision checks. This is never part of an exported receipt.
+
+```csharp
+public sealed record ProviderProvenanceAccess(ImmutableArray<string> TenantIds, ImmutableDictionary<string, string> RuntimeRevisions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ProviderProvenanceAccess Public { get; } = new ([], ImmutableDictionary&lt;string, string&gt;.Empty);</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:84](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L84) |  |
+| <code>public bool IsVisibleTo(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:86](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L86) |  |
+| <code>public ProviderProvenanceAccess ForRequestTenant(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:89](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L89) |  |
+
 ## ProviderProvenanceLabels
 
 Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceLabels</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:95](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L95).
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:94](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L94).
 
 ```csharp
 public static class ProviderProvenanceLabels
@@ -20,19 +40,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string Unknown = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:97](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L97) |  |
-| <code>public static string? PublicProviderId(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:101](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L101) |  |
-| <code>public static string ProviderId(string value) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:110](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L110) |  |
-| <code>public static string ConnectionId(string providerId, string tenantId, string connectionId) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:114](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L114) |  |
-| <code>public static string? RuntimeRevision(string? generation) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:117](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L117) |  |
-| <code>public static string Environment(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:120](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L120) |  |
-| <code>public static bool IsSymbol(string? value);</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:131](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L131) |  |
+| <code>public const string Unknown = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:96](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L96) |  |
+| <code>public static string? PublicProviderId(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:100](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L100) |  |
+| <code>public static string ProviderId(string value) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:109](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L109) |  |
+| <code>public static string ConnectionId(string providerId, string tenantId, string connectionId) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:113](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L113) |  |
+| <code>public static string? RuntimeRevision(string? generation) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:116](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L116) |  |
+| <code>public static string Environment(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:119](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L119) |  |
+| <code>public static bool IsSymbol(string? value);</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:130](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L130) |  |
 
 ## ProviderProvenanceReceipt
 
 Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceReceipt</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:8](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L8).
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:7](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L7).
 
 Versioned, allowlisted evidence captured from a single terminal execution.
 
@@ -44,13 +64,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:24](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L24) |  |
+| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:23](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L23) |  |
 
 ## ProviderProvenanceRequest
 
 Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:62](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L62).
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:61](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L61).
 
 ```csharp
 public sealed record ProviderProvenanceRequest(DateOnly? From, DateOnly? To, ImmutableArray<string> Symbols, string? Granularity = null, int? MaxConcurrentSymbols = null, ImmutableArray<ProviderProvenanceSymbolPriority>? SymbolPriorities = null, bool? ResumeFromCheckpoint = null, decimal? InitialCash = null, bool? AdjustForCorporateActions = null, bool? FailOnUnknownSymbols = null, int WithheldSymbolCount = 0, bool UsesDiscoveredUniverse = false, bool? SkipExistingData = null, bool? FillGapsOnly = null);
@@ -60,7 +80,7 @@ public sealed record ProviderProvenanceRequest(DateOnly? From, DateOnly? To, Imm
 
 Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceSource</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:27](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L27).
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:26](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L26).
 
 ```csharp
 public sealed record ProviderProvenanceSource(string ProviderId, string? ConnectionId, string Environment, string FeedLabel, string EntitlementLabel, string DataSemantics, int? Priority = null, long Requests = 0, long ResponsesWithData = 0, long Unavailable = 0, long EmptyResponses = 0, long StaleResponses = 0, long StaleResponsesAccepted = 0, long ReplayEvents = 0, int? StaleToleranceDays = null);
@@ -70,7 +90,7 @@ public sealed record ProviderProvenanceSource(string ProviderId, string? Connect
 
 Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceSymbolPriority</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:78](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L78).
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:77](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L77).
 
 ```csharp
 public sealed record ProviderProvenanceSymbolPriority(string Symbol, int Priority);
@@ -80,7 +100,7 @@ public sealed record ProviderProvenanceSymbolPriority(string Symbol, int Priorit
 
 Qualified name: <code>Meridian.Contracts.Operations.ProviderProvenanceValidation</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:45](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L45).
+Source: [src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:44](../../../../src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs#L44).
 
 Only typed execution settings belong in a receipt. Free-form configuration stays in its owner.
 
@@ -759,22 +779,3 @@ Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:143](../../../../src/Meridi
 ```csharp
 public sealed record PlaidItemDto(string ItemId, string InstitutionId, string InstitutionName, PlaidEnvironmentDto Environment, PlaidItemStatusDto Status, string AccessTokenKey, string? TransactionsCursor, DateTimeOffset LinkedAt, DateTimeOffset? LastSyncedAt, DateTimeOffset? ConsentExpiresAt, string? LastWebhookType, string? LastWebhookCode, string? LastError);
 ```
-
-## PlaidItemStatusDto
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidItemStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:24](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L24).
-
-```csharp
-public enum PlaidItemStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Linked</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:26](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L26) |  |
-| <code>RequiresUpdate</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:27](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L27) |  |
-| <code>Revoked</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:28](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L28) |  |
-| <code>Error</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:29](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L29) |  |

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationReconciliationHandoffHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationReconciliationHandoffHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:540](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L540).
+
+```csharp
+public sealed record ProviderIntegrationReconciliationHandoffHistoryDto(string ConnectionId, IReadOnlyList<ProviderIntegrationReconciliationHandoffRecordDto> Records, int TotalRecords, int HandoffCount, DateTimeOffset? LastRequestedAt);
+```
+
 ## ProviderIntegrationReconciliationHandoffRecordDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationReconciliationHandoffRecordDto</code>. Kind: `record`.
@@ -707,13 +717,3 @@ Enum declarations:
 | <code>Cash = 2</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L12) |  |
 | <code>Tax = 3</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L13) |  |
 | <code>Statutory = 4</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:14](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L14) |  |
-
-## AccountingBasisProjectionItemDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1138](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1138).
-
-```csharp
-public sealed record AccountingBasisProjectionItemDto(AccountingBasisKindDto AccountingBasis, Guid LedgerBookId, Guid PeriodId, PostingRuleJournalCandidateResultDto Candidate, string Status, string? DisabledReason = null);
-```

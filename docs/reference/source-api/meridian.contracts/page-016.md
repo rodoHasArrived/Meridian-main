@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderVerificationHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderVerificationHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderVerificationHistoryDtos.cs:6](../../../../src/Meridian.Contracts/Configuration/ProviderVerificationHistoryDtos.cs#L6).
+
+```csharp
+public sealed record ProviderVerificationHistoryDto(string ConnectionId, string ProviderId, DateTimeOffset AsOfUtc, IReadOnlyList<ProviderVerificationObservationDto> Observations, bool IsTruncated);
+```
+
 ## ProviderVerificationObservationDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.ProviderVerificationObservationDto</code>. Kind: `record`.
@@ -871,16 +881,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:102](../../..
 
 ```csharp
 public sealed record BorrowerInfoDto(Guid BorrowerId, string BorrowerName, Guid? LegalEntityId);
-```
-
-## CapitalizePikRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.CapitalizePikRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:144](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L144).
-
-Capitalizes accrued PIK interest on CapitalizationDate.
-
-```csharp
-public sealed record CapitalizePikRequest(DateOnly CapitalizationDate);
 ```

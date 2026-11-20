@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ServicerStatementRowDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:348](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L348).
+
+```csharp
+public sealed record ServicerStatementRowDto(string RowId, ServicerStatementKind Kind, int RowNumber, ServicerStatementRowStatus Status, Guid? LoanId, Guid? SecurityId, string? SecuritySymbol, string? ExternalLoanReference, string? ServicerLoanNumber, string? BorrowerReference, string? FundAccountId, string? CashAccountId, DateOnly? StatementDate, DateOnly? EffectiveDate, DateOnly? SettlementDate, decimal? PrincipalOutstanding, decimal? InterestAccruedUnpaid, decimal? FeesAccruedUnpaid, decimal? PenaltyAccruedUnpaid, decimal? CommitmentAvailable, decimal? GrossAmount, decimal? PrincipalAmount, decimal? InterestAmount, decimal? FeeAmount, decimal? PenaltyAmount, CurrencyCode? Currency, string? ExternalRef, string RowHash, string RawPayloadJson, ServicerStatementApplyMode? SuggestedApplyMode = null, IReadOnlyList<ServicerStatementValidationIssueDto>? Issues = null, string? EvidenceRoute = null);
+```
+
 ## ServicerStatementRowStatus
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementRowStatus</code>. Kind: `enum`.
@@ -1063,32 +1073,3 @@ Declared public members:
 | <code>public decimal Spread =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:132](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L132) | Calculated spread (Ask - Bid). |
 | <code>public decimal MidPrice =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:137](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L137) | Calculated mid-price ((Ask + Bid) / 2). |
 | <code>public decimal? SpreadBps =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:142](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L142) | Spread as a percentage of the mid-price in basis points. |
-
-## HistoricalTrade
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.HistoricalTrade</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:9](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L9).
-
-Historical trade data from Alpaca Markets API. Represents a single executed trade at a specific exchange.
-
-```csharp
-public sealed record HistoricalTrade : MarketEventPayload
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:14](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L14) | Gets the ticker symbol for the security. |
-| <code>public DateTimeOffset Timestamp { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:19](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L19) | Gets the timestamp when the trade was executed. |
-| <code>public string Exchange { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:24](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L24) | Gets the exchange code where the trade occurred. |
-| <code>public decimal Price { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:29](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L29) | Gets the execution price of the trade. |
-| <code>public long Size { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:34](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L34) | Gets the number of shares traded. |
-| <code>public string TradeId { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:39](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L39) | Gets the unique identifier for this trade. |
-| <code>public string[]? Conditions { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:44](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L44) | Gets the trade condition codes. |
-| <code>public string? Tape { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:49](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L49) | Gets the tape identifier (A, B, or C). |
-| <code>public string Source { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:54](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L54) | Gets the data source identifier (e.g., &quot;alpaca&quot;). |
-| <code>public long SequenceNumber { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:59](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L59) | Gets the sequence number for ordering events. |
-| <code>public HistoricalTrade(string Symbol, DateTimeOffset Timestamp, string Exchange, decimal Price, long Size, string TradeId, string[]? Conditions = null, string? Tape = null, string Source = &quot;alpaca&quot;, long SequenceNumber = 0);</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:74](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L74) | Initializes a new instance of the HistoricalTrade record. |
-| <code>public decimal NotionalValue =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs:113](../../../../src/Meridian.Contracts/Domain/Models/HistoricalTrade.cs#L113) | Notional value of the trade (Price * Size). |

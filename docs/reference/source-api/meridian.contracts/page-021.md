@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EnvironmentValidationIssueDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:134](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L134).
+
+```csharp
+public sealed record EnvironmentValidationIssueDto(EnvironmentValidationSeverity Severity, string Code, string Message, string? LaneId = null, string? NodeDefinitionId = null, string? RelationshipDefinitionId = null);
+```
+
 ## EnvironmentValidationResultDto
 
 Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto</code>. Kind: `record`.
@@ -962,21 +972,3 @@ Declared public members:
 | <code>public string Extension { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:142](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L142) |  |
 | <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:143](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L143) |  |
 | <code>public bool SupportsCompression { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:144](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L144) |  |
-
-## ExportFormatsResponse
-
-Qualified name: <code>Meridian.Contracts.Export.ExportFormatsResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:289](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L289).
-
-Carries the export format choices returned by the API.
-
-```csharp
-public sealed class ExportFormatsResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;ExportFormatInfo&gt;? Formats { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:291](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L291) |  |

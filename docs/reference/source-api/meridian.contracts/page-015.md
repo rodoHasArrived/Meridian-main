@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AlpacaOptionsDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.AlpacaOptionsDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:75](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L75).
+
+Alpaca provider configuration.
+
+```csharp
+public sealed class AlpacaOptionsDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonExtensionData] public Dictionary&lt;string, JsonElement&gt;? AdditionalProperties { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:79](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L79) | Retains host feed settings this common settings view does not model. |
+| <code>[JsonPropertyName(&quot;keyId&quot;)] public string? KeyId { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:82](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L82) |  |
+| <code>[JsonPropertyName(&quot;secretKey&quot;)] public string? SecretKey { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:85](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L85) |  |
+| <code>[JsonPropertyName(&quot;feed&quot;)] public string Feed { get; set; } = &quot;iex&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:88](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L88) |  |
+| <code>[JsonPropertyName(&quot;useSandbox&quot;)] public bool UseSandbox { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:91](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L91) |  |
+| <code>[JsonPropertyName(&quot;subscribeQuotes&quot;)] public bool SubscribeQuotes { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:94](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L94) |  |
+
 ## AppConfigDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.AppConfigDto</code>. Kind: `class`.
@@ -1037,13 +1060,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;sleeveId&quot;)] public Guid? SleeveId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:209](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L209) |  |
 | <code>[JsonPropertyName(&quot;vehicleId&quot;)] public Guid? VehicleId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:212](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L212) |  |
 | <code>[JsonPropertyName(&quot;accountId&quot;)] public Guid? AccountId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:215](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L215) |  |
-
-## ProviderVerificationHistoryDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.ProviderVerificationHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Configuration/ProviderVerificationHistoryDtos.cs:6](../../../../src/Meridian.Contracts/Configuration/ProviderVerificationHistoryDtos.cs#L6).
-
-```csharp
-public sealed record ProviderVerificationHistoryDto(string ConnectionId, string ProviderId, DateTimeOffset AsOfUtc, IReadOnlyList<ProviderVerificationObservationDto> Observations, bool IsTruncated);
-```
