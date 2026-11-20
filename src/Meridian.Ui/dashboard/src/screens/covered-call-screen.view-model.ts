@@ -15,7 +15,7 @@ import type {
   CoveredCallTrade
 } from "@/lib/covered-call";
 import { shortCallBreakEven } from "@/lib/covered-call/payoff";
-import { formatFixed, formatPrefixedCurrency } from "@/lib/format";
+import { formatPrefixedCurrency } from "@/lib/format";
 import {
   formatCount,
   formatDecimal,
