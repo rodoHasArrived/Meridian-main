@@ -223,7 +223,16 @@ public sealed class BackfillConfigDto
     /// </summary>
     [JsonPropertyName("providers")]
     public BackfillProvidersConfigDto? Providers { get; set; }
+
+    /// <summary>Retains host-owned budgets when other settings are edited.</summary>
+    [JsonPropertyName("operationalBudgets")]
+    public Dictionary<string, BackfillOperationalBudgetDto>? OperationalBudgets { get; set; }
 }
+
+public sealed record BackfillOperationalBudgetDto(
+    [property: JsonPropertyName("reserveHeadroomPercent")] int ReserveHeadroomPercent = 0,
+    [property: JsonPropertyName("maxConcurrentRequests")] int? MaxConcurrentRequests = null,
+    [property: JsonPropertyName("approvedEquivalentProviders")] string[]? ApprovedEquivalentProviders = null);
 
 /// <summary>Operator-facing automatic gap-remediation configuration.</summary>
 public sealed class AutoGapRemediationConfigDto

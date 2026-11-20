@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 317,
-    "warning": 317
+    "total": 325,
+    "warning": 325
   },
   "failed": false,
   "findings": [
@@ -674,6 +674,66 @@
       },
       "message": "Business table ledger.entity_controlled_close_authorization does not have a table comment.",
       "object": "ledger.entity_controlled_close_authorization",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "external_gl_book_policy"
+      },
+      "message": "Business table ledger.external_gl_book_policy does not have a table comment.",
+      "object": "ledger.external_gl_book_policy",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "external_gl_mapping_profiles"
+      },
+      "message": "Business table ledger.external_gl_mapping_profiles does not have a table comment.",
+      "object": "ledger.external_gl_mapping_profiles",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "external_gl_posting_decisions"
+      },
+      "message": "Business table ledger.external_gl_posting_decisions does not have a table comment.",
+      "object": "ledger.external_gl_posting_decisions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "external_gl_posting_outbox"
+      },
+      "message": "Business table ledger.external_gl_posting_outbox does not have a table comment.",
+      "object": "ledger.external_gl_posting_outbox",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "external_gl_posting_packages"
+      },
+      "message": "Business table ledger.external_gl_posting_packages does not have a table comment.",
+      "object": "ledger.external_gl_posting_packages",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "external_gl_posting_receipts"
+      },
+      "message": "Business table ledger.external_gl_posting_receipts does not have a table comment.",
+      "object": "ledger.external_gl_posting_receipts",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -2424,6 +2484,34 @@
     {
       "details": {
         "columns": [
+          "journal_entry_id"
+        ],
+        "constraint": "external_gl_posting_outbox_journal_entry_id_fkey",
+        "schema": "ledger",
+        "table": "external_gl_posting_outbox"
+      },
+      "message": "Foreign key ledger.external_gl_posting_outbox.external_gl_posting_outbox_journal_entry_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.external_gl_posting_outbox.external_gl_posting_outbox_journal_entry_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "period_id"
+        ],
+        "constraint": "external_gl_posting_packages_period_id_fkey",
+        "schema": "ledger",
+        "table": "external_gl_posting_packages"
+      },
+      "message": "Foreign key ledger.external_gl_posting_packages.external_gl_posting_packages_period_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.external_gl_posting_packages.external_gl_posting_packages_period_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "ledger_book_id"
         ],
         "constraint": "intercompany_account_binding_revisions_ledger_book_id_fkey",
@@ -3536,5 +3624,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "6e99f1960a179d3c3b793471da23175ff03e73e327cf657545b1d5dffd7d2e87"
+  "fingerprint": "d47434675b0947dacf23fb0f126d3b53e0d0bd7b39ca9695eacd1d5ca0bb6cfb"
 }

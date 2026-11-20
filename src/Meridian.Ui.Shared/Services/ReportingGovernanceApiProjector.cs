@@ -143,7 +143,7 @@ public static class ReportingGovernanceApiProjector
         return requests.Select(request => ProjectRestatement(request, caller)).ToArray();
     }
 
-    private static ReportingRunParametersDto? DeserializeParameters(GovernedReportingRun run)
+    internal static ReportingRunParametersDto? DeserializeParameters(GovernedReportingRun run)
     {
         if (string.IsNullOrWhiteSpace(run.Snapshot.ParametersCanonicalJson))
         {

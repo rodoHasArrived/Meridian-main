@@ -1,4 +1,6 @@
 using System.Linq;
+using System.Text.Json.Serialization;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.Contracts.Backfill;
 
@@ -19,6 +21,16 @@ public sealed record BackfillResult(
     SymbolValidationSignal[]? SymbolValidationSignals = null
 )
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ProviderProvenanceReceipt? ProviderProvenance { get; init; }
+
+    [JsonIgnore]
+    public ProviderProvenanceAccess? ProvenanceAccess { get; init; }
+
+    public BackfillResult ForTenant(string? tenantId) =>
+        (ProviderProvenance is not null || QuotaReceipt is not null) && ProvenanceAccess?.IsVisibleTo(tenantId) != true
+            ? this with { ProviderProvenance = null, QuotaReceipt = null } : this;
+
     /// <summary>
     /// Symbols skipped because their checkpoint already covered the requested date range.
     /// Only populated when resume-from-checkpoint mode is enabled on the backfill request.
@@ -30,6 +42,8 @@ public sealed record BackfillResult(
     /// Provides operator-visible trust data for each symbol in <see cref="Symbols"/>.
     /// </summary>
     public SymbolValidationSignal[] SymbolValidationSignals { get; init; } = SymbolValidationSignals ?? [];
+
+    public BackfillQuotaReceipt? QuotaReceipt { get; init; }
 
     /// <summary>Immutable response revisions that were retained after storage confirmed this run's data.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]

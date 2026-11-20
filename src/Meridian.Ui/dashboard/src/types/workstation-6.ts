@@ -1070,6 +1070,7 @@ export interface LedgerPeriodTrialBalanceLine {
  */
 /** One posting line of a governed journal entry (`LedgerJournalEntryLineDto`). */
 export interface LedgerPostedJournalEntryLine {
+  amountPassport?: import("./amount-passport").AmountPassportReference | null;
   entryId: string;
   journalEntryId: string;
   timestamp: string;
@@ -1498,6 +1499,7 @@ export interface StrategyRunDetail {
   governance?: unknown | null;
   governanceHooks?: unknown[] | null;
   biasDisclosure?: BiasDisclosure | null;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
   evidenceLoop?: StrategyRunEvidenceLoop | null;
   acceptanceChecklist?: StrategyRunAcceptanceChecklistItem[] | null;
 }

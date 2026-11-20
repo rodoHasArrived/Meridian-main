@@ -151,6 +151,26 @@ public sealed record CanonicalStatementRow(
     /// </summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public decimal? AccruedInterest { get; init; }
+
+    /// <summary>The source payment identity linked by a retained reversal.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? RelatedTransactionId { get; init; }
+
+    /// <summary>Explicit canonical instrument identity supplied by the source mapping.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SecurityId { get; init; }
+
+    /// <summary>Source allocation JSON; every positive leg identifies one obligation or projected flow.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ReceiptAllocations { get; init; }
+
+    /// <summary>Source identity for a payment allocated to one obligation.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ObligationKey { get; init; }
+
+    /// <summary>Accepted projected flow identity for a payment allocated to one obligation.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? ProjectedCashFlowId { get; init; }
 }
 
 public sealed record ReconciliationCase(

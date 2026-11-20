@@ -1507,7 +1507,8 @@ public sealed record AccountingSystemMappingProfileUpsertRequestDto(
     IReadOnlyList<string>? EvidenceLinks = null,
     string? TenantId = null,
     string? CompanyId = null,
-    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
+    ExternalGlDestination? PostingDestination = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];

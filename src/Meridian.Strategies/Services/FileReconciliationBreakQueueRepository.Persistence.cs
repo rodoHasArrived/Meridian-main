@@ -143,6 +143,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
                         $"Duplicate reconciliation bulk receipt '{receipt.BulkActionId}' was retained in the snapshot.");
                 }
             }
+            ValidateReviewedBulkBindings();
         }
 
         _commandReceipts.Clear();
@@ -903,6 +904,22 @@ public sealed partial class FileReconciliationBreakQueueRepository
         {
             throw new InvalidDataException(
                 $"Reconciliation bulk receipt '{receipt.BulkActionId}' has inconsistent legacy-verification metadata.");
+        }
+    }
+
+    private void ValidateReviewedBulkBindings()
+    {
+        var consumed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var requests = _auditEvents.Where(static item => item.EventType == "BulkActionRequested")
+            .ToLookup(static item => item.BreakId, StringComparer.OrdinalIgnoreCase);
+        foreach (var receipt in _bulkReceipts.Values.Where(static item => !item.LegacyUnverified && !item.Result.DryRun))
+        {
+            var auditedPreviewId = ReadAuditedBulkRequest(receipt, requests[receipt.BulkActionId].LastOrDefault())?.PreviewBulkActionId;
+            if (receipt.PreviewBulkActionId != auditedPreviewId
+                || auditedPreviewId is not null && (!consumed.Add(auditedPreviewId)
+                    || !_bulkReceipts.TryGetValue(auditedPreviewId, out var preview) || !preview.Result.DryRun
+                    || preview.Result.ReviewProtocol != 1))
+                throw new InvalidDataException($"Reconciliation bulk receipt '{receipt.BulkActionId}' has an invalid reviewed-preview binding.");
         }
     }
 

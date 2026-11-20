@@ -169,24 +169,30 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.AccountingClose.AccountingReportPackageService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:48](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L48).
+Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:50](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L50).
 
 Builds and retains accounting report packages and their certification state.
 
 ```csharp
-public sealed class AccountingReportPackageService : IAccountingReportPackageService
+public sealed partial class AccountingReportPackageService : IAccountingReportPackageService
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AccountingReportPackageService(IAccountingCloseManagementService? closeManagementService = null);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:62](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L62) |  |
-| <code>public AccountingReportPackageService(IAccountingCloseManagementService? closeManagementService, StorageOptions storageOptions) : this(closeManagementService);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:67](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L67) |  |
-| <code>public async Task&lt;AccountingReportPackageBundleDto&gt; BuildPackageAsync(AccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:76](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L76) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountingReportPackageBundleDto&gt;&gt; ListPackagesAsync(string? fundProfileId = null, string? periodId = null, Guid? ledgerBookId = null, LedgerDimensionSetDto? dimensions = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:270](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L270) |  |
-| <code>public async Task&lt;AccountingReportPackageBundleDto?&gt; CertifyPackageAsync(CertifyAccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:297](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L297) |  |
-| <code>public Task&lt;ReportExportArtifactManifestDto?&gt; GetExportArtifactManifestAsync(string packageId, string artifactId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:463](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L463) |  |
+| <code>public AccountingReportPackageService(IAccountingCloseManagementService? closeManagementService = null);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:65](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L65) |  |
+| <code>public AccountingReportPackageService(IAccountingCloseManagementService? closeManagementService, StorageOptions storageOptions, IExternalGlConfirmationGate? externalGl = null) : this(closeManagementService);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:70](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L70) |  |
+| <code>public async Task&lt;AccountingReportPackageBundleDto&gt; BuildPackageAsync(AccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:81](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L81) |  |
+| <code>public Task&lt;IReadOnlyList&lt;AccountingReportPackageBundleDto&gt;&gt; ListPackagesAsync(string? fundProfileId = null, string? periodId = null, Guid? ledgerBookId = null, LedgerDimensionSetDto? dimensions = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:275](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L275) |  |
+| <code>public async Task&lt;AccountingReportPackageBundleDto?&gt; CertifyPackageAsync(CertifyAccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:302](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L302) |  |
+| <code>public Task&lt;ReportExportArtifactManifestDto?&gt; GetExportArtifactManifestAsync(string packageId, string artifactId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:468](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L468) |  |
+
+Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.Dimensions.cs:8](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.Dimensions.cs#L8).
+
+```csharp
+public sealed partial class AccountingReportPackageService
+```
 
 ## CloseApprovalHistoryEntry
 
@@ -439,7 +445,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.AccountingClose.IAccountingReportPackageService</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:18](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L18).
+Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:20](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L20).
 
 Defines creation, listing, and certification of accounting report packages.
 
@@ -451,10 +457,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;AccountingReportPackageBundleDto&gt; BuildPackageAsync(AccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:20](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L20) |  |
-| <code>Task&lt;IReadOnlyList&lt;AccountingReportPackageBundleDto&gt;&gt; ListPackagesAsync(string? fundProfileId = null, string? periodId = null, Guid? ledgerBookId = null, LedgerDimensionSetDto? dimensions = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:24](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L24) |  |
-| <code>Task&lt;AccountingReportPackageBundleDto?&gt; CertifyPackageAsync(CertifyAccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:33](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L33) |  |
-| <code>Task&lt;ReportExportArtifactManifestDto?&gt; GetExportArtifactManifestAsync(string packageId, string artifactId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:37](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L37) |  |
+| <code>Task&lt;AccountingReportPackageBundleDto&gt; BuildPackageAsync(AccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:22](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L22) |  |
+| <code>Task&lt;IReadOnlyList&lt;AccountingReportPackageBundleDto&gt;&gt; ListPackagesAsync(string? fundProfileId = null, string? periodId = null, Guid? ledgerBookId = null, LedgerDimensionSetDto? dimensions = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:26](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L26) |  |
+| <code>Task&lt;AccountingReportPackageBundleDto?&gt; CertifyPackageAsync(CertifyAccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:35](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L35) |  |
+| <code>Task&lt;ReportExportArtifactManifestDto?&gt; GetExportArtifactManifestAsync(string packageId, string artifactId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:39](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L39) |  |
 
 ## JournalEntry
 
@@ -622,7 +628,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:23](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L23).
+Source: [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:24](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L24).
 
 Coordinates external general-ledger providers, mapping profiles, imports, and reconciliation evidence.
 
@@ -634,16 +640,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AccountingSystemIntegrationService(IEnumerable&lt;IAccountingSystemProvider&gt; providers, ILedgerJournalStore? ledgerJournalStore = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null, AccountingSystemIntegrationStateStore? stateStore = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:79](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L79) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AccountingSystemProviderDto&gt;&gt; ListProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:114](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L114) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ExternalGlMappingProfileDto&gt;&gt; ListMappingProfilesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:139](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L139) |  |
-| <code>public Task&lt;ExternalGlMappingProfileDto&gt; UpsertMappingProfileAsync(AccountingSystemMappingProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:166](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L166) |  |
-| <code>public async Task&lt;ExternalGlExportPackageDto&gt; CreateExportPackageAsync(AccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:225](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L225) |  |
-| <code>public async Task&lt;ExternalGlExportPackageDto?&gt; CertifyExportPackageAsync(CertifyAccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:322](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L322) |  |
-| <code>public async Task&lt;ExternalGlExportPackageManifestDto?&gt; GetExportPackageManifestAsync(string exportPackageId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:421](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L421) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ExternalGlExportPackageDto&gt;&gt; ListExportPackagesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, AccountingCertificationStateDto? certificationState = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:438](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L438) |  |
-| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; ImportAsync(AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:467](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L467) |  |
-| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; GetLatestImportAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:498](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L498) | Returns the latest persisted import for the scope. When none has been persisted, an unpersisted preview is computed and returned instead. The preview is never cached: this method backs HTTP GET routes, which must stay free of side effects, and caching it would make a read silently record (possibly fixture) evidence as the scope&#x27;s latest import. |
+| <code>public AccountingSystemIntegrationService(IEnumerable&lt;IAccountingSystemProvider&gt; providers, ILedgerJournalStore? ledgerJournalStore = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null, AccountingSystemIntegrationStateStore? stateStore = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:80](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L80) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AccountingSystemProviderDto&gt;&gt; ListProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:115](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L115) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ExternalGlMappingProfileDto&gt;&gt; ListMappingProfilesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:140](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L140) |  |
+| <code>public Task&lt;ExternalGlMappingProfileDto&gt; UpsertMappingProfileAsync(AccountingSystemMappingProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:167](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L167) |  |
+| <code>public async Task&lt;ExternalGlExportPackageDto&gt; CreateExportPackageAsync(AccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:247](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L247) |  |
+| <code>public async Task&lt;ExternalGlExportPackageDto?&gt; CertifyExportPackageAsync(CertifyAccountingSystemExportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:344](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L344) |  |
+| <code>public async Task&lt;ExternalGlExportPackageManifestDto?&gt; GetExportPackageManifestAsync(string exportPackageId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:443](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L443) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ExternalGlExportPackageDto&gt;&gt; ListExportPackagesAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, AccountingCertificationStateDto? certificationState = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:460](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L460) |  |
+| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; ImportAsync(AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:489](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L489) |  |
+| <code>public async Task&lt;AccountingSystemImportDetailDto&gt; GetLatestImportAsync(string? providerId = null, string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs:520](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs#L520) | Returns the latest persisted import for the scope. When none has been persisted, an unpersisted preview is computed and returned instead. The preview is never cached: this method backs HTTP GET routes, which must stay free of side effects, and caching it would make a read silently record (possibly fixture) evidence as the scope&#x27;s latest import. |
 
 Source: [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs:24](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs#L24).
 
@@ -659,6 +665,12 @@ Declared public members:
 | <code>public AccountingSystemImportDetailDto? GetRetainedImport(string providerId, string importId, string fundProfileId, Guid ledgerBookId, string tenantId, string companyId);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs:45](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs#L45) | Returns an isolated copy of the exact retained external GL import, or null. It never invokes a provider, so shadow onboarding can read the incumbent&#x27;s opening trial balance without changing any source. |
 | <code>public static string GetOnboardingMappingVersion(ExternalGlMappingProfileDto profile) =&gt; …;</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs:55](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs#L55) | Content version of a mapping, independent of dictionary enumeration order. |
 | <code>public async Task&lt;AccountingOnboardingCapture?&gt; CaptureRetainedOnboardingAsync(string providerId, string fundProfileId, Guid ledgerBookId, string importId, string mappingProfileId, string mappingVersion, DateOnly asOfDate, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs:68](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs#L68) | Captures only already-retained evidence. It never invokes a provider or falls back to an import. The existing reconciliation algorithm runs against a private, read-only copy of its inputs. Missing requested inputs return null; a changed explicit mapping version is refused. |
+
+Source: [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Posting.cs:9](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Posting.cs#L9).
+
+```csharp
+public sealed partial class AccountingSystemIntegrationService
+```
 
 Source: [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.ProviderMetadata.cs:7](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.ProviderMetadata.cs#L7).
 
@@ -695,6 +707,48 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public AccountingSystemIntegrationStateStore(string directory);</code> | [src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationStateStore.cs:20](../../../../src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationStateStore.cs#L20) |  |
+
+## ExternalGlPostingDispatcher
+
+Qualified name: <code>Meridian.FinancialOperations.AccountingSystem.ExternalGlPostingDispatcher</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingDispatcher.cs:10](../../../../src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingDispatcher.cs#L10).
+
+Advances one durable outbox document and reconciles its exact Meridian line identities.
+
+```csharp
+public sealed class ExternalGlPostingDispatcher(PostgresLedgerJournalStore store, IEnumerable<IExternalGlPostingProvider> providers, TimeProvider time, IBookOfRecordGuard? bookOfRecord = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;bool&gt; ProcessNextAsync(CancellationToken ct);</code> | [src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingDispatcher.cs:16](../../../../src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingDispatcher.cs#L16) |  |
+
+## ExternalGlPostingService
+
+Qualified name: <code>Meridian.FinancialOperations.AccountingSystem.ExternalGlPostingService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs:16](../../../../src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs#L16).
+
+Prepares exact journal exports and retains human certification and approval for dispatch.
+
+```csharp
+public sealed class ExternalGlPostingService(PostgresLedgerJournalStore store, AccountingSystemIntegrationService accounting, IEnumerable<IExternalGlPostingProvider> providers, TimeProvider time, IBookOfRecordGuard? bookOfRecord = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ExternalGlBookPolicy&gt; ConfigureBookAsync(Guid bookId, string tenant, string company, string fund, string providerId, string connectionId, bool confirmationRequired, string actor, OperationsActionOriginDto origin, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs:23](../../../../src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs#L23) |  |
+| <code>public Task&lt;ExternalGlBookPolicy?&gt; GetPolicyAsync(Guid bookId, string tenant, string company, string fund, CancellationToken ct) =&gt; …;</code> | [src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs:39](../../../../src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs#L39) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ExternalGlMappingProfileDto&gt;&gt; ListMappingsAsync(Guid bookId, string tenant, string company, string fund, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs:42](../../../../src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs#L42) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ExternalGlPackageListItem&gt;&gt; ListAsync(ExternalGlPostingScope scope, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs:52](../../../../src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs#L52) |  |
+| <code>public async Task&lt;ExternalGlPostingPackage?&gt; GetAsync(ExternalGlPostingScope scope, string packageId, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs:58](../../../../src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs#L58) |  |
+| <code>public async Task&lt;ExternalGlPostingPackage?&gt; DecideAsync(ExternalGlPostingScope scope, string packageId, bool approve, string expectedPayloadHash, string notes, string actor, OperationsActionOriginDto origin, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs:64](../../../../src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs#L64) |  |
+| <code>public async Task&lt;ExternalGlPostingPackage&gt; PrepareAsync(ExternalGlPostingScope scope, string? mappingProfileId, IReadOnlyList&lt;Guid&gt;? journalIds, string rationale, string actor, OperationsActionOriginDto origin, ExternalGlPostingPurpose purpose, string? predecessorPackageId, Guid? predecessorPeriodId, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs:78](../../../../src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs#L78) |  |
 
 ## BankingConflictException
 
@@ -977,40 +1031,3 @@ Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Tra
 ```csharp
 public sealed partial class ConsolidationService
 ```
-
-## ConsolidationTransitionService
-
-Qualified name: <code>Meridian.FinancialOperations.Consolidation.ConsolidationTransitionService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs:12](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs#L12).
-
-Reviews a reporting path change; rebuilds the new target without importing old overlays.
-
-```csharp
-public sealed class ConsolidationTransitionService(ConsolidationService consolidation, ILedgerJournalStore journals, IConsolidationTransitionStore transitions, IAccountingPolicyService policies, IIntercompanyAccountBindingStore bindings, IConsolidationFxAuthority fx, ILegacyIntercompanyAttributionStore legacy, IFundProfileTenancyRegistry owners, PostgresFundStructureStore? structure = null, TimeProvider? timeProvider = null, IIntercompanyAccountingArrangementStore? arrangements = null, IIntercompanyAccountingArrangementLegalAuthority? legalAuthority = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ConsolidationTransitionPreviewDto&gt; PreviewAsync(ConsolidationTransitionRequestDto request, string tenantId, string? companyId, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs:19](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs#L19) |  |
-| <code>public async Task&lt;ConsolidationTransitionReceiptDto&gt; ActivateAsync(ApproveConsolidationTransitionRequestDto request, string tenantId, string? companyId, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs:32](../../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationTransitionService.cs#L32) |  |
-
-## PostgresConsolidationPostingAuthority
-
-Qualified name: <code>Meridian.FinancialOperations.Consolidation.PostgresConsolidationPostingAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs:10](../../../../src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs#L10).
-
-Closes the ownership/policy change window between workflow review and durable append.
-
-```csharp
-public sealed class PostgresConsolidationPostingAuthority(ConsolidationService consolidation, PostgresFundStructureStore structure, IAccountingPolicyService policies, IIntercompanyAccountBindingStore? bindings = null, IConsolidationFxAuthority? fxAuthority = null, ILegacyIntercompanyAttributionStore? legacyAttributions = null, IConsolidationTransitionStore? transitions = null, IIntercompanyAccountingArrangementStore? arrangements = null, IIntercompanyAccountingArrangementLegalAuthority? legalAuthority = null) : IConsolidationPostingAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs:18](../../../../src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs#L18) |  |

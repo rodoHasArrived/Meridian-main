@@ -14,7 +14,7 @@ import {
   TimerReset
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { KpiProvider } from "@/lib/kpi-context";
@@ -39,6 +39,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
+import { getOlderBackfillResults } from "@/lib/api";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   buildDataAnalyticsDegradedViewModel,
@@ -77,6 +78,8 @@ import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history"
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
+import { BackfillSubmissionPanel, BackfillReceiptEvidence } from "@/screens/data-screen.backfill-quota";
+import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
   selectProvidersInUse,
@@ -100,6 +103,7 @@ import type {
 } from "@/screens/data-screen.view-model";
 import type { DataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
 import type {
+  DataBackfillRecord,
   ProviderConnectionRow,
   ProviderReadinessSummary,
   ProviderRoutingBinding,
@@ -125,6 +129,7 @@ interface DataScreenProps {
   dataQualityActionApi?: Partial<CellActionApi>;
   onProviderSetupConfigured?: () => Promise<void> | void;
   onProviderRoutingRefresh?: () => Promise<void> | void;
+  onBackfillCompleted?: (workspace: "data") => Promise<void> | void;
 }
 
 const providerHealthColumns: TableWorkbenchColumn<DataOperationsProviderRow>[] = [
@@ -202,7 +207,7 @@ export function DataScreen(props: DataScreenProps) {
 }
 
 function DataScreenContent({
-  data,
+  data: currentData,
   session = null,
   providerConnections = null,
   providerReadiness = null,
@@ -213,11 +218,35 @@ function DataScreenContent({
   dataQualityFetcher,
   dataQualityActionApi,
   onProviderSetupConfigured,
-  onProviderRoutingRefresh
+  onProviderRoutingRefresh,
+  onBackfillCompleted
 }: DataScreenProps) {
   const sharedCounts = useSharedCrossScreenCounts();
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
+  const [olderBackfills, setOlderBackfills] = useState<{
+    session: typeof session; rows: DataBackfillRecord[]; loading: boolean; end: boolean; error: boolean;
+  } | null>(null);
+  const older = olderBackfills?.session === session ? olderBackfills : null;
+  const data = useMemo(() => {
+    if (!currentData || !older?.rows.length) return currentData;
+    const recent = new Set(currentData.backfills.map((row) => row.jobId));
+    return { ...currentData, backfills: [...currentData.backfills, ...older.rows.filter((row) => !recent.has(row.jobId))] };
+  }, [currentData, older?.rows]);
+  const cursor = (older?.rows ?? currentData?.backfills ?? []).filter((row) => row.providerProvenance).at(-1)?.providerProvenance?.receiptId;
+  const canLoadOlder = Boolean(cursor && !older?.end && (older || (currentData?.backfills.length ?? 0) >= 50));
+
+  async function loadOlderBackfills() {
+    if (!cursor || older?.loading) return;
+    const rows = older?.rows ?? [];
+    setOlderBackfills({ session, rows, loading: true, end: false, error: false });
+    try {
+      const page = await getOlderBackfillResults(cursor);
+      setOlderBackfills({ session, rows: [...rows, ...page], loading: false, end: page.length < 50, error: false });
+    } catch {
+      setOlderBackfills({ session, rows, loading: false, end: false, error: true });
+    }
+  }
   const providerSetupLifecycle = useMemo(
     () => ({ onConfigured: onProviderSetupConfigured }),
     [onProviderSetupConfigured]
@@ -260,6 +289,11 @@ function DataScreenContent({
     if (!shared || !local || (shared.healthy === local.healthy && shared.total === local.total)) return null;
     return `Providers healthy counts every provider in use across the workstation (${formatProviderHealth(shared)}); the health cards below show ${formatProviderHealth(local)} loaded on this page.`;
   }, [sharedCounts, kpiProviders]);
+  const lastReceiptId = vm.result?.providerProvenance?.receiptId
+    ?? vm.queuedBackfills.find((row) => row.completedAt && row.quotaReceipt)?.executionId;
+  useEffect(() => {
+    if (lastReceiptId) void onBackfillCompleted?.("data");
+  }, [lastReceiptId, onBackfillCompleted]);
   const queryPanel = useDataQueryPanel();
   const qualityPanel = useDataQualityPanel(dataQualityFetcher);
   const capabilityMatrixPanel = useCapabilityMatrixPanel();
@@ -514,7 +548,16 @@ function DataScreenContent({
           </>
         ) : null}
 
-        {showBackfillWorkstream ? <DataBackfillWorkstream vm={vm} /> : null}
+        {showBackfillWorkstream ? (
+          <DataBackfillWorkstream vm={vm} onBackfillCompleted={() => void onBackfillCompleted?.("data")}>
+            {canLoadOlder ? (
+              <Button variant="outline" size="sm" onClick={() => void loadOlderBackfills()} disabled={older?.loading}>
+                {older?.loading ? "Loading older results…" : "Load older backfill results"}
+              </Button>
+            ) : null}
+            {older?.error ? <p role="alert" className="text-sm text-danger">Could not load older backfill results.</p> : null}
+          </DataBackfillWorkstream>
+        ) : null}
 
         {showOperationsWorkstream ? <IngestionOperationsWorkstream /> : null}
 
@@ -532,7 +575,7 @@ function DataScreenContent({
       </section>
 
       <ProviderSetupDialog vm={vm} />
-      <BackfillTriggerDialog vm={vm} />
+      <BackfillTriggerDialog vm={vm} onBackfillCompleted={() => void onBackfillCompleted?.("data")} />
     </div>
   );
 }
@@ -1733,13 +1776,18 @@ const providerSetupNextActionIcons: Record<ProviderSetupNextActionState["id"], L
   "plaid-transfers": RefreshCcw
 };
 
-function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
+function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperationsVm; onBackfillCompleted: () => void }) {
+  const providerField = useRef<HTMLSelectElement>(null);
+  const quota = vm.preview?.quota;
+  const queuedAction = vm.scheduleForLater ? "Schedule backfill" : quota?.exceedsBudget ? "Queue with throttling" : "Queue backfill";
+  const latestSubmission = vm.queuedBackfills.find((row) => row.executionId === vm.submission?.executionId);
+  const submissionStatus = latestSubmission?.status ?? vm.submission?.status;
   return (
     <Dialog open={vm.dialogOpen} onOpenChange={(open) => { if (!open) vm.closeBackfillDialog(); }}>
       <DialogContent
         aria-labelledby={vm.dialogState.titleId}
         aria-describedby={vm.dialogState.descriptionId}
-        className="max-w-xl p-6"
+        className="max-w-2xl! p-6"
       >
         <div className="flex items-start justify-between gap-4">
           <DialogHeader className="mb-0">
@@ -1772,6 +1820,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
           <label htmlFor={vm.dialogState.providerField.id} className="grid gap-1 text-sm">
             {vm.dialogState.providerField.label}
             <Select
+              ref={providerField}
               id={vm.dialogState.providerField.id}
               className="min-h-11"
               value={vm.form.provider}
@@ -1810,7 +1859,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
                   onClick={() => vm.updateBackfillForm("provider", provider.value)}
                 >
                   <span className="font-semibold">{provider.label}</span>{" "}
-                  <span className={cn("ml-2 text-xs text-primary", usesTrackedCaps(provider.badge) && "type-label--caps")}>{provider.badge}</span>
+                  <span className={cn("ml-2 text-xs text-foreground", usesTrackedCaps(provider.badge) && "type-label--caps")}>{provider.badge}</span>
                 </Button>
               ))}
             </div>
@@ -1882,7 +1931,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
           aria-live="polite"
           tone={dataStatusToneToBannerTone(vm.dialogState.formStatusTone)}
           title="Backfill request status"
-          detail={vm.dialogState.formStatusLabel}
+          detail={vm.submission ? `Backfill ${submissionStatus?.toLowerCase()}.` : quota && vm.phase === "running" ? "Submitting the previewed backfill." : vm.dialogState.formStatusLabel}
           className="mt-4"
         />
 
@@ -1904,8 +1953,11 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
         )}
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
         {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
+        <BackfillSubmissionPanel vm={vm} providerField={providerField} />
         {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
         {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
+        {vm.result?.quotaReceipt && <div className="mt-3"><BackfillReceiptEvidence receipt={vm.result.quotaReceipt} /></div>}
+        {vm.runResultCard ? <ProviderProvenancePanel receipt={vm.result?.providerProvenance} onBackfillCompleted={onBackfillCompleted} /> : null}
         {vm.result?.batchReceipts?.length ? <BackfillBatchReceipts receipts={vm.result.batchReceipts} /> : null}
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -1920,16 +1972,16 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
           >
             {vm.dialogState.previewAction.label}
           </Button>
-          {vm.preview && (
+          {vm.preview && !vm.submission && (
             <Button
               onClick={() => void vm.runBackfill()}
               disabled={vm.dialogState.runAction.disabled}
               disabledReason={vm.dialogState.runAction.disabledReason}
               busy={vm.dialogState.runAction.busy}
-              busyLabel={vm.dialogState.runAction.busyLabel}
-              aria-label={vm.dialogState.runAction.ariaLabel}
+              busyLabel={quota ? "Submitting…" : vm.dialogState.runAction.busyLabel}
+              aria-label={quota ? queuedAction : vm.dialogState.runAction.ariaLabel}
             >
-              {vm.dialogState.runAction.label}
+              {quota ? queuedAction : vm.dialogState.runAction.label}
             </Button>
           )}
         </div>

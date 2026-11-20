@@ -389,36 +389,70 @@ Enum declarations:
 | <code>QualityAlert</code> | [src/Meridian.Application/Backfill/AutoGapRemediationService.cs:30](../../../../src/Meridian.Application/Backfill/AutoGapRemediationService.cs#L30) |  |
 | <code>ReconnectionGap</code> | [src/Meridian.Application/Backfill/AutoGapRemediationService.cs:31](../../../../src/Meridian.Application/Backfill/AutoGapRemediationService.cs#L31) |  |
 
-## BackfillCoordinator
+## BackfillCloneConflictException
 
-Qualified name: <code>Meridian.Application.Backfill.BackfillCoordinator</code>. Kind: `class`.
+Qualified name: <code>Meridian.Application.Backfill.BackfillCloneConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Backfill/BackfillCoordinator.cs:37](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L37).
-
-Coordinates backfill operations using providers from ProviderRegistry. All providers are resolved through the registry, which is populated during DI setup. Owns execution, provider discovery, and preview estimation; the Meridian.Ui.Shared.Services.BackfillCoordinator is a thin read-model façade over this type.
+Source: [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:215](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L215).
 
 ```csharp
-public sealed class BackfillCoordinator : IDisposable
+public sealed class BackfillCloneConflictException(BackfillClonePlan plan) : InvalidOperationException("The backfill clone requires a new review.")
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Func&lt;string, DateOnly, DateOnly, CancellationToken, Task&lt;HistoricalSessionSchedule?&gt;&gt;? ResolveSessionsAsync { get; init; }</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:53](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L53) |  |
-| <code>public BackfillCoordinator(ConfigStore store, ProviderRegistry? registry = null, ProviderFactory? factory = null, IEventMetrics? metrics = null, ISymbolResolver? symbolResolver = null, Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null, IProviderCatalog? providerCatalog = null);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:71](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L71) | Creates a BackfillCoordinator using the unified ProviderRegistry for provider discovery. |
-| <code>public IEnumerable&lt;object&gt; DescribeProviders();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:104](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L104) |  |
-| <code>public void ValidateRequest(BackfillRequest request);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:121](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L121) |  |
-| <code>public BackfillResult? TryReadLast() =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:127](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L127) |  |
-| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:132](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L132) | Returns whether a backfill run is currently active. |
-| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:138](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L138) | Returns the per-symbol checkpoint map saved during the last backfill run, or null when no checkpoints have been persisted yet. |
-| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:149](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L149) | Returns the per-symbol bar-count map saved during the last backfill run, or null when no bar-count data has been persisted yet. |
-| <code>public BackfillRunProgressResponse? GetProgress();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:159](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L159) | Gets current backfill progress. Returns null if no active backfill. |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckProviderHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:175](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L175) | Get health status of all providers. |
-| <code>public async Task&lt;SymbolResolution?&gt; ResolveSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:212](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L212) | Resolve a symbol using OpenFIGI. |
-| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:223](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L223) |  |
-| <code>public async Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:293](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L293) | Previews a backfill operation without fetching data: which provider would serve it, estimated bar counts and duration, and existing on-disk coverage per symbol. |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:531](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L531) |  |
+| <code>public BackfillClonePlan Plan { get; } = plan;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:218](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L218) |  |
+
+## BackfillCoordinator
+
+Qualified name: <code>Meridian.Application.Backfill.BackfillCoordinator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:16](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L16).
+
+```csharp
+public sealed partial class BackfillCoordinator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BackfillStatusStore GetReceiptStore();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:20](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L20) |  |
+| <code>public async Task&lt;BackfillClonePlan?&gt; GetClonePlanAsync(Guid receiptId, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:25](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L25) |  |
+| <code>public async Task&lt;BackfillResult&gt; RunCloneAsync(Guid receiptId, string confirmationCode, string? tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:41](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L41) |  |
+
+Source: [src/Meridian.Application/Backfill/BackfillCoordinator.cs:38](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L38).
+
+Coordinates backfill operations using providers from ProviderRegistry. All providers are resolved through the registry, which is populated during DI setup. Owns execution, provider discovery, and preview estimation; the Meridian.Ui.Shared.Services.BackfillCoordinator is a thin read-model façade over this type.
+
+```csharp
+public sealed partial class BackfillCoordinator : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Func&lt;string, DateOnly, DateOnly, CancellationToken, Task&lt;HistoricalSessionSchedule?&gt;&gt;? ResolveSessionsAsync { get; init; }</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:57](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L57) |  |
+| <code>public BackfillCoordinator(ConfigStore store, ProviderRegistry? registry = null, ProviderFactory? factory = null, IEventMetrics? metrics = null, ISymbolResolver? symbolResolver = null, Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null, IProviderCatalog? providerCatalog = null, IScopedProviderCredentialStore? cloneCredentials = null);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:75](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L75) | Creates a BackfillCoordinator using the unified ProviderRegistry for provider discovery. |
+| <code>public IEnumerable&lt;object&gt; DescribeProviders() =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:111](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L111) |  |
+| <code>public IEnumerable&lt;object&gt; DescribeProviders(string? tenantId);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:113](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L113) |  |
+| <code>public void ValidateRequest(BackfillRequest request) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:131](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L131) |  |
+| <code>public void ValidateRequest(BackfillRequest request, string? tenantId);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:133](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L133) |  |
+| <code>public BackfillResult? TryReadLast() =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:139](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L139) |  |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:144](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L144) | Returns whether a backfill run is currently active. |
+| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:150](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L150) | Returns the per-symbol checkpoint map saved during the last backfill run, or null when no checkpoints have been persisted yet. |
+| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:161](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L161) | Returns the per-symbol bar-count map saved during the last backfill run, or null when no bar-count data has been persisted yet. |
+| <code>public BackfillRunProgressResponse? GetProgress();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:171](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L171) | Gets current backfill progress. Returns null if no active backfill. |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckProviderHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:187](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L187) | Get health status of all providers. |
+| <code>public async Task&lt;SymbolResolution?&gt; ResolveSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:224](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L224) | Resolve a symbol using OpenFIGI. |
+| <code>public Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:235](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L235) |  |
+| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:238](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L238) |  |
+| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:356](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L356) | Previews a backfill operation without fetching data: which provider would serve it, estimated bar counts and duration, and existing on-disk coverage per symbol. |
+| <code>public async Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, string? tenantId, CancellationToken ct);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:359](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L359) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:655](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L655) |  |
 
 ## BackfillCoordinatorExecutionGateway
 
@@ -504,12 +538,22 @@ public sealed record BackfillPartitionEstimate(int Sequence, DateOnly From, Date
 
 Qualified name: <code>Meridian.Application.Backfill.BackfillPreviewResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Backfill/BackfillPreview.cs:9](../../../../src/Meridian.Application/Backfill/BackfillPreview.cs#L9).
+Source: [src/Meridian.Application/Backfill/BackfillPreview.cs:10](../../../../src/Meridian.Application/Backfill/BackfillPreview.cs#L10).
 
 Result of a backfill preview operation.
 
 ```csharp
-public sealed record BackfillPreviewResult(string Provider, string ProviderDisplayName, DateOnly From, DateOnly To, int TotalDays, int EstimatedTradingDays, SymbolPreview[] Symbols, int EstimatedDurationSeconds, string[] Notes);
+public sealed record BackfillPreviewResult(string Provider, string ProviderDisplayName, DateOnly From, DateOnly To, int TotalDays, int EstimatedTradingDays, SymbolPreview[] Symbols, double? EstimatedDurationSeconds, string[] Notes, BackfillQuotaEstimate Quota, BackfillProviderAlternative[] ApprovedAlternatives);
+```
+
+## BackfillProviderAlternative
+
+Qualified name: <code>Meridian.Application.Backfill.BackfillProviderAlternative</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Backfill/BackfillPreview.cs:24](../../../../src/Meridian.Application/Backfill/BackfillPreview.cs#L24).
+
+```csharp
+public sealed record BackfillProviderAlternative(string Provider, string DisplayName);
 ```
 
 ## BackfillRemediationSlaDecision
@@ -628,6 +672,16 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static BackfillRequest FromConfig(AppConfig cfg);</code> | [src/Meridian.Application/Backfill/BackfillRequest.cs:43](../../../../src/Meridian.Application/Backfill/BackfillRequest.cs#L43) |  |
+
+## BackfillSubmissionConflictException
+
+Qualified name: <code>Meridian.Application.Backfill.BackfillSubmissionConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:190](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L190).
+
+```csharp
+public sealed class BackfillSubmissionConflictException(string message) : Exception(message);
+```
 
 ## CrossSourceBackfillBatchReconciliationRequest
 
@@ -766,7 +820,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Backfill.ExistingDataInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Backfill/BackfillPreview.cs:35](../../../../src/Meridian.Application/Backfill/BackfillPreview.cs#L35).
+Source: [src/Meridian.Application/Backfill/BackfillPreview.cs:40](../../../../src/Meridian.Application/Backfill/BackfillPreview.cs#L40).
 
 Information about existing data for a symbol.
 
@@ -796,61 +850,3 @@ Declared public members:
 | <code>public void Subscribe(IReconnectionGapSource source);</code> | [src/Meridian.Application/Backfill/GapBackfillService.cs:78](../../../../src/Meridian.Application/Backfill/GapBackfillService.cs#L78) | Subscribes to reconnection-gap events from a streaming provider so backfill is automatically triggered when the provider reconnects after a disconnection. |
 | <code>public void Unsubscribe(IReconnectionGapSource source);</code> | [src/Meridian.Application/Backfill/GapBackfillService.cs:94](../../../../src/Meridian.Application/Backfill/GapBackfillService.cs#L94) | Unsubscribes from reconnection-gap events. |
 | <code>public void OnReconnectionGap(ReconnectionGap gap);</code> | [src/Meridian.Application/Backfill/GapBackfillService.cs:103](../../../../src/Meridian.Application/Backfill/GapBackfillService.cs#L103) | Handles a reconnection gap, triggering a background backfill covering the gap window when the gap exceeds the minimum threshold and symbols are subscribed. |
-
-## HistoricalBackfillService
-
-Qualified name: <code>Meridian.Application.Backfill.HistoricalBackfillService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:26](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L26).
-
-Orchestrates historical backfills from free/public data providers into the storage pipeline.
-
-```csharp
-public sealed class HistoricalBackfillService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HistoricalBackfillService(IEnumerable&lt;IHistoricalDataProvider&gt; providers, ILogger? logger = null, IEventMetrics? metrics = null, BackfillJobsConfig? jobsConfig = null, BackfillStatusStore? checkpointStore = null, Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null, TimeZoneInfo? intradaySessionTimeZone = null, IReadOnlyDictionary&lt;string, ProviderValidationProfile&gt;? validationProfiles = null);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:38](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L38) |  |
-| <code>public IReadOnlyCollection&lt;IHistoricalDataProvider&gt; Providers =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:60](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L60) |  |
-| <code>public Func&lt;string, DateOnly, DateOnly, CancellationToken, Task&lt;HistoricalSessionSchedule?&gt;&gt;? ResolveSessionsAsync { get; init; }</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:63](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L63) | Calendar evidence for instruments whose listing is known to the host. |
-| <code>public void ValidateRequest(BackfillRequest request);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:71](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L71) |  |
-| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:100](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L100) |  |
-
-## IBackfillExecutionGateway
-
-Qualified name: <code>Meridian.Application.Backfill.IBackfillExecutionGateway</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs:9](../../../../src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs#L9).
-
-Abstraction over backfill execution so auto-remediation can be tested deterministically.
-
-```csharp
-public interface IBackfillExecutionGateway
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs:11](../../../../src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs#L11) |  |
-
-## IDataQualityGapRemediationService
-
-Qualified name: <code>Meridian.Application.Backfill.IDataQualityGapRemediationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Backfill/AutoGapRemediationService.cs:37](../../../../src/Meridian.Application/Backfill/AutoGapRemediationService.cs#L37).
-
-Shared application boundary for explicit, contextual data-quality gap remediation.
-
-```csharp
-public interface IDataQualityGapRemediationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AutoGapRemediationRequestResult&gt; RequestDataQualityGapAsync(QualityDataGap gap, string? provider = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/AutoGapRemediationService.cs:39](../../../../src/Meridian.Application/Backfill/AutoGapRemediationService.cs#L39) |  |
