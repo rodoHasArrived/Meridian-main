@@ -3010,16 +3010,14 @@ function ensurePlotToolWorkspaceChartState(workspace: StrategyPlotWorkspaceState
 }
 
 function ensurePlotToolStatisticsChartState(statistics: StrategyPlotStatisticsState): StrategyPlotStatisticsState {
-  if (statistics.distributionChart) {
-    return statistics;
-  }
-
   const distributionBars = statistics.distributionBars ?? [];
 
   return {
     ...statistics,
     distributionBars,
-    distributionChart: buildPlotToolDistributionChartState(distributionBars)
+    distributionChart: statistics.distributionChart ?? buildPlotToolDistributionChartState(distributionBars),
+    momentsTable: statistics.momentsTable ?? buildPlotToolMomentsTable(statistics.moments ?? []),
+    sampleTable: statistics.sampleTable ?? buildPlotToolSampleTable(statistics.sampleRows ?? [])
   };
 }
 
