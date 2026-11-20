@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderConnectionConfigDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderConnectionConfigDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:29](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L29).
+
+Describes a tenant&#x27;s provider connection, credential environment, operating mode, and readiness.
+
+```csharp
+public sealed class ProviderConnectionConfigDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;tenantId&quot;)] public string? TenantId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:32](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L32) |  |
+| <code>[JsonPropertyName(&quot;credentialEnvironment&quot;)] public string? CredentialEnvironment { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:35](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L35) |  |
+| <code>[JsonPropertyName(&quot;connectionId&quot;)] public string ConnectionId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:38](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L38) |  |
+| <code>[JsonPropertyName(&quot;providerFamilyId&quot;)] public string ProviderFamilyId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:41](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L41) |  |
+| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:44](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L44) |  |
+| <code>[JsonPropertyName(&quot;connectionType&quot;)] public string ConnectionType { get; set; } = &quot;DataVendor&quot;;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:47](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L47) |  |
+| <code>[JsonPropertyName(&quot;connectionMode&quot;)] public string ConnectionMode { get; set; } = &quot;ReadOnly&quot;;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:50](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L50) |  |
+| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:53](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L53) |  |
+| <code>[JsonPropertyName(&quot;credentialReference&quot;)] public string? CredentialReference { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:56](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L56) |  |
+| <code>[JsonPropertyName(&quot;institutionId&quot;)] public string? InstitutionId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:59](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L59) |  |
+| <code>[JsonPropertyName(&quot;externalAccountId&quot;)] public string? ExternalAccountId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:62](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L62) |  |
+| <code>[JsonPropertyName(&quot;scope&quot;)] public ProviderScopeDto? Scope { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:65](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L65) |  |
+| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:68](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L68) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:71](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L71) |  |
+| <code>[JsonPropertyName(&quot;productionReady&quot;)] public bool ProductionReady { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:74](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L74) |  |
+
+## ProviderConnectionRowDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderConnectionRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:77](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L77).
+
+```csharp
+public sealed record ProviderConnectionRowDto(string ProviderId, string DisplayName, ProviderConnectionCapabilityDto Capability, ProviderCredentialStateDto CredentialState, ProviderCredentialSourceDto CredentialSource, ProviderVerificationStateDto VerificationState, ProviderContinuityHealthDto Health, bool FallbackActive, DateTimeOffset? LastVerifiedAt, DateTimeOffset? LastSuccessfulAt, DateTimeOffset? LastFailureAt, string? LastError, string? MaskedKeyPreview, string? Environment, string? ExternalAccountId, IReadOnlyList<string> AffectedWorkflows, string RecommendedAction, string ActionHref, IReadOnlyList<ProviderCredentialFieldMetadataDto>? CredentialFields = null, IReadOnlyList<ProviderEnvironmentOptionDto>? EnvironmentOptions = null);
+```
+
+## ProviderConnectionsConfigDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderConnectionsConfigDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:8](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L8).
+
+DTO version of relationship-aware provider operations configuration.
+
+```csharp
+public sealed class ProviderConnectionsConfigDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;connections&quot;)] public ProviderConnectionConfigDto[]? Connections { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:11](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L11) |  |
+| <code>[JsonPropertyName(&quot;bindings&quot;)] public ProviderBindingConfigDto[]? Bindings { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:14](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L14) |  |
+| <code>[JsonPropertyName(&quot;policies&quot;)] public ProviderPolicyConfigDto[]? Policies { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:17](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L17) |  |
+| <code>[JsonPropertyName(&quot;presets&quot;)] public ProviderPresetConfigDto[]? Presets { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:20](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L20) |  |
+| <code>[JsonPropertyName(&quot;certifications&quot;)] public ProviderCertificationConfigDto[]? Certifications { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:23](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L23) |  |
+
 ## ProviderContinuityHealthDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.ProviderContinuityHealthDto</code>. Kind: `enum`.
@@ -919,34 +983,4 @@ Source: [src/Meridian.Contracts/Derivatives/SwapDtos.cs:5](../../../../src/Merid
 
 ```csharp
 public sealed record SwapReferenceDto(Guid SecurityId, string DisplayName, string Currency, string? SwapType, DateOnly EffectiveDate, DateOnly MaturityDate, string LifecycleStat, IReadOnlyList<SwapLegDto> Legs, string PrimaryIdentifier, long Version);
-```
-
-## AccountingPeriodLockDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.AccountingPeriodLockDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:199](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L199).
-
-```csharp
-public sealed record AccountingPeriodLockDto(string LedgerBasis, DateOnly PeriodStartDate, DateOnly PeriodEndDate, string Status, string? LockedBy, DateTimeOffset? LockedAt, string? ReopenedBy, DateTimeOffset? ReopenedAt, string? Reason);
-```
-
-## ActivateLoanRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ActivateLoanRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:327](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L327).
-
-```csharp
-public sealed record ActivateLoanRequest(DateOnly ActivationDate);
-```
-
-## AddCollateralRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.AddCollateralRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:538](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L538).
-
-```csharp
-public sealed record AddCollateralRequest(CollateralType CollateralType, string Description, decimal EstimatedValue, CurrencyCode Currency, DateOnly AppraisalDate);
 ```

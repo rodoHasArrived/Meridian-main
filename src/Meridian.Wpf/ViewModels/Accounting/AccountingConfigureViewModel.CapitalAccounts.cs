@@ -18,6 +18,8 @@ namespace Meridian.Wpf.ViewModels.Accounting;
 
 public sealed partial class AccountingConfigureViewModel
 {
+    public PrivateCapitalUnitRegisterViewModel? UnitRegister { get; }
+
     private async Task LoadCapitalAccountWorkbenchAsync(CancellationToken ct)
     {
         if (_activeFundProfile is null)

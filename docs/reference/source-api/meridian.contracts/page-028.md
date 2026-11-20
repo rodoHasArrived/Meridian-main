@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAccrualFixingPinDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualFixingPinDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:54](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L54).
+
+The approved fixing that set one floating slice&#x27;s rate: AnnualRate = IndexRate + SpreadBps / 10,000.
+
+```csharp
+public sealed record IntercompanyAccrualFixingPinDto(Guid FixingId, string IndexReference, DateOnly FixingDate, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal IndexRate, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal SpreadBps, int FixingLagBusinessDays, string ValueDigest);
+```
+
+## IntercompanyAccrualPreviewDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:87](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L87).
+
+A calculated amount is a proposal input, never a posting. Unavailable carries no amount: a partial window, an undeclared term or a missing authority is refused rather than estimated.
+
+```csharp
+public sealed record IntercompanyAccrualPreviewDto(string Status, string RuleVersion, Guid? AgreementId, string? Currency, DateOnly AccrualFrom, DateOnly AccrualTo, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? Amount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? UnroundedAmount, string KernelVersion, IReadOnlyList<IntercompanyAccrualCalendarPinDto> Calendars, IReadOnlyList<IntercompanyAccrualSliceDto> Slices, IReadOnlyList<string> Diagnostics)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore] public bool IsReady =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:94](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L94) |  |
+
+## IntercompanyAccrualPrincipalSegmentDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualPrincipalSegmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:31](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L31).
+
+Outstanding principal over &#91;From, To) with the retained source that established it.
+
+```csharp
+public sealed record IntercompanyAccrualPrincipalSegmentDto(DateOnly From, DateOnly To, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Principal, string EvidenceReference);
+```
+
 ## IntercompanyAccrualRules
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualRules</code>. Kind: `class`.
@@ -683,51 +725,4 @@ Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementD
 
 ```csharp
 public sealed record IntercompanyPartyMappingDto(Guid EntityId, Guid LedgerBookId, string ReceivableAccountNodeId, string PayableAccountNodeId, string? SettlementAccountNodeId = null, string? RevenueAccountNodeId = null, string? ExpenseAccountNodeId = null);
-```
-
-## IntercompanyRateBasisDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyRateBasisDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L7).
-
-```csharp
-public enum IntercompanyRateBasisDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fixed</code> | [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L7) |  |
-| <code>Floating</code> | [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L7) |  |
-
-## IntercompanyRateFixingActionDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyRateFixingActionDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L6).
-
-```csharp
-public enum IntercompanyRateFixingActionDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Propose</code> | [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L6) |  |
-| <code>Approve</code> | [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L6) |  |
-| <code>Reject</code> | [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L6) |  |
-
-## IntercompanyRateFixingDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyRateFixingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:21](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L21).
-
-One index observation date in one tenant, retained as append-only versions. Only Approved sets accrual rates; a correction is a new pending value that replaces it only when a second person approves it.
-
-```csharp
-public sealed record IntercompanyRateFixingDto(Guid FixingId, string TenantId, string IndexReference, DateOnly FixingDate, long Version, IntercompanyRateFixingValueDto? Approved, IntercompanyRateFixingValueDto? Pending, IReadOnlyList<IntercompanyRateFixingEventDto> Events);
 ```

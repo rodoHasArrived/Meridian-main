@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using Meridian.Ledger;
+
 namespace Meridian.Backtesting.Sdk;
 
 /// <summary>
@@ -33,6 +36,10 @@ public sealed record AssetEvent(
     decimal? ReferencePrice = null,
     string? Description = null)
 {
+    /// <summary>Optional source evidence attached by the canonical event producer.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<JournalEvidenceReference>? EvidenceReferences { get; init; }
+
     /// <summary>Resolved destination symbol after any rename, merger, or acquisition conversion.</summary>
     public string DestinationSymbol => string.IsNullOrWhiteSpace(TargetSymbol) ? Symbol : TargetSymbol;
 

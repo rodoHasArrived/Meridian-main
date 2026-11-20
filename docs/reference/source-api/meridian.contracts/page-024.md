@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondProviderResponseDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondProviderResponseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:23](../../../../src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs#L23).
+
+The provider&#x27;s exact returned JSON text, retained as UTF-8 and addressed by its SHA-256.
+
+```csharp
+public sealed record BondProviderResponseDto(string ProviderId, string ContentSha256, string EvidenceReference, string RawResponseJson);
+```
+
+## BondQuoteCategory
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondQuoteCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:12](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L12).
+
+```csharp
+public enum BondQuoteCategory
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>EvaluatedValuation</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:12](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L12) |  |
+| <code>ReportedTrade</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:12](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L12) |  |
+| <code>IndicativeQuote</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:12](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L12) |  |
+| <code>ExecutableQuote</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:12](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L12) |  |
+
+## BondQuotePriceBasis
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondQuotePriceBasis</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L14).
+
+```csharp
+public enum BondQuotePriceBasis
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Clean</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L14) |  |
+| <code>Dirty</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L14) |  |
+
 ## BondRedemptionScenario
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondRedemptionScenario</code>. Kind: `record`.
@@ -722,54 +770,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;BondMonitoringSnapshotDto&gt; CaptureAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:73](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L73) |  |
 | <code>Task&lt;IReadOnlyList&lt;BondMonitoringSnapshotDto&gt;&gt; GetHistoryAsync(AccountCashForecastScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:74](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L74) |  |
-
-## IBondMonitoringStore
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.IBondMonitoringStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:65](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L65).
-
-```csharp
-public interface IBondMonitoringStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BondMonitoringSnapshotDto&gt; AppendAsync(BondMonitoringSnapshotDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:67](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L67) |  |
-| <code>Task&lt;IReadOnlyList&lt;BondMonitoringSnapshotDto&gt;&gt; GetHistoryAsync(AccountCashForecastScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:68](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L68) |  |
-
-## IBondObservedFixingStore
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.IBondObservedFixingStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs:18](../../../../src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs#L18).
-
-```csharp
-public interface IBondObservedFixingStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BondObservedFixingReceipt&gt; RetainAsync(BondObservedFixingCandidate fixing, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs:20](../../../../src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs#L20) |  |
-| <code>Task&lt;BondObservedFixingReceipt?&gt; GetAsync(Guid securityId, Guid receiptId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs:21](../../../../src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs#L21) |  |
-| <code>Task&lt;IReadOnlyList&lt;BondObservedFixingReceipt&gt;&gt; ListAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs:22](../../../../src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs#L22) |  |
-
-## IBondPerformanceService
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.IBondPerformanceService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:78](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L78).
-
-```csharp
-public interface IBondPerformanceService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BondPerformanceResult&gt; ExplainAsync(BondPerformanceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:80](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L80) |  |

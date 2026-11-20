@@ -849,6 +849,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
             // Pre-populate checkpoints from a previous run
             await checkpointStore.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 1, 15));
             await checkpointStore.WriteSymbolCheckpointAsync("AAPL", new DateOnly(2024, 1, 10));
+            await SeedCoverageAsync(checkpointStore, "test", "AAPL", new DateOnly(2024, 1, 10), new DateOnly(2024, 1, 10), bars: 1);
 
             var svc = new HistoricalBackfillService(new[] { provider }, checkpointStore: checkpointStore);
             // Fresh run — ResumeFromCheckpoint defaults to false
@@ -864,7 +865,8 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
             // AAPL should be gone (cleared by the fresh run)
             checkpoints!.Should().NotContainKey("AAPL");
             // SPY should have a new checkpoint from this run's bar
-            checkpoints.Should().ContainKey("SPY");
+            checkpoints.Should().Contain("SPY", MakeBar("SPY").SessionDate);
+            checkpointStore.TryReadSymbolCoverage(DataGranularity.Daily, "test", "default").Should().ContainKey("AAPL");
         }
         finally
         {

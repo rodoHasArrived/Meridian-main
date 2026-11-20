@@ -625,6 +625,18 @@ The reference view of a StructuredCredit tranche, read from its relational terms
 public sealed record StructuredCreditReferenceDto(Guid SecurityId, string DisplayName, string Currency, string Tranche, string? PoolId, string CollateralType, decimal OriginalFace, decimal? CurrentFactor, string CouponOrIndex, string? FactorScheduleReference, DateOnly? Maturity, string PrimaryIdentifier, long Version, string? StructuredCreditKind = null, string? Seniority = null, decimal? AttachmentPoint = null, decimal? DetachmentPoint = null, decimal? WeightedAverageCoupon = null, int? WeightedAverageMaturityMonths = null, int? WeightedAverageLoanAgeMonths = null, DateOnly? ReinvestmentPeriodEnd = null, DateOnly? NonCallPeriodEnd = null);
 ```
 
+## BackfillBatchReceipt
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillBatchReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:4](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L4).
+
+Immutable evidence for a backfill response whose accepted rows reached storage.
+
+```csharp
+public sealed record BackfillBatchReceipt(string RevisionId, string RequestedProvider, string? ServingProvider, string Feed, string Instrument, string Granularity, DateOnly? From, DateOnly? To, string Status, int RowCount, string ContentHash, string? Calendar, IReadOnlyList<DateOnly>? ExpectedSessions, IReadOnlyList<DateOnly> ReceivedSessions);
+```
+
 ## BackfillJobStatus
 
 Qualified name: <code>Meridian.Contracts.Backfill.BackfillJobStatus</code>. Kind: `class`.
@@ -741,7 +753,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string[] SkippedSymbols { get; init; } = SkippedSymbols??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:26](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L26) | Symbols skipped because their checkpoint already covered the requested date range. Only populated when resume-from-checkpoint mode is enabled on the backfill request. |
 | <code>public SymbolValidationSignal[] SymbolValidationSignals { get; init; } = SymbolValidationSignals??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:32](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L32) | Per-symbol completeness signals (pass / warn / fail) produced at the end of the run. Provides operator-visible trust data for each symbol in Symbols. |
-| <code>public static BackfillResult Failed(string provider, IReadOnlyList&lt;string&gt; symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:34](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L34) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BackfillBatchReceipt&gt;? BatchReceipts { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:36](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L36) | Immutable response revisions that were retained after storage confirmed this run&#x27;s data. |
+| <code>public static BackfillResult Failed(string provider, IReadOnlyList&lt;string&gt; symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:38](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L38) |  |
 
 ## BackfillRunProgressResponse
 
@@ -753,6 +766,37 @@ Response from /api/backfill/progress. Legacy last-run fields remain available wh
 
 ```csharp
 public sealed record BackfillRunProgressResponse(BackfillResult? LastRun, bool IsActive, BackfillProviderProgressSnapshotDto ProviderProgress, DateTimeOffset Timestamp);
+```
+
+## HistoricalSessionEvidence
+
+Qualified name: <code>Meridian.Contracts.Backfill.HistoricalSessionEvidence</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:21](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L21).
+
+Sources of expected exchange sessions for historical coverage, when available.
+
+```csharp
+public static class HistoricalSessionEvidence
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string UsEquities = &quot;us-equity-sessions-v1&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:23](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L23) |  |
+| <code>public static bool IsUsEquityListing(string? mic) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:25](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L25) |  |
+
+## HistoricalSessionSchedule
+
+Qualified name: <code>Meridian.Contracts.Backfill.HistoricalSessionSchedule</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:29](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L29).
+
+The session dates supported by a positively identified exchange calendar.
+
+```csharp
+public sealed record HistoricalSessionSchedule(string Calendar, IReadOnlyList<DateOnly> Sessions);
 ```
 
 ## SymbolBackfillProgress
@@ -809,52 +853,3 @@ Declared public members:
 | <code>public static readonly IReadOnlyList&lt;string&gt; AllStatuses = new[] { Pending, Downloading, Completed, Failed, Skipped };</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:74](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L74) | All valid status values. |
 | <code>public static bool IsTerminal(string status) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:82](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L82) | Checks if the given status represents a terminal state. |
 | <code>public static bool IsValid(string status) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:88](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L88) | Checks if the given status is valid. |
-
-## SymbolValidationSignal
-
-Qualified name: <code>Meridian.Contracts.Backfill.SymbolValidationSignal</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:24](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L24).
-
-Shared per-symbol completeness signal produced at the end of a backfill run.
-
-```csharp
-public sealed record SymbolValidationSignal(string Symbol, string Status, long BarsWritten, long? CheckpointBarsWritten, DateOnly? EffectiveFrom, DateOnly? EffectiveTo, string? Reason = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SymbolValidationSignal Pass(string symbol, long barsWritten, DateOnly? from, DateOnly? to) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:35](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L35) | Creates a Pass signal for a symbol that was fetched and returned bars. |
-| <code>public static SymbolValidationSignal PassSkipped(string symbol, long checkpointBarsWritten, DateOnly? coveredThrough) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:42](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L42) | Creates a Pass signal for a symbol that was skipped because its checkpoint fully covered the requested date range. |
-| <code>public static SymbolValidationSignal Warn(string symbol, DateOnly? from, DateOnly? to, string reason) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:47](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L47) | Creates a Warn signal for a symbol fetched without error but returning zero bars. |
-| <code>public static SymbolValidationSignal Fail(string symbol, DateOnly? from, DateOnly? to, string reason) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:51](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L51) | Creates a Fail signal for a symbol that threw an exception during fetch. |
-
-## BacktestPreflightCheckResultDto
-
-Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightCheckResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:19](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L19).
-
-```csharp
-public sealed record BacktestPreflightCheckResultDto(string Name, BacktestPreflightCheckStatusDto Status, string Message, string? Remediation = null, IReadOnlyDictionary<string, string>? Details = null);
-```
-
-## BacktestPreflightCheckStatusDto
-
-Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightCheckStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:26](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L26).
-
-```csharp
-public enum BacktestPreflightCheckStatusDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Passed = 0</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:28](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L28) |  |
-| <code>Warning = 1</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:29](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L29) |  |
-| <code>Failed = 2</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:30](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L30) |  |

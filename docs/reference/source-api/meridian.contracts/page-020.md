@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateEnvironmentDraftRequest
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:99](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L99).
+
+```csharp
+public sealed record CreateEnvironmentDraftRequest(Guid DraftId, string Name, string CreatedBy, OrganizationEnvironmentDefinitionDto Definition, string? Notes = null);
+```
+
+## EnvironmentContextMappingDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentContextMappingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:180](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L180).
+
+```csharp
+public sealed record EnvironmentContextMappingDto(string NodeDefinitionId, Guid RuntimeNodeId, string ContextKey, string LaneId, string LaneName, EnvironmentLaneArchetype Archetype);
+```
+
+## EnvironmentDraftDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:106](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L106).
+
+```csharp
+public sealed record EnvironmentDraftDto(Guid DraftId, string Name, OrganizationEnvironmentDefinitionDto Definition, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string CreatedBy, string UpdatedBy, Guid? BasedOnVersionId = null, string? Notes = null);
+```
+
 ## EnvironmentLaneArchetype
 
 Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype</code>. Kind: `enum`.
@@ -812,64 +842,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>CsvSchemaDefinition GetCsvSchema(string schemaId);</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:458](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L458) |  |
 | <code>bool IsSupported(string schemaId);</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:459](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L459) |  |
-
-## ISftpFilePublisher
-
-Qualified name: <code>Meridian.Contracts.Etl.ISftpFilePublisher</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Etl/ISftpFilePublisher.cs:6](../../../../src/Meridian.Contracts/Etl/ISftpFilePublisher.cs#L6).
-
-Publishes a local file to the configured SFTP destination.
-
-```csharp
-public interface ISftpFilePublisher
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task PublishAsync(EtlDestinationDefinition destination, string localPath, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/ISftpFilePublisher.cs:8](../../../../src/Meridian.Contracts/Etl/ISftpFilePublisher.cs#L8) |  |
-
-## PartnerRecordEnvelope
-
-Qualified name: <code>Meridian.Contracts.Etl.PartnerRecordEnvelope</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:261](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L261).
-
-Carries a parsed partner record together with its source file, checksum, and record index.
-
-```csharp
-public sealed class PartnerRecordEnvelope
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;partnerSchemaId&quot;)] public required string PartnerSchemaId { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:264](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L264) |  |
-| <code>[JsonPropertyName(&quot;sourceFileName&quot;)] public required string SourceFileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:267](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L267) |  |
-| <code>[JsonPropertyName(&quot;sourceFileChecksum&quot;)] public required string SourceFileChecksum { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:270](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L270) |  |
-| <code>[JsonPropertyName(&quot;recordIndex&quot;)] public required long RecordIndex { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:273](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L273) |  |
-| <code>[JsonPropertyName(&quot;fields&quot;)] public required IReadOnlyDictionary&lt;string, string?&gt; Fields { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:276](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L276) |  |
-| <code>[JsonPropertyName(&quot;rawLine&quot;)] public string? RawLine { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:279](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L279) |  |
-
-## AggregationOption
-
-Qualified name: <code>Meridian.Contracts.Export.AggregationOption</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:150](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L150).
-
-Describes a selectable aggregation value and its display text.
-
-```csharp
-public sealed class AggregationOption
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Value { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:152](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L152) |  |
-| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:153](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L153) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:154](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L154) |  |

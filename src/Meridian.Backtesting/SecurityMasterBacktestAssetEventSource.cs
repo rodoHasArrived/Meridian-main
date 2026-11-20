@@ -1,4 +1,5 @@
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Ledger;
 
 namespace Meridian.Backtesting;
 
@@ -24,6 +25,7 @@ public sealed class SecurityMasterBacktestAssetEventSource(
             throw new ArgumentException("Corporate-action cutoff must be on or after the start date.");
 
         var cutoff = new DateTimeOffset(through.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var retainedAt = DateTimeOffset.UtcNow;
         var result = new List<AssetEvent>();
         var processed = new HashSet<Guid>();
         var pending = new Queue<(SecurityDetailDto Security, string Symbol, DateOnly ActiveFrom)>();
@@ -71,7 +73,7 @@ public sealed class SecurityMasterBacktestAssetEventSource(
                 var mapped = await MapAsync(action, currentSymbol, ct).ConfigureAwait(false);
                 if (mapped is null)
                     continue;
-                result.Add(mapped);
+                result.Add(mapped with { EvidenceReferences = [ActionEvidence(action, retainedAt)] });
                 if (mapped.HasPositionTransformation && mapped.TargetSymbol is not null)
                 {
                     currentSymbol = mapped.DestinationSymbol;
@@ -172,6 +174,13 @@ public sealed class SecurityMasterBacktestAssetEventSource(
 
     private static InvalidOperationException InvalidTerms(CorporateActionDto action, string reason) =>
         new($"Corporate action {action.CorpActId:D}: {reason}.");
+
+    internal static JournalEvidenceReference ActionEvidence(CorporateActionDto action, DateTimeOffset retainedAt)
+        => new(action.CorpActId.ToString("D"), $"security-master://corporate-actions/{action.CorpActId:D}",
+            "Corporate action", "Security Master", retainedAt, "Meridian backtest",
+            SubjectId: action.SecurityId.ToString("D"), ContentHash: CorporateActionEconomicFingerprint.Compute(action),
+            SourceReference: action.CorpActId.ToString("D"), ReviewStatus: action.LifecycleState, EffectiveDate: action.ExDate,
+            SubjectType: "Security");
 
     private static bool IsTransformation(string eventType) => eventType is
         CorporateActionEventTypes.StockSplit or CorporateActionEventTypes.ReverseStockSplit or

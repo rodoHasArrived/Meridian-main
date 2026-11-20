@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondMarketQuoteDetails
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMarketQuoteDetails</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:19](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L19).
+
+A quote&#x27;s economic meaning. A price selection receipt remains the pricing authority.
+
+```csharp
+public sealed record BondMarketQuoteDetails([property : JsonRequired] BondQuoteCategory Category, [property : JsonRequired] BondQuotePriceBasis PriceBasis, DateOnly SettlementDate, decimal? AvailableFace = null, decimal? ProviderYield = null, string? ProviderYieldConvention = null, DateTimeOffset? ExpiresAtUtc = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? PricingSourceId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:28](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L28) |  |
+| <code>public DateTimeOffset? ObservedAtUtc { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:29](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L29) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SettlementBasis { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:31](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L31) |  |
+
+## BondMarketValueUnit
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMarketValueUnit</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10).
+
+```csharp
+public enum BondMarketValueUnit
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AnnualFraction</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>Percent</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>IndexLevel</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>PrincipalFactor</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>PercentOfPar</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>CurrencyPerUnit</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>Rating</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+
+## BondMigrationBatchPreviewRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationBatchPreviewRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationApiRequests.cs:11](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationApiRequests.cs#L11).
+
+Bounded bulk preview; each row retains its own expected security version.
+
+```csharp
+public sealed record BondMigrationBatchPreviewRequest(IReadOnlyList<BondMigrationPreviewRequest> Bonds);
+```
+
 ## BondMigrationBlockDto
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationBlockDto</code>. Kind: `record`.
@@ -624,51 +678,3 @@ Source: [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:45](../../
 ```csharp
 public partial class BondProviderIntakeJsonContext : JsonSerializerContext;
 ```
-
-## BondProviderResponseDto
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondProviderResponseDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:23](../../../../src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs#L23).
-
-The provider&#x27;s exact returned JSON text, retained as UTF-8 and addressed by its SHA-256.
-
-```csharp
-public sealed record BondProviderResponseDto(string ProviderId, string ContentSha256, string EvidenceReference, string RawResponseJson);
-```
-
-## BondQuoteCategory
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondQuoteCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:12](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L12).
-
-```csharp
-public enum BondQuoteCategory
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>EvaluatedValuation</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:12](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L12) |  |
-| <code>ReportedTrade</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:12](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L12) |  |
-| <code>IndicativeQuote</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:12](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L12) |  |
-| <code>ExecutableQuote</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:12](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L12) |  |
-
-## BondQuotePriceBasis
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondQuotePriceBasis</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L14).
-
-```csharp
-public enum BondQuotePriceBasis
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Clean</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L14) |  |
-| <code>Dirty</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L14) |  |

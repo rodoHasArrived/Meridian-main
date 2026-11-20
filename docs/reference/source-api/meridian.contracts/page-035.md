@@ -6,6 +6,172 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConsolidationFxTranslationResultDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationFxTranslationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs:74](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs#L74).
+
+```csharp
+public sealed record ConsolidationFxTranslationResultDto(string Currency, IReadOnlyList<ConsolidationFxTranslatedLineDto> Lines, decimal TranslationReserveSignedAmount, IReadOnlyList<string> Blockers, string Fingerprint, IReadOnlyList<ConsolidationFxReserveDto>? Reserves = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsComplete =&gt; …;</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs:79](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs#L79) |  |
+| <code>public decimal TranslationDifferenceSignedAmount { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs:80](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs#L80) |  |
+| <code>public decimal RoundingDifferenceSignedAmount { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs:81](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs#L81) |  |
+
+## ConsolidationFxValidation
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationFxValidation</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:7](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L7).
+
+Shared invariants for approved FX evidence at every persistence boundary.
+
+```csharp
+public static class ConsolidationFxValidation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Validate(ConsolidationFxRateSetDto value);</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:9](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L9) |  |
+| <code>public static void Validate(ConsolidationFxPolicyDto value);</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:39](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L39) |  |
+| <code>public static void Validate(ConsolidationFxBookConfigurationDto value);</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:60](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L60) |  |
+| <code>public static string Hash(ConsolidationFxRateSetDto value) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:79](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L79) |  |
+| <code>public static string Hash(ConsolidationFxBookConfigurationDto value) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs:81](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxValidation.cs#L81) |  |
+
+## ConsolidationMatchDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationMatchDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:96](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L96).
+
+```csharp
+public sealed record ConsolidationMatchDto(string PostingEntityId, string CounterpartyId, decimal Receivable, decimal Payable, decimal MatchedAmount, decimal UnmatchedReceivable, decimal UnmatchedPayable, IReadOnlyList<ConsolidationSourceDto> Sources)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountingArrangementId { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:102](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L102) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountingArrangementRevisionId { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:104](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L104) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Treatment { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:106](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L106) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? MatchingCurrency { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:108](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L108) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? MatchedTransactionAmount { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:110](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L110) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? UnmatchedFirstTransactionAmount { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:112](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L112) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? UnmatchedSecondTransactionAmount { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:114](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L114) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? TranslationDifference { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:116](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L116) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? IntercompanyTransactionId { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:118](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L118) |  |
+
+## ConsolidationRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:7](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L7).
+
+First slice: two directly wholly owned entities, Primary basis, one functional currency.
+
+```csharp
+public sealed record ConsolidationRequestDto(Guid OrganizationId, Guid OwnershipRootId, Guid EliminationBookId, Guid PeriodId, DateOnly AsOf);
+```
+
+## ConsolidationRuleEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationRuleEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L10).
+
+```csharp
+public sealed record ConsolidationRuleEvidenceDto(string RuleId, string RuleVersion);
+```
+
+## ConsolidationSourceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationSourceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:55](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L55).
+
+```csharp
+public sealed record ConsolidationSourceDto(Guid LedgerBookId, Guid JournalEntryId, Guid LineId, string EntityId, string? CounterpartyId, string AccountPath, decimal Debit, decimal Credit, DateOnly EffectiveDate, string DrillThrough)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountType { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:60](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L60) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? OriginalAccountPath { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:62](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L62) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CounterpartyDisposition { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:64](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L64) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Currency { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:66](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L66) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? ChartAccountNodeId { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:68](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L68) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountBindingRevisionId { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:70](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L70) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountingArrangementId { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:72](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L72) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountingArrangementRevisionId { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:74](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L74) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Guid? IntercompanyAgreementId { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:76](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L76) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public int? IntercompanyAgreementVersion { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:78](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L78) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? IntercompanyAgreementPayloadHash { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:80](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L80) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? IntercompanyTransactionId { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:82](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L82) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? TransactionDebit { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:84](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L84) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? TransactionCredit { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:86](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L86) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? TransactionCurrency { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:88](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L88) |  |
+
+## ConsolidationTransitionJsonContext
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationTransitionJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs#L44).
+
+```csharp
+public sealed partial class ConsolidationTransitionJsonContext : JsonSerializerContext;
+```
+
+## ConsolidationTransitionLineageDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationTransitionLineageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs#L22).
+
+```csharp
+public sealed record ConsolidationTransitionLineageDto(Guid TransitionId, string ContentHash, DateOnly CutoverDate, Guid PreviousEliminationBookId);
+```
+
+## ConsolidationTransitionPreviewDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationTransitionPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs#L11).
+
+Retained server preview; approval accepts only its exact current fingerprint.
+
+```csharp
+public sealed record ConsolidationTransitionPreviewDto(Guid PreviewId, ConsolidationTransitionRequestDto Request, long RootVersion, Guid? PreviousTransitionId, string TenantId, string? CompanyId, string PreparedBy, DateTimeOffset PreparedAt, string PreviousBookEvidenceDigest, IReadOnlyList<Guid> PreviousPostedJournalIds, DateOnly? PreviousLatestPostedAsOf, IReadOnlyList<string> PreviousEntityIds, ConsolidationEvidenceDto NewEvidence, IReadOnlyList<string> JoinedEntityIds, IReadOnlyList<string> RemovedEntityIds, IReadOnlyList<string> Blockers, string Fingerprint)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool CanApprove =&gt; …;</code> | [src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs#L19) |  |
+
+## ConsolidationTransitionReceiptDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationTransitionReceiptDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs:28](../../../../src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs#L28).
+
+Immutable independently approved route and exact reviewed operands.
+
+```csharp
+public sealed record ConsolidationTransitionReceiptDto(Guid TransitionId, Guid PreviewId, long RootVersion, Guid? PreviousTransitionId, ConsolidationTransitionRequestDto Request, string TenantId, string? CompanyId, string PreparedBy, string ApprovedBy, DateTimeOffset ApprovedAt, string PreviewFingerprint, string PreviousBookEvidenceDigest, IReadOnlyList<Guid> PreviousPostedJournalIds, DateOnly? PreviousLatestPostedAsOf, IReadOnlyList<string> PreviousEntityIds, ConsolidationEvidenceDto NewEvidence, string ContentHash);
+```
+
 ## ConsolidationTransitionRequestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationTransitionRequestDto</code>. Kind: `record`.
@@ -241,7 +407,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.ExecuteAccountingRuleTestCasesRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1193](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1193).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1198](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1198).
 
 ```csharp
 public sealed record ExecuteAccountingRuleTestCasesRequestDto(string FundProfileId, string Actor, IReadOnlyList<AccountingRuleTestCaseDto>? TestCases = null, Guid? LedgerBookId = null, string? CorrelationId = null, string? TenantId = null, string? CompanyId = null)
@@ -251,7 +417,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;AccountingRuleTestCaseDto&gt; TestCases { get; init; } = TestCases??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1202](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1202) |  |
+| <code>public IReadOnlyList&lt;AccountingRuleTestCaseDto&gt; TestCases { get; init; } = TestCases??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1207](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1207) |  |
 
 ## ExternalGlExportCertificationDto
 
@@ -369,6 +535,16 @@ Read-only preview. Decimal component strings preserve exact workstation display.
 public sealed record FactorPaydownPreparationDto(OpenLotFactorPaydownInstructionDto Instruction, AssetLotMutationInstructionDto LotMutation, ProjectAssetAccountingEventRequestDto ProjectRequest, IReadOnlyDictionary<string, string> Components, string PreparationFingerprint);
 ```
 
+## FinalizeFiscalYearCloseRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.FinalizeFiscalYearCloseRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:47](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L47).
+
+```csharp
+public sealed record FinalizeFiscalYearCloseRequestDto(Guid CommandId, string ExpectedPlanHashSha256, string Reason, Guid? SupersedesReceiptId = null);
+```
+
 ## FinancialStatementPackageDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.FinancialStatementPackageDto</code>. Kind: `record`.
@@ -390,7 +566,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearCloseBalanceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L44).
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:84](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L84).
 
 One account and dimensional scope in a close-plan section, with normal-balance sign.
 
@@ -402,7 +578,7 @@ public sealed record FiscalYearCloseBalanceDto(string AccountName, string Accoun
 
 Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearCloseBlockerCodes</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:55](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L55).
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:95](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L95).
 
 Stable blocker codes for the fiscal-year close plan.
 
@@ -414,24 +590,24 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string NoPeriods = &quot;no-periods&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:57](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L57) |  |
-| <code>public const string CoverageGap = &quot;coverage-gap&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:58](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L58) |  |
-| <code>public const string PeriodNotHardClosed = &quot;period-not-hard-closed&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:59](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L59) |  |
-| <code>public const string PriorYearNotClosed = &quot;prior-year-not-closed&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:60](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L60) |  |
-| <code>public const string SnapshotMissing = &quot;snapshot-missing&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:61](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L61) |  |
-| <code>public const string SnapshotStale = &quot;snapshot-stale&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:62](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L62) |  |
-| <code>public const string SnapshotIntegrity = &quot;snapshot-integrity&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:63](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L63) |  |
-| <code>public const string FinalSnapshotSuperseded = &quot;final-snapshot-superseded&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:64](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L64) |  |
-| <code>public const string UnknownJournalPeriod = &quot;unknown-journal-period&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:65](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L65) |  |
-| <code>public const string LaterYearJournal = &quot;later-year-journal&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:66](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L66) |  |
-| <code>public const string Unbalanced = &quot;unbalanced&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:67](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L67) |  |
-| <code>public const string IncomeNotPreserved = &quot;income-not-preserved&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:68](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L68) |  |
+| <code>public const string NoPeriods = &quot;no-periods&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:97](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L97) |  |
+| <code>public const string CoverageGap = &quot;coverage-gap&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:98](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L98) |  |
+| <code>public const string PeriodNotHardClosed = &quot;period-not-hard-closed&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:99](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L99) |  |
+| <code>public const string PriorYearNotClosed = &quot;prior-year-not-closed&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:100](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L100) |  |
+| <code>public const string SnapshotMissing = &quot;snapshot-missing&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:101](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L101) |  |
+| <code>public const string SnapshotStale = &quot;snapshot-stale&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:102](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L102) |  |
+| <code>public const string SnapshotIntegrity = &quot;snapshot-integrity&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:103](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L103) |  |
+| <code>public const string FinalSnapshotSuperseded = &quot;final-snapshot-superseded&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:104](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L104) |  |
+| <code>public const string UnknownJournalPeriod = &quot;unknown-journal-period&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:105](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L105) |  |
+| <code>public const string LaterYearJournal = &quot;later-year-journal&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:106](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L106) |  |
+| <code>public const string Unbalanced = &quot;unbalanced&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:107](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L107) |  |
+| <code>public const string IncomeNotPreserved = &quot;income-not-preserved&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:108](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L108) |  |
 
 ## FiscalYearCloseBlockerDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearCloseBlockerDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:29](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L29).
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:69](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L69).
 
 One named reason the fiscal year cannot be closed yet.
 
@@ -439,11 +615,23 @@ One named reason the fiscal year cannot be closed yet.
 public sealed record FiscalYearCloseBlockerDto(string Code, string Message, Guid? PeriodId = null);
 ```
 
+## FiscalYearCloseBookEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearCloseBookEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:39](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L39).
+
+The retained book settings bound into the reviewed fiscal plan.
+
+```csharp
+public sealed record FiscalYearCloseBookEvidenceDto(string FunctionalCurrency, AccountingBasisKindDto AccountingBasis, string AccountingPolicyId, string AccountingPolicyVersion, Guid OwningEntityId, DateTimeOffset BookUpdatedAt);
+```
+
 ## FiscalYearClosePeriodEvidenceDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:32](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L32).
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:72](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L72).
 
 A constituent period and the retained close snapshot the plan relied on.
 
@@ -455,19 +643,38 @@ public sealed record FiscalYearClosePeriodEvidenceDto(Guid PeriodId, int PeriodN
 
 Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearClosePlanDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L9).
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L11).
 
 Read-only fiscal-year close plan for one ledger book (W12-YEND-001 slice 1). It is derived only from retained hard-close snapshots and never posts, reopens or changes period state. When any blocker is present the plan is not ready, carries no balances and no plan hash, so an incomplete year can never be read as a closeable or empty one.
 
 ```csharp
-public sealed record FiscalYearClosePlanDto(Guid LedgerBookId, int FiscalYear, DateOnly? FiscalYearStart, DateOnly? FiscalYearEnd, bool IsReady, IReadOnlyList<FiscalYearCloseBlockerDto> Blockers, IReadOnlyList<FiscalYearClosePeriodEvidenceDto> Periods, IReadOnlyList<FiscalYearCloseBalanceDto> PreClosingTrialBalance, IReadOnlyList<FiscalYearCloseBalanceDto> PostedClosingTransfers, IReadOnlyList<FiscalYearCloseBalanceDto> ProposedClosingTransfers, IReadOnlyList<FiscalYearCloseBalanceDto> PostClosingTrialBalance, IReadOnlyList<FiscalYearCloseBalanceDto> NextYearOpeningBalances, decimal ReportedNetIncome, decimal OpeningEquity, decimal PreClosingEquity, decimal PostClosingEquity, string? PlanHashSha256);
+public sealed record FiscalYearClosePlanDto(Guid LedgerBookId, int FiscalYear, DateOnly? FiscalYearStart, DateOnly? FiscalYearEnd, bool IsReady, IReadOnlyList<FiscalYearCloseBlockerDto> Blockers, IReadOnlyList<FiscalYearClosePeriodEvidenceDto> Periods, IReadOnlyList<FiscalYearCloseBalanceDto> PreClosingTrialBalance, IReadOnlyList<FiscalYearCloseBalanceDto> PostedClosingTransfers, IReadOnlyList<FiscalYearCloseBalanceDto> ProposedClosingTransfers, IReadOnlyList<FiscalYearCloseBalanceDto> PostClosingTrialBalance, IReadOnlyList<FiscalYearCloseBalanceDto> NextYearOpeningBalances, decimal ReportedNetIncome, decimal OpeningEquity, decimal PreClosingEquity, decimal PostClosingEquity, string? PlanHashSha256)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public FiscalYearCloseBookEvidenceDto? Book { get; init; }</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:31](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L31) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool CanFinalizeFiscalYearClose { get; init; }</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:35](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L35) | Whether the authenticated reader can authorize the current plan. |
+
+## FiscalYearCloseReceiptDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearCloseReceiptDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:54](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L54).
+
+An immutable fiscal close and next-year opening representation for a continuous book.
+
+```csharp
+public sealed record FiscalYearCloseReceiptDto(Guid ReceiptId, Guid? SupersedesReceiptId, DateTimeOffset RecordedAt, string AuthorizedBy, string ControllerRole, string Reason, FiscalYearClosePlanDto Plan, string FunctionalCurrency, AccountingBasisKindDto AccountingBasis, string AccountingPolicyId, string AccountingPolicyVersion, IReadOnlyList<Guid> ClosingJournalEntryIds);
 ```
 
 ## GeneratedPostingLineDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.GeneratedPostingLineDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:398](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L398).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:403](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L403).
 
 ```csharp
 public sealed record GeneratedPostingLineDto(string LineId, string AccountPath, AccountingTemplateLineSideDto Side, string AmountFormulaId, decimal Amount, string Currency = "USD", LedgerDimensionSetDto? Dimensions = null, string? Description = null);
@@ -541,262 +748,3 @@ Declared public members:
 | <code>Task&lt;AccountingAuditPendingMarker?&gt; ReadAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:123](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L123) | The outstanding marker, or null when the last mutation-and-audit pair completed. |
 | <code>Task WriteAsync(AccountingAuditPendingMarker marker, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:126](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L126) | Records the intent to audit, before the mutation it describes runs. |
 | <code>Task ClearAsync(Guid auditEventId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:132](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L132) | Clears the marker for auditEventId. A no-op when the outstanding marker is for a different event, so a late clear cannot erase a newer intent. |
-
-## IAccountingAutomaticPostingPolicyValidator
-
-Qualified name: <code>Meridian.Contracts.Ledger.IAccountingAutomaticPostingPolicyValidator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs:15](../../../../src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs#L15).
-
-Checks exact effective policy rules before an automatic journal is prepared.
-
-```csharp
-public interface IAccountingAutomaticPostingPolicyValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireRetainedAuthorityAsync(AccountingPolicyDto snapshot, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs:17](../../../../src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs#L17) |  |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireAuthorityAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs:20](../../../../src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs#L20) |  |
-| <code>Task&lt;AccountingPolicyRuleDto&gt; ResolveRuleAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, string sourceEventType, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs:23](../../../../src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs#L23) |  |
-| <code>Task ValidateAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs:26](../../../../src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs#L26) |  |
-
-## IAccountingConfigurationService
-
-Qualified name: <code>Meridian.Contracts.Ledger.IAccountingConfigurationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1010](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1010).
-
-Retrieves and updates scoped accounting configuration and its supporting templates and mappings.
-
-```csharp
-public interface IAccountingConfigurationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AccountingConfigurationWorkspaceDto&gt; GetWorkspaceAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1012](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1012) |  |
-| <code>Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertChartNodeAsync(UpsertChartOfAccountsNodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1019](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1019) |  |
-| <code>Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertTemplateAsync(UpsertJournalEntryTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1023](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1023) |  |
-| <code>Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertPostingRuleAsync(UpsertPostingRuleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1027](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1027) |  |
-| <code>Task&lt;AccountingConfigurationWorkspaceDto&gt; ApprovePostingRulePromotionAsync(ApprovePostingRulePromotionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1031](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1031) |  |
-| <code>Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertRuleTestCaseAsync(UpsertAccountingRuleTestCaseRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1035](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1035) |  |
-| <code>Task&lt;AccountingJournalTemplatePreviewDto&gt; PreviewTemplateAsync(PreviewJournalTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1039](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1039) |  |
-| <code>Task&lt;RuleDryRunResultDto&gt; DryRunPostingRuleAsync(RuleDryRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1043](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1043) |  |
-| <code>Task&lt;AccountingRuleTestSuiteResultDto&gt; ExecuteRuleTestCasesAsync(ExecuteAccountingRuleTestCasesRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1047](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1047) |  |
-| <code>Task&lt;AccountingConfigurationWorkspaceDto&gt; ActivateAsync(ActivateAccountingConfigurationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1051](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1051) |  |
-| <code>Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAuditAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1055](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1055) |  |
-
-## IAccountingConfigurationStore
-
-Qualified name: <code>Meridian.Contracts.Ledger.IAccountingConfigurationStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1177](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1177).
-
-Loads and saves scoped accounting configuration workspaces.
-
-```csharp
-public interface IAccountingConfigurationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AccountingConfigurationWorkspaceDto?&gt; GetAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1179](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1179) |  |
-| <code>Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1186](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1186) |  |
-
-## IAutomatedPostingGrantStore
-
-Qualified name: <code>Meridian.Contracts.Ledger.IAutomatedPostingGrantStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:47](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L47).
-
-```csharp
-public interface IAutomatedPostingGrantStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AutomatedPostingGrantDto&gt; ActivateAsync(ActivateAutomatedPostingGrantRequest request, string actor, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:49](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L49) |  |
-| <code>Task&lt;AutomatedPostingGrantDto&gt; ActivateWithPolicyAsync(ActivateAutomatedPostingGrantRequest request, AccountingPolicyDto policySnapshot, string actor, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:51](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L51) |  |
-| <code>Task&lt;AutomatedPostingGrantDto&gt; RevokeAsync(Guid grantId, long expectedVersion, string actor, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:55](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L55) |  |
-| <code>Task&lt;AutomatedPostingGrantDto?&gt; GetAsync(Guid grantId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:57](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L57) |  |
-| <code>Task ValidateCurrentAsync(AutomatedPostingGrantReferenceDto reference, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:59](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L59) | Checks current grant, policy and exact mapped content without posting. |
-
-## ICapitalAccountWorkbenchService
-
-Qualified name: <code>Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1118](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1118).
-
-Builds a capital account workbench filtered by fund, book, event, investor, and currency.
-
-```csharp
-public interface ICapitalAccountWorkbenchService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;CapitalAccountWorkbenchDto&gt; GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, string? fundEventId = null, string? capitalAccountId = null, string? investorId = null, string? currency = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1120](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1120) |  |
-
-## IConfiguredLedgerAccountResolver
-
-Qualified name: <code>Meridian.Contracts.Ledger.IConfiguredLedgerAccountResolver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs:4](../../../../src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs#L4).
-
-Resolves a configured account without inferring classification from its name.
-
-```csharp
-public interface IConfiguredLedgerAccountResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ChartOfAccountsNodeDto&gt; ResolveAsync(ConfiguredLedgerAccountRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs:6](../../../../src/Meridian.Contracts/Ledger/ConfiguredLedgerAccountResolver.cs#L6) |  |
-
-## IConsolidationBookPolicyValidator
-
-Qualified name: <code>Meridian.Contracts.Ledger.IConsolidationBookPolicyValidator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/IConsolidationBookPolicyValidator.cs:4](../../../../src/Meridian.Contracts/Ledger/IConsolidationBookPolicyValidator.cs#L4).
-
-Validates the governed rule behind the narrow additional reporting-book creation path.
-
-```csharp
-public interface IConsolidationBookPolicyValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task ValidateAsync(string policyId, string policyVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IConsolidationBookPolicyValidator.cs:6](../../../../src/Meridian.Contracts/Ledger/IConsolidationBookPolicyValidator.cs#L6) |  |
-
-## IConsolidationDraftGuard
-
-Qualified name: <code>Meridian.Contracts.Ledger.IConsolidationDraftGuard</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:50](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L50).
-
-Checks that a consolidation draft&#x27;s source authority is still current before it proceeds.
-
-```csharp
-public interface IConsolidationDraftGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task ValidateCurrentAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:52](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L52) |  |
-
-## IIntercompanyAccountBindingStore
-
-Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyAccountBindingStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:54](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L54).
-
-Retained account authority shared by posting, consolidation and both workstations.
-
-```csharp
-public interface IIntercompanyAccountBindingStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyAccountBindingDto&gt;&gt; ListAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:56](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L56) |  |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyAccountBindingDto&gt;&gt; HistoryAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:58](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L58) |  |
-| <code>Task&lt;IntercompanyAccountBindingDto?&gt; GetRevisionAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:60](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L60) |  |
-| <code>Task&lt;IntercompanyAccountBindingDto&gt; AppendAsync(IntercompanyAccountBindingDto revision, Guid? expectedPreviousRevisionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:61](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L61) |  |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:65](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L65) | Holds mapping mutations until the consumer&#x27;s financial transaction commits. |
-
-## IIntercompanyAccrualScheduleStore
-
-Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyAccrualScheduleStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:53](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L53).
-
-Append-only, tenant-scoped schedule versions.
-
-```csharp
-public interface IIntercompanyAccrualScheduleStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IntercompanyAccrualScheduleDto?&gt; GetAsync(string tenantId, Guid scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:55](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L55) |  |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyAccrualScheduleDto&gt;&gt; ListAsync(string tenantId, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:56](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L56) |  |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyAccrualScheduleDto&gt;&gt; ListActiveAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:58](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L58) | Every tenant&#x27;s active schedules, for the background runner only. |
-| <code>Task&lt;IntercompanyAccrualScheduleDto&gt; AppendAsync(IntercompanyAccrualScheduleDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:59](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L59) |  |
-
-## IIntercompanyBalanceConfirmationStore
-
-Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:103](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L103).
-
-Durable, append-only confirmation history scoped to the caller&#x27;s tenant and company. Each append adds the next version of one confirmation; a stale expected version is refused rather than overwritten.
-
-```csharp
-public interface IIntercompanyBalanceConfirmationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(Guid confirmationId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:105](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L105) |  |
-| <code>Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:107](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L107) | The latest version of the confirmation for one accounting profile and as-of date, if any. |
-| <code>Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:112](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L112) | Appends next as version expectedVersion + 1. Version 1 creates the confirmation and is refused when one already exists for the same profile and date. |
-
-## IIntercompanyConfirmationClosePolicyStore
-
-Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyConfirmationClosePolicyStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:38](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L38).
-
-Append-only, tenant-scoped close-policy versions.
-
-```csharp
-public interface IIntercompanyConfirmationClosePolicyStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IntercompanyConfirmationClosePolicyDto?&gt; GetAsync(string tenantId, Guid policyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:40](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L40) |  |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyConfirmationClosePolicyDto&gt;&gt; ListAsync(string tenantId, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:41](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L41) |  |
-| <code>Task&lt;IntercompanyConfirmationClosePolicyDto&gt; AppendAsync(IntercompanyConfirmationClosePolicyDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L42) |  |
-
-## IIntercompanyObligationMonitorService
-
-Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyObligationMonitorService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:30](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L30).
-
-```csharp
-public interface IIntercompanyObligationMonitorService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IntercompanyObligationMonitorDto&gt; EvaluateAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:32](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L32) |  |

@@ -55,6 +55,12 @@ public sealed partial class PaperTradingPortfolio
                 foreach (var symbol in symbols)
                 {
                     account.Positions.TryGetValue(symbol, out var position);
+                    if (position is not null)
+                    {
+                        var units = position.UnitizedLots.Sum(lot => lot.UnitKind == position.LotUnit ? lot.Quantity : 0m);
+                        Compare(account.AccountId, $"PositionLots:{symbol}:{position.LotUnit}",
+                            Math.Abs(position.Quantity), units);
+                    }
                     Compare(account.AccountId, $"Securities:{symbol}",
                         position is { Quantity: > 0m, UsesVariationMargin: false } ? position.OpenCostBasis : 0m,
                         _ledger.GetBalance(Scoped(account, LedgerAccounts.Securities(symbol))));

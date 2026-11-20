@@ -21,7 +21,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class ReportingRunCertificationServiceTests
+public sealed partial class ReportingRunCertificationServiceTests
 {
     private static readonly DateTimeOffset CapturedAt =
         new(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
@@ -2000,7 +2000,7 @@ public sealed class ReportingRunCertificationServiceTests
             ("entryId", "22222222-2222-2222-2222-222222222222"))
     ];
 
-    private static LedgerFinancialReportPack BuildCanonicalCapitalReportPack()
+    private static LedgerFinancialReportPack BuildCanonicalCapitalReportPack(bool includeStatementControls = false)
     {
         var ledger = new Meridian.Ledger.Ledger();
         ledger.PostLines(
@@ -2026,7 +2026,12 @@ public sealed class ReportingRunCertificationServiceTests
             new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero),
             "USD",
             "controller",
-            CapturedAt);
+            CapturedAt)
+        {
+            StatementControl = includeStatementControls
+                ? new LedgerStatementControlDefinition(LedgerStatementControlDefinition.CurrentVersion, AccountingBasisKindDto.Gaap)
+                : null
+        };
         return LedgerReportPackBuilder.Build(ledger, request);
     }
 

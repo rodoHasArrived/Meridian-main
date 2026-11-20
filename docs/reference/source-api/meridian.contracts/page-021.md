@@ -6,6 +6,67 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISftpFilePublisher
+
+Qualified name: <code>Meridian.Contracts.Etl.ISftpFilePublisher</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Etl/ISftpFilePublisher.cs:6](../../../../src/Meridian.Contracts/Etl/ISftpFilePublisher.cs#L6).
+
+Publishes a local file to the configured SFTP destination.
+
+```csharp
+public interface ISftpFilePublisher
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task PublishAsync(EtlDestinationDefinition destination, string localPath, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/ISftpFilePublisher.cs:8](../../../../src/Meridian.Contracts/Etl/ISftpFilePublisher.cs#L8) |  |
+
+## PartnerRecordEnvelope
+
+Qualified name: <code>Meridian.Contracts.Etl.PartnerRecordEnvelope</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:261](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L261).
+
+Carries a parsed partner record together with its source file, checksum, and record index.
+
+```csharp
+public sealed class PartnerRecordEnvelope
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;partnerSchemaId&quot;)] public required string PartnerSchemaId { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:264](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L264) |  |
+| <code>[JsonPropertyName(&quot;sourceFileName&quot;)] public required string SourceFileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:267](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L267) |  |
+| <code>[JsonPropertyName(&quot;sourceFileChecksum&quot;)] public required string SourceFileChecksum { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:270](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L270) |  |
+| <code>[JsonPropertyName(&quot;recordIndex&quot;)] public required long RecordIndex { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:273](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L273) |  |
+| <code>[JsonPropertyName(&quot;fields&quot;)] public required IReadOnlyDictionary&lt;string, string?&gt; Fields { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:276](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L276) |  |
+| <code>[JsonPropertyName(&quot;rawLine&quot;)] public string? RawLine { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:279](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L279) |  |
+
+## AggregationOption
+
+Qualified name: <code>Meridian.Contracts.Export.AggregationOption</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:150](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L150).
+
+Describes a selectable aggregation value and its display text.
+
+```csharp
+public sealed class AggregationOption
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Value { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:152](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L152) |  |
+| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:153](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L153) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:154](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L154) |  |
+
 ## AnalysisExportFormat
 
 Qualified name: <code>Meridian.Contracts.Export.AnalysisExportFormat</code>. Kind: `enum`.
@@ -944,45 +1005,3 @@ Enum declarations:
 | <code>Info = 0</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:88](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L88) |  |
 | <code>Warning = 1</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:89](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L89) |  |
 | <code>Critical = 2</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:90](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L90) |  |
-
-## GovernedFoundationContractDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.GovernedFoundationContractDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:109](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L109).
-
-```csharp
-public sealed record GovernedFoundationContractDto(GovernedFoundationKindDto Kind, string DisplayName, string Description, IReadOnlyList<string> Guardrails);
-```
-
-## GovernedFoundationKindDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.GovernedFoundationKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:74](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L74).
-
-```csharp
-public enum GovernedFoundationKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>AuditTrail = 0</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:76](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L76) |  |
-| <code>SecurityModelFoundation = 1</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:77](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L77) |  |
-| <code>CoreObjectIdentity = 2</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:78](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L78) |  |
-| <code>FinancialCalculationIntegrity = 3</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:79](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L79) |  |
-| <code>DataLineageModel = 4</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:80](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L80) |  |
-| <code>ApprovalEvidenceModel = 5</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:81](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L81) |  |
-| <code>ImmutableRecordPreservation = 6</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:82](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L82) |  |
-
-## StableCoreObjectContractDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.StableCoreObjectContractDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:93](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L93).
-
-```csharp
-public sealed record StableCoreObjectContractDto(CoreFinancialObjectKindDto Kind, string DisplayName, string Description, string OwnerContext, string IdentityRule, bool AllowsTenantCustomFields);
-```
