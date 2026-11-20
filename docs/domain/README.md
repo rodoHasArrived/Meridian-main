@@ -2,7 +2,7 @@
 
 **Status:** active guidance  
 **Owner:** core-team  
-**Reviewed:** 2026-10-30
+**Reviewed:** 2026-11-20
 
 This directory contains Meridian's domain dictionary for AI-assisted and human development.
 Start with the [Meridian Domain Model](../architecture/meridian-domain-model.md) for shared scope,
@@ -30,6 +30,7 @@ Start with:
 - [Intercompany Agreements](intercompany-agreements.md)
 - [Intercompany Consolidation](intercompany-consolidation.md)
 - [Recurring Journal](recurring-journal.md)
+- [Fiscal-Year Close](fiscal-year-close.md)
 - [Security](security.md)
 - [Contractual Schedule](contractual-schedule.md)
 - [Contractual Cash-Flow Projection](contractual-cash-flow-projection.md)
