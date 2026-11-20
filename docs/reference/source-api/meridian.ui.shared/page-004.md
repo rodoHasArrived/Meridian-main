@@ -28,6 +28,12 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.EvidenceEndpoints</code>. Kind: `class`.
 
+Source: [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.AmountPassport.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.AmountPassport.cs#L14).
+
+```csharp
+public static partial class EvidenceEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs#L18).
 
 Serves retained evidence artifacts and maps evidence workflow operations with subject-scope authorization.
@@ -351,7 +357,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapFundStructureEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs#L22) |  |
 
-Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingAmountProof.cs:9](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingAmountProof.cs#L9).
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingAmountProof.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingAmountProof.cs#L11).
 
 ```csharp
 public static partial class FundStructureEndpoints

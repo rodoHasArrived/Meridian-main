@@ -307,6 +307,7 @@ public sealed partial class PostgresLedgerJournalStore :
             && !query.AggregateId.HasValue
             && !query.JournalEntryId.HasValue
             && !query.SourceEventId.HasValue
+            && !query.SourceJournalEntryId.HasValue
             && !query.FillId.HasValue
             && string.IsNullOrWhiteSpace(query.OrderId)
             && string.IsNullOrWhiteSpace(query.AccountName)
@@ -345,6 +346,11 @@ public sealed partial class PostgresLedgerJournalStore :
         if (query.SourceEventId.HasValue)
         {
             command.Parameters.AddWithValue("source_event_id", query.SourceEventId.Value);
+        }
+
+        if (query.SourceJournalEntryId.HasValue)
+        {
+            command.Parameters.AddWithValue("source_journal_entry_id", query.SourceJournalEntryId.Value);
         }
 
         if (query.EffectiveFrom.HasValue)

@@ -237,6 +237,7 @@ export function JournalEntryDetailScreen() {
   const technicalSummaryFields = view.summaryFields.filter((field) => ["Journal entry", "Fund", "Ledger book"].includes(field.label));
   const operationalSummaryFields = view.summaryFields.filter((field) => !technicalSummaryFields.includes(field));
 
+  const postedPassports = new Map(postedEntry?.lines.map(line => [line.entryId, line.amountPassport]));
   const lineRows: LedgerRow[] = view.lines.map((line) => ({
     date: line.date ?? draft?.accountingDate ?? "",
     ref: "Current entry",
@@ -244,6 +245,7 @@ export function JournalEntryDetailScreen() {
     account: line.account,
     debit: line.debit,
     credit: line.credit,
+    amountPassport: postedEntry ? postedPassports.get(line.lineId) ?? null : undefined,
     evidenceSubject: draft ? { subjectKind: "journal-entry", subjectId: draft.journalEntryId, ledgerBookId: draft.ledgerBookId } : undefined
   }));
 

@@ -797,6 +797,7 @@ export interface BrokerageHouseholdAccount {
 }
 
 export interface BrokerageHouseholdPosition {
+  amountPassports?: Record<string, import("./amount-passport").AmountPassportReference> | null;
   markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   fundAccountId: string;
   providerId: string;

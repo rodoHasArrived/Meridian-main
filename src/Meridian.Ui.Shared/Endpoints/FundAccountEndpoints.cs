@@ -283,10 +283,11 @@ public static partial class FundAccountEndpoints
             if (sync is null)
                 return BrokerageSyncUnavailable();
 
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var household = await sync.GetHouseholdAsync(
                     provider,
                     (fundAccountIds, ct) => ResolveAccessibleBrokerageFundAccountsAsync(fundAccountIds, context, ct),
-                    ct: context.RequestAborted)
+                    context.RequestAborted, tenant.TenantId, tenant.CompanyId)
                 .ConfigureAwait(false);
             return Results.Json(household, jsonOptions);
         })
@@ -346,7 +347,8 @@ public static partial class FundAccountEndpoints
 
             var request = await ReadBrokerageSyncRequestAsync(context, jsonOptions).ConfigureAwait(false)
                 ?? new WorkstationBrokerageSyncRunRequestDto();
-            var status = await sync.RunSyncAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var status = await sync.RunSyncAsync(accountId, request, context.RequestAborted, tenant.TenantId, tenant.CompanyId).ConfigureAwait(false);
             return Results.Json(status, jsonOptions);
         })
         .WithName("RunAccountBrokerageSync").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending)

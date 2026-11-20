@@ -187,6 +187,11 @@ public sealed partial class PostgresLedgerJournalStore
             sql += " and je_filter.source_event_id = @source_event_id";
         }
 
+        if (query?.SourceJournalEntryId.HasValue == true)
+        {
+            sql += " and je_filter.source_journal_entry_id = @source_journal_entry_id";
+        }
+
         // JournalEntryMetadata.EffectiveDate is serialized as an ISO yyyy-MM-dd JSON string. Use
         // that accounting date when it is present and fall back to the UTC posting date for legacy
         // journals. Comparing the canonical ISO representation keeps malformed legacy metadata

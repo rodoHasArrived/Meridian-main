@@ -4,12 +4,13 @@ import { RunAttributionPeriodComparison } from "@/screens/portfolio-screen.attri
 import { PageHeading } from "@/components/ui/page-heading";
 import { DetailFields, DetailPane } from "@/components/meridian/detail-pane";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
+import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
 import { PositionValueGraphic } from "@/components/meridian/position-value-graphic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -149,28 +150,30 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
     label: "Qty",
     numeric: true,
     hideable: true,
-    render: (row) => <span className="font-mono text-foreground">{row.quantity}</span>
+    render: (row) => <PositionAmount row={row} label="quantity" field="quantity" value={row.quantity} />
   },
   {
     id: "average",
     label: "Avg price",
     numeric: true,
     hideable: true,
-    render: (row) => <span className="font-mono text-foreground">{row.avgPrice}</span>
+    render: (row) => <PositionAmount row={row} label="average price" field="average-price" value={row.avgPrice} />
   },
   {
     id: "mark",
     label: "Recorded mark",
     numeric: true,
     hideable: true,
-    render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
+    render: (row) => <PositionAmount row={row} label="recorded mark" field="mark" value={row.markPrice} />
   },
   {
     id: "unrealized-pnl",
     label: "Unrealized P&L",
     numeric: true,
     hideable: true,
-    render: (row) => <PositionValueGraphic value={row.unrealizedPnl} measurement={row.pnlGraphic} kind="pnl" className={cn("font-semibold", pnlToneClass[row.pnlTone])} />
+    render: (row) => <PositionAmount row={row} label="unrealized P&L" field="unrealized-pnl" value={row.unrealizedPnl}>
+      <PositionValueGraphic value={row.unrealizedPnl} measurement={row.pnlGraphic} kind="pnl" className={cn("font-semibold", pnlToneClass[row.pnlTone])} />
+    </PositionAmount>
   },
   {
     id: "exposure",
@@ -178,7 +181,9 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
     numeric: true,
     hideable: true,
     render: (row) => <span data-holding-exposure={row.exposureAmount ?? ""} data-holding-currency={row.currency ?? ""}>
+      <PositionAmount row={row} label="exposure" field="exposure" value={row.exposure}>
       <PositionValueGraphic value={row.exposure} measurement={row.exposureGraphic} kind="exposure" reviewRequired={row.markFreshness.reviewRequired} className="text-foreground" />
+      </PositionAmount>
     </span>
   }
 ];
@@ -203,7 +208,10 @@ const positionWorkbenchColumns: TableWorkbenchColumn<PortfolioPositionRow>[] = p
 })).sort((left, right) => Number(right.id === "symbol") - Number(left.id === "symbol"));
 positionWorkbenchColumns.splice(5, 0,
   { id: "currency", label: "Currency", hideable: true, exportValue: row => row.currency ?? "", render: row => <HoldingFigureCell figure={row.currencyFigure} /> },
-  { id: "market-value", label: "Market value", align: "right", exportValue: row => row.marketValueFigure.staleLabel ? `${row.marketValue} (${row.marketValueFigure.staleLabel})` : row.marketValue, render: row => <HoldingFigureCell figure={row.marketValueFigure} /> },
+  { id: "market-value", label: "Market value", align: "right", exportValue: row => row.marketValueFigure.staleLabel ? `${row.marketValue} (${row.marketValueFigure.staleLabel})` : row.marketValue,
+    render: row => <PositionAmount row={row} label="market value" field="market-value" value={row.marketValue} stale={row.marketValueFigure.stale}>
+      <HoldingFigureCell figure={row.marketValueFigure} />
+    </PositionAmount> },
   { id: "weight", label: "Weight", align: "right", exportValue: row => row.weight, render: row => <HoldingFigureCell figure={row.weightFigure} /> },
   { id: "day-pnl", label: "Day P&L", align: "right", exportValue: row => row.dayPnl, render: row => row.dayPnl });
 
@@ -314,31 +322,33 @@ const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionR
     id: "quantity",
     label: "Qty",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.quantity}</span>
+    render: (row) => <PositionAmount row={row} label="quantity" field="quantity" value={row.quantity} />
   },
   {
     id: "average",
     label: "Avg",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.averagePrice}</span>
+    render: (row) => <PositionAmount row={row} label="average entry price" field="average-price" value={row.averagePrice} />
   },
   {
     id: "mark",
     label: "Mark",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
+    render: (row) => <PositionAmount row={row} label="mark" field="mark" value={row.markPrice} />
   },
   {
     id: "market-value",
     label: "Market value",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.marketValue}</span>
+    render: (row) => <PositionAmount row={row} label="market value" field="market-value" value={row.marketValue} />
   },
   {
     id: "unrealized-pnl",
     label: "Unrealized P&L",
     align: "right",
-    render: (row) => <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.unrealizedPnl}</span>
+    render: (row) => <PositionAmount row={row} label="unrealized P&L" field="unrealized-pnl" value={row.unrealizedPnl}>
+      <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.unrealizedPnl}</span>
+    </PositionAmount>
   },
   {
     id: "coverage",
@@ -350,6 +360,21 @@ const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionR
     )
   }
 ];
+
+function PositionAmount({ row, label, field, value, stale, children }: {
+  row: PortfolioBrokeragePositionRow | PortfolioPositionRow; label: string; field: string;
+  value: string; stale?: boolean; children?: ReactNode;
+}) {
+  const reference = "amountPassports" in row ? row.amountPassports?.[field] : null;
+  return <AmountPassportTrigger className="font-mono" selection={{
+    label: `${row.symbol} ${label}`, category: "Position valuation", displayValue: value, reference,
+    currency: field === "quantity" ? null : row.currency,
+    unit: field === "quantity" ? "position units" : field === "mark" || field === "average-price" ? "currency per position unit" : "currency",
+    mark: field === "quantity" || field === "average-price" ? null : row.markFreshness,
+    freshness: stale ? "stale" : undefined,
+    unavailableReason: "This position value has no retained snapshot address. The displayed observation remains available for review."
+  }}>{children ?? value}</AmountPassportTrigger>;
+}
 
 type PortfolioRouteViewId = "overview" | "attribution" | "brokerage-sync";
 
@@ -1669,7 +1694,11 @@ function PortfolioDrillInChart({ profile, runTitle }: { profile: EquityCurveSumm
             title="Run equity and drawdown"
             subtitle={`Retained equity curve and drawdown for ${runTitle}. Run denomination is unavailable; amounts are not assigned a currency.`}
             readout={[
-              { label: "Final equity", value: formatRunAmount(profile.finalEquity) },
+              { label: "Final equity", value: <AmountPassportTrigger selection={{
+                label: "Final run equity", displayValue: formatRunAmount(profile.finalEquity),
+                asOf: points.at(-1)?.date, unit: "currency", origin: "calculated", zero: profile.finalEquity === 0,
+                unavailableReason: "The equity series supplies the total but does not retain a denomination or an amount address."
+              }}>{formatRunAmount(profile.finalEquity)}</AmountPassportTrigger> },
               {
                 label: "Max drawdown",
                 value: maxDrawdownLabel,

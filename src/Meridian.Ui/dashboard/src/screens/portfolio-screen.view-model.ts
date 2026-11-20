@@ -14,7 +14,7 @@ import {
   multiAssetStatusLabel,
   multiAssetStatusTone
 } from "./portfolio-screen.multi-asset-coverage";
-import { formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatMoney, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
 import { buildHoldingsModel, holdingRowFigures, holdingsTotalLine, type HoldingFigure, type HoldingsTotalLine } from "@/lib/holdings-model";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
@@ -158,6 +158,8 @@ export interface PortfolioBrokerageAccountRow {
 
 export interface PortfolioBrokeragePositionRow {
   markFreshness: MarkFreshnessPresentation;
+  amountPassports?: BrokerageHouseholdPosition["amountPassports"];
+  currency: string | null;
   id: string;
   accountLabel: string;
   accountKind: string;
@@ -1736,28 +1738,42 @@ function latestAccountSync(accounts: BrokerageHouseholdAccount[]): string {
   return latest ? formatDateTime(latest.toISOString()) : "—";
 }
 
+function formatBrokeragePositionAmounts(position: BrokerageHouseholdPosition) {
+  function money(field: string, value: number, decimals: number, signed = false) {
+    const proof = position.amountPassports?.[field];
+    return proof?.origin === "unavailable" ? "—" : formatMoney(proof?.exactValue ?? value, {
+      currency: position.currency?.trim() || null, decimals, signed
+    });
+  }
+  return {
+    quantity: position.amountPassports?.quantity?.origin === "unavailable" ? "—" : formatNumber(position.quantity),
+    averagePrice: money("average-price", position.averageEntryPrice, 2),
+    markPrice: money("mark", position.marketPrice, 2),
+    marketValue: money("market-value", position.marketValue, 0),
+    unrealizedPnl: money("unrealized-pnl", position.unrealizedPnl, 0, true)
+  };
+}
+
 function toBrokeragePositionRow(
   position: BrokerageHouseholdPosition,
   accounts: BrokerageHouseholdAccount[],
   selectedId: string | null
 ): PortfolioBrokeragePositionRow {
   const account = accounts.find((candidate) => candidate.fundAccountId === position.fundAccountId);
-  const pnl = formatSignedCurrency(position.unrealizedPnl, { maximumFractionDigits: 0 });
+  const amounts = formatBrokeragePositionAmounts(position);
   const id = brokeragePositionId(position);
   const accountKind = accountKindLabel(position.accountKind);
   const accountLabel = account?.displayName ?? accountKind;
   return {
     id,
+    amountPassports: position.amountPassports,
+    currency: position.currency,
     accountLabel,
     accountKind,
     symbol: position.symbol,
-    quantity: formatNumber(position.quantity),
-    averagePrice: formatPrefixedCurrency(position.averageEntryPrice, { minimumFractionDigits: 2 }),
-    markPrice: formatPrefixedCurrency(position.marketPrice, { minimumFractionDigits: 2 }),
+    ...amounts,
     markFreshness: presentMarkFreshness(position.markFreshness),
-    marketValue: formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 }),
-    unrealizedPnl: pnl,
-    pnlTone: pnlTone(pnl),
+    pnlTone: pnlTone(amounts.unrealizedPnl),
     assetClass: position.assetClass,
     securityCoverage: position.security ? "Covered" : "Missing",
     rowClassName: position.security ? "bg-background/50" : "bg-warning/5",
@@ -1765,7 +1781,7 @@ function toBrokeragePositionRow(
     detailPanelId: "portfolio-brokerage-position-detail",
     expanded: id === selectedId,
     selectAriaLabel: `Inspect ${position.symbol} ${accountKind} live position`,
-    ariaLabel: `${position.symbol} ${accountKind} brokerage position: ${formatNumber(position.quantity)} shares, market value ${formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 })}, unrealized P&L ${pnl}`
+    ariaLabel: `${position.symbol} ${accountKind} brokerage position: ${amounts.quantity} units, market value ${amounts.marketValue}, unrealized P&L ${amounts.unrealizedPnl}`
   };
 }
 
@@ -1782,7 +1798,7 @@ function buildSelectedBrokeragePositionDetail(
   const account = accounts.find((candidate) => candidate.fundAccountId === position.fundAccountId);
   const accountKind = accountKindLabel(position.accountKind);
   const accountLabel = account?.displayName ?? accountKind;
-  const pnl = formatSignedCurrency(position.unrealizedPnl, { maximumFractionDigits: 0 });
+  const amounts = formatBrokeragePositionAmounts(position);
   const pnlStatusTone = numericPnlTone(position.unrealizedPnl);
   const coverageTone: PortfolioBrokeragePositionDetail["statusTone"] = position.security ? "success" : "warning";
   const statusTone = position.security ? pnlStatusTone : "warning";
@@ -1796,19 +1812,19 @@ function buildSelectedBrokeragePositionDetail(
     subtitle: `${providerLabel} / ${accountLabel} / ${position.assetClass}`,
     ariaLabel: `${position.symbol} brokerage position detail`,
     statusTitle: "Brokerage position inspector",
-    statusDetail: `${mark.label}: ${mark.reason} Recorded ${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 })} market value and ${pnl} unrealized P&L.`,
+    statusDetail: `${mark.label}: ${mark.reason} Recorded ${amounts.quantity} ${position.symbol} units in ${accountLabel} with ${amounts.marketValue} market value and ${amounts.unrealizedPnl} unrealized P&L.`,
     statusTone,
     statusBadgeLabel: coverageLabel,
     statusBadgeVariant,
     fields: [
       { label: "Account", value: accountLabel, tone: "default" },
       { label: "Account kind", value: accountKind, tone: "muted" },
-      { label: "Quantity", value: formatNumber(position.quantity), tone: "default" },
-      { label: "Average entry", value: formatPrefixedCurrency(position.averageEntryPrice, { minimumFractionDigits: 2 }), tone: "muted" },
-      markPriceField(formatPrefixedCurrency(position.marketPrice, { minimumFractionDigits: 2 }), mark),
+      { label: "Quantity", value: amounts.quantity, tone: "default" },
+      { label: "Average entry", value: amounts.averagePrice, tone: "muted" },
+      markPriceField(amounts.markPrice, mark),
       ...markFreshnessFields(mark),
-      { label: "Market value", value: formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Unrealized P&L", value: pnl, tone: pnlStatusTone },
+      { label: "Market value", value: amounts.marketValue, tone: "default" },
+      { label: "Unrealized P&L", value: amounts.unrealizedPnl, tone: amounts.unrealizedPnl === "—" ? "muted" : pnlStatusTone },
       { label: "Security coverage", value: coverageLabel, tone: coverageTone },
       { label: "Currency", value: position.currency ?? "Unavailable", tone: "muted" }
     ],
