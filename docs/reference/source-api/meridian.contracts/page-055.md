@@ -6,6 +6,106 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityPriceKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L10).
+
+Categories of price in the Security Master pricing taxonomy.
+
+```csharp
+public enum SecurityPriceKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Raw</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L12) |  |
+| <code>TradePrice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L13) |  |
+| <code>ClientOverride</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L14) |  |
+| <code>MarketGoldenCopy</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L15) |  |
+| <code>Comparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L16) |  |
+| <code>CalculatedPar</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L17) |  |
+| <code>CalculatedStraightLine</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L18) |  |
+
+## SecurityPriceQuotationEvidence
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceQuotationEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L42).
+
+Provider-declared quotation and settlement facts; absent legacy facts are never inferred.
+
+```csharp
+public sealed record SecurityPriceQuotationEvidence(SecurityPriceBasis Basis, SecurityQuotationConvention Convention, SecurityQuoteStatus Status, DateOnly SettlementDate, string SettlementBasis)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool EconomicallyComparable(SecurityPriceQuotationEvidence? left, SecurityPriceQuotationEvidence? right) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L49) |  |
+
+## SecurityPriceUnit
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceUnit</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L23).
+
+Quote basis; unspecified legacy observations cannot support valuation.
+
+```csharp
+public enum SecurityPriceUnit
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L23) |  |
+| <code>CurrencyPerUnit</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L23) |  |
+| <code>PercentOfPar</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L23) |  |
+
+## SecurityPricingHierarchyDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPricingHierarchyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L67).
+
+Full pricing source hierarchy for a security, optionally scoped to an account.
+
+```csharp
+public sealed record SecurityPricingHierarchyDto(Guid SecurityId, string? AccountId, IReadOnlyList<PricingHierarchyEntryDto> Entries, DateTimeOffset AsOf, string UpdatedBy);
+```
+
+## SecurityProjectionRecord
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityProjectionRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L82).
+
+```csharp
+public sealed record SecurityProjectionRecord(Guid SecurityId, string AssetClass, SecurityStatusDto Status, string DisplayName, string Currency, string PrimaryIdentifierKind, string PrimaryIdentifierValue, JsonElement CommonTerms, JsonElement AssetSpecificTerms, JsonElement Provenance, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<SecurityIdentifierDto> Identifiers, IReadOnlyList<SecurityAliasDto> Aliases);
+```
+
+## SecurityProjectionRecordExtensions
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs:3](../../../../src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs#L3).
+
+```csharp
+public static class SecurityProjectionRecordExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecurityDetailDto ToDetail(this SecurityProjectionRecord security);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs#L10) | The retained projection row viewed as the detail contract that terms resolvers, schedule factories and calculation policies consume. Identity, terms, version and effective window are carried unchanged; provenance and primary identifier are projection-only facts. |
+
 ## SecurityQuotationConvention
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityQuotationConvention</code>. Kind: `enum`.
@@ -826,85 +926,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Declared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L36) | Declared through the graph API by an operator or an ingest, with its own validity window. |
 | <code>Derived</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L39) | Derived from the instrument&#x27;s own terms on every projection write; replaced whenever the terms change. |
-
-## SecurityUnderlyingRole
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L10).
-
-What an underlying link says the target is to the instrument.
-
-```csharp
-public enum SecurityUnderlyingRole
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Underlying</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L13) | The instrument&#x27;s underlying: an option&#x27;s or warrant&#x27;s stock, a CFD&#x27;s or note&#x27;s reference asset. |
-| <code>ReferenceEntity</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L16) | The entity whose credit the instrument references (a CDS reference entity). |
-| <code>ReferenceObligation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L19) | The obligation delivered or valued on a credit event (a CDS reference obligation). |
-| <code>Index</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L22) | A rate, inflation or credit index the instrument&#x27;s payments read (a floating index, an inflation index, a CDS index). |
-| <code>BasketConstituent</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L25) | One member of a basket the instrument references, carrying its weight. |
-| <code>Collateral</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L28) | An asset pledged under the instrument (collateral). |
-
-## SecurityValidationGateResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationGateResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L69).
-
-```csharp
-public sealed record SecurityValidationGateResultDto(SecurityValidationWorkflowDto Workflow, string? Symbol, Guid? SecurityId, bool IsResolved, bool IsBlocked, SecurityValidationReportDto Report, SecurityValidationSnapshotDto? Snapshot);
-```
-
-## SecurityValidationIssueDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L20).
-
-```csharp
-public sealed record SecurityValidationIssueDto(SecurityValidationSeverityDto Severity, string Code, string Title, string Message, IReadOnlyList<string> AffectedFields, string SuggestedAction, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
-```
-
-## SecurityValidationReportDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationReportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L29).
-
-```csharp
-public sealed record SecurityValidationReportDto(Guid? SecurityId, string Scope, DateTimeOffset EvaluatedAtUtc, bool HasBlockingIssues, int CriticalIssueCount, int ErrorIssueCount, IReadOnlyList<SecurityValidationIssueDto> Issues);
-```
-
-## SecurityValidationSeverityDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSeverityDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L6).
-
-```csharp
-public enum SecurityValidationSeverityDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L8) |  |
-| <code>Warning = 1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L9) |  |
-| <code>Error = 2</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L10) |  |
-| <code>Critical = 3</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L11) |  |
-
-## SecurityValidationSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L56).
-
-```csharp
-public sealed record SecurityValidationSnapshotDto(Guid SnapshotId, Guid? SecurityId, string Scope, SecurityValidationWorkflowDto Workflow, string? WorkflowReference, string? Actor, string Reason, DateTimeOffset RecordedAtUtc, string ReportHashSha256, SecurityValidationReportDto Report, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
-```

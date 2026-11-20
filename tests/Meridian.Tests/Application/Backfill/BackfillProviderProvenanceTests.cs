@@ -46,6 +46,7 @@ public sealed class BackfillProviderProvenanceTests : TempDirectoryTestBase
         store.ReadRecentRetainedResults(10, Tenant, rows[0].Receipt.ReceiptId).Should().ContainSingle();
         store.ReadRecentRetainedResults(10, "different-tenant").Should().BeEmpty();
         store.TryRead()!.ForTenant("different-tenant").ProviderProvenance.Should().BeNull();
+        store.TryRead()!.ForTenant("different-tenant").QuotaReceipt.Should().BeNull();
         (await coordinator.GetClonePlanAsync(receipt.ReceiptId, "different-tenant")).Should().BeNull();
 
         var retained = store.TryReadRetainedResult(receipt.ReceiptId)!;
@@ -76,6 +77,19 @@ public sealed class BackfillProviderProvenanceTests : TempDirectoryTestBase
         fallback.LastRequested.Should().Be(("SPY", (DateOnly?)Session, (DateOnly?)Session));
 
         var originalConfig = config.Load();
+        await config.SaveAsync(originalConfig with
+        {
+            Backfill = originalConfig.Backfill! with
+            {
+                OperationalBudgets = new() { ["yahoo"] = new(MaxConcurrentRequests: 1) }
+            }
+        });
+        var capped = () => coordinator.RunCloneAsync(source.ReceiptId, conflict.Which.Plan.ConfirmationCode!, Tenant);
+        var cappedConflict = await capped.Should().ThrowAsync<Meridian.Application.Backfill.BackfillCloneConflictException>();
+        cappedConflict.Which.Plan.Status.Should().Be("Unavailable");
+        cappedConflict.Which.Plan.Messages.Should().ContainSingle().Which.Should().Contain("concurrency");
+        (await coordinator.GetClonePlanAsync(source.ReceiptId, Tenant))!.ConfirmationCode.Should().BeNull();
+
         await config.SaveAsync(originalConfig with
         {
             Backfill = originalConfig.Backfill! with

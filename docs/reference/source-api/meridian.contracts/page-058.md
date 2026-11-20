@@ -6,6 +6,120 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuthoritativeScopeAssignment
+
+Qualified name: <code>Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:16](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L16).
+
+One authoritative scope assignment: the exact tenant, company, and narrow accounting scope that a registered authority asserts is affected by a security-level fact. An assignment is a statement of record, not a caller-supplied hint. Every field beyond TenantId/CompanyId is populated only when the asserting authority can name it from durable assignment data; a field it cannot attribute stays null rather than being defaulted, so a consumer can tell &quot;not applicable&quot; from &quot;not resolved&quot;.
+
+```csharp
+public sealed record AuthoritativeScopeAssignment(string TenantId, string CompanyId, string AuthorityId, DateTimeOffset ResolvedAsOfUtc, string? StructureNodeId = null, string? FundProfileId = null, string? FinancialAccountId = null, string? PortfolioId = null, string? CustodyAccountId = null, string? LedgerBookId = null, string? PeriodId = null, string? AccountingBasis = null, string? FunctionalCurrency = null, string? Jurisdiction = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ScopeKey =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:37](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L37) | Identity of the scope this assignment names, ignoring which authority asserted it and when. Two authorities that resolve the same accounting scope must produce the same key so the fan-out set is a set of scopes rather than a set of assertions. |
+| <code>public bool IsOwnedBy(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:53](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L53) | Whether this assignment is owned by the supplied tenant/company pair. |
+
+## FundProfileOwnership
+
+Qualified name: <code>Meridian.Contracts.Tenancy.FundProfileOwnership</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:61](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L61).
+
+Recorded ownership of a fund profile by a tenant (and, for audit, its company).
+
+```csharp
+public sealed record FundProfileOwnership(string FundProfileId, string TenantId, string? CompanyId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsHeldBy(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:68](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L68) | Whether this ownership is held by the supplied tenant. Tenant identity is the authoritative scope key (it falls back to company id when a distinct tenant id is not yet issued), matched case-insensitively after trimming. |
+
+## FundScopedWriteTenantDecision
+
+Qualified name: <code>Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:12](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L12).
+
+SEC-005 slice 4c-iii decision for a fund-scoped write request: whether a session with no server-resolved tenant may create or evaluate fund-scoped accounting artifacts.
+
+```csharp
+public enum FundScopedWriteTenantDecision
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Allow</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:15](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L15) | The caller has a resolved tenant; proceed normally. |
+| <code>WarnAndAllow</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:18](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L18) | Tenantless caller, enforcement off: record a detection warning, then proceed. |
+| <code>Deny</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:21](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L21) | Tenantless caller, enforcement on: refuse the write (fail closed). |
+
+## FundScopedWriteTenantGate
+
+Qualified name: <code>Meridian.Contracts.Tenancy.FundScopedWriteTenantGate</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:25](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L25).
+
+Pure decision for the SEC-005 4c-iii fund-scoped write tenant gate.
+
+```csharp
+public static class FundScopedWriteTenantGate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FundScopedWriteTenantDecision Decide(bool hasTenantScope, bool enforce) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:31](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L31) | A caller with a resolved tenant is always allowed. A tenantless caller is denied only when enforcement is enabled; otherwise it is allowed but flagged for detection. |
+
+## FundScopeTenantAuthority
+
+Qualified name: <code>Meridian.Contracts.Tenancy.FundScopeTenantAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:28](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L28).
+
+The tenant an out-of-request reader is acting for, established explicitly for the duration of a unit of background work (W9-GOV-008 criterion 2).
+
+```csharp
+public static class FundScopeTenantAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? CurrentTenantId =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:33](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L33) | The tenant the current background scope holds authority for, or null when none is held. |
+| <code>public static string? CurrentReason =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:39](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L39) | Why the current scope holds authority — the job or workflow name — for diagnostics when a background read is scoped differently from an operator&#x27;s. |
+| <code>public static IDisposable Enter(string tenantId, string reason);</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:50](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L50) | Acts as tenantId until the returned scope is disposed. |
+
+## IAuthoritativeScopeFanOutService
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:121](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L121).
+
+The authoritative multi-tenant scope fan-out authority: given a security-level fact, it names every accounting scope that fact reaches, or refuses to answer. This is the tenancy authority that security-master decisions depend on. A corporate-action source decision is a statement about a globally observed fact, but applying it creates per-scope casework; without an authority that can enumerate the affected scopes, a decision taken in one tenant either silently misses other affected tenants or leaks their existence. Consumers must treat a non-authoritative result as a denial, never as an empty affected set.
+
+```csharp
+public interface IAuthoritativeScopeFanOutService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ScopeFanOutResult&gt; ResolveAffectedScopesAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:127](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L127) | Enumerates every accounting scope affected by the fact, across all tenants. Never throws for an unavailable backing store — that is reported as a blocker. |
+| <code>Task&lt;ScopeFanOutResult&gt; ResolveOwnedScopesAsync(string tenantId, string companyId, ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:137](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L137) | Enumerates the affected scopes owned by exactly one tenant/company, for a caller that may only see its own tenancy. The result is authoritative only when the full cross-tenant resolution was authoritative, so a caller cannot obtain a confident single-tenant answer while the wider fan-out is unknown. |
+
 ## IFundProfileTenancyRegistry
 
 Qualified name: <code>Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry</code>. Kind: `interface`.
@@ -633,102 +747,3 @@ Enum declarations:
 | <code>Reconciliation</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L87) |  |
 | <code>Report</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L88) |  |
 | <code>Evidence</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L89) |  |
-
-## AuditTrailSourceAvailabilityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceAvailabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L68).
-
-Distinguishes an empty retained trail from a source that is not configured.
-
-```csharp
-public sealed record AuditTrailSourceAvailabilityDto(bool ExecutionAudit, bool OperationsContinuity);
-```
-
-## AuditTrailSourceStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L73).
-
-Source availability is independent of the number of matching records.
-
-```csharp
-public sealed record AuditTrailSourceStatusDto(string Source, string State);
-```
-
-## AuditTrailTimelineEntryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailTimelineEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L28).
-
-Normalized timeline row used by shared audit explorer surfaces.
-
-```csharp
-public sealed record AuditTrailTimelineEntryDto(string AuditId, DateTimeOffset OccurredAt, string ObjectKind, string ObjectId, string Category, string Action, string Outcome, string? Actor = null, string? RunId = null, string? Symbol = null, string? CorrelationId = null, string? Reason = null, string? Scope = null, string? Message = null, IReadOnlyDictionary<string, string>? Metadata = null, IReadOnlyList<string>? RelatedObjectIds = null, string? EvidenceRoute = null, string? ActionLedgerSource = null, int? ActionLedgerSequence = null, string? PreviousActionHash = null, string? CurrentActionHash = null, string? ActionLedgerStatus = null, string? OrderId = null, string? BrokerName = null);
-```
-
-## AutomatedJournalCapitalAccountReconciliationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalCapitalAccountReconciliationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L25).
-
-Reviewed capital-account tie-out for the NAV and high-water-mark inputs used by one monthly fee-accrual cycle. The scheduler verifies the retained values, variance, confidence, reviewer, source version, and evidence before it can create a draft.
-
-```csharp
-public sealed record AutomatedJournalCapitalAccountReconciliationDto(string ReconciliationId, string PeriodId, string Currency, decimal ReconciledBeginningNav, decimal ReconciledEndingNavBeforeFees, decimal ReconciledHighWaterMark, decimal CapitalAccountOpeningBalance, decimal CapitalAccountEndingBalanceBeforeFees, decimal CapitalAccountHighWaterMark, decimal MaximumVarianceTolerance, decimal ConfidenceScore, bool IsReconciled, string SourceVersion, string ReviewedBy, DateTimeOffset ReviewedAtUtc, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L43) |  |
-
-## AutomatedJournalScheduleStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalScheduleStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L8).
-
-Operator-visible state of scheduled fee-accrual and dividend-capture work.
-
-```csharp
-public enum AutomatedJournalScheduleStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotConfigured = 0</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L10) |  |
-| <code>Scheduled = 1</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L11) |  |
-| <code>Running = 2</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L12) |  |
-| <code>DraftReady = 3</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L13) |  |
-| <code>NeedsInvestigation = 4</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L14) |  |
-| <code>NoDraftRequired = 5</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L15) |  |
-| <code>Blocked = 6</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L16) |  |
-| <code>Failed = 7</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L17) |  |
-
-## AutomatedJournalScheduleStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalScheduleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L51).
-
-Close-cockpit projection for the explicitly scoped monthly automated-journal work. Counts are schedule-run counts, not posted-journal counts; every produced item remains in the existing manual workbench for human approval and posting.
-
-```csharp
-public sealed record AutomatedJournalScheduleStatusDto(string? FundProfileId, Guid? LedgerBookId, string? PeriodId, int ConfiguredCount, int EnabledCount, int FeeScheduleCount, int DividendScheduleCount, int DraftReadyCount, int NeedsInvestigationCount, int BlockedCount, AutomatedJournalScheduleStateDto State, string Summary, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? Blockers = null, IReadOnlyList<Guid>? JournalEntryIds = null, decimal? MinimumEvidenceConfidence = null, AutomatedJournalEvidenceQualityDto? LowestEvidenceQuality = null, int HumanReviewQueueCount = 0, string? EntityId = null, string? TenantId = null, string? CompanyId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L74) |  |
-| <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L76) |  |
-| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L78) |  |

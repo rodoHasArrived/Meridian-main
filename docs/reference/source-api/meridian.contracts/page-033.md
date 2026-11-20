@@ -6,6 +6,99 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingPolicyDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingPolicyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:127](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L127).
+
+```csharp
+public sealed record AccountingPolicyDto(string PolicyId, AccountingBasisKindDto AccountingBasis, string Version, string DisplayName, DateOnly EffectiveFrom, DateOnly? EffectiveTo, bool IsDefault, string RulesJson, DateTimeOffset CreatedAt, string? FundProfileId = null, Guid? FundStructureNodeId = null, string? InstrumentId = null, Guid? SourceEventId = null, AccountingPolicyRulePackDto? RulePack = null);
+```
+
+## AccountingPolicyQuery
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingPolicyQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:143](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L143).
+
+```csharp
+public sealed record AccountingPolicyQuery(AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, DateOnly? EffectiveDate = null, string? PolicyId = null, string? FundProfileId = null, Guid? FundStructureNodeId = null, string? InstrumentId = null, Guid? SourceEventId = null, string? PolicyVersion = null);
+```
+
+## AccountingPolicyRuleDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingPolicyRuleDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:94](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L94).
+
+```csharp
+public sealed record AccountingPolicyRuleDto(string RuleId, AccountingTreatmentKindDto TreatmentKind, string RuleVersion = "v1", string? SourceEventType = null, string? JournalTemplateId = null, bool RequiresEvidence = true, bool RequiresApproval = true, bool AllowsAutoPosting = false, string? Description = null, IReadOnlyList<string>? Tags = null);
+```
+
+## AccountingPolicyRulePackDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingPolicyRulePackDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:106](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L106).
+
+```csharp
+public sealed record AccountingPolicyRulePackDto(string RulePackId, string RulePackVersion, IReadOnlyList<AccountingPolicyRuleDto> Rules, string? Description = null);
+```
+
+## AccountingPostingApprovalStateDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingPostingApprovalStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:20](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L20).
+
+```csharp
+public enum AccountingPostingApprovalStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotRequired = 0</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L22) |  |
+| <code>Pending = 1</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:23](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L23) |  |
+| <code>Approved = 2</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:24](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L24) |  |
+| <code>Rejected = 3</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:25](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L25) |  |
+| <code>PreparerAttested = 4</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:26](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L26) |  |
+
+## AccountingPostingCommandDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingPostingCommandDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:61](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L61).
+
+```csharp
+public sealed record AccountingPostingCommandDto(Guid CommandId, Guid AggregateId, Guid PeriodId, DateOnly EffectiveDate, DateTimeOffset PostingDate, string IdempotencyKey, AccountingPostingIntentDto Intent = AccountingPostingIntentDto.Originating, Guid? SourceEventId = null, Guid? CorrelationId = null, Guid? CausationId = null, Guid? SourceJournalEntryId = null, long? ExpectedVersion = null, string? SourceEventType = null, TreasuryLedgerContextDto? TreasuryContext = null, AccountingPostingApprovalStateDto ApprovalState = AccountingPostingApprovalStateDto.Pending, string? ApprovalId = null, string? OperatorRationale = null, IReadOnlyList<AccountingPostingEvidenceReferenceDto>? Evidence = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, Guid? LedgerBookId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto? BondCouponRecognition { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:84](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L84) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public AutomatedPostingGrantReferenceDto? AutomationGrant { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:88](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L88) | Operator delegation used only by the narrowly scoped system fill posting boundary. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public ThreeWayFeeCorrectionEvidenceDto? ThreeWayFeeCorrection { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:91](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L91) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Actor { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:98](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L98) | The actual posting actor, supplied by the validated command boundary. Null retains an explicitly unattributed legacy command; it never means that an approver posted it. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public ConsolidationFxAmountDto? IntercompanyFx { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:102](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L102) | Exact approved transaction-date FX authority reviewed with intercompany amounts. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public AssetAccountingPreparerAttestationDto? CashDividendAttestation { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:104](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L104) |  |
+| <code>public IReadOnlyList&lt;AccountingPostingEvidenceReferenceDto&gt; Evidence { get; init; } = Evidence??[];</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:106](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L106) |  |
+| <code>public AccountingBookContextDto? BookContext { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:109](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L109) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Guid? ControlledCloseAuthorizationId { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:112](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L112) |  |
+| <code>public Guid? BookPositionId { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:114](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L114) |  |
+| <code>public EconomicEventReferenceDto? EconomicEvent { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:116](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L116) |  |
+| <code>public ProjectionLineageDto? ProjectionLineage { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:118](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L118) |  |
+| <code>public AccountingRulePackReferenceDto? RulePackReference { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:120](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L120) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? LotAmortization { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:124](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L124) | Reviewed canonical lot inputs for the atomic amortization posting boundary. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? LotCorporateAction { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:128](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L128) | Reviewed predecessor and successor snapshots committed with this journal. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? LotCapitalReturn { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:131](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L131) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? LotFactorPaydown { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:135](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L135) | Reviewed per-lot principal paydown committed with this journal through the atomic lot boundary. |
+| <code>public DataProvenance Provenance { get; init; } = DataProvenance.Real;</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:143](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L143) | Origin of the figures this posting carries. Defaults to DataProvenance.Real. A non-real value is the retained &quot;simulated mark&quot;: the append boundary refuses to persist a figure whose evidence declares a simulated origin unless this mark is set, and — once set — the mark is written onto the journal so a simulated figure can never be mistaken for real. |
+
 ## AccountingPostingEvidenceKindDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingPostingEvidenceKindDto</code>. Kind: `enum`.
@@ -667,85 +760,3 @@ Enum declarations:
 | <code>Low = 0</code> | [src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs#L9) |  |
 | <code>Medium = 1</code> | [src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs#L10) |  |
 | <code>High = 2</code> | [src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs#L11) |  |
-
-## AutomatedPostingGrantDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AutomatedPostingGrantDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:35](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L35).
-
-```csharp
-public sealed record AutomatedPostingGrantDto(AutomatedPostingGrantReferenceDto Reference, bool IsActive, string ActivatedBy, DateTimeOffset ActivatedAtUtc, string? RevokedBy = null, DateTimeOffset? RevokedAtUtc = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingPolicyDto? PolicySnapshot { get; init; }</code> | [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L44) | Immutable operator-authorized policy retained for deterministic process restart. |
-
-## AutomatedPostingGrantReferenceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AutomatedPostingGrantReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L6).
-
-Exact, retained operator delegation for synthetic fill accounting; never a reviewer identity.
-
-```csharp
-public sealed record AutomatedPostingGrantReferenceDto(Guid GrantId, long Version, string TenantId, string FinancialAccountId, Guid LedgerBookId, Guid PeriodId, string PolicyId, string PolicyVersion, string MappingRevision, string SourceMode, string? CompanyId = null);
-```
-
-## BookFxSettlementAmountsDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.BookFxSettlementAmountsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:45](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L45).
-
-Functional amounts derived from directed approved rates and retained basis.
-
-```csharp
-public sealed record BookFxSettlementAmountsDto(decimal GaapTradeReceivable, decimal GaapMarketResult, decimal ReceivableRelieved, decimal FunctionalCash, decimal GaapOutstandingReceivable, decimal CashMarketResult, decimal SettlementFxResult);
-```
-
-## BookFxSettlementJournalDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.BookFxSettlementJournalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:14](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L14).
-
-Exact scope of one journal expected by the reviewed settlement set.
-
-```csharp
-public sealed record BookFxSettlementJournalDto(Guid JournalEntryId, Guid PeriodId, long PeriodVersion, string AccountingPolicyId, string AccountingPolicyVersion);
-```
-
-## BookFxSettlementLegDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.BookFxSettlementLegDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L6).
-
-```csharp
-public enum BookFxSettlementLegDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>GaapTrade</code> | [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L8) |  |
-| <code>GaapSettlement</code> | [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L9) |  |
-| <code>CashSettlement</code> | [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L10) |  |
-
-## BookFxSettlementLegReceiptDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.BookFxSettlementLegReceiptDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:78](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L78).
-
-Immutable proof of one approved posted consequence. Journal lines remain authoritative.
-
-```csharp
-public sealed record BookFxSettlementLegReceiptDto(Guid CommandId, BookFxSettlementLegDto Leg, Guid LedgerBookId, Guid PeriodId, Guid JournalEntryId, long JournalSequence, Guid? LotMutationBatchId, string PlanHashSha256, DateTimeOffset CapturedAt, string CapturedBy);
-```

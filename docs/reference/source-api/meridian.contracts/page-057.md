@@ -6,6 +6,89 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UpsertOtcContractRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcContractRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L184).
+
+Creates (ContractId null) or amends a bilateral contract.
+
+```csharp
+public sealed record UpsertOtcContractRequest(Guid? ContractId, Guid SecurityId, Guid NettingSetId, string? ExternalTradeId, OtcContractDirection Direction, decimal Notional, string NotionalCurrency, DateOnly TradeDate, DateOnly EffectiveDate, DateOnly? TerminationDate, OtcContractStatus Status, string? ConfirmationReference = null, string? Notes = null, string? UpdatedBy = null);
+```
+
+## UpsertOtcMasterAgreementRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcMasterAgreementRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:145](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L145).
+
+Creates (AgreementId null) or amends a master agreement.
+
+```csharp
+public sealed record UpsertOtcMasterAgreementRequest(Guid? AgreementId, string Counterparty, string? CounterpartyLei, string OurEntity, Guid? OurEntityId, OtcMasterAgreementType AgreementType, DateOnly AgreementDate, string? GoverningLaw = null, string? Notes = null, string? UpdatedBy = null);
+```
+
+## UpsertOtcNettingSetRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcNettingSetRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L175).
+
+Creates (NettingSetId null) or amends a netting set.
+
+```csharp
+public sealed record UpsertOtcNettingSetRequest(Guid? NettingSetId, Guid MasterAgreementId, Guid? CollateralAgreementId, string Name, string? Notes = null, string? UpdatedBy = null);
+```
+
+## UpsertSecurityAliasRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L59).
+
+```csharp
+public sealed record UpsertSecurityAliasRequest(Guid AliasId, Guid SecurityId, string AliasKind, string AliasValue, string? Provider, SecurityAliasScope Scope, string CreatedBy, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string? Reason);
+```
+
+## IBacktestPreflightService
+
+Qualified name: <code>Meridian.Contracts.Services.IBacktestPreflightService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IBacktestPreflightService.cs:8](../../../../src/Meridian.Contracts/Services/IBacktestPreflightService.cs#L8).
+
+Runs backtest-scoped trust-gate checks before replay begins.
+
+```csharp
+public interface IBacktestPreflightService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BacktestPreflightReportV2Dto&gt; RunAsync(BacktestPreflightRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IBacktestPreflightService.cs:13](../../../../src/Meridian.Contracts/Services/IBacktestPreflightService.cs#L13) | Executes backtest preflight checks and returns a structured report. |
+
+## IConnectivityProbeService
+
+Qualified name: <code>Meridian.Contracts.Services.IConnectivityProbeService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:8](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L8).
+
+Contract for probing internet connectivity and broadcasting state changes.
+
+```csharp
+public interface IConnectivityProbeService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IsOnline { get; }</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:13](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L13) | Gets whether the system is currently online. |
+| <code>event EventHandler&lt;bool&gt;? ConnectivityChanged;</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:18](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L18) | Raised when connectivity state changes (true = online, false = offline). |
+
 ## IEntityLifecycleProjectionSink
 
 Qualified name: <code>Meridian.Contracts.Services.IEntityLifecycleProjectionSink</code>. Kind: `interface`.
@@ -836,117 +919,3 @@ Enum declarations:
 | <code>Warning</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:110](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L110) |  |
 | <code>Error</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:111](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L111) |  |
 | <code>Blocker</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:112](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L112) |  |
-
-## AuthoritativeScopeAssignment
-
-Qualified name: <code>Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:16](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L16).
-
-One authoritative scope assignment: the exact tenant, company, and narrow accounting scope that a registered authority asserts is affected by a security-level fact. An assignment is a statement of record, not a caller-supplied hint. Every field beyond TenantId/CompanyId is populated only when the asserting authority can name it from durable assignment data; a field it cannot attribute stays null rather than being defaulted, so a consumer can tell &quot;not applicable&quot; from &quot;not resolved&quot;.
-
-```csharp
-public sealed record AuthoritativeScopeAssignment(string TenantId, string CompanyId, string AuthorityId, DateTimeOffset ResolvedAsOfUtc, string? StructureNodeId = null, string? FundProfileId = null, string? FinancialAccountId = null, string? PortfolioId = null, string? CustodyAccountId = null, string? LedgerBookId = null, string? PeriodId = null, string? AccountingBasis = null, string? FunctionalCurrency = null, string? Jurisdiction = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ScopeKey =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:37](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L37) | Identity of the scope this assignment names, ignoring which authority asserted it and when. Two authorities that resolve the same accounting scope must produce the same key so the fan-out set is a set of scopes rather than a set of assertions. |
-| <code>public bool IsOwnedBy(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:53](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L53) | Whether this assignment is owned by the supplied tenant/company pair. |
-
-## FundProfileOwnership
-
-Qualified name: <code>Meridian.Contracts.Tenancy.FundProfileOwnership</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:61](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L61).
-
-Recorded ownership of a fund profile by a tenant (and, for audit, its company).
-
-```csharp
-public sealed record FundProfileOwnership(string FundProfileId, string TenantId, string? CompanyId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsHeldBy(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:68](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L68) | Whether this ownership is held by the supplied tenant. Tenant identity is the authoritative scope key (it falls back to company id when a distinct tenant id is not yet issued), matched case-insensitively after trimming. |
-
-## FundScopedWriteTenantDecision
-
-Qualified name: <code>Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:12](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L12).
-
-SEC-005 slice 4c-iii decision for a fund-scoped write request: whether a session with no server-resolved tenant may create or evaluate fund-scoped accounting artifacts.
-
-```csharp
-public enum FundScopedWriteTenantDecision
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Allow</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:15](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L15) | The caller has a resolved tenant; proceed normally. |
-| <code>WarnAndAllow</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:18](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L18) | Tenantless caller, enforcement off: record a detection warning, then proceed. |
-| <code>Deny</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:21](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L21) | Tenantless caller, enforcement on: refuse the write (fail closed). |
-
-## FundScopedWriteTenantGate
-
-Qualified name: <code>Meridian.Contracts.Tenancy.FundScopedWriteTenantGate</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:25](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L25).
-
-Pure decision for the SEC-005 4c-iii fund-scoped write tenant gate.
-
-```csharp
-public static class FundScopedWriteTenantGate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static FundScopedWriteTenantDecision Decide(bool hasTenantScope, bool enforce) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:31](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L31) | A caller with a resolved tenant is always allowed. A tenantless caller is denied only when enforcement is enabled; otherwise it is allowed but flagged for detection. |
-
-## FundScopeTenantAuthority
-
-Qualified name: <code>Meridian.Contracts.Tenancy.FundScopeTenantAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:28](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L28).
-
-The tenant an out-of-request reader is acting for, established explicitly for the duration of a unit of background work (W9-GOV-008 criterion 2).
-
-```csharp
-public static class FundScopeTenantAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string? CurrentTenantId =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:33](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L33) | The tenant the current background scope holds authority for, or null when none is held. |
-| <code>public static string? CurrentReason =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:39](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L39) | Why the current scope holds authority — the job or workflow name — for diagnostics when a background read is scoped differently from an operator&#x27;s. |
-| <code>public static IDisposable Enter(string tenantId, string reason);</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:50](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L50) | Acts as tenantId until the returned scope is disposed. |
-
-## IAuthoritativeScopeFanOutService
-
-Qualified name: <code>Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:121](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L121).
-
-The authoritative multi-tenant scope fan-out authority: given a security-level fact, it names every accounting scope that fact reaches, or refuses to answer. This is the tenancy authority that security-master decisions depend on. A corporate-action source decision is a statement about a globally observed fact, but applying it creates per-scope casework; without an authority that can enumerate the affected scopes, a decision taken in one tenant either silently misses other affected tenants or leaks their existence. Consumers must treat a non-authoritative result as a denial, never as an empty affected set.
-
-```csharp
-public interface IAuthoritativeScopeFanOutService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ScopeFanOutResult&gt; ResolveAffectedScopesAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:127](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L127) | Enumerates every accounting scope affected by the fact, across all tenants. Never throws for an unavailable backing store — that is reported as a blocker. |
-| <code>Task&lt;ScopeFanOutResult&gt; ResolveOwnedScopesAsync(string tenantId, string companyId, ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:137](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L137) | Enumerates the affected scopes owned by exactly one tenant/company, for a caller that may only see its own tenancy. The result is authoritative only when the full cross-tenant resolution was authoritative, so a caller cannot obtain a confident single-tenant answer while the wider fan-out is unknown. |

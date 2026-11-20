@@ -6,6 +6,79 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionAccountingApprovalResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:180](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L180).
+
+```csharp
+public sealed record CorporateActionAccountingApprovalResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCaseAccountingApprovalDto Approval, CorporateActionCaseTransitionDto Transition, bool Replayed);
+```
+
+## CorporateActionAccountingDecisionAuthorityDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L118).
+
+Server-stamped downstream accounting authority. Deliberately separate from CorporateActionCaseTransitionAuthorityDto so preparation authority can never grant an approval or posting outcome.
+
+```csharp
+public sealed record CorporateActionAccountingDecisionAuthorityDto(bool CanApproveAccounting, bool CanPostAccounting);
+```
+
+## CorporateActionAccountingPostingResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAccountingPostingResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:186](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L186).
+
+```csharp
+public sealed record CorporateActionAccountingPostingResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCaseAccountingPostingDto Posting, CorporateActionCaseTransitionDto Transition, bool Replayed);
+```
+
+## CorporateActionAccountingProjectionMutationResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAccountingProjectionMutationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L175).
+
+```csharp
+public sealed record CorporateActionAccountingProjectionMutationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCaseAccountingProjectionDto Projection, bool Replayed);
+```
+
+## CorporateActionAdjustmentBehavior
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAdjustmentBehavior</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:496](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L496).
+
+How historical-price and open-position adjustment treats the event type.
+
+```csharp
+public enum CorporateActionAdjustmentBehavior
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:498](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L498) |  |
+| <code>PriceScaling</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:499](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L499) |  |
+| <code>CashDistribution</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:500](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L500) |  |
+| <code>PositionTransformation</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:501](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L501) |  |
+
+## CorporateActionCalendarCaseReferenceDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCalendarCaseReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L53).
+
+```csharp
+public sealed record CorporateActionCalendarCaseReferenceDto(Guid CaseId, long Version, string State, CorporateActionCaseScopeDto Scope);
+```
+
 ## CorporateActionCalendarEventDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto</code>. Kind: `record`.
@@ -633,93 +706,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContract
 
 ```csharp
 public sealed record CorporateActionDissentFieldDto(string Field, IReadOnlyList<CorporateActionConflictCandidateDto> Candidates);
-```
-
-## CorporateActionDownstreamAuthorityRequiredException
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDownstreamAuthorityRequiredException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:952](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L952).
-
-Signals that a case transition requires the governed downstream accounting or posting workflow.
-
-```csharp
-public sealed class CorporateActionDownstreamAuthorityRequiredException : CorporateActionOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionDownstreamAuthorityRequiredException(string targetState) : base(CorporateActionProblemCodes.DownstreamAuthorityRequired, $&quot;Transition to &#x27;{targetState}&#x27; belongs to the governed downstream accounting/posting workflow and cannot be granted by the generic corporate-action case command.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:954](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L954) |  |
-| <code>public string TargetState { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:962](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L962) |  |
-
-## CorporateActionDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:167](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L167).
-
-A single corporate action event envelope returned by the corporate actions query. LifecycleState holds a writeable CorporateActionLifecycleStates value; null reads as Confirmed for events written before lifecycle support. SupersedesCorpActId marks this event as an amendment (or, with a Cancelled state, a cancellation) of a prior event — the store stays append-only and readers fold chains via the effective-state projector. RedemptionPricePercentOfPar carries BondCall/BondMaturityRedemption pricing as a percent of par.
-
-```csharp
-public sealed record CorporateActionDto(Guid CorpActId, Guid SecurityId, string EventType, DateOnly ExDate, DateOnly? PayDate, decimal? DividendPerShare, string? Currency, decimal? SplitRatio, Guid? NewSecurityId, decimal? DistributionRatio, Guid? AcquirerSecurityId, decimal? ExchangeRatio, decimal? SubscriptionPricePerShare, decimal? RightsPerShare, DateOnly? RecordDate = null, string? LifecycleState = null, Guid? SupersedesCorpActId = null, decimal? RedemptionPricePercentOfPar = null, JsonElement? Payload = null, int PayloadSchemaVersion = CorporateActionPayloads.CurrentSchemaVersion);
-```
-
-## CorporateActionDurableInboxDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDurableInboxDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:476](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L476).
-
-```csharp
-public sealed record CorporateActionDurableInboxDto(DateTimeOffset? LastIngestAt, int StagedCount, int AppliedLastRun, int DuplicatesSkippedLastRun, IReadOnlyList<CorporateActionDurableInboxEntryDto> Staged, IReadOnlyList<string> Errors, IReadOnlyList<CorporateActionProcessingCaseDto> Cases);
-```
-
-## CorporateActionDurableInboxEntryDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDurableInboxEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:452](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L452).
-
-Durable source-proposal projection shaped for the existing browser inbox. Acceptance identity, version, exact scope, and action availability are server-owned and never inferred by clients.
-
-```csharp
-public sealed record CorporateActionDurableInboxEntryDto(Guid SecurityId, string Ticker, string ActionType, DateOnly ExDate, DateOnly? RecordDate, DateOnly? PayableDate, decimal? Amount, string? Currency, decimal? SplitFromFactor, decimal? SplitToFactor, string WinningSource, IReadOnlyList<string> AgreeingSources, IReadOnlyList<string> DissentingSources, bool AutoApplied, Guid ProposalId, long Version, string ProposalState, CorporateActionCaseScopeDto AcceptanceScope, CorporateActionSourceProposalActionAvailabilityDto ActionAvailability)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:473](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L473) |  |
-
-## CorporateActionEconomicFingerprint
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEconomicFingerprint</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEconomicFingerprint.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEconomicFingerprint.cs#L14).
-
-Computes a provider-neutral SHA-256 fingerprint for the economic terms of a corporate action. Source/provider identity, workflow state, actor, and append identity are deliberately excluded; retries and independent providers describing the same economics therefore converge.
-
-```csharp
-public static class CorporateActionEconomicFingerprint
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Compute(CorporateActionDto action);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEconomicFingerprint.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEconomicFingerprint.cs#L16) |  |
-
-## CorporateActionEffectiveState
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEffectiveState</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L106).
-
-One effective corporate action: the chain tip with a canonical EventType, its resolved lifecycle state at the projection&#x27;s as-of time, and the full amendment timeline (original announcement first, tip last).
-
-```csharp
-public sealed record CorporateActionEffectiveState(CorporateActionDto Effective, string LifecycleState, bool IsCancelled, IReadOnlyList<CorporateActionDto> Timeline);
 ```

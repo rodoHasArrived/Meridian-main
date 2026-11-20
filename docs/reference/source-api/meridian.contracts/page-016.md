@@ -6,6 +6,139 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IClusterCoordinator
+
+Qualified name: <code>Meridian.Contracts.Coordination.IClusterCoordinator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:19](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L19).
+
+Abstraction for the cluster-wide leader election service. Only the elected coordinator instance manages partition assignments and orchestrates cross-instance workflows such as rolling upgrades and distributed backfill scheduling.
+
+```csharp
+public interface IClusterCoordinator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IsLeader { get; }</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:22](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L22) | Gets whether this instance currently holds the coordinator lease. |
+| <code>string InstanceId { get; }</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:25](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L25) | Gets the stable instance identifier for this node. |
+| <code>Task&lt;bool&gt; TryBecomeLeaderAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:31](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L31) | Attempts to acquire (or confirm) the coordinator lease. Safe to call repeatedly; returns false if another healthy instance is already the leader. |
+| <code>Task StepDownAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:37](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L37) | Voluntarily yields coordinator leadership so that another instance may take over. Used by split-brain detection and rolling-upgrade orchestration. |
+| <code>event EventHandler&lt;LeadershipChangedEventArgs&gt;? LeadershipChanged;</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:40](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L40) | Fires when this instance gains or loses the coordinator role. |
+
+## ICoordinationStore
+
+Qualified name: <code>Meridian.Contracts.Coordination.ICoordinationStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:6](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L6).
+
+Persists resource leases and coordinates acquisition, renewal, release, and fenced execution.
+
+```csharp
+public interface ICoordinationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LeaseAcquireResult&gt; TryAcquireLeaseAsync(string resourceId, string instanceId, TimeSpan leaseTtl, TimeSpan takeoverDelay, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:8](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L8) |  |
+| <code>Task&lt;bool&gt; RenewLeaseAsync(string resourceId, string instanceId, TimeSpan leaseTtl, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:15](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L15) |  |
+| <code>Task&lt;bool&gt; ReleaseLeaseAsync(string resourceId, string instanceId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:21](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L21) |  |
+| <code>Task&lt;LeaseRecord?&gt; GetLeaseAsync(string resourceId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:26](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L26) |  |
+| <code>Task&lt;IReadOnlyList&lt;LeaseRecord&gt;&gt; GetAllLeasesAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:28](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L28) |  |
+| <code>Task&lt;IReadOnlyList&lt;string&gt;&gt; GetCorruptedLeaseFilesAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:30](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L30) |  |
+| <code>string RootPath { get; }</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:32](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L32) |  |
+| <code>Task&lt;bool&gt; ExecuteUnderLeaseAsync(LeaseRecord lease, Func&lt;CancellationToken, Task&gt; action, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Coordination/ICoordinationStore.cs:35](../../../../src/Meridian.Contracts/Coordination/ICoordinationStore.cs#L35) | Validates the exact live owner and excludes lease transfer for the entire action. |
+
+## IExecutionLease
+
+Qualified name: <code>Meridian.Contracts.Coordination.IExecutionLease</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Coordination/IExecutionLease.cs:4](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L4).
+
+A lease owned by one execution, with atomic ownership checks around side effects.
+
+```csharp
+public interface IExecutionLease : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string ResourceId { get; }</code> | [src/Meridian.Contracts/Coordination/IExecutionLease.cs:6](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L6) |  |
+| <code>Task ExecuteAsync(Func&lt;CancellationToken, Task&gt; action, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IExecutionLease.cs:12](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L12) | Runs an action only while this execution owns the resource. Acquisition and transfer remain excluded until the action returns. Actions must not reenter the same lease. |
+| <code>async Task&lt;T&gt; ExecuteAsync&lt;T&gt;(Func&lt;CancellationToken, Task&lt;T&gt;&gt; action, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IExecutionLease.cs:14](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L14) |  |
+
+## ILeaseManager
+
+Qualified name: <code>Meridian.Contracts.Coordination.ILeaseManager</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Coordination/ILeaseManager.cs:6](../../../../src/Meridian.Contracts/Coordination/ILeaseManager.cs#L6).
+
+Manages this instance&#x27;s resource leases and exposes current coordination ownership.
+
+```csharp
+public interface ILeaseManager
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool Enabled { get; }</code> | [src/Meridian.Contracts/Coordination/ILeaseManager.cs:8](../../../../src/Meridian.Contracts/Coordination/ILeaseManager.cs#L8) |  |
+| <code>string InstanceId { get; }</code> | [src/Meridian.Contracts/Coordination/ILeaseManager.cs:9](../../../../src/Meridian.Contracts/Coordination/ILeaseManager.cs#L9) |  |
+| <code>Task&lt;LeaseAcquireResult&gt; TryAcquireAsync(string resourceId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ILeaseManager.cs:11](../../../../src/Meridian.Contracts/Coordination/ILeaseManager.cs#L11) |  |
+| <code>Task&lt;ExecutionLeaseAcquireResult&gt; TryAcquireExecutionAsync(string resourceId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Coordination/ILeaseManager.cs:14](../../../../src/Meridian.Contracts/Coordination/ILeaseManager.cs#L14) | Acquires a unique run owner, including in single-instance mode. |
+| <code>Task&lt;bool&gt; RenewAsync(string resourceId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ILeaseManager.cs:17](../../../../src/Meridian.Contracts/Coordination/ILeaseManager.cs#L17) |  |
+| <code>Task&lt;bool&gt; ReleaseAsync(string resourceId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ILeaseManager.cs:19](../../../../src/Meridian.Contracts/Coordination/ILeaseManager.cs#L19) |  |
+| <code>bool HoldsLease(string resourceId);</code> | [src/Meridian.Contracts/Coordination/ILeaseManager.cs:21](../../../../src/Meridian.Contracts/Coordination/ILeaseManager.cs#L21) |  |
+| <code>Task&lt;CoordinationSnapshot&gt; GetSnapshotAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ILeaseManager.cs:23](../../../../src/Meridian.Contracts/Coordination/ILeaseManager.cs#L23) |  |
+
+## IScheduledWorkOwnershipService
+
+Qualified name: <code>Meridian.Contracts.Coordination.IScheduledWorkOwnershipService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs:6](../../../../src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs#L6).
+
+Coordinates dispatcher leadership and exclusive ownership of schedules and jobs.
+
+```csharp
+public interface IScheduledWorkOwnershipService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LeaseAcquireResult&gt; TryAcquireDispatcherLeadershipAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs:8](../../../../src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs#L8) |  |
+| <code>Task&lt;LeaseAcquireResult&gt; TryAcquireScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs:10](../../../../src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs#L10) |  |
+| <code>Task&lt;bool&gt; ReleaseScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs:12](../../../../src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs#L12) |  |
+| <code>Task&lt;LeaseAcquireResult&gt; TryAcquireJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs:14](../../../../src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs#L14) |  |
+| <code>Task&lt;bool&gt; ReleaseJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs:16](../../../../src/Meridian.Contracts/Coordination/IScheduledWorkOwnershipService.cs#L16) |  |
+
+## ISubscriptionOwnershipService
+
+Qualified name: <code>Meridian.Contracts.Coordination.ISubscriptionOwnershipService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Coordination/ISubscriptionOwnershipService.cs:6](../../../../src/Meridian.Contracts/Coordination/ISubscriptionOwnershipService.cs#L6).
+
+Coordinates ownership of provider subscriptions by data kind and symbol.
+
+```csharp
+public interface ISubscriptionOwnershipService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LeaseAcquireResult&gt; TryAcquireAsync(string providerId, string kind, string symbol, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ISubscriptionOwnershipService.cs:8](../../../../src/Meridian.Contracts/Coordination/ISubscriptionOwnershipService.cs#L8) |  |
+| <code>Task&lt;bool&gt; ReleaseAsync(string providerId, string kind, string symbol, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Coordination/ISubscriptionOwnershipService.cs:14](../../../../src/Meridian.Contracts/Coordination/ISubscriptionOwnershipService.cs#L14) |  |
+
 ## LeadershipChangedEventArgs
 
 Qualified name: <code>Meridian.Contracts.Coordination.LeadershipChangedEventArgs</code>. Kind: `class`.
@@ -650,93 +783,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:14]
 
 ```csharp
 public sealed record DirectLendingCommandError(DirectLendingErrorCode Code, string Message);
-```
-
-## DirectLendingCommandException
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:33](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L33).
-
-Exposes a structured direct lending command error as an exception.
-
-```csharp
-public sealed class DirectLendingCommandException : Exception
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DirectLendingCommandException(DirectLendingCommandError error) : base(error.Message);</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:35](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L35) |  |
-| <code>public DirectLendingCommandError Error { get; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:41](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L41) |  |
-
-## DirectLendingCommandMetadataDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:107](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L107).
-
-```csharp
-public sealed record DirectLendingCommandMetadataDto(Guid? CommandId, Guid? CorrelationId, Guid? CausationId, string? SourceSystem, bool ReplayFlag);
-```
-
-## DirectLendingCommandResult (generic arity 1)
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:18](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L18).
-
-```csharp
-public sealed record DirectLendingCommandResult<T>(T? Value, DirectLendingCommandError? Error)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsSuccess =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:22](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L22) |  |
-| <code>public static DirectLendingCommandResult&lt;T&gt; Success(T value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:24](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L24) |  |
-| <code>public static DirectLendingCommandResult&lt;T&gt; Failure(DirectLendingErrorCode code, string message) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:26](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L26) |  |
-
-## DirectLendingErrorCode
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingErrorCode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:3](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L3).
-
-```csharp
-public enum DirectLendingErrorCode : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Validation = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:5](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L5) |  |
-| <code>NotFound = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:6](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L6) |  |
-| <code>ConcurrencyConflict = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:7](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L7) |  |
-| <code>Conflict = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:8](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L8) |  |
-| <code>FixingMissing = 4</code> | [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:11](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L11) | A scheduled rate reset has no index fixing for its observation date (fail closed). |
-
-## DirectLendingIndexFixingDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingIndexFixingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:121](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L121).
-
-An observed index fixing held in the direct-lending fixing store.
-
-```csharp
-public sealed record DirectLendingIndexFixingDto(Guid FixingId, string IndexName, DateOnly ObservationDate, int Revision, DeclaredRate DeclaredRate, decimal RateFraction, string? SourceRef, DateTimeOffset RecordedAt, string? RecordedBy);
-```
-
-## DirectLendingOperationsCalendarItemDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsCalendarItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:479](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L479).
-
-```csharp
-public sealed record DirectLendingOperationsCalendarItemDto(Guid LoanId, string FacilityName, string ItemType, DateOnly DueDate, string Status, string Detail, string Route);
 ```

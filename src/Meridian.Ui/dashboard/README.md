@@ -11,6 +11,10 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Ui/dashboard
 
+Data → Backfills previews the historical adapter's quota, observed budget, and expected cost.
+The same dialog queues, schedules, or previews a provider administrator-approved equivalent.
+Workstation backfill receipts show the submission estimate, waiting states, observed providers,
+and execution variance from the shared API. See [provider backfill operations](../../../docs/operators/provider-backfill-operations.md#workstation-quota-and-receipts).
 Native intercompany agreement editors capture structured terms without calculating charges.
 Externally reviewed attestations retain the operator and external reviewer separately. The entity
 workspace presents advisory obligation monitoring and reviewed legacy coverage corrections or

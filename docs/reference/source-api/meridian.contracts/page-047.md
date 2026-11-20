@@ -6,6 +6,95 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionDownstreamAuthorityRequiredException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDownstreamAuthorityRequiredException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:952](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L952).
+
+Signals that a case transition requires the governed downstream accounting or posting workflow.
+
+```csharp
+public sealed class CorporateActionDownstreamAuthorityRequiredException : CorporateActionOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionDownstreamAuthorityRequiredException(string targetState) : base(CorporateActionProblemCodes.DownstreamAuthorityRequired, $&quot;Transition to &#x27;{targetState}&#x27; belongs to the governed downstream accounting/posting workflow and cannot be granted by the generic corporate-action case command.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:954](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L954) |  |
+| <code>public string TargetState { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:962](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L962) |  |
+
+## CorporateActionDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:167](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L167).
+
+A single corporate action event envelope returned by the corporate actions query. LifecycleState holds a writeable CorporateActionLifecycleStates value; null reads as Confirmed for events written before lifecycle support. SupersedesCorpActId marks this event as an amendment (or, with a Cancelled state, a cancellation) of a prior event — the store stays append-only and readers fold chains via the effective-state projector. RedemptionPricePercentOfPar carries BondCall/BondMaturityRedemption pricing as a percent of par.
+
+```csharp
+public sealed record CorporateActionDto(Guid CorpActId, Guid SecurityId, string EventType, DateOnly ExDate, DateOnly? PayDate, decimal? DividendPerShare, string? Currency, decimal? SplitRatio, Guid? NewSecurityId, decimal? DistributionRatio, Guid? AcquirerSecurityId, decimal? ExchangeRatio, decimal? SubscriptionPricePerShare, decimal? RightsPerShare, DateOnly? RecordDate = null, string? LifecycleState = null, Guid? SupersedesCorpActId = null, decimal? RedemptionPricePercentOfPar = null, JsonElement? Payload = null, int PayloadSchemaVersion = CorporateActionPayloads.CurrentSchemaVersion);
+```
+
+## CorporateActionDurableInboxDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDurableInboxDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:476](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L476).
+
+```csharp
+public sealed record CorporateActionDurableInboxDto(DateTimeOffset? LastIngestAt, int StagedCount, int AppliedLastRun, int DuplicatesSkippedLastRun, IReadOnlyList<CorporateActionDurableInboxEntryDto> Staged, IReadOnlyList<string> Errors, IReadOnlyList<CorporateActionProcessingCaseDto> Cases);
+```
+
+## CorporateActionDurableInboxEntryDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDurableInboxEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:452](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L452).
+
+Durable source-proposal projection shaped for the existing browser inbox. Acceptance identity, version, exact scope, and action availability are server-owned and never inferred by clients.
+
+```csharp
+public sealed record CorporateActionDurableInboxEntryDto(Guid SecurityId, string Ticker, string ActionType, DateOnly ExDate, DateOnly? RecordDate, DateOnly? PayableDate, decimal? Amount, string? Currency, decimal? SplitFromFactor, decimal? SplitToFactor, string WinningSource, IReadOnlyList<string> AgreeingSources, IReadOnlyList<string> DissentingSources, bool AutoApplied, Guid ProposalId, long Version, string ProposalState, CorporateActionCaseScopeDto AcceptanceScope, CorporateActionSourceProposalActionAvailabilityDto ActionAvailability)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:473](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L473) |  |
+
+## CorporateActionEconomicFingerprint
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEconomicFingerprint</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEconomicFingerprint.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEconomicFingerprint.cs#L14).
+
+Computes a provider-neutral SHA-256 fingerprint for the economic terms of a corporate action. Source/provider identity, workflow state, actor, and append identity are deliberately excluded; retries and independent providers describing the same economics therefore converge.
+
+```csharp
+public static class CorporateActionEconomicFingerprint
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Compute(CorporateActionDto action);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEconomicFingerprint.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEconomicFingerprint.cs#L16) |  |
+
+## CorporateActionEffectiveState
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEffectiveState</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L106).
+
+One effective corporate action: the chain tip with a canonical EventType, its resolved lifecycle state at the projection&#x27;s as-of time, and the full amendment timeline (original announcement first, tip last).
+
+```csharp
+public sealed record CorporateActionEffectiveState(CorporateActionDto Effective, string LifecycleState, bool IsCancelled, IReadOnlyList<CorporateActionDto> Timeline);
+```
+
 ## CorporateActionEffectiveStateProjector
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEffectiveStateProjector</code>. Kind: `class`.
@@ -821,112 +910,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static CorporateActionTerms From(CorporateActionDto action);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L18) | The typed terms for action. The event type is normalized through the descriptor catalog first, so provider aliases map to the canonical family. |
 | <code>public static IReadOnlySet&lt;string&gt; PayloadOnlyEventTypes { get; } = new HashSet&lt;string&gt;(StringComparer.Ordinal) { CorporateActionEventTypes.AdvanceRefunding, CorporateActionEventTypes.BankruptcyDistribution, CorporateActionEventTypes.ConsentSolicitation, CorporateActionEventTypes.FractionalUnitsCashInLieu, CorporateActionEventTypes.PaymentInKind, CorporateActionEventTypes.OptionContractAdjustment, CorporateActionEventTypes.CryptoFork, };</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:115](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L115) | Event types whose economics live only in the versioned payload (their schema is in CorporateActionPayloadSchemaCatalog). Every other catalog event type maps to a typed family; the coverage test holds the two lists to the catalog. |
-
-## CorporateActionTermsIncompleteException
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionTermsIncompleteException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:919](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L919).
-
-Signals that required corporate action terms are incomplete.
-
-```csharp
-public sealed class CorporateActionTermsIncompleteException : CorporateActionOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionTermsIncompleteException(string message) : base(CorporateActionProblemCodes.TermsIncomplete, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:921](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L921) |  |
-
-## CorporateActionTypeDescriptor
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptor</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:456](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L456).
-
-Metadata for one canonical corporate-action event type. CanonicalName is the stored wire value; CaevCode is ISO 15022 alignment metadata only (not unique — e.g. regular and special dividends both map to DVCA) and null for internal-only extensions. An empty ValidSecurityMasterAssetClasses list means the event type is valid for every asset class.
-
-```csharp
-public sealed record CorporateActionTypeDescriptor(string CanonicalName, string? CaevCode, string DisplayName, string Description, IReadOnlyList<string> Aliases, IReadOnlyList<string> ValidSecurityMasterAssetClasses, IReadOnlyList<CorporateActionField> RequiredFields, CorporateActionAdjustmentBehavior AdjustmentBehavior, CorporateActionLedgerPostingKind LedgerPostingKind, bool IsPriceAffecting, IReadOnlyList<string> LedgerBehaviorHints)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool AppliesToAssetClass(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:469](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L469) |  |
-
-## CorporateActionTypeDescriptorCatalog
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptorCatalog</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L10).
-
-Contract-owned metadata for canonical corporate-action event types. The canonical name (see CorporateActionEventTypes) remains the compact wire value; this catalog carries the ISO 15022 alignment, provider aliases, required fields, asset-class validity, and downstream behavior consumers need for validation, price adjustment, ledger posting, and workbench workflows.
-
-```csharp
-public static class CorporateActionTypeDescriptorCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;CorporateActionTypeDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:370](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L370) |  |
-| <code>public static CorporateActionTypeDescriptor? Find(string? canonicalName) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:372](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L372) |  |
-| <code>public static bool TryGet(string canonicalName, out CorporateActionTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:377](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L377) |  |
-| <code>public static bool TryNormalize(string? rawEventType, out CorporateActionTypeDescriptor descriptor);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:385](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L385) | Alias-tolerant resolution: canonical names, provider aliases, and CAEV codes are all accepted, compared on the letters-and-digits compact token so spacing, casing, and punctuation variants resolve to the same descriptor. |
-| <code>public static IReadOnlyList&lt;CorporateActionTypeDescriptor&gt; FindByAssetClass(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:396](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L396) |  |
-
-## CorporateActionValidationException
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionValidationException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:908](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L908).
-
-Signals that a corporate action command failed input validation.
-
-```csharp
-public sealed class CorporateActionValidationException : CorporateActionOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionValidationException(string message) : base(CorporateActionProblemCodes.ValidationFailed, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:910](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L910) |  |
-
-## CorporateActionVersionConflictException
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionVersionConflictException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:856](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L856).
-
-Signals that a corporate action resource changed since the caller&#x27;s expected version.
-
-```csharp
-public sealed class CorporateActionVersionConflictException : CorporateActionOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionVersionConflictException(Guid resourceId, long expectedVersion, long currentVersion) : base(CorporateActionProblemCodes.VersionConflict, $&quot;Corporate-action resource &#x27;{resourceId:D}&#x27; has version {currentVersion}; expected {expectedVersion}.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:858](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L858) |  |
-| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:868](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L868) |  |
-| <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:869](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L869) |  |
-| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:870](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L870) |  |
-
-## CreateSecurityClosePriceSetRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs#L13).
-
-The date uses UTC; account and book identities are exact, case-sensitive scopes. Retain RequestId across retries to recover the same immutable capture after a lost response.
-
-```csharp
-public sealed record CreateSecurityClosePriceSetRequest(string AccountId, string BookId, DateOnly ValuationDate, DateTimeOffset EvaluatedAsOf, IReadOnlyList<SecurityClosePriceInputDto> Securities, decimal MaxSourceDispersionPercent, string CreatedBy, Guid? CorrectsSnapshotId = null, string? CorrectionRationale = null, DateTimeOffset? KnowledgeAsOf = null, Guid? RequestId = null);
-```
