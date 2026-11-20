@@ -467,7 +467,7 @@ Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Acco
 public sealed partial class ManualJournalEntryWorkbenchService
 ```
 
-Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetAccounting.cs:6](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetAccounting.cs#L6).
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetAccounting.cs:8](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetAccounting.cs#L8).
 
 ```csharp
 public sealed partial class ManualJournalEntryWorkbenchService
