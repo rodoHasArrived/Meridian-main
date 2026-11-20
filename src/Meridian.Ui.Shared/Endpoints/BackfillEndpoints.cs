@@ -16,7 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using BackfillCoordinator = Meridian.Ui.Shared.Services.BackfillCoordinator;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
-using BackfillCoordinator = Meridian.Ui.Shared.Services.BackfillCoordinator;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
