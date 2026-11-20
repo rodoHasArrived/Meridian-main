@@ -677,6 +677,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
+- `AccountingSystem/ExternalGlPostingService.cs` and `ExternalGlPostingDispatcher.cs` retain exact approved journal packages and reconcile provider receipts. The dispatcher queries the retained provider key before replay.
 - `AccountingSystem/AccountingSystemIntegrationStateStore.cs` - optional atomic file retention of latest imports, mapping profiles and export packages across restarts; without it the service keeps them for the process lifetime only.
 - `AccountingSystem/AccountingSystemIntegrationService.Reconciliation.cs` - provider report balance projection, requested-period activity, currency identity checks, and reconciliation read models.
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.

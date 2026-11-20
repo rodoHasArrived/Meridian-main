@@ -2617,3 +2617,9 @@ legacy prose metadata is descriptive. Schedule write semantics share the frozen 
 and the readable-ahead rollout guard. Bond/CD write through 3 and StructuredCredit through 4, while S2 document
 floors keep undeclared scalar payloads at 1/1/2. Configured writers require the activated deployment
 capability floor; this code change does not execute its activation SQL.
+
+
+External GL posting contracts retain the exact fund, book and period, provider destination,
+certified mapping, source checkpoint, journal and line identities, and exact decimal amounts.
+`ExternalGlPostingPackage` combines that immutable payload with certification, approval and
+receipt observations. Amounts and journal sequence values use JSON strings for exact review.

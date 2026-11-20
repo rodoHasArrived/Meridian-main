@@ -33,13 +33,13 @@ public sealed partial class BackfillCoordinator
             return MissingCloneConfiguration(retained.Receipt);
 
         var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
-        var service = CreateService(cfg: cfg, tenantId: tenantId, createdProviders: providers);
+        using var service = CreateService(cfg: cfg, tenantId: tenantId, createdProviders: providers);
         var (plan, _) = await AssessCloneAsync(retained, cfg, service, ct).ConfigureAwait(false);
         return plan;
     }
 
-    public Task<BackfillResult> RunCloneAsync(Guid receiptId, string confirmationCode, string? tenantId, CancellationToken ct = default) =>
-        RunCoreAsync(null, receiptId, confirmationCode, tenantId, ct);
+    public async Task<BackfillResult> RunCloneAsync(Guid receiptId, string confirmationCode, string? tenantId, CancellationToken ct = default) =>
+        (await RunCoreAsync(null, receiptId, confirmationCode, tenantId, ct).ConfigureAwait(false)).Result;
 
     private AppConfig? TryLoadCloneConfig()
     {
@@ -90,10 +90,15 @@ public sealed partial class BackfillCoordinator
         try
         {
             service.ValidateRequest(request);
+            if (inputs.MaxConcurrentSymbols is { } originalConcurrency &&
+                BackfillQuotaPlanner.ResolveConcurrency(request, cfg.Backfill, provider, service.Providers) != originalConcurrency)
+            {
+                return Unavailable("The shared provider budget now caps concurrency below the saved request.");
+            }
         }
         catch (InvalidOperationException)
         {
-            return Unavailable("The historical provider no longer supports the requested scope or granularity.");
+            return Unavailable("The current provider or operational policy cannot support the saved request.");
         }
 
         var route = service.DescribeRoute(request);

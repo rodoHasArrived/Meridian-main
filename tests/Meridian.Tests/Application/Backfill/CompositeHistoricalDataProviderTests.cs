@@ -586,9 +586,32 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
         var bars = CreateBars("SPY", 2);
         fallback.Setup(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(bars);
+        var meteredAdmissions = new List<string>();
+        var unmeteredAdmissions = new List<string>();
+        var sends = new List<string>();
+        var throttles = new List<(string Provider, string Reason, TimeSpan? Wait)>();
+        using var scope = new HistoricalBackfillRequestScope(
+            provider =>
+            {
+                meteredAdmissions.Add(provider.Name);
+                return 25;
+            },
+            (provider, _) =>
+            {
+                unmeteredAdmissions.Add(provider.Name);
+                return Task.CompletedTask;
+            },
+            sends.Add,
+            _ => { },
+            (provider, reason, wait) => throttles.Add((provider, reason, wait)),
+            retryRateLimited: false);
         using var composite = new CompositeHistoricalDataProvider([routed, fallback.Object]);
         (await composite.GetDailyBarsAsync("SPY", null, null)).Should().BeEquivalentTo(bars);
 
+        meteredAdmissions.Should().Equal(routed.Name);
+        unmeteredAdmissions.Should().Equal("fallback");
+        sends.Should().Equal(routed.Name);
+        throttles.Should().Equal((routed.Name, "provider-rate-limit", (TimeSpan?)null));
         handler.CallCount.Should().Be(2);
         var history = ProviderRateLimitHistory.Shared.Read(direct.Name, 1);
         history.Where(entry => entry.EventType == "rate-limited").Should().HaveCount(2)
@@ -861,6 +884,7 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
         public override string DisplayName => Name;
         public override string Description => "Historical HTTP throttle fixture.";
         public override int Priority => 1;
+        public override int MaxRequestsPerWindow => 4;
         protected override string HttpClientName => Name;
 
         public override async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(

@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsCloseCalendarService
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsCloseCalendarService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:29](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L29).
+
+Projects workflow deadlines into a close calendar and applies calendar item updates.
+
+```csharp
+public sealed class OperationsCloseCalendarService : IOperationsCloseCalendarService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperationsCloseCalendarService(IOperationsContinuityWorkflowService workflowService);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:43](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L43) |  |
+| <code>public OperationsCloseCalendarService(IOperationsContinuityWorkflowService workflowService, StorageOptions storageOptions) : this(workflowService);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:48](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L48) |  |
+| <code>public async Task&lt;OperationsCloseCalendarDto&gt; GetCalendarAsync(Guid? fundAccountId = null, string? periodId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:57](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L57) |  |
+| <code>public async Task&lt;OperationsCloseCalendarItemUpsertResultDto&gt; UpsertItemAsync(OperationsCloseCalendarItemUpsertRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:90](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L90) |  |
+
+## OperationsCloseChecklistHistory
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsCloseChecklistHistory</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseChecklistHistory.cs:6](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseChecklistHistory.cs#L6).
+
+Projects only retained snapshots. Unknown historical gate states remain explicit gaps.
+
+```csharp
+public static class OperationsCloseChecklistHistory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OperationsCloseChecklistHistoryDto Build(Guid workflowId, IReadOnlyList&lt;OperationsTimelineEntryDto&gt; timeline, DateTimeOffset asOf);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseChecklistHistory.cs:8](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseChecklistHistory.cs#L8) |  |
+
 ## OperationsContinuityTransactionalCommitResult
 
 Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsContinuityTransactionalCommitResult</code>. Kind: `record`.
@@ -961,39 +1000,3 @@ Declared public members:
 | <code>public bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs:82](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs#L82) |  |
 | <code>public async Task&lt;StatementSourceDocument&gt; FetchAsync(StatementFetchRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs:96](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs#L96) |  |
 | <code>public Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs:159](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaActivityStatementConnector.cs#L159) |  |
-
-## AlpacaStatementSnapshot
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca.AlpacaStatementSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaStatementSnapshot.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaStatementSnapshot.cs#L13).
-
-The retained document produced by an Alpaca statement fetch: account activity (orders/fills/cash) plus an optional portfolio snapshot (positions + balance), so a single fetch covers transactional and position data. Serialized as the connector&#x27;s source document, giving remote fetches the same raw-evidence trail as file uploads.
-
-```csharp
-public sealed record AlpacaStatementSnapshot(string ProviderId, string AccountId, DateTimeOffset RetrievedAt, BrokerageActivitySnapshotDto? Activity, BrokeragePortfolioSnapshotDto? Portfolio);
-```
-
-## Bai2StatementConnector
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Bai2.Bai2StatementConnector</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:22](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L22).
-
-BAI2 (Cash Management Balance Reporting) connector. Reads the group as-of date and currency, each account&#x27;s closing ledger balance (status code 015), and every transaction-detail (16) record, signing amounts by BAI type-code class (100–399 credit, 400–799 debit). Amounts are expressed in the currency&#x27;s minor units (cents) per the BAI2 convention and scaled to major units. This lets institutional bank cash statements reconcile without hand-conversion to CSV.
-
-```csharp
-public sealed class Bai2StatementConnector : IStatementConnector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ConnectorId = &quot;bai2&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L24) |  |
-| <code>public Bai2StatementConnector() : this(StatementIngressLimits.Default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L33) |  |
-| <code>public Bai2StatementConnector(StatementIngressLimits limits) : this(limits, StatementBalanceRole.Closing);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:38](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L38) |  |
-| <code>public Bai2StatementConnector(StatementIngressLimits limits, StatementBalanceRole balanceRole);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L48) | Creates a connector that emits the closing ledger balance (015, falling back to 045; the default used by every reconciliation run) or, only when explicitly requested, the opening ledger balance (010). Opening available cash (040) cannot establish the opening booked balance. |
-| <code>public StatementConnectorDescriptor Descriptor { get; } = new (ConnectorId, &quot;BAI2 cash management statement&quot;, [&quot;.bai&quot;, &quot;.bai2&quot;], SupportsFileImport : true, SupportsRemoteFetch : false, RequiresMappingProfile : false, DefaultProfileId : null);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L60) |  |
-| <code>public bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:69](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L69) |  |
-| <code>public Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L77) |  |

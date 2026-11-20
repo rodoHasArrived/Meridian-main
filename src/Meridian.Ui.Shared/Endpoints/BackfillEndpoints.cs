@@ -120,7 +120,7 @@ public static class BackfillEndpoints
             if (backfill is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill coordinator");
 
-            var providers = backfill.DescribeProviders();
+            var providers = backfill.DescribeProviders(HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId);
             return Results.Json(providers, jsonOptions);
         })
         .WithName("GetBackfillProviders")
@@ -162,7 +162,7 @@ public static class BackfillEndpoints
             try
             {
                 request = CreateBackfillRequest(req);
-                var validation = ValidateBackfillRequest(context, req, request, backfill);
+                var validation = ValidateBackfillRequest(context, req, request, backfill, validateProvider: false);
                 if (validation is not null)
                     return validation;
             }
@@ -173,8 +173,13 @@ public static class BackfillEndpoints
 
             try
             {
-                var preview = await backfill.PreviewAsync(request, ct).ConfigureAwait(false);
+                var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+                var preview = await backfill.PreviewAsync(request, tenantId, ct).ConfigureAwait(false);
                 return Results.Json(preview, jsonOptionsIndented);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Validation(context, "request", ex.Message);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -218,13 +223,45 @@ public static class BackfillEndpoints
             try
             {
                 request = CreateBackfillRequest(req);
-                var validation = ValidateBackfillRequest(context, req, request, backfill);
+                var validation = ValidateBackfillRequest(context, req, request, backfill, validateProvider: req.ExecutionPolicy is null);
                 if (validation is not null)
                     return validation;
             }
             catch (InvalidOperationException ex)
             {
                 return ApiProblemDetails.Validation(context, "request", ex.Message);
+            }
+
+            if (req.ExecutionPolicy is not null || req.SubmissionId is not null || req.ScheduledAt is not null || req.ApprovedAlternativeFor is not null)
+            {
+                if (req.ExecutionPolicy is not ("queued" or "scheduled") || req.SubmissionId is null || req.SubmissionId == Guid.Empty ||
+                    (req.ExecutionPolicy == "scheduled") != req.ScheduledAt.HasValue)
+                    return ApiProblemDetails.Validation(context, "executionPolicy", "Choose queued or scheduled execution. Scheduling requires a start time and both options require a submission ID.");
+
+                var queue = context.RequestServices.GetService<WorkstationBackfillQueue>();
+                if (queue is null)
+                    return ApiProblemDetails.ServiceUnavailable(context, "workstation backfill queue");
+
+                try
+                {
+                    var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                    var receipt = await queue.SubmitAsync(req.SubmissionId.Value, tenant.TenantId!, request, req.ScheduledAt, req.ApprovedAlternativeFor, ct)
+                        .ConfigureAwait(false);
+                    return Results.Json(receipt, jsonOptions, statusCode: StatusCodes.Status202Accepted);
+                }
+                catch (BackfillSubmissionConflictException ex)
+                {
+                    return ApiProblemDetails.Conflict(context, ex.Message);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return ApiProblemDetails.Validation(context, "request", ex.Message);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+                {
+                    loggerFactory.CreateLogger(nameof(BackfillEndpoints)).LogError(ex, "Could not retain queued backfill submission.");
+                    return ApiProblemDetails.ServiceUnavailable(context, "backfill execution storage");
+                }
             }
 
             try
@@ -257,8 +294,9 @@ public static class BackfillEndpoints
             }
         })
         .WithName("RunBackfill")
-        .WithDescription("Executes a backfill operation for the specified symbols and date range.")
+        .WithDescription("Executes a backfill, or accepts a queued or scheduled workstation submission.")
         .Produces<BackfillResult>(200)
+        .Produces<BackfillSubmissionReceipt>(202)
         .ProducesValidationProblem()
         .ProducesProblem(StatusCodes.Status409Conflict)
         .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -508,7 +546,8 @@ public static class BackfillEndpoints
         HttpContext context,
         BackfillRequestDto req,
         BackfillRequest request,
-        BackfillCoordinator backfill)
+        BackfillCoordinator backfill,
+        bool validateProvider = true)
     {
         if (req.Symbols is null || req.Symbols.Length == 0)
             return ApiProblemDetails.Validation(context, "symbols", "At least one symbol is required.");
@@ -516,7 +555,7 @@ public static class BackfillEndpoints
         if (req.Symbols.Length > 100)
             return ApiProblemDetails.Validation(context, "symbols", "Maximum 100 symbols per backfill request.");
 
-        var invalidSymbols = req.Symbols.Where(s => !SymbolPattern.IsMatch(s)).ToArray();
+        var invalidSymbols = req.Symbols.Where(s => s is null or "." or ".." || !SymbolPattern.IsMatch(s)).ToArray();
         if (invalidSymbols.Length > 0)
             return ApiProblemDetails.Validation(
                 context,
@@ -554,6 +593,9 @@ public static class BackfillEndpoints
                 }
             }
         }
+
+        if (!validateProvider)
+            return null;
 
         try
         {

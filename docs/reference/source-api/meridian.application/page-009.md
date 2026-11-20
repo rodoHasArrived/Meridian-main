@@ -6,6 +6,80 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NullSecurityMasterClassificationDriftReportService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterClassificationDriftReportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:138](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L138).
+
+Rejects classification drift reports when Security Master is unavailable.
+
+```csharp
+public sealed class NullSecurityMasterClassificationDriftReportService : ISecurityMasterClassificationDriftReportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityClassificationDriftReportDto&gt; BuildReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:140](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L140) |  |
+
+## NullSecurityMasterCorporateActionCommandService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterCorporateActionCommandService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:160](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L160).
+
+Rejects Security Master corporate-action appends when command storage is unavailable.
+
+```csharp
+public sealed class NullSecurityMasterCorporateActionCommandService : ISecurityMasterCorporateActionCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityMasterCorporateActionAppendResultDto&gt; AppendAsync(SecurityMasterCorporateActionAppendRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:162](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L162) |  |
+
+## NullSecurityMasterDataQualityService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterDataQualityService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:115](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L115).
+
+Returns no retained quality report and rejects quality checks when Security Master is unavailable.
+
+```csharp
+public sealed class NullSecurityMasterDataQualityService : ISecurityMasterDataQualityService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityMasterQualityReportDto&gt; RunQualityChecksAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:117](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L117) |  |
+| <code>public Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:121](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L121) |  |
+
+## NullSecurityMasterImportService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:284](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L284).
+
+Reports an unavailable Security Master import service and refuses imports.
+
+```csharp
+public sealed class NullSecurityMasterImportService : ISecurityMasterImportService, ISecurityMasterIngestStatusService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterIngestStatusSnapshot GetSnapshot() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:286](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L286) |  |
+| <code>public Task&lt;SecurityMasterImportResult&gt; ImportAsync(string fileContent, string fileExtension, string actor, IProgress&lt;SecurityMasterImportProgress&gt;? progress = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:289](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L289) |  |
+
 ## NullSecurityMasterPricingService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterPricingService</code>. Kind: `class`.
@@ -960,67 +1034,3 @@ Declared public members:
 | <code>public SecurityMasterGovernanceSnapshot Current =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:189](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L189) |  |
 | <code>public static SecurityMasterGovernanceSnapshot Evaluate(SecurityMasterWorkbenchOptions options, bool isProductionComposition, Func&lt;string, string?&gt;? configuredValue = null, bool institutionalLatched = false);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:206](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L206) | Decides the effective requirements for one options value. Nothing here can turn a requirement off under the Institutional profile: configuredValue only decides which keys are reported as contradicted. |
 | <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:271](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L271) |  |
-
-## SecurityMasterGovernanceSnapshot
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:57](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L57).
-
-One consistent reading of the effective Security Master governance requirements, taken from a single options value so the three requirements cannot be read from different reloads.
-
-```csharp
-public sealed record SecurityMasterGovernanceSnapshot(SecurityMasterGovernanceProfile Profile, SecurityMasterGovernanceProfileSource ProfileSource, SecurityMasterGovernanceRequirementBasis GovernedTermAmendments, SecurityMasterGovernanceRequirementBasis IndependentReviewer, SecurityMasterGovernanceRequirementBasis IndependentProfileApprover, IReadOnlyList<string> ContradictedKeys)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsProfileLatched =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:70](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L70) | True when the Institutional profile is in force only because this process ran it earlier (SecurityMasterGovernanceProfileSource.Latched), not because the current configuration or posture declares it. A restart is required to leave it. |
-| <code>public bool RequireGovernedTermAmendments =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:73](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L73) | Effective SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments. |
-| <code>public bool RequireIndependentReviewer =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:76](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L76) | Effective SecurityMasterWorkbenchOptions.RequireIndependentReviewer. |
-| <code>public bool RequireIndependentProfileApprover =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:79](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L79) | Effective SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover. |
-
-## SecurityMasterHistoricalSymbolTimelineResolver
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterHistoricalSymbolTimelineResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs#L13).
-
-Security-master-backed IHistoricalSymbolTimelineResolver: resolves the requested symbol to a security (as-of the chunk date first, then as-of now, so both the current and the retired ticker of a renamed security land on the same record), then picks the ticker identifier whose validity interval covers the chunk date.
-
-```csharp
-public sealed class SecurityMasterHistoricalSymbolTimelineResolver : IHistoricalSymbolTimelineResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterHistoricalSymbolTimelineResolver(Meridian.Contracts.SecurityMaster.ISecurityResolver securityResolver, ISecurityMasterStore store, ILogger&lt;SecurityMasterHistoricalSymbolTimelineResolver&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs#L19) |  |
-| <code>public async Task&lt;string&gt; ResolveTickerForDateAsync(string symbol, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs:29](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs#L29) |  |
-
-## SecurityMasterImportProgress
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterImportProgress</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L22).
-
-Progress update for ongoing Security Master imports.
-
-```csharp
-public sealed record SecurityMasterImportProgress(int Total, int Processed, int Imported, int Failed);
-```
-
-## SecurityMasterImportResult
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterImportResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L12).
-
-Defines the import result for bulk Security Master imports.
-
-```csharp
-public sealed record SecurityMasterImportResult(int Imported, int Skipped, int Failed, int ConflictsDetected, IReadOnlyList<string> Errors);
-```

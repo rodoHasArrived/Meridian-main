@@ -1,4 +1,4 @@
-import { type HTMLAttributes, type ReactNode, useCallback, useEffect, useId, useRef } from "react";
+import { type CSSProperties, type HTMLAttributes, type ReactNode, useCallback, useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 import { resolveDialogTabTarget, resolveInitialDialogFocus } from "@/components/ui/dialog.view-model";
 import { cn } from "@/lib/utils";
@@ -14,8 +14,10 @@ export interface DrawerProps {
   ariaLabel?: string;
   closeOnEsc?: boolean;
   closeOnBackdrop?: boolean;
+  modal?: boolean;
   children?: ReactNode;
   className?: string;
+  panelStyle?: CSSProperties;
 }
 
 function getActiveElement(): HTMLElement | null {
@@ -41,8 +43,10 @@ export function Drawer({
   ariaLabel,
   closeOnEsc = true,
   closeOnBackdrop = true,
+  modal = true,
   children,
-  className
+  className,
+  panelStyle
 }: DrawerProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -57,12 +61,13 @@ export function Drawer({
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!modal && !panelRef.current?.contains(getActiveElement())) return;
       if (closeOnEsc && event.key === "Escape") {
         event.preventDefault();
         requestClose();
         return;
       }
-      if (event.key !== "Tab") {
+      if (!modal || event.key !== "Tab") {
         return;
       }
       const nextFocus = resolveDialogTabTarget(panelRef.current, getActiveElement(), event.shiftKey);
@@ -74,7 +79,7 @@ export function Drawer({
 
     window.addEventListener("keydown", handleKeyDown, true);
     return () => window.removeEventListener("keydown", handleKeyDown, true);
-  }, [open, closeOnEsc, requestClose]);
+  }, [open, closeOnEsc, modal, requestClose]);
 
   useEffect(() => {
     if (!open) {
@@ -82,14 +87,14 @@ export function Drawer({
     }
     restoreFocusRef.current = getActiveElement();
     const frame = window.requestAnimationFrame(() => {
-      resolveInitialDialogFocus(panelRef.current, getActiveElement())?.focus();
+      resolveInitialDialogFocus(panelRef.current, getActiveElement())?.focus({ preventScroll: true });
     });
     return () => {
       window.cancelAnimationFrame(frame);
       const restore = restoreFocusRef.current;
       restoreFocusRef.current = null;
       if (restore?.isConnected) {
-        restore.focus();
+        restore.focus({ preventScroll: true });
       }
     };
   }, [open]);
@@ -101,7 +106,8 @@ export function Drawer({
   return (
     <div
       ref={overlayRef}
-      className={cn("fixed inset-0 z-50 flex bg-background/70", side === "left" ? "justify-start" : "justify-end")}
+      className={cn("fixed inset-0 z-50 flex", modal ? "bg-background/70" : "pointer-events-none",
+        side === "left" ? "justify-start" : "justify-end")}
       onMouseDown={(event) => {
         if (closeOnBackdrop && event.target === overlayRef.current) {
           requestClose();
@@ -111,12 +117,13 @@ export function Drawer({
       <div
         ref={panelRef}
         role="dialog"
-        aria-modal="true"
+        aria-modal={modal}
         aria-label={title ? undefined : ariaLabel ?? "Drawer"}
         aria-labelledby={title ? generatedTitleId : undefined}
         tabIndex={-1}
+        style={panelStyle}
         className={cn(
-          "flex h-full w-full max-w-[360px] flex-col bg-card shadow-[0_2px_6px_rgba(0,0,0,0.18)] focus:outline-hidden",
+          "pointer-events-auto flex h-full w-full max-w-[360px] flex-col bg-card shadow-[0_2px_6px_rgba(0,0,0,0.18)] focus:outline-hidden",
           side === "left" ? "border-r border-border sheet-slide-left" : "border-l border-border sheet-slide-right",
           className
         )}
