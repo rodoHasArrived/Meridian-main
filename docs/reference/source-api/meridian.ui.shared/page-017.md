@@ -602,7 +602,7 @@ Source: [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:
 Resolves generated amounts exclusively from the report&#x27;s retained ledger population.
 
 ```csharp
-public sealed class ReportLedgerAmountProvenanceService(IReportingRunStore? runs, PostedLedgerAmountProvenanceService postedAmounts)
+public sealed partial class ReportLedgerAmountProvenanceService(IReportingRunStore? runs, PostedLedgerAmountProvenanceService postedAmounts)
 ```
 
 Declared public members:
@@ -611,7 +611,13 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static bool IsReportSubject(string subjectId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:14](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L14) |  |
 | <code>public IReadOnlyList&lt;ReportLedgerAmountBindingDto&gt; List(string runId, ReportAccessQueryContext access);</code> | [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L16) |  |
-| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, ReportAccessQueryContext? access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L33) |  |
+| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, ReportAccessQueryContext? access, CancellationToken ct = default, AmountPassportIdentityDto? passport = null, IReadOnlyList&lt;AmountPassportRecordDto&gt;? history = null);</code> | [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs#L34) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.Passport.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.Passport.cs#L7).
+
+```csharp
+public sealed partial class ReportLedgerAmountProvenanceService
+```
 
 ## ReportPackDeliveryArtifactContent
 

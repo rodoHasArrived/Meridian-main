@@ -337,7 +337,8 @@ public sealed record LedgerJournalEntryQuery(
     // Execution lineage: the fill and order a posting recorded in its metadata. OrderId is the
     // execution journal's own identifier (the retained source.orderId tag), or its GUID form.
     Guid? FillId = null,
-    string? OrderId = null)
+    string? OrderId = null,
+    Guid? SourceJournalEntryId = null)
 {
     public string? JournalEntryIdPrefix { get; init; }
 }

@@ -38,7 +38,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerReportSignatureDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:437](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L437).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:440](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L440).
 
 ```csharp
 public sealed record LedgerReportSignatureDto(string Algorithm, string PayloadChecksumSha256, string SignedBy, DateTimeOffset SignedAtUtc);
@@ -67,7 +67,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerTrialBalanceReportDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:443](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L443).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:446](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L446).
 
 ```csharp
 public sealed record LedgerTrialBalanceReportDto(Guid PeriodId, Guid LedgerBookId, int FiscalYear, int PeriodNo, string Label, bool IsPeriodLocked, decimal TotalDebits, decimal TotalCredits, decimal NetIncome, decimal? PeriodOnPeriodVariance, int OpenBreakCount, LedgerPeriodSignoffStatusDto SignoffStatus, DateTimeOffset CompletedAt, IReadOnlyList<LedgerPeriodTrialBalanceLineDto> Lines, LedgerReportSignatureDto Signature, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1");
