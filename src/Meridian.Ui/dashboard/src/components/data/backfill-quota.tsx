@@ -82,7 +82,7 @@ export function BackfillQuotaPanel({ preview, busy, submitted, onSelectProvider,
       </p>
       {quota?.exceedsBudget && !submitted ? (
         <div className="space-y-2 border-t border-border pt-3">
-          <p className="text-sm font-medium text-warning">This plan exceeds the available backfill budget.</p>
+          <p className="text-sm font-medium text-[var(--orange-dim)]">This plan exceeds the available backfill budget.</p>
           <p className="text-xs leading-5 text-muted-foreground">
             Shorten the date range or remove symbols and preview again. You can also queue the full plan with throttling.
           </p>
@@ -185,7 +185,7 @@ export function BackfillJobDetails({ job, statusError }: { job: BackfillJobRecei
         title={`Backfill ${job.status.toLowerCase()}`}
         detail={detail}
       />
-      {statusError ? <p role="status" className="text-xs text-warning">{statusError}</p> : null}
+      {statusError ? <p role="status" className="text-xs text-[var(--orange-dim)]">{statusError}</p> : null}
       {job.actual ? <BackfillQuotaActual receipt={job.actual} /> : null}
     </section>
   );
