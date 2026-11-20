@@ -268,7 +268,7 @@ public static class ReportWriterGridEngine
             .ToList();
         var metricTotals = BuildMetricTotals(workingRows);
         ApplyFormulas(workingRows, formulas, circularFormulas, metricTotals, warnings);
-        var sorted = SortRows(workingRows, grid, metrics);
+        var sorted = SortRows(workingRows, grid, metrics, rowDimensions);
 
         return sorted
             .Select((row, index) => new ReportWriterGridRowDto(BuildRowKey(row.Values, rowDimensions, index), row.Values))
@@ -313,7 +313,7 @@ public static class ReportWriterGridEngine
 
         var metricTotals = BuildMetricTotals(workingRows);
         ApplyFormulas(workingRows, formulas, circularFormulas, metricTotals, warnings);
-        var sorted = SortRows(workingRows, grid, metrics);
+        var sorted = SortRows(workingRows, grid, metrics, dimensions);
         var limited = grid.Kind == ReportWriterGridKindDto.TopN && grid.TopN is > 0
             ? sorted.Take(grid.TopN.Value)
             : sorted;
@@ -383,7 +383,19 @@ public static class ReportWriterGridEngine
             columns.Add(new PivotColumn(key, BuildPivotLabel(values, columnDimensions)));
         }
 
-        return columns;
+        // Deterministic column order: alphabetical by label (case-insensitive), blank labels last,
+        // ordinal key as the tie-break. Render columns and per-row metric layout both read this list.
+        return columns
+            .OrderBy(column => IsBlankPivotLabel(column.Label) ? 1 : 0)
+            .ThenBy(column => column.Label, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(column => column.Key, StringComparer.Ordinal)
+            .ToList();
+    }
+
+    private static bool IsBlankPivotLabel(string label)
+    {
+        var segments = label.Split(" / ");
+        return segments.All(segment => string.Equals(segment, "(blank)", StringComparison.Ordinal));
     }
 
     private static string BuildPivotMetricKey(string pivotKey, string metricName) =>
@@ -861,7 +873,8 @@ public static class ReportWriterGridEngine
     private static IEnumerable<WorkingRow> SortRows(
         IReadOnlyList<WorkingRow> rows,
         ReportWriterGridDefinitionDto grid,
-        IReadOnlyList<ReportWriterMetricDefinitionDto> metrics)
+        IReadOnlyList<ReportWriterMetricDefinitionDto> metrics,
+        IReadOnlyList<string> dimensions)
     {
         var sortBy = string.IsNullOrWhiteSpace(grid.SortBy)
             ? grid.Kind == ReportWriterGridKindDto.Contribution
@@ -870,7 +883,10 @@ public static class ReportWriterGridEngine
             : grid.SortBy.Trim();
         if (string.IsNullOrWhiteSpace(sortBy))
         {
-            return rows;
+            // No metric to rank by: order groups by their visible dimension values so output is
+            // deterministic rather than first-seen.
+            return rows.OrderBy(row => BuildGroupKey(row.Values, dimensions), StringComparer.OrdinalIgnoreCase)
+                .ThenBy(row => BuildGroupKey(row.Values, dimensions), StringComparer.Ordinal);
         }
 
         return grid.SortDescending
@@ -1498,6 +1514,8 @@ public static class ReportWriterGridEngine
                 ["abs"] = static self => self.EvaluateAbs(),
                 ["min"] = static self => self.EvaluateMin(),
                 ["max"] = static self => self.EvaluateMax(),
+                ["median"] = static self => self.EvaluateMedian(),
+                ["stdev"] = static self => self.EvaluateStdev(),
                 ["safeDivide"] = static self => self.EvaluateSafeDivide(),
                 ["percent"] = static self => self.EvaluateRatio(100m),
                 ["basisPoints"] = static self => self.EvaluateRatio(10000m),
@@ -1566,6 +1584,67 @@ public static class ReportWriterGridEngine
         private decimal EvaluateMin() => ParseExpressionArgumentList(minimumCount: 1).Min();
 
         private decimal EvaluateMax() => ParseExpressionArgumentList(minimumCount: 1).Max();
+
+        private decimal EvaluateMedian()
+        {
+            var values = ParseExpressionArgumentList(minimumCount: 1);
+            if (_skipDepth > 0)
+            {
+                return 0m;
+            }
+
+            values.Sort();
+            var middle = values.Count / 2;
+            return values.Count % 2 == 1
+                ? values[middle]
+                : (values[middle - 1] + values[middle]) / 2m;
+        }
+
+        // Sample standard deviation (n - 1 denominator) over the listed arguments.
+        private decimal EvaluateStdev()
+        {
+            var values = ParseExpressionArgumentList(minimumCount: 1);
+            if (_skipDepth > 0)
+            {
+                return 0m;
+            }
+
+            if (values.Count < 2)
+            {
+                throw new InvalidOperationException("stdev requires at least two values.");
+            }
+
+            var mean = values.Sum() / values.Count;
+            var sumOfSquares = values.Sum(value => (value - mean) * (value - mean));
+            return SqrtDecimal(sumOfSquares / (values.Count - 1));
+        }
+
+        private static decimal SqrtDecimal(decimal value)
+        {
+            if (value <= 0m)
+            {
+                return 0m;
+            }
+
+            var current = (decimal)Math.Sqrt((double)value);
+            for (var iteration = 0; iteration < 8; iteration++)
+            {
+                if (current == 0m)
+                {
+                    return 0m;
+                }
+
+                var next = (current + value / current) / 2m;
+                if (next == current)
+                {
+                    break;
+                }
+
+                current = next;
+            }
+
+            return current;
+        }
 
         private decimal EvaluateSafeDivide()
         {

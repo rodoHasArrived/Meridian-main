@@ -198,6 +198,41 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void TemplateRegistry_ReportWriterFormulaValidation_RecognisesMedianAndStdevAsFunctions()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "stats-formula-grid",
+                "Stats Formula Grid",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "Validate statistics helpers in no-code formulas",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "formula-grid",
+                        "Formula Grid",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["sector"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                            new ReportWriterMetricDefinitionDto("fees", "fees")
+                        ],
+                        Formulas:
+                        [
+                            new ReportWriterFormulaDefinitionDto("middle", "median({pnl}, {fees}, 0)"),
+                            new ReportWriterFormulaDefinitionDto("spread", "STDEV(pnl, fees)")
+                        ])
+                ]),
+            "report.author");
+
+        draft.ValidationIssues.Should().BeEmpty();
+    }
+
+    [Fact]
     public void TemplateRegistry_ReportWriterFormulaValidation_BlocksUnknownAndCircularReferences()
     {
         var svc = new ReportTemplateRegistryService();
@@ -761,10 +796,10 @@ public sealed class ReportPackWorkflowServiceTests
         var grid = rendered.Grids.Should().ContainSingle().Subject;
         grid.Columns.Select(static column => column.Key).Should().Equal(
             "sector",
-            "US:marketValue",
-            "US:pnl",
             "EU:marketValue",
             "EU:pnl",
+            "US:marketValue",
+            "US:pnl",
             "returnPct");
         grid.Rows.Should().HaveCount(2);
         grid.Rows.Should().Contain(row =>

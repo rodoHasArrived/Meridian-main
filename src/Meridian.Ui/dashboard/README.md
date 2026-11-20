@@ -2709,7 +2709,7 @@ shared renderer still owns pivot, Top-N, contribution, filter, and formula outpu
 source-backed option posts the selected payload-owned rows to the render endpoint; the browser also
 renders the source-owned field catalog with role and data-type metadata before preview. Formula
 preview row generation recognizes brace references, bare identifiers, `total(...)`, and shared
-formula functions such as `abs(...)`, `min(...)`, `max(...)`, `safeDivide(...)`, `percent(...)`,
+formula functions such as `abs(...)`, `min(...)`, `max(...)`, `median(...)`, `stdev(...)`, `safeDivide(...)`, `percent(...)`,
 `basisPoints(...)`, `round(...)`, and `if(...)`, so local sample rows include the same formula source fields
 the shared renderer will evaluate. The
 certified operational data-mart option is server-projected with row-lineage keys, lineage manifest

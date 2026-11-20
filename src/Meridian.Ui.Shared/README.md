@@ -2908,7 +2908,7 @@ fields, metric source mappings, formula dependencies, and saved filter lineage s
 previews can display the same audit trace as retained exports. Template governance validation now
 blocks report-writer formulas that reference unknown metrics/formulas, unsupported `total(...)`
 fields, or self/forward/circular formula dependencies before those templates can enter review or
-approval, while recognizing supported helpers such as `safeDivide(...)`, `percent(...)`,
+approval, while recognizing supported helpers such as `median(...)`, `stdev(...)`, `safeDivide(...)`, `percent(...)`,
 `basisPoints(...)`, `round(...)`, and `if(...)` as functions instead of missing row fields.
 Draft formula validation reads hyphenated bare references with the same
 `ReportWriterFormulaReferences` rule as the grid engine, so `pnl-fees` between two known metrics
