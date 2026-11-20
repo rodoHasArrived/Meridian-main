@@ -260,14 +260,14 @@ public sealed partial class ProviderFactory
         if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
             return null;
 
-        return new AlpacaHistoricalDataProvider(
+        return ProviderRuntimeProvenance.Attach(new AlpacaHistoricalDataProvider(
             keyId: keyId,
             secretKey: secretKey,
             feed: configuredOptions.Feed,
             adjustment: cfg?.Adjustment ?? "all",
             priority: cfg?.Priority ?? 5,
             rateLimitPerMinute: cfg?.RateLimitPerMinute ?? 200,
-            log: _log);
+            log: _log), credentials);
     }
 
     internal IHistoricalDataProvider? CreatePolygonBackfillProvider(PolygonBackfillConfig? cfg)
@@ -327,11 +327,11 @@ public sealed partial class ProviderFactory
         var credentials = CreateCredentialContext<NasdaqDataLinkHistoricalDataProvider>(
             ("NASDAQ_DATA_LINK_API_KEY", cfg?.ApiKey));
         var apiKey = credentials.Get("NASDAQ_DATA_LINK_API_KEY");
-        return new NasdaqDataLinkHistoricalDataProvider(
+        return ProviderRuntimeProvenance.Attach(new NasdaqDataLinkHistoricalDataProvider(
             apiKey: apiKey,
             database: cfg?.Database ?? "WIKI",
             log: _log,
-            runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "nasdaqdatalink"));
+            runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "nasdaqdatalink")), credentials);
     }
 
     internal IHistoricalDataProvider? CreateRobinhoodBackfillProvider(RobinhoodConfig? cfg)
@@ -480,8 +480,14 @@ public sealed partial class ProviderFactory
         string credentialName,
         string? configuredValue,
         Func<string, IHistoricalDataProvider> factory)
-        => CreateCredentialGatedProvider<TCredentialSource, IHistoricalDataProvider>(
-            enabled, credentialName, configuredValue, factory);
+    {
+        if (!enabled)
+            return null;
+
+        var context = CreateCredentialContext<TCredentialSource>((credentialName, configuredValue));
+        var credential = context?.Get(credentialName);
+        return string.IsNullOrWhiteSpace(credential) ? null : ProviderRuntimeProvenance.Attach(factory(credential), context!);
+    }
 
     internal ISymbolSearchProvider? CreateCredentialGatedSearchProvider<TCredentialSource>(
         bool enabled,

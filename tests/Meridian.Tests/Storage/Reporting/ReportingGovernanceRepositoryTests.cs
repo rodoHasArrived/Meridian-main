@@ -88,6 +88,31 @@ public sealed class ReportingGovernanceRepositoryTests :
     }
 
     [ReportingDatabaseFact]
+    public async Task FindRunIdsAsync_RanksDraftExactAndPrefixMatchesWithinTenantAndCompany()
+    {
+        var scope = NewScenario();
+        var service = NewService(_database.Repository);
+        var exact = await service.CreateRunAsync(scope.CreationRequest with { RunId = "month-close" }, scope.Creator);
+        var prefix = await service.CreateRunAsync(scope.CreationRequest with
+        {
+            RunId = "month-close-draft",
+            SeriesId = "other-month-close-series"
+        }, scope.Creator);
+        var outside = NewScenario();
+        await service.CreateRunAsync(outside.CreationRequest with { RunId = "month-close-foreign" }, outside.Creator);
+
+        Task<IReadOnlyList<string>> SearchAsync(string company, string query) =>
+            _database.Repository.ExecuteTransactionAsync((transaction, ct) =>
+                transaction.FindRunIdsAsync(scope.TenantId, company, query, offset: 0, limit: 12, ct)).AsTask();
+
+        var company = scope.CreationRequest.Scope.CompanyId!;
+        (await SearchAsync(company, "MONTH-CLOSE")).Should().Equal(exact.RunId, prefix.RunId);
+        (await SearchAsync(company, "template-monthly")).Should().Equal(exact.RunId, prefix.RunId);
+        (await SearchAsync(company, "close")).Should().BeEmpty();
+        (await SearchAsync("other-company", "month-close")).Should().BeEmpty();
+    }
+
+    [ReportingDatabaseFact]
     public async Task ReplaceRunAsync_RejectsAStaleDurableVersionWithoutAppendingAudit()
     {
         var scenario = NewScenario();

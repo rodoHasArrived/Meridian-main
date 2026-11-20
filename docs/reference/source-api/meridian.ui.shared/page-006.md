@@ -604,7 +604,7 @@ Cross-screen counts (A3): open orders, provider health and open breaks, counted 
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:51](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L51).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:52](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L52).
 
 Endpoints for the desktop workstation API surface.
 
@@ -616,7 +616,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:59](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L59) |  |
+| <code>public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:60](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L60) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs#L12).
 
@@ -802,6 +802,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationReg
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.RecordSearch.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.RecordSearch.cs#L26).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs#L13).
 
 ```csharp
@@ -876,7 +882,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconcil
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs#L24).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs#L25).
 
 Strategy Designer and Strategy Engine endpoints for the workstation API surface, split out of the WorkstationEndpoints core partial as a capability group.
 

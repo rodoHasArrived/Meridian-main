@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionCommand
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CorporateActionCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L75).
+
+Command model produced by an ICorporateActionProvider implementation. Contains the fields needed to raise a CorporateActionDeclared domain event.
+
+```csharp
+public sealed record CorporateActionCommand(Guid SecurityId, string ActionType, DateOnly ExDate, DateOnly? RecordDate, DateOnly? PayableDate, decimal? Amount, string? Currency, decimal? SplitFromFactor, decimal? SplitToFactor, string? Description, string SourceProvider, string? SourceEventId = null, string? SourceEventVersion = null, DateTimeOffset? ObservedAtUtc = null, string? EvidenceHash = null, string? EvidenceReference = null, CorporateActionProviderReleaseStatusDto ReleaseStatus = CorporateActionProviderReleaseStatusDto.ReviewOnly);
+```
+
 ## CorporateActionFetchFailure
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CorporateActionFetchFailure</code>. Kind: `record`.
@@ -216,7 +228,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.EnvironmentCredentialResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:604](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L604).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:610](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L610).
 
 Credential resolver that reads from environment variables. Follows the same pattern as ConfigurationService.
 
@@ -228,7 +240,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:606](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L606) |  |
+| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:612](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L612) |  |
 
 ## GapAnalysisResult
 
@@ -557,7 +569,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.IPreparedProviderCredentials</code>. Kind: `interface`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:575](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L575).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:581](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L581).
 
 Credentials read ahead of a synchronous provider construction.
 
@@ -569,13 +581,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IDisposable Activate();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:581](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L581) | Makes the prepared credentials visible to IProviderCredentialResolver.CreateContext on the current execution flow until the returned scope is disposed. |
+| <code>IDisposable Activate();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:587](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L587) | Makes the prepared credentials visible to IProviderCredentialResolver.CreateContext on the current execution flow until the returned scope is disposed. |
 
 ## IProviderCredentialResolver
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver</code>. Kind: `interface`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:539](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L539).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:545](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L545).
 
 Generic provider credential context factory used by runtime provider registration.
 
@@ -587,8 +599,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:547](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L547) | Builds the credential context a provider is constructed with. Provider construction is synchronous (dependency-injection factories and adapter constructors cannot await), so this never awaits. A resolver backed by storage serves it from credentials an enclosing PrepareAsync read; with none prepared it has to wait for the read. |
-| <code>ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:568](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L568) | Asynchronously reads everything CreateContext will need, so the synchronous construction that follows does no storage I/O. Await this at an asynchronous entry point, then construct providers inside IPreparedProviderCredentials.Activate: var prepared = await resolver.PrepareAsync(ct: ct); using (prepared.Activate()) { // synchronous provider construction } The prepared credentials are a point-in-time read and are only valid for the construction that immediately follows; do not keep them. |
+| <code>ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:553](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L553) | Builds the credential context a provider is constructed with. Provider construction is synchronous (dependency-injection factories and adapter constructors cannot await), so this never awaits. A resolver backed by storage serves it from credentials an enclosing PrepareAsync read; with none prepared it has to wait for the read. |
+| <code>ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:574](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L574) | Asynchronously reads everything CreateContext will need, so the synchronous construction that follows does no storage I/O. Await this at an asynchronous entry point, then construct providers inside IPreparedProviderCredentials.Activate: var prepared = await resolver.PrepareAsync(ct: ct); using (prepared.Activate()) { // synchronous provider construction } The prepared credentials are a point-in-time read and are only valid for the construction that immediately follows; do not keep them. |
 
 ## IRateLimitAwareProvider
 
@@ -704,7 +716,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.PreparedProviderCredentials</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:585](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L585).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:591](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L591).
 
 Shared no-op for resolvers that need no storage read.
 
@@ -716,7 +728,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IPreparedProviderCredentials None { get; } = new NoPreparedCredentials();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:588](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L588) | Nothing to prepare: IPreparedProviderCredentials.Activate does nothing. |
+| <code>public static IPreparedProviderCredentials None { get; } = new NoPreparedCredentials();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:594](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L594) | Nothing to prepare: IPreparedProviderCredentials.Activate does nothing. |
 
 ## PriorityBackfillQueue
 
@@ -926,7 +938,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCreationResult</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:524](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L524).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:530](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L530).
 
 Result of provider creation operation.
 
@@ -938,11 +950,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public List&lt;string&gt; BackfillProviders { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:526](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L526) |  |
-| <code>public List&lt;string&gt; SymbolSearchProviders { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:527](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L527) |  |
-| <code>public int TotalProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:529](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L529) |  |
-| <code>public bool HasBackfillProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:532](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L532) |  |
-| <code>public bool HasSymbolSearchProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:533](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L533) |  |
+| <code>public List&lt;string&gt; BackfillProviders { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:532](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L532) |  |
+| <code>public List&lt;string&gt; SymbolSearchProviders { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:533](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L533) |  |
+| <code>public int TotalProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:535](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L535) |  |
+| <code>public bool HasBackfillProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:538](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L538) |  |
+| <code>public bool HasSymbolSearchProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:539](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L539) |  |
 
 ## ProviderDataQualityIssue
 
@@ -1029,21 +1041,3 @@ Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs:23
 ```csharp
 public sealed partial class ProviderFactory
 ```
-
-## ProviderHealthStatus
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderHealthStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:344](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L344).
-
-Result of a provider health check.
-
-```csharp
-public sealed record ProviderHealthStatus(string ProviderName, bool IsAvailable, string? Message = null, DateTimeOffset? CheckedAt = null, TimeSpan? ResponseTime = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderHealthStatus() : this(&quot;unknown&quot;, false);</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:352](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L352) |  |

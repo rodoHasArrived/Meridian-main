@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IIBDataLineageSource
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBDataLineageSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:46](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L46).
+
+Optional runtime callback source for automatically captured IB entitlement evidence.
+
+```csharp
+public interface IIBDataLineageSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>event EventHandler&lt;IBMarketDataTypeUpdate&gt;? MarketDataTypeReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:48](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L48) |  |
+
 ## IIBDataServiceTransport
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBDataServiceTransport</code>. Kind: `interface`.
@@ -164,17 +182,17 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:38](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L38) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:39](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L39) |  |
-| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:40](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L40) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L43) |  |
-| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L44) |  |
-| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:47](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L47) |  |
-| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L48) |  |
-| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L53) | Nasdaq Data Link supports adjusted bars with corporate actions. |
-| <code>public NasdaqDataLinkHistoricalDataProvider(string? apiKey = null, string database = &quot;WIKI&quot;, HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:62](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L62) | Create a Nasdaq Data Link provider. |
-| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:82](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L82) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:99](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L99) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:109](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L109) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:41](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L41) |  |
+| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:42](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L42) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:45](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L45) |  |
+| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:46](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L46) |  |
+| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:49](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L49) |  |
+| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:50](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L50) |  |
+| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L55) | Nasdaq Data Link supports adjusted bars with corporate actions. |
+| <code>public NasdaqDataLinkHistoricalDataProvider(string? apiKey = null, string database = &quot;WIKI&quot;, HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:64](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L64) | Create a Nasdaq Data Link provider. |
+| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:84](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L84) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:101](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L101) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:111](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L111) |  |
 
 ## NasdaqDataLinkSymbolSearchProvider
 
@@ -1236,37 +1254,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>IAsyncEnumerable&lt;TemplateBrokerStreamMessage&gt; StreamAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L67) |  |
-
-## TemplateBrokerageGateway
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:38](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L38).
-
-Template brokerage gateway scaffold. Copy this file and fill in the TODOs to implement a new brokerage provider. Steps to implement a new brokerage: 1. Copy this file to a new folder under Adapters/{BrokerName}/ 2. Rename the class to {BrokerName}BrokerageGateway 3. Replace the template &#91;DataSource&#93; and &#91;ImplementsAdr&#93; metadata with broker-specific values 4. Replace scaffold methods with broker-specific API calls 5. Add JSON DTOs and a JsonSerializerContext for ADR-014 compliance 6. Register in DI: services.AddBrokerageGateway&lt;{BrokerName}BrokerageGateway&gt;() 7. Add configuration options record if needed 8. Add tests under tests/Meridian.Tests/Brokerage/
-
-```csharp
-public sealed class TemplateBrokerageGateway : IBrokerageGateway
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TemplateBrokerageGateway(ILogger&lt;TemplateBrokerageGateway&gt; logger) : this(logger, new TemplateBrokerageGatewayOptions());</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L50) |  |
-| <code>public TemplateBrokerageGateway(ILogger&lt;TemplateBrokerageGateway&gt; logger, TemplateBrokerageGatewayOptions options);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L55) |  |
-| <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L67) |  |
-| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L69) |  |
-| <code>public string BrokerDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L71) |  |
-| <code>public BrokerageCapabilities BrokerageCapabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:73](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L73) |  |
-| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L75) |  |
-| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L88) |  |
-| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:97](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L97) |  |
-| <code>public async Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:127](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L127) |  |
-| <code>public async Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:153](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L153) |  |
-| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:183](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L183) |  |
-| <code>public Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:192](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L192) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:207](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L207) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:214](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L214) |  |
-| <code>public async Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:225](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L225) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:240](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L240) |  |

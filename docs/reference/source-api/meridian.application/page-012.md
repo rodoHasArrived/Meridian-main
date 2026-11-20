@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ArchivedSymbolsOptions
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:756](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L756).
+
+Options for scanning archived symbols.
+
+```csharp
+public sealed record ArchivedSymbolsOptions(string[]? FilterSymbols = null, bool IncludeCompressed = true);
+```
+
 ## ArchivedSymbolsResult
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult</code>. Kind: `record`.
@@ -1081,23 +1093,3 @@ Declared public members:
 | <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:15](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L15) |  |
 | <code>public CredentialGuidanceStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L17) |  |
 | <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:23](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L23) |  |
-
-## DetectProvidersStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.DetectProvidersStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L11).
-
-Step 1: Scans environment variables and returns the list of detected providers. Writes WizardContext.DetectedProviders.
-
-```csharp
-public sealed class DetectProvidersStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L16) |  |
-| <code>public DetectProvidersStep(AutoConfigurationService autoConfig, TextWriter output);</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L18) |  |
-| <code>public Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L24) |  |

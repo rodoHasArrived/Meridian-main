@@ -5,6 +5,7 @@ import { axe } from "jest-axe";
 import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
 import * as api from "@/lib/api";
+import { readRecordWorkspaceContext } from "@/lib/record-workspace-context";
 import type { StrategyWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 
 function position(symbol: string, side: "Long" | "Short", current: boolean): TradingWorkspaceResponse["positions"][number] {
@@ -78,6 +79,25 @@ describe("Portfolio Open positions controls", () => {
     vi.spyOn(api, "getFinancialRecordExplorer").mockRejectedValue(new Error("Explorer not configured in this fixture."));
   });
   afterEach(() => vi.restoreAllMocks());
+
+  it("restores only an unambiguous linked holding and carries its exact position into related work", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<PortfolioScreen portfolio={portfolioFromTrading(trading, null)} trading={trading} strategy={null} accounting={null} />, {
+      initialEntries: ["/portfolio?positionRef=symbol%3AMSFT%3ALong"]
+    });
+    expect(screen.getByText("The linked holding is unavailable in the current portfolio.")).toBeVisible();
+    expect(screen.queryByRole("region", { name: "Position identity" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("row", { name: "Inspect AAPL Short holding" }));
+    const identity = within(screen.getByRole("region", { name: "Position identity" }));
+    expect(identity.getByText("AAPL · Short")).toBeVisible();
+    expect(identity.getByText("Mark current")).toBeVisible();
+    const asset = screen.getByRole("link", { name: "Open asset detail for AAPL" });
+    const href = new URL(asset.getAttribute("href")!, "https://meridian.local");
+    const carried = readRecordWorkspaceContext(href.search);
+    expect(carried?.origin).toBe("/portfolio?positionRef=symbol%3AAAPL%3AShort#portfolio-position-detail");
+    expect(carried?.record).toMatchObject({ kind: "position", asOf: "2026-10-28", status: "Open", trust: "Mark current" });
+  });
 
   it("combines symbol, side and server mark readiness filters and resets controls", async () => {
     const user = userEvent.setup();

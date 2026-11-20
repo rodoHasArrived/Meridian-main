@@ -4,6 +4,8 @@ import { resolveKpi } from "@/lib/kpi-registry";
 import { isBondAssetClass } from "@/lib/fixed-income-navigation";
 import { measureDisplayedPositionAmounts, type PositionValueMeasurement } from "@/lib/position-value-graphic";
 import { presentMarkFreshness, markFreshnessFields, markPriceField, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { useLinkedRecordSelection } from "@/hooks/use-linked-record-selection";
+import { findUniqueRecord, positionRecordIdentity, positionReference, type RecordIdentity } from "@/lib/record-workspace-context";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   buildMultiAssetCoverageGroups,
@@ -21,6 +23,7 @@ import {
   formatDateTime,
   formatNumber,
   formatRatioAsPercent,
+  nextBrokerageAccountKey,
   pnlFieldTone,
   pnlTone,
   riskFieldTone,
@@ -48,6 +51,8 @@ import type {
   TradingWorkspaceResponse
 } from "@/types";
 import { formatCount } from "@/lib/format";
+
+export { resolveBrokerageAccountFilterKeyCommand } from "@/screens/portfolio-screen.presentation";
 
 type PortfolioRiskState = TradingWorkspaceResponse["risk"];
 type PortfolioBrokerageStatus = TradingWorkspaceResponse["brokerage"];
@@ -323,6 +328,8 @@ interface PortfolioRunContinuityBlocker {
 
 export interface PortfolioPositionDetail {
   id: string;
+  record: RecordIdentity;
+  linkedRef: string;
   title: string;
   subtitle: string;
   ariaLabel: string;
@@ -593,10 +600,12 @@ export function buildPortfolioScreenViewModel({
   brokeragePortfolio,
   multiAssetCoverage,
   selectedPositionId = null,
+  requestedPositionRef = null,
   selectedRunId = null,
   selectedRunContinuity = null,
   selectedRunDrillIn = null,
   selectedBrokeragePositionId = null,
+  requestedBrokeragePositionId = null,
   selectedBrokerageAccountKey = "all",
   pathname = WORKSTATION_ROUTE_CATALOG.portfolio,
   selectPosition = () => {},
@@ -612,10 +621,12 @@ export function buildPortfolioScreenViewModel({
   brokeragePortfolio?: BrokerageHouseholdPortfolio | null;
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
   selectedPositionId?: string | null;
+  requestedPositionRef?: string | null;
   selectedRunId?: string | null;
   selectedRunContinuity?: StrategyRunContinuityDto | null;
   selectedRunDrillIn?: PortfolioRunDrillInData | null;
   selectedBrokeragePositionId?: string | null;
+  requestedBrokeragePositionId?: string | null;
   selectedBrokerageAccountKey?: string;
   pathname?: string;
   selectPosition?: (id: string) => void;
@@ -645,12 +656,11 @@ export function buildPortfolioScreenViewModel({
   };
   const brokeragePositions = (brokeragePortfolio?.positions ?? [])
     .filter((position) => selectedBrokerageKey === "all" || position.fundAccountId === selectedBrokerageKey);
-  const selectedBrokerageStableId =
-    brokeragePositions.find((position) => brokeragePositionId(position) === selectedBrokeragePositionId) !== undefined
-      ? selectedBrokeragePositionId
-      : brokeragePositions.length > 0
-        ? brokeragePositionId(brokeragePositions[0])
-        : null;
+  const selectedBrokeragePositionRecord = brokeragePositions.find((position) => brokeragePositionId(position) === selectedBrokeragePositionId)
+    ?? (requestedBrokeragePositionId
+      ? findUniqueRecord(brokeragePositions, (position) => brokeragePositionId(position) === requestedBrokeragePositionId)
+      : brokeragePositions[0]);
+  const selectedBrokerageStableId = selectedBrokeragePositionRecord ? brokeragePositionId(selectedBrokeragePositionRecord) : null;
   const brokerageConnectionState = brokerageConnection?.state ?? "NotConfigured";
   const brokerageConnectionWarnings = [
     ...(brokerageConnection?.warnings ?? []),
@@ -663,12 +673,15 @@ export function buildPortfolioScreenViewModel({
     warningCount: brokerageWarningRows.length,
     connectionState: brokerageConnectionState
   });
-  const selectedId =
-    positions.find((p, index) => positionId(p.symbol, p.side, index) === selectedPositionId) !== undefined
-      ? selectedPositionId
-      : positions.length > 0
-        ? positionId(positions[0].symbol, positions[0].side, 0)
-        : null;
+  const positionKeys = positions.map((position, index) => ({
+    position,
+    id: positionId(position.symbol, position.side, index),
+    ref: positionReference(position)
+  }));
+  const selectedPositionKey = positionKeys.find((row) => row.id === selectedPositionId) ?? (requestedPositionRef
+    ? findUniqueRecord(positionKeys, (row) => row.ref === requestedPositionRef)
+    : positionKeys[0]);
+  const selectedId = selectedPositionKey?.id ?? null;
   const selectedRunStableId =
     runs.find((run) => run.id === selectedRunId) !== undefined
       ? selectedRunId
@@ -681,9 +694,8 @@ export function buildPortfolioScreenViewModel({
   const pnlGraphics = measureDisplayedPositionAmounts(positions.map((position) => position.unrealizedPnl), positionCurrencies);
   // One model feeds the table rows, the headline figures and the holding detail panel.
   const holdings = buildHoldingsModel(portfolio);
-  const positionRows: PortfolioPositionRow[] = positions.map((p, index) => {
+  const positionRows: PortfolioPositionRow[] = positionKeys.map(({ position: p, id }, index) => {
     const holding = holdings.rows[index];
-    const id = positionId(p.symbol, p.side, index);
     const tone = pnlTone(p.unrealizedPnl);
     const isSelected = id === selectedId;
 
@@ -743,8 +755,12 @@ export function buildPortfolioScreenViewModel({
   const totalExposure = exposureKpi.value;
   const totalUnrealizedPnl = unrealizedPnlKpi.value;
   const selectedRow = positionRows.find((row) => row.id === selectedId) ?? null;
-  const selectedPosition = selectedRow
-    ? buildSelectedPositionDetail(selectedRow, risk, brokerage)
+  const selectedPosition = selectedRow && selectedPositionKey
+    ? buildSelectedPositionDetail(
+      selectedRow, risk, brokerage,
+      positionRecordIdentity(selectedPositionKey.position, selectedRow.markFreshness),
+      selectedPositionKey.ref
+    )
     : null;
   const selectedRunRow = runRows.find((row) => row.id === selectedRunStableId) ?? null;
   const selectedContinuity = resolveSelectedRunContinuity(selectedRunRow, selectedRunContinuity);
@@ -766,8 +782,6 @@ export function buildPortfolioScreenViewModel({
   const selectedBrokerageAccount = selectedBrokerageAccountRecord
     ? buildSelectedBrokerageAccountDetail(selectedBrokerageAccountRecord, providerLabel)
     : buildAllBrokerageAccountsDetail(brokerageAccounts, brokeragePortfolio, providerLabel);
-  const selectedBrokeragePositionRecord =
-    brokeragePositions.find((position) => brokeragePositionId(position) === selectedBrokerageStableId) ?? null;
   const selectedBrokeragePosition = selectedBrokeragePositionRecord
     ? buildSelectedBrokeragePositionDetail(selectedBrokeragePositionRecord, brokerageAccounts, providerLabel)
     : null;
@@ -1333,6 +1347,10 @@ export function usePortfolioScreenViewModel({
   multiAssetCoverage,
   selectedRunContinuity = null,
   selectedRunDrillIn = null,
+  requestedPositionRef = null,
+  requestedBrokerageAccount = null,
+  requestedBrokeragePositionId = null,
+  onBrokerageAccountChange,
   pathname = WORKSTATION_ROUTE_CATALOG.portfolio
 }: {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -1344,12 +1362,16 @@ export function usePortfolioScreenViewModel({
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
   selectedRunContinuity?: StrategyRunContinuityDto | null;
   selectedRunDrillIn?: PortfolioRunDrillInData | null;
+  requestedPositionRef?: string | null;
+  requestedBrokerageAccount?: string | null;
+  requestedBrokeragePositionId?: string | null;
+  onBrokerageAccountChange?: (key: string) => void;
   pathname?: string;
 }): PortfolioScreenViewModel {
-  const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
+  const [selectedPositionId, setSelectedPositionId] = useLinkedRecordSelection(requestedPositionRef);
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
-  const [selectedBrokeragePositionId, setSelectedBrokeragePositionId] = useState<string | null>(null);
-  const [selectedBrokerageAccountKey, setSelectedBrokerageAccountKey] = useState<string>("all");
+  const [selectedBrokeragePositionId, setSelectedBrokeragePositionId] = useLinkedRecordSelection(requestedBrokeragePositionId);
+  const [selectedBrokerageAccountKey, setSelectedBrokerageAccountKey] = useLinkedRecordSelection(requestedBrokerageAccount);
 
   return buildPortfolioScreenViewModel({
     portfolio,
@@ -1363,13 +1385,15 @@ export function usePortfolioScreenViewModel({
     selectedRunDrillIn,
     pathname,
     selectedPositionId,
+    requestedPositionRef,
     selectedRunId,
     selectedBrokeragePositionId,
-    selectedBrokerageAccountKey,
+    requestedBrokeragePositionId,
+    selectedBrokerageAccountKey: selectedBrokerageAccountKey ?? requestedBrokerageAccount ?? "all",
     selectPosition: setSelectedPositionId,
     selectRun: setSelectedRunId,
     selectBrokeragePosition: setSelectedBrokeragePositionId,
-    selectBrokerageAccount: setSelectedBrokerageAccountKey
+    selectBrokerageAccount: onBrokerageAccountChange ?? setSelectedBrokerageAccountKey
   });
 }
 
@@ -1514,51 +1538,6 @@ function toPortfolioRunRecord(run: PortfolioWorkspaceResponse["runs"][number]): 
     notes: run.notes,
     promotionState: run.promotionState
   };
-}
-
-export function resolveBrokerageAccountFilterKeyCommand(
-  key: string
-): "next" | "previous" | "first" | "last" | null {
-  if (key === "ArrowRight" || key === "ArrowDown") {
-    return "next";
-  }
-
-  if (key === "ArrowLeft" || key === "ArrowUp") {
-    return "previous";
-  }
-
-  if (key === "Home") {
-    return "first";
-  }
-
-  if (key === "End") {
-    return "last";
-  }
-
-  return null;
-}
-
-function nextBrokerageAccountKey(
-  options: PortfolioBrokerageAccountOption[],
-  selectedKey: string,
-  direction: "next" | "previous" | "first" | "last"
-): string {
-  if (options.length === 0) {
-    return selectedKey;
-  }
-
-  if (direction === "first") {
-    return options[0].key;
-  }
-
-  if (direction === "last") {
-    return options[options.length - 1].key;
-  }
-
-  const selectedIndex = Math.max(0, options.findIndex((option) => option.key === selectedKey));
-  const offset = direction === "next" ? 1 : -1;
-  const nextIndex = (selectedIndex + offset + options.length) % options.length;
-  return options[nextIndex].key;
 }
 
 function toBrokerageAccountRow(
@@ -1750,7 +1729,7 @@ function toBrokeragePositionRow(
   };
 }
 
-function brokeragePositionId(position: BrokerageHouseholdPosition): string {
+export function brokeragePositionId(position: BrokerageHouseholdPosition): string {
   return `${position.fundAccountId}-${position.symbol}-${position.positionId ?? "position"}`;
 }
 
@@ -2327,7 +2306,9 @@ function modeBadgeVariant(mode: string): "paper" | "live" | "outline" {
 function buildSelectedPositionDetail(
   position: PortfolioPositionRow,
   risk: PortfolioRiskState | null,
-  brokerage: PortfolioBrokerageStatus | null
+  brokerage: PortfolioBrokerageStatus | null,
+  record: RecordIdentity,
+  linkedRef: string
 ): PortfolioPositionDetail {
   const statusTone = position.markFreshness.reviewRequired ? "warning" : riskTone(risk?.state, position.pnlTone);
   const guardrailSummary = risk?.activeGuardrails.length
@@ -2336,6 +2317,8 @@ function buildSelectedPositionDetail(
 
   return {
     id: position.id,
+    record,
+    linkedRef,
     title: position.symbol,
     subtitle: `${position.side} · ${position.quantity} shares`,
     ariaLabel: `${position.symbol} holding detail`,
