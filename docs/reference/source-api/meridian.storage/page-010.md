@@ -6,6 +6,127 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CryptoProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CryptoProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs#L15).
+
+```csharp
+public sealed record CryptoProjectionRow(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string? Network, string PrimaryIdentifierValue, long Version);
+```
+
+## CurveDefinedPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CurveDefinedPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:94](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L94).
+
+Curves / CurveDefined.
+
+```csharp
+public sealed record CurveDefinedPayload(Guid CurveId, string CurveKey, string Kind, string Currency, string? IndexName, string? Tenor, string DayCount, string Interpolation, string Source, string? Description) : ISecurityGovernancePayload
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public Meridian.Contracts.SecurityMaster.SecurityCurveRatePolicy RatePolicy { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:107](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L107) |  |
+
+## CurveVersionPublishedPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CurveVersionPublishedPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:111](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L111).
+
+Curves / CurveVersionPublished.
+
+```csharp
+public sealed record CurveVersionPublishedPayload(Guid CurveId, Guid CurveVersionId, string CurveKey, string Kind, string Currency, string? IndexName, long Version, DateOnly AsOf, int PointCount, string ContentSha256, string Source, DateTimeOffset? SourcedAt) : ISecurityGovernancePayload;
+```
+
+## CustomAssetProfileFieldProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CustomAssetProfileFieldProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:43](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L43).
+
+```csharp
+public sealed record CustomAssetProfileFieldProjectionRow(Guid SecurityId, string CustomProfileId, int ProfileVersion, string FieldKey, string ValueKind, string? TextValue, decimal? NumericValue, bool? BooleanValue, string RawValueJson, long Version);
+```
+
+## DepositProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.DepositProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L15).
+
+```csharp
+public sealed record DepositProjectionRow(Guid SecurityId, string DisplayName, string Currency, string DepositType, string InstitutionName, DateOnly? Maturity, decimal? InterestRate, string? DayCount, bool IsCallable, string PrimaryIdentifierValue, long Version);
+```
+
+## DirectLoanCovenantRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanCovenantRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:51](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L51).
+
+One projected covenant. Threshold carries the value exactly as contracted (&quot;4.5x&quot;, &quot;2.00x fixed charge&quot;) — a string, because the canonical covenant term is one; coercing it to a number would drop every ratio covenant.
+
+```csharp
+public sealed record DirectLoanCovenantRow(Guid SecurityId, int Ordinal, string CovenantType, string Threshold, string? Notes);
+```
+
+## DirectLoanPrincipalPaymentRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanPrincipalPaymentRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:58](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L58).
+
+```csharp
+public sealed record DirectLoanPrincipalPaymentRow(Guid SecurityId, int Ordinal, DateOnly PaymentDate, decimal Amount);
+```
+
+## DirectLoanProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L32).
+
+```csharp
+public sealed record DirectLoanProjectionRow(Guid SecurityId, string DisplayName, string Currency, string Borrower, DateOnly? MaturityDate, string? ReferenceIndex, decimal? SpreadBps, decimal? CurrentCouponRate, string? ResetFrequency, string? PricingSource, string PrimaryIdentifierValue, long Version);
+```
+
+## EquityProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.EquityProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L13).
+
+```csharp
+public sealed record EquityProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? ShareClass, string? VotingRightsCat, string? Classification, string? ExchangeCode, string? CountryOfRisk, string? IssuerName, string PrimaryIdentifierValue, long Version);
+```
+
+## FileBondMarketDataStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.FileBondMarketDataStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L11).
+
+Atomic host-local observation history, partitioned by authenticated tenant and locked across processes.
+
+```csharp
+public sealed class FileBondMarketDataStore(string dataRoot) : IBondMarketDataStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BondMarketImportResult&gt; AppendAsync(string tenantId, IReadOnlyList&lt;BondMarketObservationDto&gt; observations, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L15) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BondMarketObservationDto&gt;&gt; ReadAsync(string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:60](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L60) |  |
+
 ## FileBondProviderResponseStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.FileBondProviderResponseStore</code>. Kind: `class`.
@@ -828,136 +949,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool RestoresPriorDecision { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:49](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L49) | True only when the decision re-records a decision an independent reviewer already made (a compensating revert or a discard restored the overlay to values that reviewer decided). Restorations are exempt from the self-approval rule because they assert no new review; the governance log records the flag. API callers never set it. |
-
-## OperatorOverrideReviewRules
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideReviewRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:53](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L53).
-
-The independent-review rule for operator-override decisions.
-
-```csharp
-public static class OperatorOverrideReviewRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsSelfApproval(string? stagedBy, string? reviewer) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:59](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L59) | Whether reviewer is the actor who staged the overlay&#x27;s current values. Actor identities compare case-insensitively after trimming. |
-| <code>public static void EnsureIndependentReview(Guid securityId, OperatorOverridesDto overlay, OperatorOverrideDecision decision);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:69](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L69) | Fails when decision approves values the reviewer staged themselves. A rejection (withdrawing one&#x27;s own staged values) and a restoration of a prior independent decision are allowed. |
-
-## OperatorOverridesDecisionPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverridesDecisionPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:61](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L61).
-
-OperatorOverrides / Approved or Rejected: a recorded review decision.
-
-```csharp
-public sealed record OperatorOverridesDecisionPayload(string Decision, string Reviewer, string StagedBy, string? Comment, string? ReasonCode, bool RestoresPriorDecision, IReadOnlyDictionary<string, string> Values) : ISecurityGovernancePayload;
-```
-
-## OperatorOverrideSelfApprovalException
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideSelfApprovalException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:83](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L83).
-
-Raised when a reviewer attempts to approve operator-override values they staged.
-
-```csharp
-public sealed class OperatorOverrideSelfApprovalException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperatorOverrideSelfApprovalException(Guid securityId, string reviewer) : base($&quot;Operator overrides for security &#x27;{securityId:D}&#x27; were staged by &#x27;{reviewer}&#x27;, who cannot also approve them; an independent reviewer must decide.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:85](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L85) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:92](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L92) |  |
-| <code>public string Reviewer { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:94](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L94) |  |
-
-## OperatorOverridesPatchedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverridesPatchedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:51](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L51).
-
-OperatorOverrides / Patched: staged overlay values awaiting review.
-
-```csharp
-public sealed record OperatorOverridesPatchedPayload(IReadOnlyList<string> SetKeys, IReadOnlyList<string> RemovedKeys, IReadOnlyDictionary<string, string> PreviousValues, IReadOnlyDictionary<string, string> Values, string? ReasonCode, string ApprovalStatus, long? ExpectedCanonicalVersion) : ISecurityGovernancePayload;
-```
-
-## OptionContractProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OptionContractProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs#L17).
-
-```csharp
-public sealed record OptionContractProjectionRow(string ContractSymbol, Guid? SecurityId, string OptionChainId, string UnderlyingSymbol, Guid? UnderlyingSecurityId, string PutCall, decimal Strike, DateOnly ExpiryDate, decimal Multiplier, bool IsAdjusted, DateOnly? LastTradingDate, string LifecycleStat, DateTimeOffset LastUpdatedUtc, long Version);
-```
-
-## OtcCollateralBalanceChangedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralBalanceChangedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:167](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L167).
-
-OtcCollateral / CollateralBalanceRecorded or CollateralBalanceAmended.
-
-```csharp
-public sealed record OtcCollateralBalanceChangedPayload(Guid MasterAgreementId, OtcCollateralBalancePayload Balance, OtcCollateralBalancePayload? Previous, IReadOnlyList<string> Changes) : ISecurityGovernancePayload;
-```
-
-## OtcCollateralBalancePayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralBalancePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:147](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L147).
-
-A collateral balance as the OtcCollateral stream records it.
-
-```csharp
-public sealed record OtcCollateralBalancePayload(Guid BalanceId, Guid CollateralAgreementId, string Direction, string Kind, string EligibleCollateralDescription, Guid? SecurityId, string Currency, decimal Quantity, decimal UnitValue, decimal ValuedAmount, decimal HaircutPercent, DateOnly ValuedAsOf, string? Reference, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
-```
-
-## OtcCollateralMovementPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralMovementPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:126](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L126).
-
-A collateral movement inside an exposure-snapshot payload.
-
-```csharp
-public sealed record OtcCollateralMovementPayload(string Kind, string Mover, decimal Amount, string Currency);
-```
-
-## OtcExposureSnapshotRecordedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcExposureSnapshotRecordedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:129](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L129).
-
-OtcCollateral / ExposureSnapshotRecorded.
-
-```csharp
-public sealed record OtcExposureSnapshotRecordedPayload(Guid SnapshotId, Guid NettingSetId, Guid? CollateralAgreementId, DateOnly AsOfDate, int Version, string Status, string NettingBasis, string Provenance, string Currency, decimal NetExposure, decimal GrossPositive, decimal GrossNegative, IReadOnlyList<OtcCollateralMovementPayload> Movements, int BlockerCount, string PayloadSha256) : ISecurityGovernancePayload;
-```
-
-## OtcMarginCallIssuedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallIssuedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:203](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L203).
-
-OtcCollateral / MarginCallIssued.
-
-```csharp
-public sealed record OtcMarginCallIssuedPayload(OtcMarginCallPayload Call, OtcMarginCallSnapshotReferencePayload Snapshot) : ISecurityGovernancePayload;
-```

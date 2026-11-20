@@ -1301,7 +1301,9 @@ public sealed partial class PostgresLedgerJournalStore :
                     functional_currency,
                     transaction_debit,
                     transaction_credit,
-                    fx_rate_to_functional)
+                    fx_rate_to_functional,
+                    memo,
+                    chart_account)
                 values (
                     @entry_id,
                     @journal_entry_id,
@@ -1332,7 +1334,9 @@ public sealed partial class PostgresLedgerJournalStore :
                     @functional_currency,
                     @transaction_debit,
                     @transaction_credit,
-                    @fx_rate_to_functional);
+                    @fx_rate_to_functional,
+                    @memo,
+                    cast(@chart_account as jsonb));
                 """;
             command.Parameters.AddWithValue("entry_id", leg.EntryId);
             command.Parameters.AddWithValue("journal_entry_id", leg.JournalEntryId);
@@ -1364,6 +1368,10 @@ public sealed partial class PostgresLedgerJournalStore :
             command.Parameters.AddWithValue("transaction_debit", (object?)leg.Currency?.TransactionDebit ?? DBNull.Value);
             command.Parameters.AddWithValue("transaction_credit", (object?)leg.Currency?.TransactionCredit ?? DBNull.Value);
             command.Parameters.AddWithValue("fx_rate_to_functional", (object?)leg.Currency?.FxRateToFunctional ?? DBNull.Value);
+            command.Parameters.AddWithValue("memo", (object?)leg.Memo ?? DBNull.Value);
+            command.Parameters.AddWithValue("chart_account", leg.ChartAccount is { } chartAccount
+                ? JsonSerializer.Serialize(chartAccount, JsonOptions)
+                : (object)DBNull.Value);
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -1406,7 +1414,9 @@ public sealed partial class PostgresLedgerJournalStore :
                    jl.functional_currency,
                    jl.transaction_debit,
                    jl.transaction_credit,
-                   jl.fx_rate_to_functional
+                   jl.fx_rate_to_functional,
+                   jl.memo,
+                   jl.chart_account::text
             from {Qualified("journal_entries")} je
             join {Qualified("journal_legs")} jl on jl.journal_entry_id = je.journal_entry_id
             """ + "\n";
@@ -1468,7 +1478,11 @@ public sealed partial class PostgresLedgerJournalStore :
                 reader.GetDecimal(25),
                 reader.GetString(26),
                 reader.IsDBNull(28) ? null : DeserializeLineDimensions(reader.GetString(28)),
-                ReadLegCurrency(reader, 29, 30, 31, 32, 33)));
+                ReadLegCurrency(reader, 29, 30, 31, 32, 33))
+            {
+                Memo = reader.IsDBNull(34) ? null : reader.GetString(34),
+                ChartAccount = reader.IsDBNull(35) ? null : DeserializeChartAccount(reader.GetString(35))
+            });
         }
 
         if (current is not null)

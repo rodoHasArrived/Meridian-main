@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportTemplateGovernanceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportTemplateGovernanceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:98](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L98).
+
+Loads and saves reporting template governance records.
+
+```csharp
+public interface IReportTemplateGovernanceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L100) |  |
+| <code>void Save(IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:101](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L101) |  |
+
 ## IStatementCaseworkCommitFaultInjector
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IStatementCaseworkCommitFaultInjector</code>. Kind: `interface`.
@@ -311,6 +330,20 @@ Declared public members:
 | <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:115](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L115) |  |
 | <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingAuthoritativeSourceCaptureIntent intent, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:121](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L121) |  |
 
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs:10](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs#L10).
+
+```csharp
+public sealed partial class LedgerReportingAuthoritativeSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string FiscalYearCloseReceiptParameter = &quot;fiscalYearCloseReceiptId&quot;;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs:12](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs#L12) |  |
+| <code>public const string BookFxSettlementSetParameter = &quot;bookFxSettlementSetId&quot;;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs:13](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs#L13) |  |
+| <code>public const string ComparisonPeriodParameter = &quot;comparisonPeriodId&quot;;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs:14](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.StatementControls.cs#L14) |  |
+
 Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:11](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L11).
 
 ```csharp
@@ -448,7 +481,7 @@ Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Acco
 public sealed partial class ManualJournalEntryWorkbenchService
 ```
 
-Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetAccounting.cs:6](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetAccounting.cs#L6).
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetAccounting.cs:8](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetAccounting.cs#L8).
 
 ```csharp
 public sealed partial class ManualJournalEntryWorkbenchService
@@ -1004,22 +1037,3 @@ A server-resolved source-to-book binding, never a caller&#x27;s assertion of acc
 ```csharp
 public sealed record PaperSessionAccountingBinding(string SessionId, Guid AggregateId, Guid LedgerBookId, Guid PeriodId, string FinancialAccountId);
 ```
-
-## PaperSessionAccountingSourceReader
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaperSessionAccountingSourceReader</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:304](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L304).
-
-Reads full retained fills from every session sharing the exact account posting scope, not the compacting pending-fill WAL. The anchor binding must come from trusted retained session metadata. Closed sessions remain part of the population. Variation-margin populations need retained realized-P&amp;L/settlement policy and remain explicitly incomplete here.
-
-```csharp
-public sealed class PaperSessionAccountingSourceReader(IPaperSessionStore store, PaperSessionAccountingBinding binding) : ILedgerAccountingSourceReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:308](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L308) |  |
-| <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:310](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L310) |  |

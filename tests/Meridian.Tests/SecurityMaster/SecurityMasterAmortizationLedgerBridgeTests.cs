@@ -161,6 +161,60 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
     }
 
     [Fact]
+    public async Task PostProjectedCashFlowsAsync_WhenCouponIsCorrected_KeepsOriginalAccrual()
+    {
+        var asOf = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var originalTerms = TermsWith(maturity: new DateOnly(2028, 1, 1), dayCount: "30/360") with
+        {
+            IssueDate = DateOnly.FromDateTime(asOf.UtcDateTime),
+            PrincipalFace = 1_000m,
+            CouponKind = SecurityCouponKind.Fixed,
+            CouponRate = 5.00m,
+            CouponRateUnit = SecurityCouponRateUnit.Percent,
+            PaymentFrequency = "Annual",
+        };
+        var couponPeriod = Period(2027, 1, 1, interest: 50.00m);
+        var originalProjection = Projection(originalTerms, couponPeriod) with { AsOf = asOf };
+        var correctedProjection = originalProjection with
+        {
+            TermsUsed = originalTerms with { CouponRate = 4.75m },
+            Schedule = [couponPeriod with { InterestAmount = 47.50m }],
+        };
+        var service = CashFlowServiceWith(originalProjection);
+        var logger = Substitute.For<ILogger<SecurityMasterAmortizationLedgerBridge>>();
+        var bridge = new SecurityMasterAmortizationLedgerBridge(service, logger);
+        var ledger = new DomainLedger();
+        var interestReceivable = LedgerAccounts.AccruedInterestReceivable(Ticker);
+
+        (await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger)).Should().Be(1);
+        var originalJournal = ledger.Journal.Should().ContainSingle().Which;
+        var originalLines = originalJournal.Lines.ToArray();
+        originalJournal.IsBalanced.Should().BeTrue();
+        ledger.GetBalance(interestReceivable).Should().Be(50.00m);
+        ledger.GetBalance(LedgerAccounts.CouponIncome).Should().Be(50.00m);
+
+        service.GetProjectionAsync(SecurityId, StructuredCashFlowScenario.Base, Arg.Any<CancellationToken>())
+            .Returns(correctedProjection);
+        logger.ClearReceivedCalls();
+
+        // Characterize the current silent skip when a correction reaches an already posted date.
+        (await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger)).Should().Be(0);
+        var replayedJournal = ledger.Journal.Should().ContainSingle().Which;
+        replayedJournal.JournalEntryId.Should().Be(originalJournal.JournalEntryId);
+        replayedJournal.Lines.Should().Equal(originalLines);
+        ledger.GetBalance(interestReceivable).Should().Be(50.00m);
+        ledger.GetBalance(LedgerAccounts.CouponIncome).Should().Be(50.00m);
+        logger.ReceivedCalls().Should().NotContain(call => call.GetMethodInfo().Name == "Log"
+            && (LogLevel)call.GetArguments()[0]! == LogLevel.Warning);
+
+        var freshLedger = new DomainLedger();
+        (await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, freshLedger)).Should().Be(1);
+        freshLedger.Journal.Should().ContainSingle().Which.IsBalanced.Should().BeTrue();
+        freshLedger.GetBalance(interestReceivable).Should().Be(47.50m);
+        freshLedger.GetBalance(LedgerAccounts.CouponIncome).Should().Be(47.50m);
+    }
+
+    [Fact]
     public async Task PostProjectedCashFlowsAsync_SmallPremiumOverManyPeriods_NeverBooksReversedSign()
     {
         // A tiny lot (0.01 par-100 units at 102) -> 0.02 total premium spread over 4 quarterly

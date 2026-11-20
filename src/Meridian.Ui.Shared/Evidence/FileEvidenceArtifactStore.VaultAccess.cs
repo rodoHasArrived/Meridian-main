@@ -43,14 +43,6 @@ public sealed partial class FileEvidenceArtifactStore
     private const int MaxDocumentVerificationCandidates = 512;
     private const long MaxDocumentVerificationBytesPerRequest = 256L * 1024 * 1024;
 
-    [Obsolete("Use TryOpenManifestAsync(..., tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
-    public Task<EvidenceManifestFile?> TryOpenManifestAsync(
-        string subjectKind,
-        string subjectId,
-        string fileName,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
-
     public async Task<EvidenceManifestFile?> TryOpenManifestAsync(
         string subjectKind,
         string subjectId,
@@ -79,12 +71,6 @@ public sealed partial class FileEvidenceArtifactStore
             : null;
     }
 
-    [Obsolete("Use TryOpenManifestByVaultIdAsync(vaultId, tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
-    public Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
-        string vaultId,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
-
     public async Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
         string vaultId,
         string tenantId,
@@ -110,12 +96,6 @@ public sealed partial class FileEvidenceArtifactStore
 
         return OpenManifestFile(manifestPath);
     }
-
-    [Obsolete("Use TryGetVaultIdentityAsync(vaultId, tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
-    public Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
-        string vaultId,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
 
     public async Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
         string vaultId,
@@ -784,14 +764,6 @@ public sealed partial class FileEvidenceArtifactStore
         }
     }
 
-    [Obsolete("Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.")]
-    public Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
-        string vaultId,
-        string documentId,
-        EvidenceVaultDocumentReviewRequestDto request,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
-
     public async Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
         string vaultId,
         string documentId,
@@ -932,10 +904,6 @@ public sealed partial class FileEvidenceArtifactStore
 
         return (tenantId!.Trim(), scope!.Trim());
     }
-
-    private static NotSupportedException UnscopedAccessNotSupported() =>
-        new("Evidence Vault access requires an authenticated tenant and company scope. " +
-            "Migrate to the scoped overload.");
 
     private static bool MatchesIdentityScope(
         EvidenceVaultIdentityDto identity,

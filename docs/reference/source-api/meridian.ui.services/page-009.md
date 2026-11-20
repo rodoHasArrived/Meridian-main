@@ -458,7 +458,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.PreflightCheckResult</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:688](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L688).
+Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:686](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L686).
 
 Result of preflight checks.
 
@@ -470,12 +470,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CheckResult NetworkCheck { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:690](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L690) |  |
-| <code>public CheckResult DiskSpaceCheck { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:691](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L691) |  |
-| <code>public CheckResult StoragePermissionCheck { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:692](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L692) |  |
-| <code>public CheckResult CollectorServiceCheck { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:693](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L693) |  |
-| <code>public bool AllPassed =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:695](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L695) |  |
-| <code>public IEnumerable&lt;CheckResult&gt; GetAllChecks();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:699](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L699) |  |
+| <code>public CheckResult NetworkCheck { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:688](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L688) |  |
+| <code>public CheckResult DiskSpaceCheck { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:689](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L689) |  |
+| <code>public CheckResult StoragePermissionCheck { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:690](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L690) |  |
+| <code>public CheckResult CollectorServiceCheck { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:691](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L691) |  |
+| <code>public bool AllPassed =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:693](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L693) |  |
+| <code>public IEnumerable&lt;CheckResult&gt; GetAllChecks();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:697](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L697) |  |
 
 ## PreflightResult
 

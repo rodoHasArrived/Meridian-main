@@ -23,15 +23,6 @@ public interface IEvidenceArtifactStore
         EvidenceVaultIntakeRequestDto request,
         CancellationToken ct = default);
 
-    /// <summary>Legacy unscoped manifest lookup retained as a fail-closed compatibility shim.</summary>
-    [Obsolete("Use TryOpenManifestAsync(..., tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
-    Task<EvidenceManifestFile?> TryOpenManifestAsync(
-        string subjectKind,
-        string subjectId,
-        string fileName,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
-
     Task<EvidenceManifestFile?> TryOpenManifestAsync(
         string subjectKind,
         string subjectId,
@@ -41,26 +32,12 @@ public interface IEvidenceArtifactStore
         CancellationToken ct = default) =>
         throw ScopedImplementationRequired();
 
-    /// <summary>Legacy unscoped vault lookup retained as a fail-closed compatibility shim.</summary>
-    [Obsolete("Use TryOpenManifestByVaultIdAsync(vaultId, tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
-    Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
-        string vaultId,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
-
     Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
         string vaultId,
         string tenantId,
         string scope,
         CancellationToken ct = default) =>
         throw ScopedImplementationRequired();
-
-    /// <summary>Legacy unscoped identity lookup retained as a fail-closed compatibility shim.</summary>
-    [Obsolete("Use TryGetVaultIdentityAsync(vaultId, tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
-    Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
-        string vaultId,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
 
     Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
         string vaultId,
@@ -93,15 +70,6 @@ public interface IEvidenceArtifactStore
         EvidenceVaultDocumentQueryDto query,
         CancellationToken ct = default);
 
-    /// <summary>Legacy unscoped review mutation retained as a fail-closed compatibility shim.</summary>
-    [Obsolete("Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.")]
-    Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
-        string vaultId,
-        string documentId,
-        EvidenceVaultDocumentReviewRequestDto request,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
-
     Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
         string vaultId,
         string documentId,
@@ -110,10 +78,6 @@ public interface IEvidenceArtifactStore
         EvidenceVaultDocumentReviewRequestDto request,
         CancellationToken ct = default) =>
         throw ScopedImplementationRequired();
-
-    private static NotSupportedException UnscopedAccessNotSupported() =>
-        new("Evidence Vault access requires an authenticated tenant and company scope. " +
-            "Migrate to the scoped overload.");
 
     private static NotSupportedException ScopedImplementationRequired() =>
         new("This evidence store implementation must implement the tenant/company-scoped contract.");

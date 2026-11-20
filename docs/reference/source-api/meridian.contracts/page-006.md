@@ -260,7 +260,7 @@ public sealed record ProviderBindingDto(string BindingId, string Capability, str
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderCapabilityOutput</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:439](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L439).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:443](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L443).
 
 Standardized capability output for UI consumption.
 
@@ -272,16 +272,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;supportsStreaming&quot;)] public bool SupportsStreaming { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:442](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L442) |  |
-| <code>[JsonPropertyName(&quot;supportsMarketDepth&quot;)] public bool SupportsMarketDepth { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:445](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L445) |  |
-| <code>[JsonPropertyName(&quot;maxDepthLevels&quot;)] public int? MaxDepthLevels { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:448](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L448) |  |
-| <code>[JsonPropertyName(&quot;supportsAdjustedPrices&quot;)] public bool SupportsAdjustedPrices { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:451](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L451) |  |
-| <code>[JsonPropertyName(&quot;supportsDividends&quot;)] public bool SupportsDividends { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:454](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L454) |  |
-| <code>[JsonPropertyName(&quot;supportsSplits&quot;)] public bool SupportsSplits { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:457](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L457) |  |
-| <code>[JsonPropertyName(&quot;supportsIntraday&quot;)] public bool SupportsIntraday { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:460](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L460) |  |
-| <code>[JsonPropertyName(&quot;supportsTrades&quot;)] public bool SupportsTrades { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:463](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L463) |  |
-| <code>[JsonPropertyName(&quot;supportsQuotes&quot;)] public bool SupportsQuotes { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:466](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L466) |  |
-| <code>[JsonPropertyName(&quot;supportsAuctions&quot;)] public bool SupportsAuctions { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:469](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L469) |  |
+| <code>[JsonPropertyName(&quot;supportsStreaming&quot;)] public bool SupportsStreaming { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:446](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L446) |  |
+| <code>[JsonPropertyName(&quot;supportsMarketDepth&quot;)] public bool SupportsMarketDepth { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:449](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L449) |  |
+| <code>[JsonPropertyName(&quot;maxDepthLevels&quot;)] public int? MaxDepthLevels { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:452](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L452) |  |
+| <code>[JsonPropertyName(&quot;supportsAdjustedPrices&quot;)] public bool SupportsAdjustedPrices { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:455](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L455) |  |
+| <code>[JsonPropertyName(&quot;supportsDividends&quot;)] public bool SupportsDividends { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:458](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L458) |  |
+| <code>[JsonPropertyName(&quot;supportsSplits&quot;)] public bool SupportsSplits { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:461](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L461) |  |
+| <code>[JsonPropertyName(&quot;supportsIntraday&quot;)] public bool SupportsIntraday { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:464](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L464) |  |
+| <code>[JsonPropertyName(&quot;supportsTrades&quot;)] public bool SupportsTrades { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:467](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L467) |  |
+| <code>[JsonPropertyName(&quot;supportsQuotes&quot;)] public bool SupportsQuotes { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:470](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L470) |  |
+| <code>[JsonPropertyName(&quot;supportsAuctions&quot;)] public bool SupportsAuctions { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:473](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L473) |  |
 
 ## ProviderCapabilitySurfaceDto
 
@@ -386,7 +386,7 @@ public sealed record ProviderCertificationDto(string ConnectionId, string Status
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderComparisonResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:93](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L93).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:97](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L97).
 
 Response containing provider comparison data.
 
@@ -526,7 +526,7 @@ public sealed record ProviderFixedIncomeTaskCapabilityDto(string Task, string Ad
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderHealthResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:175](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L175).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:179](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L179).
 
 Response containing provider health information.
 
@@ -574,7 +574,7 @@ public sealed record ProviderInstrumentCapabilityRowDto(string ProviderId, IRead
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderKernelProvenanceResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:187](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L187).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:191](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L191).
 
 ```csharp
 public record ProviderKernelProvenanceResponse(string BaselineKernelVersion, string CandidateKernelVersion, string DatasetId, DateTimeOffset CalibratedAt, string CalibratedBy);
@@ -631,7 +631,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderMetricsResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:135](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L135).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:139](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L139).
 
 Response containing detailed provider metrics.
 

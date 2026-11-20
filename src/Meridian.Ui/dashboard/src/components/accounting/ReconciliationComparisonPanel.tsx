@@ -183,7 +183,11 @@ export function ReconciliationComparisonPanel({ view }: { view: ReconciliationCo
           <span>Ledger balance</span>
           <strong>{view.ledgerBalanceLabel}</strong>
         </div>
-        <div className={cn("accounting-reference-balance-badge", view.varianceTone === "success" ? "is-balanced" : "is-out")}>
+        <div className={cn(
+          "accounting-reference-balance-badge",
+          view.varianceTone === "success" && "is-balanced",
+          view.varianceTone === "warning" && "is-out"
+        )}>
           <span aria-hidden="true" />
           {view.varianceLabel}
         </div>

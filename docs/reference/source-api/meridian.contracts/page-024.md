@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondScreeningJsonContext
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondScreeningJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L27).
+
+```csharp
+public partial class BondScreeningJsonContext : JsonSerializerContext;
+```
+
+## BondScreeningPageDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondScreeningPageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L14).
+
+```csharp
+public sealed record BondScreeningPageDto(IReadOnlyList<BondScreeningRow> Rows, string? NextCursor, IReadOnlyList<BondScreeningGap> Gaps, int SourcePagesRead, bool ReferenceKnowledgeTimeVerified, IReadOnlyList<string> Limitations);
+```
+
+## BondScreeningQuery
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondScreeningQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:6](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L6).
+
+Issuer is a case-insensitive substring; currency, coupon and agency rating labels are exact filters.
+
+```csharp
+public sealed record BondScreeningQuery(DateOnly AsOf, DateTimeOffset KnownAtUtc, DateOnly MaturityFrom, DateOnly MaturityTo, string? Issuer = null, string? Currency = null, string? CouponKind = null, DateOnly? CallProtectedThrough = null, string? RatingAgency = null, IReadOnlyList<string>? AcceptedRatings = null, int PageSize = 50, string? Cursor = null);
+```
+
 ## BondScreeningRow
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondScreeningRow</code>. Kind: `record`.
@@ -765,53 +797,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;BondPortfolioRiskResult&gt; CalculateAsync(AccountCashForecastScopeDto scope, BondPortfolioRiskRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs:43](../../../../src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs#L43) |  |
-
-## IBondProviderResponseStore
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.IBondProviderResponseStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:26](../../../../src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs#L26).
-
-```csharp
-public interface IBondProviderResponseStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BondProviderResponseDto&gt; RetainAsync(string tenantId, string companyId, string providerId, string rawResponseJson, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:28](../../../../src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs#L28) |  |
-| <code>Task&lt;BondProviderResponseDto?&gt; GetAsync(string tenantId, string companyId, string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:30](../../../../src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs#L30) |  |
-
-## IBondScreeningService
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.IBondScreeningService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:18](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L18).
-
-```csharp
-public interface IBondScreeningService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BondScreeningPageDto&gt; ScreenAsync(string tenantId, BondScreeningQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:20](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L20) |  |
-
-## IBondSettlementConsiderationService
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:84](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L84).
-
-```csharp
-public interface IBondSettlementConsiderationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BondSettlementPreparationResult&gt; PrepareAsync(BondSettlementConsiderationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:86](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L86) |  |
-| <code>Task&lt;IReadOnlyList&lt;BondAnalyticsBlocker&gt;&gt; VerifyAsync(BondSettlementConsiderationDto settlement, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:90](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L90) | Recomputes a retained receipt against its actual pinned/versioned analytics inputs. |

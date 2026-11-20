@@ -789,9 +789,13 @@ writer announces changes through `lib/operator-preference-events.ts`; the theme 
 re-read their store when host values are applied. Host values the browser cannot use (an unknown
 appearance or density, a zone missing from its Intl data, refused shortcut combos) are ignored. Once
 the host holds a record, missing shortcut overrides mean "none", so a reset in one browser reaches
-the others. A failed read (no session, an older host, offline) leaves preferences browser-only for
-the visit and saves nothing; a failed save keeps the local value and retries with the next change.
-Last write wins across browsers. Fixture sessions stay browser-only. The values are display-only.
+the others. A failed read (no session, an older host, offline) leaves preferences browser-only and
+saves nothing; a failed save keeps the local value and retries with the next change. The sync
+publishes its state (`local`, `loading`, `saving`, `synced`, `failed`) through
+`lib/operator-preference-events.ts`, and the Appearance and Notifications cards render it with
+`screens/settings-screen.preference-sync-status.tsx`: "Saved to your profile" with the save time,
+"Saving…", or "Only in this browser" with **Retry now**, which re-reads the host after a failed
+read or saves the current set at once after a failed save. Last write wins across browsers. Fixture sessions stay browser-only. The values are display-only.
 Settings > Preferences > Notifications (`screens/settings-screen.notification-preferences.tsx`, store
 `lib/notification-preferences.ts`) holds the pop-up switch, five notification types (connection,
 errors, backfill, data gaps, storage), quiet hours as 24-hour `HH:mm` times in the display time zone
@@ -1039,6 +1043,15 @@ or indicators. Failed and partial queries show an explicit incomplete state with
 paths and Retry; incomplete comparison series are withheld and named in an alert. The shared
 API retains recovered bars and `fileFailures` for investigation without presenting them as a
 complete series. Focused coverage lives in `historical-chart.test.tsx`.
+
+Decision chart inspectors share a selection with the plot. In Strategy, Live Quotes, historical
+prices, and Report Writer, keyboard focus and pointer inspection expose the same plotted values,
+units, as-of, calculation basis, and source links. Historical studies link the stored input bars.
+Live prints link to the selected tape record and depth points to the captured order-book levels. Report
+Writer keeps rendered grid-row order, including repeated category labels. Portfolio run charts
+link their retained equity and return series, and cash projections link to the contributing flows
+for the selected bucket. PlotTool's scatter and residual distribution are illustrative and disclose
+the lack of retained observations.
 
 Loan book accepts numeric and named host enums and preserves unknown values without inventing
 USD. Server `currencyTotals` retain their denomination and an explicit no-FX notice; scalar
@@ -3497,6 +3510,14 @@ Browser reconciliation route helpers include the shared Accounting casework fami
 
 Browser extensibility route helpers expose the shared core extensibility catalog plus tenant-template activation-readiness, activation, and activation-history endpoints; keep `src/types.ts` aligned with `Meridian.Contracts.Extensibility` instead of adding UI-local workflow or rule shapes.
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+The counterpart-proposal panel picks the existing counterpart journal from the posted journals the server's link
+check would accept (`entityOperationEndpoints.counterpartCandidates`); changing the counterpart book clears the
+choice, and linking still re-checks it. The balance-confirmation screen includes
+`accounting-screen.entity-confirmation-close-policy.tsx`: propose which confirmation findings block close, then a
+different reviewer approves; reject or disable needs a reason. Without an active policy confirmation stays advisory.
+
 ## Accounting close browser surface
 
 The External GL route also hosts bounded accounting onboarding for one entity, explicit account
@@ -3557,6 +3578,13 @@ existing view-model exports remain compatible. Supporting account
 oversight, calibration/history, readiness, source comparison and run evidence remain available in
 labelled disclosures. Statement import IDs and strategy reconciliation run IDs remain distinct;
 the UI does not infer a mapping between them.
+
+The cash comparison shows “Can't assess” when cash-flow coverage or a required amount is unavailable.
+Measured zero variance can still show “Balanced.”
+
+Statement import links open Match using the source import and break IDs retained on the queue row.
+Match checks the current queue when the shell snapshot lacks the requested break. Its casework and
+evidence links use the governed queue row's ID. An unavailable target gets an explicit notice.
 
 `reconciliation-view-state.ts` stores `reconciliationRun`, `reconciliationBreak`,
 `reconciliationSearch`, `reconciliationStatus` and `reconciliationSort` in the URL, preserving

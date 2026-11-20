@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScreenLayout } from "@/components/ui/screen-layout";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { SeverityBadge } from "@/components/operations";
-import { QuantPlotChart } from "@/components/meridian/quant-plot";
+import { QuantPlotChart, QuantPlotSource } from "@/components/meridian/quant-plot";
 import {
   DenseDataTable,
   EntitySummary,
@@ -309,11 +309,15 @@ function RunResultPanel({ run, panel, consoleLines, tradeLedger, onTradeSelect }
             <CardDescription>{panel.plotsDescription}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3 lg:grid-cols-2">
-              {result.plots.map((plot, idx) => (
-                <QuantPlotChart key={`${plot.title}-${idx}`} plot={plot} />
-              ))}
-            </div>
+            <QuantPlotSource source={run.submittedSource}>
+              {(proof) => (
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {result.plots.map((plot, idx) => (
+                    <QuantPlotChart key={`${plot.title}-${idx}`} plot={plot} proof={proof} />
+                  ))}
+                </div>
+              )}
+            </QuantPlotSource>
           </CardContent>
         </Card>
       ) : null}

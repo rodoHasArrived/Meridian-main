@@ -143,6 +143,7 @@ Declared public members:
 | <code>public bool AllowScaffoldMarketFills { get; set; }</code> | [src/Meridian.Execution/Adapters/PaperTradingGatewayOptions.cs:18](../../../../src/Meridian.Execution/Adapters/PaperTradingGatewayOptions.cs#L18) | Whether market-style orders may fill at ScaffoldMarketFillPrice when no live feed price is available. Off by default: a fabricated fill price produces plausible-looking but meaningless paper P&amp;L, so the gateways fail closed and reject priceless market orders unless this is explicitly enabled. |
 | <code>public decimal ScaffoldMarketFillPrice { get; set; } = 1m;</code> | [src/Meridian.Execution/Adapters/PaperTradingGatewayOptions.cs:26](../../../../src/Meridian.Execution/Adapters/PaperTradingGatewayOptions.cs#L26) | Notional fill price used for market-style orders when no live feed price is available and AllowScaffoldMarketFills is enabled. Every fill priced from this value produces meaningless paper P&amp;L, and the gateway logs a warning the first time it is used. |
 | <code>public int? MaxObservationAgeSeconds { get; set; }</code> | [src/Meridian.Execution/Adapters/PaperTradingGatewayOptions.cs:36](../../../../src/Meridian.Execution/Adapters/PaperTradingGatewayOptions.cs#L36) | Maximum age, in seconds, of a quote or trade print that may still price, trigger, or fill a paper order. Unset (the default) applies no freshness window: orders match against the feed cache as it is, however old. When set, a market order whose only tick data is older than this is rejected, resting orders do not fill or trigger off it, and scaffold pricing does not stand in for it. Bar-only symbols are unaffected. Must be positive when set. See PaperMatching.PaperObservationFreshnessPolicy. |
+| <code>public bool RequireBondAccruedInterest { get; set; }</code> | [src/Meridian.Execution/Adapters/PaperTradingGatewayOptions.cs:44](../../../../src/Meridian.Execution/Adapters/PaperTradingGatewayOptions.cs#L44) | Reject face-value bond fills unless shared analytics supplies reconciled clean/dirty prices and purchased accrued interest for the exact security and settlement date. Opt in for supported bond demonstrations; unset preserves legacy clean-only fallback. This does not enable canonical bond accounting or change short-sale entitlement rules. |
 
 ## AllocationResult
 
@@ -750,15 +751,16 @@ Declared public members:
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SettlementCurrency { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:67](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L67) |  |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMode { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:70](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L70) |  |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;TradeExecutionFee&gt;? Fees { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:73](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L73) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingEvidenceVersion { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:92](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L92) | Accounting-evidence contract used by the producer. Zero identifies historical events; current OMS fills use version one even when their accounting context is unavailable. An absent version-one payload must block posting rather than imply a position direction. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public TradeFillAccountingEvidence? AccountingEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:100](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L100) | Exact opening and closing economics captured while the portfolio applies this fill. A null value does not authorize reconstructing basis or short direction from realized P&amp;L. Historical event JSON and the positional constructor remain unchanged when absent. |
-| <code>public decimal GrossValue =&gt; …;</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:110](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L110) | Gross trade value, always positive. For a face-value fill the clean price is a percentage of par, so the price is scaled to a fraction of par before multiplying — the same convention pre-trade risk uses to measure the order — keeping the booked cash movement equal to the notional the risk gate approved. Otherwise the quoted price is scaled by ContractMultiplier, matching the paper portfolio&#x27;s cash and realized P&amp;L. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? BrokerActivityId { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:77](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L77) | Exact broker statement activity identity when the source supplied one. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingEvidenceVersion { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:98](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L98) | Accounting-evidence contract used by the producer. Zero identifies historical events; current OMS fills use version one even when their accounting context is unavailable. An absent version-one payload must block posting rather than imply a position direction. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public TradeFillAccountingEvidence? AccountingEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:106](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L106) | Exact opening and closing economics captured while the portfolio applies this fill. A null value does not authorize reconstructing basis or short direction from realized P&amp;L. Historical event JSON and the positional constructor remain unchanged when absent. |
+| <code>public decimal GrossValue =&gt; …;</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:116](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L116) | Gross trade value, always positive. For a face-value fill the clean price is a percentage of par, so the price is scaled to a fraction of par before multiplying — the same convention pre-trade risk uses to measure the order — keeping the booked cash movement equal to the notional the risk gate approved. Otherwise the quoted price is scaled by ContractMultiplier, matching the paper portfolio&#x27;s cash and realized P&amp;L. |
 
 ## TradeExecutionFee
 
 Qualified name: <code>Meridian.Execution.Events.TradeExecutionFee</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Events/TradeExecutedEvent.cs:117](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L117).
+Source: [src/Meridian.Execution/Events/TradeExecutedEvent.cs:123](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L123).
 
 A separately identified source fee; commission is not repeated here.
 
@@ -787,6 +789,24 @@ Declared public members:
 | <code>public string ScopeDirectory { get; }</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:96](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L96) |  |
 | <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:105](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L105) |  |
 | <code>public string LockPath =&gt; …;</code> | [src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs:111](../../../../src/Meridian.Execution/Events/TradeFillHandoffFailureStore.cs#L111) | Persistent lock-file path used to coordinate independent store instances and processes. The file remains on disk; ownership is the lifetime of an exclusive file handle. |
+
+## TradeFillLedgerBackendBinding
+
+Qualified name: <code>Meridian.Execution.Events.TradeFillLedgerBackendBinding</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Events/TradeFillLedgerBackendBinding.cs:18](../../../../src/Meridian.Execution/Events/TradeFillLedgerBackendBinding.cs#L18).
+
+Binds one exact trade-fill posting scope to the authoritative journal backend it posts to.
+
+```csharp
+public static class TradeFillLedgerBackendBinding
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Ensure(TradeFillPostingStoreOptions options, TradeFillLedgerStoreKind store);</code> | [src/Meridian.Execution/Events/TradeFillLedgerBackendBinding.cs:30](../../../../src/Meridian.Execution/Events/TradeFillLedgerBackendBinding.cs#L30) | Records store for the scope on first use, or verifies that the scope was bound to the same backend. Must run before the scope&#x27;s handoff store is opened, so existing handoff data reliably means the scope predates the binding. |
 
 ## TradeFillLedgerPostingConfirmation
 
@@ -1028,21 +1048,3 @@ Declared public members:
 | <code>Task&lt;OrderAcknowledgement&gt; SubmitAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Interfaces/IOrderGateway.cs:36](../../../../src/Meridian.Execution/Interfaces/IOrderGateway.cs#L36) | Submits an order to the gateway. Returns an acknowledgement immediately; fills arrive asynchronously via StreamOrderUpdatesAsync. |
 | <code>Task&lt;bool&gt; CancelAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Interfaces/IOrderGateway.cs:42](../../../../src/Meridian.Execution/Interfaces/IOrderGateway.cs#L42) | Requests cancellation of a working order. Returns true if the cancellation was accepted, false if the order was already terminal. |
 | <code>IAsyncEnumerable&lt;OrderStatusUpdate&gt; StreamOrderUpdatesAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Interfaces/IOrderGateway.cs:48](../../../../src/Meridian.Execution/Interfaces/IOrderGateway.cs#L48) | Streams all order lifecycle events (fills, partial fills, cancellations, rejections) for this session. Callers should consume this stream on a dedicated background task. |
-
-## IPaperFillEvaluationTrigger
-
-Qualified name: <code>Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger</code>. Kind: `interface`.
-
-Source: [src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs:9](../../../../src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs#L9).
-
-Implemented by paper gateways that hold resting limit/stop orders. The host&#x27;s market event tap pokes this after recording new market data for a symbol so resting orders are re-evaluated against the fresh observation without polling. Implementations must be non-blocking: evaluation work is scheduled, never run inline on the market data path.
-
-```csharp
-public interface IPaperFillEvaluationTrigger
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs:12](../../../../src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs#L12) | Schedules re-evaluation of resting paper orders for symbol. |

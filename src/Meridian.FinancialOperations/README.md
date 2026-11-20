@@ -18,6 +18,14 @@ exact financial meaning. `StatementImportServiceTests.CsvMalformedTail_BlocksWho
 proves a valid prefix cannot make a malformed tail complete and that a corrected retry retains exact
 source bytes and remains idempotent after service restart.
 
+Statement transaction reconciliation pairs retained external IDs first within the authorized account
+and statement window. Economic, date, and identity conflicts preserve both evidence references
+for review. Transactions with an ID missing on either side can use a unique configured fallback
+pair or settlement group. Competing candidates become one ambiguity break with the associated
+source evidence. Recovered Alpaca FILL activity carries its provider identity to the journal.
+Historical Meridian-generated fill IDs have no provider identity and remain eligible for fallback.
+Casework keeps its existing operator review and approved adjustment path.
+
 The intercompany obligation monitor enriches the existing posted balance schedule with canonical
 legal expiry, coverage, lifecycle and guarantee observations. Its default expiry horizon is 30
 calendar days; retained source versions distinguish current, stale and unavailable evidence. The
@@ -1394,6 +1402,16 @@ the same isolated configuration workspace as the Rules Studio store.
 ### Migration and archive notes
 
 `OperationsContinuityWorkflow`, `OperationsContinuityWorkflowService`, workflow repository/store contracts and implementations, status derivation, audit hashing, `OperationsApprovalPolicyMatrixService`, `IOperationsApprovalPolicyMatrixService`, `OperationsCloseCalendarService`, and `IOperationsCloseCalendarService` moved from `src/Meridian.Application/OperationsContinuity` into this module. Statement reconciliation models, contracts, services, repositories, orchestration, mapping/tolerance profiles, matching engines, break classification, decision journals, and statement-run workflow services moved from `src/Meridian.Application/Reconciliation` into this module. `ReconciliationEngineService` moved from `src/Meridian.Application/Services` into this module and now consumes the contracts-owned Security Master query surface. Accounting close services moved out of the legacy Application accounting-close folder into `AccountingClose/`. Payment approval and bank-transaction services moved out of the legacy Application banking folder into `Banking/`. Accounting policy/projection services and ledger text-journal parser/reporting services moved out of the legacy Application ledger folder into `Ledger/`. `AccountingSystemIntegrationService` and `PrivateCapitalCloseCockpitService` moved from `src/Meridian.Ui.Shared/Services` into this module. Application composition, command handlers, and UI services consume these module services but do not own their workflow state, policy implementation, reconciliation state, matching rules, statement-run persistence, portfolio-vs-ledger reconciliation engine behavior, external-GL reconciliation, bank-side transaction state, accounting policy/projection behavior, ledger text-journal semantics, accounting-close projections, private-capital close proof, or posting-disable posture.
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`IntercompanyConfirmationClosePolicyRules` and `IntercompanyConfirmationClosePolicyService` hold the maker-checker
+lifecycle of a book's confirmation close policy (ADR-032): propose with a reason, approval by someone else,
+reject or disable with a reason, at most one proposed or active policy per book. `IntercompanyConfirmationCloseGate`
+evaluates an active policy at the selected period end through `IIntercompanyBalanceConfirmationSummarySource`
+(implemented by `IntercompanyBalanceConfirmationService`). `FinancialOperationsCommandCenterReadService` adds the
+`intercompany-confirmation` contributor only for a book with an active policy: `Blocked` for a listed finding,
+`Ready` otherwise, `Unavailable` when the period or confirmation status cannot be read. The advisory list is unchanged.
 
 ## Change rules
 

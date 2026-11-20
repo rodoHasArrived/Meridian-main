@@ -6,10 +6,20 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Ui.Shared
+
+Receipt-backed Long bond acquisitions built through the asset-accounting candidate endpoint now
+enter the immutable journal review queue. Intake requires face-value per-100 terms, an explicit
+amortization method, matching acquisition/functional currency and reconciled settlement; the
+spine verifies retained analytics and authoritative book/position scope before queueing. Missing
+review services refuse before candidate drafting. Retries reuse the same source draft; submitting,
+independent approval and typed atomic posting remain separate actions. Generic manual saves and
+posting cannot replace that authority. This does not convert paper fills into canonical lots or
+enable the unsupported canonical paper-bond path. See the
+[synthetic LOT evidence packet](../../docs/testing/evidence/next-work-20261029/bond-lot-golden-case.md).
 
 Provider quota responses preserve the runtime's explicit credits/request unit and daily usage,
 cap and reset-policy evidence. They do not infer fundamentals entitlement from available credits.
@@ -392,12 +402,18 @@ aging and casework workflow. The new comparison does not imply historical lot re
 
 `Ledger:DailyReconciliation` configures the comparison-only background clock: `UtcHour` (default 23),
 `RetryMinutes` (default 15), and `Targets` containing `TenantId`, `CompanyId`, `FundProfileId`,
-`AccountId`, `AmountTolerance`, and `ProviderStaleAfterMinutes`. Empty targets leave it idle. Each
-due target rechecks retained fund/account ownership, enters explicit tenant authority, and executes
-the shared reconciliation service with a deterministic account/date operation ID. Restarts recover
-the same retained operation; failed attempts retry at the bounded interval. The worker never signs
-off or resolves a break, approves a journal, or fetches provider credentials. Broker sync must keep
-its retained provider snapshot current; missing/stale evidence stays visible in comparison results.
+`AccountId`, `AmountTolerance`, and `ProviderStaleAfterMinutes`. Each due provider target rechecks
+retained fund/account ownership, enters explicit tenant authority, and executes shared reconciliation
+with a deterministic account/date operation ID. Restarts recover the same retained operation.
+Failures retry at the configured interval. Provider freshness comes from retained broker sync.
+
+The same worker also compares durable simulated paper sessions when there are zero provider targets.
+It uses the regular exchange close, including early closes, and resumes from the last retained
+session/account cutoff. Each receipt preserves cash and retained lot coverage breaks for review.
+`GET /api/execution/sessions/{sessionId}/reconciliation` reads the most recent retained result
+for an authorized fund account or an administrator's local simulation. Set the optional
+`cutoff` query parameter to an ISO 8601 instant for an explicit as-of comparison. Approval and
+adjustment authority stays with governed casework.
 
 ## Full journal reads and portable exports
 
@@ -566,6 +582,18 @@ and `documentId`; source bytes supply the positive settled Credit observation. S
 SHA-256, accepted review, dates and exact `NUMERIC(19,4)` representation are checked before retention.
 Exact source retries recover the retained observation; changed inputs or collisions refuse. This
 operation neither posts cash nor initiates a payment and establishes no live-provider compatibility.
+
+`POST /api/ledger/private-capital/unit-register/preview?ledgerBookId=...` reconciles one
+whole-book share class to a hard-closed period. Select the exact period, canonical Evidence
+Vault link and accepted `AdminPackage` or `Statement` document ID. The reviewed JSON
+conforms to [PrivateCapitalUnitRegisterSourceDto](../Meridian.Contracts/Ledger/PrivateCapitalUnitRegisterDtos.cs).
+The `single-class-no-fees-v1` policy projects inception-to-cutoff units from individually
+matched subscription and redemption journals. It verifies posted cash, investor capital,
+dealing price and units against the reviewed register, and ties class NAV to closing net
+assets. The preview includes explicit breaks, both source hashes and the valuation rounding
+residual. Posted management or performance fees block a tied result until the applicable fee
+state is supported. It grants read-only review and finance staff continue to post and approve
+through the governed journal workbench.
 
 Capital-call notices use the existing governed Reporting lifecycle and an explicit deployment-owned
 investor-to-recipient binding under `PrivateCapital:NoticeRecipients`. Investor IDs are not assumed
@@ -1002,6 +1030,19 @@ still start while comparison routes remain unavailable; no in-memory production 
 currency/FX values, dimensional account ID, journal recording time, activity, and accounting-policy
 references with the exact journal/line IDs. Explicit functional currency inconsistent with the
 certified book blocks capture; missing transaction FX metadata is never invented.
+
+The Financial Statement Control Pack template (`financial-statement-control-pack`) binds
+one book, basis, scope and cutoff to a retained close version for Final runs. It publishes
+an XLSX statement table and a matching Parquet companion, with a signed mapping manifest
+for the trial balance, income statement, balance sheet, cash bridge and partners' capital.
+Supply `fiscalYearCloseReceiptId` in template parameters for an annual pack with its
+separate closing transfers and next-year opening amounts. Supply `bookFxSettlementSetId`
+when a report depends on a retained cross-book settlement set. The exact approved set must
+be complete and its journals must be in the selected book's retained population at cutoff.
+For a final period pack, supply `comparisonPeriodId` to include one earlier hard-close period
+from the same book. Both closes are retained with the report. The earlier population must
+match the current period's retained opening history. Comparisons with divergent restated
+history or an annual fiscal close require separate review.
 
 `RecurringJournalRunner` joins `AutomatedJournalScheduledWorker` and the existing journal-intake
 path to create one retained human-review draft per recurring occurrence. It holds the durable
@@ -2322,7 +2363,10 @@ fallback stores under the resolved workstation data root. `FileAccountingConfigu
 persists chart accounts, templates, posting rules, saved rule test cases, and accounting action audit events at
 `workstation/accounting/accounting-configuration.json`, while `FileManualJournalEntryDraftStore`
 persists draft and submitted manual journal records at
-`workstation/accounting/manual-journal-drafts.json`. `FileAccountingMigrationRunArtifactStore`
+`workstation/accounting/manual-journal-drafts.json`. When `MERIDIAN_LEDGER_CONNECTION_STRING` is
+configured, `PostgresManualJournalEntryDraftStore` (ledger migration 077) holds those drafts instead,
+paired with `PostgresManualJournalMutationRecoveryStore` so journal commands are serialized across
+hosts. `FileAccountingMigrationRunArtifactStore`
 persists retained accounting migration run evidence at
 `workstation/accounting/migration-run-artifacts.json`, `FileAccountingMigrationRunWorkerPlanStore`
 persists retained migration worker plans at
@@ -2832,6 +2876,8 @@ requires operator acceptance text as a requirement, while the service requires a
 `IEvidenceArtifactStore` before queueing the native run. The service records the exact
 tenant/company-scoped pre-execution entry, and shared store/read/review/Trading services preserve
 that scope and lineage.
+`ICoveredCallBacktestService` and `IEvidenceArtifactStore` expose only scoped overloads; the
+obsolete fail-closed unscoped slots were removed on 2026-11-20 (see the contract compatibility matrix).
 
 The Strategy promotion surface uses `/api/promotion/approve`; it cannot create a generic paper
 session as a promotion substitute. A checklist item becomes ready only from a durable approved
@@ -4161,6 +4207,15 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | --- | --- | --- | --- |
 | `TODO-SRC-UI-SHARED-001` | Complete W5 shared read-model visibility for close-package and provenance timelines | done | high |
 <!-- source-todos:end -->
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`IntercompanyOperationsEndpoints` adds `GET /api/ledger/intercompany/proposals/{id}/counterpart-candidates`,
+backed by `IntercompanyProposalDeliveryService.ListCounterpartCandidatesAsync`, which shares the link check so the
+list and the link cannot drift; the link still re-checks under the journal mutation lease.
+`IntercompanyConfirmationClosePolicyEndpoints` maps `/api/ledger/intercompany/confirmation-close-policies` (list,
+propose, decide) for owned books. `PostgresManualJournalMutationRecoveryStore` holds one PostgreSQL session lock per
+ledger schema for each journal command when drafts are in PostgreSQL.
 
 ## Validation
 

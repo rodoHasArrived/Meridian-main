@@ -28,6 +28,7 @@ vi.mock("@/lib/api", async () => {
   return {
     ...actual,
     getOperationsCloseCalendar: vi.fn(),
+    getReconciliationBreakQueue: vi.fn(),
     getRunLedgerJournal: vi.fn(),
     getRunTrialBalance: vi.fn()
   };
@@ -1366,6 +1367,73 @@ describe("finance standard pages", () => {
     expect(screen.getAllByText("Cash variance needs review").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute("href", "/accounting/reconciliation");
     expect(screen.getByRole("button", { name: "Record match decision" })).toBeDisabled();
+  });
+
+  it.each([
+    "runId=import-run&caseId=case%3Asource-break&breakId=source-break",
+    "caseId=case%3Asource-break",
+    "breakId=statement%3Aqueue-break",
+    "runId=import-run"
+  ])("opens the addressed statement break in Match with %s", async (query) => {
+    const priorBreak = requireFirst(data.breakQueue, "prior reconciliation break");
+    const importedBreak = {
+      ...priorBreak,
+      breakId: "statement:queue-break",
+      runId: "statement-reconciliation",
+      sourceBreakId: "source-break",
+      sourceImportId: "import-run",
+      reason: "Imported custodian cash differs from the ledger."
+    };
+    await renderPage(
+      <ReconciliationMatchWorkbenchScreen data={{ ...data, breakQueue: [...data.breakQueue, importedBreak] }} />,
+      `/accounting/reconciliation/match?${query}`
+    );
+
+    expect(screen.getByText(importedBreak.reason)).toBeInTheDocument();
+    expect(screen.queryByText(priorBreak.reason)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Review retained evidence" })).toHaveAttribute(
+      "href", "/reporting/evidence?subjectKind=reconciliation-break&subjectId=statement%3Aqueue-break"
+    );
+    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute(
+      "href", "/accounting/reconciliation?reconciliationBreak=statement%3Aqueue-break"
+    );
+  });
+
+  it("reads the current queue when the imported case is absent from the workspace snapshot", async () => {
+    const importedBreak = {
+      ...requireFirst(data.breakQueue, "prior reconciliation break"),
+      breakId: "statement:queue-break",
+      runId: "statement-reconciliation",
+      sourceBreakId: "source-break",
+      sourceImportId: "import-run",
+      fundAccountId: "fund-alpha",
+      reason: "Newly published statement break."
+    };
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce([importedBreak]);
+    await renderPage(
+      <ReconciliationMatchWorkbenchScreen data={data} />,
+      "/accounting/reconciliation/match?runId=import-run&breakId=source-break&fundAccountId=fund-alpha"
+    );
+
+    expect(api.getReconciliationBreakQueue).toHaveBeenCalledWith(
+      undefined, "fund-alpha", { signal: expect.any(AbortSignal), allowDevelopmentFallback: false }
+    );
+    expect(screen.getByText(importedBreak.reason)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute(
+      "href", "/accounting/reconciliation?reconciliationBreak=statement%3Aqueue-break&fundAccountId=fund-alpha"
+    );
+  });
+
+  it("reports an unavailable case without selecting a different break from the same run", async () => {
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+    await renderPage(
+      <ReconciliationMatchWorkbenchScreen data={data} />,
+      "/accounting/reconciliation/match?runId=run-42&caseId=case%3Amissing-break&breakId=missing-break"
+    );
+
+    expect(screen.getByText("Requested reconciliation break unavailable")).toBeInTheDocument();
+    expect(screen.queryByText(requireFirst(data.breakQueue, "prior reconciliation break").reason)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Review retained evidence" })).not.toBeInTheDocument();
   });
 
   it("renders close calendar tasks", async () => {

@@ -666,6 +666,7 @@ export interface AccountingChartAccountDraft {
   path: string;
   accountName: string;
   accountType: string;
+  accountCode: string;
   parentPath: string;
   financialAccountId: string;
   evidenceText: string;
@@ -702,6 +703,8 @@ export interface AccountingChartAccountEditorViewModel {
   pathValue: string;
   accountNameValue: string;
   accountTypeValue: string;
+  accountCodeValue: string;
+  accountCodeReadOnly: boolean;
   parentPathValue: string;
   financialAccountIdValue: string;
   evidenceValue: string;
@@ -1612,7 +1615,7 @@ export interface ReconciliationComparisonViewState {
   statementBalanceLabel: string;
   ledgerBalanceLabel: string;
   varianceLabel: string;
-  varianceTone: "success" | "warning";
+  varianceTone: "default" | "success" | "warning";
   rows: ReconciliationComparisonRowViewModel[];
   /** Per-line statement side. Transaction-level when an external GL reconciliation is loaded, else one line per run. */
   statementLines: ReconciliationLineItemViewModel[];

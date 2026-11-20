@@ -84,6 +84,11 @@ public sealed class SettingsFeatureModule : IDesktopFeatureModule
         services.AddTransient<SetupWizardViewModel>();
         services.AddTransient<WorkflowLibraryViewModel>();
         services.AddSingleton<WpfCredentialService>();
+        // OAuth auto-refresh runs against the real DPAPI-backed credential store, not the
+        // shared no-op default. App starts it after desktop activation and stops it on exit.
+        services.AddSingleton(sp => new OAuthRefreshService(
+            sp.GetRequiredService<WpfCredentialService>(),
+            sp.GetService<Microsoft.Extensions.Logging.ILogger<OAuthRefreshService>>()));
         services.AddSingleton<IWorkstationProviderOwnershipApiClient, WorkstationProviderOwnershipApiClient>();
         services.AddSingleton<IWorkstationBondCutoverApiClient, WorkstationBondCutoverApiClient>();
         services.AddTransient<CredentialManagementViewModel>();

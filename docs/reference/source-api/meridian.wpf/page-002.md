@@ -127,8 +127,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:51](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L51) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:374](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L374) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:376](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L376) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:379](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L379) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:381](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L381) |  |
 
 ## DataFeatureModule
 
@@ -882,9 +882,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:50](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L50) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:92](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L92) |  |
-| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:94](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L94) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:97](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L97) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:97](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L97) |  |
+| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:99](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L99) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:102](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L102) |  |
 
 ## ISettingsWorkspaceShellPresentationService
 
@@ -1133,9 +1133,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:28](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L28) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:45](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L45) |  |
-| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:47](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L47) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:50](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L50) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:46](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L46) |  |
+| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:48](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L48) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:51](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L51) |  |
 
 ## MainWindow
 

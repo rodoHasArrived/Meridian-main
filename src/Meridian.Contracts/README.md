@@ -2531,6 +2531,15 @@ economics. `SecurityAssetTermFormModel` holds the schema-driven editor rules. Th
 `BondAccountingElectionsDto` and `BondYieldAdjustmentMethod` are retired; accounting elections live
 on the lot.
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`IntercompanyCounterpartCandidateDto` lists posted journals that a counterpart link would accept.
+`IntercompanyConfirmationClosePolicyDtos` define the reviewed per-book confirmation close policy (ADR-032): its
+versions, propose and decide requests, `IIntercompanyConfirmationClosePolicyStore` and JSON context.
+`IIntercompanyConfirmationCloseGate` and `IntercompanyConfirmationCloseGateResultDto` let close readiness take an
+opt-in confirmation contributor; with no active policy the gate returns null and the decision is unchanged.
+`FundOperationsNavigationContext` gains an optional, additive `JournalEntryId` for journal deep links.
+
 ## Validation
 
 ```bash

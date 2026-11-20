@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConfigStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L13).
+
+ConfigStore for web dashboard hosting. Delegates all operations to the core CoreConfigStore and only provides a web-specific default config path (4 directories up from BaseDirectory).
+
+```csharp
+public sealed class ConfigStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ConfigStore() : this(GetWebDefaultPath());</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:19](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L19) |  |
+| <code>public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:21](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L21) |  |
+| <code>public string ConfigPath =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:27](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L27) |  |
+| <code>public static Meridian.Core.Config.AppConfig LoadConfig(string path) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:29](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L29) |  |
+| <code>public Meridian.Core.Config.AppConfig Load() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:32](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L32) |  |
+| <code>public Meridian.Contracts.Configuration.ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:34](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L34) |  |
+| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:36](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L36) |  |
+| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L39) |  |
+| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:52](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L52) | Read-modify-write under the configuration lock; see the core store for the contract. |
+| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateWithConfirmationAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, bool confirmDataSemantics, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:58](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L58) | Explicit confirmation is required for edits changing the meaning of newly stored data. |
+| <code>public System.Threading.Tasks.Task UpdateAsync(Func&lt;Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:72](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L72) | Read-modify-write under the configuration lock; see the core store for the contract. |
+| <code>public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:77](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L77) |  |
+| <code>public string? TryLoadStatusJson() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:80](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L80) |  |
+| <code>public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:82](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L82) |  |
+| <code>public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:85](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L85) |  |
+| <code>public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:88](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L88) |  |
+
 ## ConfigStoreExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStoreExtensions</code>. Kind: `class`.
@@ -293,17 +326,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[Obsolete(&quot;Use StartAsync(request, scope, ct); an authenticated tenant/company scope is required.&quot;)] ValueTask&lt;CoveredCallRunHandle&gt; StartAsync(CoveredCallBacktestRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:17](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L17) | Legacy unscoped entry point retained for source compatibility. Unscoped execution is no longer supported because it cannot establish tenant and company ownership. |
-| <code>ValueTask&lt;CoveredCallRunHandle&gt; StartAsync(CoveredCallBacktestRequest request, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:23](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L23) | Starts a new backtest run. Returns immediately with the assigned RunId. |
-| <code>[Obsolete(&quot;Use GetStatusAsync(runId, scope, ct); an authenticated tenant/company scope is required.&quot;)] ValueTask&lt;CoveredCallRunStatusDto?&gt; GetStatusAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L31) | Legacy unscoped status lookup retained as a fail-closed compatibility shim. |
-| <code>ValueTask&lt;CoveredCallRunStatusDto?&gt; GetStatusAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:37](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L37) | Returns the current status of the run, or null if unknown. |
-| <code>[Obsolete(&quot;Use GetResultAsync(runId, scope, ct); an authenticated tenant/company scope is required.&quot;)] ValueTask&lt;CoveredCallRunResult?&gt; GetResultAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:45](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L45) | Legacy unscoped result lookup retained as a fail-closed compatibility shim. |
-| <code>ValueTask&lt;CoveredCallRunResult?&gt; GetResultAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:51](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L51) | Returns the completed result, or null if the run is not yet finished or unknown. |
-| <code>[Obsolete(&quot;Use ListRunsAsync(scope, limit, ct); an authenticated tenant/company scope is required.&quot;)] ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(int limit = 50, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:59](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L59) | Legacy unscoped run listing retained as a fail-closed compatibility shim. |
-| <code>ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(CoveredCallRunScope scope, int limit = 50, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:65](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L65) | Lists prior covered-call runs (most recent first). |
-| <code>[Obsolete(&quot;Use CancelAsync(runId, scope, ct); an authenticated tenant/company scope is required.&quot;)] ValueTask CancelAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:73](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L73) | Legacy unscoped cancellation retained as a fail-closed compatibility shim. |
-| <code>ValueTask CancelAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:79](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L79) | Cancels a queued or running backtest. Idempotent. |
-| <code>ValueTask&lt;CoveredCallChainPreview&gt; PreviewChainAsync(CoveredCallChainPreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:86](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L86) | Returns the chain snapshot that would be evaluated for scanDate — for the configure-form preview. |
+| <code>ValueTask&lt;CoveredCallRunHandle&gt; StartAsync(CoveredCallBacktestRequest request, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:13](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L13) | Starts a new backtest run. Returns immediately with the assigned RunId. |
+| <code>ValueTask&lt;CoveredCallRunStatusDto?&gt; GetStatusAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:20](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L20) | Returns the current status of the run, or null if unknown. |
+| <code>ValueTask&lt;CoveredCallRunResult?&gt; GetResultAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L27) | Returns the completed result, or null if the run is not yet finished or unknown. |
+| <code>ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(CoveredCallRunScope scope, int limit = 50, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:34](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L34) | Lists prior covered-call runs (most recent first). |
+| <code>ValueTask CancelAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:41](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L41) | Cancels a queued or running backtest. Idempotent. |
+| <code>ValueTask&lt;CoveredCallChainPreview&gt; PreviewChainAsync(CoveredCallChainPreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:48](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L48) | Returns the chain snapshot that would be evaluated for scanDate — for the configure-form preview. |
 
 ## ICoveredCallChainProviderFactory
 
@@ -739,7 +767,7 @@ Declared public members:
 | <code>public const string RetainedManifestSchemaVersion = &quot;meridian.reporting.retained-manifest.v1&quot;;</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L61) |  |
 | <code>public DeterministicReportingCertifiedArtifactProducer(IReportingPrimaryDocumentRenderer? primaryRenderer = null, IReportingCertifiedLedgerPresentationSource? ledgerPresentationSource = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:80](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L80) | Constructs the producer with an optional client-grade primary-document renderer and an optional exact canonical-ledger-presentation source. When the renderer is null (dependency-free hosts and the existing byte-exact tests) the built-in plain-text PDF/XLSX rendering is used. A capital-account primary document requires both a presentation-capable renderer and a checkpoint-bound canonical ledger report pack; it never falls back to recalculating partners&#x27; capital from certified display rows. Capital-account PDF, XLSX, and ClientPackage outputs all select bytes from that same canonical pair. Every other artifact (CSV, evidence vault, preview, manifest, grids) is unaffected by this choice. |
 | <code>public async ValueTask&lt;ReportingGovernedArtifactProduction&gt; ProduceAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:88](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L88) |  |
-| <code>public static ReportingRetainedManifestDocument ParseRetainedManifest(ReadOnlySpan&lt;byte&gt; retainedBytes);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:202](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L202) |  |
+| <code>public static ReportingRetainedManifestDocument ParseRetainedManifest(ReadOnlySpan&lt;byte&gt; retainedBytes);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:206](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L206) |  |
 
 ## DirectLendingOperationsReadService
 
@@ -857,7 +885,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DocumentsReportingPrimaryDocumentRenderer</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:136](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L136).
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:140](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L140).
 
 Reporting adapter over the existing Documents authority. Generic report outputs retain the presentation-neutral ClientGradeReportRenderer path, while a checkpoint-bound ledger primary document is passed intact to LedgerClientReportExportService. The latter resolves FinancialReportDocumentRenderer from composition and renders one canonical PDF/XLSX pair without rebuilding partners-capital figures or creating another renderer.
 
@@ -869,11 +897,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public byte[] RenderPdf(ReportingOutputManifest manifest) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:142](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L142) |  |
-| <code>public byte[] RenderWorkbook(ReportingOutputManifest manifest) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:145](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L145) |  |
-| <code>public DocumentsReportingPrimaryDocumentRenderer() : this(new LedgerClientReportExportService(new FinancialReportDocumentRenderer()));</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:152](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L152) | Convenience construction for dependency-light callers and focused tests. Production composition supplies the shared export service explicitly. |
-| <code>public DocumentsReportingPrimaryDocumentRenderer(LedgerClientReportExportService clientReportExportService);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:157](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L157) |  |
-| <code>public LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:164](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L164) |  |
+| <code>public byte[] RenderPdf(ReportingOutputManifest manifest) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:146](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L146) |  |
+| <code>public byte[] RenderWorkbook(ReportingOutputManifest manifest) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:149](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L149) |  |
+| <code>public DocumentsReportingPrimaryDocumentRenderer() : this(new LedgerClientReportExportService(new FinancialReportDocumentRenderer()));</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L156) | Convenience construction for dependency-light callers and focused tests. Production composition supplies the shared export service explicitly. |
+| <code>public DocumentsReportingPrimaryDocumentRenderer(LedgerClientReportExportService clientReportExportService);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:161](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L161) |  |
+| <code>public LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L168) |  |
 
 ## DrawdownGuardrailRule
 
@@ -912,22 +940,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;EntityTimelineDto&gt; GetAsync(string tenant, Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default, string actor = &quot;entity-timeline&quot;);</code> | [src/Meridian.Ui.Shared/Services/EntityTimelineService.cs:13](../../../../src/Meridian.Ui.Shared/Services/EntityTimelineService.cs#L13) |  |
-
-## EquityOrderSessionPolicy
-
-Qualified name: <code>Meridian.Ui.Shared.Services.EquityOrderSessionPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs:10](../../../../src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs#L10).
-
-Session admission for known US equities. Other instruments keep their existing policies.
-
-```csharp
-public sealed class EquityOrderSessionPolicy(ISecurityIdentityQueryService? securities = null, TimeProvider? clock = null) : IOrderSessionPolicy, IOrderInstrumentCoverageSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;bool&gt; IsUsdEquityAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs:14](../../../../src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs#L14) |  |
-| <code>public async Task&lt;OrderCheck&gt; EvaluateAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs:23](../../../../src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs#L23) |  |

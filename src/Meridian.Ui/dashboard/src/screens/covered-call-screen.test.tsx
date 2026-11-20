@@ -600,7 +600,7 @@ describe("CoveredCallScreen", () => {
     });
 
     expect(firstPosition).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("img", { name: "SPY 505.00 short-call payoff diagram" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "SPY 505.00 short-call payoff diagram" })).toBeInTheDocument();
     expect(screen.getByText("2 x 505.00 call expiring 2024-02-16 - short-call break-even about $507.35")).toBeInTheDocument();
 
     fireEvent.click(secondPosition);
@@ -608,7 +608,7 @@ describe("CoveredCallScreen", () => {
     expect(await screen.findByRole("button", {
       name: "Selected SPY 510.00 call expiring 2024-03-15 payoff diagram"
     })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("img", { name: "SPY 510.00 short-call payoff diagram" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "SPY 510.00 short-call payoff diagram" })).toBeInTheDocument();
     expect(screen.getByText("1 x 510.00 call expiring 2024-03-15 - short-call break-even about $511.90")).toBeInTheDocument();
   });
 

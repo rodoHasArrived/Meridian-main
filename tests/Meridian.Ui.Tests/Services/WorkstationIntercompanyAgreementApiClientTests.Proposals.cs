@@ -41,6 +41,25 @@ public sealed partial class WorkstationIntercompanyAgreementApiClientTests
     }
 
     [Fact]
+    public async Task CounterpartCandidates_ReadTheProposalAndTargetBookWithExactAmounts()
+    {
+        var proposal = Guid.NewGuid();
+        var book = Guid.NewGuid();
+        var journal = Guid.NewGuid();
+        var json = $$"""[{"journalEntryId":"{{journal:D}}","effectiveDate":"2026-09-30","description":"Borrower recharge","amount":-1234567890123456.789012345678,"currency":"EUR"}]""";
+        using var api = new ApiClientService(new Factory((request, _) =>
+        {
+            Assert.Equal($"/api/ledger/intercompany/proposals/{proposal:D}/counterpart-candidates", request.RequestUri!.AbsolutePath);
+            Assert.Equal($"?targetBookId={book:D}", request.RequestUri.Query);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json, Encoding.UTF8, "application/json") });
+        }));
+        var response = await new WorkstationIntercompanyAgreementApiClient(api).GetCounterpartCandidatesAsync(proposal, book);
+        Assert.True(response.Success, response.ErrorMessage);
+        var candidate = Assert.Single(response.Data!);
+        Assert.Equal((journal, -1234567890123456.789012345678m), (candidate.JournalEntryId, candidate.Amount));
+    }
+
+    [Fact]
     public async Task CounterpartProposalsFromAnotherBookAreRefused()
     {
         var source = new IntercompanyProposalSourceDto(Guid.NewGuid(), "tenant", null, Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), "TX", new(2026, 9, 30), "USD", []);

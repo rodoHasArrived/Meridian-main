@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerIntegrityException
+
+Qualified name: <code>Meridian.Backtesting.Sdk.LedgerIntegrityException</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:31](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L31).
+
+Stops a strict backtest while retaining the differences that caused the failure.
+
+```csharp
+public sealed class LedgerIntegrityException(IReadOnlyList<LedgerIntegrityBreak> breaks) : InvalidOperationException($"Ledger integrity failed with {breaks.Count} difference(s).")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;LedgerIntegrityBreak&gt; Breaks { get; } = Array.AsReadOnly(breaks.ToArray());</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:34](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L34) |  |
+
+## LotSelectionMethod
+
+Qualified name: <code>Meridian.Backtesting.Sdk.LotSelectionMethod</code>. Kind: `enum`.
+
+Source: [src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs:7](../../../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs#L7).
+
+Controls which open lots are selected first when a sell or cover order is processed. The chosen method affects both realised P&amp;L timing and tax treatment.
+
+```csharp
+public enum LotSelectionMethod
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Fifo</code> | [src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs:13](../../../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs#L13) | First In, First Out — oldest lots are closed first. This is the default and matches legacy behaviour. |
+| <code>Lifo</code> | [src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs:19](../../../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs#L19) | Last In, First Out — most recently opened lots are closed first. Can defer gains by closing lower-cost lots later. |
+| <code>Hifo</code> | [src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs:25](../../../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs#L25) | Highest Cost In, First Out — the lot with the highest entry price is closed first, minimising short-term capital gains (tax-loss harvesting). |
+| <code>SpecificId</code> | [src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs:32](../../../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs#L32) | Specific Identification — the caller supplies a OpenLot.LotId via FillEvent.TargetLotId to nominate the exact lot to close. Falls back to Fifo when no matching lot is found. |
+
+## MarginInterestCashFlow
+
+Qualified name: <code>Meridian.Backtesting.Sdk.MarginInterestCashFlow</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:24](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L24).
+
+Daily margin interest charge on a debit balance (negative amount = cash outflow).
+
+```csharp
+public sealed record MarginInterestCashFlow(DateTimeOffset Timestamp, decimal Amount, decimal MarginBalance, double AnnualRate, string? AccountId = null) : CashFlowEntry(Timestamp, Amount, AccountId);
+```
+
 ## OpenLot
 
 Qualified name: <code>Meridian.Backtesting.Sdk.OpenLot</code>. Kind: `record`.
@@ -856,46 +907,3 @@ Declared public members:
 | <code>public decimal TotalPremiumReceived =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:136](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L136) | Total premium received (entry credit × contracts × multiplier). |
 | <code>public decimal UnrealisedPnl =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:139](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L139) | Current unrealised P&amp;L on the short option (positive = profit). |
 | <code>public double PremiumCaptured =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:145](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L145) | Fraction of the original premium that has been &quot;captured&quot;. A value of 1.0 means the option has gone to zero (full profit). |
-
-## StrategyParameterAttribute
-
-Qualified name: <code>Meridian.Backtesting.Sdk.StrategyParameterAttribute</code>. Kind: `class`.
-
-Source: [src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs:8](../../../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs#L8).
-
-Marks a public property on an IBacktestStrategy implementation as a user-configurable parameter. The backtesting UI discovers these via reflection to render a dynamic parameter form.
-
-```csharp
-public sealed class StrategyParameterAttribute(string displayName, string? description = null) : Attribute
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string DisplayName { get; } = displayName;</code> | [src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs:11](../../../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs#L11) | Human-readable label shown in the UI. |
-| <code>public string? Description { get; } = description;</code> | [src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs:14](../../../../src/Meridian.Backtesting.Sdk/StrategyParameterAttribute.cs#L14) | Optional longer description / tooltip text. |
-
-## SymbolAttribution
-
-Qualified name: <code>Meridian.Backtesting.Sdk.SymbolAttribution</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:7](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L7).
-
-Per-symbol trade attribution.
-
-```csharp
-public sealed record SymbolAttribution(string Symbol, decimal RealizedPnl, decimal UnrealizedPnl, int TradeCount, decimal Commissions, decimal MarginInterestAllocated);
-```
-
-## SymbolTcaSummary
-
-Qualified name: <code>Meridian.Backtesting.Sdk.SymbolTcaSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/TcaReportModels.cs:31](../../../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs#L31).
-
-Per-symbol execution cost breakdown for a simulation run.
-
-```csharp
-public sealed record SymbolTcaSummary(string Symbol, decimal TotalBuyNotional, decimal TotalSellNotional, decimal AvgBuyPrice, decimal AvgSellPrice, decimal TotalCommission, double CommissionRateBps, int TotalFills);
-```

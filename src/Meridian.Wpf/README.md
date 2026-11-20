@@ -172,9 +172,12 @@ A Counterpart proposals tab (`Views/IntercompanyCounterpartProposalsControl.xaml
 `IntercompanyCounterpartQueueWorkspace`: delivery records and aged booking breaks for a source
 book, retained source lines and provenance, delivery retry, explicit FX repricing with a
 before-and-after preview, and linking an existing counterpart journal. The source book and the
-existing counterpart book are chosen from lists rather than typed; the counterpart journal ID is
-still entered, as in the browser. The desktop holds no proposal state and never posts; the same
-Windows-only validation boundary applies.
+existing counterpart book are chosen from lists rather than typed. Since 2026-11-18 the counterpart
+journal is also chosen from a list, as in the browser: the shared
+`/api/ledger/intercompany/proposals/{id}/counterpart-candidates` read returns only posted journals that
+the server's link check would accept, and linking re-checks the choice. "Open journal" on a delivery
+record opens the Fund Ledger Journal tab for that book's fund profile with the entry selected. The
+desktop holds no proposal state and never posts; the same Windows-only validation boundary applies.
 
 Fund Operations adds a Balance confirmation tab
 (`Views/IntercompanyBalanceConfirmationControl.xaml`) over the shared
@@ -1365,6 +1368,13 @@ behavior into view models. Do not duplicate product logic that belongs in shared
 When telemetry, latency, order-flow, or preview data is unavailable, show an explicit unmeasured or
 unavailable state rather than seeded sample numbers or plausible-looking derived metrics.
 Use `Controls/EmptyStatePanel` for reusable missing-data states; it supports title, explanation, severity, and up to two actions for provider setup, import, selection, freshness, reconciliation, reporting, and fixture-data recovery paths.
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+The Balance confirmation tab includes the book's confirmation close policy (ADR-032) through
+`IntercompanyBalanceConfirmationWorkspace.ClosePolicy`: choose the findings that block close, propose with a reason,
+and approve, reject or disable. The close-readiness advisory text points to the separate `intercompany-confirmation`
+requirement when a policy applies.
 
 ## Related docs
 

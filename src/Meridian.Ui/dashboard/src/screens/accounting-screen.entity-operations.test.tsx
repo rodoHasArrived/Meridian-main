@@ -324,13 +324,18 @@ describe("Entity operations", () => {
 
   it("shows delivery failure and links a specifically identified existing counterpart", async () => {
     const proposal: IntercompanyProposal = { source: { proposalId: "proposal-a", sourceJournalId: "source-journal", sourceBookId: "book-a", sourceEntityId: "entity-a", counterpartyEntityId: "entity-b", accountingArrangementId: "arrangement-a", accountingArrangementRevisionId: "mapping-a", intercompanyAgreementId: "legal-a", intercompanyAgreementVersion: 4, intercompanyAgreementPayloadHash: "approved-native-payload", transactionId: "recharge-123", effectiveDate: "2026-11-01", sourceFunctionalCurrency: "USD" }, status: "NeedsFix", attempts: 2, recordedAt: "2026-11-01", targetBookId: null, targetJournalId: null, lastError: "Destination period is locked.", dueDate: null, sourceDigest: "source-digest" };
-    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/proposals") ? [proposal] : []);
+    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/counterpart-candidates")
+      ? (path.includes("targetBookId=book-b") ? [{ journalEntryId: "existing-journal", effectiveDate: "2026-11-01", description: "Book B recharge", amount: -100, currency: "USD" }] : [])
+      : path.includes("/proposals") ? [proposal] : []);
     vi.mocked(postEntityOperation).mockResolvedValue({ ...proposal, status: "Linked", targetBookId: "book-b", targetJournalId: "existing-journal" });
     renderWithRouter(<EntityCounterpartProposals scope={scope} />);
     await screen.findByText("Destination period is locked.");
     fireEvent.click(screen.getByRole("button", { name: "recharge-123" }));
+    expect(screen.getByLabelText("Existing counterpart journal")).toBeDisabled();
     fireEvent.change(screen.getByLabelText("Existing counterpart book"), { target: { value: "book-b" } });
-    fireEvent.change(screen.getByLabelText("Existing counterpart journal ID"), { target: { value: "existing-journal" } });
+    await screen.findByRole("option", { name: "2026-11-01 · Book B recharge · -100 USD" });
+    expect(getEntityOperation).toHaveBeenCalledWith("/api/ledger/intercompany/proposals/proposal-a/counterpart-candidates?targetBookId=book-b", expect.any(Object));
+    fireEvent.change(screen.getByLabelText("Existing counterpart journal"), { target: { value: "existing-journal" } });
     fireEvent.change(screen.getByLabelText("Counterpart linking reason"), { target: { value: "Book B already recorded the source invoice" } });
     fireEvent.click(screen.getByRole("button", { name: "Validate and link existing counterpart" }));
     await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith("/api/ledger/intercompany/proposals/proposal-a/link", expect.objectContaining({ targetBookId: "book-b", targetJournalId: "existing-journal", requestId: expect.any(String) }), expect.any(Object)));
@@ -338,7 +343,9 @@ describe("Entity operations", () => {
 
   it.each([true, false])("uses the appended manual resolution without rewriting original delivery or offering more actions (resolved getters %s)", async (includeResolvedGetters) => {
     let proposal: IntercompanyProposal = { source: { proposalId: "proposal-a", sourceJournalId: "source-journal", sourceBookId: "book-a", sourceEntityId: "entity-a", counterpartyEntityId: "entity-b", accountingArrangementId: "arrangement-a", accountingArrangementRevisionId: "mapping-a", intercompanyAgreementId: "legal-a", intercompanyAgreementVersion: 4, intercompanyAgreementPayloadHash: "approved-native-payload", transactionId: "rejected-recharge", effectiveDate: "2026-11-01", sourceFunctionalCurrency: "USD" }, status: "Drafted", attempts: 1, recordedAt: "2026-11-01", targetBookId: "book-b", targetJournalId: "original-rejected-generated-draft", lastError: null, dueDate: null, sourceDigest: "source-digest" };
-    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/proposals?") ? [proposal] : []);
+    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/counterpart-candidates")
+      ? [{ journalEntryId: "manually-posted-counterpart", effectiveDate: "2026-11-01", description: "Manual reciprocal", amount: -100, currency: "USD" }]
+      : path.includes("/proposals?") ? [proposal] : []);
     vi.mocked(postEntityOperation).mockImplementation(async () => {
       proposal = { ...proposal, latestLink: { requestId: "link-request", proposalId: "proposal-a", targetBookId: "book-b", targetJournalId: "manually-posted-counterpart", actor: "target-reviewer", reason: "Rejected generated draft replaced by existing reciprocal posted journal", recordedAt: "2026-11-12", rejectedDraftId: "original-rejected-generated-draft", rejectedDraftVersion: 6 },
         ...(includeResolvedGetters ? { resolvedTargetBookId: "book-b", resolvedTargetJournalId: "manually-posted-counterpart" } : {}) };
@@ -348,7 +355,8 @@ describe("Entity operations", () => {
     fireEvent.click(await screen.findByRole("button", { name: "rejected-recharge" }));
     expect(screen.getByRole("button", { name: "Preview counterpart FX repricing" })).toBeVisible();
     fireEvent.change(screen.getByLabelText("Existing counterpart book"), { target: { value: "book-b" } });
-    fireEvent.change(screen.getByLabelText("Existing counterpart journal ID"), { target: { value: "manually-posted-counterpart" } });
+    await screen.findByRole("option", { name: "2026-11-01 · Manual reciprocal · -100 USD" });
+    fireEvent.change(screen.getByLabelText("Existing counterpart journal"), { target: { value: "manually-posted-counterpart" } });
     fireEvent.change(screen.getByLabelText("Counterpart linking reason"), { target: { value: "Reviewed generated-draft rejection and exact posted counterpart" } });
     fireEvent.click(screen.getByRole("button", { name: "Validate and link existing counterpart" }));
     const resolved = await screen.findByRole("link", { name: "Open resolved counterpart journal" });
