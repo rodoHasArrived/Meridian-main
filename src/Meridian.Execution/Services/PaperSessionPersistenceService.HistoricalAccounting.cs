@@ -8,7 +8,7 @@ namespace Meridian.Execution.Services;
 public sealed partial class PaperSessionPersistenceService
 {
     private bool HasHistoricalAccountingScope(PaperSession session) =>
-        session.AccountingContext is not null && session.AccountingContext != _financing?.PostingContext;
+        session.AccountingContext is not null && session.AccountingContext != _accountingContext;
 
     private void EnsureCurrentAccountingScope(PaperSession session)
     {
@@ -21,7 +21,7 @@ public sealed partial class PaperSessionPersistenceService
     private async Task<(IReadOnlyList<PaperFinancingCharge> Charges, string? UnavailableReason)> LoadSessionFinancingAsync(
         TradeFillLedgerPostingContext? context, string sessionId, CancellationToken ct)
     {
-        if (context is null || context == _financing?.PostingContext)
+        if (context is null || context == _accountingContext)
             return (_financing is null ? [] : await _financing.LoadAndRecoverAsync(sessionId, ct).ConfigureAwait(false), null);
         if (_financing is null)
             return ([], "Historical financing coverage is unavailable because its accounting owner is not configured.");

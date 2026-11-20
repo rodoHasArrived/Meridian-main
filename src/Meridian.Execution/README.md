@@ -607,7 +607,11 @@ journal-only (v1) protocol. `FileTradeFillLedger.CreatePostingTarget` wraps a
 `GovernedTradeFillLedgerPostingTarget` chain, so identity collisions, equivalent retries and
 replay comparison behave as on Postgres. `FileTradeFillLedger.VerifyBeforeHostStartupAsync`
 rebuilds and verifies the journal before host start. `BuildContext` refuses `Store=File` with
-`CanonicalAccounting`.
+`CanonicalAccounting`. `TradeFillLedgerBackendBinding.Ensure` records the backend for each exact
+posting scope in its handoff directory and refuses a later switch, because the handoff store replays
+only pending fills. `PaperSessionPersistenceService` takes the posting scope as an optional
+`accountingContext` when no financing service is composed. Sessions therefore keep their scope
+binding, and prior-scope sessions stay read-only after a rollover.
 The independent `ITradeFillHandoffFailureStore` must declare the same exact posting scope as the
 ledger consumer; composition fails before startup when the scopes differ, so restart recovery cannot
 route a prior book or period's fill into the current ledger. Exact identities compare the scope label,

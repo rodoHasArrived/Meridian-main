@@ -123,6 +123,13 @@ File mode has these limits:
 - It posts to an unbound ledger: journals must balance and have unique IDs, but no per-line currency
   detail is required. This matches what the Postgres store accepts for v1.
 - Paper financing accruals are not posted, because they validate against Postgres periods and books.
+- Each posting scope is bound to the backend that first acknowledged its fills. The binding is
+  recorded in `ledger-backend.json` in the scope's handoff directory. Handoff data written before
+  this binding existed is treated as Postgres. Switching `Store` for an existing book, period and
+  aggregate is refused at startup, because fills already acknowledged by the other backend would be
+  missing from the new journal. Use a new scope, or migrate the journals explicitly.
+- Paper sessions still record the posting scope without a financing service, so after a book or
+  period rollover, sessions from the prior scope stay read-only.
 - The store is not registered as the host `ILedgerJournalStore`. Book, period, tax-lot and scoped
   query features stay Postgres-only, and so do the run-ledger read APIs below.
 

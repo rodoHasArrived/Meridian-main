@@ -208,6 +208,13 @@ public sealed class UiServer : IAsyncDisposable
 
                 var postingContext = tradeFillPostingOptions.BuildContext();
                 var tradeFillStoreRoot = Path.Combine(resolvedDataRoot, "execution", "trade-fill-ledger");
+                // Before any handoff store opens: a scope stays on the backend that acknowledged
+                // its fills, so switching Store cannot silently split one scope across journals.
+                TradeFillLedgerBackendBinding.Ensure(
+                    new TradeFillPostingStoreOptions(tradeFillStoreRoot, postingContext),
+                    tradeFillPostingOptions.Store);
+                // Paper sessions bind to this scope even when no financing service is composed.
+                builder.Services.AddSingleton(postingContext);
                 if (useFileLedger)
                 {
                     // The file journal is the authoritative store for this posting scope only. It is

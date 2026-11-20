@@ -38,6 +38,10 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
     private readonly CancellationTokenSource _lifetimeCts = new();
     private readonly IPaperSessionStore? _store;
     private readonly PaperFinancingPostingService? _financing;
+    // The posting scope new sessions are bound to. Financing supplies it when composed; a host
+    // that posts fills without financing (the file-backed trade-fill journal) supplies it directly,
+    // so scope rollovers still make prior-scope sessions read-only.
+    private readonly TradeFillLedgerPostingContext? _accountingContext;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger<PaperSessionPersistenceService> _logger;
     private Task? _initialisationTask;
@@ -50,12 +54,20 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         ILogger<PaperSessionPersistenceService> logger,
         IPaperSessionStore? store = null,
         ExecutionAuditTrailService? auditTrail = null,
-        PaperFinancingPostingService? financing = null)
+        PaperFinancingPostingService? financing = null,
+        TradeFillLedgerPostingContext? accountingContext = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _store = store;
         _auditTrail = auditTrail;
         _financing = financing;
+        if (financing is not null && accountingContext is not null && accountingContext != financing.PostingContext)
+        {
+            throw new ArgumentException(
+                "The paper-session accounting scope must match the financing posting scope.", nameof(accountingContext));
+        }
+
+        _accountingContext = financing?.PostingContext ?? accountingContext;
     }
 
     // ------------------------------------------------------------------
@@ -153,7 +165,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
             var (financingCharges, accountingUnavailableReason) = await LoadSessionFinancingAsync(
                 record.AccountingContext, record.SessionId, ct).ConfigureAwait(false);
             var historicalAccounting = record.AccountingContext is not null
-                && record.AccountingContext != _financing?.PostingContext;
+                && record.AccountingContext != _accountingContext;
             if (financingCharges.Count > 0 && record.AccountingContext is null)
                 throw new InvalidDataException("An unbound paper session cannot claim retained financing assessments.");
             var appliedFillHashes = new Dictionary<Guid, string>();
@@ -321,8 +333,8 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 // evidence can cite exactly which paper execution model produced them.
                 MatchingModelVersion = PaperMatching.PaperOrderMatchingPolicy.MatchingModelVersion,
                 CostModelVersion = PaperMatching.PaperTradingCostModel.CostModelVersion,
-                AccountingContext = _financing?.PostingContext,
-                FinancialAccountId = _financing is null ? null : PaperTradingPortfolio.DefaultAccountId,
+                AccountingContext = _accountingContext,
+                FinancialAccountId = _accountingContext is null ? null : PaperTradingPortfolio.DefaultAccountId,
             };
 
             if (_store is not null)

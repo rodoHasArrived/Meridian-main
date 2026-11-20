@@ -135,8 +135,8 @@
       "id": "SRC-EXECUTION",
       "path": "src/Meridian.Execution",
       "readme": "src/Meridian.Execution/README.md",
-      "readme_hash": "6e55a6074aa4c02db7762cba9d84ac9593b9ed5c385c197076473d4cd8574477",
-      "source_hash": "445f0de3a2cce4c0ded264d87a7133f1faf5f6ea8910c5798473d51d0235bd1d"
+      "readme_hash": "bb8bcd7c45ba833c4d223c6af933bb13dfe8d6e140b7eb715dd9deb9d780baa0",
+      "source_hash": "04b65eee65d7a671d49b1999fc94e1268c92e009947549f2d63f87e032234007"
     },
     {
       "id": "SRC-EXECUTION-SDK",
@@ -177,8 +177,8 @@
       "id": "SRC-HOST",
       "path": "src/Meridian",
       "readme": "src/Meridian/README.md",
-      "readme_hash": "554ea38881a900e80b1de061173da55161db1e05dcaf4ca2dc2508364079f5bb",
-      "source_hash": "b1a49f3152ccb6ecebe07907771e8f72f5108e09292558c0dbc021452011febd"
+      "readme_hash": "1da35578ef34a268f6b11fa678a97673b4375c802289bfbfc1413d38685c7f14",
+      "source_hash": "199b80f78b99a573681a5c3869166c081db4932822e43dd0615107d881abb1f5"
     },
     {
       "id": "SRC-IBAPI-SMOKESTUB",
