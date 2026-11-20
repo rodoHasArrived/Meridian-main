@@ -778,7 +778,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.LedgerEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs#L11).
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs#L12).
 
 ```csharp
 public static partial class LedgerEndpoints

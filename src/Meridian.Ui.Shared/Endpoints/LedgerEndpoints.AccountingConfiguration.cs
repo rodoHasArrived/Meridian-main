@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -441,6 +442,17 @@ public static partial class LedgerEndpoints
                     return EndpointHelpers.Forbidden();
                 }
 
+                ManualJournalEntryWorkbenchService? bondReview = null;
+                if (request.EventKind == AssetAccountingEventKindDto.Acquisition &&
+                    request.LotMutation?.Acquisition?.SettlementConsideration is not null)
+                {
+                    if (!ManualJournalEntryWorkbenchService.IsSupportedBondAcquisitionIntake(request.LotMutation))
+                        return Results.BadRequest(new { error = "Bond acquisition review supports Long face-value same-currency settlements only." });
+                    bondReview = ResolveManualJournalEntryWorkbenchService(context) as ManualJournalEntryWorkbenchService;
+                    if (bondReview is null)
+                        return ServiceUnavailable("The governed bond acquisition review workflow is unavailable.");
+                }
+
                 var result = await service
                     .BuildPostingCandidateAsync(request with
                     {
@@ -455,6 +467,9 @@ public static partial class LedgerEndpoints
                             : request.LotMutation
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
+                if (bondReview is not null)
+                    await bondReview.SaveAssetAccountingDraftAsync(result, ResolveMutationActor(context, request.Actor),
+                        context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
