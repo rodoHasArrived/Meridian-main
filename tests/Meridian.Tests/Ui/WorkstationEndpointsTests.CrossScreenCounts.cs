@@ -1,7 +1,9 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Plaid;
+using Meridian.DataIntegration.Credentials;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
@@ -59,8 +61,11 @@ public sealed partial class WorkstationEndpointsTests
         listedHealthy.Should().Be(1);
     }
 
-    [Fact]
-    public async Task MapWorkstationEndpoints_ReadinessRepositoryUnavailable_PreservesDataAndSharedProviderCounts()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MapWorkstationEndpoints_ReadinessRepositoryUnavailable_PreservesDataAndSharedProviderCounts(
+        bool credentialVaultUnavailable)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-readiness-failure", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(root, "_status"));
@@ -77,12 +82,27 @@ public sealed partial class WorkstationEndpointsTests
             var plaid = Substitute.For<IPlaidConnectionRepository>();
             plaid.ListItemsAsync(Arg.Any<CancellationToken>()).Returns(_ =>
                 Task.FromException<IReadOnlyList<PlaidItemDto>>(new IOException("Synthetic storage failure.")));
+            var credentialVault = Substitute.For<IProviderCredentialStore>();
+            credentialVault.GetStatusAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(_ =>
+                Task.FromException<ProviderCredentialStoreStatus>(new IOException("Synthetic vault failure.")));
+            var permissions = UserPermission.ViewDiagnostics | UserPermission.ViewHistoricalData;
+            if (credentialVaultUnavailable)
+                permissions |= UserPermission.ManageCredentials;
             await using var app = await CreateAppAsync(services =>
             {
                 RegisterConfigStores(services, configPath);
-                services.AddSingleton(plaid);
+                if (credentialVaultUnavailable)
+                {
+                    services.AddSingleton(credentialVault);
+                    services.AddSingleton(new ProviderCredentialOwnershipPolicy(RequireExplicitOwnership: false));
+                    services.AddSingleton<ProviderConnectionLifecycleService>();
+                }
+                else
+                {
+                    services.AddSingleton(plaid);
+                }
                 services.AddSingleton<ProviderReadinessService>();
-            }, currentUserPermissions: UserPermission.ViewDiagnostics | UserPermission.ViewHistoricalData);
+            }, currentUserPermissions: permissions);
             using var client = app.GetTestClient();
 
             foreach (var route in new[] { UiApiRoutes.WorkstationData, UiApiRoutes.WorkstationDataOperations })
@@ -92,6 +112,7 @@ public sealed partial class WorkstationEndpointsTests
                 provider.GetProperty("providerId").GetString().Should().Be("yahoo");
                 provider.GetProperty("status").GetString().Should().Be("Healthy");
                 provider.GetProperty("latency").GetString().Should().Be("40 ms average");
+                provider.GetProperty("connectionSummary").ValueKind.Should().Be(JsonValueKind.Null);
                 provider.GetProperty("diagnostics").EnumerateArray().Should().Contain(diagnostic =>
                     diagnostic.GetProperty("id").GetString() == "provider-readiness" &&
                     diagnostic.GetProperty("statusLabel").GetString() == "Unavailable");
@@ -99,7 +120,10 @@ public sealed partial class WorkstationEndpointsTests
 
             using var counts = await ReadJsonAsync(client, UiApiRoutes.WorkstationCrossScreenCounts);
             counts.RootElement.GetProperty("providers").GetProperty("healthy").GetInt32().Should().Be(1);
-            await plaid.Received(3).ListItemsAsync(Arg.Any<CancellationToken>());
+            if (credentialVaultUnavailable)
+                await credentialVault.Received(3).GetStatusAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+            else
+                await plaid.Received(3).ListItemsAsync(Arg.Any<CancellationToken>());
         }
         finally
         {

@@ -15,7 +15,8 @@ Provider quota responses preserve the runtime's explicit credits/request unit an
 cap and reset-policy evidence. They do not infer fundamentals entitlement from available credits.
 
 The Data workspace and its shared provider counts can use the retained records when readiness
-repositories are unavailable. Affected rows report unavailable readiness evidence. Provider
+repositories or the provider credential vault are unavailable. Affected rows report unavailable
+readiness evidence, and a failed vault read leaves the credential summary unavailable. Provider
 health returns connection state separately from performance measurements. Absent measurements
 are null, and measured average latency includes its observation timestamp.
 

@@ -1380,7 +1380,6 @@ public static partial class WorkstationEndpoints
         HttpContext context,
         Meridian.Application.UI.ConfigStore? configStore)
     {
-        var providerConnectionLifecycle = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
         var routingConnectionService = context.RequestServices.GetService<ProviderConnectionService>();
         var routingBindingService = context.RequestServices.GetService<ProviderBindingService>();
         var routingTrustService = context.RequestServices.GetService<ProviderTrustScoringService>();
@@ -1391,11 +1390,18 @@ public static partial class WorkstationEndpoints
         var routingTenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         // Provider readiness mirrors GET /api/providers/connections: a tenant-scoped request includes the
         // tenant's own connection credentials, so a scoped save is reflected here as it is in Settings.
-        var connectionRows = !canManageCredentials || providerConnectionLifecycle is null
-            ? []
-            : routingTenant.HasTenantScope
-                ? await providerConnectionLifecycle.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
-                : await providerConnectionLifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+        var connectionRows = canManageCredentials
+            ? await LoadOptionalDataProviderEvidenceAsync<ProviderConnectionRowDto>(context, "Provider connections", async () =>
+            {
+                var lifecycle = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
+                if (lifecycle is null)
+                    return [];
+
+                return routingTenant.HasTenantScope
+                    ? await lifecycle.GetConnectionsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
+                    : await lifecycle.GetConnectionsAsync(context.RequestAborted).ConfigureAwait(false);
+            }).ConfigureAwait(false)
+            : [];
         // Routing reads mirror the direct /api/provider-routing endpoints: they are filtered to the
         // authenticated tenant's retained connections, and a request without tenant scope sees none.
         var canReadRouting = canManageCredentials && routingTenant.HasTenantScope;
@@ -1408,16 +1414,19 @@ public static partial class WorkstationEndpoints
         var trustSnapshots = canReadRouting && routingTrustService is not null
             ? await routingTrustService.GetTrustSnapshotsForTenantAsync(routingTenant.TenantId!, context.RequestAborted).ConfigureAwait(false)
             : [];
-        var readinessRows = await LoadDataProviderReadinessRowsAsync(context).ConfigureAwait(false);
+        // Readiness also depends on the connection read. A failed read leaves only independent evidence.
+        var readinessRows = connectionRows is null
+            ? null
+            : await LoadDataProviderReadinessRowsAsync(context).ConfigureAwait(false);
         return BuildWorkstationDataProviderRecords(
             metricsStatus,
-            connectionRows,
+            connectionRows ?? [],
             routingConnections,
             routingBindings,
             trustSnapshots,
             readinessRows,
             asOf: DateTimeOffset.UtcNow,
-            exposeConnectionSummaries: canManageCredentials);
+            exposeConnectionSummaries: canManageCredentials && connectionRows is not null);
     }
 
     // The same permissions GET /api/providers/readiness admits, so the list never shows a caller a
@@ -1438,7 +1447,7 @@ public static partial class WorkstationEndpoints
             return [];
         }
 
-        try
+        return await LoadOptionalDataProviderEvidenceAsync<ProviderReadinessRowDto>(context, "Provider readiness", async () =>
         {
             // Hosts without the shared configuration store do not offer readiness enrichment.
             if (context.RequestServices.GetService<Meridian.Ui.Shared.Services.ConfigStore>() is null)
@@ -1450,6 +1459,15 @@ public static partial class WorkstationEndpoints
 
             var readiness = await readinessService.GetReadinessAsync(context.RequestAborted).ConfigureAwait(false);
             return readiness.Providers;
+        }).ConfigureAwait(false);
+    }
+
+    private static async Task<IReadOnlyList<T>?> LoadOptionalDataProviderEvidenceAsync<T>(
+        HttpContext context, string evidence, Func<Task<IReadOnlyList<T>>> read)
+    {
+        try
+        {
+            return await read().ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException and not AccessViolationException)
         {
@@ -1457,7 +1475,7 @@ public static partial class WorkstationEndpoints
             // Repository failures can contain connection details. Log the type without the payload.
             context.RequestServices.GetService<ILoggerFactory>()
                 ?.CreateLogger("Meridian.Ui.Shared.Endpoints.WorkstationEndpoints")
-                .LogWarning("Provider readiness enrichment is unavailable ({FailureType}).", ex.GetType().Name);
+                .LogWarning("{Evidence} unavailable ({FailureType}).", evidence, ex.GetType().Name);
             return null;
         }
     }
