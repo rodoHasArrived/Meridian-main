@@ -6,6 +6,202 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PartnershipInvestorAllocationInput
+
+Qualified name: <code>Meridian.Ledger.PartnershipInvestorAllocationInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:6](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L6).
+
+Period-level partnership accounting inputs for fees, high-water marks, and investor allocations.
+
+```csharp
+public sealed record PartnershipInvestorAllocationInput
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PartnershipInvestorAllocationInput(string FundId, string PeriodId, DateTimeOffset AsOf, decimal BeginningNav, decimal EndingNavBeforeFees, decimal HighWaterMark, decimal ManagementFeeRate, decimal PerformanceFeeRate, IReadOnlyList&lt;PartnershipInvestor&gt; Investors, string? Description = null);</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:8](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L8) |  |
+| <code>public string FundId { get; }</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:51](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L51) |  |
+| <code>public string PeriodId { get; }</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:53](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L53) |  |
+| <code>public DateTimeOffset AsOf { get; }</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:55](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L55) |  |
+| <code>public decimal BeginningNav { get; }</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:57](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L57) |  |
+| <code>public decimal EndingNavBeforeFees { get; }</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:59](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L59) |  |
+| <code>public decimal HighWaterMark { get; }</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:61](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L61) |  |
+| <code>public decimal ManagementFeeRate { get; }</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:63](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L63) |  |
+| <code>public decimal PerformanceFeeRate { get; }</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:65](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L65) |  |
+| <code>public IReadOnlyList&lt;PartnershipInvestor&gt; Investors { get; }</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:67](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L67) |  |
+| <code>public string? Description { get; }</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs:69](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationInput.cs#L69) |  |
+
+## PartnershipInvestorAllocationProjection
+
+Qualified name: <code>Meridian.Ledger.PartnershipInvestorAllocationProjection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PartnershipInvestorAllocationProjection.cs:6](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationProjection.cs#L6).
+
+Balanced journal projection for partnership fees and investor capital allocations.
+
+```csharp
+public sealed record PartnershipInvestorAllocationProjection(PartnershipInvestorAllocationInput Input, decimal GrossProfitOrLoss, decimal ManagementFee, decimal PerformanceFee, decimal AllocableProfitOrLoss, decimal EndingNavAfterFees, decimal UpdatedHighWaterMark, string Description, IReadOnlyList<PartnershipInvestorAllocation> InvestorAllocations, IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> Lines)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal TotalDebits =&gt; …;</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationProjection.cs:18](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationProjection.cs#L18) |  |
+| <code>public decimal TotalCredits =&gt; …;</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationProjection.cs:20](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationProjection.cs#L20) |  |
+| <code>public bool IsBalanced =&gt; …;</code> | [src/Meridian.Ledger/PartnershipInvestorAllocationProjection.cs:22](../../../../src/Meridian.Ledger/PartnershipInvestorAllocationProjection.cs#L22) |  |
+
+## PartnershipWaterfallAllocationInput
+
+Qualified name: <code>Meridian.Ledger.PartnershipWaterfallAllocationInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:6](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L6).
+
+Period-level inputs for tiered partnership waterfall allocation.
+
+```csharp
+public sealed record PartnershipWaterfallAllocationInput
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PartnershipWaterfallAllocationInput(string FundId, string PeriodId, DateTimeOffset AsOf, decimal DistributableProfit, IReadOnlyList&lt;PartnershipInvestor&gt; Investors, IReadOnlyList&lt;PartnershipWaterfallTier&gt; Tiers, string? Description = null);</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:8](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L8) |  |
+| <code>public string FundId { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:39](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L39) |  |
+| <code>public string PeriodId { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:41](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L41) |  |
+| <code>public DateTimeOffset AsOf { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:43](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L43) |  |
+| <code>public decimal DistributableProfit { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:45](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L45) |  |
+| <code>public IReadOnlyList&lt;PartnershipInvestor&gt; Investors { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:47](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L47) |  |
+| <code>public IReadOnlyList&lt;PartnershipWaterfallTier&gt; Tiers { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:49](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L49) |  |
+| <code>public string? Description { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs:51](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationInput.cs#L51) |  |
+
+## PartnershipWaterfallAllocationProjection
+
+Qualified name: <code>Meridian.Ledger.PartnershipWaterfallAllocationProjection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PartnershipWaterfallAllocationProjection.cs:6](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationProjection.cs#L6).
+
+Balanced journal projection for tiered partnership waterfall allocations.
+
+```csharp
+public sealed record PartnershipWaterfallAllocationProjection(PartnershipWaterfallAllocationInput Input, string Description, IReadOnlyList<PartnershipWaterfallTierAllocation> TierAllocations, IReadOnlyList<PartnershipInvestorAllocation> InvestorAllocations, decimal UnallocatedProfit, IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> Lines)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal AllocatedProfit =&gt; …;</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationProjection.cs:14](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationProjection.cs#L14) |  |
+| <code>public decimal TotalDebits =&gt; …;</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationProjection.cs:16](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationProjection.cs#L16) |  |
+| <code>public decimal TotalCredits =&gt; …;</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationProjection.cs:18](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationProjection.cs#L18) |  |
+| <code>public bool IsBalanced =&gt; …;</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationProjection.cs:20](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationProjection.cs#L20) |  |
+
+## PartnershipWaterfallAllocationRule
+
+Qualified name: <code>Meridian.Ledger.PartnershipWaterfallAllocationRule</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs:6](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs#L6).
+
+Investor allocation rule inside one partnership waterfall tier.
+
+```csharp
+public sealed record PartnershipWaterfallAllocationRule
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PartnershipWaterfallAllocationRule(string investorId, decimal allocationPercent);</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs:8](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs#L8) |  |
+| <code>public string InvestorId { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs:19](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs#L19) |  |
+| <code>public decimal AllocationPercent { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs:21](../../../../src/Meridian.Ledger/PartnershipWaterfallAllocationRule.cs#L21) |  |
+
+## PartnershipWaterfallProjector
+
+Qualified name: <code>Meridian.Ledger.PartnershipWaterfallProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/PartnershipWaterfallProjector.cs:9](../../../../src/Meridian.Ledger/PartnershipWaterfallProjector.cs#L9).
+
+Projects tiered partnership waterfalls into investor capital allocations.
+
+```csharp
+public static class PartnershipWaterfallProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PartnershipWaterfallAllocationProjection Project(PartnershipWaterfallAllocationInput input);</code> | [src/Meridian.Ledger/PartnershipWaterfallProjector.cs:13](../../../../src/Meridian.Ledger/PartnershipWaterfallProjector.cs#L13) |  |
+
+## PartnershipWaterfallTier
+
+Qualified name: <code>Meridian.Ledger.PartnershipWaterfallTier</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PartnershipWaterfallTier.cs:6](../../../../src/Meridian.Ledger/PartnershipWaterfallTier.cs#L6).
+
+Ordered partnership waterfall tier with optional dollar cap and investor split rules.
+
+```csharp
+public sealed record PartnershipWaterfallTier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PartnershipWaterfallTier(string tierId, string description, IReadOnlyList&lt;PartnershipWaterfallAllocationRule&gt; allocationRules, decimal? capAmount = null);</code> | [src/Meridian.Ledger/PartnershipWaterfallTier.cs:8](../../../../src/Meridian.Ledger/PartnershipWaterfallTier.cs#L8) |  |
+| <code>public string TierId { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallTier.cs:30](../../../../src/Meridian.Ledger/PartnershipWaterfallTier.cs#L30) |  |
+| <code>public string Description { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallTier.cs:32](../../../../src/Meridian.Ledger/PartnershipWaterfallTier.cs#L32) |  |
+| <code>public IReadOnlyList&lt;PartnershipWaterfallAllocationRule&gt; AllocationRules { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallTier.cs:34](../../../../src/Meridian.Ledger/PartnershipWaterfallTier.cs#L34) |  |
+| <code>public decimal? CapAmount { get; }</code> | [src/Meridian.Ledger/PartnershipWaterfallTier.cs:36](../../../../src/Meridian.Ledger/PartnershipWaterfallTier.cs#L36) |  |
+
+## PartnershipWaterfallTierAllocation
+
+Qualified name: <code>Meridian.Ledger.PartnershipWaterfallTierAllocation</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PartnershipWaterfallTierAllocation.cs:6](../../../../src/Meridian.Ledger/PartnershipWaterfallTierAllocation.cs#L6).
+
+Allocation to one investor from one waterfall tier.
+
+```csharp
+public sealed record PartnershipWaterfallTierAllocation(string TierId, string TierDescription, PartnershipInvestor Investor, decimal AllocatedAmount, LedgerAccount CapitalAccount);
+```
+
+## PerformanceFeeAccrualDraftResult
+
+Qualified name: <code>Meridian.Ledger.PerformanceFeeAccrualDraftResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/FundEconomicsJournalFactory.cs:10](../../../../src/Meridian.Ledger/FundEconomicsJournalFactory.cs#L10).
+
+Result of drafting a performance-fee accrual: the balanced draft (null when no fee is due) plus the crystallization outputs a caller persists to carry the high-water mark forward.
+
+```csharp
+public sealed record PerformanceFeeAccrualDraftResult(AutomatedJournalDraft? Draft, decimal GrossProfit, decimal FeeBase, decimal PerformanceFee, decimal CrystallizedFee, decimal NewHighWaterMark, decimal PeriodAccrual = 0m)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasFee =&gt; …;</code> | [src/Meridian.Ledger/FundEconomicsJournalFactory.cs:20](../../../../src/Meridian.Ledger/FundEconomicsJournalFactory.cs#L20) | True when a fee accrued and a posting draft was produced. |
+
+## PeriodCloseAccountBalance
+
+Qualified name: <code>Meridian.Ledger.PeriodCloseAccountBalance</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PeriodCloseInput.cs:9](../../../../src/Meridian.Ledger/PeriodCloseInput.cs#L9).
+
+One trial-balance row feeding period-close projection: an account, its normal-balance value, and the optional dimensional scope (entity, sleeve, ...) it was posted under. Rows with the same account but different dimensions are closed independently so entity/sleeve P&amp;L and retained earnings stay dimension-scoped.
+
+```csharp
+public sealed record PeriodCloseAccountBalance(LedgerAccount Account, decimal Balance, LedgerLineDimensionSet? Dimensions = null);
+```
+
 ## PeriodCloseDraftBuilder
 
 Qualified name: <code>Meridian.Ledger.PeriodCloseDraftBuilder</code>. Kind: `class`.
@@ -741,192 +937,4 @@ Account-level variance between the actual ledger and an independent shadow-NAV l
 
 ```csharp
 public sealed record ShadowNavValidationFinding(LedgerAccount Account, decimal ActualBalance, decimal ShadowBalance, decimal Variance, decimal AbsoluteVariance, bool RequiresOverride);
-```
-
-## ShadowNavValidationPolicy
-
-Qualified name: <code>Meridian.Ledger.ShadowNavValidationPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:6](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L6).
-
-Tolerance and governance metadata for comparing an actual ledger to a shadow-NAV ledger.
-
-```csharp
-public sealed record ShadowNavValidationPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShadowNavValidationPolicy(decimal navTolerance, decimal accountTolerance, string policyId = &quot;shadow-nav-default&quot;, string? reviewerGroup = null);</code> | [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:8](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L8) |  |
-| <code>public decimal NavTolerance { get; }</code> | [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:27](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L27) |  |
-| <code>public decimal AccountTolerance { get; }</code> | [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:29](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L29) |  |
-| <code>public string PolicyId { get; }</code> | [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:31](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L31) |  |
-| <code>public string? ReviewerGroup { get; }</code> | [src/Meridian.Ledger/ShadowNavValidationPolicy.cs:33](../../../../src/Meridian.Ledger/ShadowNavValidationPolicy.cs#L33) |  |
-
-## ShadowNavValidationReport
-
-Qualified name: <code>Meridian.Ledger.ShadowNavValidationReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ShadowNavValidationReport.cs:6](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L6).
-
-Point-in-time comparison between published actual books and an independent shadow-NAV book.
-
-```csharp
-public sealed record ShadowNavValidationReport(LedgerBookKey ActualLedgerKey, LedgerBookKey ShadowLedgerKey, DateTimeOffset AsOf, string PolicyId, string? ReviewerGroup, decimal NavTolerance, decimal AccountTolerance, decimal ActualNav, decimal ShadowNav, decimal NavVariance, IReadOnlyList<ShadowNavValidationFinding> Findings)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal AbsoluteNavVariance =&gt; …;</code> | [src/Meridian.Ledger/ShadowNavValidationReport.cs:19](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L19) |  |
-| <code>public bool NavWithinTolerance =&gt; …;</code> | [src/Meridian.Ledger/ShadowNavValidationReport.cs:21](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L21) |  |
-| <code>public bool AccountVariancesWithinTolerance =&gt; …;</code> | [src/Meridian.Ledger/ShadowNavValidationReport.cs:23](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L23) |  |
-| <code>public bool RequiresOverride =&gt; …;</code> | [src/Meridian.Ledger/ShadowNavValidationReport.cs:25](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L25) |  |
-| <code>public ShadowNavOverrideDraft CreateOverrideDraft(DateTimeOffset createdAtUtc, string createdBy, string reason);</code> | [src/Meridian.Ledger/ShadowNavValidationReport.cs:27](../../../../src/Meridian.Ledger/ShadowNavValidationReport.cs#L27) |  |
-
-## ShadowNavValidator
-
-Qualified name: <code>Meridian.Ledger.ShadowNavValidator</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/ShadowNavValidator.cs:6](../../../../src/Meridian.Ledger/ShadowNavValidator.cs#L6).
-
-Compares actual and shadow ledgers for independent NAV validation.
-
-```csharp
-public static class ShadowNavValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ShadowNavValidationReport Validate(ProjectLedgerBook projectLedgerBook, LedgerBookKey actualLedgerKey, LedgerBookKey shadowLedgerKey, DateTimeOffset asOf, ShadowNavValidationPolicy policy, ChartOfAccounts? chart = null, string? financialAccountId = null);</code> | [src/Meridian.Ledger/ShadowNavValidator.cs:8](../../../../src/Meridian.Ledger/ShadowNavValidator.cs#L8) |  |
-
-## ShareClass
-
-Qualified name: <code>Meridian.Ledger.ShareClass</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ShareClass.cs:25](../../../../src/Meridian.Ledger/ShareClass.cs#L25).
-
-A fund share/unit class with the terms needed to unitize NAV: base currency, fee rates, the inception NAV per unit, and the equalization method.
-
-```csharp
-public sealed record ShareClass
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShareClass(string shareClassId, string fundProfileId, string name, string currency, decimal managementFeeRateAnnual, decimal performanceFeeRate, decimal inceptionNavPerUnit, DateOnly inceptionDate, EqualizationMethod equalizationMethod = EqualizationMethod.None);</code> | [src/Meridian.Ledger/ShareClass.cs:27](../../../../src/Meridian.Ledger/ShareClass.cs#L27) |  |
-| <code>public string ShareClassId { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:62](../../../../src/Meridian.Ledger/ShareClass.cs#L62) |  |
-| <code>public string FundProfileId { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:64](../../../../src/Meridian.Ledger/ShareClass.cs#L64) |  |
-| <code>public string Name { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:66](../../../../src/Meridian.Ledger/ShareClass.cs#L66) |  |
-| <code>public string Currency { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:68](../../../../src/Meridian.Ledger/ShareClass.cs#L68) |  |
-| <code>public decimal ManagementFeeRateAnnual { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:70](../../../../src/Meridian.Ledger/ShareClass.cs#L70) |  |
-| <code>public decimal PerformanceFeeRate { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:72](../../../../src/Meridian.Ledger/ShareClass.cs#L72) |  |
-| <code>public decimal InceptionNavPerUnit { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:74](../../../../src/Meridian.Ledger/ShareClass.cs#L74) |  |
-| <code>public DateOnly InceptionDate { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:76](../../../../src/Meridian.Ledger/ShareClass.cs#L76) |  |
-| <code>public EqualizationMethod EqualizationMethod { get; }</code> | [src/Meridian.Ledger/ShareClass.cs:78](../../../../src/Meridian.Ledger/ShareClass.cs#L78) |  |
-
-## ShareClassUnitHolding
-
-Qualified name: <code>Meridian.Ledger.ShareClassUnitHolding</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:7](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L7).
-
-One investor&#x27;s unit holding in a share class.
-
-```csharp
-public sealed record ShareClassUnitHolding(string InvestorId, decimal Units, decimal SubscribedAmount, decimal RedeemedAmount, decimal EqualisationCredit, decimal ContingentRedemption)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal Value(decimal navPerUnit) =&gt; …;</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:16](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L16) | Current value of the holding at the class NAV per unit. |
-
-## ShareClassUnitMovement
-
-Qualified name: <code>Meridian.Ledger.ShareClassUnitMovement</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:20](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L20).
-
-One processed unit-register transaction with its resulting units and equalization.
-
-```csharp
-public sealed record ShareClassUnitMovement(string TransactionId, string InvestorId, DateOnly DealingDate, UnitTransactionType Type, decimal NavPerUnit, decimal Amount, decimal Units, decimal EqualisationCredit, decimal ContingentRedemption);
-```
-
-## ShareClassUnitRegister
-
-Qualified name: <code>Meridian.Ledger.ShareClassUnitRegister</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:32](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L32).
-
-Unitized state of a share class after folding its transactions to a valuation date.
-
-```csharp
-public sealed record ShareClassUnitRegister(ShareClass ShareClass, DateOnly AsOf, decimal UnitsOutstanding, decimal ClassNav, decimal NavPerUnit, decimal HighWaterNavPerUnit, IReadOnlyList<ShareClassUnitHolding> Holdings, IReadOnlyList<ShareClassUnitMovement> Movements, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal AggregateHoldingValue =&gt; …;</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:44](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L44) | Aggregate value of all holdings at the class NAV per unit; ties to class NAV. |
-
-## ShareClassUnitRegisterProjector
-
-Qualified name: <code>Meridian.Ledger.ShareClassUnitRegisterProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:54](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L54).
-
-Folds a share class&#x27;s subscription/redemption transactions into a unit register: units outstanding, per-investor holdings, NAV per unit, running high-water mark, and — for equalising classes — the equalisation credit / contingent redemption on each subscription. Pure and deterministic. NAV per unit at the valuation date uses the supplied class NAV when known, otherwise the last dealing price.
-
-```csharp
-public static class ShareClassUnitRegisterProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string RedemptionExceedsHoldingIssueCode = &quot;fund.share-class.redemption-exceeds-holding&quot;;</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:56](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L56) |  |
-| <code>public static ShareClassUnitRegister Project(ShareClass shareClass, IReadOnlyList&lt;UnitTransaction&gt; transactions, DateOnly asOf, decimal? classNav = null);</code> | [src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs:58](../../../../src/Meridian.Ledger/ShareClassUnitRegisterProjector.cs#L58) |  |
-
-## ShortCarryProjector
-
-Qualified name: <code>Meridian.Ledger.ShortCarryProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/ShortCarryProjector.cs:11](../../../../src/Meridian.Ledger/ShortCarryProjector.cs#L11).
-
-Book accounting for short carrying charges: a borrow fee is an expense paid in cash; a payment in lieu is dividend expense paid in cash. Neither changes the short lot&#x27;s quantity or liability basis, so neither is a lot mutation; both are governed period journals that must reference the open short lot they belong to.
-
-```csharp
-public static class ShortCarryProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly IReadOnlySet&lt;int&gt; SupportedDaysPerYear = new HashSet&lt;int&gt;{ 360, 365 };</code> | [src/Meridian.Ledger/ShortCarryProjector.cs:13](../../../../src/Meridian.Ledger/ShortCarryProjector.cs#L13) |  |
-| <code>public static decimal? TryComputeAmount(ShortCarryInstruction instruction, out string? refusal);</code> | [src/Meridian.Ledger/ShortCarryProjector.cs:16](../../../../src/Meridian.Ledger/ShortCarryProjector.cs#L16) | The functional-currency charge, at ledger rounding, or the reason it cannot be calculated. |
-| <code>public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Lines(ShortCarryInstruction instruction, LedgerAccount carryingAccount);</code> | [src/Meridian.Ledger/ShortCarryProjector.cs:35](../../../../src/Meridian.Ledger/ShortCarryProjector.cs#L35) | Expected journal lines for the instruction against the lot&#x27;s liability carrying account. |
-
-## ShortCoverLine
-
-Qualified name: <code>Meridian.Ledger.ShortCoverLine</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ShortLotJournalProjector.cs:7](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L7).
-
-One projected currency-aware short cover line; functional amounts plus the transaction leg.
-
-```csharp
-public sealed record ShortCoverLine(LedgerAccount Account, decimal Debit, decimal Credit, string TransactionCurrency, decimal TransactionDebit, decimal TransactionCredit, decimal FxRateToFunctional, string FunctionalCurrency);
 ```

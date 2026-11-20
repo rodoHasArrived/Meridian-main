@@ -95,6 +95,29 @@ public sealed partial class PostgresLedgerJournalStore
             || command.SourceJournalEntryId != predecessor.Entry.JournalEntryId)
             throw new LedgerValidationException("Mixed prior-period posting intent and typed source must bind the exact retained predecessor.");
 
+        if (correctionIdText is null && tags.GetValueOrDefault("prior-period.reversalPolicy") == "reverse-period-end-mark")
+        {
+            var source = roots[0].Entry.Metadata;
+            if ((!ValuationMarkEvidenceGuard.IsValuation(source.IdempotencyKey) && source.ActivityType != "fair-value-mark")
+                || originalDate != rootPeriod.EndDate || target.StartDate.DayNumber != rootPeriod.EndDate.DayNumber + 1
+                || command.EffectiveDate != target.StartDate)
+                throw new LedgerValidationException("A scheduled mark reversal must target the first day after its retained period-end mark.");
+            await using var check = connection.CreateCommand();
+            check.Transaction = transaction;
+            check.CommandText = $"""
+                select exists (
+                    select 1 from {Qualified("journal_entries")} where
+                        source_journal_entry_id = @mark and period_id = @target
+                        and metadata->'tags'->>'prior-period.reversalPolicy' = 'reverse-period-end-mark'
+                        and metadata->'tags'->>'prior-period.correctionJournalEntryId' is null
+                );
+                """;
+            check.Parameters.AddWithValue("mark", rootId);
+            check.Parameters.AddWithValue("target", target.PeriodId);
+            if (await check.ExecuteScalarAsync(ct).ConfigureAwait(false) is true)
+                throw new LedgerValidationException("A governed reversal for this period-end mark already posted to the target period.");
+        }
+
         var book = await LoadLedgerBookAsync(connection, transaction, bookId, ct).ConfigureAwait(false)
             ?? throw new LedgerValidationException("The authoritative mixed prior-period ledger book is unavailable.");
         if (book.AccountingBasis != write.AccountingBasis || !predecessor.Entry.IsBalanced

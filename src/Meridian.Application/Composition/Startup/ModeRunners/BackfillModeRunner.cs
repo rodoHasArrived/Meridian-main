@@ -116,9 +116,15 @@ public sealed class BackfillModeRunner
                 providersArray = backfillProviders.ToArray();
             }
 
-            var backfill = new HistoricalBackfillService(providersArray, _log, validationProfiles: ctx.Config.Backfill?.ValidationProfiles);
-            var result = await backfill.RunAsync(backfillRequest, pipeline, ct).ConfigureAwait(false);
             var statusStore = BackfillStatusStore.FromConfig(ctx.Config);
+            var backfill = new HistoricalBackfillService(providersArray, _log, checkpointStore: statusStore,
+                symbolTimelineResolver: backfillHost.GetService<Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver>(),
+                validationProfiles: ctx.Config.Backfill?.ValidationProfiles)
+            {
+                ResolveSessionsAsync = new Meridian.Platform.Scheduling.HistoricalSessionScheduleResolver(
+                    backfillHost.GetService<Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService>()).ResolveAsync
+            };
+            var result = await backfill.RunAsync(backfillRequest, pipeline, ct).ConfigureAwait(false);
             await statusStore.WriteAsync(result, ct).ConfigureAwait(false);
             await pipeline.FlushAsync(ct).ConfigureAwait(false);
             await statusWriter.WriteOnceAsync(ct).ConfigureAwait(false);

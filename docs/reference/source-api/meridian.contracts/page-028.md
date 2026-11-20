@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementAuditDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementAuditDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:64](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L64).
+
+```csharp
+public sealed record IntercompanyAgreementAuditDto(Guid EventId, Guid ProposalId, string Action, string Actor, DateTimeOffset RecordedAtUtc, long AggregateVersion, string? Rationale, IntercompanyAgreementDraftDto? Snapshot = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;string&gt;? MigrationWarnings { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:69](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L69) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:71](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L71) |  |
+
+## IntercompanyAgreementCallContext
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementCallContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:121](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L121).
+
+Trusted server context, never deserialize this from a command body.
+
+```csharp
+public sealed record IntercompanyAgreementCallContext(string TenantId, string Actor);
+```
+
+## IntercompanyAgreementCapabilitiesDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementCapabilitiesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:74](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L74).
+
+```csharp
+public sealed record IntercompanyAgreementCapabilitiesDto(bool CanEdit, bool CanSubmit, bool CanApprove, bool CanReject, bool CanWithdraw, bool CanAmend, bool CanTerminate, string? BlockingReason = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool CanCreateProposal { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:78](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L78) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool CanAttestExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:80](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L80) |  |
+
 ## IntercompanyAgreementCommandDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementCommandDto</code>. Kind: `record`.
@@ -653,36 +699,4 @@ Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs
 
 ```csharp
 public sealed record IntercompanyScheduleDto(DateOnly StartDate, DateOnly EndDate, IntercompanyFrequencyDto Frequency, string CalendarId, BusinessDayConvention BusinessDayConvention, int SettlementBusinessDays = 0);
-```
-
-## IntercompanyStructuredTermsDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:31](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L31).
-
-Versioned declarations. Presence does not authorize accrual, posting, settlement or FX conversion.
-
-```csharp
-public sealed record IntercompanyStructuredTermsDto(IntercompanyScheduleDto? Schedule = null, IntercompanyRateBasisDto? RateBasis = null, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? FixedAnnualRate = null, string? FloatingIndexReference = null, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? SpreadBps = null, IntercompanyDayCountDto? DayCount = null, IntercompanyCompoundingDto? Compounding = null, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? FixedFeeAmount = null, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? AnnualFeeRate = null, string? CalculationBaseReference = null, IReadOnlyList<IntercompanyAllocationDto>? Allocations = null, string? AllocationDriverReference = null, IntercompanyGuaranteeTermsDto? Guarantee = null, int SchemaVersion = 1, IntercompanyFixedFeeBasisDto? FixedFeeBasis = null, int? FixingLagBusinessDays = null);
-```
-
-## IntercompanyStructuredTermsJsonContext
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsJsonContext.cs:10](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsJsonContext.cs#L10).
-
-```csharp
-public partial class IntercompanyStructuredTermsJsonContext : JsonSerializerContext;
-```
-
-## IntercompanyStructuredTermsPreviewDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:51](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L51).
-
-```csharp
-public sealed record IntercompanyStructuredTermsPreviewDto(string Status, string TermsFormat, string SubjectHash, string KernelVersion, string? CalendarId, string? CalendarHash, IReadOnlyList<IntercompanyDatePeriodDto> Periods, IReadOnlyList<string> Diagnostics);
 ```

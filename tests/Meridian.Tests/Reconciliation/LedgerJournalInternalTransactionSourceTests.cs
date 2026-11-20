@@ -213,16 +213,24 @@ public sealed partial class LedgerJournalInternalTransactionSourceTests
         match.InternalEvidenceReference.Should().Be($"internal:journal:{trade.JournalEntryId:D}");
     }
 
-    [Fact]
-    public async Task GetTransactionsAsync_TradeFillJournalAsThePostingConsumerBuildsIt_ExactMatchesThroughFitIdRule()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("alpaca-activity-401")]
+    public async Task GetTransactionsAsync_TradeFillUsesBrokerIdentityOrUniqueLegacyFallback(string? brokerActivityId)
     {
-        // Mirrors exactly what LedgerPostingConsumer.BuildTradeJournal/BuildPostingMetadata now
-        // emit for a buy fill: activity "trade-fill" (not in the projection's activity vocabulary,
-        // so classification must come from the Securities line), tradeFill.* audit tags, and the
-        // opt-in `quantity`/`externalTransactionId` identity tags. No `settlementDate` tag is
-        // stamped — the execution report carries none — so the projection defaults settlement to
-        // the trade date and the statement row here settles same-day.
+        // Retained trade journals carry a local fill ID. Only a supplied broker activity ID
+        // establishes statement identity. Both fixtures otherwise have the same economics.
         var fillId = Guid.NewGuid();
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["source.orderId"] = "ord-recon",
+            ["tradeFill.side"] = "Buy",
+            ["tradeFill.quantity"] = "12.5",
+            ["quantity"] = "12.5",
+            ["externalTransactionId"] = fillId.ToString("D")
+        };
+        if (brokerActivityId is not null)
+            tags["brokerActivityId"] = brokerActivityId;
         var trade = Journal(
             Timestamp(2026, 5, 28),
             "Buy 12.5 MSFT @ 100.2500",
@@ -232,14 +240,7 @@ public sealed partial class LedgerJournalInternalTransactionSourceTests
                 FillId: fillId,
                 FinancialAccountId: AccountLabel,
                 EffectiveDate: new DateOnly(2026, 5, 28),
-                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["source.orderId"] = "ord-recon",
-                    ["tradeFill.side"] = "Buy",
-                    ["tradeFill.quantity"] = "12.5",
-                    ["quantity"] = "12.5",
-                    ["externalTransactionId"] = fillId.ToString("D"),
-                }),
+                Tags: tags),
             (LedgerAccounts.Securities("MSFT", AccountLabel), 1253.125m, 0m),
             (LedgerAccounts.CashAccount(AccountLabel), 0m, 1253.125m));
 
@@ -248,12 +249,12 @@ public sealed partial class LedgerJournalInternalTransactionSourceTests
         var projected = internalTransactions.Should().ContainSingle().Subject;
         projected.TransactionType.Should().Be("trade");
         projected.Quantity.Should().Be(12.5m);
-        projected.ExternalTransactionId.Should().Be(fillId.ToString("D"));
+        projected.ExternalTransactionId.Should().Be(brokerActivityId);
         projected.SettlementDate.Should().Be(new DateOnly(2026, 5, 28), "no settlement tag defaults to the trade date");
 
         var statementRow = new NormalizedStatementTransaction(
             "import-1:7",
-            fillId.ToString("D"),
+            brokerActivityId ?? "unrecorded-alpaca-activity-402",
             AccountLabel,
             "MSFT",
             "USD",
@@ -274,10 +275,10 @@ public sealed partial class LedgerJournalInternalTransactionSourceTests
             new StatementMatchingToleranceProfile(0m, 0m, 0m, 0m, 0m)));
 
         var match = result.Results.Should().ContainSingle().Subject;
-        match.MatchTier.Should().Be(
-            StatementMatchTier.Exact,
-            "a fill journal stamped with the canonical fill id and quantity must exact-match instead of degrading to the candidate stage");
-        match.RuleIds.Should().Contain("statement-transaction-external-id-v1");
+        match.MatchTier.Should().Be(StatementMatchTier.Exact);
+        match.RuleIds.Should().Contain(brokerActivityId is null
+            ? "statement-transaction-exact-v1"
+            : "statement-transaction-external-id-v1");
         match.InternalEvidenceReference.Should().Be($"internal:journal:{trade.JournalEntryId:D}");
     }
 

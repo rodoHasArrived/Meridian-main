@@ -5,6 +5,7 @@ import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, Clipboar
 import React, { type ReactNode } from "react";
 import { ServerOrderPreviewPanel } from "./trading-screen.server-preview";
 import { ExecutionJournalPanel } from "./trading-screen.journal";
+import { PaperReconciliationPanel } from "./trading-screen.paper-reconciliation";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
 import { Link, useLocation } from "react-router-dom";
@@ -2025,6 +2026,7 @@ function PaperSessionDetailPanelView({ detail }: { detail: PaperSessionDetailPan
       )}
 
       {detail.replay && <PaperSessionReplayPanelView panel={detail.replay} />}
+      <PaperReconciliationPanel key={detail.sessionId} sessionId={detail.sessionId} />
     </div>
   );
 }

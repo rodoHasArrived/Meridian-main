@@ -50,6 +50,8 @@ public sealed class BackfillCoordinator : IDisposable
     private BackfillResult? _lastRun;
     private bool _disposed;
 
+    public Func<string, DateOnly, DateOnly, CancellationToken, Task<HistoricalSessionSchedule?>>? ResolveSessionsAsync { get; init; }
+
     /// <summary>
     /// Creates a BackfillCoordinator using the unified ProviderRegistry for provider discovery.
     /// </summary>
@@ -452,7 +454,10 @@ public sealed class BackfillCoordinator : IDisposable
             _log,
             checkpointStore: checkpointStore,
             symbolTimelineResolver: _symbolTimelineResolver,
-            validationProfiles: backfillCfg?.ValidationProfiles);
+            validationProfiles: backfillCfg?.ValidationProfiles)
+        {
+            ResolveSessionsAsync = ResolveSessionsAsync
+        };
     }
 
     private static string[] GetSupportedGranularityValues(IHistoricalDataProvider provider)

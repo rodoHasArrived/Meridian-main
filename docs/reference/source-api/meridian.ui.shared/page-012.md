@@ -28,9 +28,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FiscalYearCloseSnapshotRead</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:15](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L15).
-
-The retained close snapshot read for one constituent period. IntegrityFailed is set when the store refused to serve retained bytes that no longer match their hash or scope.
+Source: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:6](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L6).
 
 ```csharp
 public sealed record FiscalYearCloseSnapshotRead(LedgerPeriodCloseSnapshot? Snapshot, bool IntegrityFailed = false);
@@ -993,7 +991,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingActionAuditStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:58](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L58).
+Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:67](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L67).
 
 Appends and queries accounting action audit events in process memory.
 
@@ -1005,8 +1003,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:64](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L64) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:94](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L94) |  |
+| <code>public Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:73](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L73) |  |
+| <code>public Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:103](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L103) |  |
 
 ## InMemoryAccountingConfigurationStore
 
@@ -1025,7 +1023,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task&lt;AccountingConfigurationWorkspaceDto?&gt; GetAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:25](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L25) |  |
-| <code>public Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:37](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L37) |  |
+| <code>public Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:40](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L40) |  |
 
 ## InMemoryAccountingMigrationRunArtifactStore
 
