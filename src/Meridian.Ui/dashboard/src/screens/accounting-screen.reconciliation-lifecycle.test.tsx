@@ -67,7 +67,7 @@ describe("buildBreakLifecycleModel", () => {
     const model = buildBreakLifecycleModel(item(state))!;
     expect(model.canClassify).toBe(classify);
     const enabled = Object.fromEntries(model.actions.map((action) => [action.id, action.enabled]));
-    expect(enabled).toEqual({ waive, signOff, reopen });
+    expect(enabled).toEqual({ waive, supersede: waive, signOff, reopen });
     for (const action of model.actions) {
       if (action.enabled) expect(action.disabledReason).toBeNull();
       else expect(action.disabledReason).toBeTruthy();
@@ -168,6 +168,79 @@ describe("BreakLifecyclePanel", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("changed since you opened it");
     await userEvent.click(screen.getByRole("button", { name: "Reload this break" }));
     await waitFor(() => expect(onUpdated).toHaveBeenCalledWith(expect.objectContaining({ version: 9 })));
+  });
+
+  it("requires a fresh review if the case version advances while sign-off is open", async () => {
+    const services = fakeServices({ read: vi.fn(async () => item("Resolved", { version: 5 })) });
+    const { rerender } = render(<BreakLifecyclePanel item={item("Resolved")} services={services} />);
+    await userEvent.click(screen.getByRole("button", { name: "Sign off" }));
+    rerender(<BreakLifecyclePanel item={item("Resolved", { version: 5 })} services={services} />);
+    expect(screen.getByRole("button", { name: "Confirm sign off" })).toBeDisabled();
+    expect(screen.getByText(/Reviewed version 4 · current version 5/)).toBeInTheDocument();
+    expect(services.signOff).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Reload this break" }));
+    expect(await screen.findByText(/Case version 4 → 5/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Sign off" }));
+    await userEvent.click(screen.getByRole("button", { name: "Confirm sign off" }));
+    expect(services.signOff).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ expectedVersion: 5 }));
+  });
+
+  it("previews supersession with the distinct successor and required approval", async () => {
+    const supersede = vi.fn(async () => succeeded(item("Superseded", { version: 5, supersedingBreakId: "cash-2" })));
+    render(<BreakLifecyclePanel item={item("Investigating", { evidenceLinks: ["journal:je-cash-1",
+      "urn:meridian:statement-casework-handoff:completed:internal-reference"] })} services={fakeServices({ supersede })} />);
+    await userEvent.click(screen.getByRole("button", { name: "Supersede" }));
+    const form = screen.getByRole("form", { name: "Supersede this break" });
+    expect(form).toHaveTextContent("Investigating → Superseded");
+    expect(within(form).getByRole("button", { name: "Confirm supersede" })).toBeDisabled();
+    await userEvent.type(within(form).getByLabelText("Reason"), "Source correction created the successor case");
+    await userEvent.type(within(form).getByLabelText("Approver operator ID"), "controller-2");
+    await userEvent.type(within(form).getByLabelText("Approval reference"), "APR-18");
+    await userEvent.type(within(form).getByLabelText("Successor case ID"), "cash-2");
+    await userEvent.click(within(form).getByRole("button", { name: "Confirm supersede" }));
+    expect(supersede).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ action: "Supersede", expectedVersion: 4,
+      supersedingBreakId: "cash-2", approvalActor: "controller-2", approvalReference: "APR-18", evidenceLinks: ["journal:je-cash-1"] }));
+  });
+
+  it("recovers an uncertain statement decision by command ID and waits for the retained handoff", async () => {
+    const scoped = item("Resolved", { sourceType: "statement", tenantId: "tenant", companyId: "company" });
+    const signOff = vi.fn<(command: ReconciliationCaseworkCommand) => Promise<ReconciliationCaseworkOperationResult>>()
+      .mockRejectedValue(new Error("Connection interrupted"));
+    const audit = vi.fn<() => Promise<ReconciliationBreakQueueAuditEvent[]>>();
+    const services = fakeServices({ signOff, audit });
+    const { unmount } = render(<BreakLifecyclePanel item={scoped} services={services} operatorId="ops-2" />);
+    await userEvent.click(screen.getByRole("button", { name: "Sign off" }));
+    await userEvent.click(screen.getByRole("button", { name: "Confirm sign off" }));
+    await screen.findByText("Command outcome unconfirmed");
+    const { commandId } = signOff.mock.calls[0][0];
+    unmount();
+    const retained = { eventId: "signed", eventType: "SignedOff", breakId: scoped.breakId, occurredAt: scoped.detectedAt, commandId };
+    audit.mockResolvedValueOnce([retained]).mockResolvedValueOnce([retained, {
+      ...retained, eventId: "handoff", eventType: "EvidenceLinked", commandId: "paired-command", causationId: commandId, source: "statement-casework-handoff"
+    }]);
+    render(<BreakLifecyclePanel item={scoped} services={services} operatorId="ops-2" />);
+    expect(screen.getByText(commandId)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Check outcome" }));
+    await screen.findByText(/handoff are still unconfirmed/);
+    await userEvent.click(screen.getByRole("button", { name: "Check outcome" }));
+    await screen.findByText("Command confirmed in retained case history.");
+    expect(signOff).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("button", { name: "Check outcome" })).not.toBeInTheDocument();
+  });
+
+  it("offers the same reviewed command only after checking its uncertain outcome", async () => {
+    const signOff = vi.fn<(command: ReconciliationCaseworkCommand) => Promise<ReconciliationCaseworkOperationResult>>()
+      .mockRejectedValueOnce(new Error("Connection interrupted"))
+      .mockResolvedValueOnce(succeeded(item("SignedOff", { version: 5 })));
+    render(<BreakLifecyclePanel item={item("Resolved")} services={fakeServices({ signOff, audit: async () => [] })} />);
+    await userEvent.click(screen.getByRole("button", { name: "Sign off" }));
+    await userEvent.click(screen.getByRole("button", { name: "Confirm sign off" }));
+    const check = await screen.findByRole("button", { name: "Check outcome" });
+    expect(screen.queryByRole("button", { name: "Resume same command" })).not.toBeInTheDocument();
+    await userEvent.click(check);
+    await userEvent.click(await screen.findByRole("button", { name: "Resume same command" }));
+    expect(signOff.mock.calls[1][0]).toEqual(signOff.mock.calls[0][0]);
+    await screen.findByText("Sign-off retained in case history.");
   });
 
   it("keeps classification read-only on a signed-off break and has no axe violations", async () => {

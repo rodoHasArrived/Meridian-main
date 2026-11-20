@@ -1023,6 +1023,20 @@ Focused coverage lives in `reporting-retained-amounts.test.tsx` and `report-amou
 
 The reconciliation queue shows source observation and retained occurrence age directly. Clearing is labeled Source cleared and never implies case resolution. Legacy rows explicitly show identity/age unavailable. Queue refresh compares lineage metadata; inspector details include business and comparison scopes.
 
+The Match handoff and Casework render the same retained break evidence. Casework keeps the queue beside
+the selected case, with its observed and expected amounts, supplied residuals and lineage next to actions,
+affected outputs and activity. An earlier retained comparison travels in the case link. The browser
+compares supplied residuals only when the retained comparison scope and units agree. Source clearing,
+case disposition and sign-off have separate labels.
+
+Waive, supersede, sign-off and reopen bind the reviewed case version. After a conflict, reload the case and
+review a new preview. The browser tab retains unconfirmed command IDs for audit lookup. Statement
+decisions also require the paired handoff event. After checking the outcome, the operator can resume
+the exact reviewed request while it is available in workbench memory. The bulk bar shows a sample of
+eligible cases, blocked cases and per-case queue receipts. It reports any outstanding statement handoff
+alongside the retained batch result. Match allocations, full run-diff classifications and atomic binding
+to the bulk preview versions depend on further service contracts.
+
 Accounting payment approvals provides an explicit entity-ID selection on the ordinary unscoped route. Unapplied scope edits disable decisions; applying a new entity clears the old review session. Cash Ladder retains the same-account scenario catalog through loading and errors while continuing to withhold stale balances and drill evidence.
 
 

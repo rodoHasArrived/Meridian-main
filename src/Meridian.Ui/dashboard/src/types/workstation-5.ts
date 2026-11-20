@@ -39,6 +39,7 @@ export interface ReconciliationBreakQueueItem {
   runId: string;
   strategyName: string;
   category: string;
+  severity?: "Info" | "Low" | "Medium" | "High" | "Critical";
   status: ReconciliationBreakQueueStatus;
   variance: number;
   reason: string;
@@ -106,6 +107,7 @@ export interface ReconciliationBreakQueueItem {
   dispositionEvidenceHash?: string | null;
   disposedAt?: string | null;
   blockedOutputs?: string[] | null;
+  ledgerBookId?: string | null;
   accountingPeriodId?: string | null;
   asOfDate?: string | null;
   /** Case lifecycle the server checks before waive, sign-off and reopen. Older payloads omit it. */
@@ -126,6 +128,10 @@ export interface ReconciliationBreakQueueAuditEvent {
   reason?: string | null;
   note?: string | null;
   commandId?: string | null;
+  correlationId?: string | null;
+  causationId?: string | null;
+  source?: string | null;
+  afterPayload?: string | null;
   sequence?: number;
 }
 

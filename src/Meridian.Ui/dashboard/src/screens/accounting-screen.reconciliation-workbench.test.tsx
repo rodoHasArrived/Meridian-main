@@ -73,8 +73,8 @@ function renderWorkbench(
     const dialog = useReconciliationResolveDialogViewModel(resolveBreak);
     return <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={dialog} runSelector={runSelector} bulkServices={bulkServices} visitServices={visitServices} {...extra.props} controls={{ queueSearch, queueStatus, queueSort, setQueueSearch, setQueueStatus, setQueueSort, clearQueueFilters: () => { setQueueSearch(""); setQueueStatus("all"); } }} />;
   }
-  render(<MemoryRouter><Harness /></MemoryRouter>);
-  return { assignBreak, resolveBreak, applyBreakQueueItems };
+  const { unmount } = render(<MemoryRouter><Harness /></MemoryRouter>);
+  return { assignBreak, resolveBreak, applyBreakQueueItems, unmount };
 }
 
 function breakTable() { return screen.getByRole("treegrid", { name: "Reconciliation break queue" }); }
@@ -146,6 +146,63 @@ describe("Reconciliation workbench", () => {
     await user.keyboard("d");
     await screen.findByRole("textbox", { name: "Dismiss rationale" });
     expect(resolveBreak).not.toHaveBeenCalled();
+  });
+
+  it("moves between filtered cases from the inspector and returns focus to the queue", async () => {
+    const user = userEvent.setup();
+    renderWorkbench();
+    queueRows()[0].focus();
+    await user.keyboard("{Enter}");
+    await waitFor(() => expect(inspector()).toHaveFocus());
+    await user.keyboard("j");
+    expect(within(inspector()).getByRole("heading", { name: /Fee review/ })).toBeInTheDocument();
+    expect(within(inspector()).getByRole("button", { name: "Next case" })).toBeDisabled();
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(queueRows()[1]).toHaveFocus());
+  });
+
+  it("checks the retained batch receipt after an uncertain execute without dispatching again", async () => {
+    const user = userEvent.setup();
+    const services = fakeBulkServices();
+    services.execute.mockRejectedValueOnce(new Error("Connection interrupted"));
+    const readResult = vi.fn(async () => bulkResult(services.execute.mock.calls[0][0], () => true));
+    const scoped = { sourceRows: breaks.map((item) => ({ ...item, tenantId: "tenant", companyId: "company" })), props: { operatorId: "ops" } };
+    const { unmount } = renderWorkbench(undefined, { ...services, readResult }, offlineVisits, scoped);
+    await user.click(within(queueRows()[0]).getByRole("checkbox"));
+    await user.click(within(bulkBar()).getByRole("button", { name: "Assign to me" }));
+    await user.click(await within(bulkBar()).findByRole("button", { name: "Assign 1 break" }));
+    await within(bulkBar()).findByText("Batch outcome unconfirmed");
+    unmount();
+    renderWorkbench(undefined, { ...services, readResult }, offlineVisits, scoped);
+    await user.click(within(bulkBar()).getByRole("button", { name: "Check batch outcome" }));
+    await user.click(await within(bulkBar()).findByText("Retained batch queue result"));
+    expect(within(bulkBar()).getByRole("list", { name: "Per-case batch results" })).toHaveTextContent("cash-1 · Recorded · Open");
+    expect(readResult).toHaveBeenCalledExactlyOnceWith(services.execute.mock.calls[0][0].commandId);
+    expect(services.execute).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the queue-only batch effect distinct and resumes the exact reviewed request", async () => {
+    const user = userEvent.setup();
+    const services = fakeBulkServices();
+    services.execute.mockRejectedValueOnce(new Error("Statement handoff interrupted"));
+    const readResult = vi.fn(async () => {
+      const result = bulkResult(services.execute.mock.calls[0][0], () => true);
+      return { ...result, results: result.results.map((entry) => ({ ...entry,
+        item: { ...entry.item, sourceType: "statement", evidenceLinks: ["urn:meridian:statement-casework-handoff:pending:fixture"] }
+      })) };
+    });
+    renderWorkbench(undefined, { ...services, readResult });
+    await user.click(within(queueRows()[0]).getByRole("checkbox"));
+    await user.click(within(bulkBar()).getByRole("button", { name: "Resolve with reason" }));
+    await user.type(within(bulkBar()).getByRole("textbox", { name: "Reason" }), "Retained journal resolves the difference.");
+    await user.selectOptions(within(bulkBar()).getByLabelText("Root cause"), "LedgerClassification");
+    await user.selectOptions(within(bulkBar()).getByLabelText("Resolution"), "LedgerAdjusted");
+    await user.click(within(bulkBar()).getByRole("button", { name: "Check 1 break" }));
+    await user.click(await within(bulkBar()).findByRole("button", { name: "Resolve 1 break" }));
+    await user.click(await within(bulkBar()).findByRole("button", { name: "Check batch outcome" }));
+    await within(bulkBar()).findByText("The queue result is retained. Statement handoff is still unconfirmed.");
+    await user.click(within(bulkBar()).getByRole("button", { name: "Resume same batch" }));
+    expect(services.execute.mock.calls[1][0]).toEqual(services.execute.mock.calls[0][0]);
   });
 
   it("keeps the break queue visible when activating a statement-run selector row", async () => {

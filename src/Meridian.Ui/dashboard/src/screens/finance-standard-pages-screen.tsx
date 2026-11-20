@@ -33,8 +33,9 @@ import {
   normalizeReportingWorkspace,
   type ReportingWorkspacePayload
 } from "@/lib/reporting-workspace";
-import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
+import { ReconciliationCaseEvidence } from "@/screens/reconciliation-case-evidence";
 import { formatAccountingDate, formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
@@ -891,10 +892,9 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
   const currentRead = needsQueueRead && queueRead?.navigationKey === navigationKey ? queueRead : null;
   const breaks = currentRead?.rows ? scopeBreaks(currentRead.rows) : workspaceBreaks;
   const selectedBreak = currentRead?.rows ? selectBreak(breaks) : workspaceSelection;
-  const breakLabel = selectedBreak ? financeBreakLabel(selectedBreak.category) : "No open break selected";
   const freshness = buildFinanceFreshness(selectedBreak?.lastUpdatedAt);
   const caseworkPath = workstationRouteWithQuery("accountingReconciliation", {
-    reconciliationBreak: hasAddress ? selectedBreak?.breakId : undefined,
+    reconciliationBreak: selectedBreak?.breakId,
     entityId: searchParams.get("entityId"),
     fundId: searchParams.get("fundId"),
     fundAccountId
@@ -914,45 +914,23 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
         scope={{ value: selectedBreak ? "Selected case" : "No case selected", detail: selectedBreak?.strategyName, tone: selectedBreak ? "ready" : "unknown" }}
         freshness={freshness}
         completeness={{ value: selectedBreak ? "Case loaded" : "No case data", tone: selectedBreak ? "review" : "unknown" }}
-        blocker={selectedBreak ? { value: "Open cash variance", detail: selectedBreak.reason, tone: "review" } : undefined}
       />
       <div className="flex flex-wrap gap-2">
         <Button asChild size="sm"><Link to={caseworkPath}>Open reconciliation casework</Link></Button>
-        {selectedBreak ? (
-          <Button asChild size="sm" variant="outline"><Link to={evidenceWorkbenchPath("reconciliation-break", selectedBreak.breakId)}>Review retained evidence</Link></Button>
-        ) : null}
-        <Button type="button" size="sm" variant="outline" disabled disabledReason="Match decisions are recorded from the reconciliation casework route.">Record match decision</Button>
       </div>
       <Card className="panel-surface">
         <CardHeader>
           <CardTitle>Reconciliation Match Workbench</CardTitle>
-          <CardDescription>Clear breaks by matching source records to ledger records with suggested adjustments.</CardDescription>
+          {selectedBreak ? <CardDescription>{financeBreakLabel(selectedBreak.category)}</CardDescription> : null}
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
-          <FinanceFact label="Open breaks" value={String(breaks.length)} />
-          <FinanceFact label="Selected break" value={breakLabel} />
-          <FinanceFact label="Status" value={selectedBreak ? presentStatusLabel(selectedBreak.status) : "No case"} />
-          <FinanceFact label="Variance" value={selectedBreak ? formatCurrency(selectedBreak.variance) : "Not supplied"} mono />
-          <FinanceFact label="Owner" value={selectedBreak?.assigneeDisplayName ?? selectedBreak?.assignedTo ?? "Unassigned"} />
-          <FinanceFact label="Next action" value={selectedBreak?.recommendedAction ?? "Review the case before taking action."} />
+        <CardContent>
+          {selectedBreak ? (
+            <ReconciliationCaseEvidence key={selectedBreak.breakId} item={selectedBreak} relatedRows={breaks} />
+          ) : (
+            <StatusBanner role="status" tone="info" title={emptyState.title} detail={emptyState.detail} />
+          )}
         </CardContent>
       </Card>
-      {selectedBreak ? (
-        <TechnicalDetails label="Audit details">
-          <dl className="grid gap-2 md:grid-cols-2">
-            <FinanceFact label="Case ID" value={selectedBreak.breakId} mono />
-            <FinanceFact label="Run ID" value={selectedBreak.runId} mono />
-            <FinanceFact label="Raw category" value={selectedBreak.category} mono />
-            <FinanceFact label="Source system" value={selectedBreak.sourceSystem ?? "Not supplied"} mono />
-            <FinanceFact label="Source reference" value={selectedBreak.sourceReference ?? "Not supplied"} mono />
-            <FinanceFact label="Tolerance profile" value={selectedBreak.toleranceProfileId ?? "Not supplied"} mono />
-            <FinanceFact label="SLA policy" value={selectedBreak.slaPolicyId ?? "Not supplied"} mono />
-          </dl>
-        </TechnicalDetails>
-      ) : (
-        <StatusBanner role="status" tone="info" title={emptyState.title} detail={emptyState.detail} />
-      )}
-
     </div>
   );
 }

@@ -177,12 +177,12 @@ describe("market data tab route focus", () => {
 
 describe("reconciliation queue route focus", () => {
   const paths = ["/accounting/reconciliation", "/accounting/exceptions", "/accounting/reconciliation/", "/ACCOUNTING/EXCEPTIONS/"];
-  const localQuery = "reconciliationRun=run-a&reconciliationBreak=break-a&reconciliationSearch=cash&reconciliationStatus=Open&reconciliationSort=oldest";
+  const localQuery = "reconciliationRun=run-a&reconciliationBreak=break-a&reconciliationCompare=prior-a&reconciliationSearch=cash&reconciliationStatus=Open&reconciliationSort=oldest&reconciliationColumns=owner";
 
   it.each(paths)("keeps row selection and local controls focused on %s", (pathname) => {
     const initial = focusState("", pathname);
     expect(focusState(`?${localQuery}`, pathname).routeKey).toBe(initial.routeKey);
-    for (const key of ["reconciliationRun", "reconciliationBreak", "reconciliationSearch", "reconciliationStatus", "reconciliationSort"]) {
+    for (const key of ["reconciliationRun", "reconciliationBreak", "reconciliationCompare", "reconciliationSearch", "reconciliationStatus", "reconciliationSort", "reconciliationColumns"]) {
       expect(focusState(`?${key}=first`, pathname).routeKey).toBe(initial.routeKey);
       expect(focusState(`?${key}=second`, pathname).routeKey).toBe(initial.routeKey);
     }
