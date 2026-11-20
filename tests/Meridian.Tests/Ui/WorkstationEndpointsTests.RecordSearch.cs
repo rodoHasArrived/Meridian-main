@@ -197,7 +197,7 @@ public sealed partial class WorkstationEndpointsTests
         result.RecordId.Should().Be(opaqueId);
         result.Label.Should().Be("VISIBLE");
         result.Scope.Should().Be(visible.DisplayName);
-        result.Href.Should().Be($"/portfolio/brokerage-sync?recordScope=1&fundAccountId={visible.AccountId:D}&position={visible.AccountId:D}-VISIBLE-{opaqueId}&positionProvider=fixture");
+        result.Href.Should().Be($"/portfolio/brokerage-sync?recordScope=1&fundAccountId={visible.AccountId:D}&brokeragePosition={visible.AccountId:D}-VISIBLE-{opaqueId}&positionProvider=fixture");
     }
 
     private static async Task<WorkstationRecordSearchResult> SearchRecordsAsync(HttpClient client, string query)

@@ -1111,7 +1111,7 @@ describe("PortfolioScreen", () => {
     });
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting}
       brokerageConnection={brokerageConnection} brokeragePortfolio={brokeragePortfolio} />, {
-      initialEntries: ["/portfolio/brokerage-sync?positionProvider=alpaca&fundAccountId=fund-taxable&position=fund-taxable-MSFT-pos-msft"]
+      initialEntries: ["/portfolio/brokerage-sync?positionProvider=alpaca&fundAccountId=fund-taxable&brokeragePosition=fund-taxable-MSFT-pos-msft"]
     });
 
     expect(await screen.findByRole("region", { name: /msft brokerage position detail/i })).toBeInTheDocument();

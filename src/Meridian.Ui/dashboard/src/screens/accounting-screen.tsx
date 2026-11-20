@@ -13,6 +13,8 @@ import { CloseChecklistProgressChart, ReconciliationAgingChart } from "@/compone
 import { CloseChecklistHistoryChart } from "@/components/meridian/close-checklist-history-chart";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { instrumentRecordIdentity } from "@/lib/instrument-record-identity";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PrepareNextPeriodPanel } from "@/screens/accounting-screen.prepare-next-period";
@@ -292,6 +294,9 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   const identityPrimaryFields = identity?.summaryFields.filter((field) => field.label === "Asset class" || field.label === "Effective") ?? [];
   const identityTechnicalFields = identity?.summaryFields.filter((field) => !identityPrimaryFields.includes(field)) ?? [];
   const selectedSecurityEntry = securityMaster.selectedEntry;
+  const registryDetail = securityMaster.identity?.securityId === securityMaster.selectedSecurityId ? securityMaster.identity : null;
+  const registryRecord = instrumentRecordIdentity(selectedSecurityEntry, registryDetail);
+  const registryRecordContext = useRecordWorkspaceContext(registryRecord, { securityId: securityMaster.selectedSecurityId }, "#security-detail-page-title");
   const securityMasterActiveTab = resolveSecurityMasterDrillInTab(search);
   const bondAction = new URLSearchParams(search).get("bondAction");
   const focusedBondAction = useRef<string | null>(null);
@@ -1850,6 +1855,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                   {securityMaster.pageView.detailStatusLabel}
                 </Badge>
               </div>
+              {registryRecord ? <RecordIdentitySpine record={registryRecord} context={registryRecordContext} /> : null}
               <ToolbarStrip
                 ariaLabel={securityMaster.pageView.detailToolbarAriaLabel}
                 items={securityMaster.pageView.detailSections}

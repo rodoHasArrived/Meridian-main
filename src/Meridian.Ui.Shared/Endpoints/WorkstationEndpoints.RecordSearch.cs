@@ -192,7 +192,7 @@ public static partial class WorkstationEndpoints
                 Add(hits, Match(id, position.Symbol), "Position", id, position.Symbol, account.DisplayName,
                     $"Synced {Date(snapshot.SyncedAt)}", snapshot.Health.ToString(),
                     Route("/portfolio/brokerage-sync", ("fundAccountId", position.FundAccountId.ToString("D")),
-                        ("position", selection), ("positionProvider", position.ProviderId)));
+                        ("brokeragePosition", selection), ("positionProvider", position.ProviderId)));
             }
         }
 
