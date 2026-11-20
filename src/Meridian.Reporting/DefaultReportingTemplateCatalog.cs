@@ -5,6 +5,8 @@ namespace Meridian.Reporting;
 /// <summary>Provides the built-in reporting template metadata and section definitions.</summary>
 public sealed class DefaultReportingTemplateCatalog : IReportingTemplateCatalog
 {
+    public const string FinancialStatementControlTemplateId = "financial-statement-control-pack";
+
     private readonly IReadOnlyDictionary<string, ReportingTemplateMetadata> templates = new Dictionary<string, ReportingTemplateMetadata>(StringComparer.OrdinalIgnoreCase)
     {
         ["investor-monthly-statement"] = new(
@@ -49,6 +51,13 @@ public sealed class DefaultReportingTemplateCatalog : IReportingTemplateCatalog
             "1.0.0",
             ["cover", "capital-balance", "flows", "allocation"],
             ImmutableDictionary<string, string>.Empty.Add("audience", "investor")),
+        [FinancialStatementControlTemplateId] = new(
+            FinancialStatementControlTemplateId,
+            ReportingTemplateFamily.CustomReport,
+            "Financial Statement Control Pack",
+            "1.0.0",
+            ["trial-balance", "balance-sheet", "income-statement", "cash-bridge", "partners-capital", "agreement-controls"],
+            ImmutableDictionary<string, string>.Empty.Add("audience", "accounting")),
         ["capital-call-notice"] = new(
             "capital-call-notice",
             ReportingTemplateFamily.InvestorStatement,

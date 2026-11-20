@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RiskRuleRuntimeOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:18](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L18).
+
+Location of the persisted operator-tuned risk-rule thresholds (drawdown %, order-rate ceiling), and optionally the first-run ceilings seeded before any operator snapshot exists.
+
+```csharp
+public sealed record RiskRuleRuntimeOptions(string SnapshotPath, RiskRuleFirstRunDefaults? FirstRunDefaults = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RiskRuleRuntimeOptions Default { get; } = new (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), &quot;Meridian&quot;, &quot;workstation&quot;, &quot;risk-rules.json&quot;));</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:22](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L22) |  |
+
 ## RiskRuleRuntimeService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeService</code>. Kind: `class`.
@@ -839,21 +857,3 @@ Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:23](../
 ```csharp
 public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncValidationIssue> Issues);
 ```
-
-## ThreeWayAdjustmentDraftService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayAdjustmentDraftService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentDraftService.cs:12](../../../../src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentDraftService.cs#L12).
-
-Prepares a reviewed correction candidate; never approves, posts, or clears casework.
-
-```csharp
-public sealed class ThreeWayAdjustmentDraftService(IThreeWayReconciliationSourceReader sources, FileThreeWayReconciliationEvidenceStore evidence, ThreeWayReconciliationOptions options, ILedgerJournalStore? ledger = null, IAccountingConfigurationService? configuration = null, IManualJournalEntryWorkbenchService? workbench = null, IManualJournalEntryDraftStore? drafts = null, TimeProvider? timeProvider = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; PrepareAsync(Guid accountId, ReconciliationBreakQueueScope access, PrepareThreeWayAdjustmentRequestDto request, string actor, IReadOnlyList&lt;string&gt;? principalIds = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentDraftService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ThreeWayAdjustmentDraftService.cs#L24) |  |

@@ -54,7 +54,10 @@ public sealed partial class AccountingConfigureViewModel
                 accountName,
                 accountType,
                 string.IsNullOrWhiteSpace(ChartAccountParentPath) ? null : ChartAccountParentPath.Trim(),
-                FinancialAccountId: string.IsNullOrWhiteSpace(ChartAccountFinancialAccountId) ? null : ChartAccountFinancialAccountId.Trim());
+                FinancialAccountId: string.IsNullOrWhiteSpace(ChartAccountFinancialAccountId) ? null : ChartAccountFinancialAccountId.Trim())
+            {
+                AccountCode = string.IsNullOrWhiteSpace(ChartAccountCode) ? null : ChartAccountCode.Trim()
+            };
             _configuration = await _configurationService.UpsertChartNodeAsync(
                 new UpsertChartOfAccountsNodeRequest(
                     _activeFundProfile.FundProfileId,
@@ -424,6 +427,7 @@ public sealed partial class AccountingConfigureViewModel
         ChartAccountPath = $"Assets:Configured Account {nextIndex.ToString(CultureInfo.InvariantCulture)}";
         ChartAccountName = $"Configured Account {nextIndex.ToString(CultureInfo.InvariantCulture)}";
         ChartAccountType = "Asset";
+        ChartAccountCode = string.Empty;
         ChartAccountParentPath = "Assets";
         ChartAccountFinancialAccountId = string.Empty;
         ChartAccountEvidenceText = $"wpf://accounting/configure/chart-account/{nextIndex.ToString(CultureInfo.InvariantCulture)}";

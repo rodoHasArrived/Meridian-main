@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -26,6 +28,14 @@ public sealed record LedgerEntry
 
     /// <summary>Human-readable description of the economic event.</summary>
     public string Description { get; private init; }
+
+    /// <summary>Optional source or preparer description specific to this line.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Memo { get; init; }
+
+    /// <summary>The chart node and revision used to resolve this posting's account.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerAccountChartReference? ChartAccount { get; init; }
 
     /// <summary>Optional dimensional accounting scope for this specific ledger line.</summary>
     public LedgerLineDimensionSet? Dimensions { get; private init; }
