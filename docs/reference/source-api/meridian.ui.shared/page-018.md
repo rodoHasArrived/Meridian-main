@@ -189,7 +189,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactContent</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L10).
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L11).
 
 ```csharp
 public sealed record ReportWriterGridArtifactContent(string FileName, string ContentType, byte[] Content);
@@ -199,7 +199,7 @@ public sealed record ReportWriterGridArtifactContent(string FileName, string Con
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L18).
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L19).
 
 Renders report-writer grids and produces their downloadable artifact content.
 
@@ -211,9 +211,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportWriterGridArtifactService(IReportingOrchestrationService orchestrationService, GovernedReportingTemplateCatalog? governedTemplateCatalog = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L28) |  |
-| <code>public ReportWriterGridRenderDto GetGrid(string runId, string gridId, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L36) |  |
-| <code>public ReportWriterGridArtifactContent GetArtifact(string runId, string gridId, string? format, JsonSerializerOptions jsonOptions, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L50) |  |
+| <code>public ReportWriterGridArtifactService(IReportingOrchestrationService orchestrationService, GovernedReportingTemplateCatalog? governedTemplateCatalog = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:29](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L29) |  |
+| <code>public ReportWriterGridRenderDto GetGrid(string runId, string gridId, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L37) |  |
+| <code>public ReportWriterGridArtifactContent GetArtifact(string runId, string gridId, string? format, JsonSerializerOptions jsonOptions, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:51](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L51) |  |
 
 ## RiskRuleConfigDto
 
