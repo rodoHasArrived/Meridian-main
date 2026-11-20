@@ -1154,6 +1154,15 @@ export interface BackfillTriggerResult {
   completedUtc: string;
   error: string | null;
   batchReceipts?: BackfillBatchReceipt[] | null;
+  routingAttempts?: BackfillRoutingAttempt[] | null;
+}
+
+export interface BackfillRoutingAttempt {
+  symbol: string;
+  providerId: string;
+  reason: string;
+  bars: number;
+  attempted: boolean;
 }
 
 export interface BackfillBatchReceipt {

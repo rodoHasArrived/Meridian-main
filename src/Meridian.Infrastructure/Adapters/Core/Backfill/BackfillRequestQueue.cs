@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Channels;
+using Meridian.Contracts.Backfill;
 using Meridian.Core.Logging;
 using Meridian.Core.Pipeline;
 using Serilog;
@@ -69,7 +70,8 @@ public sealed class BackfillRequestQueue : IDisposable
     public async Task<IReadOnlyList<BackfillRequest>> EnqueueJobRequestsAsync(
         BackfillJob job,
         GapAnalysisResult gapAnalysis,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        BackfillRoutingSnapshot? routingSnapshot = null)
     {
         ArgumentNullException.ThrowIfNull(job);
         ArgumentNullException.ThrowIfNull(gapAnalysis);
@@ -97,6 +99,7 @@ public sealed class BackfillRequestQueue : IDisposable
                     ToDate = to,
                     Granularity = job.Granularity,
                     PreferredProviders = job.PreferredProviders.ToList(),
+                    RoutingSnapshot = routingSnapshot,
                     Priority = CalculatePriority(job, symbol, from),
                     MaxRetries = job.Options.MaxRetries,
                     CreatedAt = DateTimeOffset.UtcNow
@@ -275,9 +278,12 @@ public sealed class BackfillRequestQueue : IDisposable
                     Interlocked.Increment(ref _nextAttemptId));
                 _inFlightRequests[attemptToken] = selected;
 
-                // Track active requests per provider
-                var provider = selected.AssignedProvider ?? "unknown";
-                _activeRequestsByProvider.AddOrUpdate(provider, 1, (_, count) => count + 1);
+                // The active route acquires a slot for each actual fetch, including fallback.
+                if (selected.RoutingSnapshot is null)
+                {
+                    var provider = selected.AssignedProvider ?? "unknown";
+                    _activeRequestsByProvider.AddOrUpdate(provider, 1, (_, count) => count + 1);
+                }
 
                 NotifyQueueStateChanged();
                 return new BackfillRequestAttempt(selected, attemptToken);
@@ -296,6 +302,9 @@ public sealed class BackfillRequestQueue : IDisposable
     /// </summary>
     private Task<bool> CanProcessRequestAsync(BackfillRequest request, CancellationToken ct)
     {
+        if (request.RoutingSnapshot is not null)
+            return Task.FromResult(true);
+
         // Get available providers for this request
         var providers = request.PreferredProviders.Count > 0
             ? request.PreferredProviders
@@ -342,14 +351,14 @@ public sealed class BackfillRequestQueue : IDisposable
         CancellationToken ct = default)
         => CompleteRequestAttemptAsync(request, attemptToken, success, error, ct);
 
-    internal async Task CompleteRequestAttemptAsync(
+    internal async Task<bool> CompleteRequestAttemptAsync(
         BackfillRequest request,
         BackfillRequestAttemptToken attemptToken,
         bool success,
         string? error = null,
         CancellationToken ct = default)
     {
-        var transitioned = false;
+        var terminal = false;
 
         await _queueLock.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -360,11 +369,12 @@ public sealed class BackfillRequestQueue : IDisposable
                     "Ignored stale completion for backfill request {RequestId}, attempt {AttemptToken}",
                     request.RequestId,
                     attemptToken.Value);
-                return;
+                return false;
             }
 
             var provider = request.AssignedProvider ?? "unknown";
-            _activeRequestsByProvider.AddOrUpdate(provider, 0, (_, count) => Math.Max(0, count - 1));
+            if (request.RoutingSnapshot is null)
+                _activeRequestsByProvider.AddOrUpdate(provider, 0, (_, count) => Math.Max(0, count - 1));
 
             request.CompletedAt = DateTimeOffset.UtcNow;
             request.Status = success ? BackfillRequestStatus.Completed : BackfillRequestStatus.Failed;
@@ -395,7 +405,7 @@ public sealed class BackfillRequestQueue : IDisposable
                 }
             }
 
-            transitioned = true;
+            terminal = request.Status is BackfillRequestStatus.Completed or BackfillRequestStatus.Failed;
             NotifyQueueStateChanged();
         }
         finally
@@ -403,8 +413,9 @@ public sealed class BackfillRequestQueue : IDisposable
             _queueLock.Release();
         }
 
-        if (transitioned)
+        if (terminal)
             await PublishCompletionAsync(request).ConfigureAwait(false);
+        return terminal;
     }
 
     /// <summary>
@@ -434,7 +445,8 @@ public sealed class BackfillRequestQueue : IDisposable
                 return false;
 
             var provider = request.AssignedProvider ?? "unknown";
-            _activeRequestsByProvider.AddOrUpdate(provider, 0, (_, count) => Math.Max(0, count - 1));
+            if (request.RoutingSnapshot is null)
+                _activeRequestsByProvider.AddOrUpdate(provider, 0, (_, count) => Math.Max(0, count - 1));
 
             request.CompletedAt = DateTimeOffset.UtcNow;
             request.Status = BackfillRequestStatus.Cancelled;
@@ -466,7 +478,8 @@ public sealed class BackfillRequestQueue : IDisposable
                 return false;
 
             var provider = request.AssignedProvider ?? "unknown";
-            _activeRequestsByProvider.AddOrUpdate(provider, 0, (_, count) => Math.Max(0, count - 1));
+            if (request.RoutingSnapshot is null)
+                _activeRequestsByProvider.AddOrUpdate(provider, 0, (_, count) => Math.Max(0, count - 1));
 
             request.Status = BackfillRequestStatus.Pending;
             request.AssignedProvider = null;
@@ -708,6 +721,10 @@ public sealed class BackfillRequest
     // Queue-only context: persisted job descriptors and request payloads stay unchanged.
     // Retries retain the initiating producer instead of adopting a previous worker attempt.
     internal ActivityContext ParentContext { get; private set; }
+    internal BackfillRoutingSnapshot? RoutingSnapshot { get; init; }
+    internal List<BackfillRoutingAttempt> RoutingAttempts { get; } = [];
+    internal Dictionary<string, int> ServedBy { get; } = new(StringComparer.OrdinalIgnoreCase);
+    internal HashSet<DateOnly> RetainedSessions { get; } = [];
 
     internal void CaptureTraceContext()
     {

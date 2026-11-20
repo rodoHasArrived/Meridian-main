@@ -35,6 +35,10 @@ public sealed record BackfillResult(
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<BackfillBatchReceipt>? BatchReceipts { get; init; }
 
+    /// <summary>Provider selection outcomes. Reasons are fixed codes without vendor response details.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BackfillRoutingAttempt>? RoutingAttempts { get; init; }
+
     public static BackfillResult Failed(string provider, IReadOnlyList<string> symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex)
         => new(false, provider, symbols.ToArray(), from, to, 0, started, DateTimeOffset.UtcNow, ex.Message);
 }

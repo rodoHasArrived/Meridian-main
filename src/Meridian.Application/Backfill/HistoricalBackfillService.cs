@@ -62,6 +62,9 @@ public sealed class HistoricalBackfillService
     /// <summary>Calendar evidence for instruments whose listing is known to the host.</summary>
     public Func<string, DateOnly, DateOnly, CancellationToken, Task<HistoricalSessionSchedule?>>? ResolveSessionsAsync { get; init; }
 
+    internal BackfillRoutingAdmission? DirectRoutingAdmission { get; init; }
+    internal Action<BackfillRoutingAttempt>? CaptureRoutingAttempt { get; init; }
+
     private static string SanitizeLogText(string? value) =>
         (value ?? string.Empty).Replace('\r', '_').Replace('\n', '_');
 
@@ -107,6 +110,12 @@ public sealed class HistoricalBackfillService
         ValidateRequest(request);
         var provider = _providers[request.Provider.ToLowerInvariant()];
         var aggregateProvider = provider as IHistoricalAggregateBarProvider;
+
+        Task<IReadOnlyList<TResult>> FetchAsync<TResult>(string symbol, Func<CancellationToken, Task<IReadOnlyList<TResult>>> fetch)
+            => provider is not CompositeHistoricalDataProvider && DirectRoutingAdmission is { } admission
+                ? admission.FetchPinnedAsync(provider, symbol, fetch, CaptureRoutingAttempt, ct)
+                : fetch(ct);
+
         await using var receiptLease = _checkpointStore is not null
             ? await _checkpointStore.Batches.AcquireRunLeaseAsync(ct).ConfigureAwait(false)
             : null;
@@ -273,19 +282,20 @@ public sealed class HistoricalBackfillService
                         {
                             foreach (var partition in executionPartitions)
                             {
-                                var bars = await aggregateProvider.GetAggregateBarsAsync(
+                                var bars = await FetchAsync(symbol, token => aggregateProvider.GetAggregateBarsAsync(
                                     symbol,
                                     request.Granularity,
                                     partition.From,
                                     BackfillPartitionPlanner.ToInclusiveEnd(partition),
-                                    ct).ConfigureAwait(false);
+                                    token)).ConfigureAwait(false);
 
                                 await PublishAggregateBarsAsync(bars, partition.From, BackfillPartitionPlanner.ToInclusiveEnd(partition)).ConfigureAwait(false);
                             }
                         }
                         else
                         {
-                            var bars = await aggregateProvider.GetAggregateBarsAsync(symbol, request.Granularity, rangeFrom, rangeTo, ct).ConfigureAwait(false);
+                            var bars = await FetchAsync(symbol, token => aggregateProvider.GetAggregateBarsAsync(
+                                symbol, request.Granularity, rangeFrom, rangeTo, token)).ConfigureAwait(false);
                             await PublishAggregateBarsAsync(bars, rangeFrom, rangeTo).ConfigureAwait(false);
                         }
                     }
@@ -298,11 +308,11 @@ public sealed class HistoricalBackfillService
                                 // A range spanning a ticker rename must query the provider with the
                                 // era-correct symbol per chunk, then land under the requested symbol.
                                 var eraSymbol = await ResolveEraSymbolAsync(symbol, partition.From, ct).ConfigureAwait(false);
-                                var bars = await provider.GetDailyBarsAsync(
+                                var bars = await FetchAsync(symbol, token => provider.GetDailyBarsAsync(
                                     eraSymbol,
                                     partition.From,
                                     BackfillPartitionPlanner.ToInclusiveEnd(partition),
-                                    ct).ConfigureAwait(false);
+                                    token)).ConfigureAwait(false);
 
                                 await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol),
                                     partition.From, BackfillPartitionPlanner.ToInclusiveEnd(partition)).ConfigureAwait(false);
@@ -313,7 +323,8 @@ public sealed class HistoricalBackfillService
                             var eraSymbol = rangeFrom.HasValue
                                 ? await ResolveEraSymbolAsync(symbol, rangeFrom.Value, ct).ConfigureAwait(false)
                                 : symbol;
-                            var bars = await provider.GetDailyBarsAsync(eraSymbol, rangeFrom, rangeTo, ct).ConfigureAwait(false);
+                            var bars = await FetchAsync(symbol, token => provider.GetDailyBarsAsync(
+                                eraSymbol, rangeFrom, rangeTo, token)).ConfigureAwait(false);
                             await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol), rangeFrom, rangeTo).ConfigureAwait(false);
                         }
                     }

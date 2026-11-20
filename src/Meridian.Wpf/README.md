@@ -11,6 +11,10 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Wpf
 
+Provider Accounting exposes host quota settings for Twelve Data and Alpha Vantage, adapter-managed
+FRED limits, and seven UTC days of retained throttling and rotation totals. Saved and running quotas
+appear together. A pending restart remains visible after a successful save.
+
 Protected production and packaged/customer configuration persistence uses the shared provider-secret
 scanner before writing either the primary file or last-known-good copy. Startup also refuses a
 secret-bearing or unparseable retained generation before creating backups, recovery receipts or
@@ -66,6 +70,12 @@ unavailable. Desktop file saves are explicitly unverified by a host-only receipt
 for verification/restart through this desktop session. The banner never restarts the host or enables
 execution. `ConfigurationChangeStatusViewModelTests` covers shared impact projection, local-save
 honesty, failures, cancellation and superseded responses. Native rendering still requires Windows.
+
+Data Sources and Backfill Provider Settings save through the host and show activation evidence
+for each running surface. The activation panel lists pending paths before a supervised restart
+and refreshes when a new host session reports readiness. Symbol Mapping edits and CSV exchange use
+the host's canonical registry. Failed saves keep the source or mapping draft available for retry.
+Manage provider credentials under Settings. Alpaca feed changes apply across the host after restart.
 
 Ordinary desktop configuration saves strictly
 re-read the current file under the shared write lease and run the shared whole-document guard

@@ -35,6 +35,20 @@ describe("RateLimitHistoryPanel", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("Quota history is unavailable");
   });
 
+  it("shows durable daily observations when recent events are empty", async () => {
+    const user = userEvent.setup();
+    const fetchHistory = vi.fn().mockResolvedValue({
+      ...snapshot, history: [], dailyRollupsAvailable: true,
+      dailyRollups: [{ dateUtc: "2026-11-12", throttleCount: 9, rotationCount: 2 }]
+    });
+    renderWithRouter(<RateLimitHistoryPanel fetchHistory={fetchHistory} />);
+    await user.click(screen.getByText("Rate-limit and quota history"));
+    await user.click(screen.getByRole("button", { name: "Load quota history" }));
+    expect(await screen.findByRole("table", { name: "Daily quota observations for polygon" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "2026-11-12" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "9" })).toBeInTheDocument();
+  });
+
   it("reports a failed history read without pretending there were no events", async () => {
     const user = userEvent.setup();
     renderWithRouter(<RateLimitHistoryPanel fetchHistory={vi.fn().mockRejectedValue(new Error("Service unavailable"))} />);

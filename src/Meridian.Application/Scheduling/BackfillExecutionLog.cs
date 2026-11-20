@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Application.Backfill;
+using Meridian.Contracts.Backfill;
 using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
 using Serilog;
@@ -251,6 +252,8 @@ public sealed class SymbolExecutionResult
     public int GapsFilled { get; set; }
     public long BarsRetrieved { get; set; }
     public string? Provider { get; set; }
+    public IReadOnlyList<BackfillProviderContribution>? ServedBy { get; init; }
+    public IReadOnlyList<BackfillRoutingAttempt>? RoutingAttempts { get; init; }
     public string? ErrorMessage { get; set; }
     public DateTimeOffset? StartedAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }

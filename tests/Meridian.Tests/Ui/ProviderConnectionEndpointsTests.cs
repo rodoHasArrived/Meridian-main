@@ -919,11 +919,205 @@ public sealed class ProviderConnectionEndpointsTests
             new Meridian.Application.UI.ConfigStore(app.Services.GetRequiredService<ConfigStore>().ConfigPath))
             .UpsertForTenantAsync(new Meridian.Contracts.Api.CreateProviderConnectionRequest(id, provider, id, ExternalAccountId: account), tenant, environment);
 
+    [Theory]
+    [InlineData("polygon", "api.polygon.io", "Authorization", "{\"status\":\"OK\"}")]
+    [InlineData("tiingo", "api.tiingo.com", "Authorization", "{\"message\":\"You successfully sent a request\"}")]
+    [InlineData("finnhub", "finnhub.io", "X-Finnhub-Token", "{\"c\":100}")]
+    public async Task DraftVerification_UsesReadOnlyVendorProbeAndLeavesTheVaultUntouched(
+        string providerId, string host, string header, string payload)
+    {
+        HttpRequestMessage? sent = null;
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new CapturingStubHandler(request => sent = request, new StringContent(payload)))));
+        await RetainConnectionAsync(app, "owned", "provider-tenant", providerId, "example-account", "default");
+        var client = app.GetTestClient();
+        var vault = app.Services.GetRequiredService<IProviderCredentialStore>();
+        var response = await client.PostAsync($"/api/providers/{providerId}/verify-draft?connectionId=owned",
+            JsonContent(new { credentials = new { ApiKey = "fixture-draft" } }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadAsync<ProviderCredentialDraftVerificationResultDto>(response);
+        result.Status.Should().Be(ProviderCredentialDraftStatusDto.Verified);
+        sent!.Method.Should().Be(HttpMethod.Get);
+        sent.RequestUri!.Host.Should().Be(host);
+        sent.RequestUri.Query.Should().NotContain("fixture-draft");
+        sent.Headers.GetValues(header).Should().ContainSingle(value => value.EndsWith("fixture-draft"));
+        File.Exists(vault.VaultPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task DraftVerification_RejectsForeignOwnershipBeforeCallingTheVendor()
+    {
+        var calls = 0;
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new CapturingStubHandler(_ => calls++, new StringContent("{\"status\":\"OK\"}")))));
+        await RetainConnectionAsync(app, "foreign", "other-tenant", "polygon", "example-account", "default");
+        var response = await app.GetTestClient().PostAsync("/api/providers/polygon/verify-draft?connectionId=foreign",
+            JsonContent(new { credentials = new { ApiKey = "fixture-foreign" } }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        calls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DraftVerification_RequiresCompleteInputForDisabledOwnedConnection()
+    {
+        var calls = 0;
+        const string account = "fixture-account";
+        var scope = new ProviderCredentialScope("provider-tenant", "disabled-alpaca", account, "paper");
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new CapturingStubHandler(_ => calls++,
+                new StringContent("{\"account_number\":\"fixture-account\"}")))));
+        await RetainConnectionAsync(app, scope.ConnectionId, scope.TenantId, "alpaca", account, "paper");
+        var vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("alpaca",
+            new Dictionary<string, string?> { ["KeyId"] = "saved-id", ["SecretKey"] = "saved-secret" }, "paper"), scope);
+        var core = new Meridian.Application.UI.ConfigStore(app.Services.GetRequiredService<ConfigStore>().ConfigPath);
+        await core.UpdateAsync(config => config with
+        {
+            ProviderConnections = config.ProviderConnections! with
+            {
+                Connections = config.ProviderConnections.Connections!.Select(connection => connection with { Enabled = false }).ToArray()
+            }
+        });
+
+        var client = app.GetTestClient();
+        const string route = "/api/providers/alpaca/verify-draft?connectionId=disabled-alpaca";
+        var incomplete = await ReadAsync<ProviderCredentialDraftVerificationResultDto>(await client.PostAsync(route,
+            JsonContent(new { credentials = new { KeyId = "draft-id" } })));
+        incomplete.Status.Should().Be(ProviderCredentialDraftStatusDto.Rejected);
+        calls.Should().Be(0);
+        var complete = await ReadAsync<ProviderCredentialDraftVerificationResultDto>(await client.PostAsync(route,
+            JsonContent(new { credentials = new { KeyId = "draft-id", SecretKey = "draft-secret" } })));
+        complete.Status.Should().Be(ProviderCredentialDraftStatusDto.Verified);
+        calls.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, ProviderCredentialDraftStatusDto.Rejected)]
+    [InlineData(HttpStatusCode.TooManyRequests, ProviderCredentialDraftStatusDto.Unavailable)]
+    public async Task DraftVerification_SanitizesVendorRejectionsAndThrottling(
+        HttpStatusCode status, ProviderCredentialDraftStatusDto expected)
+    {
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new RequestStubHandler((_, _) =>
+                Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent("fixture-secret-echo") })))));
+        await RetainConnectionAsync(app, "owned", "provider-tenant", "polygon", "example-account", "default");
+        var client = app.GetTestClient();
+        (await client.PutAsync("/api/providers/polygon/credentials?connectionId=owned",
+            JsonContent(new { credentials = new { ApiKey = "fixture-old" } }))).EnsureSuccessStatusCode();
+        var vault = app.Services.GetRequiredService<IProviderCredentialStore>();
+        var retainedBefore = await File.ReadAllBytesAsync(vault.VaultPath);
+
+        var response = await client.PostAsync("/api/providers/polygon/verify-draft?connectionId=owned",
+            JsonContent(new { credentials = new { ApiKey = "fixture-secret-echo" } }));
+
+        (await ReadAsync<ProviderCredentialDraftVerificationResultDto>(response)).Status.Should().Be(expected);
+        (await response.Content.ReadAsStringAsync()).Should().NotContain("fixture-secret-echo");
+        (await File.ReadAllBytesAsync(vault.VaultPath)).Should().Equal(retainedBefore);
+        var rows = await ReadAsync<ProviderConnectionRowDto[]>(await client.GetAsync("/api/providers/connections?connectionId=owned"));
+        rows.Should().ContainSingle().Which.RotationDueAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(90), TimeSpan.FromMinutes(1));
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Forbidden, false, HttpStatusCode.UnprocessableEntity)]
+    [InlineData(HttpStatusCode.OK, true, HttpStatusCode.Conflict)]
+    [InlineData(HttpStatusCode.OK, false, HttpStatusCode.OK)]
+    public async Task AlpacaFeed_SaveRequiresPositiveSipEvidenceForTheSelectedCredentialGeneration(
+        HttpStatusCode probeStatus, bool rotateDuringProbe, HttpStatusCode expectedStatus)
+    {
+        const string account = "example-sip-account";
+        var scope = new ProviderCredentialScope("provider-tenant", "owned-alpaca", account, "paper");
+        FileProviderCredentialStore? vault = null;
+        var probes = new List<Uri>();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new RequestStubHandler(async (request, ct) =>
+            {
+                probes.Add(request.RequestUri!);
+                if (request.RequestUri!.AbsolutePath == "/v2/account")
+                    return new HttpResponseMessage(HttpStatusCode.OK) { Content = JsonContent(new { account_number = account }) };
+                if (rotateDuringProbe)
+                    await vault!.SaveScopedAsync(new ProviderCredentialSaveRequest("alpaca",
+                        new Dictionary<string, string?> { ["KeyId"] = "fixture-rotated", ["SecretKey"] = "fixture-rotated-secret" }, "paper"), scope, ct);
+                return new HttpResponseMessage(probeStatus)
+                {
+                    Content = new StringContent(probeStatus == HttpStatusCode.OK
+                        ? "{\"trade\":{\"t\":\"2026-11-20T15:00:00Z\"}}"
+                        : "{\"message\":\"fixture-secret\"}")
+                };
+            }))), UserPermission.ManageCredentials | UserPermission.ModifyConfig, includeConfigEndpoints: true);
+        await RetainConnectionAsync(app, scope.ConnectionId, scope.TenantId, "alpaca", account, "paper");
+        vault = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        await vault.SaveScopedAsync(new ProviderCredentialSaveRequest("alpaca",
+            new Dictionary<string, string?> { ["KeyId"] = "fixture-key", ["SecretKey"] = "fixture-secret" }, "paper"), scope);
+        var configStore = app.Services.GetRequiredService<ConfigStore>();
+        var core = new Meridian.Application.UI.ConfigStore(configStore.ConfigPath);
+        await core.UpdateAsync(config => config with
+        {
+            Alpaca = new(Feed: "iex", OptionsFeed: "indicative"),
+            DataSources = new(Sources: [new("named-alpaca", "Alpaca feed", DataSourceKind.Alpaca,
+                Alpaca: new(Feed: "iex", CryptoFeed: "us"))]),
+            ProviderModules = new(new() { ["alpaca-api"] = new(Settings: new() { ["FeEd"] = "iex" }) })
+        });
+        var runtime = new Meridian.Application.ProviderRouting.ProviderRuntimeCredentialService(core, vault);
+        await runtime.BindAsync("alpaca", scope.ConnectionId, scope.TenantId);
+        var client = app.GetTestClient();
+        var rejectedByLegacyRoute = await client.PostAsync("/api/config/alpaca", JsonContent(new { feed = "sip" }));
+        rejectedByLegacyRoute.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        probes.Should().BeEmpty();
+
+        var response = await client.PutAsync("/api/config/alpaca/feed", JsonContent(new { feed = "sip", sourceId = "named-alpaca" }));
+
+        response.StatusCode.Should().Be(expectedStatus);
+        probes.Select(uri => uri.AbsolutePath).Should().Equal("/v2/account", "/v2/stocks/AAPL/trades/latest");
+        probes.Last().Query.Should().Be("?feed=sip");
+        (await response.Content.ReadAsStringAsync()).Should().NotContain("fixture-secret");
+        var config = configStore.Load();
+        var expectedFeed = expectedStatus == HttpStatusCode.OK ? "sip" : "iex";
+        config.Alpaca!.Feed.Should().Be(expectedFeed);
+        config.Alpaca.OptionsFeed.Should().Be("indicative");
+        config.DataSources!.Sources!.Single().Alpaca!.Feed.Should().Be(expectedFeed);
+        config.ProviderModules!.Modules!["alpaca-api"].Settings!.Single(setting =>
+            setting.Key.Equals("feed", StringComparison.OrdinalIgnoreCase)).Value.Should().Be(expectedFeed);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GenericSettingsWrite_BlocksAliasedModuleSipOrUnmaskingAShadowedSipFeed(bool removeOverride)
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        var store = app.Services.GetRequiredService<ConfigStore>();
+        var core = new Meridian.Application.UI.ConfigStore(store.ConfigPath);
+        await core.UpdateAsync(config => config with
+        {
+            Alpaca = new(Feed: removeOverride ? "sip" : "iex"),
+            ProviderModules = new(new() { ["alpaca-api"] = new(Settings: new()
+            {
+                ["feed"] = "iex",
+                ["FeEd"] = "iex"
+            }) })
+        });
+
+        var update = async () => await store.UpdateAsync(config => config with
+        {
+            ProviderModules = removeOverride ? null : new(new() { ["alpaca-api"] = new(Settings: new()
+            {
+                ["feed"] = "iex",
+                ["FeEd"] = "sip"
+            }) })
+        });
+
+        var failure = await update.Should().ThrowAsync<UiConfigurationValidationException>();
+        failure.Which.Errors.Should().ContainKey("Alpaca.Feed");
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ManageCredentials,
         bool includeTenantScope = true,
-        bool includeActor = true)
+        bool includeActor = true,
+        bool includeConfigEndpoints = false)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-connection-endpoints", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -961,10 +1155,13 @@ public sealed class ProviderConnectionEndpointsTests
             await next();
         });
         app.UseRateLimiter();
-        app.MapProviderConnectionEndpoints(new JsonSerializerOptions
+        var jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        };
+        app.MapProviderConnectionEndpoints(jsonOptions);
+        if (includeConfigEndpoints)
+            app.MapConfigEndpoints(jsonOptions);
 
         await app.StartAsync();
         return app;
@@ -1009,6 +1206,11 @@ public sealed class ProviderConnectionEndpointsTests
     private sealed class StubHttpClientFactory(HttpMessageHandler handler) : IHttpClientFactory
     {
         public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
+    }
+
+    private sealed class RequestStubHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> send) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) => send(request, ct);
     }
 
     private sealed class FakeQuickBooksAccountingVerifier : IAccountingSystemProvider, IAccountingSystemConnectionVerifier

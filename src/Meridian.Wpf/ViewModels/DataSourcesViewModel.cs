@@ -2,11 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
+using Meridian.Ui.Services;
+using Meridian.Ui.Services.ProviderDiagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using WpfServices = Meridian.Wpf.Services;
@@ -15,12 +19,12 @@ namespace Meridian.Wpf.ViewModels;
 
 /// <summary>
 /// ViewModel for the Data Sources configuration page.
-/// Owns all state and commands so that the code-behind is thinned to
-/// lifecycle wiring and secret-input/ComboBox-tag helpers only.
+/// Edits the authoritative host configuration and displays runtime activation evidence.
 /// </summary>
 public sealed class DataSourcesViewModel : BindableBase
 {
-    private readonly WpfServices.ConfigService _configService;
+    private readonly ProviderConfigurationApiClient _client;
+    private readonly SemaphoreSlim _settingWrites = new(1);
     private readonly WpfServices.FirstRunService _firstRunService;
     private readonly ILogger _logger;
     private bool _isLoading;
@@ -90,42 +94,45 @@ public sealed class DataSourcesViewModel : BindableBase
     private DataSourceConfigDto? _selectedDefaultHistoricalSource;
 
     // ── Internal form state
-    private string? _editingSourceId;
+    private string? _draftSourceId;
+    private DataSourceConfigDto? _editingSource;
     private string _selectedProvider = "IB";
     private string _selectedType = "RealTime";
     private string _alpacaFeed = "iex";
+    private string? _savedAlpacaFeed;
+    private string _initialAlpacaFeed = "iex";
     private string _polygonFeed = "stocks";
 
-    /// <summary>Polygon API key read from the shared secret input by code-behind before Save.</summary>
-    internal string PolygonApiKey { get; set; } = string.Empty;
-
     public DataSourcesViewModel(
-        WpfServices.ConfigService configService,
+        ProviderConfigurationApiClient client,
         WpfServices.FirstRunService firstRunService,
         ILogger<DataSourcesViewModel>? logger = null)
     {
-        _configService = configService;
+        _client = client;
         _firstRunService = firstRunService;
         _logger = logger ?? NullLogger<DataSourcesViewModel>.Instance;
+        Activation = new ProviderActivationViewModel(client, LoadAsync);
+        Activation.StatusChanged += (_, _) => UpdateActivationRows();
 
         // Load
         LoadCommand = new AsyncRelayCommand(LoadAsync);
         RetryConfigurationCommand = new AsyncRelayCommand(LoadAsync);
 
         // Source list
-        AddSourceCommand = new RelayCommand(BeginAddSource);
-        EditSourceCommand = new RelayCommand<string>(BeginEditSource);
+        AddSourceCommand = new RelayCommand(BeginAddSource, () => !IsSaving);
+        EditSourceCommand = new RelayCommand<string>(BeginEditSource, _ => !IsSaving);
         DeleteSourceCommand = new AsyncRelayCommand<string>(DeleteSourceAsync);
-        ToggleSourceEnabledCommand = new AsyncRelayCommand<DataSourceConfigDto>(ToggleSourceEnabledAsync);
+        ToggleSourceEnabledCommand = new AsyncRelayCommand<DataSourceRow>(ToggleSourceEnabledAsync);
 
         // Edit form
         SaveSourceCommand = new AsyncRelayCommand(SaveSourceAsync, () => CanSaveSource);
-        CancelEditCommand = new RelayCommand(CancelEdit);
+        CancelEditCommand = new RelayCommand(CancelEdit, () => !IsSaving);
+        OpenProviderCredentialsCommand = new RelayCommand(() => WpfServices.NavigationService.Instance.NavigateTo("CredentialManagement"));
     }
 
     // ── Collections ──────────────────────────────────────────────────────
 
-    public ObservableCollection<DataSourceConfigDto> DataSources { get; } = new();
+    public ObservableCollection<DataSourceRow> DataSources { get; } = new();
     public ObservableCollection<DataSourceConfigDto> RealTimeSources { get; } = new();
     public ObservableCollection<DataSourceConfigDto> HistoricalSources { get; } = new();
 
@@ -136,9 +143,11 @@ public sealed class DataSourcesViewModel : BindableBase
     public IRelayCommand AddSourceCommand { get; }
     public IRelayCommand<string> EditSourceCommand { get; }
     public IAsyncRelayCommand<string> DeleteSourceCommand { get; }
-    public IAsyncRelayCommand<DataSourceConfigDto> ToggleSourceEnabledCommand { get; }
+    public IAsyncRelayCommand<DataSourceRow> ToggleSourceEnabledCommand { get; }
     public IAsyncRelayCommand SaveSourceCommand { get; }
     public IRelayCommand CancelEditCommand { get; }
+    public IRelayCommand OpenProviderCredentialsCommand { get; }
+    public ProviderActivationViewModel Activation { get; }
 
     // ── Failover properties ───────────────────────────────────────────────
 
@@ -212,9 +221,17 @@ public sealed class DataSourcesViewModel : BindableBase
         private set
         {
             if (SetProperty(ref _isSaving, value))
+            {
                 RefreshEditReadiness();
+                AddSourceCommand.NotifyCanExecuteChanged();
+                EditSourceCommand.NotifyCanExecuteChanged();
+                CancelEditCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(IsEditFormEnabled));
+            }
         }
     }
+
+    public bool IsEditFormEnabled => !IsSaving;
 
     public bool CanSaveSource
     {
@@ -338,8 +355,7 @@ public sealed class DataSourcesViewModel : BindableBase
         get => _alpacaFeed;
         set
         {
-            var feed = string.IsNullOrWhiteSpace(value) ? "iex" : value;
-            if (SetProperty(ref _alpacaFeed, feed))
+            if (!string.IsNullOrWhiteSpace(value) && SetProperty(ref _alpacaFeed, value))
                 RefreshEditReadiness();
         }
     }
@@ -453,19 +469,24 @@ public sealed class DataSourcesViewModel : BindableBase
         private set => SetProperty(ref _configurationRecoveryDetail, value);
     }
 
-    // ── Internal access for code-behind ───────────────────────────────────
-
-    /// <summary>Returns the ID of the source being edited, or null when adding.</summary>
-    internal string? EditingSourceId => _editingSourceId;
-
     // ── Public async methods ──────────────────────────────────────────────
 
     public async Task LoadAsync(CancellationToken ct = default)
     {
+        if (_isLoading)
+            return;
         _isLoading = true;
         try
         {
-            var config = await _configService.GetDataSourcesConfigAsync();
+            var config = await _client.GetDataSourcesAsync(ct);
+            try
+            {
+                _savedAlpacaFeed = await _client.GetAlpacaFeedAsync(ct);
+            }
+            catch (InvalidOperationException)
+            {
+                _savedAlpacaFeed = null;
+            }
 
             _failoverEnabled = config.EnableFailover;
             _failoverTimeoutText = config.FailoverTimeoutSeconds.ToString();
@@ -474,21 +495,24 @@ public sealed class DataSourcesViewModel : BindableBase
 
             DataSources.Clear();
             foreach (var source in config.Sources ?? Array.Empty<DataSourceConfigDto>())
-                DataSources.Add(source);
+                DataSources.Add(new DataSourceRow(source));
 
             SourceCountText = $"({DataSources.Count})";
             IsNoSourcesVisible = DataSources.Count == 0;
 
             UpdateDefaultSourceCollections(config);
             ApplyConfigurationRecoveryState();
+            await Activation.RefreshAsync(ct);
+            UpdateActivationRows();
         }
-        catch (Exception ex)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (InvalidOperationException ex)
         {
             ShowStatus($"Failed to load data sources: {ex.Message}", isError: true);
             IsConfigurationRecoveryVisible = true;
-            ConfigurationRecoveryTitle = "Configuration needs attention";
-            ConfigurationRecoveryDetail =
-                "Data Sources remained available with safe defaults. Correct file access or syntax, then retry the load.";
+            ConfigurationRecoveryTitle = "Data source host unavailable";
+            ConfigurationRecoveryDetail = "Check the host connection and retry. Open edits remain available in the form.";
+            Activation.CancelPending();
         }
         finally
         {
@@ -496,17 +520,18 @@ public sealed class DataSourcesViewModel : BindableBase
         }
     }
 
+    public void Stop()
+    {
+        LoadCommand.Cancel();
+        RetryConfigurationCommand.Cancel();
+        SaveSourceCommand.Cancel();
+        DeleteSourceCommand.Cancel();
+        ToggleSourceEnabledCommand.Cancel();
+        Activation.CancelPending();
+    }
+
     private void ApplyConfigurationRecoveryState()
     {
-        if (_configService.LastLoadError is { } loadError)
-        {
-            IsConfigurationRecoveryVisible = true;
-            ConfigurationRecoveryTitle = "Configuration needs attention";
-            ConfigurationRecoveryDetail =
-                $"The desktop configuration could not be loaded ({loadError.Message}). Safe defaults are active; retry after correcting access.";
-            return;
-        }
-
         var recovery = _firstRunService.LastConfigurationRecoveryResult;
         IsConfigurationRecoveryVisible = recovery is { Outcome: not WpfServices.ConfigurationProvisioningResult.AlreadyValid };
         if (!IsConfigurationRecoveryVisible || recovery is null)
@@ -532,9 +557,9 @@ public sealed class DataSourcesViewModel : BindableBase
         HistoricalSources.Clear();
 
         foreach (var s in DataSources.Where(s => s.Type is "RealTime" or "Both"))
-            RealTimeSources.Add(s);
+            RealTimeSources.Add(s.Source);
         foreach (var s in DataSources.Where(s => s.Type is "Historical" or "Both"))
-            HistoricalSources.Add(s);
+            HistoricalSources.Add(s.Source);
 
         _selectedDefaultRealTimeSource = RealTimeSources.FirstOrDefault(s => s.Id == config.DefaultRealTimeSourceId);
         _selectedDefaultHistoricalSource = HistoricalSources.FirstOrDefault(s => s.Id == config.DefaultHistoricalSourceId);
@@ -544,7 +569,8 @@ public sealed class DataSourcesViewModel : BindableBase
 
     private void BeginAddSource()
     {
-        _editingSourceId = null;
+        _draftSourceId = Guid.NewGuid().ToString("N");
+        _editingSource = null;
         EditPanelTitle = "Add Data Source";
         ResetEditForm();
         IsEditPanelVisible = true;
@@ -558,9 +584,11 @@ public sealed class DataSourcesViewModel : BindableBase
         if (source == null)
             return;
 
-        _editingSourceId = sourceId;
+        _draftSourceId = sourceId;
+        _editingSource = source.Source;
         EditPanelTitle = "Edit Data Source";
-        PopulateEditForm(source);
+        ResetEditForm();
+        PopulateEditForm(source.Source);
         IsEditPanelVisible = true;
     }
 
@@ -583,11 +611,12 @@ public sealed class DataSourcesViewModel : BindableBase
 
         try
         {
-            await _configService.DeleteDataSourceAsync(sourceId, ct);
+            await _client.DeleteDataSourceAsync(sourceId, ct);
             await LoadAsync(ct);
             ShowStatus("Data source deleted successfully.");
         }
-        catch (Exception ex)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (InvalidOperationException ex)
         {
             ShowStatus($"Failed to delete data source: {ex.Message}", isError: true);
         }
@@ -599,18 +628,50 @@ public sealed class DataSourcesViewModel : BindableBase
             return;
 
         IsSaving = true;
+        var sourceSaved = false;
+        var savingFeed = false;
         try
         {
             var source = BuildDataSourceFromForm();
-            await _configService.AddOrUpdateDataSourceAsync(source, ct);
+            var feed = AlpacaFeed;
+            var sourceId = _draftSourceId!;
+            if (_editingSource is null || !SameSource(source, BuildDataSourceRequest(_editingSource)))
+            {
+                sourceId = await _client.SaveDataSourceAsync(source, ct);
+                sourceSaved = true;
+                _draftSourceId = sourceId;
+                _editingSource = new DataSourceConfigDto
+                {
+                    Id = sourceId, Name = source.Name, Provider = source.Provider, Enabled = source.Enabled,
+                    Type = source.Type, Priority = source.Priority, Description = source.Description, Tags = source.Tags,
+                    Symbols = source.Symbols, IB = source.IB, Polygon = source.Polygon, Alpaca = source.Alpaca
+                };
+            }
+
+            if (source.Alpaca is not null && !string.Equals(feed, _initialAlpacaFeed, StringComparison.OrdinalIgnoreCase))
+            {
+                savingFeed = true;
+                await _client.SaveAlpacaFeedAsync(sourceId, feed, ct);
+            }
+
             IsEditPanelVisible = false;
             await LoadAsync(ct);
-            ShowStatus(_editingSourceId == null ? "Data source added successfully." : "Data source updated successfully.");
-            _editingSourceId = null;
+            ShowStatus("Data source saved to the host. See provider activation for the running state.");
+            _editingSource = null;
+            _draftSourceId = null;
         }
-        catch (Exception ex)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (InvalidOperationException ex)
         {
-            ShowStatus($"Failed to save data source: {ex.Message}", isError: true);
+            if (sourceSaved)
+                await LoadAsync(ct);
+            var failure = (sourceSaved, savingFeed) switch
+            {
+                (true, true) => "The source was saved to the host. The Alpaca feed change still needs to be saved.",
+                (_, true) => "The Alpaca feed change still needs to be saved.",
+                _ => "Failed to save data source."
+            };
+            ShowStatus($"{failure} {ex.Message}", isError: true);
         }
         finally
         {
@@ -621,7 +682,8 @@ public sealed class DataSourcesViewModel : BindableBase
     private void CancelEdit()
     {
         IsEditPanelVisible = false;
-        _editingSourceId = null;
+        _editingSource = null;
+        _draftSourceId = null;
         ClearValidationErrors();
     }
 
@@ -641,61 +703,70 @@ public sealed class DataSourcesViewModel : BindableBase
 
     private async Task SaveFailoverSettingsAsync(CancellationToken ct = default)
     {
-        IsFailoverTimeoutErrorVisible = false;
-        if (!int.TryParse(FailoverTimeoutText, out var timeout) || timeout is < 5 or > 300)
-        {
-            FailoverTimeoutError = "Timeout must be between 5 and 300 seconds.";
-            IsFailoverTimeoutErrorVisible = true;
-            return;
-        }
-
+        await _settingWrites.WaitAsync(ct);
         try
         {
-            await _configService.UpdateFailoverSettingsAsync(FailoverEnabled, timeout, ct);
+            IsFailoverTimeoutErrorVisible = false;
+            if (!int.TryParse(FailoverTimeoutText, out var timeout) || timeout is < 5 or > 300)
+            {
+                FailoverTimeoutError = "Timeout must be between 5 and 300 seconds.";
+                IsFailoverTimeoutErrorVisible = true;
+                return;
+            }
+
+            await _client.SaveFailoverAsync(FailoverEnabled, timeout, ct);
+            await Activation.RefreshAsync(ct);
         }
-        catch (Exception ex)
+        finally
         {
-            ShowStatus($"Failed to update failover settings: {ex.Message}", isError: true);
+            _settingWrites.Release();
         }
     }
 
     private async Task SetDefaultSourceAsync(string id, bool isHistorical, CancellationToken ct = default)
     {
+        await _settingWrites.WaitAsync(ct);
         try
         {
-            await _configService.SetDefaultDataSourceAsync(id, isHistorical, ct);
+            await _client.SetDefaultAsync(id, isHistorical, ct);
+            await Activation.RefreshAsync(ct);
         }
-        catch (Exception ex)
+        finally
         {
-            ShowStatus($"Failed to set default source: {ex.Message}", isError: true);
+            _settingWrites.Release();
         }
     }
 
-    private async Task ToggleSourceEnabledAsync(DataSourceConfigDto? source, CancellationToken ct = default)
+    private async Task ToggleSourceEnabledAsync(DataSourceRow? source, CancellationToken ct = default)
     {
         if (source == null)
             return;
         try
         {
-            await _configService.AddOrUpdateDataSourceAsync(source, ct);
+            await _client.SetDataSourceEnabledAsync(source.Id, source.Enabled, ct);
+            source.Source.Enabled = source.Enabled;
+            await Activation.RefreshAsync(ct);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (InvalidOperationException ex)
         {
+            source.Enabled = source.Source.Enabled;
             ShowStatus($"Failed to update data source: {ex.Message}", isError: true);
         }
     }
 
-    private DataSourceConfigDto BuildDataSourceFromForm()
+    private DataSourceConfigRequest BuildDataSourceFromForm()
     {
         var source = new DataSourceConfigDto
         {
-            Id = _editingSourceId ?? Guid.NewGuid().ToString("N"),
+            Id = _draftSourceId!,
             Name = SourceNameText.Trim(),
             Provider = SelectedProvider,
             Type = SelectedType,
             Priority = int.TryParse(PriorityText, out var p) ? p : 100,
-            Description = DescriptionText.Trim(),
-            Enabled = true
+            Description = string.IsNullOrWhiteSpace(DescriptionText) ? null : DescriptionText.Trim(),
+            Enabled = _editingSource?.Enabled ?? true,
+            Tags = _editingSource?.Tags
         };
 
         if (!string.IsNullOrWhiteSpace(SymbolsText))
@@ -713,21 +784,22 @@ public sealed class DataSourcesViewModel : BindableBase
                     ClientId = int.TryParse(IBClientId, out var cid) ? cid : 1,
                     UsePaperTrading = IBPaperTrading,
                     SubscribeDepth = IBSubscribeDepth,
-                    TickByTick = IBTickByTick
+                    TickByTick = IBTickByTick,
+                    DepthLevels = _editingSource?.IB?.DepthLevels ?? 10
                 };
                 break;
             case "Alpaca":
                 source.Alpaca = new AlpacaOptionsDto
                 {
-                    Feed = AlpacaFeed,
+                    Feed = _editingSource?.Alpaca?.Feed ?? "iex",
                     UseSandbox = AlpacaSandbox,
-                    SubscribeQuotes = AlpacaSubscribeQuotes
+                    SubscribeQuotes = AlpacaSubscribeQuotes,
+                    AdditionalProperties = _editingSource?.Alpaca?.AdditionalProperties
                 };
                 break;
             case "Polygon":
                 source.Polygon = new PolygonOptionsDto
                 {
-                    ApiKey = PolygonApiKey,
                     Feed = PolygonFeed,
                     UseDelayed = PolygonDelayed,
                     SubscribeTrades = PolygonSubscribeTrades,
@@ -737,7 +809,24 @@ public sealed class DataSourcesViewModel : BindableBase
                 break;
         }
 
-        return source;
+        return BuildDataSourceRequest(source);
+    }
+
+    private static DataSourceConfigRequest BuildDataSourceRequest(DataSourceConfigDto source)
+        => new(source.Id, source.Name, source.Provider, source.Enabled, source.Type, source.Priority,
+            source.Alpaca is { } alpaca ? new AlpacaOptionsDto
+            {
+                Feed = alpaca.Feed, UseSandbox = alpaca.UseSandbox, SubscribeQuotes = alpaca.SubscribeQuotes,
+                AdditionalProperties = alpaca.AdditionalProperties
+            } : null, source.Polygon, source.IB, source.Symbols, source.Description, source.Tags);
+
+    private static bool SameSource(DataSourceConfigRequest current, DataSourceConfigRequest baseline)
+        => JsonSerializer.Serialize(current, DesktopJsonOptions.Api) == JsonSerializer.Serialize(baseline, DesktopJsonOptions.Api);
+
+    private void UpdateActivationRows()
+    {
+        foreach (var source in DataSources)
+            source.UpdateActivation(Activation.Find(source.Id, "streaming"));
     }
 
     private void PopulateEditForm(DataSourceConfigDto source)
@@ -762,14 +851,14 @@ public sealed class DataSourcesViewModel : BindableBase
 
         if (source.Alpaca != null)
         {
-            AlpacaFeed = source.Alpaca.Feed ?? "iex";
+            _initialAlpacaFeed = _savedAlpacaFeed ?? source.Alpaca.Feed;
+            AlpacaFeed = _initialAlpacaFeed;
             AlpacaSandbox = source.Alpaca.UseSandbox;
             AlpacaSubscribeQuotes = source.Alpaca.SubscribeQuotes;
         }
 
         if (source.Polygon != null)
         {
-            PolygonApiKey = source.Polygon.ApiKey ?? string.Empty;
             PolygonFeed = source.Polygon.Feed ?? "stocks";
             PolygonDelayed = source.Polygon.UseDelayed;
             PolygonSubscribeTrades = source.Polygon.SubscribeTrades;
@@ -794,11 +883,11 @@ public sealed class DataSourcesViewModel : BindableBase
         IBSubscribeDepth = true;
         IBTickByTick = true;
 
-        AlpacaFeed = "iex";
+        _initialAlpacaFeed = _savedAlpacaFeed ?? "iex";
+        AlpacaFeed = _initialAlpacaFeed;
         AlpacaSandbox = false;
         AlpacaSubscribeQuotes = false;
 
-        PolygonApiKey = string.Empty;
         PolygonFeed = "stocks";
         PolygonDelayed = false;
         PolygonSubscribeTrades = true;
@@ -880,7 +969,9 @@ public sealed class DataSourcesViewModel : BindableBase
     {
         "Alpaca" => "Alpaca",
         "Polygon" => "Polygon.io",
-        "Robinhood" => "Robinhood",
+        "Yahoo" => "Yahoo Finance",
+        "NYSE" => "NYSE",
+        "Synthetic" => "Synthetic",
         _ => "Interactive Brokers"
     };
 
@@ -926,6 +1017,30 @@ public sealed class DataSourcesViewModel : BindableBase
         StatusMessage = message;
         IsStatusError = isError;
         IsStatusVisible = true;
+    }
+}
+
+public sealed class DataSourceRow(DataSourceConfigDto source) : BindableBase
+{
+    private bool _enabled = source.Enabled;
+    private string _activationState = "Unavailable";
+    private string _activationDetail = "The host has no activation evidence for this source.";
+    internal DataSourceConfigDto Source { get; } = source;
+
+    public string Id => Source.Id;
+    public string Name => Source.Name;
+    public string Provider => Source.Provider;
+    public string Type => Source.Type;
+    public string? Description => Source.Description;
+    public int Priority => Source.Priority;
+    public bool Enabled { get => _enabled; set => SetProperty(ref _enabled, value); }
+    public string ActivationState { get => _activationState; private set => SetProperty(ref _activationState, value); }
+    public string ActivationDetail { get => _activationDetail; private set => SetProperty(ref _activationDetail, value); }
+
+    internal void UpdateActivation(ProviderActivationEntry? entry)
+    {
+        ActivationState = ProviderActivationViewModel.DescribeState(entry);
+        ActivationDetail = ProviderActivationViewModel.DescribeDetail(entry);
     }
 }
 

@@ -69,8 +69,13 @@ import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigatio
 import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-symbols";
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
 import { FailoverRegion } from "@/screens/data-screen.failover";
+import { AlpacaFeedRegion } from "@/screens/data-screen.alpaca-feed";
+import { canTestProviderDraft } from "@/screens/data-screen.draft-verification";
+import { supportsProviderDraft } from "@/lib/provider-credential-scope";
 import { BackfillProviderEditorRegion } from "@/screens/data-screen.backfill-provider-editor";
 import { BackfillBatchReceipts } from "@/screens/data-screen.backfill-batch-receipts";
+import { BackfillSchedulesRegion } from "@/screens/data-screen.backfill-schedules";
+import { ProviderActivationPanel } from "@/components/data/provider-activation-panel";
 import { DataRoutingPreviewPanel } from "@/screens/data-screen.routing-preview";
 import { ProviderValidationPanel } from "@/screens/data-screen.provider-validation";
 import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history";
@@ -262,7 +267,7 @@ function DataScreenContent({
   }, [sharedCounts, kpiProviders]);
   const queryPanel = useDataQueryPanel();
   const qualityPanel = useDataQualityPanel(dataQualityFetcher);
-  const capabilityMatrixPanel = useCapabilityMatrixPanel();
+  const capabilityMatrixPanel = useCapabilityMatrixPanel(vm.workstream === "overview" && data !== null);
   const capabilityFreshness = useMemo(() => buildCapabilityFreshnessIndex(vm.providerSection.rows), [vm.providerSection.rows]);
   const corporateActionInboxPanel = useCorporateActionInboxPanel();
   const coverageGapsPanel = useCoverageGapsPanel();
@@ -506,7 +511,9 @@ function DataScreenContent({
 
         {showProviderWorkstream ? (
           <>
+            <ProviderActivationPanel />
             <FailoverRegion />
+            <AlpacaFeedRegion />
             <BackfillProviderEditorRegion />
             <DataRoutingPreviewPanel />
             <ProviderValidationPanel />
@@ -514,7 +521,10 @@ function DataScreenContent({
           </>
         ) : null}
 
-        {showBackfillWorkstream ? <DataBackfillWorkstream vm={vm} /> : null}
+        {showBackfillWorkstream ? <>
+          <DataBackfillWorkstream vm={vm} />
+          <BackfillSchedulesRegion />
+        </> : null}
 
         {showOperationsWorkstream ? <IngestionOperationsWorkstream /> : null}
 
@@ -1167,6 +1177,7 @@ function dataStatusToneToBannerTone(tone: "default" | "warning" | "danger" | "su
 }
 
 function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
+  const draftRejected = vm.providerDraftTest.result !== null && vm.providerDraftTest.result.status !== "Verified";
   return (
     <Dialog open={vm.providerSetupOpen} onOpenChange={(open) => { if (!open) vm.closeProviderSetup(); }}>
       <DialogContent aria-labelledby={vm.providerSetupDialogState.titleId} aria-describedby={vm.providerSetupDialogState.descriptionId}>
@@ -1389,6 +1400,21 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                 </label>
               ))}
 
+              {supportsProviderDraft(vm.providerForm.kind) ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="outline" onClick={() => void vm.providerDraftTest.verify(vm.providerForm)}
+                    disabled={!canTestProviderDraft(vm.providerForm) || vm.providerPhase === "submitting"}
+                    busy={vm.providerDraftTest.busy} busyLabel="Testing draft">
+                    Test draft credentials
+                  </Button>
+                  {vm.providerDraftTest.result ? (
+                    <p className="text-sm text-muted-foreground" role="status">
+                      {vm.providerDraftTest.result.status === "Unavailable" ? "Verification unavailable" : vm.providerDraftTest.result.status}. {vm.providerDraftTest.result.message}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
               <fieldset>
                 <legend className="mb-2 text-sm">Capabilities</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -1461,13 +1487,13 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
               </Button>
               <Button
                 onClick={() => void vm.submitProviderSetup()}
-                disabled={vm.providerSetupDialogState.submitAction.disabled}
+                disabled={vm.providerSetupDialogState.submitAction.disabled || vm.providerDraftTest.busy}
                 disabledReason={vm.providerSetupDialogState.submitAction.disabledReason}
                 busy={vm.providerSetupDialogState.submitAction.busy}
                 busyLabel={vm.providerSetupDialogState.submitAction.busyLabel}
-                aria-label={vm.providerSetupDialogState.submitAction.ariaLabel}
+                aria-label={draftRejected ? "Save anyway" : vm.providerSetupDialogState.submitAction.ariaLabel}
               >
-                {vm.providerSetupDialogState.submitAction.label}
+                {draftRejected ? "Save anyway" : vm.providerSetupDialogState.submitAction.label}
               </Button>
             </div>
           </>
@@ -1906,7 +1932,9 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
         {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
         {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
         {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
-        {vm.result?.batchReceipts?.length ? <BackfillBatchReceipts receipts={vm.result.batchReceipts} /> : null}
+        {vm.result && (vm.result.batchReceipts?.length || vm.result.routingAttempts?.length) ? (
+          <BackfillBatchReceipts receipts={vm.result.batchReceipts ?? []} attempts={vm.result.routingAttempts ?? []} />
+        ) : null}
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button
@@ -2058,6 +2086,30 @@ function BackfillLiveProgress({ state }: { state: BackfillLiveProgressState }) {
 
 const FRESHNESS_SEVERITY: Record<CapabilityFreshnessModel["state"], string> = { current: "ready", stale: "stale", "no-evidence": "unknown" };
 
+function declaredSupport(value?: boolean) {
+  return value === undefined ? "Unavailable" : value ? "Yes" : "No";
+}
+
+function declaredDepth(row: CapabilityMatrixRowModel) {
+  const declaration = row.capabilities;
+  if (!declaration?.supportsMarketDepth) return declaredSupport(declaration?.supportsMarketDepth);
+  return declaration.maxDepthLevels == null ? "Unlimited" : declaration.maxDepthLevels.toString();
+}
+
+const declaredCapabilityColumns: TableWorkbenchColumn<CapabilityMatrixRowModel>[] = [
+  { id: "market-depth", label: "Depth levels", render: declaredDepth, exportValue: declaredDepth },
+  ...([
+    ["supportsAdjustedPrices", "Adjusted bars"],
+    ["supportsHistoricalTrades", "Historical trades"],
+    ["supportsHistoricalQuotes", "Historical quotes"],
+    ["supportsIntraday", "Intraday"]
+  ] as const).map(([id, label]) => ({
+    id, label,
+    render: (row: CapabilityMatrixRowModel) => declaredSupport(row.capabilities?.[id]),
+    exportValue: (row: CapabilityMatrixRowModel) => declaredSupport(row.capabilities?.[id])
+  }))
+];
+
 function CapabilityMatrixRegion({ panel, freshness }: { panel: CapabilityMatrixViewModel; freshness: (providerId: string) => CapabilityFreshnessModel }) {
   return (
     <section aria-labelledby="capability-matrix-title" className="workspace-region capability-matrix-region">
@@ -2094,12 +2146,14 @@ function CapabilityMatrixRegion({ panel, freshness }: { panel: CapabilityMatrixV
                       exportValue: (row: CapabilityMatrixRowModel) => { const fresh = freshness(row.providerId); return fresh.ageText ? `${fresh.label} (${fresh.ageText})` : fresh.label; } },
                     ...panel.model.columns.map((column) => ({ id: column, label: column,
                       render: (row: CapabilityMatrixRowModel) => { const cell = row.cells.find((item) => item.instrumentType === column); return cell ? <span aria-label={cell.description} title={cell.description}>{cell.marks}</span> : "Unavailable"; },
-                      exportValue: (row: CapabilityMatrixRowModel) => row.cells.find((cell) => cell.instrumentType === column)?.description ?? "Unavailable" }))]}
+                      exportValue: (row: CapabilityMatrixRowModel) => row.cells.find((cell) => cell.instrumentType === column)?.description ?? "Unavailable" })),
+                    ...declaredCapabilityColumns]}
                   ariaLabel="Provider capability by instrument type" emptyText="No declared capabilities." maxVisibleRows={null} />
               </div>
               <p className="text-xs text-muted-foreground">
                 {CAPABILITY_LEGEND.map((mark) => `${mark.code} = ${mark.label}`).join(" · ")}
               </p>
+              <p className="text-xs text-muted-foreground">Depth, adjusted bars, historical trades and quotes, and intraday coverage are adapter declarations.</p>
               {panel.model.failures.length > 0 && (
                 <div>
                   <h3 className="text-sm font-semibold">Discovery failures</h3>

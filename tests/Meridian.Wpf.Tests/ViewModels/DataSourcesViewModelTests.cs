@@ -6,6 +6,64 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class DataSourcesViewModelTests
 {
     [Fact]
+    public async Task SaveSource_WhenAlpacaFeedFails_RetainsDraftAndRetriesOnlyFeed()
+    {
+        var sourceWrites = 0;
+        var feedWrites = 0;
+        string? sourceId = null;
+        using var api = new ApiClientService(new Factory(async request =>
+        {
+            switch (request.Method.Method, request.RequestUri!.AbsolutePath)
+            {
+                case ("POST", "/api/config/datasources"):
+                    sourceWrites++;
+                    using (var payload = JsonDocument.Parse(await request.Content!.ReadAsStringAsync()))
+                    {
+                        sourceId = payload.RootElement.GetProperty("id").GetString();
+                        Assert.Equal("iex", payload.RootElement.GetProperty("alpaca").GetProperty("feed").GetString());
+                    }
+                    return Json(JsonSerializer.Serialize(new { id = sourceId }));
+                case ("PUT", "/api/config/alpaca/feed"):
+                    using (var payload = JsonDocument.Parse(await request.Content!.ReadAsStringAsync()))
+                    {
+                        Assert.Equal(sourceId, payload.RootElement.GetProperty("sourceId").GetString());
+                        Assert.Equal("sip", payload.RootElement.GetProperty("feed").GetString());
+                    }
+                    return ++feedWrites == 1
+                        ? Json("""{ "error": "SIP access could not be verified." }""", HttpStatusCode.Conflict)
+                        : Json("{}");
+                case ("GET", "/api/config/datasources"):
+                    return Json("""{ "sources": [] }""");
+                case ("GET", "/api/config/alpaca/feed"):
+                    return Json("""{ "feed": "iex" }""");
+                case ("GET", "/api/providers/activation"):
+                    return Json("""{ "providers": [], "canRestart": false, "pendingPaths": [], "isReady": true }""");
+                default:
+                    throw new InvalidOperationException("Unexpected test route.");
+            }
+        }));
+        var viewModel = new DataSourcesViewModel(new ProviderConfigurationApiClient(api), FirstRunService.Instance);
+        viewModel.AddSourceCommand.Execute(null);
+        viewModel.SourceNameText = "Synthetic market-data fixture";
+        viewModel.SelectedProvider = "Alpaca";
+        viewModel.AlpacaFeed = "sip";
+
+        await viewModel.SaveSourceCommand.ExecuteAsync(null);
+
+        Assert.True(viewModel.IsEditPanelVisible);
+        Assert.True(viewModel.CanSaveSource);
+        Assert.Equal("sip", viewModel.AlpacaFeed);
+        Assert.Contains("The source was saved to the host", viewModel.StatusMessage);
+        Assert.Contains("SIP access could not be verified", viewModel.StatusMessage);
+
+        await viewModel.SaveSourceCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, sourceWrites);
+        Assert.Equal(2, feedWrites);
+        Assert.False(viewModel.IsEditPanelVisible);
+    }
+
+    [Fact]
     public void BuildEditReadinessState_WithoutName_DisablesSaveAndExplainsRecovery()
     {
         var state = DataSourcesViewModel.BuildEditReadinessState(
@@ -89,6 +147,9 @@ public sealed class DataSourcesViewModelTests
         xaml.Should().Contain("IsEnabled=\"{Binding CanSaveSource}\"");
         xaml.Should().Contain("ToolTip=\"{Binding SourceSetupReadinessDetail}\"");
         xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        xaml.Should().Contain("Command=\"{Binding SaveSourceCommand}\"");
+        xaml.Should().Contain("ProviderActivationPanel");
+        xaml.Should().Contain("{Binding ActivationState}");
         xaml.Should().NotContain("SelectionChanged=\"ProviderCombo_SelectionChanged\"");
         xaml.Should().NotContain("Click=\"EditDataSource_Click\"");
         xaml.Should().NotContain("Click=\"DeleteDataSource_Click\"");
@@ -99,8 +160,8 @@ public sealed class DataSourcesViewModelTests
         codeBehind.Should().NotContain("DeleteDataSource_Click");
         codeBehind.Should().NotContain("SourceEnabled_Changed");
         codeBehind.Should().Contain("WpfServices.FirstRunService firstRunService");
-        codeBehind.Should().Contain("new DataSourcesViewModel(configService, firstRunService, logger)");
-        codeBehind.Should().Contain("_viewModel.PolygonApiKey = PolygonApiKeyInput.Secret");
+        codeBehind.Should().Contain("new DataSourcesViewModel(client, firstRunService, logger)");
+        codeBehind.Should().NotContain("PolygonApiKey");
     }
 
     [Fact]
@@ -122,4 +183,27 @@ public sealed class DataSourcesViewModelTests
         source.Should().Contain("_host = BuildDesktopHost(includeDesktopConfiguration: false)");
         source.Should().Contain("IsConfigurationStartupFailure");
     }
+
+    private static HttpResponseMessage Json(string body, HttpStatusCode status = HttpStatusCode.OK) => new(status)
+    {
+        Content = new StringContent(body, Encoding.UTF8, "application/json")
+    };
+
+    private sealed class Factory(Func<HttpRequestMessage, Task<HttpResponseMessage>> send) : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new(new Handler(send));
+    }
+
+    private sealed class Handler(Func<HttpRequestMessage, Task<HttpResponseMessage>> send) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => send(request);
+    }
 }
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using Meridian.Ui.Services;
+using Meridian.Ui.Services.ProviderDiagnostics;
+using Meridian.Wpf.Services;

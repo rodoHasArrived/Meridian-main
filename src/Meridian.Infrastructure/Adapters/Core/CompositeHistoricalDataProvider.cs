@@ -4,6 +4,7 @@ using Meridian.Core.Exceptions;
 using Meridian.Core.Config;
 using DataSourceType = Meridian.Infrastructure.DataSources.DataSourceType;
 using Meridian.Core.Logging;
+using Meridian.Contracts.Backfill;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
@@ -38,6 +39,9 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     private readonly bool _ownsProgressTracker;
     private readonly ILogger _log;
     private readonly IReadOnlyDictionary<string, ProviderValidationProfile>? _validationProfiles;
+    private readonly BackfillRoutingAdmission? _routingAdmission;
+    private readonly Action<BackfillRoutingAttempt>? _captureAttempt;
+    private readonly IReadOnlyList<string> _unavailablePreferences;
     private bool _disposed;
 
     // Maximum number of times the whole provider chain is retried after every candidate has
@@ -117,17 +121,23 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         BackfillProgressTracker? progressTracker = null,
         IReadOnlyDictionary<string, ProviderValidationProfile>? validationProfiles = null,
         ProviderRateLimitHistory? rateLimitHistory = null,
-        Func<CrossProviderTolerancePolicy>? crossValidationPolicy = null)
+        Func<CrossProviderTolerancePolicy>? crossValidationPolicy = null,
+        BackfillRoutingAdmission? routingAdmission = null,
+        Action<BackfillRoutingAttempt>? captureAttempt = null,
+        IReadOnlyList<string>? unavailablePreferences = null)
     {
         // Fabricated bars are a last resort even when their numeric priority is lower.
-        _providers = providers
-            .OrderBy(p => p.IsSimulated)
-            .ThenBy(p => p.Priority)
-            .ToList();
+        _providers = routingAdmission is null
+            ? BackfillRoutingSnapshot.Order(providers.Select(p => new BackfillRoutingProvider(p, p.Priority)))
+                .Select(entry => entry.Provider).ToList()
+            : providers.ToList();
 
-        if (_providers.Count == 0)
+        if (_providers.Count == 0 && routingAdmission is null)
             throw new ArgumentException("At least one provider is required", nameof(providers));
 
+        _routingAdmission = routingAdmission;
+        _captureAttempt = captureAttempt;
+        _unavailablePreferences = unavailablePreferences ?? [];
         _symbolResolver = symbolResolver;
         _validationProfiles = validationProfiles;
         foreach (var profile in validationProfiles?.Values ?? Enumerable.Empty<ProviderValidationProfile>())
@@ -141,15 +151,16 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         _ownsProgressTracker = progressTracker is null;
 
         // Rate-limit aware rotation policy, backed by a per-provider rate-limit state tracker.
-        var rateLimitTracker = new ProviderRateLimitTracker(_log);
-        foreach (var provider in _providers)
+        var rateLimitTracker = routingAdmission?.Tracker ?? new ProviderRateLimitTracker(_log);
+        if (routingAdmission is null)
         {
-            rateLimitTracker.RegisterProvider(provider);
+            foreach (var provider in _providers)
+                rateLimitTracker.RegisterProvider(provider);
         }
         _rotation = new ProviderRotationStrategy(rateLimitTracker, enableRateLimitRotation, rateLimitRotationThreshold, rateLimitHistory);
 
         // Per-provider health status and failure backoff bookkeeping.
-        _health = new ProviderHealthTracker(
+        _health = routingAdmission?.Health ?? new ProviderHealthTracker(
             _providers.Select(p => p.Name),
             failureBackoffDuration ?? TimeSpan.FromMinutes(5));
 
@@ -172,7 +183,11 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         return false;
     }
 
-    public async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+        => GetDailyBarsWithEvidenceAsync(symbol, from, to, null, ct);
+
+    internal async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsWithEvidenceAsync(
+        string symbol, DateOnly? from, DateOnly? to, Action<BackfillRoutingAttempt>? captureAttempt, CancellationToken ct)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -192,7 +207,8 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             rangeEnd: to,
             recencyEvaluator: (bars, provider) => BackfillBarValidation.EvaluateDailyRecency(bars, to,
                 staleToleranceDays: ResolveValidationProfile(provider).StaleToleranceDays),
-            ct: ct).ConfigureAwait(false);
+            ct: ct,
+            captureAttempt: captureAttempt).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(
@@ -250,7 +266,8 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         DateOnly? rangeStart,
         DateOnly? rangeEnd,
         Func<IReadOnlyList<TResult>, string, StaleBarsVerdict?>? recencyEvaluator,
-        CancellationToken ct)
+        CancellationToken ct,
+        Action<BackfillRoutingAttempt>? captureAttempt = null)
     {
         var requestStartedAt = DateTimeOffset.UtcNow;
         var retryDeadline = requestStartedAt + _maxRateLimitRetryBudget;
@@ -259,11 +276,23 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         StaleBarsVerdict? freshestStaleVerdict = null;
         string? freshestStaleProvider = null;
         string? throttledProvider = null;
+        var capture = captureAttempt ?? _captureAttempt;
+        if (capture is not null)
+        {
+            foreach (var unavailable in _unavailablePreferences)
+                capture(new BackfillRoutingAttempt(symbol, unavailable, "provider-unavailable", 0, false));
+        }
 
         for (var attempt = 0; ; attempt++)
         {
             ct.ThrowIfCancellationRequested();
             var candidates = candidateSelector().ToArray();
+            if (capture is not null && candidates.Length > 1)
+            {
+                var preferred = _providers.FirstOrDefault(candidates.Contains);
+                if (preferred is not null && !ReferenceEquals(candidates[0], preferred))
+                    capture(new BackfillRoutingAttempt(symbol, preferred.Name, "rotated-for-capacity", 0, false));
+            }
             List<(string Provider, Exception Error)> errors = [];
             List<IHistoricalDataProvider> rateLimitedCandidates = [];
             var hasNonRateLimitFailure = false;
@@ -290,41 +319,52 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             {
                 ct.ThrowIfCancellationRequested();
 
-                // Skip providers in backoff period
-                if (_health.IsInBackoffPeriod(provider.Name))
+                void Capture(string reason, int bars = 0, bool attempted = false) =>
+                    capture?.Invoke(new BackfillRoutingAttempt(symbol, provider.Name, reason, bars, attempted));
+
+                bool SkipUnavailable()
                 {
-                    _log.Debug("Skipping {Provider} - in backoff period", provider.Name);
-                    var unavailable = new DataProviderException(
-                        "Provider is unavailable during failure backoff; coverage was not checked.",
-                        provider: provider.Name,
-                        symbol: symbol);
-                    errors.Add((provider.Name, unavailable));
-                    Report(provider.Name, "skipped-backoff", error: unavailable.Message);
-                    continue;
+                    if (_health.IsInBackoffPeriod(provider.Name))
+                    {
+                        var unavailable = new DataProviderException(
+                            "Provider is unavailable during failure backoff; coverage was not checked.",
+                            provider: provider.Name, symbol: symbol);
+                        errors.Add((provider.Name, unavailable));
+                        Report(provider.Name, "skipped-backoff", error: unavailable.Message);
+                        Capture("skipped-backoff");
+                        return true;
+                    }
+                    if ((_rotation.Enabled || _routingAdmission is not null) && _rotation.IsRateLimited(provider.Name))
+                    {
+                        var resetTime = _rotation.GetTimeUntilReset(provider.Name);
+                        var unavailable = new RateLimitException(
+                            "Provider is rate limited; coverage was not checked.",
+                            provider: provider.Name, symbol: symbol, retryAfter: resetTime);
+                        errors.Add((provider.Name, unavailable));
+                        rateLimitedCandidates.Add(provider);
+                        Report(provider.Name, "skipped-rate-limited", error: unavailable.Message);
+                        Capture("skipped-rate-limited");
+                        return true;
+                    }
+                    return false;
                 }
 
-                // Skip rate-limited providers if rotation is enabled
-                if (_rotation.Enabled && _rotation.IsRateLimited(provider.Name))
-                {
-                    var resetTime = _rotation.GetTimeUntilReset(provider.Name);
-                    _log.Debug("Skipping {Provider} - rate limited, resets in {ResetTime}", provider.Name, resetTime);
-                    var unavailable = new RateLimitException(
-                        "Provider is rate limited; coverage was not checked.",
-                        provider: provider.Name,
-                        symbol: symbol,
-                        retryAfter: resetTime);
-                    errors.Add((provider.Name, unavailable));
-                    rateLimitedCandidates.Add(provider);
-                    Report(provider.Name, "skipped-rate-limited", error: unavailable.Message);
+                if (SkipUnavailable())
                     continue;
-                }
 
+                var resolvedSymbol = await ResolveSymbolForProviderAsync(symbol, provider.Name, ct).ConfigureAwait(false);
+                using var slot = _routingAdmission is null
+                    ? null
+                    : await _routingAdmission.AcquireAsync(provider.Name, ct).ConfigureAwait(false);
+                // A caller ahead of us can establish a cooldown while we wait. Keep the
+                // slot through outcome handling so that state is visible to the next waiter.
+                ct.ThrowIfCancellationRequested();
+                if (slot is not null && SkipUnavailable())
+                    continue;
                 providerAttempt++;
+                var called = false;
                 try
                 {
-                    // Resolve symbol for this provider if resolver is available
-                    var resolvedSymbol = await ResolveSymbolForProviderAsync(symbol, provider.Name, ct).ConfigureAwait(false);
-
                     _log.Information("Trying {Provider} for {Symbol} {Operation} (resolved: {Resolved})",
                         provider.Name, symbol, operationLabel, resolvedSymbol);
                     Report(provider.Name, "trying");
@@ -340,9 +380,8 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     var validationProfile = ResolveValidationProfile(provider.Name);
                     _log.Debug("Applying provider validation profile {Provider} {StaleToleranceDays} {FutureSkewSeconds} {StaleThresholdSeconds} {MaxLatencyMs}",
                         provider.Name, validationProfile.StaleToleranceDays, validationProfile.FutureSkewSeconds, validationProfile.StaleThresholdSeconds, validationProfile.MaxLatencyMs);
-                    // Record the request attempt
                     _rotation.RecordRequest(provider.Name);
-
+                    called = true;
                     var results = await fetchAsync(provider, resolvedSymbol, ct).ConfigureAwait(false);
                     ct.ThrowIfCancellationRequested();
                     var elapsed = DateTimeOffset.UtcNow - startTime;
@@ -352,7 +391,8 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                         // Update health status and clear any rate limit state
                         _health.UpdateHealth(provider.Name, true, $"Retrieved {results.Count} {operationLabel}", elapsed);
                         _health.ClearFailure(provider.Name);
-                        _rotation.ClearRateLimitState(provider.Name);
+                        if (_routingAdmission is null)
+                            _rotation.ClearRateLimitState(provider.Name);
 
                         var staleVerdict = recencyEvaluator?.Invoke(results, provider.Name);
                         if (staleVerdict is not null)
@@ -361,6 +401,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                                 "Provider {Provider} returned stale {Operation} for {Symbol}: {StaleReason}. Trying fresher providers before accepting.",
                                 provider.Name, operationLabel, symbol, staleVerdict.Description);
                             Report(provider.Name, "stale-data", results.Count, error: staleVerdict.Description);
+                            Capture("stale-data", results.Count, attempted: true);
 
                             if (freshestStaleVerdict is null ||
                                 staleVerdict.LatestSessionDate > freshestStaleVerdict.LatestSessionDate)
@@ -384,20 +425,24 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                             await onSuccessAsync(results, provider, ct).ConfigureAwait(false);
                         }
 
+                        Capture("completed", results.Count, attempted: true);
                         return results;
                     }
 
                     _log.Debug("No {Operation} returned from {Provider} for {Symbol}, trying next", operationLabel, provider.Name, symbol);
                     Report(provider.Name, "no-data");
+                    Capture("no-data", attempted: true);
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
+                    if (called)
+                        Capture("cancelled", attempted: true);
                     throw;
                 }
                 catch (Exception ex)
                 {
                     // Check if this is a rate limit error
-                    if (IsRateLimitException(ex))
+                    if (called && IsRateLimitException(ex))
                     {
                         var retryAfter = ExtractRetryAfter(ex);
                         _rotation.RecordRateLimitHit(provider.Name, retryAfter,
@@ -407,6 +452,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                         _log.Warning("Provider {Provider} hit rate limit for {Symbol} {Operation}, rotating to next provider",
                             provider.Name, symbol, operationLabel);
                         Report(provider.Name, "rate-limited", error: ex.Message);
+                        Capture("rate-limited", attempted: true);
                     }
                     else
                     {
@@ -414,6 +460,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                         _log.Warning(ex, "Provider {Provider} failed for {Symbol} {Operation}", provider.Name, symbol, operationLabel);
                         _health.RecordFailure(provider.Name, ex.Message);
                         Report(provider.Name, "failed", error: ex.Message);
+                        Capture("failed", attempted: called);
                     }
                     errors.Add((provider.Name, ex));
                 }
@@ -449,6 +496,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     "All providers returned stale {Operation} for {Symbol}; accepting freshest stale result from {Provider} ({StaleReason})",
                     operationLabel, symbol, freshestStaleProvider, freshestStaleVerdict!.Description);
                 Report(freshestStaleProvider!, "stale-data-accepted", freshestStaleResult.Count, error: freshestStaleVerdict.Description);
+                capture?.Invoke(new BackfillRoutingAttempt(symbol, freshestStaleProvider!, "stale-data-accepted", freshestStaleResult.Count, false));
                 return freshestStaleResult;
             }
 
@@ -545,7 +593,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     private static TimeSpan? ExtractRetryAfter(Exception ex)
         => FindRateLimitException(ex)?.RetryAfter;
 
-    private static RateLimitException? FindRateLimitException(Exception ex)
+    internal static RateLimitException? FindRateLimitException(Exception ex)
     {
         if (ex is RateLimitException rateLimit)
             return rateLimit;
@@ -563,7 +611,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         return ex.InnerException is null ? null : FindRateLimitException(ex.InnerException);
     }
 
-    private static bool HasHttpTooManyRequestsStatus(Exception ex)
+    internal static bool HasHttpTooManyRequestsStatus(Exception ex)
     {
         if (ex is HttpRequestException { StatusCode: HttpStatusCode.TooManyRequests })
             return true;
@@ -658,10 +706,13 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
         var failures = new List<Exception>();
 
-        CaptureDisposalFailure(
-            failures,
-            _rotation.Dispose,
-            "Failed to dispose the provider rotation strategy.");
+        if (_routingAdmission is null)
+        {
+            CaptureDisposalFailure(
+                failures,
+                _rotation.Dispose,
+                "Failed to dispose the provider rotation strategy.");
+        }
 
         if (_ownsProgressTracker)
         {
@@ -671,12 +722,15 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 "Failed to dispose the owned backfill progress tracker.");
         }
 
-        foreach (var provider in _providers)
+        if (_routingAdmission is null)
         {
-            CaptureDisposalFailure(
-                failures,
-                provider.Dispose,
-                $"Failed to dispose historical provider '{provider.Name}'.");
+            foreach (var provider in _providers)
+            {
+                CaptureDisposalFailure(
+                    failures,
+                    provider.Dispose,
+                    $"Failed to dispose historical provider '{provider.Name}'.");
+            }
         }
 
         if (failures.Count > 0)

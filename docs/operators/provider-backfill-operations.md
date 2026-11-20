@@ -40,6 +40,11 @@ Use this sequence for controlled backfill execution:
 ## Key endpoints
 
 - `GET /api/backfill/providers`
+- `GET /api/backfill/providers/effective-order`
+- `GET /api/backfill/schedules`
+- `POST /api/backfill/schedules`
+- `PUT /api/backfill/schedules/{id}/preferred-providers`
+- `GET /api/backfill/schedules/{id}/history`
 - `GET /api/backfill/status`
 - `GET /api/backfill/progress`
 - `POST /api/backfill/run/preview`
@@ -61,6 +66,18 @@ Use explicit provider priority and fallback policy matching current run intent:
 - Configure provider enablement and `Priority` in backfill settings.
 - Enable fallback only where temporary provider failures are acceptable.
 - Validate credentials for key-backed providers before production backfill.
+
+In **Data → Providers**, open **Edit provider priorities and limits**. The effective order shows
+the providers built for new jobs. The save receipt tells you which routing changes apply to the
+next job and which pacing or tier changes require a restart. Running jobs retain their routing
+snapshot through retries. A failed runtime apply leaves the previous routing order available.
+
+In **Data → Backfills → Manage schedules**, set **Preferred providers** in the order they should
+be tried. An empty list uses the global order. Choices are restricted to available providers that
+can serve daily bars. When fallback is enabled, the job may use other eligible providers after
+trying its preferences. When fallback is disabled, an unavailable first choice produces a failed
+job with a reason. The schedule history shows the retained bars and provider attempts for each
+execution. Automatic execution requires `Backfill.Jobs.Scheduling.Enabled` in the host configuration.
 
 Keep provider lookup details in Reference lane files:
 - [provider-capability-matrix.md](../reference/provider-capability-matrix.md)
@@ -130,6 +147,9 @@ exact symbols and dates, and `--help backfill` for supported CLI options.
 - The result's provider, symbols, dates, and timestamps match the approved request. Inspect
   `Success`, `BarsWritten`, `SkippedSymbols`, `SymbolValidationSignals`, and `Error`; successful
   process completion alone does not establish complete or correct historical coverage.
+- The **Served by** table counts rows in unique retained batch revisions by symbol and provider.
+  It can include bars already present in storage. Inspect **Provider attempts** for rate limits,
+  stale data, empty responses, or other reasons the run tried an alternate provider.
 - Retain the result before a later run replaces the last-run file, then complete the quality
   checks below and the [mandatory evidence](#mandatory-evidence) packet.
 

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Channels;
 using Meridian.Core.Pipeline;
@@ -24,6 +25,7 @@ using Meridian.Contracts.Monitoring;
 using Meridian.Contracts.Backfill;
 using Meridian.Contracts.Api;
 using Meridian.Storage.Backfill;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Application.Backfill;
 
@@ -39,6 +41,7 @@ public sealed class BackfillCoordinator : IDisposable
     private readonly ConfigStore _store;
     private readonly ProviderRegistry? _registry;
     private readonly ProviderFactory? _factory;
+    private readonly BackfillRoutingRuntime? _routingRuntime;
     private readonly IProviderCatalog _providerCatalog;
     private readonly IEventMetrics _metrics;
     private readonly ILogger _log = LoggingSetup.ForContext<BackfillCoordinator>();
@@ -75,11 +78,13 @@ public sealed class BackfillCoordinator : IDisposable
         IEventMetrics? metrics = null,
         ISymbolResolver? symbolResolver = null,
         Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null,
-        IProviderCatalog? providerCatalog = null)
+        IProviderCatalog? providerCatalog = null,
+        BackfillRoutingRuntime? routingRuntime = null)
     {
         _store = store;
         _registry = registry;
         _factory = factory;
+        _routingRuntime = routingRuntime;
         _providerCatalog = providerCatalog ?? new RuntimeProviderCatalog();
         _metrics = metrics ?? new DefaultEventMetrics();
         _symbolTimelineResolver = symbolTimelineResolver;
@@ -103,24 +108,27 @@ public sealed class BackfillCoordinator : IDisposable
 
     public IEnumerable<object> DescribeProviders()
     {
-        var providers = CreateProviders();
+        var providers = _routingRuntime?.Current?.Providers ?? CreateProviders()
+            .Select(provider => new BackfillRoutingProvider(provider, provider.Priority)).ToArray();
         return providers
-            .Select(p => new
+            .Select(entry => new
             {
-                p.Name,
-                p.DisplayName,
-                p.Description,
-                p.Priority,
-                p.SupportsAdjustedPrices,
-                p.SupportsDividends,
-                p.SupportsIntraday,
-                SupportedGranularities = GetSupportedGranularityValues(p)
-            });
+                entry.Provider.Name,
+                entry.Provider.DisplayName,
+                entry.Provider.Description,
+                entry.Priority,
+                entry.Provider.SupportsAdjustedPrices,
+                entry.Provider.SupportsDividends,
+                entry.Provider.SupportsIntraday,
+                SupportedGranularities = GetSupportedGranularityValues(entry.Provider)
+            }).ToArray();
     }
 
     public void ValidateRequest(BackfillRequest request)
     {
-        var service = CreateService();
+        var routing = _routingRuntime?.Current;
+        using var composite = CreateRuntimeComposite(routing, request);
+        var service = CreateService(routing: routing, runtimeComposite: composite);
         service.ValidateRequest(request);
     }
 
@@ -174,7 +182,9 @@ public sealed class BackfillCoordinator : IDisposable
     /// </summary>
     public async Task<IReadOnlyDictionary<string, ProviderHealthStatus>> CheckProviderHealthAsync(CancellationToken ct = default)
     {
-        var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
+        var providers = _routingRuntime?.Current is { } routing
+            ? routing.Providers.Select(entry => entry.Provider).ToList()
+            : await CreateProvidersAsync(ct).ConfigureAwait(false);
         var results = new Dictionary<string, ProviderHealthStatus>();
 
         foreach (var provider in providers)
@@ -227,6 +237,7 @@ public sealed class BackfillCoordinator : IDisposable
 
         try
         {
+            var routing = _routingRuntime?.Current;
             var normalizedSymbols = BackfillSymbolNormalizer.Normalize(request.Symbols);
             _progressTracker.Clear();
             foreach (var symbol in normalizedSymbols)
@@ -254,8 +265,13 @@ public sealed class BackfillCoordinator : IDisposable
             _metrics.Reset();
 
             var statusStore = new BackfillStatusStore(_store.GetDataRoot(cfg));
-            var service = CreateService(statusStore, await CreateProvidersAsync(ct).ConfigureAwait(false));
+            var attempts = new ConcurrentQueue<BackfillRoutingAttempt>();
+            using var composite = CreateRuntimeComposite(routing, request, attempts.Enqueue);
+            var createdProviders = routing is null ? await CreateProvidersAsync(ct).ConfigureAwait(false) : null;
+            var service = CreateService(statusStore, createdProviders, routing, composite, attempts.Enqueue);
             var result = await service.RunAsync(request, pipeline, ct).ConfigureAwait(false);
+            if (!attempts.IsEmpty)
+                result = result with { RoutingAttempts = attempts.ToArray() };
 
             await statusStore.WriteAsync(result).ConfigureAwait(false);
             _lastRun = result;
@@ -293,10 +309,13 @@ public sealed class BackfillCoordinator : IDisposable
     public async Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, CancellationToken ct = default)
     {
         // Validation needs the providers too; create them once, with credentials read ahead.
-        var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
-        CreateService(createdProviders: providers).ValidateRequest(request);
+        var routing = _routingRuntime?.Current;
+        var providers = routing is null ? await CreateProvidersAsync(ct).ConfigureAwait(false) : null;
+        using var composite = CreateRuntimeComposite(routing, request);
+        var service = CreateService(createdProviders: providers, routing: routing, runtimeComposite: composite);
+        service.ValidateRequest(request);
 
-        var provider = providers
+        var provider = service.Providers
             .FirstOrDefault(p => p.Name.Equals(request.Provider, StringComparison.OrdinalIgnoreCase));
         var cfg = _store.Load();
         var dataRoot = _store.GetDataRoot(cfg);
@@ -422,24 +441,37 @@ public sealed class BackfillCoordinator : IDisposable
 
     private HistoricalBackfillService CreateService(
         BackfillStatusStore? checkpointStore = null,
-        List<IHistoricalDataProvider>? createdProviders = null)
+        List<IHistoricalDataProvider>? createdProviders = null,
+        BackfillRoutingSnapshot? routing = null,
+        CompositeHistoricalDataProvider? runtimeComposite = null,
+        Action<BackfillRoutingAttempt>? captureAttempt = null)
     {
         var cfg = _store.Load();
         var backfillCfg = cfg.Backfill;
 
-        var providers = createdProviders ?? CreateProviders();
+        var providers = routing is null
+            ? createdProviders ?? CreateProviders()
+            : routing.Providers.Select(entry => entry.Provider).ToList();
 
         // If composite provider requested, wrap all providers
-        if (string.Equals(backfillCfg?.Provider, "composite", StringComparison.OrdinalIgnoreCase)
-            || (backfillCfg?.EnableFallback ?? true))
+        if (runtimeComposite is not null)
+        {
+            providers.Insert(0, runtimeComposite);
+        }
+        else if (routing is null && providers.Count > 0 &&
+            (string.Equals(backfillCfg?.Provider, "composite", StringComparison.OrdinalIgnoreCase)
+             || (backfillCfg?.EnableFallback ?? true)))
         {
             var composite = new CompositeHistoricalDataProvider(
                 providers,
                 backfillCfg?.EnableSymbolResolution ?? true ? _symbolResolver : null,
                 enableCrossValidation: false,
+                enableRateLimitRotation: backfillCfg?.EnableRateLimitRotation ?? true,
+                rateLimitRotationThreshold: backfillCfg?.RateLimitRotationThreshold ?? 0.8,
                 log: _log,
                 progressTracker: _progressTracker,
                 validationProfiles: backfillCfg?.ValidationProfiles,
+                rateLimitHistory: ProviderRateLimitHistory.ForDataRoot(_store.GetDataRoot(cfg), new AtomicFileWriterAdapter()),
                 crossValidationPolicy: () => CrossProviderTolerancePolicy.FromConfig(_store.Load())
             );
 
@@ -456,9 +488,20 @@ public sealed class BackfillCoordinator : IDisposable
             symbolTimelineResolver: _symbolTimelineResolver,
             validationProfiles: backfillCfg?.ValidationProfiles)
         {
-            ResolveSessionsAsync = ResolveSessionsAsync
+            ResolveSessionsAsync = ResolveSessionsAsync,
+            DirectRoutingAdmission = routing is null ? null : _routingRuntime?.Admission,
+            CaptureRoutingAttempt = captureAttempt
         };
     }
+
+    private CompositeHistoricalDataProvider? CreateRuntimeComposite(
+        BackfillRoutingSnapshot? routing,
+        BackfillRequest request,
+        Action<BackfillRoutingAttempt>? captureAttempt = null)
+        => string.Equals(request.Provider, "composite", StringComparison.OrdinalIgnoreCase)
+            ? routing?.CreateComposite([], _symbolResolver, _log, _progressTracker, captureAttempt,
+                () => CrossProviderTolerancePolicy.FromConfig(_store.Load()))
+            : null;
 
     private static string[] GetSupportedGranularityValues(IHistoricalDataProvider provider)
     {

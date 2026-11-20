@@ -4,7 +4,9 @@ import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-re
 import * as workstationApi from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { openPlaidLink, type PlaidLinkSuccessMetadata } from "@/lib/plaid-link";
+import { supportsProviderDraft } from "@/lib/provider-credential-scope";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { useProviderSetupDraftVerification } from "./data-screen.draft-verification";
 import {
   buildProviderReadinessSummaryText,
   credentialToneFromLabel,
@@ -1041,6 +1043,9 @@ export function useDataViewModel(
   // Provider setup state
   const [providerSetupOpen, setProviderSetupOpen] = useState(false);
   const [providerForm, setProviderForm] = useState<ProviderSetupFormState>(defaultProviderSetupForm);
+  const providerDraftTest = useProviderSetupDraftVerification();
+  const resetProviderDraftTest = providerDraftTest.reset;
+  const providerSupportsDraft = supportsProviderDraft(providerForm.kind);
   const [providerPhase, setProviderPhase] = useState<ProviderSetupPhase>("idle");
   const [providerSetupResult, setProviderSetupResult] = useState<ProviderSetupResult | null>(null);
   const [providerSetupError, setProviderSetupError] = useState<ApiErrorDisplay | null>(null);
@@ -1544,26 +1549,30 @@ export function useDataViewModel(
 
   const openProviderSetup = useCallback(() => {
     nextProviderSetupCommandRevision();
+    resetProviderDraftTest();
     setProviderSetupOpen(true);
     setProviderForm(clearProviderSetupCredentials);
     setProviderSetupResult(null);
     setProviderSetupError(null);
     setProviderPhase("idle");
     resetPlaidInstitutionSearch();
-  }, [nextProviderSetupCommandRevision, resetPlaidInstitutionSearch]);
+  }, [nextProviderSetupCommandRevision, resetPlaidInstitutionSearch, resetProviderDraftTest]);
 
   const closeProviderSetup = useCallback(() => {
     if (providerPhase === "submitting") return;
     nextProviderSetupCommandRevision();
+    resetProviderDraftTest();
     setProviderForm(clearProviderSetupCredentials);
     setProviderSetupOpen(false);
     setProviderSetupResult(null);
     setProviderSetupError(null);
     setProviderPhase("idle");
     resetPlaidInstitutionSearch();
-  }, [nextProviderSetupCommandRevision, providerPhase, resetPlaidInstitutionSearch]);
+  }, [nextProviderSetupCommandRevision, providerPhase, resetPlaidInstitutionSearch, resetProviderDraftTest]);
 
   const updateProviderForm = useCallback((field: Exclude<keyof ProviderSetupFormState, "capabilities" | "liveAcknowledged">, value: string) => {
+    if (field === "kind" || (providerSupportsDraft && (field === "environment" || field === "apiKey" || field === "apiSecret")))
+      resetProviderDraftTest();
     setProviderForm((current) => {
       if (field === "kind") {
         const meta = PROVIDER_KIND_CATALOG.find((p) => p.kind === value);
@@ -1586,7 +1595,7 @@ export function useDataViewModel(
     if (field === "kind" && value !== "plaid") {
       resetPlaidInstitutionSearch();
     }
-  }, [resetPlaidInstitutionSearch]);
+  }, [providerSupportsDraft, resetPlaidInstitutionSearch, resetProviderDraftTest]);
 
   const updatePlaidInstitutionQuery = useCallback((value: string) => {
     setPlaidInstitutionQuery(value);
@@ -1942,6 +1951,7 @@ export function useDataViewModel(
     openProviderSetup,
     closeProviderSetup,
     providerForm,
+    providerDraftTest,
     updateProviderForm,
     plaidInstitutionQuery,
     updatePlaidInstitutionQuery,

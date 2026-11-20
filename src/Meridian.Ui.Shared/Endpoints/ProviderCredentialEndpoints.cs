@@ -84,32 +84,34 @@ public static class ProviderCredentialEndpoints
             }
 
             var sw = Stopwatch.StartNew();
-            var credentials = NormalizeCredentials(descriptor, request.Credentials);
-            if (credentials.Count > 0)
+            try
             {
-                await service.SaveCredentialsAsync(
-                    descriptor.ProviderId,
-                    new ProviderCredentialUpsertRequestDto(
-                        credentials,
-                        Environment: null,
-                        RequestedBy: actor),
-                    context.RequestAborted).ConfigureAwait(false);
+                var selected = ProviderConnectionEndpoints.ResolveConnectionService(context, descriptor.ProviderId, service);
+                if (request.Credentials is { Count: > 0 })
+                {
+                    var draft = new ProviderCredentialDraftRequestDto(NormalizeCredentials(descriptor, request.Credentials));
+                    var result = await selected.VerifyDraftAsync(descriptor.ProviderId, draft, context.RequestAborted)
+                        .ConfigureAwait(false);
+                    var verified = result.Status == ProviderCredentialDraftStatusDto.Verified;
+                    return Results.Json(new ProviderConnectionTest(descriptor.ProviderId, verified, (int)sw.ElapsedMilliseconds,
+                        verified ? "Connected" : result.Status.ToString(), verified ? null : result.Message, DateTime.UtcNow), jsonOptions);
+                }
+
+                var verification = await selected.VerifyAsync(descriptor.ProviderId, context.RequestAborted, actor).ConfigureAwait(false);
+                return Results.Json(new ProviderConnectionTest(descriptor.ProviderId, verification.Success, (int)sw.ElapsedMilliseconds,
+                    verification.Success ? "Connected" : "Failed", verification.LastError, DateTime.UtcNow), jsonOptions);
             }
-
-            var verification = await service.VerifyAsync(descriptor.ProviderId, context.RequestAborted, actor)
-                .ConfigureAwait(false);
-            sw.Stop();
-
-            return Results.Json(new ProviderConnectionTest(
-                Provider: descriptor.ProviderId,
-                IsConnected: verification.Success,
-                ResponseTimeMs: (int)sw.ElapsedMilliseconds,
-                Status: verification.Success ? "Connected" : "Failed",
-                ErrorMessage: verification.Success ? null : verification.LastError,
-                TestedAt: DateTime.UtcNow), jsonOptions);
+            catch (UnauthorizedAccessException)
+            {
+                return EndpointHelpers.Forbidden();
+            }
+            catch (InvalidDataException)
+            {
+                return Results.BadRequest(new { error = "Credential request does not match retained connection ownership." });
+            }
         })
         .WithName("TestProviderConnection").RequirePermission(UserPermission.ManageCredentials)
-        .WithDescription("Compatibility wrapper around the canonical provider verification route.")
+        .WithDescription("Verifies draft fields without persisting them, or re-verifies a saved connection when no fields are supplied.")
         .Produces<ProviderConnectionTest>(StatusCodes.Status200OK)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

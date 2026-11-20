@@ -3,7 +3,11 @@ using System.Text.Json.Serialization;
 namespace Meridian.Core.Config;
 
 /// <summary>Conservative application caps for a declared vendor plan; never a credential or entitlement.</summary>
-public sealed record BackfillVendorTier(string Id, string Label, int? RateLimitPerMinute = null, int? RateLimitPerHour = null);
+public sealed record BackfillVendorTier(string Id, string Label, int? RateLimitPerMinute = null, int? RateLimitPerHour = null)
+{
+    /// <summary>Published vendor daily allowance for a preset with a daily vendor cap.</summary>
+    public int? DailyQuotaLimit { get; init; }
+}
 
 public sealed record BackfillVendorDescriptor(string Id, string DisplayName, int DefaultPriority, bool RequiresApiKey,
     IReadOnlyList<BackfillVendorTier> Tiers);
@@ -23,8 +27,10 @@ public static class BackfillProviderCatalog
     public const int StooqPriority = 20;
     public const int YahooPriority = 10, YahooPerHour = 2000;
     public const int AlphaVantagePriority = 25, AlphaVantagePerMinute = 5;
+    public const int AlphaVantageFreeDailyRequests = 25, AlphaVantagePremium75PerMinute = 75;
     public const int NasdaqPriority = 30;
     public const int TwelveDataPriority = 22, TwelveDataPerMinute = 8;
+    public const int TwelveDataBasicDailyCredits = 800, TwelveDataGrowPerMinute = 55;
     public const int OpenFigiPriority = 100, OpenFigiPerMinute = 25, OpenFigiAuthenticatedPerMinute = 250;
 
     public static IReadOnlyList<BackfillVendorDescriptor> Providers { get; } = Array.AsReadOnly(new BackfillVendorDescriptor[]
@@ -35,9 +41,11 @@ public static class BackfillProviderCatalog
         new("finnhub", "Finnhub", FinnhubPriority, true, [new("free", "Free", FinnhubPerMinute)]),
         new("stooq", "Stooq", StooqPriority, false, [new("free", "Public")]),
         new("yahoo", "Yahoo Finance", YahooPriority, false, [new("free", "Public (unofficial)", RateLimitPerHour: YahooPerHour)]),
-        new("alphavantage", "Alpha Vantage", AlphaVantagePriority, true, [new("free", "Free (25/day retained)", AlphaVantagePerMinute)]),
+        new("alphavantage", "Alpha Vantage", AlphaVantagePriority, true,
+            [new("free", "Free", AlphaVantagePerMinute) { DailyQuotaLimit = AlphaVantageFreeDailyRequests }, new("premium-75", "Premium 75", AlphaVantagePremium75PerMinute)]),
         new("nasdaqdatalink", "Nasdaq Data Link", NasdaqPriority, false, [new("free", "Public datasets")]),
-        new("twelvedata", "Twelve Data", TwelveDataPriority, true, [new("free", "Basic", TwelveDataPerMinute)]),
+        new("twelvedata", "Twelve Data", TwelveDataPriority, true,
+            [new("free", "Basic", TwelveDataPerMinute) { DailyQuotaLimit = TwelveDataBasicDailyCredits }, new("grow", "Grow", TwelveDataGrowPerMinute)]),
         new("openfigi", "OpenFIGI (symbol resolution)", OpenFigiPriority, false, [new("free", "Unauthenticated", OpenFigiPerMinute), new("authenticated", "Authenticated", OpenFigiAuthenticatedPerMinute)])
     });
 
@@ -98,7 +106,7 @@ public static class BackfillProviderCatalog
             "finnhub" => new(config.Finnhub?.Enabled ?? true, config.Finnhub?.Priority ?? d.DefaultPriority, config.Finnhub?.TierId ?? "free", config.Finnhub?.RateLimitPerMinute ?? d.Tiers[0].RateLimitPerMinute),
             "stooq" => new(config.Stooq?.Enabled ?? true, config.Stooq?.Priority ?? d.DefaultPriority),
             "yahoo" => new(config.Yahoo?.Enabled ?? true, config.Yahoo?.Priority ?? d.DefaultPriority, config.Yahoo?.TierId ?? "free", RateLimitPerHour: config.Yahoo?.RateLimitPerHour ?? d.Tiers[0].RateLimitPerHour),
-            "alphavantage" => new(config.AlphaVantage?.Enabled ?? new AlphaVantageConfig().Enabled, config.AlphaVantage?.Priority ?? d.DefaultPriority, RateLimitPerMinute: config.AlphaVantage?.RateLimitPerMinute ?? d.Tiers[0].RateLimitPerMinute),
+            "alphavantage" => new(config.AlphaVantage?.Enabled ?? false, config.AlphaVantage?.Priority ?? d.DefaultPriority, config.AlphaVantage?.TierId ?? "free", config.AlphaVantage?.RateLimitPerMinute ?? d.Tiers[0].RateLimitPerMinute),
             "nasdaqdatalink" => new(config.Nasdaq?.Enabled ?? true, config.Nasdaq?.Priority ?? d.DefaultPriority),
             "twelvedata" => new(config.TwelveData?.Enabled ?? true, config.TwelveData?.Priority ?? d.DefaultPriority, config.TwelveData?.TierId ?? "free", config.TwelveData?.RateLimitPerMinute ?? d.Tiers[0].RateLimitPerMinute),
             "openfigi" => new(config.OpenFigi?.Enabled ?? true, d.DefaultPriority, config.OpenFigi?.TierId ?? "free", config.OpenFigi?.RateLimitPerMinute ?? GetTier("openfigi", config.OpenFigi?.TierId ?? "free").RateLimitPerMinute),
@@ -123,7 +131,7 @@ public static class BackfillProviderCatalog
             "finnhub" => config with { Finnhub = (config.Finnhub ?? new()) with { Enabled = edit.Enabled, Priority = edit.Priority, TierId = edit.TierId, RateLimitPerMinute = minute!.Value } },
             "stooq" => config with { Stooq = (config.Stooq ?? new()) with { Enabled = edit.Enabled, Priority = edit.Priority } },
             "yahoo" => config with { Yahoo = (config.Yahoo ?? new()) with { Enabled = edit.Enabled, Priority = edit.Priority, TierId = edit.TierId, RateLimitPerHour = hour!.Value } },
-            "alphavantage" => config with { AlphaVantage = (config.AlphaVantage ?? new()) with { Enabled = edit.Enabled, Priority = edit.Priority, RateLimitPerMinute = minute!.Value } },
+            "alphavantage" => config with { AlphaVantage = (config.AlphaVantage ?? new()) with { Enabled = edit.Enabled, Priority = edit.Priority, RateLimitPerMinute = minute!.Value, TierId = edit.TierId == "free" ? null : edit.TierId } },
             "nasdaqdatalink" => config with { Nasdaq = (config.Nasdaq ?? new()) with { Enabled = edit.Enabled, Priority = edit.Priority } },
             "twelvedata" => config with { TwelveData = (config.TwelveData ?? new()) with { Enabled = edit.Enabled, Priority = edit.Priority, TierId = edit.TierId, RateLimitPerMinute = minute!.Value } },
             "openfigi" => config with { OpenFigi = (config.OpenFigi ?? new()) with { Enabled = edit.Enabled, TierId = edit.TierId, RateLimitPerMinute = minute } },

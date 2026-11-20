@@ -65,3 +65,4 @@ export const {
   testProviderModule,
   restartProviderHost
 } = createProviderModulesApi(getJson, postJson, putJson, deleteJson);
+export { verifyDraftProviderConnection, getProviderDeclaredCapabilities } from "@/lib/api/provider-management.api";

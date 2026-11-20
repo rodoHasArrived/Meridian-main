@@ -56,6 +56,7 @@ public partial class AddProviderWizardPage
             CredentialFieldsPanel.Children.Clear();
         }
         finally { _clearingPersistedFields = false; }
+        _viewModel.SetCredentialDraftPresence(false);
     }
 
     private void ApplyOwnedConnectionChoices()

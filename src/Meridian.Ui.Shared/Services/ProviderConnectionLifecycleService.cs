@@ -534,7 +534,12 @@ public sealed partial class ProviderConnectionLifecycleService
             RecommendedAction: ResolveRecommendedAction(descriptor, status, health),
             ActionHref: descriptor.ResolvedActionHref,
             CredentialFields: setupDescriptor.AcceptedCredentialFields,
-            EnvironmentOptions: setupDescriptor.EnvironmentOptions);
+            EnvironmentOptions: setupDescriptor.EnvironmentOptions)
+        {
+            RotationDueAt = DateTimeOffset.TryParse(status.AuditMetadata.GetValueOrDefault("rotationDueAt"),
+                System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None,
+                out var rotationDueAt) ? rotationDueAt : null
+        };
     }
 
     private static ProviderContinuityHealthDto ResolveHealth(

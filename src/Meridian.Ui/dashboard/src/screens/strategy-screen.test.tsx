@@ -212,7 +212,7 @@ describe("StrategyScreen", () => {
       }
     } });
     const user = userEvent.setup();
-    renderWithRouter(<StrategyScreen data={{ ...twoRuns, runs: twoRuns.runs.map((run) => ({ ...run, mode: "Backtest" })) }} />);
+    renderWithRouter(<StrategyScreen data={{ ...twoRuns, runs: twoRuns.runs.map((run) => ({ ...run, mode: "backtest" })) }} />);
 
     await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
 

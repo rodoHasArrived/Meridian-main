@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import type { BackfillBatchReceipt } from "@/types";
+import { BackfillAttribution, retainedSourceRows } from "@/screens/data-screen.backfill-attribution";
+import type { BackfillBatchReceipt, BackfillRoutingAttempt } from "@/types";
 
 const receiptColumns: DenseDataTableColumn<BackfillBatchReceipt>[] = [
   {
@@ -34,13 +35,20 @@ const receiptColumns: DenseDataTableColumn<BackfillBatchReceipt>[] = [
   }
 ];
 
-export function BackfillBatchReceipts({ receipts }: { receipts: BackfillBatchReceipt[] }) {
+export function BackfillBatchReceipts({ receipts, attempts }: {
+  receipts: BackfillBatchReceipt[];
+  attempts?: BackfillRoutingAttempt[];
+}) {
   const [open, setOpen] = useState(false);
-  return <details className="mt-4 rounded border border-border p-3" onToggle={event => setOpen(event.currentTarget.open)}>
-    <summary className="cursor-pointer text-sm font-semibold">Retained batch receipts ({receipts.length})</summary>
-    {open ? <div className="mt-2 max-h-72 overflow-auto">
-      <DenseDataTable columns={receiptColumns} rows={receipts} getRowId={receipt => receipt.revisionId}
-        ariaLabel="Backfill batch evidence" emptyText="No retained batch receipts." />
-    </div> : null}
-  </details>;
+  const sourceRows = useMemo(() => retainedSourceRows(receipts), [receipts]);
+  return <div className="mt-4 space-y-2">
+    <BackfillAttribution sources={sourceRows} attempts={attempts ?? []} />
+    {receipts.length > 0 ? <details className="rounded border border-border p-3" onToggle={event => setOpen(event.currentTarget.open)}>
+      <summary className="cursor-pointer text-sm font-semibold">Retained batch receipts ({receipts.length})</summary>
+      {open ? <div className="mt-2 max-h-72 overflow-auto">
+        <DenseDataTable columns={receiptColumns} rows={receipts} getRowId={receipt => receipt.revisionId}
+          ariaLabel="Backfill batch evidence" emptyText="No retained batch receipts." />
+      </div> : null}
+    </details> : null}
+  </div>;
 }

@@ -112,6 +112,38 @@ public static class ProviderConnectionEndpoints
         .Produces<ProviderCredentialMutationResultDto>(StatusCodes.Status200OK)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        group.MapPost(UiApiRoutes.ProviderCredentialVerifyDraft, async (
+            string providerId,
+            ProviderCredentialDraftRequestDto request,
+            HttpContext context,
+            ProviderConnectionLifecycleService service) =>
+        {
+            if (!HasManageCredentialsPermission(context) || !EndpointAuthorization.TryResolveActor(context, out _))
+                return EndpointHelpers.Forbidden();
+
+            try
+            {
+                var selected = ResolveConnectionService(context, providerId, service);
+                var result = await selected.VerifyDraftAsync(providerId, request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return EndpointHelpers.Forbidden();
+            }
+            catch (InvalidDataException)
+            {
+                return Results.BadRequest(new { error = "Credential request does not match retained connection ownership." });
+            }
+            catch (ArgumentException)
+            {
+                return Results.NotFound(new { error = "Provider is not credential-managed." });
+            }
+        })
+        .WithName("VerifyDraftProviderConnection").RequirePermission(UserPermission.ManageCredentials)
+        .Produces<ProviderCredentialDraftVerificationResultDto>(StatusCodes.Status200OK)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         group.MapPost(UiApiRoutes.ProviderCredentialVerify, async (
             string providerId,
             HttpContext context,
@@ -180,7 +212,7 @@ public static class ProviderConnectionEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
-    private static ProviderConnectionLifecycleService ResolveConnectionService(HttpContext context, string providerId, ProviderConnectionLifecycleService service)
+    internal static ProviderConnectionLifecycleService ResolveConnectionService(HttpContext context, string providerId, ProviderConnectionLifecycleService service)
     {
         var connectionId = ReadConnectionId(context);
         if (connectionId is null)
