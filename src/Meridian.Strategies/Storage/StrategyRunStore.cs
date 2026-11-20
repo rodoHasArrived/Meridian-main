@@ -73,6 +73,8 @@ public sealed class StrategyRunStore : IStrategyRepository
             {
                 var eventType = InferEventType(entry);
                 _runsById.TryGetValue(entry.RunId, out var existing);
+                if (HasChangedProviderProvenance(existing, entry))
+                    throw new InvalidOperationException("A retained provider provenance receipt cannot be changed.");
                 if (entry.OutputMetadata.Count > 0 &&
                     eventType != StrategyRunLifecycleEventType.Completed &&
                     !(existing is { EndedAt: not null } && entry.EndedAt == existing.EndedAt &&
@@ -1252,12 +1254,23 @@ public sealed class StrategyRunStore : IStrategyRepository
             return "the retained run end timestamp changed after the run ended";
         }
 
+        if (HasChangedProviderProvenance(previous, current))
+            return "the retained provider provenance receipt changed";
+
         if (current.AttemptNumber < previous.AttemptNumber)
         {
             return "the recovery attempt number moved backwards";
         }
 
         return null;
+    }
+
+    private static bool HasChangedProviderProvenance(StrategyRunEntry? previous, StrategyRunEntry current)
+    {
+        return previous?.EndedAt is not null && !string.Equals(
+            JsonSerializer.Serialize(previous.ProviderProvenance, StrategyRunPersistenceJson.Options),
+            JsonSerializer.Serialize(current.ProviderProvenance, StrategyRunPersistenceJson.Options),
+            StringComparison.Ordinal);
     }
 
     private static bool IsRetainedTerminalCleanupStep(

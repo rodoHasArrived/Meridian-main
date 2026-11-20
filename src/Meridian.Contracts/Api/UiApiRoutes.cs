@@ -60,6 +60,9 @@ public static class UiApiRoutes
     public const string BackfillStatus = "/api/backfill/status";
     public const string BackfillRun = "/api/backfill/run";
     public const string BackfillRunPreview = "/api/backfill/run/preview";
+    public const string BackfillClone = "/api/backfill/receipts/{receiptId:guid}/clone";
+    public const string BackfillReceipts = "/api/backfill/receipts";
+    public const string BackfillReceipt = "/api/backfill/receipts/{receiptId:guid}";
     public const string BackfillProgress = "/api/backfill/progress";
     public const string BackfillHealth = "/api/backfill/health";
     public const string BackfillResolve = "/api/backfill/resolve/{symbol}";
@@ -815,6 +818,7 @@ public static class UiApiRoutes
     // Strategy run comparison and diff endpoints
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
     public const string WorkstationWorkflowLibrary = "/api/workstation/workflows";
+    public const string WorkstationRecordSearch = "/api/workstation/search/records";
     public const string WorkstationWorkflowPresets = "/api/workstation/workflows/presets";
     public const string WorkstationWorkflowPresetById = "/api/workstation/workflows/presets/{presetId}";
     public const string WorkstationWorkflowPresetPin = "/api/workstation/workflows/presets/{presetId}/pin";

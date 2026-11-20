@@ -81,10 +81,11 @@ export interface ChartSvgProps extends ChartA11yProps {
    * control nested inside one is hidden from assistive technology.
    */
   overlay?: ReactNode;
+  overlayHintId?: string;
   children: ReactNode;
 }
 
-export function ChartSvg({ viewBox, style, ariaLabel, ariaDescription, accessibleData, overlay = null, children }: ChartSvgProps) {
+export function ChartSvg({ viewBox, style, ariaLabel, ariaDescription, accessibleData, overlay = null, overlayHintId, children }: ChartSvgProps) {
   const id = useId();
   const descriptionId = ariaDescription ? `${id}-description` : undefined;
   const image = { role: "img", "aria-label": ariaLabel, "aria-describedby": descriptionId } as const;
@@ -92,7 +93,7 @@ export function ChartSvg({ viewBox, style, ariaLabel, ariaDescription, accessibl
   return (
     <>
       {overlay ? (
-        <svg viewBox={viewBox} preserveAspectRatio="none" style={style} role="group">
+        <svg viewBox={viewBox} preserveAspectRatio="none" style={style} role="group" aria-label={overlayHintId ? ariaLabel : undefined} aria-describedby={overlayHintId}>
           <g {...image}>{children}</g>
           {overlay}
         </svg>

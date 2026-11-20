@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderHealthStatus
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderHealthStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:344](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L344).
+
+Result of a provider health check.
+
+```csharp
+public sealed record ProviderHealthStatus(string ProviderName, bool IsAvailable, string? Message = null, DateTimeOffset? CheckedAt = null, TimeSpan? ResponseTime = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderHealthStatus() : this(&quot;unknown&quot;, false);</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:352](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L352) |  |
+
 ## ProviderInfo
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderInfo</code>. Kind: `record`.
@@ -1080,25 +1098,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;shareOutstanding&quot;)] public decimal? SharesOutstanding { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:510](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L510) |  |
 | <code>[JsonPropertyName(&quot;ticker&quot;)] public string? Ticker { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:513](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L513) |  |
 | <code>[JsonPropertyName(&quot;weburl&quot;)] public string? WebUrl { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:516](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L516) |  |
-
-## FinnhubCorporateActionProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubCorporateActionProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L35).
-
-Fetches dividend and split history from Finnhub corporate-action endpoints.
-
-```csharp
-public sealed partial class FinnhubCorporateActionProvider : ICorporateActionProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FinnhubCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;FinnhubCorporateActionProvider&gt; logger, ICredentialContext? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L44) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L56) |  |
-| <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L58) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:62](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L62) |  |
-| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L69) |  |

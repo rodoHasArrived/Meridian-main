@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ArchivedSymbolsOptions
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:756](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L756).
+
+Options for scanning archived symbols.
+
+```csharp
+public sealed record ArchivedSymbolsOptions(string[]? FilterSymbols = null, bool IncludeCompressed = true);
+```
+
 ## ArchivedSymbolsResult
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult</code>. Kind: `record`.
@@ -1071,23 +1083,3 @@ Declared public members:
 | <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L17) |  |
 | <code>public ConfigureStorageStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L19) |  |
 | <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L25) |  |
-
-## ConfigureSymbolsStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureSymbolsStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L11).
-
-Step 6: Lets the user pick a symbol preset or enter custom symbols. Writes WizardContext.Symbols.
-
-```csharp
-public sealed class ConfigureSymbolsStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L16) |  |
-| <code>public ConfigureSymbolsStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L18) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L24) |  |

@@ -128,4 +128,7 @@ public sealed record BacktestResult(
     {
         CorporateActionSnapshotHash = CanonicalCorporateActions?.ContentHash
     };
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }
 }
