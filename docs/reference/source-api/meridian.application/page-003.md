@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HostModeOrchestrator
+
+Qualified name: <code>Meridian.Application.Composition.Startup.HostModeOrchestrator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs:17](../../../../src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs#L17).
+
+Shared startup orchestrator that dispatches commands and runs the appropriate host mode using HostStartupFactory.
+
+```csharp
+public sealed class HostModeOrchestrator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HostModeOrchestrator(ILogger log, DashboardServerFactory dashboardServerFactory);</code> | [src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs:22](../../../../src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs#L22) |  |
+| <code>public async Task&lt;int&gt; RunAsync(CliArguments cliArgs, AppConfig cfg, string cfgPath, ConfigurationService configService, DeploymentContext deployment, CancellationToken ct = default, IApplicationLifecycleCoordinator? lifecycle = null);</code> | [src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs:28](../../../../src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs#L28) |  |
+
 ## IApplicationLifecycleCoordinator
 
 Qualified name: <code>Meridian.Application.Composition.Startup.IApplicationLifecycleCoordinator</code>. Kind: `interface`.
@@ -982,26 +1001,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;QualityCompositeDashboardResponse&gt; GetDashboardAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:20](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L20) |  |
 | <code>bool TryResolveGap(string symbol, string gapId, out CompositeDataQualityGap target);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:22](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L22) |  |
-
-## QualityMonitoringPublisher
-
-Qualified name: <code>Meridian.Application.DataQuality.QualityMonitoringPublisher</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:27](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L27).
-
-IMarketEventPublisher decorator that feeds live MarketEventType.Trade and MarketEventType.BboQuote ingress into the DataQualityMonitoringService (completeness, gap analysis, sequence tracking, anomaly detection, latency histograms, and cross-provider comparison).
-
-```csharp
-public sealed class QualityMonitoringPublisher : IMarketEventPublisher, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QualityMonitoringPublisher(IMarketEventPublisher inner, DataQualityMonitoringService quality, ILogger&lt;QualityMonitoringPublisher&gt;? logger = null, int sampleCapacity = DefaultSampleCapacity, DataFreshnessSlaMonitor? freshness = null);</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:45](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L45) |  |
-| <code>public long TradesObserved =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:71](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L71) | Gets the number of trade events recorded into the quality monitors. |
-| <code>public long QuotesObserved =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:74](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L74) | Gets the number of quote events recorded into the quality monitors. |
-| <code>public long SamplesDropped =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:77](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L77) | Gets the number of quality samples dropped because the sample buffer was full. |
-| <code>public bool TryPublish(in MarketEvent evt);</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:80](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L80) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:172](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L172) |  |

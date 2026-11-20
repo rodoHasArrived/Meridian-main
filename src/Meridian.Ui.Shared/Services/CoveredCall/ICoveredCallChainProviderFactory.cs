@@ -22,6 +22,10 @@ public interface ICoveredCallChainProviderFactory
         int maxDte,
         CancellationToken ct = default);
 
+    ValueTask<IOptionChainProvider> CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to,
+        int maxDte, string? tenantId, CancellationToken ct)
+        => CreateAsync(underlyingSymbol, from, to, maxDte, ct);
+
     /// <summary>
     /// Materialises a single-date chain (for the configure-form preview). Underlying price is
     /// resolved from the latest available snapshot. Returns a tuple of (underlyingPrice, candidates).

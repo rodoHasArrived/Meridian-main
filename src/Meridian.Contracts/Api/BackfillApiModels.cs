@@ -1,6 +1,15 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.Contracts.Api;
+
+public sealed record BackfillClonePlan(
+    ProviderProvenanceRequest Request,
+    string Status,
+    IReadOnlyList<string> Messages,
+    string? ConfirmationCode = null);
+
+public sealed record BackfillCloneConfirmation(string ConfirmationCode);
 
 // ============================================================
 // Backfill Health and Provider Status DTOs
