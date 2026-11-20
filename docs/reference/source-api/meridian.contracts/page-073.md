@@ -53,7 +53,7 @@ Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartSeriesDto<
 Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1531](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1531).
 
 ```csharp
-public sealed record ReportWriterChartSeriesDto(string Key, string Label, IReadOnlyList<decimal> Values);
+public sealed record ReportWriterChartSeriesDto(string Key, string Label, IReadOnlyList<decimal?> Values);
 ```
 
 ## ReportWriterChartTypeDto
