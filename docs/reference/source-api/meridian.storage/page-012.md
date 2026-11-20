@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProjectionBatchRebuiltRecord
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ProjectionBatchRebuiltRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L46).
+
+A record written by a rebuild batch. Version 1 stored these two names in PascalCase.
+
+```csharp
+public sealed record ProjectionBatchRebuiltRecord([property : JsonPropertyName("SecurityId")] Guid SecurityId, [property : JsonPropertyName("Version")] long Version);
+```
+
 ## RegistryProjectionReadService
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.RegistryProjectionReadService</code>. Kind: `class`.
@@ -843,21 +855,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static DataReplacementCostEstimate Empty(DataReplacementCostOptions options) =&gt; …;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:187](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L187) |  |
-
-## DataReplacementCostEstimator
-
-Qualified name: <code>Meridian.Storage.Services.DataReplacementCostEstimator</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:12](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L12).
-
-Estimates what the locally collected market-data store would cost to repurchase from commercial metered vendors, priced against a configurable rate card. Estimates are deliberately conservative: two independent bases are computed (per symbol-day and per gigabyte) and the lower one is reported as the headline figure. This is a pure post-processing pass over the StorageCatalog; it never touches the data files.
-
-```csharp
-public static class DataReplacementCostEstimator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DataReplacementCostEstimate Estimate(StorageCatalog catalog, DataReplacementCostOptions options);</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:19](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L19) | Computes a replacement-cost estimate for catalog using options. Returns a zero-valued estimate when the catalog is empty or the meter is disabled. |

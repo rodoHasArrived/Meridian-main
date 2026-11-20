@@ -278,6 +278,10 @@ execution: row dimensions, column-field cross-tabs for pivot grids, aggregate
 metrics, Top-N limits, contribution percentages, and bounded arithmetic formulas are evaluated
 against the lower-level engine's input rows with structured warnings for missing or non-numeric
 inputs. Governed HTTP callers do not supply those rows; the server resolves their certified source.
+Metric bindings are checked against dataset field names before filtering. An absent metric field
+produces a failed check in preview and a terminal audited failure in generation. Numeric aggregates
+with no observations and empty pivot intersections render as blanks. Chart points for blanks carry
+null values, while measured zeros retain their numeric value.
 The canonical envelope now preserves optional `PositionId` alongside `InstrumentId`, keeping
 same-security book positions distinct in generated reporting evidence without treating a projected
 position or balance as an accounting fact. The immutable journal remains authoritative.

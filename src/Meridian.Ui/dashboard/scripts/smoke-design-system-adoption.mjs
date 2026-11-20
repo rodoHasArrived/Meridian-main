@@ -248,8 +248,9 @@ try {
       const before = await labels(metrics); assert.equal(before.at(-1), "P&L");
       const remove = metrics.getByRole("button", { name: "Remove P&L", exact: true }); await remove.focus(); await remove.press("Enter");
       assert.deepEqual(await labels(metrics), before.filter(label => label !== "P&L"));
+      await page.getByLabel("Sector Pivot preview dataset").selectOption("portfolioPositions");
       const sources = page.getByRole("list", { name: "Sector Pivot source fields", exact: true });
-      const source = sources.getByRole("listitem").filter({ has: page.getByText("pnl", { exact: true }) });
+      const source = sources.getByRole("listitem").filter({ has: page.getByText("P&L", { exact: true }) });
       const formulas = page.getByRole("list", { name: "Sector Pivot Formulas", exact: true });
       async function drag(from, to) {
         // Browser-native DataTransfer and real React drag handlers; no direct state access.
@@ -262,13 +263,13 @@ try {
           return payload;
         } finally { await sourceHandle.dispose(); await dataTransfer.dispose(); }
       }
-      const copied = await drag(source, formulas); assert.equal(copied.origin, null); assert.equal(copied.token.label, "pnl");
-      assert.equal(await formulas.getByText("pnl", { exact: true }).count(), 1); assert.equal(await source.count(), 1, "Source field is copied");
-      const movedToken = formulas.getByRole("listitem").filter({ has: page.getByText("pnl", { exact: true }) });
+      const copied = await drag(source, formulas); assert.equal(copied.origin, null); assert.equal(copied.token.label, "P&L");
+      assert.equal(await formulas.getByText("P&L", { exact: true }).count(), 1); assert.equal(await source.count(), 1, "Source field is copied");
+      const movedToken = formulas.getByRole("listitem").filter({ has: page.getByText("P&L", { exact: true }) });
       const moved = await drag(movedToken, metrics); assert.equal(moved.token.id, copied.token.id); assert.equal(moved.origin.zone, "formulas");
-      assert.equal(await formulas.getByText("pnl", { exact: true }).count(), 0); assert.equal(await metrics.getByText("pnl", { exact: true }).count(), 1);
-      await drag(source, metrics); assert.equal(await metrics.getByText("pnl", { exact: true }).count(), 1, "Duplicate token drop remains a no-op");
-      await metrics.getByRole("button", { name: "Remove pnl", exact: true }).press("Space"); assert.equal(await metrics.getByText("pnl", { exact: true }).count(), 0);
+      assert.equal(await formulas.getByText("P&L", { exact: true }).count(), 0); assert.equal(await metrics.getByText("P&L", { exact: true }).count(), 1);
+      await drag(source, metrics); assert.equal(await metrics.getByText("P&L", { exact: true }).count(), 1, "Duplicate token drop remains a no-op");
+      await metrics.getByRole("button", { name: "Remove P&L", exact: true }).press("Space"); assert.equal(await metrics.getByText("P&L", { exact: true }).count(), 0);
       record.copiedToken = copied.token; record.moveOrigin = moved.origin; record.states = ["native-keyboard", "reorder", "boundary-disabled-reason", "removal", "drag-copy", "drag-move", "duplicate-no-op", "24px-targets"];
     });
     await context.close();
