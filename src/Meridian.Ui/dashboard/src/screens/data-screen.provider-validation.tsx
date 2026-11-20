@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { TimeText } from "@/components/ui/time-text";
 import { isApiError } from "@/lib/api-errors";
 import { getJson, putJson } from "@/lib/api/http-client";
+import { formatNumber } from "@/lib/format";
 
 export interface ProviderValidationProfile {
   staleToleranceDays: number;
@@ -62,8 +64,6 @@ const rules = [
   { id: "maxLatencyMs", label: "Maximum event age", unit: "ms", maximum: 86400000,
     detail: "Rejects live events that arrive too long after their timestamp. Zero disables this check." }
 ] as const;
-const auditDate = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
-const number = new Intl.NumberFormat(undefined, { maximumFractionDigits: 10 });
 
 export function profileLoosens(next: ProviderValidationProfile, previous: ProviderValidationProfile) {
   return next.staleToleranceDays > previous.staleToleranceDays || next.futureSkewSeconds > previous.futureSkewSeconds ||
@@ -287,7 +287,7 @@ function readDraft(values: DraftValues): ProviderValidationProfile | null {
 
 function formatRule(key: RuleKey, value: number | null) {
   if (value === null || (key === "maxLatencyMs" && value === 0)) return "Disabled";
-  return number.format(value) + " " + rules.find(rule => rule.id === key)?.unit;
+  return formatNumber(value, { maximumFractionDigits: 10 }) + " " + rules.find(rule => rule.id === key)?.unit;
 }
 
 function changedRules(before: ProviderValidationProfile, after: ProviderValidationProfile) {
@@ -310,7 +310,7 @@ function ProfileDifference({ before, after }: { before: ProviderValidationProfil
 function AuditChange({ entry }: { entry: ProfileAudit }) {
   return <div className="space-y-2 text-xs">
     <dl className="grid gap-2 sm:grid-cols-3">
-      <div><dt className="text-muted-foreground">Recorded at</dt><dd><time dateTime={entry.changedAt}>{auditDate.format(new Date(entry.changedAt))}</time></dd></div>
+      <div><dt className="text-muted-foreground">Recorded at</dt><dd><TimeText value={entry.changedAt} precision="second" /></dd></div>
       <div><dt className="text-muted-foreground">Actor</dt><dd className="break-words">{entry.actor}</dd></div>
       <div><dt className="text-muted-foreground">Recorded reason</dt><dd className="break-words">{entry.reason ?? "None recorded"}</dd></div>
     </dl>
