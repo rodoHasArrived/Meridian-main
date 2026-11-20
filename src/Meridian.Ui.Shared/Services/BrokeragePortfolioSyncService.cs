@@ -179,7 +179,9 @@ public sealed partial class BrokeragePortfolioSyncService
     public async Task<WorkstationBrokerageSyncStatusDto> RunSyncAsync(
         Guid fundAccountId,
         WorkstationBrokerageSyncRunRequestDto? request = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? passportTenantId = null,
+        string? passportCompanyId = null)
     {
         ct.ThrowIfCancellationRequested();
         request ??= new WorkstationBrokerageSyncRunRequestDto();
@@ -294,7 +296,8 @@ public sealed partial class BrokeragePortfolioSyncService
             warnings.Add($"Provider '{link.ProviderId}' has no activity sync adapter registered.");
         }
 
-        var rawPath = BuildRawSnapshotPath(link.ProviderId, link.ExternalAccountId, attemptedAt);
+        var passportScope = portfolio is null ? null
+            : await BuildPassportScopeAsync(fundAccountId, passportTenantId, passportCompanyId, ct).ConfigureAwait(false);
         var raw = new BrokerageRawSyncSnapshot(
             CapturedAt: attemptedAt,
             ProviderId: link.ProviderId,
@@ -302,8 +305,9 @@ public sealed partial class BrokeragePortfolioSyncService
             RequestedBy: request.RequestedBy,
             Portfolio: portfolio,
             Activity: activity,
-            Warnings: warnings);
-        await WriteJsonAsync(rawPath, raw, ct).ConfigureAwait(false);
+            Warnings: warnings,
+            PassportScope: passportScope);
+        var (rawPath, passportSnapshot) = await RetainRawSnapshotAsync(raw, ct).ConfigureAwait(false);
 
         var projection = await BuildProjectionAsync(
             fundAccountId,
@@ -315,7 +319,7 @@ public sealed partial class BrokeragePortfolioSyncService
             warnings,
             ct).ConfigureAwait(false);
         projection = CarryForwardLastGoodState(
-            projection,
+            projection with { AmountPassportSnapshot = passportSnapshot },
             await TryLoadPriorProjectionAsync(projection.FundAccountId, ct).ConfigureAwait(false),
             portfolioMissing: portfolio is null,
             activityMissing: activity is null);
@@ -552,7 +556,9 @@ public sealed partial class BrokeragePortfolioSyncService
     public async Task<BrokerageHouseholdPortfolioDto> GetHouseholdAsync(
         string? providerId,
         Func<IReadOnlyCollection<Guid>, CancellationToken, Task<IReadOnlySet<Guid>>> authorizeFundAccounts,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        string? passportTenantId = null,
+        string? passportCompanyId = null)
     {
         ArgumentNullException.ThrowIfNull(authorizeFundAccounts);
         ct.ThrowIfCancellationRequested();
@@ -621,7 +627,7 @@ public sealed partial class BrokeragePortfolioSyncService
                 Warnings: projection.Status.Warnings))
             .ToArray();
         var positions = projections
-            .SelectMany(static projection => projection.Positions.Select(position => new BrokerageHouseholdPositionDto(
+            .SelectMany(projection => projection.Positions.Select((position, index) => new BrokerageHouseholdPositionDto(
                 FundAccountId: projection.FundAccountId,
                 ProviderId: projection.Link.ProviderId,
                 ExternalAccountId: projection.Link.ExternalAccountId,
@@ -639,7 +645,8 @@ public sealed partial class BrokeragePortfolioSyncService
                 Currency: position.Currency)
             {
                 AccruedInterest = position.AccruedInterest,
-                ValuationBasis = position.ValuationBasis
+                ValuationBasis = position.ValuationBasis,
+                AmountPassports = BuildPositionReferences(projection, position, index, passportTenantId, passportCompanyId)
             }))
             .OrderBy(static position => position.Symbol, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -995,7 +1002,7 @@ public sealed partial class BrokeragePortfolioSyncService
 
         if (portfolioMissing && (prior.Balance is not null || prior.Positions.Count > 0))
         {
-            result = result with { Balance = prior.Balance, Positions = prior.Positions };
+            result = result with { Balance = prior.Balance, Positions = prior.Positions, AmountPassportSnapshot = prior.AmountPassportSnapshot };
             status = status with
             {
                 PositionCount = prior.Positions.Count,
@@ -1912,7 +1919,8 @@ public sealed partial class BrokeragePortfolioSyncService
         string? RequestedBy,
         BrokeragePortfolioSnapshotDto? Portfolio,
         BrokerageActivitySnapshotDto? Activity,
-        IReadOnlyList<string> Warnings);
+        IReadOnlyList<string> Warnings,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] AmountPassportScopeDto? PassportScope = null);
 
     private sealed record BrokerageActivityHistory(
         Guid FundAccountId,

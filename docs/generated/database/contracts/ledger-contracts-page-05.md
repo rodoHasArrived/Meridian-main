@@ -549,6 +549,7 @@ classDiagram
     class Meridian_Contracts_Ledger_LedgerJournalEntryLineDto["LedgerJournalEntryLineDto"] {
         +string AccountName
         +string AccountType
+        +AmountPassportReferenceDto? AmountPassport
         +LedgerJournalLineChartAccountDto? ChartAccount
         +decimal Credit
         +LedgerJournalLineCurrencyDto? Currency
@@ -558,7 +559,6 @@ classDiagram
         +Guid EntryId
         +string? FinancialAccountId
         +Guid JournalEntryId
-        +string? Memo
     }
     class Meridian_Contracts_Ledger_LedgerJournalExecutionLineageDto["LedgerJournalExecutionLineageDto"] {
         +Guid? FillId

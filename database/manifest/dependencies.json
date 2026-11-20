@@ -17158,6 +17158,54 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportComponentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportFreshnessDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportIdentityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportPermissionsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportRecordDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ApprovalDecision"
     },
     {
@@ -17297,6 +17345,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.BrokerageAmountPassportSnapshotDto"
     },
     {
       "kind": "contract-set-member",
@@ -45603,6 +45657,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto"
     },
@@ -50973,6 +51033,60 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AmountPassportDto",
+      "target": "contract:Meridian.Contracts.Workstation.AccountingPreparerAttestationDisclosureDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AmountPassportDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportComponentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AmountPassportDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportFreshnessDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AmountPassportDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportPermissionsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AmountPassportDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportRecordDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AmountPassportDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AmountPassportIdentityDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AmountPassportRecordDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AmountPassportReferenceDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ApproveSecurityMasterOverrides",
       "target": "contract:Meridian.Contracts.Workstation.FundWorkflowCommandMetadata"
     },
@@ -51045,6 +51159,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.BrokerageAmountPassportSnapshotDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.BrokerageCashFlowSummaryDto",
       "target": "contract:Meridian.Contracts.Workstation.BrokerageAccountKindDto"
     },
@@ -51083,6 +51203,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.BrokerageHouseholdPortfolioDto",
       "target": "contract:Meridian.Contracts.Workstation.BrokerageHouseholdPositionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.BrokerageHouseholdPositionDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportReferenceDto"
     },
     {
       "kind": "contract-reference",
@@ -52240,6 +52366,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FundAccountBrokerageSyncActivityDto",
+      "target": "contract:Meridian.Contracts.Workstation.BrokerageAmountPassportSnapshotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FundAccountBrokerageSyncActivityDto",
       "target": "contract:Meridian.Contracts.Workstation.FundAccountBrokerageBalanceSnapshotDto"
     },
     {
@@ -53177,6 +53309,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto",
       "target": "contract:Meridian.Contracts.Workstation.AccountingPreparerAttestationDisclosureDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportDto"
     },
     {
       "kind": "contract-reference",
@@ -55853,6 +55991,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReportAccessPrincipalDto",
       "target": "contract:Meridian.Contracts.Workstation.ReportAccessPrincipalKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportReferenceDto"
     },
     {
       "kind": "contract-reference",
@@ -59087,6 +59231,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationKpiDefinitionsDto",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationKpiDefinitionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationMetricCard",
+      "target": "contract:Meridian.Contracts.Workstation.AmountPassportReferenceDto"
     },
     {
       "kind": "contract-reference",
@@ -70376,7 +70526,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "d929a9b816bf069714fbd4dd2c17cf5992e772fa4dc4b531c4e5deb7795ff3f9",
+  "fingerprint": "a695218bb70425861acae9f3533d5924e2c99cc56831155c36b97d62c749fa06",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -87584,6 +87734,54 @@
       "label": "Meridian.Contracts.Workstation.AlpacaBrokerageConnectionRequestDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AmountPassportComponentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AmountPassportComponentDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AmountPassportDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AmountPassportDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AmountPassportFreshnessDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AmountPassportFreshnessDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AmountPassportIdentityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AmountPassportIdentityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AmountPassportPermissionsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AmountPassportPermissionsDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AmountPassportRecordDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AmountPassportRecordDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AmountPassportReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AmountPassportReferenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AmountPassportScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AmountPassportScopeDto"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.ApprovalDecision",
       "kind": "contract-type",
@@ -87726,6 +87924,12 @@
       "id": "contract:Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.BrokerageAmountPassportSnapshotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.BrokerageAmountPassportSnapshotDto"
     },
     {
       "classification": "dto",
@@ -103467,11 +103671,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4312,
-    "contract_set_memberships": 5671,
-    "edges": 11691,
+    "contract_references": 4328,
+    "contract_set_memberships": 5680,
+    "edges": 11716,
     "foreign_keys": 213,
     "logical_references": 6,
-    "nodes": 5757
+    "nodes": 5766
   }
 }

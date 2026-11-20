@@ -49,6 +49,7 @@ import { WorkspaceStatus } from "@/components/meridian/workspace-status";
 import { SectionDescriptionPreferences } from "@/components/ui/section-description";
 import { EntityInspectorProvider } from "@/components/meridian/entity-inspector";
 import { MetricPassportSessionProvider } from "@/components/meridian/metric-passport";
+import { AmountPassportProvider } from "@/components/meridian/amount-passport";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { RecordWorkspaceHandoff } from "@/components/meridian/record-identity-spine";
 import { readRecordWorkspaceContext, withoutRecordWorkspaceContext } from "@/lib/record-workspace-context";
@@ -1005,6 +1006,7 @@ function AppShell({
     <ShellStatusSignalsProvider value={shellStatusSignals}>
     <WorkspaceFigureContextProvider value={workspaceFigureContext}>
     <PageTrustProvider registry={pageTrustRegistry}>
+    <AmountPassportProvider enabled={shell.canRenderRoutes} scopeKey={JSON.stringify(operatingScopeInput)} session={session}>
     <KpiProvider models={{ portfolio, trading, overview, strategy, data, accounting, crossScreenCounts }}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
@@ -1261,6 +1263,7 @@ function AppShell({
       </Sheet>
     </div>
     </KpiProvider>
+    </AmountPassportProvider>
     </PageTrustProvider>
     </WorkspaceFigureContextProvider>
     </ShellStatusSignalsProvider>

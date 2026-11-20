@@ -6,11 +6,12 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Endpoints;
 
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>Resolves immutable posted-line identities without account-name, symbol, or case searches.</summary>
-public sealed class PostedLedgerAmountProvenanceService(
+public sealed partial class PostedLedgerAmountProvenanceService(
     ILedgerJournalStore? journals,
     ILedgerBookService? books,
     IFundProfileTenancyRegistry? tenancy,
@@ -22,7 +23,8 @@ public sealed class PostedLedgerAmountProvenanceService(
     public async Task<EvidencePacketDto?> GetPacketAsync(
         string subjectId,
         LedgerAmountScopeDto scope,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        AmountPassportIdentityDto? passport = null)
     {
         if (journals is null || books is null || tenancy is null ||
             !IsComplete(scope) || !TryParseSubject(subjectId, out var journalId, out var entryId, out var debit))
@@ -41,7 +43,7 @@ public sealed class PostedLedgerAmountProvenanceService(
             return null;
 
         var records = await journals.QueryAsync(new LedgerJournalEntryQuery(
-            LedgerBookId: scope.LedgerBookId, PeriodId: scope.PeriodId), ct).ConfigureAwait(false);
+            LedgerBookId: scope.LedgerBookId, PeriodId: scope.PeriodId, JournalEntryId: journalId), ct).ConfigureAwait(false);
         var matches = records.Where(record => record.PeriodId == scope.PeriodId &&
             record.Entry.JournalEntryId == journalId).ToArray();
         if (matches.Length == 0)
@@ -51,7 +53,19 @@ public sealed class PostedLedgerAmountProvenanceService(
                 ["The retained journal identity is ambiguous. Amount proof is blocked."]);
 
         var record = matches[0];
-        return await GetRetainedPacketAsync(subjectId, scope, record, book.BaseCurrency, ct).ConfigureAwait(false);
+        if (passport is not null)
+        {
+            var lines = record.Entry.Lines.Where(item => item.EntryId == entryId).Take(2).ToArray();
+            if (lines.Length != 1 || record.AccountingBasis != book.AccountingBasis ||
+                AmountPassportFacts.PostedReference(record, lines[0], scope, book.BaseCurrency).Identity != passport)
+                throw new AmountPassportScopeMismatchException();
+            var dimensions = LedgerEndpoints.ResolveLineDimensions(record, lines[0]);
+            if (dimensions?.FundId is { } fund && fund != scope.FundProfileId ||
+                Guid.TryParse(dimensions?.BookId, out var dimensionBook) && dimensionBook != scope.LedgerBookId)
+                throw new AmountPassportScopeMismatchException();
+        }
+        return await GetRetainedPacketAsync(subjectId, scope, record, book.BaseCurrency, ct,
+            passport is not null ? period : null).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -61,7 +75,7 @@ public sealed class PostedLedgerAmountProvenanceService(
     /// </summary>
     internal async Task<EvidencePacketDto?> GetRetainedPacketAsync(
         string subjectId, LedgerAmountScopeDto scope, LedgerJournalEntryRecord record,
-        string baseCurrency, CancellationToken ct = default)
+        string baseCurrency, CancellationToken ct = default, LedgerAccountingPeriod? passportPeriod = null)
     {
         if (!IsComplete(scope) || !TryParseSubject(subjectId, out var journalId, out var entryId, out var debit)
             || record.PeriodId != scope.PeriodId || record.Entry.JournalEntryId != journalId)
@@ -90,6 +104,8 @@ public sealed class PostedLedgerAmountProvenanceService(
         };
         var warnings = new List<string>();
         var status = EvidenceStatusDto.Ready;
+        var evaluatedAt = DateTimeOffset.UtcNow;
+        var stale = false;
         var references = record.Entry.Metadata.EvidenceReferences.Where(reference =>
             reference.SubjectType != EvidenceSubjectResolver.LedgerAmountKind || reference.SubjectId is null ||
             !siblingSubjects.Contains(reference.SubjectId)).ToArray();
@@ -158,8 +174,10 @@ public sealed class PostedLedgerAmountProvenanceService(
                 continue;
             }
             if (reference.RetainedAtUtc != identity.RetainedAt || identity.RetainedAt > record.CreatedAt ||
-                identity.RetainedAt > DateTimeOffset.UtcNow || identity.Artifacts.Count == 0)
+                identity.RetainedAt > evaluatedAt || identity.Artifacts.Count == 0)
             {
+                stale |= reference.RetainedAtUtc != identity.RetainedAt ||
+                    identity.RetainedAt > record.CreatedAt || identity.RetainedAt > evaluatedAt;
                 Review("Supporting evidence is stale or its retained source artifact is missing.");
                 continue;
             }
@@ -178,8 +196,9 @@ public sealed class PostedLedgerAmountProvenanceService(
                     lifecycle.ValueKind == JsonValueKind.Object &&
                     lifecycle.TryGetProperty("expiresAt", out var expiration) &&
                     expiration.ValueKind != JsonValueKind.Null &&
-                    (expiration.ValueKind != JsonValueKind.String || !expiration.TryGetDateTimeOffset(out var expiresAt) || expiresAt <= DateTimeOffset.UtcNow))
+                    (expiration.ValueKind != JsonValueKind.String || !expiration.TryGetDateTimeOffset(out var expiresAt) || expiresAt <= evaluatedAt))
                 {
+                    stale = true;
                     Review("Supporting evidence has expired and requires renewed review.");
                     continue;
                 }
@@ -207,9 +226,15 @@ public sealed class PostedLedgerAmountProvenanceService(
         if (evidence.Count == 1)
             Review("No verified retained source evidence supports this amount. Review is required.");
 
-        return Packet(canonicalId, scope, debit ? line.Debit : line.Credit,
+        var packet = Packet(canonicalId, scope, debit ? line.Debit : line.Credit,
             line.Currency?.FunctionalCurrency ?? baseCurrency, status, evidence, warnings.Distinct().ToArray(),
-            accountingAttestations);
+            accountingAttestations, stale);
+        if (passportPeriod is null)
+            return packet;
+
+        var proof = packet.LedgerAmount!;
+        var passport = await BuildPassportAsync(record, line, proof, passportPeriod, evaluatedAt, stale, ct).ConfigureAwait(false);
+        return packet with { LedgerAmount = proof with { AmountPassport = passport } };
 
         void Review(string warning)
         {
@@ -222,7 +247,7 @@ public sealed class PostedLedgerAmountProvenanceService(
     private static EvidencePacketDto Packet(string subjectId, LedgerAmountScopeDto scope, decimal amount,
         string currency, EvidenceStatusDto status, IReadOnlyList<LedgerAmountProofEvidenceDto> evidence,
         IReadOnlyList<string> warnings,
-        IReadOnlyList<AccountingPreparerAttestationDisclosureDto>? accountingAttestations = null)
+        IReadOnlyList<AccountingPreparerAttestationDisclosureDto>? accountingAttestations = null, bool stale = false)
     {
         var subject = new EvidenceSubjectDto(subjectId, EvidenceSubjectResolver.LedgerAmountKind,
             "Posted ledger amount", "Accounting", null, "AccountingLedgerExplorer", scope.LedgerBookId);
@@ -253,7 +278,8 @@ public sealed class PostedLedgerAmountProvenanceService(
             LedgerAmount = new LedgerAmountProofDto(subjectId, scope, amount, currency, status, evidence, warnings)
             {
                 AccountingPreparerAttestations = accountingAttestations,
-                OrdinaryRecordedApprovalSatisfied = accountingAttestations is { Count: > 0 } ? false : null
+                OrdinaryRecordedApprovalSatisfied = accountingAttestations is { Count: > 0 } ? false : null,
+                RetainedSupportStale = stale
             },
             ProofChain = new EvidenceProofChainDto(completeness.Score, status,
                 status == EvidenceStatusDto.Ready ? 2 : evidence.Count > 0 ? 1 : 0, 2,
