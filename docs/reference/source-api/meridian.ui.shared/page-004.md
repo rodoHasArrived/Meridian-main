@@ -288,7 +288,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundAccountEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L20).
+Source: [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L21).
 
 Maps fund-account management and brokerage synchronization operations with account-specific authorization.
 
@@ -300,7 +300,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L22) |  |
+| <code>public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L23) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.ThreeWayReconciliation.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.ThreeWayReconciliation.cs#L12).
 

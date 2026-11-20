@@ -739,7 +739,7 @@ public sealed record SecurityForwardCurvePoint(DateOnly Date, decimal Rate);
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityHistoryRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L20).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L23).
 
 ```csharp
 public sealed record SecurityHistoryRequest(Guid SecurityId, int Take = 100);

@@ -250,6 +250,28 @@ Healthy providers out of every provider the Data workspace lists.
 public sealed record WorkstationProviderHealthCount(int Healthy, int Total, string Definition);
 ```
 
+## WorkstationRecordSearchHit
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRecordSearchHit</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs#L4).
+
+A navigation projection of an authorized record. Financial values stay in the detail view.
+
+```csharp
+public sealed record WorkstationRecordSearchHit(string RecordType, string RecordId, string Label, string Scope, string AsOfPosture, string Status, string Href);
+```
+
+## WorkstationRecordSearchResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRecordSearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs#L13).
+
+```csharp
+public sealed record WorkstationRecordSearchResult(IReadOnlyList<WorkstationRecordSearchHit> Items, bool IsPartial);
+```
+
 ## WorkstationReportAccessAuditSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportAccessAuditSummaryDto</code>. Kind: `record`.
@@ -532,26 +554,4 @@ The entities, funds and fund accounts the calling operator may choose as an oper
 
 ```csharp
 public sealed record WorkstationScopeOptionsDto(IReadOnlyList<WorkstationScopeEntityOptionDto> Entities, IReadOnlyList<WorkstationScopeFundOptionDto> Funds, IReadOnlyList<WorkstationScopeAccountOptionDto> Accounts);
-```
-
-## WorkstationScopeOptionsJsonContext
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs#L75).
-
-Provides source-generated JSON metadata for the workstation scope-option contracts. Null relationships are written explicitly so clients can tell &quot;no fund&quot; from a missing field.
-
-```csharp
-public sealed partial class WorkstationScopeOptionsJsonContext : JsonSerializerContext;
-```
-
-## WorkstationSecurityCoverageGapPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageGapPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L69).
-
-```csharp
-public sealed record WorkstationSecurityCoverageGapPayload(string Source, string Symbol, string? AccountName, string Reason);
 ```
