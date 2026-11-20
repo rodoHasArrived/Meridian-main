@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ChartEvidence, ChartEvidenceValue } from "@/components/charts/chart-evidence";
 import { getHistoricalBars } from "@/lib/api";
-import { formatTimestamp } from "@/lib/format";
+import { historicalBarsEndpoint } from "@/lib/workstation-endpoints";
 import type { HistoricalBarPoint, HistoricalBarsResponse } from "@/types";
 import {
   CANDLESTICK_BOLLINGER_MULTIPLIER,
@@ -116,6 +117,12 @@ export interface HistoricalChartSparklineViewModel {
   highLabel: { value: string; x: number; y: number };
   lowLabel: { value: string; x: number; y: number };
   stroke: string;
+  observations: HistoricalChartMark[];
+}
+
+export interface HistoricalChartMark extends ChartEvidence {
+  x: number;
+  y: number;
 }
 
 export interface HistoricalChartStatTile {
@@ -134,23 +141,7 @@ export interface CandlestickBarViewModel {
   wickY2: number;
   isBullish: boolean;
   isDoji: boolean;
-  tooltipLabel: string;
-  hover: CandlestickHoverDetail;
-}
-
-export type CandlestickChangeTone = "positive" | "negative" | "neutral";
-
-export interface CandlestickHoverDetail {
-  index: number;
-  timeLabel: string;
-  openLabel: string;
-  highLabel: string;
-  lowLabel: string;
-  closeLabel: string;
-  volumeLabel: string;
-  changeLabel: string;
-  changeTone: CandlestickChangeTone;
-  ariaLabel: string;
+  evidence: ChartEvidence;
 }
 
 export interface CandlestickSmaOverlay {
@@ -159,6 +150,7 @@ export interface CandlestickSmaOverlay {
   ariaLabel: string;
   stroke: string;
   points: string;
+  values: (number | null)[];
 }
 
 export interface CandlestickBollingerOverlay {
@@ -191,6 +183,7 @@ export interface CandlestickRsiPanel {
   lastValueLabel: string;
   lastValueTone: "overbought" | "oversold" | "neutral";
   lastValueY: number | null;
+  values: (number | null)[];
 }
 
 export interface CandlestickChartGeometry {
@@ -224,6 +217,7 @@ export interface CandlestickChartViewModel {
   smaOverlays: CandlestickSmaOverlay[];
   bollingerOverlay: CandlestickBollingerOverlay | null;
   rsiPanel: CandlestickRsiPanel | null;
+  references: HistoricalChartMark[];
 }
 
 export interface ChartModeOption {
@@ -266,6 +260,7 @@ export interface CompareSeriesViewModel {
   lastChangeLabel: string;
   lastChangeTone: "positive" | "negative" | "neutral";
   ariaLabel: string;
+  observations: HistoricalChartMark[];
 }
 
 export interface CompareChartViewModel {
@@ -649,7 +644,7 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
   ], [indicators.sma, indicators.bollinger, indicators.rsi, symbol, toggleIndicator]);
 
   const statePanel = buildHistoricalChartStatePanel({
-    status: state.status,
+    status: state.status === "ready" && state.appliedTimeframeId !== activeTimeframe.id ? "loading" : state.status,
     bars: state.bars,
     symbol,
     activeTimeframe,
@@ -658,15 +653,15 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
 
   const compareActive = compareSymbols.length > 0;
 
-  const compareChart = compareActive
+  const compareChart = useMemo(() => compareActive
     ? buildCompareChartViewModel({
         baseSymbol: symbol,
         baseBars: state.bars,
         compareSymbols,
-        compareStates,
+        compareStates: Object.fromEntries(Object.entries(compareStates).filter(([, entry]) => entry.appliedTimeframeId === activeTimeframe.id)),
         timeframe: activeTimeframe.label
       })
-    : null;
+    : null, [compareActive, symbol, state.bars, compareSymbols, compareStates, activeTimeframe.id, activeTimeframe.label]);
 
   const compareChips = useMemo<CompareChipViewModel[]>(
     () =>
@@ -894,21 +889,16 @@ export function buildCandlestickChartViewModel({
     const changeFromPrevPct = prevClose !== null && prevClose !== 0
       ? (changeFromPrev! / prevClose) * 100
       : null;
-    const timeLabel = formatBarTimeLabel(bar.start);
-    const tooltipLabel = `${timeLabel} · O ${formatPriceRaw(bar.open)} H ${formatPriceRaw(bar.high)} L ${formatPriceRaw(bar.low)} C ${formatPriceRaw(bar.close)}`;
-
-    const hover: CandlestickHoverDetail = {
-      index: i,
-      timeLabel,
-      openLabel: formatPrice(bar.open),
-      highLabel: formatPrice(bar.high),
-      lowLabel: formatPrice(bar.low),
-      closeLabel: formatPrice(bar.close),
-      volumeLabel: formatVolume(bar.volume),
-      changeLabel: formatChangeWithPct(changeFromPrev, changeFromPrevPct),
-      changeTone: candleChangeTone(changeFromPrev),
-      ariaLabel: `${timeLabel}. Open ${formatPrice(bar.open)}, high ${formatPrice(bar.high)}, low ${formatPrice(bar.low)}, close ${formatPrice(bar.close)}. Volume ${formatVolume(bar.volume)}.`
-    };
+    const evidence = historicalBarEvidence(symbol, timeframe, bar, i, [
+      barPrice("Open", bar.open, "First stored trade price in the bar."),
+      barPrice("High", bar.high, "Highest stored trade price in the bar."),
+      barPrice("Low", bar.low, "Lowest stored trade price in the bar."),
+      barPrice("Close", bar.close, "Last stored trade price in the bar."),
+      { series: "Volume", value: bar.volume, unit: "Instrument units", basis: "Total stored trade size in the bar." }
+    ]);
+    if (changeFromPrev !== null) {
+      evidence.sourceDetail += ` Close change from the previous bar ${formatChangeWithPct(changeFromPrev, changeFromPrevPct)}.`;
+    }
 
     return {
       midX,
@@ -920,8 +910,7 @@ export function buildCandlestickChartViewModel({
       wickY2: lowY,
       isBullish,
       isDoji,
-      tooltipLabel,
-      hover
+      evidence
     };
   });
 
@@ -960,6 +949,46 @@ export function buildCandlestickChartViewModel({
       })
     : null;
 
+  candleBars.forEach(({ evidence }, index) => {
+    const indicators: ChartEvidenceValue[] = [];
+    for (const sma of smaOverlays) {
+      const value = sma.values[index];
+      if (value != null) indicators.push(barPrice(sma.label, value, `Mean of the last ${sma.period} bar closes.`));
+    }
+    const band = bollingerBands?.[index];
+    if (band && bollingerOverlay) {
+      const { period, multiplier } = bollingerOverlay;
+      indicators.push(
+        barPrice("Bollinger upper", band.upper, `${period}-bar close mean plus ${multiplier} population standard deviations.`),
+        barPrice("Bollinger middle", band.middle, `Mean of the last ${period} bar closes.`),
+        barPrice("Bollinger lower", band.lower, `${period}-bar close mean minus ${multiplier} population standard deviations.`)
+      );
+    }
+    const rsi = rsiPanel?.values[index];
+    if (rsiPanel && rsi != null) {
+      indicators.push({ series: rsiPanel.label, value: rsi, unit: "Index points (0–100)", basis: `${rsiPanel.period}-bar Wilder relative strength index of bar closes.` });
+    }
+    if (indicators.length > 0) {
+      evidence.values = [...evidence.values, ...indicators];
+      evidence.proof = historicalBarProof(symbol, timeframe, chartBars[0]!.bar.start, evidence.asOf!, "Open indicator input bars");
+    }
+  });
+
+  const references = historicalPriceReferences(chartBars, stats, symbol, timeframe, width - padX, yForPrice);
+  if (rsiPanel) {
+    for (const [label, value, y] of [
+      ["Overbought", 70, rsiPanel.overboughtY],
+      ["Midline", 50, rsiPanel.midlineY],
+      ["Oversold", 30, rsiPanel.oversoldY]
+    ] as const) {
+      references.push({
+        id: `rsi-${label}`, label: `${rsiPanel.label} ${label}`, x: width - padX, y,
+        asOf: "Fixed reference",
+        values: [{ series: `${rsiPanel.label} ${label}`, value, unit: "Index points (0–100)", basis: "Fixed RSI reference level." }]
+      });
+    }
+  }
+
   return {
     viewBox: `0 0 ${width} ${totalHeight}`,
     ariaLabel: `${symbol} ${timeframe} candlestick chart, ${n} bars from ${formatPrice(stats.low)} to ${formatPrice(stats.high)}.`,
@@ -990,7 +1019,8 @@ export function buildCandlestickChartViewModel({
     },
     smaOverlays,
     bollingerOverlay,
-    rsiPanel
+    rsiPanel,
+    references
   };
 }
 
@@ -1040,7 +1070,8 @@ function buildSmaOverlays({ closes, midXs, yForPrice, precomputed }: BuildSmaOve
       label: def.label,
       ariaLabel: `${def.period}-period simple moving average`,
       stroke: def.stroke,
-      points
+      points,
+      values
     });
   }
   return overlays;
@@ -1162,14 +1193,9 @@ function buildRsiPanel({
     lastValue,
     lastValueLabel: lastValue === null ? "-" : lastValue.toFixed(1),
     lastValueTone,
-    lastValueY: lastValue === null ? null : yForRsi(lastValue)
+    lastValueY: lastValue === null ? null : yForRsi(lastValue),
+    values
   };
-}
-
-function formatBarTimeLabel(start: string): string {
-  const date = new Date(start);
-  if (Number.isNaN(date.getTime())) return start;
-  return formatTimestamp(date);
 }
 
 function formatChangeWithPct(change: number | null, pct: number | null): string {
@@ -1181,13 +1207,50 @@ function formatChangeWithPct(change: number | null, pct: number | null): string 
   return `${changeText} (${pctSign}${pct.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%)`;
 }
 
-function candleChangeTone(change: number | null): CandlestickChangeTone {
-  if (change === null || !Number.isFinite(change) || change === 0) return "neutral";
-  return change > 0 ? "positive" : "negative";
+function barPrice(series: string, value: number, basis: string): ChartEvidenceValue {
+  return { series, value, unit: "Price per unit (currency unreported)", basis };
 }
 
-function formatPriceRaw(value: number): string {
-  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+function historicalBarProof(symbol: string, timeframe: string, start: string, end: string, label: string) {
+  const intervalMinutes = HISTORICAL_CHART_TIMEFRAMES.find(({ id }) => id === timeframe)?.intervalMinutes;
+  if (!symbol || intervalMinutes === undefined) return null;
+  return {
+    label,
+    href: historicalBarsEndpoint(symbol, {
+      intervalMinutes,
+      from: new Date(start).toISOString().slice(0, 10),
+      to: new Date(end).toISOString().slice(0, 10)
+    })
+  };
+}
+
+function historicalBarEvidence(symbol: string, timeframe: string, bar: HistoricalBarPoint, index: number, values: ChartEvidenceValue[]): ChartEvidence {
+  const adjustment = bar.isAdjusted === true ? "Adjusted prices." : bar.isAdjusted === false ? "Unadjusted prices." : "Price adjustment unreported or mixed.";
+  const source = bar.source === "mixed" ? "Mixed source provenance" : bar.source ?? "Source unreported";
+  return {
+    id: `${symbol}:${timeframe}:${bar.start}:${index}`,
+    label: `${symbol} historical bar`,
+    asOf: bar.start,
+    values,
+    proof: historicalBarProof(symbol, timeframe, bar.start, bar.start, "Open stored bars for this date"),
+    sourceDetail: `Bar start time. ${source}. ${adjustment}`
+  };
+}
+
+function historicalPriceReferences(
+  bars: ReturnType<typeof toChronologicalChartBars>, stats: HistoricalChartStats,
+  symbol: string, timeframe: string, x: number, yFor: (value: number) => number
+): HistoricalChartMark[] {
+  return (["high", "low"] as const).flatMap((key) => {
+    const value = stats[key];
+    const match = bars.find(({ bar }) => bar[key] === value);
+    if (value === null || !match) return [];
+    const label = key === "high" ? "Window high" : "Window low";
+    return [{
+      ...historicalBarEvidence(symbol, timeframe, match.bar, 0, [barPrice(label, value, `Window ${key} across the stored bars.`)]),
+      id: `${symbol}:${timeframe}:${key}`, label: `${symbol} ${label.toLowerCase()}`, x, y: yFor(value)
+    }];
+  });
 }
 
 export function buildHistoricalChartStatePanel({
@@ -1273,11 +1336,16 @@ export interface CompareSeriesInput {
 export function computePercentChangeSeries(
   bars: readonly HistoricalBarPoint[]
 ): Array<{ timestamp: number; changePct: number }> {
+  return normalizeHistoricalBars(bars).map(({ timestamp, changePct }) => ({ timestamp, changePct }));
+}
+
+function normalizeHistoricalBars(bars: readonly HistoricalBarPoint[]) {
   const chronological = toChronologicalChartBars(bars);
   if (chronological.length === 0) return [];
   const base = chronological[0]!.bar.close;
   if (!Number.isFinite(base) || base === 0) return [];
   return chronological.map(({ bar, timestamp }) => ({
+    bar,
     timestamp,
     changePct: ((bar.close - base) / base) * 100
   }));
@@ -1302,10 +1370,6 @@ export function buildCompareChartViewModel({
   const padY = 18;
 
   const seriesInputs: CompareSeriesInput[] = [];
-  const baseSeriesPct = computePercentChangeSeries(baseBars);
-  if (baseSeriesPct.length === 0 && baseBars.length === 0) {
-    // Base has no bars — still render the compare frame if we have any compare series with data
-  }
   seriesInputs.push({
     symbol: baseSymbol || "Symbol",
     bars: baseBars,
@@ -1326,7 +1390,7 @@ export function buildCompareChartViewModel({
 
   const seriesData = seriesInputs.map((input) => ({
     input,
-    points: computePercentChangeSeries(input.bars)
+    points: input.status === "ready" ? normalizeHistoricalBars(input.bars) : []
   }));
 
   const allPoints = seriesData.flatMap(({ points }) => points);
@@ -1359,6 +1423,7 @@ export function buildCompareChartViewModel({
         isBase: input.isBase,
         status: fallbackStatus,
         points: "",
+        observations: [],
         lastChangePct: null,
         lastChangeLabel: fallbackStatus === "loading" ? "Loading…" : fallbackStatus === "error" ? "Error" : "-",
         lastChangeTone: "neutral",
@@ -1368,12 +1433,22 @@ export function buildCompareChartViewModel({
     const lastChangePct = points[points.length - 1]!.changePct;
     const tone: CompareSeriesViewModel["lastChangeTone"] =
       Math.abs(lastChangePct) < 1e-6 ? "neutral" : lastChangePct > 0 ? "positive" : "negative";
+    const firstBar = points[0]!.bar;
+    const observations = points.map(({ bar, timestamp, changePct }, index) => ({
+      ...historicalBarEvidence(input.symbol, timeframe, bar, index, [{
+        series: `${input.symbol} close change`, value: changePct, unit: "%",
+        basis: `(${bar.close} − ${firstBar.close}) ÷ ${firstBar.close} × 100, relative to the first close in the displayed window.`
+      }]),
+      proof: historicalBarProof(input.symbol, timeframe, firstBar.start, bar.start, "Open comparison input bars"),
+      x: xFor(timestamp), y: yFor(changePct)
+    }));
     return {
       symbol: input.symbol,
       color: input.color,
       isBase: input.isBase,
       status: "ready",
-      points: points.map((p) => `${xFor(p.timestamp).toFixed(2)},${yFor(p.changePct).toFixed(2)}`).join(" "),
+      points: observations.map(({ x, y }) => `${x.toFixed(2)},${y.toFixed(2)}`).join(" "),
+      observations,
       lastChangePct,
       lastChangeLabel: formatChangePct(lastChangePct),
       lastChangeTone: tone,
@@ -1429,7 +1504,11 @@ export function buildHistoricalChartSparklineViewModel({
   const xFor = (ms: number) => padX + ((ms - startMs) / tsSpan) * (width - padX * 2);
   const yFor = (price: number) => padY + (1 - (price - stats.low!) / priceSpan) * (height - padY * 2);
 
-  const points = chartBars.map(({ bar, timestamp }) => `${xFor(timestamp).toFixed(2)},${yFor(bar.close).toFixed(2)}`).join(" ");
+  const observations = chartBars.map(({ bar, timestamp }, index) => ({
+    ...historicalBarEvidence(symbol, timeframe, bar, index, [barPrice("Close", bar.close, "Last stored trade price in the bar.")]),
+    x: xFor(timestamp), y: yFor(bar.close)
+  }));
+  const points = observations.map(({ x, y }) => `${x.toFixed(2)},${y.toFixed(2)}`).join(" ");
   const last = chartBars[chartBars.length - 1]!;
   const lastPoint = {
     x: xFor(last.timestamp),
@@ -1466,7 +1545,8 @@ export function buildHistoricalChartSparklineViewModel({
       x: width - padX,
       y: Math.min(yFor(stats.low) + 12, height - 4)
     },
-    stroke: chartStroke(stats.change)
+    stroke: chartStroke(stats.change),
+    observations: [...observations, ...historicalPriceReferences(chartBars, stats, symbol, timeframe, width - padX, yFor)]
   };
 }
 
