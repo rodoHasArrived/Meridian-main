@@ -5,6 +5,7 @@ using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Portfolio;
 using Meridian.Contracts.Backtesting;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Core.Serialization;
@@ -78,6 +79,7 @@ public sealed class BacktestEngine(
             throw new InvalidOperationException("Canonical settlement mode cannot be combined with PopulateAssetEventsFromSecurityMaster; select one source accounting mode.");
         await using var rawCapture = new CanonicalReplayCapture();
 
+        var startedUtc = DateTimeOffset.UtcNow;
         var sw = Stopwatch.StartNew();
         var stageTimer = new StageTimer(BacktestStage.ValidatingRequest);
         logger.LogInformation("Backtesting '{Strategy}' from {From} to {To} in {DataRoot}",
@@ -117,7 +119,11 @@ public sealed class BacktestEngine(
         var universe = await UniverseDiscovery.DiscoverAsync(
             catalogService, request.DataRoot, request.Symbols, request.From, request.To, ct)
             .ConfigureAwait(false);
-        var inputEvidence = new BacktestInputEvidence(request.DataRoot, new HistoricalSessionScheduleResolver(_securityIdentity));
+        var replayIdentityAsOf = new DateTimeOffset(request.To.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        var resolvedIdentities = new Dictionary<string, SecurityDetailDto?>(StringComparer.OrdinalIgnoreCase);
+        var scheduleResolver = new HistoricalSessionScheduleResolver(
+            _securityIdentity, identityAsOfUtc: replayIdentityAsOf, resolvedIdentities: resolvedIdentities);
+        var inputEvidence = new BacktestInputEvidence(request.DataRoot, scheduleResolver);
 
         if (rawCanonical && universe.Count == 0)
             throw new InvalidOperationException("Canonical raw-price replay requires a nonempty historical-bar universe.");
@@ -127,7 +133,11 @@ public sealed class BacktestEngine(
             logger.LogWarning("No symbols found in data root '{DataRoot}' for the requested date range", request.DataRoot);
             stageTimer.Transition(BacktestStage.Completed);
             stageTimer.Stop();
-            var empty = CreateEmptyResult(request, universe, sw.Elapsed);
+            var empty = CreateEmptyResult(request, universe, sw.Elapsed) with
+            {
+                ProviderProvenance = ResearchProviderProvenance.Create(request, startedUtc, DateTimeOffset.UtcNow,
+                    preflightEnabled: backtestPreflightService is not null, corporateActionsApplied: false)
+            };
             return await AttachCoverageAsync(empty, inputEvidence, ct).ConfigureAwait(false);
         }
 
@@ -166,10 +176,10 @@ public sealed class BacktestEngine(
         //     event loop begins so bad symbol lists surface immediately. Missing and inactive
         //     symbols feed the bias-disclosure report attached to the result.
         var (missingSecurityMasterSymbols, inactiveSecurityMasterSymbols, lotConventions) =
-            await PreResolveUniverseAsync(universe, request, ct).ConfigureAwait(false);
+            await PreResolveUniverseAsync(universe, request, replayIdentityAsOf, resolvedIdentities, ct).ConfigureAwait(false);
 
         // 2. Resolve per-symbol tick sizes from Security Master (best-effort; missing symbols are silently skipped).
-        var tickSizes = await ResolveTickSizesAsync(universe, request.To.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), ct)
+        var tickSizes = await ResolveTickSizesAsync(universe, replayIdentityAsOf.UtcDateTime, ct)
             .ConfigureAwait(false);
 
         var canonicalQueries = CanonicalCorporateActionQueries ?? securityMasterQueryService as ISecurityCorporateActionsQueryService;
@@ -251,6 +261,7 @@ public sealed class BacktestEngine(
         stageTimer.Transition(BacktestStage.Replaying);
         var currentDay = request.From;
         long eventsProcessed = 0;
+        var sourceCounts = new Dictionary<string, long>(StringComparer.Ordinal);
         var totalDays = (request.To.ToDateTime(TimeOnly.MinValue) - request.From.ToDateTime(TimeOnly.MinValue)).Days + 1;
         var rollingState = new RollingMetricsState(portfolio.ComputeCurrentEquity());
         var lastEventTimestamps = new Dictionary<string, DateTimeOffset>(StringComparer.OrdinalIgnoreCase);
@@ -278,6 +289,8 @@ public sealed class BacktestEngine(
             ctx.CurrentTime = evt.Timestamp;
             ctx.CurrentDate = evtDate;
             eventsProcessed++;
+            var providerId = ProviderProvenanceLabels.PublicProviderId(evt.Source) ?? "unrecorded";
+            sourceCounts[providerId] = sourceCounts.GetValueOrDefault(providerId) + 1;
             delistingMonitor.RecordEvent(evt.EffectiveSymbol, evtDate);
             lastEventTimestamps[evt.EffectiveSymbol] = evt.Timestamp;
             inputEvidence.Observe(evt);
@@ -357,7 +370,11 @@ public sealed class BacktestEngine(
         var result = new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, BiasDisclosure: biasDisclosure)
         {
             LedgerIntegrityBreaks = ledgerIntegrityBreaks,
-            CanonicalCorporateActions = canonicalActions?.Snapshot
+            CanonicalCorporateActions = canonicalActions?.Snapshot,
+            ProviderProvenance = ResearchProviderProvenance.Create(request, startedUtc, DateTimeOffset.UtcNow, sourceCounts,
+                preflightEnabled: backtestPreflightService is not null,
+                corporateActionsApplied: rawCanonical || portfolioActionAccounting ||
+                    (request.AdjustForCorporateActions && corporateActionAdjustment is not null))
         };
         return await AttachCoverageAsync(result, inputEvidence, ct).ConfigureAwait(false);
     }
@@ -1344,6 +1361,8 @@ public sealed class BacktestEngine(
         IReadOnlyDictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)> LotConventions)> PreResolveUniverseAsync(
         IReadOnlySet<string> universe,
         BacktestRequest request,
+        DateTimeOffset universeAsOf,
+        Dictionary<string, SecurityDetailDto?> resolvedIdentities,
         CancellationToken ct)
     {
         var definitions = new Dictionary<string, SecurityDetailDto>(StringComparer.OrdinalIgnoreCase);
@@ -1352,17 +1371,19 @@ public sealed class BacktestEngine(
 
         var missing = new List<string>();
         var inactive = new List<string>();
-        var universeAsOf = new DateTimeOffset(request.To.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
 
         foreach (var symbol in universe)
         {
             ct.ThrowIfCancellationRequested();
+            // Coverage reuses the same identity evidence, including unresolved symbols.
+            resolvedIdentities[symbol] = null;
             try
             {
                 // Resolve the ticker for the replay window's end, so a recycled or renamed ticker
                 // is judged against the identity valid for that date.
                 var detail = await _securityIdentity.GetByIdentifierAsync(
                     SecurityIdentifierKind.Ticker, symbol, provider: null, ct, asOfUtc: universeAsOf).ConfigureAwait(false);
+                resolvedIdentities[symbol] = detail;
 
                 if (detail is null)
                 {
