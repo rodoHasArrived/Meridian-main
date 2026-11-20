@@ -6,6 +6,117 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsReportPackAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperationsReportPackAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:22](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L22).
+
+Resolves pre-close report support from retained packages, never a caller readiness flag.
+
+```csharp
+public sealed class OperationsReportPackAuthority(IAccountingReportPackageService? packages = null, ILedgerBookService? books = null, IFundProfileTenancyRegistry? ownership = null, ILedgerJournalStore? journals = null) : IOperationsReportPackAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool MatchesRetainedRevision(OperationsReportPackReadinessDto retained, OperationsReportPackReadinessDto current);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:30](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L30) |  |
+| <code>public async Task&lt;OperationsReportPackReadinessDto&gt; ResolveAsync(OperationsContinuityWorkflowDto workflow, string? packageId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:41](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L41) |  |
+
+## OperatorTriageException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriageException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:7](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L7).
+
+```csharp
+public sealed class OperatorTriageException(string status, string message) : InvalidOperationException(message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Status { get; } = status;</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:9](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L9) |  |
+
+## OperatorTriagePolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriagePolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:13](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L13).
+
+Triage changes attention metadata; it never advances the underlying readiness gate.
+
+```csharp
+public static class OperatorTriagePolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OperatorTriageState ObserveSeverity(OperatorTriageState state, OperatorWorkItemToneDto tone, DateTimeOffset now);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:15](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L15) |  |
+| <code>public static bool IsSnoozed(OperatorTriagePersonalState? personal, OperatorWorkItemToneDto tone, DateTimeOffset now) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:32](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L32) |  |
+| <code>public static OperatorTriageState Apply(OperatorTriageState state, string actorId, OperatorTriageCommand command, OperatorWorkItemToneDto tone, DateTimeOffset now, bool sourceOwnsAssignment, out bool replayed);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:35](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L35) |  |
+
+## OperatorTriageServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriageServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs#L10).
+
+```csharp
+public static class OperatorTriageServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddOperatorTriageStorage(this IServiceCollection services, CompositionConfiguration configuration, bool isProduction);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs#L12) |  |
+
+## OptionAssessmentImportService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OptionAssessmentImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:10](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L10).
+
+Retains imported broker claims and their exact source bytes. No broker or OMS is called.
+
+```csharp
+public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArtifactStore evidence, TimeProvider clock)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxSourceBytes = 8 * 1024 * 1024;</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:12](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L12) |  |
+| <code>public OptionAssessmentImportPreview Preview(OptionAssessmentImportRequest request);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:16](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L16) |  |
+| <code>public async Task&lt;RetainedOptionAssessment&gt; AcceptAsync(string tenant, string company, string actor, Guid accountId, AcceptOptionAssessmentImportRequest command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L40) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;RetainedOptionAssessment&gt;&gt; ListAsync(string tenant, string company, Guid account, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:100](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L100) |  |
+
+## OptionScreeningService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OptionScreeningService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:9](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L9).
+
+Bounded, current-snapshot option exploration. Does not evaluate account or execution permission.
+
+```csharp
+public sealed class OptionScreeningService(OptionsChainService chains, TimeProvider timeProvider)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumExpirations = 12;</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:11](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L11) |  |
+| <code>public async Task&lt;OptionScreenResult&gt; ScreenAsync(OptionScreenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:13](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L13) |  |
+
 ## OwnedProviderConnection
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
@@ -827,93 +938,4 @@ Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.Sec
 
 ```csharp
 public sealed partial class ProviderLedgerReconciliationService
-```
-
-## ProviderMarketRuleReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderMarketRuleReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:26](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L26).
-
-```csharp
-public sealed record ProviderMarketRuleReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderMarketRuleIncrement Item);
-```
-
-## ProviderModuleCatalogueEntry
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleCatalogueEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:28](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L28).
-
-A discoverable provider module type — returned by the catalogue endpoint.
-
-```csharp
-public sealed record ProviderModuleCatalogueEntry(string ModuleId, string DisplayName, IReadOnlyList<string> CapabilityNames, IReadOnlyList<string> CredentialKeyHints, bool RequiresExternalConfig, bool AlreadyConfigured);
-```
-
-## ProviderModuleSetupResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleSetupResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:48](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L48).
-
-Result from a create/update/remove operation.
-
-```csharp
-public sealed record ProviderModuleSetupResult(bool Success, string? Error = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ProviderModuleSetupResult Ok() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:50](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L50) |  |
-| <code>public static ProviderModuleSetupResult Fail(string error) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:51](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L51) |  |
-
-## ProviderModuleSetupService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleSetupService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:15](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L15).
-
-Manages provider module configuration lifecycle: discovery, upsert, enable/disable, remove, and test. All config load→mutate→save cycles run through ConfigStore.UpdateAsync so they execute under the cross-process configuration lock and cannot race with other writers.
-
-```csharp
-public sealed class ProviderModuleSetupService : IProviderModuleSetupService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderModuleSetupService(ConfigStore configStore, IProviderCredentialStore credentialStore, ILogger&lt;ProviderModuleSetupService&gt; logger, ProviderRegistry? providerRegistry = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:23](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L23) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderModuleStatusDto&gt;&gt; GetConfiguredModulesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:36](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L36) |  |
-| <code>public IReadOnlyList&lt;ProviderModuleCatalogueEntry&gt; GetDiscoveredModuleCatalogue();</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:98](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L98) |  |
-| <code>public async Task&lt;ProviderModuleSetupResult&gt; UpsertModuleAsync(UpsertProviderModuleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:122](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L122) |  |
-| <code>public async Task&lt;ProviderModuleSetupResult&gt; SetEnabledAsync(string moduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:190](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L190) |  |
-| <code>public async Task&lt;ProviderModuleSetupResult&gt; RemoveModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:225](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L225) |  |
-| <code>public async Task&lt;ProviderModuleTestResult&gt; TestModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:265](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L265) |  |
-
-## ProviderModuleStatusDto
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L7).
-
-Status of a configured provider module — returned by the module setup API. Credential values are NEVER included; only key names + hasValue flag.
-
-```csharp
-public sealed record ProviderModuleStatusDto(string ModuleId, string DisplayName, bool Enabled, int Priority, bool IsConfigured, bool IsRunning, IReadOnlyList<CredentialKeyStatusDto> CredentialStatus, IReadOnlyList<string> CapabilityNames, string? LastTestResult = null, DateTimeOffset? LastTestedAt = null);
-```
-
-## ProviderModuleTestResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleTestResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:55](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L55).
-
-Result from the test-module endpoint.
-
-```csharp
-public sealed record ProviderModuleTestResult(bool Success, bool CredentialConfigValid, bool ConnectionVerified, string? FailureReason = null, double? LatencyMs = null, string? ProbeDetail = null);
 ```

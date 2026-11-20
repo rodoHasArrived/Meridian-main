@@ -1,34 +1,8 @@
 import { formatCount, formatNumber, formatPercent, formatTimestamp } from "@/lib/format";
-import type { BackfillProgressResponse, BackfillProviderProgressSnapshot } from "@/types";
-
-export interface BackfillLiveProgressSymbolState {
-  symbol: string;
-  range: string;
-  provider: string;
-  attempt: string;
-  status: string;
-  progress: string;
-  error: string | null;
-}
-
-export interface BackfillLiveProgressAttemptState {
-  id: string;
-  label: string;
-  detail: string;
-  tone: "default" | "warning" | "danger";
-}
-
-export interface BackfillLiveProgressState {
-  ariaLabel: string;
-  title: string;
-  summary: string;
-  active: boolean;
-  overallPercent: number;
-  symbols: BackfillLiveProgressSymbolState[];
-  recentAttempts: BackfillLiveProgressAttemptState[];
-  droppedNotificationWarning: string | null;
-  observedAt: string;
-}
+import type { BackfillExecutionHistoryResponse, BackfillProviderProgressSnapshot, BackfillProgressResponse } from "@/types";
+import type {
+  BackfillLiveProgressState, BackfillRemediationQueueRow, BackfillRemediationQueueSortState, BackfillRemediationQueueState
+} from "./data-screen.view-model";
 
 export function buildBackfillLiveProgressState(
   response: BackfillProgressResponse | null
@@ -86,6 +60,63 @@ export function buildBackfillLiveProgressState(
   };
 }
 
+export function buildBackfillRemediationQueueState(
+  response: BackfillExecutionHistoryResponse | null,
+  sort: BackfillRemediationQueueSortState = { columnId: "tier", direction: "asc" }
+): BackfillRemediationQueueState | null {
+  if (!response) return null;
+
+  const defaultProvider = formatBackfillValue(response.autoRemediation.defaultProvider, "Not configured");
+  const rows = response.executions
+    .filter((execution) => execution.autoRemediationSla !== null)
+    .map((execution): BackfillRemediationQueueRow => {
+      const sla = execution.autoRemediationSla!;
+      const dueAt = new Date(sla.dueAtUtc);
+      const deadlineSort = Number.isNaN(dueAt.getTime()) ? Number.MAX_SAFE_INTEGER : dueAt.getTime();
+      return {
+        executionId: execution.executionId,
+        symbols: execution.symbols.length > 0 ? execution.symbols.join(", ") : `${execution.symbolsProcessed} symbol${execution.symbolsProcessed === 1 ? "" : "s"}`,
+        provider: formatBackfillValue(sla.provider, defaultProvider),
+        tier: sla.tier === "SameBusinessDay" ? "Same business day" : "Standard",
+        tierSort: sla.tier === "SameBusinessDay" ? 0 : 1,
+        status: formatBackfillRemediationStatus(sla.status),
+        deadline: Number.isNaN(dueAt.getTime()) ? "Deadline unavailable" : formatTimestamp(dueAt),
+        deadlineSort,
+        workflow: formatBackfillValue(sla.downstreamWorkflow, "Unassigned"),
+        owner: sla.requiresOwnerAssignment ? "Assignment required" : "Not required",
+        outcome: formatBackfillValue(execution.autoRemediationLastOutcome, execution.status),
+        evidence: [
+          formatBackfillValue(sla.reasonCode, "Reason unavailable"),
+          sla.triggerSource,
+          sla.isCompatibilityDerived ? "Compatibility-derived legacy evidence" : null
+        ].filter(Boolean).join(" · ")
+      };
+    });
+
+  const direction = sort.direction === "asc" ? 1 : -1;
+  rows.sort((left, right) => {
+    const comparison = sort.columnId === "deadline"
+      ? left.deadlineSort - right.deadlineSort
+      : left.tierSort - right.tierSort || left.deadlineSort - right.deadlineSort;
+    return comparison === 0
+      ? left.executionId.localeCompare(right.executionId)
+      : comparison * direction;
+  });
+
+  return {
+    rows,
+    summary: `${rows.length} retained remediation execution${rows.length === 1 ? "" : "s"}; ${response.autoRemediation.withReason} carry typed reason evidence.`,
+    defaultProvider,
+    observedAt: formatBackfillProgressTimestamp(response.timestamp)
+  };
+}
+
+function formatBackfillRemediationStatus(status: string): string {
+  return status
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/^./, (value) => value.toUpperCase());
+}
+
 function resolveBackfillProviderProgressStatus(
   symbol: BackfillProviderProgressSnapshot["symbols"][string]
 ): string {
@@ -99,7 +130,7 @@ function clampBackfillProgress(value: number): number {
   return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
 }
 
-export function formatBackfillProgressTimestamp(value: string | null | undefined): string {
+function formatBackfillProgressTimestamp(value: string | null | undefined): string {
   if (!value) return "Time unavailable";
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? "Time unavailable" : formatTimestamp(parsed);

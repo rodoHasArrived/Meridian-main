@@ -10,16 +10,6 @@ public sealed partial class PostgresLedgerJournalStore : IExternalGlConfirmation
 {
     private static readonly JsonSerializerOptions ExternalGlJson = new(JsonSerializerDefaults.Web);
 
-    private async Task LockBookForExternalGlConfirmationAsync(
-        NpgsqlConnection connection, NpgsqlTransaction transaction, Guid bookId, CancellationToken ct)
-    {
-        // The book lock also serializes required-policy changes when no policy row exists yet.
-        await using var command = new NpgsqlCommand(
-            $"select 1 from {Qualified("ledger_books")} where ledger_book_id = @book for share", connection, transaction);
-        command.Parameters.AddWithValue("book", bookId);
-        await command.ExecuteScalarAsync(ct).ConfigureAwait(false);
-    }
-
     public async Task RequireExternalGlBookAsync(Guid bookId, string tenant, string company, string fund, CancellationToken ct)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);

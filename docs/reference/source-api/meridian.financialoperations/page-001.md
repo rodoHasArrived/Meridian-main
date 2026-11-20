@@ -194,6 +194,12 @@ Declared public members:
 | <code>public async Task&lt;AccountingReportPackageBundleDto?&gt; CertifyPackageAsync(CertifyAccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:301](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L301) |  |
 | <code>public Task&lt;ReportExportArtifactManifestDto?&gt; GetExportArtifactManifestAsync(string packageId, string artifactId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:467](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L467) |  |
 
+Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.Dimensions.cs:8](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.Dimensions.cs#L8).
+
+```csharp
+public sealed partial class AccountingReportPackageService
+```
+
 ## CloseApprovalHistoryEntry
 
 Qualified name: <code>Meridian.FinancialOperations.AccountingClose.CloseApprovalHistoryEntry</code>. Kind: `record`.

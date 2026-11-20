@@ -6,10 +6,18 @@ module_id: SRC-DOMAIN
 path: src/Meridian.Domain
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-07-25
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Domain
+
+`CanonicalStatementRow` retains optional `RelatedTransactionId`, `SecurityId`, `ReceiptAllocations`,
+`ObligationKey` and `ProjectedCashFlowId` alongside the original row identity. These fields carry
+source reversal/allocation evidence through canonical import and integrity checks; they do not
+authorize a payment or journal. Each new field omits null from JSON, preserving existing retained
+canonical-row/checkpoint hashes when metadata was absent. Missing historical links remain unknown,
+and consumers must not reconstruct them from a mutable normalized sidecar. See
+[book receipt operations](../../docs/operators/book-receipt-queue.md).
 
 Statement requests and canonical imports retain optional executed mapping fingerprints. Null is omitted from JSON to preserve legacy checkpoint hashes; absent evidence is unknown, never agreement with a current mapping catalog.
 Converting a broker import request into a statement run retains that same executed mapping proof

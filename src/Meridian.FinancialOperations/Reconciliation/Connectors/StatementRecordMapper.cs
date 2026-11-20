@@ -12,7 +12,7 @@ internal static class StatementRecordMapper
 {
     private static readonly HashSet<string> CanonicalActivityTypes = new(StringComparer.OrdinalIgnoreCase)
     {
-        "position", "cash", "cashbalance", "trade", "fee", "dividend", "div"
+        "position", "cash", "cashbalance", "trade", "fee", "dividend", "div", "coupon", "interest", "principal"
     };
 
     public static IReadOnlyDictionary<string, string> BuildActivityCodeMap(StatementMappingProfileDocument profile)
@@ -162,7 +162,8 @@ internal static class StatementRecordMapper
             quantity,
             price,
             cashAmount,
-            ToArtifactActivityType(kind),
+            canonicalActivity.ToLowerInvariant() is "coupon" or "interest" or "principal"
+                ? canonicalActivity.ToLowerInvariant() : ToArtifactActivityType(kind),
             tradeDate,
             settlementDate,
             string.IsNullOrWhiteSpace(currency) ? null : currency,

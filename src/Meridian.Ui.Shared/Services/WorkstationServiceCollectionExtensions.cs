@@ -300,6 +300,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
+        services.AddBookReceiptQueueServices(ResolveWorkstationDataDirectory);
         if (!services.Any(static descriptor =>
                 descriptor.ServiceType == typeof(IAssetOperationsProjectionStore)))
         {

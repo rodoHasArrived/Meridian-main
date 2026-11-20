@@ -78,9 +78,7 @@ import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history"
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
-import {
-  BackfillQuotaPanel, BackfillReceiptEvidence, BackfillScheduleFields, BackfillSubmissionEvidence
-} from "@/screens/data-screen.backfill-quota";
+import { BackfillSubmissionPanel, BackfillReceiptEvidence } from "@/screens/data-screen.backfill-quota";
 import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
@@ -1955,14 +1953,7 @@ function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperations
         )}
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
         {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
-        {vm.preview && <BackfillQuotaPanel preview={vm.preview} submissionEstimate={vm.submission?.quota} busy={vm.busy}
-          selectAlternative={(alternative) => {
-            providerField.current?.focus();
-            vm.selectBackfillAlternative(alternative);
-          }} />}
-        {quota && !vm.submission && <BackfillScheduleFields enabled={vm.scheduleForLater} start={vm.scheduledStart}
-          busy={vm.busy} onEnabledChange={vm.setScheduleForLater} onStartChange={vm.setScheduledStart} />}
-        {vm.submission && <BackfillSubmissionEvidence submission={vm.submission} latest={latestSubmission} />}
+        <BackfillSubmissionPanel vm={vm} providerField={providerField} />
         {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
         {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
         {vm.result?.quotaReceipt && <div className="mt-3"><BackfillReceiptEvidence receipt={vm.result.quotaReceipt} /></div>}

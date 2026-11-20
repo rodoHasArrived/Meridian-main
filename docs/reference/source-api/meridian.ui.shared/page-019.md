@@ -6,6 +6,108 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationIntakeAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationIntakeAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:75](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L75).
+
+Connects retained statement intake to the existing Operations Continuity and governed casework authorities. It creates no parallel lifecycle: posting, close, report certification, approval, release, distribution, and receipt retention remain owned by their existing services.
+
+```csharp
+public sealed partial class StatementReconciliationIntakeAuthority : IStatementReconciliationIntakeAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementReconciliationIntakeAuthority(IAccountQueryService? accounts, IFundProfileTenancyRegistry? tenancy, ILedgerBookService? ledgerBooks, IOperationsContinuityWorkflowService? operations, IStatementRunWorkflowService? statementRuns, IReconciliationApiService? reconciliation, IReconciliationBreakQueueRepository? breakQueue, Meridian.DataIntegration.Reconciliation.ICanonicalStatementStore? canonicalStatements = null, Meridian.DataIntegration.Reconciliation.IStatementRunMatchArtifactStore? matchArtifacts = null, IStatementRunRecoveryRepository? runRecovery = null);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:88](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L88) |  |
+| <code>public async Task&lt;StatementAccountingScope&gt; ResolveAccountingScopeAsync(StatementReconciliationIntakeScopeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:112](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L112) |  |
+| <code>public async Task&lt;StatementReconciliationIntakeReceipt&gt; PublishAsync(string statementWorkflowId, StatementImportCommitResultDto import, StatementAccountingScope accountingScope, string tenantId, string companyId, string actor, string sourceInstitution, IReadOnlyList&lt;string&gt; evidenceReferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:231](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L231) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.Lineage.cs:11](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.Lineage.cs#L11).
+
+```csharp
+public sealed partial class StatementReconciliationIntakeAuthority
+```
+
+## StatementReconciliationIntakeAuthorityException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationIntakeAuthorityException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:62](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L62).
+
+Carries a coded failure from statement reconciliation intake authorization or publication.
+
+```csharp
+public sealed class StatementReconciliationIntakeAuthorityException(string code, string message, Exception? innerException = null) : InvalidOperationException(message, innerException)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Code { get; } = code;</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:67](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L67) |  |
+
+## StatementReconciliationIntakeReceipt
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationIntakeReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:32](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L32).
+
+```csharp
+public sealed record StatementReconciliationIntakeReceipt(StatementAccountingScope AccountingScope, Guid OperationsWorkflowId, int PublishedCaseCount, IReadOnlyList<string> EvidenceReferences);
+```
+
+## StatementReconciliationIntakeScopeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationIntakeScopeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L14).
+
+```csharp
+public sealed record StatementReconciliationIntakeScopeRequest(string TenantId, string CompanyId, string FundAccountId, string ExternalAccountId, string SourceInstitution, DateOnly PeriodStart, DateOnly PeriodEnd, StatementAccountingScope? RequestedScope = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool AllowClosedPeriodForRetainedWorkflow { get; init; }</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:29](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L29) | Allows an already-retained workflow to revalidate its immutable account, tenant, company, book, and period binding after close. New intake and any pre-publication resume must leave this false. |
+
+## StorageAssuranceService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StorageAssuranceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:17](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L17).
+
+Builds storage assurance snapshots and coordinates previewed, idempotent maintenance actions.
+
+```csharp
+public sealed class StorageAssuranceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StorageAssuranceService(StorageOptions options, IEvidenceArtifactStore evidence, IDataQualityService? quality = null, ITierMigrationService? tiers = null);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:27](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L27) |  |
+| <code>public async Task&lt;StorageAssuranceSnapshotDto&gt; GetSnapshotAsync(StorageAssurancePermissionsDto permissions, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:39](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L39) |  |
+| <code>public async Task&lt;StorageMaintenancePreviewDto&gt; PreviewAsync(StorageMaintenancePreviewRequestDto request, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:84](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L84) |  |
+| <code>public async Task&lt;StorageMaintenanceResultDto&gt; ExecuteAsync(StorageMaintenanceCommandRequestDto request, string actor, string tenantId, string companyId, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:125](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L125) |  |
+| <code>public StorageMaintenanceActionDto? GetExecuteAction(string previewId, string idempotencyKey);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:180](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L180) |  |
+
+## StpTransitionResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StpTransitionResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:77](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L77).
+
+```csharp
+public sealed record StpTransitionResult(string EntityId, string State, string? ExceptionReason, bool RoutedToBreakQueue);
+```
+
 ## StrategyRunParityReport
 
 Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunParityReport</code>. Kind: `record`.
@@ -347,7 +449,7 @@ Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Brokera
 public sealed partial class TradingOperatorReadinessService
 ```
 
-Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L22).
+Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:19](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L19).
 
 Builds the shared operator-readiness model consumed by the Trading cockpit.
 
@@ -359,10 +461,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TradingOperatorReadinessDto? Observe(Guid accountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:25](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L25) |  |
-| <code>public TradingOperatorReadinessService(IServiceProvider services, ILogger&lt;TradingOperatorReadinessService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:54](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L54) |  |
-| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:62](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L62) |  |
-| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId, StrategyRunReadScope scope, CancellationToken ct = default, Guid? authorizedPaperAccountId = null);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:67](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L67) |  |
+| <code>public TradingOperatorReadinessDto? Observe(Guid accountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L22) |  |
+| <code>public TradingOperatorReadinessService(IServiceProvider services, ILogger&lt;TradingOperatorReadinessService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:51](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L51) |  |
+| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:59](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L59) |  |
+| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId, StrategyRunReadScope scope, CancellationToken ct = default, Guid? authorizedPaperAccountId = null);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:64](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L64) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs:8](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs#L8).
 
@@ -500,7 +602,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:91](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L91) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1643](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1643) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1633](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1633) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -796,124 +898,3 @@ Declared public members:
 | <code>public Task&lt;OperatorScopePreferenceDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:41](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L41) |  |
 | <code>public async Task&lt;OperatorScopePreferenceDto&gt; SetAsync(string operatorKey, OperatingScopeValuesDto? defaultScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:53](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L53) |  |
 | <code>public static OperatingScopeValuesDto? Normalize(OperatingScopeValuesDto? scope);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:78](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L78) | Trims each value, drops blanks, and returns null for a scope with no values. |
-
-## FileOperatorSurfaceVisitStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorSurfaceVisitStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:24](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L24).
-
-JSON-backed store beside the operator scope preferences, keyed by tenant, company, user and surface. Writes go through the snapshot store&#x27;s atomic replace.
-
-```csharp
-public sealed partial class FileOperatorSurfaceVisitStore : JsonFileSnapshotStore<OperatorSurfaceVisitSnapshot>, IOperatorSurfaceVisitStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileOperatorSurfaceVisitStore(string dataRoot, ILogger&lt;FileOperatorSurfaceVisitStore&gt; logger, TimeProvider? timeProvider = null) : base(ResolveSnapshotPath(dataRoot), OperatorSurfaceVisitJsonContext.Default.OperatorSurfaceVisitSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:32](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L32) |  |
-| <code>public Task&lt;OperatorSurfaceVisitDto&gt; GetAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:42](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L42) |  |
-| <code>public async Task&lt;OperatorSurfaceVisitDto&gt; RecordVisitAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:51](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L51) |  |
-| <code>public static string NormalizeSurface(string? surface);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:72](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L72) | Surface ids are short lowercase slugs, such as reconciliation-breaks. |
-
-## FileWorkflowPresetStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.FileWorkflowPresetStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L12).
-
-JSON-backed workflow preset store rooted under Meridian&#x27;s resolved data directory.
-
-```csharp
-public sealed class FileWorkflowPresetStore : JsonFileSnapshotStore<WorkflowPresetSnapshot>, IWorkflowPresetStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileWorkflowPresetStore(string dataRoot, ILogger&lt;FileWorkflowPresetStore&gt; logger) : base(ResolveSnapshotPath(dataRoot), WorkflowPresetJsonContext.Default.WorkflowPresetSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:22](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L22) |  |
-| <code>public Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:28](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L28) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:31](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L31) |  |
-
-## IOperatorPreferenceStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorPreferenceStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L11).
-
-Durable per-operator presentation preferences (theme, density, time zone, descriptions, shortcuts, notifications).
-
-```csharp
-public interface IOperatorPreferenceStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OperatorPreferencesDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:13](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L13) |  |
-| <code>Task&lt;OperatorPreferencesDto&gt; SetAsync(string operatorKey, OperatorPreferenceValuesDto? preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:15](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L15) |  |
-
-## IOperatorScopePreferenceStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorScopePreferenceStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L10).
-
-Durable per-operator default operating scope (C1).
-
-```csharp
-public interface IOperatorScopePreferenceStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OperatorScopePreferenceDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L12) |  |
-| <code>Task&lt;OperatorScopePreferenceDto&gt; SetAsync(string operatorKey, OperatingScopeValuesDto? defaultScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L14) |  |
-
-## IOperatorSurfaceVisitStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorSurfaceVisitStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L11).
-
-Durable per-operator last visit to each workstation surface (C3).
-
-```csharp
-public interface IOperatorSurfaceVisitStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OperatorSurfaceVisitDto&gt; GetAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L14) | The last recorded visit, without recording one. |
-| <code>Task&lt;OperatorSurfaceVisitDto&gt; RecordVisitAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:17](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L17) | Records a visit now and returns the visit it replaced. |
-
-## IWorkflowActionCatalog
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L8).
-
-Resolves workflow actions into shell page targets for summaries, queues, and UI.
-
-```csharp
-public interface IWorkflowActionCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L10) |  |
-| <code>IReadOnlyList&lt;WorkflowActionDto&gt; GetActions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L12) |  |
-| <code>WorkflowActionDto? ResolveAction(string? actionId);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L14) |  |
-| <code>WorkflowActionDto? ResolveOperatorWorkItem(OperatorWorkItemDto? workItem);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:16](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L16) |  |
-| <code>WorkflowActionDto? ResolveRoute(string? targetRoute);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:18](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L18) |  |
-| <code>string ResolveTargetPageTag(string? actionId, string fallbackPageTag);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:20](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L20) |  |

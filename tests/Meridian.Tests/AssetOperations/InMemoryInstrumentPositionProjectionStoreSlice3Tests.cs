@@ -22,6 +22,41 @@ public sealed class InMemoryInstrumentPositionProjectionStoreSlice3Tests
         DateTimeOffset.Parse("2026-01-02T12:00:00Z"));
 
     [Fact]
+    public async Task GetBookAsync_IsolatesBookAndHistoricalStateWhileRetainingExpiredHoldings()
+    {
+        var store = new InMemoryAssetOperationsProjectionStore();
+        var role = CreateRole();
+        var state = CreateState(PositionId, 1, new DateOnly(2026, 1, 25), 1m, 0.98m);
+        var position = CreatePosition(role, PositionId, LedgerBookId, 1, state,
+            effectiveTo: new DateOnly(2026, 12, 31));
+        await store.UpsertAsync(role, position, state, 0, Approval);
+        var future = CreateState(PositionId, 2, new DateOnly(2026, 10, 25), 0.98m, 0.94m);
+        await store.UpsertAsync(role, position with
+        {
+            Version = 2,
+            CurrentEconomicState = future,
+            ProjectionLineage = future.ProjectionLineage
+        }, future, 1, Approval);
+        var otherId = Guid.NewGuid();
+        var otherState = CreateState(otherId, 1, new DateOnly(2026, 1, 25), 1m, 0.99m);
+        await store.UpsertAsync(role, CreatePosition(role, otherId, OtherLedgerBookId, 1, otherState),
+            otherState, 0, Approval);
+
+        var snapshots = await store.GetBookAsync(LedgerBookId, new DateOnly(2026, 6, 30));
+
+        snapshots.Should().ContainSingle();
+        snapshots[0].LedgerBookId.Should().Be(LedgerBookId);
+        snapshots[0].BookPositions.Should().ContainSingle().Which.PositionId.Should().Be(PositionId);
+        snapshots[0].BookPositions[0].CurrentEconomicState.Should().BeEquivalentTo(state);
+        snapshots[0].PositionEconomicStates.Should().ContainSingle();
+        snapshots[0].ProjectionLineages.Should().ContainSingle();
+        (await store.GetBookAsync(LedgerBookId, new DateOnly(2027, 1, 1)))
+            .Should().ContainSingle().Which.BookPositions.Should().ContainSingle();
+        (await store.GetBookAsync(Guid.NewGuid(), new DateOnly(2026, 6, 30))).Should().BeEmpty();
+        (await store.GetBookAsync(LedgerBookId, new DateOnly(2025, 12, 31))).Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task UpsertAsync_MonthlyMbsFactorSequence_EnforcesExactCasReplayAndHydratesLatestState()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));

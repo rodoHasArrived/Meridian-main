@@ -2818,6 +2818,72 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptAllocationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptCoverageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptExpectationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptExpectationVersionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptPostingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptQueryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptQueueItemDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptRunDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptSourceSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.CorporateActionAccountingProjectionDto"
     },
     {
@@ -3101,6 +3167,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.IAssetOperationsQueryService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.IBookReceiptQueueService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.IBookReceiptSource"
     },
     {
       "kind": "contract-set-member",
@@ -24322,6 +24400,72 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptAllocationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptCoverageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptExpectationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptExpectationVersionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptPostingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptQueryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptQueueItemDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptRunDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptSourceSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.CorporateActionAccountingProjectionDto"
     },
     {
@@ -24605,6 +24749,18 @@
       "label": "",
       "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.IAssetOperationsQueryService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.IBookReceiptQueueService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.IBookReceiptSource"
     },
     {
       "kind": "contract-set-member",
@@ -37373,6 +37529,96 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.BookPositionDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingBookContextDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptAllocationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptExpectationDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptExpectationVersionDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptExpectationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptQueryDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptQueueItemDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptQueueItemDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptExpectationVersionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptQueueItemDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptPostingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptRunDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptCoverageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptRunDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptQueueItemDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptRunDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptRunDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptSourceSnapshotDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptSourceSnapshotDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptCoverageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptSourceSnapshotDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptSourceSnapshotDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptExpectationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.BookReceiptSourceSnapshotDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.BookReceiptPostingDto"
     },
     {
       "kind": "contract-reference",
@@ -71272,7 +71518,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "c78fcf597856525a5207746d4a4ba8952d147cc274ff2e92efd3cd1a0282b3c3",
+  "fingerprint": "ad6e2212efe6844fe33f72fea79ae32d47ed4962b86c690e455676ef1289d5b3",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -74141,6 +74387,72 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.BookReceiptAllocationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.BookReceiptAllocationDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.BookReceiptCoverageDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.BookReceiptCoverageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.BookReceiptDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.BookReceiptDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.BookReceiptExpectationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.BookReceiptExpectationDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.BookReceiptExpectationVersionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.BookReceiptExpectationVersionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.BookReceiptPostingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.BookReceiptPostingDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.BookReceiptQueryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.BookReceiptQueryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.BookReceiptQueueItemDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.BookReceiptQueueItemDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.BookReceiptRunDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.BookReceiptRunDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.BookReceiptScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.BookReceiptScopeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.BookReceiptSourceSnapshotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.BookReceiptSourceSnapshotDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.CorporateActionAccountingProjectionDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.CorporateActionAccountingProjectionDto"
@@ -74426,6 +74738,18 @@
       "id": "contract:Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.AssetOperations.IBookReceiptQueueService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.IBookReceiptQueueService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.AssetOperations.IBookReceiptSource",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.IBookReceiptSource"
     },
     {
       "classification": "service_contract",
@@ -104735,11 +105059,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4365,
-    "contract_set_memberships": 5731,
-    "edges": 11839,
+    "contract_references": 4380,
+    "contract_set_memberships": 5757,
+    "edges": 11880,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5822
+    "nodes": 5835
   }
 }
