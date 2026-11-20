@@ -1004,6 +1004,26 @@ optional `EntityId` and `FundId` members, appended last, so the server keeps ent
 saved default; the dashboard mirror is `types/operator-scope-preference.ts`. No endpoint was added.
 The operator presentation preferences mirror `OperatorPreferencesDto` in `types/operator-preferences.ts`.
 
+### Record identity and related work
+
+Instrument, account, fund, and position inspectors use `RecordIdentitySpine`. The fact band shows
+the retained identifiers, classification, entity and book, status, date, and trust evidence the
+source supplies. Missing fields are shown explicitly. A position link uses a stable position key
+when available, or an unambiguous symbol and side in the originating view. Ambiguous links leave
+the detail unselected.
+
+`Related work` opens existing Portfolio, Accounting, Data, Trading, or Reporting routes. The
+destination displays the originating record in the workstation header with its captured status and
+trust, an `Origin scope` disclosure, and a return link to the source selection. Supported target
+selectors, such as a quote symbol or a ledger book and period, travel in the destination's own
+query parameters. Other dimensions remain visible in the origin disclosure. The captured context
+survives reload and can be dismissed from the header. Destination filters from a handoff stay
+local to that visit. Context links carry display facts and identifiers, and each destination uses
+its normal permission checks and source reads.
+
+Focused coverage includes `record-workspace-context.test.ts`, `app.test.tsx`, and
+`portfolio-screen.positions-table.test.tsx`.
+
 React, React DOM, and their type packages are upgraded together. Runtime support uses the floating
 Node major in `.nvmrc` and the minimum declared in this dashboard's `engines.node`; both prerequisite
 doctors enforce that minimum. Account names, tab counts, and provider badges retain explicit text
@@ -1043,6 +1063,15 @@ or indicators. Failed and partial queries show an explicit incomplete state with
 paths and Retry; incomplete comparison series are withheld and named in an alert. The shared
 API retains recovered bars and `fileFailures` for investigation without presenting them as a
 complete series. Focused coverage lives in `historical-chart.test.tsx`.
+
+Decision chart inspectors share a selection with the plot. In Strategy, Live Quotes, historical
+prices, and Report Writer, keyboard focus and pointer inspection expose the same plotted values,
+units, as-of, calculation basis, and source links. Historical studies link the stored input bars.
+Live prints link to the selected tape record and depth points to the captured order-book levels. Report
+Writer keeps rendered grid-row order, including repeated category labels. Portfolio run charts
+link their retained equity and return series, and cash projections link to the contributing flows
+for the selected bucket. PlotTool's scatter and residual distribution are illustrative and disclose
+the lack of retained observations.
 
 Loan book accepts numeric and named host enums and preserves unknown values without inventing
 USD. Server `currencyTotals` retain their denomination and an explicit no-FX notice; scalar

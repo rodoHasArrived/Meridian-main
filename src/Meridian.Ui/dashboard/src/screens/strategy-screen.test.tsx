@@ -241,15 +241,19 @@ describe("StrategyScreen", () => {
     expect(screen.getByLabelText("PlotTool study brief")).toBeInTheDocument();
     expect(screen.getByText("Strategy notebooks")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Selected PlotTool study detail for Mean Reversion FX" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "Mean Reversion FX vs Index Momentum scatter" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Mean Reversion FX vs Index Momentum scatter" })).toBeInTheDocument();
     expect(screen.getByText(/Spread \(bps\) against 3m implied vol/)).toBeInTheDocument();
     expect(screen.getByLabelText("PlotTool chart legend")).toBeInTheDocument();
     expect(screen.getAllByText("Current marker").length).toBeGreaterThan(0);
     expect(screen.getByText("Meridian overlays")).toBeInTheDocument();
-    expect(screen.getByText("View observation table").closest("details")).not.toHaveAttribute("open");
-    await user.click(screen.getByText("View observation table"));
-    expect(screen.getByText("View observation table").closest("details")).toHaveAttribute("open");
-    expect(screen.getByRole("table", { name: "PlotTool scatter observations" })).toBeInTheDocument();
+    const inspector = screen.getByRole("table", { name: "PlotTool scatter observations chart data" });
+    expect(inspector).toHaveTextContent("Current marker");
+    expect(screen.getByText(/Illustrative chart · retained market observation proof unavailable/)).toBeInTheDocument();
+    const marker = screen.getByRole("button", { name: /Current marker.*88.40, 73.80/ });
+    await user.click(marker);
+    await user.keyboard("{Home}");
+    expect(inspector).toHaveTextContent("Illustrative observation 1");
+    expect(inspector).toHaveTextContent("SVG units");
   });
 
   it("links PlotTool notebook rows to the selected study detail panel", async () => {
@@ -285,13 +289,10 @@ describe("StrategyScreen", () => {
     await user.click(screen.getByRole("tab", { name: "Statistics" }));
 
     expect(screen.getByText("Distribution profile")).toBeInTheDocument();
-    expect(screen.getByText("Residual distribution")).toBeInTheDocument();
-    // The label sits on the chart svg itself, not on a wrapping role="img" div, so there is
-    // exactly one image with this name and it is not nested inside another image.
-    const distributionCharts = screen.getAllByRole("img", { name: "PlotTool residual distribution chart" });
-    expect(distributionCharts).toHaveLength(1);
-    expect(distributionCharts[0].tagName.toLowerCase()).toBe("svg");
-    expect(distributionCharts[0].parentElement?.closest('[role="img"]')).toBeNull();
+    expect(screen.getAllByText("Residual distribution").length).toBeGreaterThan(0);
+    expect(screen.getByRole("table", { name: "PlotTool residual distribution chart chart data" })).toBeInTheDocument();
+    const distributionChart = screen.getByRole("img", { name: "PlotTool residual distribution chart" });
+    expect(distributionChart.parentElement?.closest('[role="img"]')).toBeNull();
     expect(screen.getByText("Regression frame")).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "PlotTool moments table" })).toBeInTheDocument();
     expect(screen.getByText("PlotTool moments for the active strategy pair.")).toBeInTheDocument();
