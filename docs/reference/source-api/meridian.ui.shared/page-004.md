@@ -28,7 +28,13 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.EvidenceEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs#L20).
+Source: [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.AmountPassport.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.AmountPassport.cs#L14).
+
+```csharp
+public static partial class EvidenceEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs#L18).
 
 Serves retained evidence artifacts and maps evidence workflow operations with subject-scope authorization.
 
@@ -40,7 +46,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static WebApplication MapEvidenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs#L22) |  |
+| <code>public static WebApplication MapEvidenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs#L20) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs#L13).
 
@@ -98,7 +104,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Audit.cs:13](../../
 public static partial class ExecutionEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L25).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L24).
 
 REST endpoints for the paper-trading cockpit and execution dashboard. Exposes positions, orders, portfolio state, and gateway controls.
 
@@ -110,15 +116,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:29](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L29) |  |
+| <code>public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L28) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Metadata.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Metadata.cs#L7).
-
-```csharp
-public static partial class ExecutionEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.PaperIntents.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.PaperIntents.cs#L14).
 
 ```csharp
 public static partial class ExecutionEndpoints
@@ -357,7 +357,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapFundStructureEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs#L22) |  |
 
-Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingAmountProof.cs:9](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingAmountProof.cs#L9).
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingAmountProof.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingAmountProof.cs#L11).
 
 ```csharp
 public static partial class FundStructureEndpoints

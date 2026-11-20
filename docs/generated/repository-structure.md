@@ -6340,6 +6340,7 @@ Meridian-main
 │   │   │   └── MoneyMarketFundDtos.cs
 │   │   ├── Workstation
 │   │   │   ├── AccountBalanceHistoryDtos.cs
+│   │   │   ├── AmountPassportDtos.cs
 │   │   │   ├── AuditTrailExplorerDtos.cs
 │   │   │   ├── AutomatedJournalScheduleDtos.cs
 │   │   │   ├── BrokerageSyncDtos.cs
@@ -6766,7 +6767,6 @@ Meridian-main
 │   │   │   ├── OrderExecutionAudit.cs
 │   │   │   ├── OrderFillContext.cs
 │   │   │   ├── OrderFillProcessor.cs
-│   │   │   ├── OrderIntentJournal.cs
 │   │   │   ├── OrderManagementLifecycleCoordinator.cs
 │   │   │   ├── OrderRiskSizingPolicy.cs
 │   │   │   ├── OrderStateTable.cs
@@ -6799,7 +6799,6 @@ Meridian-main
 │   │   │   ├── OrderManagementHostedService.cs
 │   │   │   ├── OrderPreviewService.cs
 │   │   │   ├── PaperLedgerIntegrityBreak.cs
-│   │   │   ├── PaperOrderEvidenceReader.cs
 │   │   │   ├── PaperPosition.cs
 │   │   │   ├── PaperSessionDtos.cs
 │   │   │   ├── PaperSessionJournalBatch.cs
@@ -6844,7 +6843,6 @@ Meridian-main
 │   │   ├── OrderManagementSystem.KillSwitch.cs
 │   │   ├── OrderManagementSystem.Lifecycle.cs
 │   │   ├── OrderManagementSystem.Modifications.cs
-│   │   ├── OrderManagementSystem.OrderIntents.cs
 │   │   ├── OrderManagementSystem.PendingAmendments.cs
 │   │   ├── OrderManagementSystem.Recovery.cs
 │   │   ├── OrderManagementSystem.Retention.cs
@@ -6896,7 +6894,6 @@ Meridian-main
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
 │   │   ├── OrderCommandAuthority.cs
-│   │   ├── OrderIntent.cs
 │   │   ├── OrderSizingMetadata.cs
 │   │   ├── OrderSubmissionRefusal.cs
 │   │   ├── PositionExtensions.cs
@@ -8837,10 +8834,8 @@ Meridian-main
 │   │   │   │   ├── DesignerDocumentStrategy.cs
 │   │   │   │   ├── DesignerExpression.cs
 │   │   │   │   ├── DesignerLiveFields.cs
-│   │   │   │   ├── DesignerPaperExecution.cs
 │   │   │   │   ├── DesignerSessionClock.cs
-│   │   │   │   ├── DesignerStrategyPlan.cs
-│   │   │   │   └── DesignerStrategyVersion.cs
+│   │   │   │   └── DesignerStrategyPlan.cs
 │   │   │   ├── Strategies
 │   │   │   │   ├── BuyAndHoldLiveStrategy.cs
 │   │   │   │   └── MovingAverageCrossoverLiveStrategy.cs
@@ -8922,7 +8917,6 @@ Meridian-main
 │   │   │   ├── JsonlPromotionRecordStore.cs
 │   │   │   ├── JsonlStrategyDesignRepository.cs
 │   │   │   ├── JsonlStrategyRunLedgerArchive.cs
-│   │   │   ├── ScopedStrategyDesignStore.cs
 │   │   │   └── StrategyRunStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Strategies.csproj
@@ -9179,6 +9173,9 @@ Meridian-main
 │   │   │   │   │   │   ├── accounting-preparer-attestation.test.tsx
 │   │   │   │   │   │   ├── accounting-preparer-attestation.tsx
 │   │   │   │   │   │   ├── activity-center.tsx
+│   │   │   │   │   │   ├── amount-passport-drawer.tsx
+│   │   │   │   │   │   ├── amount-passport.test.tsx
+│   │   │   │   │   │   ├── amount-passport.tsx
 │   │   │   │   │   │   ├── approval-collaboration-panel.test.tsx
 │   │   │   │   │   │   ├── approval-collaboration-panel.tsx
 │   │   │   │   │   │   ├── attention-pill.test.tsx
@@ -9798,6 +9795,7 @@ Meridian-main
 │   │   │   │   │   │   └── use-provider-setup.ts
 │   │   │   │   │   ├── accounting-navigation.test.ts
 │   │   │   │   │   ├── accounting-navigation.ts
+│   │   │   │   │   ├── amount-passport-api.ts
 │   │   │   │   │   ├── api-errors.test.ts
 │   │   │   │   │   ├── api-errors.ts
 │   │   │   │   │   ├── api.corporate-actions.test.ts
@@ -10552,7 +10550,6 @@ Meridian-main
 │   │   │   │   │   ├── statement-import-screen.tsx
 │   │   │   │   │   ├── strategy-designer-backtest.test.ts
 │   │   │   │   │   ├── strategy-designer-backtest.ts
-│   │   │   │   │   ├── strategy-designer-hosted.ts
 │   │   │   │   │   ├── strategy-designer-screen.copy.ts
 │   │   │   │   │   ├── strategy-designer-screen.test.tsx
 │   │   │   │   │   ├── strategy-designer-screen.tsx
@@ -10618,7 +10615,6 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.order-ticket-state.ts
 │   │   │   │   │   ├── trading-screen.order-ticket-text.ts
 │   │   │   │   │   ├── trading-screen.paper-reconciliation.tsx
-│   │   │   │   │   ├── trading-screen.pending-paper-intent.ts
 │   │   │   │   │   ├── trading-screen.promotion-evidence.ts
 │   │   │   │   │   ├── trading-screen.readiness-summary.ts
 │   │   │   │   │   ├── trading-screen.server-preview.test.tsx
@@ -10668,6 +10664,7 @@ Meridian-main
 │   │   │   │   │   │   ├── loan-portfolio.host.json
 │   │   │   │   │   │   ├── quant-run-response.json
 │   │   │   │   │   │   └── security-asset-term-form-parity.json
+│   │   │   │   │   ├── amount-passport-fixtures.ts
 │   │   │   │   │   ├── asset-approval-fixtures.ts
 │   │   │   │   │   ├── cash-dividend-attestation-fixtures.ts
 │   │   │   │   │   ├── fixtures.ts
@@ -10681,6 +10678,7 @@ Meridian-main
 │   │   │   │   │   ├── account-oversight.ts
 │   │   │   │   │   ├── accounting-integration.ts
 │   │   │   │   │   ├── accounting-onboarding.ts
+│   │   │   │   │   ├── amount-passport.ts
 │   │   │   │   │   ├── archive-maintenance.types.ts
 │   │   │   │   │   ├── asset-accounting-workflow.ts
 │   │   │   │   │   ├── audit-integrity.ts
@@ -11034,13 +11032,13 @@ Meridian-main
 │   │   │   ├── EndpointHelpers.cs
 │   │   │   ├── EnvironmentDesignerEndpoints.cs
 │   │   │   ├── EquityReferenceEndpoints.cs
+│   │   │   ├── EvidenceEndpoints.AmountPassport.cs
 │   │   │   ├── EvidenceEndpoints.cs
 │   │   │   ├── EvidenceEndpoints.SinglePrincipalAttestation.cs
 │   │   │   ├── ExecutionEndpointDtos.cs
 │   │   │   ├── ExecutionEndpoints.Audit.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.Metadata.cs
-│   │   │   ├── ExecutionEndpoints.PaperIntents.cs
 │   │   │   ├── ExecutionEndpoints.PaperSessionReconciliation.cs
 │   │   │   ├── ExecutionEndpoints.Positions.cs
 │   │   │   ├── ExecutionEndpoints.Sessions.cs
@@ -11330,6 +11328,7 @@ Meridian-main
 │   │   │   ├── AccountingWorkspaceReadScope.cs
 │   │   │   ├── AggregatePortfolioExposureProvider.cs
 │   │   │   ├── AlpacaBrokerageConnectionService.cs
+│   │   │   ├── AmountPassportFacts.cs
 │   │   │   ├── AuditTrailExplorerService.cs
 │   │   │   ├── AuditTrailHttpAuthority.cs
 │   │   │   ├── AutomatedJournalDividendPositionResolver.cs
@@ -11355,6 +11354,7 @@ Meridian-main
 │   │   │   ├── BondWorkflowServiceRegistration.cs
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioState.cs
+│   │   │   ├── BrokeragePortfolioSyncService.AmountPassport.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
 │   │   │   ├── BrokeragePortfolioSyncService.Performance.cs
 │   │   │   ├── BrokerageSyncActualCashActivitySource.cs
@@ -11379,7 +11379,6 @@ Meridian-main
 │   │   │   ├── DemoTenantBlueprint.cs
 │   │   │   ├── DemoTenantProvisioner.cs
 │   │   │   ├── DemoWorkspaceSeeder.cs
-│   │   │   ├── DesignerBacktestService.cs
 │   │   │   ├── DesktopLaunchTicketService.cs
 │   │   │   ├── DesktopWorkstationLaunchService.cs
 │   │   │   ├── DirectLendingOperationsReadService.cs
@@ -11510,6 +11509,7 @@ Meridian-main
 │   │   │   ├── PortfolioOpeningBalanceQueue.cs
 │   │   │   ├── PostedLedgerAccountReconciliationSource.cs
 │   │   │   ├── PostedLedgerAmountProvenanceService.cs
+│   │   │   ├── PostedLedgerAmountProvenanceService.Passport.cs
 │   │   │   ├── PostedPeriodComparisonService.cs
 │   │   │   ├── PostedStrategyRunLedgerSource.cs
 │   │   │   ├── PostgresManualJournalMutationRecoveryStore.cs
@@ -11579,6 +11579,7 @@ Meridian-main
 │   │   │   ├── ReportingWorkflowService.AccessibleRecords.cs
 │   │   │   ├── ReportingWorkflowService.cs
 │   │   │   ├── ReportLedgerAmountProvenanceService.cs
+│   │   │   ├── ReportLedgerAmountProvenanceService.Passport.cs
 │   │   │   ├── ReportPackDeliveryService.cs
 │   │   │   ├── ReportPackDeliveryService.Evidence.cs
 │   │   │   ├── ReportPackDeliveryService.Guards.cs
@@ -13550,7 +13551,6 @@ Meridian-main
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
 │   │   │   ├── BrokerageOrderRecoveryJournalTests.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.cs
-│   │   │   ├── BrokerageOrderRecoveryTests.FaultReplay.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.Retention.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── BrokerOrderSweepTests.cs
@@ -15003,6 +15003,7 @@ Meridian-main
 │   │   │   ├── ActivityCapturingPublisher.cs
 │   │   │   ├── ActivityTestListenerFactory.cs
 │   │   │   ├── AlphaVantageTestBudget.cs
+│   │   │   ├── AmountPassportTestRoutes.cs
 │   │   │   ├── LiveRunOrderAuthority.cs
 │   │   │   ├── MarketScenarioBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
@@ -15140,7 +15141,6 @@ Meridian-main
 │   │   │   ├── DataOperationsAssuranceServiceTests.cs
 │   │   │   ├── DegradedModeEvaluationTests.cs
 │   │   │   ├── DemoTenantProvisionerTests.cs
-│   │   │   ├── DesignerPaperRehearsalTests.cs
 │   │   │   ├── DesktopLaunchTicketServiceTests.cs
 │   │   │   ├── DiagnosticsEndpointsTests.cs
 │   │   │   ├── DirectLendingEndpointsTests.cs

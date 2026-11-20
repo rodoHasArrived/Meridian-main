@@ -326,7 +326,12 @@ public static partial class LedgerEndpoints
                         LineDimensions: ToLineDimensionSet(dimensionFilter)),
                     context.RequestAborted)
                 .ConfigureAwait(false);
-            var result = BuildJournalEntryDtos(entries, _ => bookId, dimensionFilter);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var book = tenant.HasTenantScope && !string.IsNullOrWhiteSpace(tenant.CompanyId) && tenant.Actor is not null
+                ? await journalStore.GetLedgerBookAsync(bookId, context.RequestAborted).ConfigureAwait(false) : null;
+            var passportScope = book is null ? null
+                : new LedgerAmountScopeDto(tenant.TenantId!, tenant.CompanyId!, book.FundProfileId, bookId, periodId);
+            var result = BuildJournalEntryDtos(entries, _ => bookId, dimensionFilter, passportScope, book?.BaseCurrency);
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetLedgerPeriodJournalEntries").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)

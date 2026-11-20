@@ -132,6 +132,7 @@ public static partial class EvidenceEndpoints
         .RequireWorkstationTenantCompanyScope();
 
         var group = app.MapGroup("/api/workstation/evidence");
+        MapAmountPassportEndpoint(group, jsonOptions);
         MapSinglePrincipalAttestationEndpoints(group, jsonOptions);
 
         group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjects), async (HttpContext context) =>

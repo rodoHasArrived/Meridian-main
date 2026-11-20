@@ -1,18 +1,16 @@
-import { FileSearch } from "lucide-react";
 import { DueChip } from "@/components/meridian/due-chip";
 import { describeDue, sortByUrgency } from "@/lib/due-urgency";
 import { MonthCalendar, type MonthCalendarItem } from "@/components/meridian/month-calendar";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DesignSystemStatus } from "@/design-system/status";
 import { EntityLink } from "@/components/meridian/entity-inspector";
-import { LedgerAmountProofDrawer } from "@/components/meridian/proof-drawer";
+import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
 import {
   nextDenseSort,
   sortRowsByValue,
   type DenseDataTableSortState
 } from "@/components/meridian/ui-kit-primitives";
-import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { formatCurrency, formatMoney, formatUtcDate, formatUtcMonthYear } from "@/lib/format";
 import { formatNumber, pluralizeCount } from "@/lib/format";
@@ -526,7 +524,6 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
 
 /** The Ledger tab's own body, so its requests belong to the tab that renders them. */
 function PostedLedgerJournalTab({ active }: { active: boolean }) {
-  const [selectedAmount, setSelectedAmount] = useState<LedgerAmountSelection | null>(null);
   // Search and sort live in the link (C4), so Copy link, saved views and saved layouts carry them.
   const [tabSearchParams, setTabSearchParams] = useSearchParams();
   const searchText = tabSearchParams.get(LEDGER_SEARCH_PARAM) ?? "";
@@ -567,18 +564,6 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const sourceLedgerContextHref = workstationRouteWithQuery("accountingLedger", {
     ...Object.fromEntries(tabSearchParams), ledgerBookId: selectedBookId, periodId: postedLedger.selectedPeriodId
   });
-  const currentAmount = selectedAmount && active && !loading && !postedLedger.journalErrorText &&
-    (!selectedAmount.ledgerBookId || selectedAmount.ledgerBookId === selectedBookId) &&
-    (!selectedAmount.periodId || selectedAmount.periodId === postedLedger.selectedPeriodId) &&
-    selectedAmount.fundProfileId === selectedFundId && journalLines.some((entry) => entry.postedLines?.some((line) =>
-      selectedAmount.subjectId === `${entry.journalEntryId}:${line.entryId}:debit` ||
-      selectedAmount.subjectId === `${entry.journalEntryId}:${line.entryId}:credit`)) ? selectedAmount : null;
-  // Discard invalid selections as well as hiding their drawer. This tab stays mounted while
-  // inactive, and retaining the selection would reopen its proof when the old scope loads again.
-  if (selectedAmount && !currentAmount) {
-    setSelectedAmount(null);
-  }
-
   // The trial balance on the sibling tab is labelled in the book's base currency; these are the
   // same governed debits and credits, so they carry it too rather than defaulting to dollars.
   const postedMoney = (value: number) => baseCurrency
@@ -627,19 +612,20 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
   function postingAmountCell(row: (typeof ledgerRows)[number], side: "debit" | "credit") {
     const posting = row.posting;
     const value = posting ? posting[side] : side === "debit" ? row.journal.totalDebits : row.journal.totalCredits;
-    // Amounts read as numbers; the proof is a small control beside them, not an underlined link.
-    return posting && value !== 0 ? (
-      // The proof control sits before the amount, so amounts stay flush with the journal totals.
-      <span className="inline-flex items-center justify-end gap-1.5">
-        <button type="button" className="ledger-proof-button inline-flex size-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          aria-label={`Inspect ${side} ${postedMoney(value)} for ${posting.accountName} in journal ${row.journal.journalEntryId}`}
-          title="Open proof"
-          onClick={() => setSelectedAmount({ subjectId: `${row.journal.journalEntryId}:${posting.entryId}:${side}`, ledgerBookId: row.journal.ledgerBookId ?? "", periodId: row.journal.periodId ?? "", fundProfileId: selectedFundId, amount: value, currency: baseCurrency ?? "", label: `${posting.accountName} ${side} ${postedMoney(value)}` })}>
-          <FileSearch className="size-3.5" aria-hidden="true" />
-        </button>
-        <span>{postedMoney(value)}</span>
-      </span>
-    ) : postedMoney(value);
+    const reference = posting && value !== 0 ? posting.amountPassport : null;
+    const displayValue = reference?.currency
+      ? formatMoney(value, { context: "accounting", currency: reference.currency })
+      : postedMoney(value);
+    return <AmountPassportTrigger
+      ariaLabel={posting && value !== 0 ? `Inspect ${side} ${displayValue} for ${posting.accountName} in journal ${row.journal.journalEntryId}` : undefined}
+      className="ledger-proof-button"
+      selection={{
+        label: posting ? `${posting.accountName} ${side}` : `Journal total ${side}`, displayValue, reference,
+        currency: baseCurrency, unit: "currency", zero: value === 0, origin: posting ? "unavailable" : "calculated",
+        asOf: posting?.timestamp ?? row.journal.timestamp, basis: postedLedger.selectedBook?.accountingBasis,
+        unavailableReason: !posting ? "The journal subtotal has no retained amount address."
+          : value === 0 ? "This side has zero and carries no posting amount." : "The posted line did not supply its complete retained scope and revision."
+      }}>{displayValue}</AmountPassportTrigger>;
   }
 
   if (!active) {
@@ -783,7 +769,6 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
         </CardContent>
       </Card>
       <AccountingPeriodComparison bookId={selectedBookId} periodId={postedLedger.selectedPeriodId} expectedBasis={postedLedger.selectedBook?.accountingBasis} enabled={postedLedger.periodsSettled} periodOptions={postedLedger.view.periodSelector.options} />
-      <LedgerAmountProofDrawer selection={currentAmount} onClose={() => setSelectedAmount(null)} />
       <nav className="flex flex-wrap gap-3 text-sm" aria-label="Related accounting workflows">
         <Link className="text-foreground underline underline-offset-4" to={scopedAccountingWorkflowPath(WORKSTATION_ROUTE_CATALOG.accountingFactorPaydown, tabSearchParams)}>Prepare factor paydown</Link>
         <Link className="text-foreground underline underline-offset-4" to={scopedAccountingWorkflowPath(WORKSTATION_ROUTE_CATALOG.accountingConsolidation, tabSearchParams)}>Open consolidation</Link>
@@ -951,7 +936,13 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
           <FinanceFact label="Open breaks" value={String(breaks.length)} />
           <FinanceFact label="Selected break" value={breakLabel} />
           <FinanceFact label="Status" value={selectedBreak ? presentStatusLabel(selectedBreak.status) : "No case"} />
-          <FinanceFact label="Variance" value={selectedBreak ? formatCurrency(selectedBreak.variance) : "Not supplied"} mono />
+          <FinanceFact label="Variance" mono value={selectedBreak ? (
+            <AmountPassportTrigger selection={{ label: "Reconciliation variance", displayValue: formatCurrency(selectedBreak.variance),
+              unit: "currency", origin: "calculated", zero: selectedBreak.variance === 0,
+              unavailableReason: "The break queue supplies a variance but no retained amount revision for its residual." }}>
+              {formatCurrency(selectedBreak.variance)}
+            </AmountPassportTrigger>
+          ) : "Not supplied"} />
           <FinanceFact label="Owner" value={selectedBreak?.assigneeDisplayName ?? selectedBreak?.assignedTo ?? "Unassigned"} />
           <FinanceFact label="Next action" value={selectedBreak?.recommendedAction ?? "Review the case before taking action."} />
         </CardContent>
@@ -1385,7 +1376,7 @@ function buildReportOutputItems(references: string[], fallback: string): string[
   });
 }
 
-function FinanceFact({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+function FinanceFact({ label, value, mono = false }: { label: string; value: ReactNode; mono?: boolean }) {
   return (
     <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
       <div className="text-xs font-medium text-muted-foreground">{label}</div>

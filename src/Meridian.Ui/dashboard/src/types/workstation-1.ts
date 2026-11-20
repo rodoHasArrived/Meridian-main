@@ -780,6 +780,7 @@ export interface MetricSnapshot {
   asOf?: string | null;
   source?: string | null;
   numberPassport?: import("./number-passport-reference").NumberPassportReference | null;
+  amountPassport?: import("./amount-passport").AmountPassportReference | null;
   /** Producer-built history, oldest first; a null value is a day the source could not establish. */
   history?: MetricHistoryPoint[] | null;
   /** How the producer rebuilt `history`, shown with the sparkline. */

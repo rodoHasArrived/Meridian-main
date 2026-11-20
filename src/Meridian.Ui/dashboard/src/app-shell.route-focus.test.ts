@@ -6,6 +6,23 @@ function focusState(search: string, pathname = "/reporting", hash = "") {
   return buildRouteFocusState(pathname, search, hash, workspaceForPath(pathname));
 }
 
+describe("Amount passport route focus", () => {
+  it("keeps Ledger Explorer search and sort local to the table", () => {
+    const pathname = "/accounting/ledger";
+    const scope = "?ledgerBookId=book-a&periodId=period-a";
+    const initial = focusState(scope, pathname);
+    expect(focusState(`${scope}&ledgerSearch=Cash&ledgerSort=debit%3Adesc`, pathname)).toEqual(initial);
+    expect(focusState("?ledgerBookId=book-a&periodId=period-b&ledgerSearch=Cash", pathname).routeKey)
+      .not.toBe(initial.routeKey);
+  });
+
+  it.each(["/accounting/ledger", "/portfolio/brokerage-sync", "/reporting/runs/detail"])("leaves passport focus to the rail on %s", (pathname) => {
+    const scope = "?fundAccountId=account-a";
+    const hash = "#amount-passport?subjectKind=ledger-amount&subjectId=posting-a&tenantId=tenant-a";
+    expect(focusState(scope, pathname, hash)).toEqual(focusState(scope, pathname));
+  });
+});
+
 describe("reporting queue route focus", () => {
   it("keeps focus in the workbench when only its selected work item changes", () => {
     const initial = focusState("");
