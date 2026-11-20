@@ -20,6 +20,10 @@ import {
   FinancialRecordExplorerShell
 } from "@/components/meridian/financial-record-explorer";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { useLinkedRecordSelection } from "@/hooks/use-linked-record-selection";
+import { appendRecordWorkspaceContext, findUniqueRecord, positionRecordIdentity, type RecordIdentity } from "@/lib/record-workspace-context";
+import { presentMarkFreshness } from "@/lib/mark-freshness";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { exportTableQuery } from "@/lib/table-workbench";
@@ -59,6 +63,7 @@ import { PortfolioPositionsToolbar } from "@/screens/portfolio-positions-toolbar
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { bondWorkflowRoute, holdingBondWorkflowRoute } from "@/lib/fixed-income-navigation";
 import {
+  brokeragePositionId,
   buildPortfolioExplorerPresentation,
   resolveRetainedPortfolioRunLabel,
   resolveBrokerageAccountFilterKeyCommand,
@@ -420,7 +425,6 @@ function PortfolioScreenContent({
   const retainedRunLabel = retainedRunId ? formatRetainedRunLabel(retainedRunId) : "Retained run";
   const retainedSourceLabel = retainedRunLabel === "Retained run" ? "Retained run records" : `${retainedRunLabel} records`;
   const retainedAsOf = portfolioExplorer?.scopeItems.find((item) => item.label.trim().toLowerCase() === "as of")?.value;
-  const [brokerageInspector, setBrokerageInspector] = useState<"account" | "position">("account");
   // On the brokerage route the household is narrowed to the scope's fund (or entity) when the
   // organization graph places its accounts; accounts it does not place are counted, never hidden
   // silently. Other Portfolio routes keep the whole household (the bar shows the fund retained).
@@ -436,6 +440,12 @@ function PortfolioScreenContent({
     return { ...narrowed, note: describeFundScopeNarrowing(narrowed.accounts, "brokerage accounts", fundScope.names) };
   }, [showBrokerageSync, fundScope, brokeragePortfolio]);
   const scopedBrokeragePortfolio = brokerageFundScope ? brokerageFundScope.portfolio : brokeragePortfolio;
+  const recordParams = new URLSearchParams(location.search);
+  const requestedPositionRef = recordParams.get("positionRef");
+  const requestedBrokerageAccount = recordParams.get("brokerageAccount");
+  const requestedBrokeragePositionId = recordParams.get("brokeragePosition");
+  const [brokeragePanel, setBrokerageInspector] = useLinkedRecordSelection<"account" | "position">(requestedBrokeragePositionId);
+  const brokerageInspector = brokeragePanel ?? (requestedBrokeragePositionId ? "position" : "account");
   const vm = usePortfolioScreenViewModel({
     portfolio,
     trading,
@@ -445,8 +455,59 @@ function PortfolioScreenContent({
     brokeragePortfolio: scopedBrokeragePortfolio,
     multiAssetCoverage,
     selectedRunDrillIn,
+    requestedPositionRef,
+    requestedBrokerageAccount,
+    requestedBrokeragePositionId,
     pathname: location.pathname
   });
+  const holding = vm.selectedPosition;
+  const holdingContext = useRecordWorkspaceContext(holding?.record ?? null,
+    holding?.linkedRef ? { positionRef: holding.linkedRef } : null, `#${vm.positionDetailId}`);
+  const holdingAssetRoute = holding ? workstationRouteWithQuery("portfolioAssetDetail", { symbol: holding.title, source: "portfolio" }) : null;
+  const holdingAssetHref = holdingAssetRoute && holdingContext
+    ? appendRecordWorkspaceContext(holdingAssetRoute, holdingContext) ?? holdingAssetRoute : holdingAssetRoute;
+
+  const brokerageAccount = showBrokerageSync
+    ? findUniqueRecord(scopedBrokeragePortfolio?.accounts ?? [], (account) => account.fundAccountId === vm.selectedBrokerageAccountKey)
+    : null;
+  const brokerageAccountRecord: RecordIdentity | null = brokerageAccount ? {
+    kind: "account",
+    id: brokerageAccount.fundAccountId,
+    name: brokerageAccount.displayName,
+    status: brokerageAccount.health,
+    asOf: brokerageAccount.syncedAt,
+    trust: brokerageAccount.health === "Healthy" && brokerageAccount.warnings.length === 0 ? "Sync healthy" : "Sync review required",
+    trustTone: brokerageAccount.health === "Healthy" && brokerageAccount.warnings.length === 0 ? "ready" : "review",
+    scope: { fundAccountId: brokerageAccount.fundAccountId, provider: brokerageAccount.providerId }
+  } : null;
+  const brokerageAccountContext = useRecordWorkspaceContext(brokerageAccountRecord, {
+    brokerageAccount: brokerageAccount?.fundAccountId,
+    brokeragePosition: ""
+  }, "#portfolio-brokerage-active-detail");
+
+  const brokeragePosition = showBrokerageSync
+    ? findUniqueRecord(scopedBrokeragePortfolio?.positions ?? [], (position) => brokeragePositionId(position) === vm.selectedBrokeragePositionId)
+    : null;
+  const brokeragePositionRecord: RecordIdentity | null = brokeragePosition ? {
+    ...positionRecordIdentity({
+      positionKey: brokeragePosition.positionId,
+      symbol: brokeragePosition.symbol,
+      side: brokeragePosition.quantity < 0 ? "Short" : "Long"
+    }, presentMarkFreshness(brokeragePosition.markFreshness), brokeragePosition.fundAccountId),
+    assetClass: brokeragePosition.security?.assetClass ?? brokeragePosition.assetClass,
+    scope: {
+      symbol: brokeragePosition.symbol,
+      fundAccountId: brokeragePosition.fundAccountId,
+      securityId: brokeragePosition.security?.securityId,
+      provider: brokeragePosition.providerId
+    }
+  } : null;
+  const brokeragePositionContext = useRecordWorkspaceContext(brokeragePositionRecord, {
+    brokerageAccount: vm.selectedBrokerageAccountKey,
+    brokeragePosition: vm.selectedBrokeragePositionId
+  }, "#portfolio-brokerage-active-detail");
+  const brokerageRecord = brokerageInspector === "position" ? brokeragePositionRecord : brokerageAccountRecord;
+  const brokerageRecordContext = brokerageInspector === "position" ? brokeragePositionContext : brokerageAccountContext;
   const positionsTable = usePortfolioPositionsTable();
   const visiblePositionRows = useMemo(
     () => selectPortfolioPositionRows(vm.positionRows, positionsTable.state),
@@ -1076,6 +1137,11 @@ function PortfolioScreenContent({
             ))}
           </div>
 
+          {requestedBrokerageAccount && requestedBrokerageAccount !== "all" && scopedBrokeragePortfolio
+            && !scopedBrokeragePortfolio.accounts.some((account) => account.fundAccountId === requestedBrokerageAccount) ? (
+              <p role="status" className="text-sm text-muted-foreground">The linked account is unavailable in the current brokerage snapshot.</p>
+            ) : null}
+
           {vm.brokerageWarningRows.length > 0 ? (
             <div
               role="status"
@@ -1145,6 +1211,7 @@ function PortfolioScreenContent({
               title={brokerageInspector === "position" ? vm.selectedBrokeragePosition?.title : vm.selectedBrokerageAccount.title}
               ariaLabel={brokerageInspector === "position" ? vm.selectedBrokeragePosition?.ariaLabel ?? "Brokerage position detail" : vm.selectedBrokerageAccount.ariaLabel}
               subtitle={brokerageInspector === "position" ? vm.selectedBrokeragePosition?.subtitle : vm.selectedBrokerageAccount.subtitle}
+              identity={brokerageRecord ? <RecordIdentitySpine record={brokerageRecord} context={brokerageRecordContext} /> : null}
               summary={brokerageInspector === "position" ? vm.selectedBrokeragePosition?.statusDetail : vm.selectedBrokerageAccount.statusDetail}
               fields={brokerageInspector === "position" ? vm.selectedBrokeragePosition ? [
                 ...vm.selectedBrokeragePosition.fields,
@@ -1153,7 +1220,7 @@ function PortfolioScreenContent({
               shownInRow={brokerageInspector === "position" ? ["Mark readiness", "Account", "Quantity", "Market value", "Unrealized P&L"] : []}
               status={brokerageInspector === "position" ? vm.selectedBrokeragePosition ? { label: vm.selectedBrokeragePosition.statusBadgeLabel, tone: vm.selectedBrokeragePosition.statusBadgeVariant } : null
                 : { label: vm.selectedBrokerageAccount.statusBadgeLabel, tone: vm.selectedBrokerageAccount.statusBadgeVariant }}
-              empty={{ title: "No brokerage position selected", text: vm.brokerageEmptyText }}
+              empty={{ title: "No brokerage position selected", text: requestedBrokeragePositionId ? "The linked brokerage position is unavailable in the current account scope." : vm.brokerageEmptyText }}
               actions={brokerageInspector === "position" && vm.selectedBrokeragePosition?.bondSecurityId ? (
                 <div className="flex flex-wrap gap-2" aria-label="Selected bond workflows">
                   <Button asChild size="sm" variant="outline">
@@ -1181,11 +1248,12 @@ function PortfolioScreenContent({
               ? { label: vm.selectedPosition.statusLabel, tone: vm.selectedPosition.statusTone }
               : null}
             subtitle={vm.selectedPosition?.subtitle}
+            identity={holding ? <RecordIdentitySpine record={holding.record} context={holdingContext} /> : null}
             summary={vm.selectedPosition?.statusDetail}
             fields={vm.selectedPosition?.fields}
             // The holdings table always shows these two; its other columns can be hidden.
             shownInRow={["Side", "Mark readiness"]}
-            empty={{ title: vm.positionDetailEmptyTitle, text: vm.positionEmptyText }}
+            empty={{ title: vm.positionDetailEmptyTitle, text: requestedPositionRef ? "The linked holding is unavailable in the current portfolio." : vm.positionEmptyText }}
             className={vm.selectedPosition ? cashFlowBorderClass[vm.selectedPosition.statusTone] : undefined}
             notice={selectedPositionOutsideResults ? (
               <div className="space-y-2">
@@ -1197,10 +1265,7 @@ function PortfolioScreenContent({
               <>
               <Button asChild size="sm" variant="outline">
                 <Link
-                  to={workstationRouteWithQuery("portfolioAssetDetail", {
-                    symbol: vm.selectedPosition.title,
-                    source: "portfolio"
-                  })}
+                  to={holdingAssetHref ?? WORKSTATION_ROUTE_CATALOG.portfolioAssetDetail}
                   aria-label={`Open asset detail for ${vm.selectedPosition.title}`}
                 >
                   Open asset detail

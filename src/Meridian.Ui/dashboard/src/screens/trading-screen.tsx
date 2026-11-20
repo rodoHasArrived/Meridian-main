@@ -6,6 +6,7 @@ import React, { type ReactNode } from "react";
 import { ServerOrderPreviewPanel } from "./trading-screen.server-preview";
 import { ExecutionJournalPanel } from "./trading-screen.journal";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
 import { Link, useLocation } from "react-router-dom";
 import { describeBrokerageSessionSource, positionSourceAttributes } from "@/lib/position-source";
 import { StatusBadge } from "@/design-system/status";
@@ -477,9 +478,13 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
   const crossCounts = selectCrossScreenCounts({ shared: sharedCounts, openOrders: data?.openOrders });
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
-  const blotterVm = useTradingBlotterViewModel(data);
+  const blotterVm = useTradingBlotterViewModel(data, new URLSearchParams(search).get("positionRef"));
   const positionSource = describeBrokerageSessionSource(data?.brokerage);
   const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId);
+  const positionRecord = blotterVm.selectedPositionRecord;
+  const scopedPositionRecord = positionRecord ? { ...positionRecord, scope: { ...positionRecord.scope, fundAccountId } } : null;
+  const positionContext = useRecordWorkspaceContext(scopedPositionRecord, blotterVm.selectedPositionReference
+    ? { positionRef: blotterVm.selectedPositionReference, fundAccountId } : null, `#${blotterVm.positionDetailId}`);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
@@ -724,6 +729,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                 {selectedPositionRow.closeTitleLabel}
               </Button>
             ) : null}
+            identity={scopedPositionRecord ? <RecordIdentitySpine record={scopedPositionRecord} context={positionContext} /> : null}
           />
         </div>
       )}>
@@ -2264,7 +2270,8 @@ function TradingBlotterDetailPanel({
   objectType,
   detail,
   emptyText,
-  action
+  action,
+  identity
 }: {
   id: string;
   objectType: string;
@@ -2272,6 +2279,7 @@ function TradingBlotterDetailPanel({
   emptyText: string;
   /** The next action for the selected row, e.g. cancel the order. */
   action?: ReactNode;
+  identity?: ReactNode;
 }) {
   return (
     <DetailPane
@@ -2283,6 +2291,7 @@ function TradingBlotterDetailPanel({
       subtitle={detail?.subtitle}
       summary={detail?.detail}
       actions={detail ? action : null}
+      identity={identity}
       fields={detail?.fields}
       shownInRow={detail?.shownInRow}
       empty={{ text: emptyText }}
