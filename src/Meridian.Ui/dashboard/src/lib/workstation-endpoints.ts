@@ -1298,8 +1298,8 @@ export function replayFilesEndpoint(symbol?: string): string {
   return `${REPLAY_API_ENDPOINTS.files}${queryString({ symbol })}`;
 }
 
-export function portfolioHouseholdEndpoint(provider = "alpaca"): string {
-  return `${PORTFOLIO_API_ENDPOINTS.household}${queryString({ provider })}`;
+export function portfolioHouseholdEndpoint(provider = "alpaca", fundAccountId?: string | null): string {
+  return `${PORTFOLIO_API_ENDPOINTS.household}${queryString({ provider, fundAccountId })}`;
 }
 
 export function portfolioSymbolExposureEndpoint(symbol: string): string {

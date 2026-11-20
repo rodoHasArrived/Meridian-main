@@ -17,6 +17,7 @@ import {
   buildOperatingScopeFromSearch,
   carryOperatingScopeIntoSearch,
   describeOperatingScopeForRoute,
+  hasExplicitRecordScope,
   operatingScopeDimensionsForRoute,
   readOperatingScopeFromSearch,
   removeOperatingScopeFromSearch,
@@ -400,10 +401,11 @@ function AppShell({
   const location = useLocation();
   const { hash, pathname, search, key: locationKey } = location;
   const activeWorkspace = resolveWorkspaceKeyFromPath(pathname);
+  const explicitRecordScope = hasExplicitRecordScope(search);
   const routeOperatingScope = useMemo(() => readOperatingScopeFromSearch(search), [search]);
   const operatingScopeInput = useMemo(
-    () => mergeOperatingScopes(storedOperatingScope, routeOperatingScope),
-    [storedOperatingScope, routeOperatingScope]
+    () => mergeOperatingScopes(explicitRecordScope ? {} : storedOperatingScope, routeOperatingScope),
+    [explicitRecordScope, storedOperatingScope, routeOperatingScope]
   );
   const operatingContextSymbol = operatingScopeInput.symbol ?? null;
   // C1: load the operator's default scope once. It is applied only when this session opened with
@@ -582,7 +584,7 @@ function AppShell({
       return;
     }
 
-    if (!hasOperatingScopeValues(routeOperatingScope)) {
+    if (explicitRecordScope || !hasOperatingScopeValues(routeOperatingScope)) {
       return;
     }
 
@@ -593,7 +595,7 @@ function AppShell({
 
     writeStoredOperatingScope(nextScope);
     setStoredOperatingScope(nextScope);
-  }, [locationKey, routeOperatingScope, storedOperatingScope]);
+  }, [explicitRecordScope, locationKey, routeOperatingScope, storedOperatingScope]);
 
   // Scope survives every in-app link (Phase 1, P2 step 1). A plain catalog link drops the query
   // string; screens that read the URL then lost their fund filter while the bar still showed it.

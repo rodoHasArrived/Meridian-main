@@ -9,6 +9,13 @@ import type {
   PortfolioRunRow
 } from "@/screens/portfolio-screen.view-model";
 
+export interface PortfolioBrokerageSelection {
+  accountKey: string;
+  positionId: string | null;
+  selectPosition: (id: string) => void;
+  selectAccount: (key: string) => void;
+}
+
 export function pnlTone(value: string): "success" | "danger" | "default" {
   if (value.startsWith("+")) return "success";
   if (value.startsWith("-")) return "danger";

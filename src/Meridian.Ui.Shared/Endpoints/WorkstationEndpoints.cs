@@ -123,6 +123,7 @@ public static partial class WorkstationEndpoints
         MapExtensibilityEndpoints(group, jsonOptions);
         MapCloseReadinessEndpoints(group, jsonOptions);
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
+        MapRecordSearchEndpoint(group, jsonOptions);
         MapOperatorTriageEndpoints(group, jsonOptions);
         MapCloseChecklistHistoryEndpoints(group, jsonOptions);
         MapApprovalCollaborationEndpoints(group, jsonOptions);

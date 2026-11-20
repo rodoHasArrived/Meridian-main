@@ -814,6 +814,7 @@ public static class UiApiRoutes
     // Strategy run comparison and diff endpoints
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
     public const string WorkstationWorkflowLibrary = "/api/workstation/workflows";
+    public const string WorkstationRecordSearch = "/api/workstation/search/records";
     public const string WorkstationWorkflowPresets = "/api/workstation/workflows/presets";
     public const string WorkstationWorkflowPresetById = "/api/workstation/workflows/presets/{presetId}";
     public const string WorkstationWorkflowPresetPin = "/api/workstation/workflows/presets/{presetId}/pin";

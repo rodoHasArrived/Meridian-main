@@ -25,7 +25,8 @@ import {
   pnlTone,
   riskFieldTone,
   riskTone,
-  runStatusTone
+  runStatusTone,
+  type PortfolioBrokerageSelection
 } from "@/screens/portfolio-screen.presentation";
 import type {
   BrokerageConnectionStatus,
@@ -598,6 +599,7 @@ export function buildPortfolioScreenViewModel({
   selectedRunDrillIn = null,
   selectedBrokeragePositionId = null,
   selectedBrokerageAccountKey = "all",
+  requireSelectedBrokeragePosition = false,
   pathname = WORKSTATION_ROUTE_CATALOG.portfolio,
   selectPosition = () => {},
   selectRun = () => {},
@@ -617,6 +619,7 @@ export function buildPortfolioScreenViewModel({
   selectedRunDrillIn?: PortfolioRunDrillInData | null;
   selectedBrokeragePositionId?: string | null;
   selectedBrokerageAccountKey?: string;
+  requireSelectedBrokeragePosition?: boolean;
   pathname?: string;
   selectPosition?: (id: string) => void;
   selectRun?: (id: string) => void;
@@ -648,7 +651,7 @@ export function buildPortfolioScreenViewModel({
   const selectedBrokerageStableId =
     brokeragePositions.find((position) => brokeragePositionId(position) === selectedBrokeragePositionId) !== undefined
       ? selectedBrokeragePositionId
-      : brokeragePositions.length > 0
+      : !requireSelectedBrokeragePosition && brokeragePositions.length > 0
         ? brokeragePositionId(brokeragePositions[0])
         : null;
   const brokerageConnectionState = brokerageConnection?.state ?? "NotConfigured";
@@ -1333,6 +1336,7 @@ export function usePortfolioScreenViewModel({
   multiAssetCoverage,
   selectedRunContinuity = null,
   selectedRunDrillIn = null,
+  brokerageSelection,
   pathname = WORKSTATION_ROUTE_CATALOG.portfolio
 }: {
   portfolio?: PortfolioWorkspaceResponse | null;
@@ -1344,6 +1348,7 @@ export function usePortfolioScreenViewModel({
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
   selectedRunContinuity?: StrategyRunContinuityDto | null;
   selectedRunDrillIn?: PortfolioRunDrillInData | null;
+  brokerageSelection?: PortfolioBrokerageSelection;
   pathname?: string;
 }): PortfolioScreenViewModel {
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
@@ -1364,12 +1369,13 @@ export function usePortfolioScreenViewModel({
     pathname,
     selectedPositionId,
     selectedRunId,
-    selectedBrokeragePositionId,
-    selectedBrokerageAccountKey,
+    selectedBrokeragePositionId: brokerageSelection ? brokerageSelection.positionId : selectedBrokeragePositionId,
+    selectedBrokerageAccountKey: brokerageSelection?.accountKey ?? selectedBrokerageAccountKey,
+    requireSelectedBrokeragePosition: Boolean(brokerageSelection?.positionId),
     selectPosition: setSelectedPositionId,
     selectRun: setSelectedRunId,
-    selectBrokeragePosition: setSelectedBrokeragePositionId,
-    selectBrokerageAccount: setSelectedBrokerageAccountKey
+    selectBrokeragePosition: brokerageSelection?.selectPosition ?? setSelectedBrokeragePositionId,
+    selectBrokerageAccount: brokerageSelection?.selectAccount ?? setSelectedBrokerageAccountKey
   });
 }
 
