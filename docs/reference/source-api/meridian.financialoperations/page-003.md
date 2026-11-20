@@ -29,7 +29,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingAutomaticPostingPolicyValidator</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:31](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L31).
+Source: [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:42](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L42).
 
 ```csharp
 public sealed class AccountingAutomaticPostingPolicyValidator(IAccountingPolicyService policies) : IAccountingAutomaticPostingPolicyValidator
@@ -39,10 +39,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireRetainedAuthorityAsync(AccountingPolicyDto snapshot, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:33](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L33) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:52](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L52) |  |
-| <code>public async Task ValidateAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:64](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L64) |  |
-| <code>public async Task&lt;AccountingPolicyRuleDto&gt; ResolveRuleAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, string sourceEventType, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:71](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L71) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireRetainedAuthorityAsync(AccountingPolicyDto snapshot, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:44](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L44) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:63](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L63) |  |
+| <code>public async Task ValidateAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:75](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L75) |  |
+| <code>public async Task&lt;AccountingPolicyRuleDto&gt; ResolveRuleAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, string sourceEventType, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:82](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L82) |  |
 
 ## AccountingBasisProjectionRequest
 
@@ -528,7 +528,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;ChartOfAccountsNodeDto&gt; ResolveAsync(ConfiguredLedgerAccountRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:7](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L7) |  |
+| <code>public async Task&lt;ChartOfAccountsNodeDto&gt; ResolveAsync(ConfiguredLedgerAccountRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:12](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L12) |  |
 
 ## FactorPaydownLotInstructionService
 

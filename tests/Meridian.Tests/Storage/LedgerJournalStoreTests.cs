@@ -270,6 +270,15 @@ public sealed class LedgerJournalStoreTests
             AggregateId = book.LedgerBookId,
             LedgerBookId = book.LedgerBookId
         };
+        target = target with
+        {
+            Entry = new JournalEntry(target.Entry.JournalEntryId, target.Entry.Timestamp, target.Entry.Description,
+                target.Entry.Lines.Select(line => line with
+                {
+                    ChartAccount = StandardChartOfAccounts.Instance.GetPostingReference(line.Account),
+                    Memo = "Retained line memo"
+                }).ToArray(), target.Entry.Metadata)
+        };
         var neighbor = BuildBalancedJournalWrite(period.PeriodId, now.AddMinutes(1)) with
         {
             AggregateId = book.LedgerBookId,

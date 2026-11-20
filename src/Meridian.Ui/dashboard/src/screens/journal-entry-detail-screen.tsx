@@ -328,6 +328,29 @@ export function JournalEntryDetailScreen() {
           </CardHeader>
           <CardContent>
             <LedgerTable rows={lineRows} currency={view.currency} showAccount caption={`Lines for journal entry ${view.journalEntryId}`} />
+            {postedEntry?.lines.some(line => line.memo || line.chartAccount || line.currency) ? (
+              <TechnicalDetails label="Posting line evidence" className="mt-3">
+                <ul className="divide-y divide-border text-sm">
+                  {postedEntry.lines.filter(line => line.memo || line.chartAccount || line.currency).map(line => (
+                    <li key={line.entryId} className="space-y-1 py-2">
+                      <div className="font-medium">
+                        {[line.chartAccount?.accountCode, line.accountName, line.symbol].filter(Boolean).join(" · ")}
+                      </div>
+                      {line.memo ? <div>{line.memo}</div> : null}
+                      {line.chartAccount ? <div className="break-all text-xs text-muted-foreground">
+                        Chart node {line.chartAccount.nodeId} · revision {line.chartAccount.revision}
+                      </div> : null}
+                      {line.currency ? <div className="text-xs text-muted-foreground">
+                        {line.currency.transactionDebit ? "Debit" : "Credit"} {line.currency.transactionDebit || line.currency.transactionCredit} {line.currency.transactionCurrency}
+                        {line.currency.transactionCurrency !== line.currency.functionalCurrency
+                          ? ` · rate ${line.currency.fxRateToFunctional} to ${line.currency.functionalCurrency}` : ""}
+                      </div> : null}
+                      <div className="break-all font-mono text-xs text-muted-foreground">{line.entryId}</div>
+                    </li>
+                  ))}
+                </ul>
+              </TechnicalDetails>
+            ) : null}
           </CardContent>
         </Card>
       ) : null}

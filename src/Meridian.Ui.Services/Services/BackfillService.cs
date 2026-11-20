@@ -105,20 +105,31 @@ public sealed class BackfillService
     /// <summary>
     /// Starts a new backfill operation using the real API.
     /// </summary>
-    public async Task StartBackfillAsync(
+    public Task StartBackfillAsync(
         string[] symbols,
         string provider,
         DateTime fromDate,
         DateTime toDate,
         string granularity = "Daily",
-        Action<BackfillProgress>? progressCallback = null, CancellationToken ct = default)
+        Action<BackfillProgress>? progressCallback = null, CancellationToken ct = default) =>
+        StartBackfillAsync(symbols, provider, fromDate, toDate, granularity, resumeFromCheckpoint: false, progressCallback, ct);
+
+    public async Task StartBackfillAsync(
+        string[] symbols,
+        string provider,
+        DateTime fromDate,
+        DateTime toDate,
+        string granularity,
+        bool resumeFromCheckpoint,
+        Action<BackfillProgress>? progressCallback = null,
+        CancellationToken ct = default)
     {
         if (IsRunning)
         {
             throw new InvalidOperationException("A backfill operation is already running");
         }
 
-        _cancellationTokenSource = new CancellationTokenSource();
+        _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _startTime = DateTime.UtcNow;
         _totalBarsDownloaded = 0;
 
@@ -149,7 +160,8 @@ public sealed class BackfillService
 
         try
         {
-            await RunBackfillAsync(symbols, provider, fromDate, toDate, granularity, progressCallback, _cancellationTokenSource.Token);
+            await RunBackfillAsync(symbols, provider, fromDate, toDate, granularity, resumeFromCheckpoint,
+                progressCallback, _cancellationTokenSource.Token);
 
             _currentProgress.Status = BackfillJobStatus.Completed;
             _currentProgress.CompletedAt = DateTime.UtcNow;
@@ -230,6 +242,7 @@ public sealed class BackfillService
         DateTime fromDate,
         DateTime toDate,
         string granularity,
+        bool resumeFromCheckpoint,
         Action<BackfillProgress>? progressCallback,
         CancellationToken cancellationToken)
     {
@@ -248,6 +261,7 @@ public sealed class BackfillService
             fromStr,
             toStr,
             granularity,
+            resumeFromCheckpoint,
             cancellationToken);
 
         if (result == null)
@@ -748,7 +762,9 @@ public sealed class BackfillService
             checkpoint.FromDate,
             checkpoint.ToDate,
             "Daily",
-            progressCallback);
+            resumeFromCheckpoint: true,
+            progressCallback,
+            ct);
     }
 
     /// <summary>

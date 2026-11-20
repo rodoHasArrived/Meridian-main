@@ -1221,6 +1221,11 @@ public sealed class StatementRunWorkflowService(
             var evidenceReferences = isInternalOnly
                 ? new[] { evidenceLink, $"internal-record:{breakRecord.SourceReference}", $"internal-hash:{sourceRowHash}" }
                 : new[] { evidenceLink, $"statement-row:{breakRecord.SourceReference}", $"statement-hash:{sourceRowHash}" };
+            evidenceReferences = evidenceReferences
+                .Concat(engineResult.AllBrokerEvidenceReferences.Select(static reference => $"statement-row:{reference}"))
+                .Concat(engineResult.AllInternalEvidenceReferences.Select(static reference => $"internal-record:{reference}"))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
             var explanation = BuildBreakExplanation(import, row, breakRecord, engineResult, evidenceReferences);
             var attachment = isInternalOnly
                 ? new ReconciliationCaseAttachment(

@@ -52,6 +52,13 @@ public interface ILedgerReportsApiClient
 
     Task<ApiResponse<JsonDocument>> GetRetainedManifestAsync(string route, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<JsonDocument>.Fail("Retained manifest is unavailable in this session."));
+
+    Task<ApiResponse<BookFxSettlementSetDto>> GetBookFxSettlementSetAsync(Guid setId, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<BookFxSettlementSetDto>.Fail("Book and FX settlement evidence is unavailable."));
+
+    Task<ApiResponse<PrivateCapitalUnitRegisterPreviewDto>> PreviewUnitRegisterAsync(
+        Guid bookId, PreviewPrivateCapitalUnitRegisterRequest request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<PrivateCapitalUnitRegisterPreviewDto>.Fail("Unit register reconciliation is unavailable."));
 }
 
 /// <summary>
@@ -68,6 +75,15 @@ public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
 
     public Task<ApiResponse<List<LedgerBookDto>>> GetBooksAsync(CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<List<LedgerBookDto>>(UiApiRoutes.LedgerBooks, ct);
+
+    public Task<ApiResponse<BookFxSettlementSetDto>> GetBookFxSettlementSetAsync(Guid setId, CancellationToken ct = default)
+        => _apiClient.GetWithResponseAsync<BookFxSettlementSetDto>(
+            UiApiRoutes.LedgerBookFxSettlementSet.Replace("{setId:guid}", setId.ToString("D"), StringComparison.Ordinal), ct);
+
+    public Task<ApiResponse<PrivateCapitalUnitRegisterPreviewDto>> PreviewUnitRegisterAsync(
+        Guid bookId, PreviewPrivateCapitalUnitRegisterRequest request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<PrivateCapitalUnitRegisterPreviewDto>(
+            $"{UiApiRoutes.LedgerPrivateCapitalUnitRegisterPreview}?ledgerBookId={bookId:D}", request, ct);
 
     public Task<ApiResponse<List<LedgerPeriodDto>>> GetPeriodsAsync(
         Guid? ledgerBookId,

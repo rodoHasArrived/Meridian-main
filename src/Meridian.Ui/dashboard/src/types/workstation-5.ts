@@ -1144,6 +1144,7 @@ export interface ChartOfAccountsNode {
   path: string;
   accountName: string;
   accountType: string;
+  accountCode?: string | null;
   parentPath?: string | null;
   symbol?: string | null;
   financialAccountId?: string | null;

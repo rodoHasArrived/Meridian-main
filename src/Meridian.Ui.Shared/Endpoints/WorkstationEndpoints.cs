@@ -1297,10 +1297,15 @@ public static partial class WorkstationEndpoints
             readinessService = new TradingOperatorReadinessService(context.RequestServices, logger);
         }
 
+        Guid? authorizedPaperAccountId = fundAccountId is { } selectedAccount &&
+            await FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(selectedAccount, context).ConfigureAwait(false)
+                ? selectedAccount
+                : null;
         return await readinessService.GetAsync(
             fundAccountId,
             ResolveStrategyRunReadScope(context),
-            context.RequestAborted).ConfigureAwait(false);
+            context.RequestAborted,
+            authorizedPaperAccountId).ConfigureAwait(false);
     }
 
     private static Task<bool> CanReadTradingAccountAsync(Guid? fundAccountId, HttpContext context) =>

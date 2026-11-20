@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Backtesting.Sdk.AssetEvent</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/AssetEvent.cs:26](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L26).
+Source: [src/Meridian.Backtesting.Sdk/AssetEvent.cs:29](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L29).
 
 Describes a scheduled asset-level event that should be applied during a backtest to improve portfolio accounting realism beyond pure trade and price data.
 
@@ -22,8 +22,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string DestinationSymbol =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:37](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L37) | Resolved destination symbol after any rename, merger, or acquisition conversion. |
-| <code>public bool HasPositionTransformation =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:40](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L40) | True when the event alters share count, symbol identity, or both. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;JournalEvidenceReference&gt;? EvidenceReferences { get; init; }</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:41](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L41) | Optional source evidence attached by the canonical event producer. |
+| <code>public string DestinationSymbol =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:44](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L44) | Resolved destination symbol after any rename, merger, or acquisition conversion. |
+| <code>public bool HasPositionTransformation =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:47](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L47) | True when the event alters share count, symbol identity, or both. |
 
 ## AssetEventCashFlow
 
@@ -51,7 +52,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.AssetEventType</code>. Kind: `enum`.
 
-Source: [src/Meridian.Backtesting.Sdk/AssetEvent.cs:46](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L46).
+Source: [src/Meridian.Backtesting.Sdk/AssetEvent.cs:53](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L53).
 
 Portfolio-affecting asset event types supported by the backtesting engine.
 
@@ -63,20 +64,20 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Dividend = 0</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:48](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L48) |  |
-| <code>Coupon = 1</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:49](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L49) |  |
-| <code>Payment = 2</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:50](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L50) |  |
-| <code>CashDistribution = 3</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:51](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L51) |  |
-| <code>ReturnOfCapital = 4</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:52](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L52) |  |
-| <code>Fee = 5</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:53](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L53) |  |
-| <code>Split = 6</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:54](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L54) |  |
-| <code>ReverseSplit = 7</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:55](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L55) |  |
-| <code>Merger = 8</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:56](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L56) |  |
-| <code>Acquisition = 9</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:57](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L57) |  |
-| <code>SymbolChange = 10</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:58](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L58) |  |
-| <code>SpinOff = 11</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:59](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L59) |  |
-| <code>Delisting = 12</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:60](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L60) |  |
-| <code>Other = 13</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:61](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L61) |  |
+| <code>Dividend = 0</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:55](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L55) |  |
+| <code>Coupon = 1</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:56](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L56) |  |
+| <code>Payment = 2</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:57](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L57) |  |
+| <code>CashDistribution = 3</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:58](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L58) |  |
+| <code>ReturnOfCapital = 4</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:59](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L59) |  |
+| <code>Fee = 5</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:60](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L60) |  |
+| <code>Split = 6</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:61](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L61) |  |
+| <code>ReverseSplit = 7</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:62](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L62) |  |
+| <code>Merger = 8</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:63](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L63) |  |
+| <code>Acquisition = 9</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:64](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L64) |  |
+| <code>SymbolChange = 10</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:65](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L65) |  |
+| <code>SpinOff = 11</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:66](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L66) |  |
+| <code>Delisting = 12</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:67](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L67) |  |
+| <code>Other = 13</code> | [src/Meridian.Backtesting.Sdk/AssetEvent.cs:68](../../../../src/Meridian.Backtesting.Sdk/AssetEvent.cs#L68) |  |
 
 ## BacktestCanonicalAction
 
@@ -141,6 +142,16 @@ Enum declarations:
 | <code>Legacy = 0</code> | [src/Meridian.Backtesting.Sdk/BacktestCorporateActionMode.cs:8](../../../../src/Meridian.Backtesting.Sdk/BacktestCorporateActionMode.cs#L8) |  |
 | <code>RawPricesWithCanonicalEvents = 1</code> | [src/Meridian.Backtesting.Sdk/BacktestCorporateActionMode.cs:9](../../../../src/Meridian.Backtesting.Sdk/BacktestCorporateActionMode.cs#L9) |  |
 
+## BacktestDataRevision
+
+Qualified name: <code>Meridian.Backtesting.Sdk.BacktestDataRevision</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:17](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L17).
+
+```csharp
+public sealed record BacktestDataRevision(string RevisionId, string ContentHash, string ServingProvider, string Instrument, string Granularity);
+```
+
 ## BacktestDefaults
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestDefaults</code>. Kind: `class`.
@@ -175,8 +186,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:78](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L78) | Null retains legacy/unassessed coverage; unavailable financing is never a measured zero. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:83](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L83) | The actual run-attributed margin interest, or null when no complete allocation is available. When unavailable, Metrics.TotalMarginInterest is only a compatibility placeholder and GrossPnl is provisional. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BacktestInputCoverage? InputCoverage { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:79](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L79) | Null on legacy runs or engines that cannot assess native replay inputs. |
+| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:82](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L82) | Null retains legacy/unassessed coverage; unavailable financing is never a measured zero. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:87](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L87) | The actual run-attributed margin interest, or null when no complete allocation is available. When unavailable, Metrics.TotalMarginInterest is only a compatibility placeholder and GrossPnl is provisional. |
 
 ## BacktestEngineMode
 
@@ -200,7 +212,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestFinancingCoverageStatuses</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:86](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L86).
+Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:90](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L90).
 
 ```csharp
 public static class BacktestFinancingCoverageStatuses
@@ -210,16 +222,38 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string Available = &quot;Available&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:88](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L88) |  |
-| <code>public const string Unavailable = &quot;Unavailable&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:89](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L89) |  |
+| <code>public const string Available = &quot;Available&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:92](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L92) |  |
+| <code>public const string Unavailable = &quot;Unavailable&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:93](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L93) |  |
+
+## BacktestInputCoverage
+
+Qualified name: <code>Meridian.Backtesting.Sdk.BacktestInputCoverage</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:4](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L4).
+
+Coverage observed from the exact inputs consumed by a native replay.
+
+```csharp
+public sealed record BacktestInputCoverage(decimal RequiredSessionFraction, IReadOnlyList<BacktestInstrumentCoverage> Instruments, IReadOnlyList<BacktestDataRevision> Revisions);
+```
+
+## BacktestInstrumentCoverage
+
+Qualified name: <code>Meridian.Backtesting.Sdk.BacktestInstrumentCoverage</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:9](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L9).
+
+```csharp
+public sealed record BacktestInstrumentCoverage(string Instrument, string Status, string? Calendar, int ObservedSessions, int? ExpectedSessions, IReadOnlyList<DateOnly> MissingSessions);
+```
 
 ## BacktestLedgerIntegrityValidator
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestLedgerIntegrityValidator</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:30](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L30).
+Source: [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:41](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L41).
 
-Compares as-of ledger cash, long basis, short proceeds and clearing balances with the retained account snapshots. All comparisons use the ledger&#x27;s shared absolute balance tolerance.
+Compares as-of ledger cash, long basis, short proceeds and clearing balances with the retained account snapshots. The lot quantity comparison uses exact, unscaled units.
 
 ```csharp
 public static class BacktestLedgerIntegrityValidator
@@ -229,7 +263,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;LedgerIntegrityBreak&gt; Validate(IReadOnlyLedger ledger, PortfolioSnapshot snapshot);</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:32](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L32) |  |
+| <code>public static IReadOnlyList&lt;LedgerIntegrityBreak&gt; Validate(IReadOnlyLedger ledger, PortfolioSnapshot snapshot);</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:43](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L43) |  |
 
 ## BacktestMetrics
 
@@ -282,7 +316,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:100](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L100).
+Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:104](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L104).
 
 Complete result of a finished backtest run.
 
@@ -294,15 +328,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;LedgerIntegrityBreak&gt; LedgerIntegrityBreaks { get; init; } = [];</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:116](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L116) | Day-end accounting differences retained for inspection; empty for a reconciled run. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BacktestCanonicalActionSnapshot? CanonicalCorporateActions { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:120](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L120) | Frozen effective action terms for an explicit canonical settlement replay. |
-| <code>public ExecutionRealismDescriptor ToResolvedRealismDescriptor() =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:123](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L123) | Includes the resolved source snapshot in the completed experiment&#x27;s identity. |
+| <code>public IReadOnlyList&lt;LedgerIntegrityBreak&gt; LedgerIntegrityBreaks { get; init; } = [];</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:120](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L120) | Day-end accounting differences retained for inspection; empty for a reconciled run. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BacktestCanonicalActionSnapshot? CanonicalCorporateActions { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:124](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L124) | Frozen effective action terms for an explicit canonical settlement replay. |
+| <code>public ExecutionRealismDescriptor ToResolvedRealismDescriptor() =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:127](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L127) | Includes the resolved source snapshot in the completed experiment&#x27;s identity. |
 
 ## BacktestResultKinds
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestResultKinds</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:93](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L93).
+Source: [src/Meridian.Backtesting.Sdk/BacktestResult.cs:97](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L97).
 
 Canonical result coverage categories shared by native and external backtest engines.
 
@@ -314,8 +348,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string Full = &quot;Full&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:95](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L95) |  |
-| <code>public const string SummaryOnly = &quot;SummaryOnly&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:96](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L96) |  |
+| <code>public const string Full = &quot;Full&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:99](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L99) |  |
+| <code>public const string SummaryOnly = &quot;SummaryOnly&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:100](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L100) |  |
 
 ## BacktestStage
 
@@ -462,7 +496,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static BacktestResult FromNative(BacktestResult result, string engineId = &quot;MeridianNative&quot;);</code> | [src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs:16](../../../../src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs#L16) |  |
-| <code>public static BacktestResult FromLeanResult(JsonElement root, string backtestId, string algorithmName, DateTimeOffset? ingestedAt = null);</code> | [src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs:35](../../../../src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs#L35) |  |
+| <code>public static BacktestResult FromLeanResult(JsonElement root, string backtestId, string algorithmName, DateTimeOffset? ingestedAt = null);</code> | [src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs:36](../../../../src/Meridian.Backtesting.Sdk/CanonicalBacktestResultNormalizer.cs#L36) |  |
 
 ## CanonicalOpenLotAdapter
 
@@ -845,7 +879,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.LedgerIntegrityBreak</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:7](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L7).
+Source: [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:9](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L9).
 
 An accounting difference observed against a simulation&#x27;s day-end books.
 
@@ -857,55 +891,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal Difference =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:16](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L16) |  |
-
-## LedgerIntegrityException
-
-Qualified name: <code>Meridian.Backtesting.Sdk.LedgerIntegrityException</code>. Kind: `class`.
-
-Source: [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:20](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L20).
-
-Stops a strict backtest while retaining the differences that caused the failure.
-
-```csharp
-public sealed class LedgerIntegrityException(IReadOnlyList<LedgerIntegrityBreak> breaks) : InvalidOperationException($"Ledger integrity failed with {breaks.Count} difference(s).")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;LedgerIntegrityBreak&gt; Breaks { get; } = Array.AsReadOnly(breaks.ToArray());</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:23](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L23) |  |
-
-## LotSelectionMethod
-
-Qualified name: <code>Meridian.Backtesting.Sdk.LotSelectionMethod</code>. Kind: `enum`.
-
-Source: [src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs:7](../../../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs#L7).
-
-Controls which open lots are selected first when a sell or cover order is processed. The chosen method affects both realised P&amp;L timing and tax treatment.
-
-```csharp
-public enum LotSelectionMethod
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fifo</code> | [src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs:13](../../../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs#L13) | First In, First Out — oldest lots are closed first. This is the default and matches legacy behaviour. |
-| <code>Lifo</code> | [src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs:19](../../../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs#L19) | Last In, First Out — most recently opened lots are closed first. Can defer gains by closing lower-cost lots later. |
-| <code>Hifo</code> | [src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs:25](../../../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs#L25) | Highest Cost In, First Out — the lot with the highest entry price is closed first, minimising short-term capital gains (tax-loss harvesting). |
-| <code>SpecificId</code> | [src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs:32](../../../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs#L32) | Specific Identification — the caller supplies a OpenLot.LotId via FillEvent.TargetLotId to nominate the exact lot to close. Falls back to Fifo when no matching lot is found. |
-
-## MarginInterestCashFlow
-
-Qualified name: <code>Meridian.Backtesting.Sdk.MarginInterestCashFlow</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:24](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L24).
-
-Daily margin interest charge on a debit balance (negative amount = cash outflow).
-
-```csharp
-public sealed record MarginInterestCashFlow(DateTimeOffset Timestamp, decimal Amount, decimal MarginBalance, double AnnualRate, string? AccountId = null) : CashFlowEntry(Timestamp, Amount, AccountId);
-```
+| <code>public decimal Difference =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:18](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L18) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Currency { get; init; }</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:21](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L21) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityLotUnitKind? UnitKind { get; init; }</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:24](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L24) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? UnitMultiplier { get; init; }</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:27](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L27) |  |
