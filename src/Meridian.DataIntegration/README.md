@@ -510,3 +510,8 @@ Preserve the module boundary declared in `docs/source/data/source-modules.yml` a
 `Reconciliation/` owns canonical statement import, IB Flex parsing, case and durability adapters.
 FinancialOperations consumes these adapters without referencing the market-data Infrastructure
 assembly. Existing financial and tenant authority checks remain in their domain owners.
+
+The immutable statement match artifact retains the executed tolerance policy, the per-break match
+evidence, and the exact operands of accepted match groups. The recovery checkpoint binds these
+fields through the artifact hash. Legacy artifacts preserve their original byte shape when these
+fields are absent. Recovery adopts a verified older artifact as written.
