@@ -486,6 +486,7 @@ function AppShell({
     refreshStatus,
     portfolioRefreshStatus,
     refresh,
+    refreshWorkspace,
     refreshPortfolio,
     refreshProviderRouting,
     updateFeatureCapability,
@@ -898,6 +899,7 @@ function AppShell({
       providerRoutingRefreshing={providerRoutingRefreshing}
       onProviderSetupConfigured={refreshProviderRouting}
       onProviderRoutingRefresh={refreshProviderRouting}
+      onBackfillCompleted={refreshWorkspace}
     />
   );
   const settingsRouteElement = (

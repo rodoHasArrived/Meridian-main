@@ -1132,6 +1132,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.BackfillCloneConfirmation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Api.BackfillClonePlan"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.BackfillCompletenessSummary"
     },
     {
@@ -12455,6 +12467,48 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Operations.PreparerAttestationApprovalBoundary"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceAccess"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceLabels"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceReceipt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceSymbolPriority"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceValidation"
     },
     {
       "kind": "contract-set-member",
@@ -35625,6 +35679,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Api.BackfillClonePlan",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceRequest"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Api.BackfillCompletenessSummary",
       "target": "contract:Meridian.Contracts.Api.BackfillValidationResult"
     },
@@ -37673,6 +37733,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Backfill.BackfillResult",
       "target": "contract:Meridian.Contracts.Backfill.SymbolValidationSignal"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillResult",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceAccess"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillResult",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceReceipt"
     },
     {
       "kind": "contract-reference",
@@ -47519,6 +47591,30 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Operations.OperationalCaseHistoryRecord",
       "target": "contract:Meridian.Contracts.Operations.VerifiedOperationOutcome"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.ProviderProvenanceReceipt",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceRequest"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.ProviderProvenanceReceipt",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceSource"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.ProviderProvenanceReceipt",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceValidation"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Operations.ProviderProvenanceRequest",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceSymbolPriority"
     },
     {
       "kind": "contract-reference",
@@ -58210,6 +58306,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceReceipt"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse",
       "target": "contract:Meridian.Contracts.Workstation.BiasDisclosureDto"
     },
     {
@@ -58397,6 +58499,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StrategyRunCrossModeTransitionMetadata",
       "target": "contract:Meridian.Contracts.Workstation.StrategyRunMode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StrategyRunDetail",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceReceipt"
     },
     {
       "kind": "contract-reference",
@@ -59183,6 +59291,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationDataBackfillRecord",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceReceipt"
     },
     {
       "kind": "contract-reference",
@@ -70774,7 +70888,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "ce3d2152be89a14a2fd7d0034869fd98b4b51b2465c2cc0dd99078ad7ae939a2",
+  "fingerprint": "c1afe0b610d2a240e8405eebb39202263b98c9aa28c746b5f54df79ae3260769",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -71954,6 +72068,18 @@
       "id": "contract:Meridian.Contracts.Api.BackfillAutoRemediationSummary",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Api.BackfillAutoRemediationSummary"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.BackfillCloneConfirmation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.BackfillCloneConfirmation"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Api.BackfillClonePlan",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Api.BackfillClonePlan"
     },
     {
       "classification": "record",
@@ -83282,6 +83408,48 @@
       "id": "contract:Meridian.Contracts.Operations.PreparerAttestationApprovalBoundary",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Operations.PreparerAttestationApprovalBoundary"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.ProviderProvenanceAccess",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.ProviderProvenanceAccess"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Operations.ProviderProvenanceLabels",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.ProviderProvenanceLabels"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.ProviderProvenanceReceipt",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.ProviderProvenanceReceipt"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Operations.ProviderProvenanceRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.ProviderProvenanceRequest"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.ProviderProvenanceSource",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.ProviderProvenanceSource"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.ProviderProvenanceSymbolPriority",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.ProviderProvenanceSymbolPriority"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Operations.ProviderProvenanceValidation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.ProviderProvenanceValidation"
     },
     {
       "classification": "record",
@@ -104021,11 +104189,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4318,
-    "contract_set_memberships": 5695,
-    "edges": 11756,
+    "contract_references": 4328,
+    "contract_set_memberships": 5704,
+    "edges": 11775,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5786
+    "nodes": 5795
   }
 }

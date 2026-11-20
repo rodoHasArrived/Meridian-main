@@ -305,15 +305,15 @@ Source: [src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs:1
 Resolves session expectations only after positively identifying a supported listing.
 
 ```csharp
-public sealed class HistoricalSessionScheduleResolver(ISecurityIdentityQueryService? identities, IOperationalTradingCalendar? calendar = null)
+public sealed class HistoricalSessionScheduleResolver(ISecurityIdentityQueryService? identities, IOperationalTradingCalendar? calendar = null, DateTimeOffset? identityAsOfUtc = null, IReadOnlyDictionary<string, SecurityDetailDto?>? resolvedIdentities = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;HistoricalSessionSchedule?&gt; ResolveAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs:15](../../../../src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs#L15) |  |
-| <code>public HistoricalSessionSchedule UsSessions(DateOnly from, DateOnly to);</code> | [src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs:53](../../../../src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs#L53) |  |
+| <code>public async Task&lt;HistoricalSessionSchedule?&gt; ResolveAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs:18](../../../../src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs#L18) |  |
+| <code>public HistoricalSessionSchedule UsSessions(DateOnly from, DateOnly to);</code> | [src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs:64](../../../../src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs#L64) |  |
 
 ## MarketHoliday
 

@@ -36,6 +36,8 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
     private readonly string _database;
 
     public override string Name => "nasdaq";
+    internal bool IsWikiDataset => string.Equals(_database, "WIKI", StringComparison.Ordinal);
+    internal bool UsesAnonymousFeed => string.IsNullOrWhiteSpace(_apiKey);
     public override string DisplayName => "Nasdaq Data Link (Quandl)";
     public override string Description => "Alternative and financial datasets from Nasdaq Data Link (formerly Quandl).";
     protected override string HttpClientName => HttpClientNames.NasdaqDataLinkHistorical;

@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntegritySeverity
+
+Qualified name: <code>Meridian.Contracts.Domain.Enums.IntegritySeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs#L6).
+
+Severity level for data integrity events.
+
+```csharp
+public enum IntegritySeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info = 0</code> | [src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs#L11) | Informational event, no action required. |
+| <code>Warning = 1</code> | [src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs#L16) | Warning event, may require attention. |
+| <code>Error = 2</code> | [src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs#L21) | Error event, requires immediate attention. |
+
+## LiquidityProfile
+
+Qualified name: <code>Meridian.Contracts.Domain.Enums.LiquidityProfile</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs#L11).
+
+Classification of expected trading activity for a symbol. Determines monitoring thresholds for gap detection, completeness scoring, SLA freshness, and anomaly detection.
+
+```csharp
+public enum LiquidityProfile : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>High = 0</code> | [src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs:18](../../../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs#L18) | High liquidity - large cap equities, major ETFs, FX majors. Continuous quoting, hundreds of trades per minute. Gap threshold ~60s, expected ~1000+ events/hour. |
+| <code>Normal = 1</code> | [src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs:25](../../../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs#L25) | Normal liquidity - mid-cap equities, sector ETFs, active options. Regular but not constant activity. Gap threshold ~120s, expected ~200 events/hour. |
+| <code>Low = 2</code> | [src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs:32](../../../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs#L32) | Low liquidity - small-cap stocks, less active options, single-stock futures. Trades may be minutes apart during quiet periods. Gap threshold ~600s, expected ~20 events/hour. |
+| <code>VeryLow = 3</code> | [src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs:39](../../../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs#L39) | Very low liquidity - OTC stocks, thinly-traded options, illiquid bonds. Trades may be 10+ minutes apart; wide spreads are normal. Gap threshold ~1800s, expected ~5 events/hour. |
+| <code>Minimal = 4</code> | [src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs:46](../../../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs#L46) | Minimal activity - deep OTC, far out-of-money options, exotic instruments. May have fewer than a handful of trades per day. Gap threshold ~3600s, expected ~1 event/hour. |
+
 ## MarketEventTier
 
 Qualified name: <code>Meridian.Contracts.Domain.Enums.MarketEventTier</code>. Kind: `enum`.
@@ -1079,45 +1121,3 @@ Declared public members:
 | <code>public string[]? RawConditions { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:55](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L55) | Gets the raw provider-specific condition codes exactly as received from the data source. Preserved for auditability; use CanonicalConditions for cross-provider filtering. |
 | <code>public CanonicalTradeCondition[]? CanonicalConditions { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:61](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L61) | Gets the canonicalized condition codes mapped from RawConditions by EventCanonicalizer. Null until the event has been canonicalized. |
 | <code>public Trade(DateTimeOffset Timestamp, string Symbol, decimal Price, long Size, AggressorSide Aggressor, long SequenceNumber, string? StreamId = null, string? Venue = null, string[]? RawConditions = null);</code> | [src/Meridian.Contracts/Domain/Models/Trade.cs:66](../../../../src/Meridian.Contracts/Domain/Models/Trade.cs#L66) | Validates trade data at construction time to prevent corrupt datasets. |
-
-## OrderBookLevelDto
-
-Qualified name: <code>Meridian.Contracts.Domain.OrderBookLevelDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:146](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L146).
-
-Order book level data transfer object.
-
-```csharp
-public sealed class OrderBookLevelDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;side&quot;)] public string Side { get; set; } = &quot;Bid&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:152](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L152) | Gets or sets the order book side. |
-| <code>[JsonPropertyName(&quot;level&quot;)] public int Level { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:158](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L158) | Gets or sets the depth level. |
-| <code>[JsonPropertyName(&quot;price&quot;)] public decimal Price { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:164](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L164) | Gets or sets the price at this level. |
-| <code>[JsonPropertyName(&quot;size&quot;)] public decimal Size { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:170](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L170) | Gets or sets the size at this level. |
-| <code>[JsonPropertyName(&quot;marketMaker&quot;)] public string? MarketMaker { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:176](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L176) | Gets or sets the market maker identifier, if available. |
-| <code>[JsonPropertyName(&quot;orderCount&quot;)] public int? OrderCount { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:182](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L182) | Gets or sets the order count at this level, if available. |
-
-## OrderBookSideValues
-
-Qualified name: <code>Meridian.Contracts.Domain.OrderBookSideValues</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:345](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L345).
-
-Order book side enumeration values.
-
-```csharp
-public static class OrderBookSideValues
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Bid = &quot;Bid&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:350](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L350) | Indicates the bid side of the book. |
-| <code>public const string Ask = &quot;Ask&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:354](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L354) | Indicates the ask side of the book. |

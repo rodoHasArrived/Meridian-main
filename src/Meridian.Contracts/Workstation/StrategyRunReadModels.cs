@@ -476,6 +476,9 @@ public sealed record StrategyRunDetail(
     /// </summary>
     public StrategyRunEvidenceLoop? EvidenceLoop { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }
+
     /// <summary>
     /// Read-only canonical promotion requirements and their durable decision posture. Kept outside
     /// the primary constructor so established CLR constructor and deconstruction signatures remain

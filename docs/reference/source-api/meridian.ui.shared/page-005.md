@@ -525,7 +525,7 @@ public sealed record ProviderValidationProfileRequest(ProviderValidationProfile 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantDiagnosticDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:359](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L359).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:370](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L370).
 
 JSON-friendly Roslyn diagnostic.
 
@@ -537,7 +537,7 @@ public sealed record QuantDiagnosticDto(string Severity, string Message, int Lin
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantLabEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L28).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:29](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L29).
 
 HTTP endpoints that expose the Meridian QuantScript engine (the &quot;Quant Lab&quot;) to the browser workstation. Endpoints are only meaningful when an IScriptRunner has been registered (gated by QuantLab:Enabled); when not registered, calls return 503 Service Unavailable.
 
@@ -549,13 +549,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapQuantLabEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:34](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L34) | Maps Quant Lab routes onto the application. Safe to call regardless of whether the QuantScript engine is registered — endpoints respond with 503 when it is missing. |
+| <code>public static void MapQuantLabEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:35](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L35) | Maps Quant Lab routes onto the application. Safe to call regardless of whether the QuantScript engine is registered — endpoints respond with 503 when it is missing. |
 
 ## QuantMetricDto
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantMetricDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:362](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L362).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:373](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L373).
 
 JSON-friendly metric entry (label/value).
 
@@ -567,7 +567,7 @@ public sealed record QuantMetricDto(string Label, string Value);
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantParameterDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:374](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L374).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:385](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L385).
 
 JSON-friendly description of a discovered script parameter.
 
@@ -579,7 +579,7 @@ public sealed record QuantParameterDto(string Name, string Label, string TypeNam
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantParametersRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:331](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L331).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:342](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L342).
 
 Body of a POST to /api/quant/parameters.
 
@@ -591,7 +591,7 @@ public sealed record QuantParametersRequest(string Source);
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantParametersResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:384](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L384).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:395](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L395).
 
 Response returned by /api/quant/parameters.
 
@@ -603,7 +603,7 @@ public sealed record QuantParametersResponse(IReadOnlyList<QuantParameterDto> Pa
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantPlotBarDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:340](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L340).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:351](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L351).
 
 OHLC bar for candlestick plots.
 
@@ -615,7 +615,7 @@ public sealed record QuantPlotBarDto(string Date, double Open, double High, doub
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantPlotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:349](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L349).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:360](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L360).
 
 JSON-friendly representation of a single plot emitted by a script.
 
@@ -627,7 +627,7 @@ public sealed record QuantPlotDto(string Title, string Type, IReadOnlyList<Quant
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantPlotPointDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:334](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L334).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:345](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L345).
 
 Plot data point with an ISO-8601 date for safe JSON transport.
 
@@ -639,7 +639,7 @@ public sealed record QuantPlotPointDto(string Date, double Value);
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantPlotSeriesDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:337](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L337).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:348](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L348).
 
 A single named series for multi-line plots.
 
@@ -651,7 +651,7 @@ public sealed record QuantPlotSeriesDto(string Label, IReadOnlyList<QuantPlotPoi
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantRunRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:323](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L323).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:334](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L334).
 
 Body of a POST to /api/quant/run.
 
@@ -663,7 +663,7 @@ public sealed record QuantRunRequest(string Source, IReadOnlyDictionary<string, 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantRunResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:393](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L393).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:404](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L404).
 
 Response returned by /api/quant/run.
 
@@ -675,14 +675,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static QuantRunResponse From(ScriptRunResult result) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:408](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L408) | Maps a strongly-typed ScriptRunResult into the JSON DTO. |
-| <code>public static QuantRunResponse FromError(string message) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:446](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L446) | Constructs an error response for unhandled exceptions. |
+| <code>public IReadOnlyList&lt;ProviderProvenanceReceipt&gt; ProviderProvenanceReceipts { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:418](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L418) |  |
+| <code>public static QuantRunResponse From(ScriptRunResult result) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:421](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L421) | Maps a strongly-typed ScriptRunResult into the JSON DTO. |
+| <code>public static QuantRunResponse FromError(string message) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:463](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L463) | Constructs an error response for unhandled exceptions. |
 
 ## QuantTemplateDto
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplateDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:387](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L387).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:398](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L398).
 
 A pre-built starter snippet for the lab.
 
@@ -694,7 +695,7 @@ public sealed record QuantTemplateDto(string Id, string Title, string Descriptio
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplatesResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:390](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L390).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:401](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L401).
 
 Response returned by /api/quant/templates.
 
@@ -706,7 +707,7 @@ public sealed record QuantTemplatesResponse(IReadOnlyList<QuantTemplateDto> Temp
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTradeDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:365](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L365).
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:376](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L376).
 
 JSON-friendly script-emitted trade row.
 

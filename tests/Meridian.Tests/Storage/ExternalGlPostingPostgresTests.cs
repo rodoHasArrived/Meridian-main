@@ -45,7 +45,7 @@ public sealed class ExternalGlPostingPostgresTests
         using var client = new HttpClient(http);
         var adapter = Adapter(client);
         var accounting = new AccountingSystemIntegrationService([], store);
-        var isBookOfRecord = false;
+        var isBookOfRecord = true;
         var bookGuard = new Mock<IBookOfRecordGuard>();
         bookGuard.Setup(guard => guard.GetStatusAsync(Tenant, Company, scope.LedgerBookId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => new BookOfRecordStatusDto(scope.LedgerBookId, isBookOfRecord, null, null, "Book is in shadow mode."));
@@ -76,6 +76,7 @@ public sealed class ExternalGlPostingPostgresTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.DecideAsync(scope, package.PackageId, true,
             package.PayloadHash, "Approve", PrepareActor, Human, ct));
 
+        isBookOfRecord = false;
         await Assert.ThrowsAsync<ShadowBookNotBookOfRecordException>(() => service.DecideAsync(scope, package.PackageId, true,
             package.PayloadHash, "Attempt approval during shadow mode", ApproveActor, Human, ct));
         isBookOfRecord = true;

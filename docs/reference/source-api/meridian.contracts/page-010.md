@@ -6,6 +6,33 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AssetCashFlowProjectionRunDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetCashFlowProjectionRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:52](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L52).
+
+```csharp
+public sealed record AssetCashFlowProjectionRunDto(Guid ProjectionRunId, Guid SecurityId, DateOnly ProjectionAsOf, string EngineVersion, string Status, DateTimeOffset GeneratedAt, string SourceDomain, string? SourceEntityId, JsonElement? ExtensionPayload = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto? Blocker { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:64](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L64) |  |
+| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:66](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L66) |  |
+
+## AssetDisposalLotSelectionDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:353](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L353).
+
+```csharp
+public sealed record AssetDisposalLotSelectionDto(Guid TaxLotRecordId, string LotId, long ExpectedVersion, decimal ExpectedOpenQuantity, decimal Quantity, int SelectionOrdinal, string SelectionEvidenceId, decimal ExpectedUnitCost = 0m, decimal ExpectedCostBasis = 0m);
+```
+
 ## AssetLedgerProjectionDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto</code>. Kind: `record`.
@@ -876,25 +903,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;CorporateActionPostingComponentDto&gt; Components { get; init; } = Components??[];</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:879](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L879) |  |
-
-## CorporateActionProjectionBlockerDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:977](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L977).
-
-```csharp
-public sealed record CorporateActionProjectionBlockerDto(string Code, string Message);
-```
-
-## CorporateActionProjectionEvidenceDependencyDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionEvidenceDependencyDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:906](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L906).
-
-Typed evidence dependency. URI, hash, version, and subject stay paired when projection identity is calculated; independently sorted URI/hash lists are deliberately not accepted.
-
-```csharp
-public sealed record CorporateActionProjectionEvidenceDependencyDto(CorporateActionProjectionEvidenceRoleDto Role, string EvidenceId, string EvidenceUri, string ContentHashSha256, long EvidenceVersion, string SubjectType, string SubjectId);
-```

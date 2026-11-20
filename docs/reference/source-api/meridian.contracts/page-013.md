@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashFlowDateDelta
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowDateDelta</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:3](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L3).
+
+```csharp
+public sealed record CashFlowDateDelta(DateOnly Date, string StreamId, decimal LeftNetCash, decimal RightNetCash)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal Delta =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:5](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L5) |  |
+
+## CashFlowExerciseCalculation
+
+Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseCalculation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:133](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L133).
+
+```csharp
+public sealed record CashFlowExerciseCalculation(SelectedCashFlowExercise Selection, CashFlowNoticeWindow NoticeWindow, decimal DirtyPresentValue, decimal AccruedInterest, decimal CleanFloor, decimal DirtyConsideration, decimal Premium);
+```
+
 ## CashFlowExerciseEligibility
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowExerciseEligibility</code>. Kind: `record`.
@@ -808,57 +834,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;latest&quot;)] public DateTime Latest { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:291](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L291) | Latest timestamp in this directory. |
 | <code>[JsonPropertyName(&quot;granularity&quot;)] public string? Granularity { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:297](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L297) | Date granularity (Daily, Hourly, Monthly). |
 | <code>[JsonPropertyName(&quot;datesWithData&quot;)] public string[]? DatesWithData { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:303](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L303) | Dates with data in this directory. |
-
-## DirectoryIndex
-
-Qualified name: <code>Meridian.Contracts.Catalog.DirectoryIndex</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:9](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L9).
-
-Per-directory metadata index stored as _index.json in each data directory. Provides file-level metadata with checksums, counts, and sequence ranges.
-
-```csharp
-public sealed class DirectoryIndex
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;indexVersion&quot;)] public string IndexVersion { get; set; } = &quot;1.0.0&quot;;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:15](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L15) | Index format version. |
-| <code>[JsonPropertyName(&quot;relativePath&quot;)] public string RelativePath { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:21](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L21) | Relative path from storage root. |
-| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:27](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L27) | When this index was created. |
-| <code>[JsonPropertyName(&quot;lastUpdatedAt&quot;)] public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:33](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L33) | When this index was last updated. |
-| <code>[JsonPropertyName(&quot;statistics&quot;)] public DirectoryStatistics Statistics { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:39](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L39) | Directory-level statistics. |
-| <code>[JsonPropertyName(&quot;files&quot;)] public List&lt;IndexedFileEntry&gt; Files { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:45](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L45) | File entries in this directory. |
-| <code>[JsonPropertyName(&quot;subdirectories&quot;)] public string[] Subdirectories { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:51](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L51) | Subdirectory references (relative paths to child _index.json files). |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:57](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L57) | Symbols present in this directory. |
-| <code>[JsonPropertyName(&quot;eventTypes&quot;)] public string[] EventTypes { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:63](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L63) | Event types present in this directory. |
-| <code>[JsonPropertyName(&quot;sources&quot;)] public string[] Sources { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:69](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L69) | Data sources present in this directory. |
-| <code>[JsonPropertyName(&quot;dateRange&quot;)] public DirectoryDateRange? DateRange { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:75](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L75) | Date range for data in this directory. |
-| <code>[JsonPropertyName(&quot;indexChecksum&quot;)] public string? IndexChecksum { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:81](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L81) | Integrity checksum for this index file. |
-
-## DirectoryScanResult
-
-Qualified name: <code>Meridian.Contracts.Catalog.DirectoryScanResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:309](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L309).
-
-Result of a directory scan operation.
-
-```csharp
-public sealed class DirectoryScanResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;success&quot;)] public bool Success { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:315](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L315) | Whether the scan was successful. |
-| <code>[JsonPropertyName(&quot;path&quot;)] public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:321](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L321) | Directory path that was scanned. |
-| <code>[JsonPropertyName(&quot;index&quot;)] public DirectoryIndex? Index { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:327](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L327) | The generated directory index. |
-| <code>[JsonPropertyName(&quot;filesScanned&quot;)] public int FilesScanned { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:333](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L333) | Number of files scanned. |
-| <code>[JsonPropertyName(&quot;filesWithErrors&quot;)] public int FilesWithErrors { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:339](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L339) | Number of files with errors. |
-| <code>[JsonPropertyName(&quot;durationMs&quot;)] public long DurationMs { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:345](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L345) | Scan duration. |
-| <code>[JsonPropertyName(&quot;error&quot;)] public string? Error { get; set; }</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:351](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L351) | Error message if scan failed. |
-| <code>[JsonPropertyName(&quot;warnings&quot;)] public List&lt;string&gt; Warnings { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/DirectoryIndex.cs:357](../../../../src/Meridian.Contracts/Catalog/DirectoryIndex.cs#L357) | Warnings encountered during scan. |

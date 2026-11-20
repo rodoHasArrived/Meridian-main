@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionProjectionBlockerDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:977](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L977).
+
+```csharp
+public sealed record CorporateActionProjectionBlockerDto(string Code, string Message);
+```
+
+## CorporateActionProjectionEvidenceDependencyDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionEvidenceDependencyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:906](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L906).
+
+Typed evidence dependency. URI, hash, version, and subject stay paired when projection identity is calculated; independently sorted URI/hash lists are deliberately not accepted.
+
+```csharp
+public sealed record CorporateActionProjectionEvidenceDependencyDto(CorporateActionProjectionEvidenceRoleDto Role, string EvidenceId, string EvidenceUri, string ContentHashSha256, long EvidenceVersion, string SubjectType, string SubjectId);
+```
+
 ## CorporateActionProjectionEvidenceRoleDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionEvidenceRoleDto</code>. Kind: `enum`.
@@ -806,35 +828,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:163](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L163) |  |
 | <code>public Guid? BookPositionId { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:165](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L165) |  |
 | <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:167](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L167) |  |
-
-## RetainedEvidenceIdentityDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs:10](../../../../src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs#L10).
-
-Provider-neutral identity for evidence whose bytes, source, review, retention, and subject scope have all been retained. A URI or source reference alone is not retained evidence.
-
-```csharp
-public sealed record RetainedEvidenceIdentityDto(string EvidenceId, string EvidenceUri, string ContentHashSha256, string SourceSystem, string SourceReference, string ReviewStatus, string ReviewedBy, DateTimeOffset ReviewedAtUtc, DateOnly EffectiveDate, long EvidenceVersion, DateTimeOffset RetainedAtUtc, string RetainedBy, string SubjectType, string SubjectId);
-```
-
-## RetainedEvidenceIdentityValidator
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs:202](../../../../src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs#L202).
-
-Fail-closed completeness checks for retained evidence identities.
-
-```csharp
-public static class RetainedEvidenceIdentityValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AcceptedReviewStatus = &quot;Accepted&quot;;</code> | [src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs:204](../../../../src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs#L204) |  |
-| <code>public static IReadOnlyList&lt;string&gt; Validate(RetainedEvidenceIdentityDto? evidence);</code> | [src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs:206](../../../../src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs#L206) |  |
-| <code>public static bool IsComplete(RetainedEvidenceIdentityDto? evidence) =&gt; …;</code> | [src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs:261](../../../../src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs#L261) |  |

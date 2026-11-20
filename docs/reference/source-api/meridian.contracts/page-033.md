@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingPostingEvidenceKindDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingPostingEvidenceKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:30](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L30).
+
+```csharp
+public enum AccountingPostingEvidenceKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Source = 0</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:32](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L32) |  |
+| <code>Approval = 1</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:33](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L33) |  |
+| <code>Reconciliation = 2</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:34](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L34) |  |
+| <code>Settlement = 3</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:35](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L35) |  |
+| <code>PeriodLock = 4</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:36](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L36) |  |
+| <code>OperatorRationale = 5</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:37](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L37) |  |
+| <code>Correction = 6</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:38](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L38) |  |
+| <code>ReportOutput = 7</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:39](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L39) |  |
+| <code>AuditSupport = 8</code> | [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:40](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L40) |  |
+
+## AccountingPostingEvidenceReferenceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingPostingEvidenceReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs:43](../../../../src/Meridian.Contracts/Ledger/AccountingPostingCommandDtos.cs#L43).
+
+```csharp
+public sealed record AccountingPostingEvidenceReferenceDto(string EvidenceId, string Uri, AccountingPostingEvidenceKindDto Kind, string SourceSystem, DateTimeOffset RetainedAtUtc, string RetainedBy, string? SubjectId = null, string? ContentHash = null, string? Description = null, string? SourceReference = null, string? Reviewer = null, DateTimeOffset? ReviewedAtUtc = null, DateOnly? EffectiveDate = null, long? EvidenceVersion = null, string? ReviewStatus = null, string? SubjectType = null);
+```
+
 ## AccountingPostingIntentDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingPostingIntentDto</code>. Kind: `enum`.
@@ -715,37 +749,3 @@ Immutable proof of one approved posted consequence. Journal lines remain authori
 ```csharp
 public sealed record BookFxSettlementLegReceiptDto(Guid CommandId, BookFxSettlementLegDto Leg, Guid LedgerBookId, Guid PeriodId, Guid JournalEntryId, long JournalSequence, Guid? LotMutationBatchId, string PlanHashSha256, DateTimeOffset CapturedAt, string CapturedBy);
 ```
-
-## BookFxSettlementSetDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.BookFxSettlementSetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:90](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L90).
-
-```csharp
-public sealed record BookFxSettlementSetDto(BookFxSettlementSetPlanDto Plan, IReadOnlyList<BookFxSettlementLegReceiptDto> Receipts, IReadOnlyList<BookFxSettlementLegDto> MissingLegs, IReadOnlyList<BookFxSettlementLegDto> InvalidatedLegs)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsComplete =&gt; …;</code> | [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:96](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L96) |  |
-
-## BookFxSettlementSetPlanDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.BookFxSettlementSetPlanDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:55](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L55).
-
-The approved input revision for a cross-book settlement evidence set.
-
-```csharp
-public sealed record BookFxSettlementSetPlanDto(RetainBookFxSettlementSetRequestDto Input, Guid EntityId, string FundProfileId, string FunctionalCurrency, DateTimeOffset GaapBookRevision, DateTimeOffset CashBookRevision, ConsolidationFxRateDto TradeRate, ConsolidationFxRateDto SettlementRate, string RateSetHashSha256, BookFxSettlementAmountsDto Amounts, DateTimeOffset ApprovedAt, string ApprovedBy, string ControllerRole, string PlanHashSha256)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string RuleVersion { get; init; } = &quot;gaap-cash-partial-sale/v1&quot;;</code> | [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:71](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L71) |  |

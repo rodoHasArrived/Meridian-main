@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderConnectionHealthResponse
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionHealthResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:16](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L16).
+
+Minimal typed projection of GET /api/providers/health used by operator clients. A null connection value means no runtime diagnostic probe exists; it must not be treated as false.
+
+```csharp
+public sealed record ProviderConnectionHealthResponse([property : JsonPropertyName("providers")] IReadOnlyList<ProviderConnectionHealthSnapshotDto> Providers, [property : JsonPropertyName("timestamp")] DateTimeOffset Timestamp);
+```
+
+## ProviderConnectionHealthSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionHealthSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:20](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L20).
+
+```csharp
+public sealed record ProviderConnectionHealthSnapshotDto([property : JsonPropertyName("providerId")] string ProviderId, [property : JsonPropertyName("displayName")] string DisplayName, [property : JsonPropertyName("isEnabled")] bool IsEnabled, [property : JsonPropertyName("isConnected")] bool? IsConnected, [property : JsonPropertyName("connectionState")] string ConnectionState, [property : JsonPropertyName("diagnosticsAvailable")] bool DiagnosticsAvailable, [property : JsonPropertyName("lastFailureKind")] string? LastFailureKind, [property : JsonPropertyName("reconnectAttempts")] int? ReconnectAttempts = null);
+```
+
 ## ProviderConnectionTest
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTest</code>. Kind: `record`.
@@ -669,28 +691,4 @@ Anomaly statistics payload returned by the dashboard.
 
 ```csharp
 public sealed record QualityAnomalyStatisticsResponse(long TotalAnomalies, IReadOnlyDictionary<byte, int> AnomaliesByType, IReadOnlyDictionary<byte, int> AnomaliesBySeverity, IReadOnlyList<QualityCountBySymbolResponse> SymbolsWithMostAnomalies, int UnacknowledgedCount, int AnomaliesLast24Hours, DateTimeOffset CalculatedAt);
-```
-
-## QualityComparisonRequest
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityComparisonRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:6](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L6).
-
-Request contract for provider comparison queries used by desktop clients.
-
-```csharp
-public sealed record QualityComparisonRequest(string Symbol, DateOnly? Date, string? EventType);
-```
-
-## QualityComparisonResponse
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityComparisonResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:323](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L323).
-
-Cross-provider comparison payload returned by /api/quality/comparison/{symbol}.
-
-```csharp
-public sealed record QualityComparisonResponse(string Symbol, DateOnly Date, string EventType, IReadOnlyList<QualityProviderDataSummaryResponse> Providers, IReadOnlyList<QualityProviderDiscrepancyResponse> Discrepancies, string RecommendedProvider, DateTimeOffset ComparedAt);
 ```

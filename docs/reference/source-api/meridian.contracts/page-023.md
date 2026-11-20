@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondFredSeriesBindingDocument
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondFredSeriesBindingDocument</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs:36](../../../../src/Meridian.Contracts/FixedIncome/BondProviderIntakeDtos.cs#L36).
+
+Exact independently accepted provider-trust/fred document. BindingKey names an immutable mapping.
+
+```csharp
+public sealed record BondFredSeriesBindingDocument(int SchemaVersion, string Kind, string BindingKey, string SeriesId, string IndexName, [property : JsonRequired] BondMarketObservationKind ObservationKind, [property : JsonRequired] BondMarketValueUnit Unit, string SourceName, string? Currency = null);
+```
+
+## BondGoverningYieldScenario
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondGoverningYieldScenario</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:89](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L89).
+
+Every tied issuer-controlled or maturity scenario determining yield to worst.
+
+```csharp
+public sealed record BondGoverningYieldScenario(string Kind, DateOnly Date, decimal Yield);
+```
+
 ## BondIdentifierCandidateDto
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondIdentifierCandidateDto</code>. Kind: `record`.
@@ -642,40 +666,3 @@ Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:29](.
 ```csharp
 public sealed record BondPerformanceTransactionPopulationDto(string PopulationId, AccountCashForecastScopeDto Scope, BondPerformanceTransactionsDocument Document, RetainedEvidenceIdentityDto Evidence, DateTimeOffset RecordedAtUtc, string RecordedBy);
 ```
-
-## BondPerformanceTransactionRules
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceTransactionRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:41](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L41).
-
-```csharp
-public static class BondPerformanceTransactionRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void Validate(BondPerformanceTransactionPopulationDto population);</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:43](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L43) |  |
-| <code>public static string Identity(AccountCashForecastScopeDto scope, RetainedEvidenceIdentityDto evidence) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:77](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L77) |  |
-
-## BondPerformanceTransactionsDocument
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceTransactionsDocument</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:9](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L9).
-
-Supported source bytes read only from an independently accepted account Evidence Vault document.
-
-```csharp
-public sealed record BondPerformanceTransactionsDocument(int SchemaVersion, string Kind, string AccountId, string BookId, DateOnly PeriodStart, DateOnly PeriodEnd, long Revision, string SourceDomain, string SourceEntityId, [property : JsonRequired] bool CompleteTradePopulation, [property : JsonRequired] bool CompleteCashPopulation, IReadOnlyList<BondPerformanceSourceTrade> TradeCash, IReadOnlyList<string> PaymentVersionIds)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonRequired] public string HoldingBasis { get; init; } = null !;</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:16](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L16) |  |
-| <code>[JsonRequired] public Guid OpeningHoldingsBatchId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:17](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L17) |  |
-| <code>[JsonRequired] public Guid ClosingHoldingsBatchId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:18](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L18) |  |

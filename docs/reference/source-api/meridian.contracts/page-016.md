@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LeadershipChangedEventArgs
+
+Qualified name: <code>Meridian.Contracts.Coordination.LeadershipChangedEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:4](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L4).
+
+Event data raised when this instance gains or loses the coordinator role.
+
+```csharp
+public sealed class LeadershipChangedEventArgs(bool isLeader, string instanceId) : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsLeader { get; } = isLeader;</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:7](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L7) | Whether this instance now holds coordinator leadership. |
+| <code>public string InstanceId { get; } = instanceId;</code> | [src/Meridian.Contracts/Coordination/IClusterCoordinator.cs:10](../../../../src/Meridian.Contracts/Coordination/IClusterCoordinator.cs#L10) | The instance identifier that changed leadership state. |
+
+## LeaseAcquireResult
+
+Qualified name: <code>Meridian.Contracts.Coordination.LeaseAcquireResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Coordination/LeaseAcquireResult.cs:3](../../../../src/Meridian.Contracts/Coordination/LeaseAcquireResult.cs#L3).
+
+```csharp
+public sealed record LeaseAcquireResult(bool Acquired, bool TakenOver, LeaseRecord? Lease, string? CurrentOwner, DateTimeOffset? CurrentExpiryUtc, string? Reason);
+```
+
 ## LeaseRecord
 
 Qualified name: <code>Meridian.Contracts.Coordination.LeaseRecord</code>. Kind: `record`.
@@ -710,24 +739,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:479](../../..
 
 ```csharp
 public sealed record DirectLendingOperationsCalendarItemDto(Guid LoanId, string FacilityName, string ItemType, DateOnly DueDate, string Status, string Detail, string Route);
-```
-
-## DirectLendingOperationsCloseBlockerDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsCloseBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:516](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L516).
-
-```csharp
-public sealed record DirectLendingOperationsCloseBlockerDto(Guid LoanId, string FacilityName, string BlockerType, string Severity, string Detail, string Route);
-```
-
-## DirectLendingOperationsCollateralCoverageDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsCollateralCoverageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:457](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L457).
-
-```csharp
-public sealed record DirectLendingOperationsCollateralCoverageDto(Guid LoanId, string FacilityName, decimal PrincipalOutstanding, decimal CollateralValue, decimal CoverageRatio, string Status, string Detail, string Route);
 ```
