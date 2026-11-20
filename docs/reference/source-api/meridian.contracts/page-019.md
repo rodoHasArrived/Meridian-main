@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AggregateTimeframe
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.AggregateTimeframe</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs:29](../../../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs#L29).
+
+Timeframe for aggregate bars.
+
+```csharp
+public enum AggregateTimeframe : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Second = 0</code> | [src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs:34](../../../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs#L34) | Per-second aggregate (Polygon &quot;A&quot; event). |
+| <code>Minute = 1</code> | [src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs:39](../../../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs#L39) | Per-minute aggregate (Polygon &quot;AM&quot; event). |
+| <code>Hour = 2</code> | [src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs:44](../../../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs#L44) | Hourly aggregate. |
+| <code>Day = 3</code> | [src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs:49](../../../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs#L49) | Daily aggregate. |
+
+## AuctionPrice
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.AuctionPrice</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:104](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L104).
+
+Individual auction price record within an opening or closing auction.
+
+```csharp
+public sealed record AuctionPrice
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset Timestamp { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:109](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L109) | Gets the timestamp of the auction price. |
+| <code>public decimal Price { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:114](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L114) | Gets the auction price. |
+| <code>public long Size { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:119](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L119) | Gets the auction size (number of shares). |
+| <code>public string? Exchange { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:124](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L124) | Gets the exchange code where the auction occurred. |
+| <code>public string? Condition { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:129](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L129) | Gets the auction condition code. |
+| <code>public AuctionPrice(DateTimeOffset Timestamp, decimal Price, long Size, string? Exchange = null, string? Condition = null);</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:139](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L139) | Initializes a new instance of the AuctionPrice record. |
+| <code>public decimal NotionalValue =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:162](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L162) | Notional value of the auction (Price * Size). |
+
+## BboQuotePayload
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.BboQuotePayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs:15](../../../../src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs#L15).
+
+Best-Bid/Offer snapshot payload.
+
+```csharp
+public sealed record BboQuotePayload(DateTimeOffset Timestamp, string Symbol, decimal BidPrice, long BidSize, decimal AskPrice, long AskSize, decimal? MidPrice, decimal? Spread, long SequenceNumber, string? StreamId = null, string? Venue = null, bool IsProviderSequence = false) : MarketEventPayload
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static BboQuotePayload FromUpdate(DateTimeOffset timestamp, string symbol, decimal bidPrice, long bidSize, decimal askPrice, long askSize, long sequenceNumber, string? streamId = null, string? venue = null);</code> | [src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs:34](../../../../src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs#L34) | Creates a BboQuotePayload from a MarketQuoteUpdate (adapter input). Calculates mid-price and spread automatically. |
+| <code>public static BboQuotePayload FromUpdate(MarketQuoteUpdate update, long seq, bool isProviderSequence = false);</code> | [src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs:76](../../../../src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs#L76) | Creates a BboQuotePayload from a MarketQuoteUpdate with conditional spread/mid-price calculation. Returns null for spread and mid-price if: - Either bid or ask price is 0 - Market is crossed (bid &gt; ask) |
+
 ## DepthIntegrityEvent
 
 Qualified name: <code>Meridian.Contracts.Domain.Models.DepthIntegrityEvent</code>. Kind: `record`.
@@ -1023,56 +1087,3 @@ Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:188](
 ```csharp
 public sealed record EnvironmentLedgerGroupRuntimeDto(Guid LedgerGroupId, string NodeDefinitionId, string DisplayName, string BaseCurrency, Guid? OrganizationId, Guid? BusinessId, Guid? ClientId, Guid? FundId, Guid? SleeveId, Guid? VehicleId, IReadOnlyList<Guid> AccountIds, IReadOnlyList<Guid> InvestmentPortfolioIds);
 ```
-
-## EnvironmentManagedScopeKind
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:32](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L32).
-
-```csharp
-public enum EnvironmentManagedScopeKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IndividualInvestor</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:34](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L34) |  |
-| <code>FamilyOffice</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:35](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L35) |  |
-| <code>Fund</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:36](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L36) |  |
-
-## EnvironmentNodeDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:47](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L47).
-
-```csharp
-public sealed record EnvironmentNodeDefinitionDto(string NodeDefinitionId, EnvironmentNodeKind NodeKind, string Code, string Name, string BaseCurrency, string? Description = null, string? ParentNodeDefinitionId = null, OwnershipRelationshipTypeDto? ParentRelationshipType = null, string? LaneId = null, BusinessKindDto? BusinessKind = null, LegalEntityTypeDto? LegalEntityType = null, AccountTypeDto? AccountType = null, ClientSegmentKind ClientSegmentKind = ClientSegmentKind.Unspecified, string? Jurisdiction = null, string? LedgerReference = null, string? Institution = null, bool IsActive = true);
-```
-
-## EnvironmentNodeKind
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:7](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L7).
-
-```csharp
-public enum EnvironmentNodeKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Organization</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:9](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L9) |  |
-| <code>Business</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:10](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L10) |  |
-| <code>Client</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:11](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L11) |  |
-| <code>Fund</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:12](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L12) |  |
-| <code>Sleeve</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:13](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L13) |  |
-| <code>Vehicle</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:14](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L14) |  |
-| <code>InvestmentPortfolio</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:15](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L15) |  |
-| <code>Entity</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:16](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L16) |  |
-| <code>Account</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:17](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L17) |  |
-| <code>LedgerGroup</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:18](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L18) |  |

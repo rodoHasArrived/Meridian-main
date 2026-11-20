@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationMetricCard
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationMetricCard</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L21).
+
+A single KPI card shown in a workstation dashboard header strip.
+
+```csharp
+public sealed record WorkstationMetricCard(string Id, string Label, string Value, string Delta = "", string Tone = "default", string? ComparisonPeriod = null, string? Basis = null, string? AsOf = null, string? Source = null, NumberPassportReferenceDto? NumberPassport = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<WorkstationMetricHistoryPointDto>? History = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? HistoryBasis = null);
+```
+
+## WorkstationMetricHistoryPointDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationMetricHistoryPointDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L39).
+
+One point of a metric&#x27;s history, oldest first. Value is null when the retained source cannot establish the figure for that date; a consumer shows a gap, never an interpolated value.
+
+```csharp
+public sealed record WorkstationMetricHistoryPointDto(DateOnly Date, decimal? Value);
+```
+
+## WorkstationModeComparisonGroup
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationModeComparisonGroup</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:137](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L137).
+
+Per-strategy cross-mode comparison group used by strategy and trading surfaces.
+
+```csharp
+public sealed record WorkstationModeComparisonGroup(string StrategyName, IReadOnlyList<WorkstationModeComparisonRun> Modes);
+```
+
 ## WorkstationModeComparisonRun
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationModeComparisonRun</code>. Kind: `record`.
@@ -520,34 +556,4 @@ Provides source-generated JSON metadata for the workstation scope-option contrac
 
 ```csharp
 public sealed partial class WorkstationScopeOptionsJsonContext : JsonSerializerContext;
-```
-
-## WorkstationSecurityCoverageGapPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageGapPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L69).
-
-```csharp
-public sealed record WorkstationSecurityCoverageGapPayload(string Source, string Symbol, string? AccountName, string Reason);
-```
-
-## WorkstationSecurityCoveragePayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoveragePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L75).
-
-```csharp
-public sealed record WorkstationSecurityCoveragePayload(int PortfolioResolved, int PortfolioMissing, int LedgerResolved, int LedgerMissing, bool HasIssues, string Tone, string Summary, IReadOnlyList<WorkstationSecurityCoverageReferencePayload> ResolvedReferences, IReadOnlyList<WorkstationSecurityCoverageGapPayload> MissingReferences);
-```
-
-## WorkstationSecurityCoverageReferencePayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageReferencePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L52).
-
-```csharp
-public sealed record WorkstationSecurityCoverageReferencePayload(string Source, string Symbol, string? AccountName, string? SecurityId, string DisplayName, string? AssetClass, string? SubType, string? Currency, string? Status, string? PrimaryIdentifier, string CoverageStatus, string? CoverageReason, string? MatchedIdentifierKind, string? MatchedIdentifierValue, string? MatchedProvider);
 ```

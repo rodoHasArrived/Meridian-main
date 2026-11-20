@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WithdrawShadowBookRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L44).
+
+```csharp
+public sealed record WithdrawShadowBookRequestDto(int ExpectedVersion, string Reason);
+```
+
+## WorkflowActionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowActionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L29).
+
+Reusable action target that can be used by summaries, inbox routing, and workflow UI.
+
+```csharp
+public sealed record WorkflowActionDto(string ActionId, string Label, string Detail, string TargetPageTag, string Tone, OperatorWorkItemKindDto? WorkItemKind, IReadOnlyList<string> RoutePrefixes, IReadOnlyList<string> RouteContains, IReadOnlyList<string> Aliases);
+```
+
+## WorkflowBlockerSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowBlockerSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L42).
+
+Primary blocker that explains why the operator cannot progress smoothly.
+
+```csharp
+public sealed record WorkflowBlockerSummary(string Code, string Label, string Detail, string Tone, bool IsBlocking);
+```
+
 ## WorkflowDefinitionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkflowDefinitionDto</code>. Kind: `record`.
@@ -536,40 +570,4 @@ Whether the workstation may submit manual orders (tickets and position actions) 
 
 ```csharp
 public sealed record WorkstationManualOrderEntry(bool Available, string? ReasonCode, string? Reason);
-```
-
-## WorkstationMetricCard
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationMetricCard</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L21).
-
-A single KPI card shown in a workstation dashboard header strip.
-
-```csharp
-public sealed record WorkstationMetricCard(string Id, string Label, string Value, string Delta = "", string Tone = "default", string? ComparisonPeriod = null, string? Basis = null, string? AsOf = null, string? Source = null, NumberPassportReferenceDto? NumberPassport = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<WorkstationMetricHistoryPointDto>? History = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? HistoryBasis = null);
-```
-
-## WorkstationMetricHistoryPointDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationMetricHistoryPointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L39).
-
-One point of a metric&#x27;s history, oldest first. Value is null when the retained source cannot establish the figure for that date; a consumer shows a gap, never an interpolated value.
-
-```csharp
-public sealed record WorkstationMetricHistoryPointDto(DateOnly Date, decimal? Value);
-```
-
-## WorkstationModeComparisonGroup
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationModeComparisonGroup</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:137](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L137).
-
-Per-strategy cross-mode comparison group used by strategy and trading surfaces.
-
-```csharp
-public sealed record WorkstationModeComparisonGroup(string StrategyName, IReadOnlyList<WorkstationModeComparisonRun> Modes);
 ```

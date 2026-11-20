@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionCalendarCaseReferenceDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCalendarCaseReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L53).
+
+```csharp
+public sealed record CorporateActionCalendarCaseReferenceDto(Guid CaseId, long Version, string State, CorporateActionCaseScopeDto Scope);
+```
+
+## CorporateActionCalendarEventDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L56).
+
+```csharp
+public sealed record CorporateActionCalendarEventDto(string EventId, Guid SecurityId, string Ticker, string ActionType, Guid ProposalId, string DateKind, DateOnly Date, DateTimeOffset? At, IReadOnlyList<CorporateActionCalendarCaseReferenceDto> Cases, CorporateActionProviderEventIdentityDto Source, string ProposalState, CorporateActionDeadlineHistoryDto? Deadline = null, CorporateActionElectionCutoffDto? SourceCutoff = null);
+```
+
+## CorporateActionCalendarPageDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCalendarPageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L71).
+
+```csharp
+public sealed record CorporateActionCalendarPageDto(DateOnly From, DateOnly To, DateTimeOffset GeneratedAtUtc, string Revision, IReadOnlyList<CorporateActionCalendarEventDto> Items, string? NextCursor, int TotalCount, string Coverage);
+```
+
 ## CorporateActionCaseAccountingApprovalDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto</code>. Kind: `record`.
@@ -691,52 +721,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static string Compute(CorporateActionDto action);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEconomicFingerprint.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEconomicFingerprint.cs#L16) |  |
-
-## CorporateActionEffectiveState
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEffectiveState</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L106).
-
-One effective corporate action: the chain tip with a canonical EventType, its resolved lifecycle state at the projection&#x27;s as-of time, and the full amendment timeline (original announcement first, tip last).
-
-```csharp
-public sealed record CorporateActionEffectiveState(CorporateActionDto Effective, string LifecycleState, bool IsCancelled, IReadOnlyList<CorporateActionDto> Timeline);
-```
-
-## CorporateActionEffectiveStateProjector
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEffectiveStateProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L11).
-
-Pure fold over a security&#x27;s append-only corporate-action events: normalizes stored EventType aliases via CorporateActionTypeDescriptorCatalog, follows SupersedesCorpActId chains to their tips, and derives the effective lifecycle state at a given as-of time. Consumers that apply economic effects (price adjustment, ledger posting) should act on the projected effective actions, never the raw rows, so amendments collapse to their latest terms and cancellations drop out.
-
-```csharp
-public static class CorporateActionEffectiveStateProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;CorporateActionEffectiveState&gt; Project(IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L13) |  |
-| <code>public static IReadOnlyList&lt;CorporateActionDto&gt; ProjectEffectiveActions(IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L62) | Effective, non-cancelled actions only — the list economic consumers act on. |
-
-## CorporateActionElectionCalendar
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendar</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L27).
-
-Reads only the versioned electionCalendar companion retained in the provider action payload. No offer expiry, ex-date, record date, or operational due date is promoted to an election cutoff. A malformed declared calendar is unavailable as a whole, preventing a partial set of deadlines from appearing complete. Empty declared calendars explicitly mean no supplied cutoffs.
-
-```csharp
-public static partial class CorporateActionElectionCalendar
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static CorporateActionElectionCalendarDto Read(JsonElement? payload);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L29) |  |

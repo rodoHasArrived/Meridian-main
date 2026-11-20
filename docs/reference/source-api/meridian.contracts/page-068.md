@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderLedgerReconciliationBreakSignOffStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationBreakSignOffStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:318](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L318).
+
+```csharp
+public enum ProviderLedgerReconciliationBreakSignOffStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Open = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:320](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L320) |  |
+| <code>Assigned = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L321) |  |
+| <code>SignedOff = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:322](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L322) |  |
+
+## ProviderLedgerReconciliationCheckDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationCheckDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:343](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L343).
+
+```csharp
+public sealed record ProviderLedgerReconciliationCheckDto(string CheckId, string Label, ProviderLedgerReconciliationCheckStatusDto Status, ReconciliationBreakCategory Category, string ExpectedSource, string ActualSource, decimal? ExpectedAmount, decimal? ActualAmount, decimal? Variance, ReconciliationBreakSeverity Severity, string Reason);
+```
+
+## ProviderLedgerReconciliationCheckStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationCheckStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:310](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L310).
+
+```csharp
+public enum ProviderLedgerReconciliationCheckStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Matched = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:312](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L312) |  |
+| <code>Break = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:313](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L313) |  |
+| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:314](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L314) |  |
+
 ## ProviderLedgerReconciliationDetailDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationDetailDto</code>. Kind: `record`.
@@ -735,38 +781,4 @@ API-safe terminal receipt for a single reconciliation casework attempt. HTTP suc
 
 ```csharp
 public sealed record ReconciliationCaseworkOperationResult(string TransitionStatus, ReconciliationBreakQueueItem? Item, VerifiedOperationOutcome Outcome, string? Error = null, string? ErrorCode = null, IReadOnlyList<string>? ValidationIssues = null);
-```
-
-## ReconciliationCompletedRunObservation
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCompletedRunObservation</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L40).
-
-```csharp
-public sealed record ReconciliationCompletedRunObservation(string RunId, ReconciliationRunObservationScope Scope, DateTimeOffset ObservedAt, bool Succeeded, bool CompletePopulation, IReadOnlyList<ReconciliationBreakObservation> Breaks);
-```
-
-## ReconciliationCorrelationContext
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCorrelationContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1056](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1056).
-
-Cross-workflow correlation metadata stamped on every reconciliation payload.
-
-```csharp
-public sealed record ReconciliationCorrelationContext(string TraceId, string SpanId, string? ParentSpanId, string WorkflowId, string? JobId = null);
-```
-
-## ReconciliationJobControl
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationJobControl</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1079](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1079).
-
-Queue orchestration controls and replay metadata for resilient reconciliation jobs.
-
-```csharp
-public sealed record ReconciliationJobControl(string JobId, string IdempotencyKey, int Attempt, int MaxAttempts, bool DeadLettered, string? DeadLetterReason, DateTimeOffset EnqueuedAt, DateTimeOffset? LastAttemptAt, DateTimeOffset? NextAttemptAt, string BackpressureBucket);
 ```

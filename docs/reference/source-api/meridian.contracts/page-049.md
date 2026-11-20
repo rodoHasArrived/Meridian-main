@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcContractDirection
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractDirection</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L28).
+
+Which side of the contract the fund took: it bought (received, paid fixed, bought protection) or sold.
+
+```csharp
+public enum OtcContractDirection
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Buy</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L30) |  |
+| <code>Sell</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L31) |  |
+
+## OtcContractDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:119](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L119).
+
+A bilateral contract: the trade the fund did against a counterparty on an instrument whose economic terms the Security Master holds. The instrument says what the contract is (a 5y payer swap on SOFR); the contract says who it is with, how much, which way, under which netting set, and where it is in its life. Many contracts can share one instrument.
+
+```csharp
+public sealed record OtcContractDto([property : JsonRequired] Guid ContractId, [property : JsonRequired] Guid SecurityId, [property : JsonRequired] Guid NettingSetId, string? ExternalTradeId, [property : JsonRequired] OtcContractDirection Direction, [property : JsonRequired] decimal Notional, [property : JsonRequired] string NotionalCurrency, [property : JsonRequired] DateOnly TradeDate, [property : JsonRequired] DateOnly EffectiveDate, DateOnly? TerminationDate, [property : JsonRequired] OtcContractStatus Status, string? ConfirmationReference, string? Notes, [property : JsonRequired] long Version, [property : JsonRequired] string UpdatedBy, [property : JsonRequired] DateTimeOffset UpdatedAt);
+```
+
+## OtcContractLifecycleData
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractLifecycleData</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L26).
+
+Version-one lifecycle data. Unknown discriminators fail deserialization rather than becoming another event.
+
+```csharp
+public abstract record OtcContractLifecycleData;
+```
+
 ## OtcContractLifecycleEventDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractLifecycleEventDto</code>. Kind: `record`.
@@ -782,56 +825,3 @@ Enum declarations:
 | <code>OrderPayload = 1</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L12) | The code is sent to (or read back from) the provider on an order. |
 | <code>PositionReport = 2</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L15) | The code is stamped on positions, fills, or execution reports. |
 | <code>Search = 4</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L18) | The code is a symbol-search asset type. |
-
-## ProviderAssetClassCodeTraits
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeTraits</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L23).
-
-Behaviour that execution and booking read from a provider asset-class code.
-
-```csharp
-public enum ProviderAssetClassCodeTraits
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L25) |  |
-| <code>FaceValueFixedIncome = 1</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L31) | Orders in this class are sized in face value and priced as a percentage of par (Alpaca treasury and corporate). |
-| <code>BookableFromReportAlone = 2</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L37) | A fill in this class can be booked from the execution report alone: unit quantity at the reported price, no contract multiplier and no percentage-of-par scaling. |
-
-## PublishSecurityCurveVersionRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.PublishSecurityCurveVersionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:108](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L108).
-
-Publishes the points of a curve as of an economic date. Identical content for the same curve and as-of returns the retained version.
-
-```csharp
-public sealed record PublishSecurityCurveVersionRequest(Guid CurveId, DateOnly AsOf, IReadOnlyList<SecurityCurvePointDto> Points, string Source, DateTimeOffset? SourcedAt = null, string? PublishedBy = null);
-```
-
-## RateUnit
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.RateUnit</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L4).
-
-The declared unit a stored rate value is expressed in.
-
-```csharp
-public enum RateUnit
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unrecognized = - 1</code> | [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L7) | A retained declaration the node cannot interpret; calculations refuse it. |
-| <code>Fraction</code> | [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L10) | A plain fraction: 0.045 is four and a half percent. |
-| <code>Percent</code> | [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L13) | Percentage points: 4.5 is four and a half percent, and 0.5 is half a percent. |
-| <code>BasisPoints</code> | [src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs#L16) | Basis points: 125 is one and a quarter percent. |

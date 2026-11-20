@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionEffectiveState
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEffectiveState</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L106).
+
+One effective corporate action: the chain tip with a canonical EventType, its resolved lifecycle state at the projection&#x27;s as-of time, and the full amendment timeline (original announcement first, tip last).
+
+```csharp
+public sealed record CorporateActionEffectiveState(CorporateActionDto Effective, string LifecycleState, bool IsCancelled, IReadOnlyList<CorporateActionDto> Timeline);
+```
+
+## CorporateActionEffectiveStateProjector
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEffectiveStateProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L11).
+
+Pure fold over a security&#x27;s append-only corporate-action events: normalizes stored EventType aliases via CorporateActionTypeDescriptorCatalog, follows SupersedesCorpActId chains to their tips, and derives the effective lifecycle state at a given as-of time. Consumers that apply economic effects (price adjustment, ledger posting) should act on the projected effective actions, never the raw rows, so amendments collapse to their latest terms and cancellations drop out.
+
+```csharp
+public static class CorporateActionEffectiveStateProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;CorporateActionEffectiveState&gt; Project(IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L13) |  |
+| <code>public static IReadOnlyList&lt;CorporateActionDto&gt; ProjectEffectiveActions(IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L62) | Effective, non-cancelled actions only — the list economic consumers act on. |
+
+## CorporateActionElectionCalendar
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendar</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L27).
+
+Reads only the versioned electionCalendar companion retained in the provider action payload. No offer expiry, ex-date, record date, or operational due date is promoted to an election cutoff. A malformed declared calendar is unavailable as a whole, preventing a partial set of deadlines from appearing complete. Empty declared calendars explicitly mean no supplied cutoffs.
+
+```csharp
+public static partial class CorporateActionElectionCalendar
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static CorporateActionElectionCalendarDto Read(JsonElement? payload);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L29) |  |
+
 ## CorporateActionElectionCalendarDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto</code>. Kind: `record`.
@@ -881,48 +930,3 @@ Declared public members:
 | <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:868](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L868) |  |
 | <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:869](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L869) |  |
 | <code>public long CurrentVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:870](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L870) |  |
-
-## CreateSecurityClosePriceSetRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CreateSecurityClosePriceSetRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs#L13).
-
-The date uses UTC; account and book identities are exact, case-sensitive scopes. Retain RequestId across retries to recover the same immutable capture after a lost response.
-
-```csharp
-public sealed record CreateSecurityClosePriceSetRequest(string AccountId, string BookId, DateOnly ValuationDate, DateTimeOffset EvaluatedAsOf, IReadOnlyList<SecurityClosePriceInputDto> Securities, decimal MaxSourceDispersionPercent, string CreatedBy, Guid? CorrectsSnapshotId = null, string? CorrectionRationale = null, DateTimeOffset? KnowledgeAsOf = null, Guid? RequestId = null);
-```
-
-## CreateSecurityRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CreateSecurityRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:5](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L5).
-
-```csharp
-public sealed record CreateSecurityRequest(Guid SecurityId, string AssetClass, JsonElement CommonTerms, JsonElement AssetSpecificTerms, IReadOnlyList<SecurityIdentifierDto> Identifiers, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## DataQualityRuleCategory
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L7).
-
-```csharp
-public enum DataQualityRuleCategory
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>FileMappingSufficiency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L9) |  |
-| <code>DataTypeRestriction</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L10) |  |
-| <code>MinimumAttribute</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L11) |  |
-| <code>TaxonomyCheck</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L12) |  |
-| <code>ValueConsistency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L13) |  |
-| <code>RefreshControl</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L14) |  |
-| <code>StalenessMonitor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L15) |  |
-| <code>ExternalComparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L16) |  |

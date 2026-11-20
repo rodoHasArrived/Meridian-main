@@ -420,7 +420,7 @@ public sealed record BackfillVendorTierDto(string Id, string Label, int? RateLim
 
 Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationApplyEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:38](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L38).
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:41](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L41).
 
 One runtime-apply outcome. Detail is a fixed explanation and may name provider or rule IDs; it never contains configuration or credential values.
 
@@ -448,12 +448,13 @@ Enum declarations:
 | <code>ProviderReconfigured</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:25](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L25) | A streaming provider was excluded from or re-included in failover in-process. |
 | <code>NoRuntimeEffect</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:28](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L28) | The value was saved; it has no runtime effect in the current host mode. |
 | <code>Deferred</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:31](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L31) | The value was saved but the running host could not apply it; a restart is required. |
+| <code>Failed</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:34](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L34) | The running host attempted to apply the saved setting and reported a failure. |
 
 ## ConfigurationApplySummary
 
 Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationApplySummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:41](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L41).
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:44](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L44).
 
 Outcome of the most recent save&#x27;s runtime apply, reported by the host component that applied it.
 
@@ -465,7 +466,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool AnyDeferred =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:45](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L45) |  |
+| <code>public bool AnyDeferred =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:48](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L48) |  |
 
 ## ConfigurationChangeImpact
 
@@ -491,20 +492,20 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationChangeStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:49](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L49).
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:72](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L72).
 
 Shared by browser and desktop clients. Pending means saved, but not confirmed applied.
 
 ```csharp
-public sealed record ConfigurationChangeStatus(ConfigurationChangeImpact Impact, IReadOnlyList<ConfigurationFieldChange> Changes, IReadOnlyList<ConfigurationFieldChange> PendingChanges, DateTimeOffset? SavedAtUtc, bool CanReconnectInProcess = false, ConfigurationApplySummary? LastApply = null)
+public sealed record ConfigurationChangeStatus(ConfigurationChangeImpact Impact, IReadOnlyList<ConfigurationFieldChange> Changes, IReadOnlyList<ConfigurationFieldChange> PendingChanges, DateTimeOffset? SavedAtUtc, bool CanReconnectInProcess = false, ConfigurationApplySummary? LastApply = null, ConfigurationRevision? Revision = null, ConfigurationRuntimeState? RuntimeState = null, ConfigurationRuntimeAcknowledgement? CollectorAcknowledgement = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool RequiresRestart =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:57](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L57) |  |
-| <code>public bool RequiresReconnect =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:59](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L59) |  |
+| <code>public bool RequiresRestart =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:83](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L83) |  |
+| <code>public bool RequiresReconnect =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:85](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L85) |  |
 
 ## ConfigurationFieldChange
 
@@ -517,6 +518,50 @@ Contains setting names only; configuration and credential values are never expor
 ```csharp
 public sealed record ConfigurationFieldChange(string Path, ConfigurationChangeImpact Impact);
 ```
+
+## ConfigurationRevision
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationRevision</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:52](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L52).
+
+Identity and SHA-256 digest of one committed configuration document.
+
+```csharp
+public sealed record ConfigurationRevision(Guid Id, string ContentHash);
+```
+
+## ConfigurationRuntimeAcknowledgement
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:55](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L55).
+
+Collector observations are bound to an exact saved revision and collector lifetime.
+
+```csharp
+public sealed record ConfigurationRuntimeAcknowledgement(ConfigurationRevision Revision, Guid CollectorInstanceId, DateTimeOffset AppliedAtUtc, IReadOnlyList<ConfigurationApplyEntry> Entries);
+```
+
+## ConfigurationRuntimeState
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationRuntimeState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:62](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L62).
+
+```csharp
+public enum ConfigurationRuntimeState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Saved</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:64](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L64) |  |
+| <code>AppliedLive</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:65](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L65) |  |
+| <code>Deferred</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:66](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L66) |  |
+| <code>Failed</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:67](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L67) |  |
+| <code>Unknown</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:68](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L68) |  |
 
 ## ConnectivityProbeOptions
 
@@ -1024,55 +1069,4 @@ Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:104](../
 
 ```csharp
 public sealed record ProviderCredentialMutationResultDto(string ProviderId, ProviderCredentialStateDto CredentialState, ProviderCredentialSourceDto CredentialSource, ProviderVerificationStateDto VerificationState, ProviderContinuityHealthDto Health, string? MaskedKeyPreview, string? Environment, IReadOnlyList<string> Warnings);
-```
-
-## ProviderCredentialSourceDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialSourceDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:26](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L26).
-
-```csharp
-public enum ProviderCredentialSourceDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:28](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L28) |  |
-| <code>LocalEncryptedStore</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:29](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L29) |  |
-| <code>Environment</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:30](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L30) |  |
-| <code>ExternalVaultReference</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:31](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L31) |  |
-| <code>NotRequired</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:32](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L32) |  |
-
-## ProviderCredentialStateDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:15](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L15).
-
-```csharp
-public enum ProviderCredentialStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotRequired</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:17](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L17) |  |
-| <code>Missing</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:18](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L18) |  |
-| <code>Partial</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:19](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L19) |  |
-| <code>Configured</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:20](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L20) |  |
-| <code>Verified</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:21](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L21) |  |
-| <code>Invalid</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:22](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L22) |  |
-
-## ProviderCredentialUpsertRequestDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialUpsertRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:99](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L99).
-
-```csharp
-public sealed record ProviderCredentialUpsertRequestDto(IReadOnlyDictionary<string, string?>? Credentials, string? Environment = null, string? RequestedBy = null);
 ```
