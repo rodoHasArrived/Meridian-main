@@ -3365,6 +3365,11 @@ approval workflow panel while presenting as Delivery Evidence, `/reporting/expor
 export artifacts, and `/reporting/governance` owns access, approval, lifecycle, and audit controls.
 Each queued daily item exposes blocked status, owner, affected output, next action, and proof or
 evidence posture so browser Reporting matches the WPF cockpit decision model.
+Report Builder populates the field palette and filter choices from the selected preview dataset.
+Choose retained rows, paste JSON or CSV, or select a sample. Drop fields into the grid or add them
+with the field selectors. A source change preserves placed fields and flags those missing from the
+new dataset. Drafts can be saved independently of preview, and governed runs validate their fields
+against the certified ledger snapshot.
 The Reporting task-mode resolver, report-pack route detector, and launcher links live in
 `reporting-screen.task-mode-view-model.ts`, keeping the daily-cockpit IA out of the broader
 reporting view model.

@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorOverrideCanonicalVersionConflictException
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideCanonicalVersionConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:101](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L101).
+
+Thrown when an overlay patch was submitted for a canonical Security Master version that no longer matches the stream version observed while the patch transaction held the stream lock.
+
+```csharp
+public sealed class OperatorOverrideCanonicalVersionConflictException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperatorOverrideCanonicalVersionConflictException(Guid securityId, long expectedVersion, long currentVersion) : base($&quot;Security stream version conflict for {securityId}. Expected {expectedVersion}, actual {currentVersion}.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:103](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L103) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:111](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L111) |  |
+| <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:112](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L112) |  |
+| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:113](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L113) |  |
+
 ## OperatorOverrideDecision
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideDecision</code>. Kind: `record`.
@@ -1182,16 +1203,4 @@ ProjectionRebuild / ProjectionBatchRebuilt: one persisted rebuild batch.
 
 ```csharp
 public sealed record ProjectionBatchRebuiltPayload(string ProjectionName, long LastGlobalSequence, IReadOnlyList<ProjectionBatchRebuiltRecord> Records) : ISecurityGovernancePayload;
-```
-
-## ProjectionBatchRebuiltRecord
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ProjectionBatchRebuiltRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L46).
-
-A record written by a rebuild batch. Version 1 stored these two names in PascalCase.
-
-```csharp
-public sealed record ProjectionBatchRebuiltRecord([property : JsonPropertyName("SecurityId")] Guid SecurityId, [property : JsonPropertyName("Version")] long Version);
 ```

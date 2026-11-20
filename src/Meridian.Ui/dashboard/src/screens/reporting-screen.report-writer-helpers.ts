@@ -3,8 +3,7 @@ import type {
   ReportWriterChartDraft,
   ReportWriterDraftSettings,
   ReportWriterDropZone,
-  ReportWriterFormatRuleDraft,
-  ReportWriterPreviewDatasetProfile
+  ReportWriterFormatRuleDraft
 } from "@/screens/reporting-screen.report-writer";
 import type { ReportingWriterGridRow, ReportingWriterToken } from "@/screens/reporting-screen.view-model";
 import type { ReportTemplateDraftRequest, ReportWriterAggregateFunction, ReportWriterChartDefinition, ReportWriterFilterDefinition, ReportWriterFormatRule, ReportWriterGridDefinition, ReportWriterGridKind, ReportWriterMetricDefinition } from "@/types";
@@ -12,7 +11,7 @@ import type { ReportTemplateDraftRequest, ReportWriterAggregateFunction, ReportW
 // Report-writer request/formula/preview builders extracted from reporting-screen.tsx
 // to keep the screen root focused on rendering. These are pure helpers (no JSX, no
 // component state): grid/access/filter/metric/formula request builders, the formula
-// field parser, and dataset-preview value generators.
+// field parser.
 
 export function buildReportWriterGridDefinition(
   grid: ReportingWriterGridRow,
@@ -60,61 +59,6 @@ export function buildWriterChartDefinition(draft: ReportWriterChartDraft | null 
     .filter((v) => v.length > 0);
   if (valueColumns.length === 0) return null;
   return { type: draft.type, categoryField: draft.categoryField.trim(), valueColumns };
-}
-
-export function buildReportWriterPreviewRows(
-  grid: ReportWriterGridDefinition,
-  profile: ReportWriterPreviewDatasetProfile
-): Record<string, string>[] {
-  const dimensionFields = normalizeStringList([
-    ...(grid.rowFields ?? []),
-    ...(grid.columnFields ?? [])
-  ]);
-  const metricSourceFields = normalizeStringList((grid.metrics ?? []).map((metric) => metric.sourceField));
-  const knownFormulaReferences = [
-    ...(grid.metrics ?? []).flatMap((metric) => [metric.name, metric.sourceField]),
-    ...(grid.formulas ?? []).map((formula) => formula.name),
-    ...dimensionFields
-  ];
-  const formulaFields = normalizeStringList((grid.formulas ?? []).flatMap((formula) => extractReportWriterFormulaFields(formula.expression, knownFormulaReferences)))
-    .filter((field) => grid.kind !== "Contribution" || !isGeneratedContributionField(field));
-  const numericFields = normalizeStringList([
-    ...metricSourceFields,
-    ...formulaFields,
-    ...(grid.sortBy ? [grid.sortBy] : [])
-  ]).filter((field) =>
-    !dimensionFields.some((dimension) => dimension.toLowerCase() === field.toLowerCase())
-    && (grid.kind !== "Contribution" || !isGeneratedContributionField(field)));
-  const fields = normalizeStringList([...dimensionFields, ...numericFields]);
-  const filters = grid.filters ?? [];
-  const filterFields = normalizeStringList(filters.map((filter) => filter.field));
-
-  if (fields.length === 0 && filterFields.length === 0) {
-    return [{ previewDataset: profile, previewRow: "1" }, { previewDataset: profile, previewRow: "2" }];
-  }
-
-  return Array.from({ length: 4 }, (_, index) => {
-    const row: Record<string, string> = { previewDataset: profile };
-    for (const field of dimensionFields) {
-      row[field] = previewDimensionValue(field, index, profile);
-    }
-
-    for (const field of numericFields) {
-      row[field] = grid.kind === "Contribution" && isPnlLikeField(field)
-        ? previewContributionPnlValue(index, profile)
-        : previewNumericValue(field, index, profile);
-    }
-
-    for (const filter of filters) {
-      if (!filter.field) {
-        continue;
-      }
-
-      row[filter.field] = previewFilterValue(filter, index, profile);
-    }
-
-    return row;
-  });
 }
 
 export function buildReportAccessPolicy(settings: ReportWriterDraftSettings): ReportTemplateDraftRequest["accessPolicy"] {
@@ -408,189 +352,9 @@ export function isReportWriterFormulaFunction(identifier: string): boolean {
   return ["abs", "min", "max", "safedivide", "percent", "basispoints", "round", "if"].includes(identifier.toLowerCase());
 }
 
-export function isGeneratedContributionField(field: string | null | undefined): boolean {
-  const normalized = normalizeIdentifierToken(field ?? "", "").toLowerCase();
-  return normalized === "contributionpercent" || normalized === "contributionabspercent";
-}
-
 export function isPnlLikeField(field: string | null | undefined): boolean {
   const normalized = (field ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
   return normalized.includes("pnl") || normalized.includes("profitloss");
-}
-
-export function previewDimensionValue(field: string, index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  const normalized = field.toLowerCase();
-  if (profile === "ledgerFacts") {
-    if (normalized.includes("sector")) {
-      return ["Operating expense", "Capital activity", "Financing", "Revenue"][index] ?? "Ledger";
-    }
-
-    if (normalized.includes("strategy")) {
-      return ["Close accrual", "Investor activity", "Cash financing", "Management fee"][index] ?? "Ledger";
-    }
-
-    if (normalized.includes("fund")) {
-      return ["Fund Alpha", "Fund Alpha", "Fund Beta", "Fund Beta"][index] ?? "Fund Alpha";
-    }
-
-    if (normalized.includes("security") || normalized.includes("asset")) {
-      return ["GL-6000", "GL-3100", "GL-2100", "GL-4100"][index] ?? "Ledger line";
-    }
-  }
-
-  if (profile === "cashLadder") {
-    if (normalized.includes("sector")) {
-      return ["Cash", "Settlement", "Financing", "Reserve"][index] ?? "Cash";
-    }
-
-    if (normalized.includes("strategy")) {
-      return ["T+0 liquidity", "T+1 settlement", "Credit facility", "Operating reserve"][index] ?? "Cash ladder";
-    }
-
-    if (normalized.includes("fund")) {
-      return ["Fund Alpha", "Fund Alpha", "Fund Alpha", "Fund Beta"][index] ?? "Fund Alpha";
-    }
-
-    if (normalized.includes("security") || normalized.includes("asset")) {
-      return ["USD sweep", "Broker receivable", "Credit draw", "Reserve cash"][index] ?? "Cash bucket";
-    }
-  }
-
-  if (normalized.includes("sector")) {
-    return ["Technology", "Technology", "Rates", "Credit"][index] ?? "Other";
-  }
-
-  if (normalized.includes("strategy")) {
-    return ["Core", "Growth", "Rates", "Credit"][index] ?? "Core";
-  }
-
-  if (normalized.includes("fund")) {
-    return ["Fund A", "Fund A", "Fund B", "Fund B"][index] ?? "Fund A";
-  }
-
-  if (normalized.includes("region")) {
-    return ["North America", "Europe", "Asia Pacific", "North America"][index] ?? "North America";
-  }
-
-  if (normalized.includes("security") || normalized.includes("asset")) {
-    return ["ABC Corp", "XYZ Fund", "UST 10Y", "Cash USD"][index] ?? "Position";
-  }
-
-  return `${formatPreviewFieldLabel(field)} ${(index % 2) + 1}`;
-}
-
-export function previewNumericValue(field: string, index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  const normalized = field.toLowerCase();
-  if (profile === "ledgerFacts") {
-    if (normalized.includes("pnl") || normalized.includes("p&l")) {
-      return ["25", "-7", "4", "12"][index] ?? "0";
-    }
-
-    if (normalized.includes("cash") || normalized.includes("liquidity")) {
-      return ["350", "150", "500", "225"][index] ?? "0";
-    }
-
-    if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-      return ["250", "125", "80", "60"][index] ?? "0";
-    }
-  }
-
-  if (profile === "cashLadder") {
-    if (normalized.includes("pnl") || normalized.includes("p&l")) {
-      return ["1", "0", "-1", "0"][index] ?? "0";
-    }
-
-    if (normalized.includes("cash") || normalized.includes("liquidity")) {
-      return ["1250", "900", "650", "300"][index] ?? "0";
-    }
-
-    if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-      return ["1200", "875", "600", "275"][index] ?? "0";
-    }
-  }
-
-  if (normalized.includes("pnl") || normalized.includes("p&l")) {
-    return ["10", "5", "-2", "4"][index] ?? "0";
-  }
-
-  if (normalized.includes("cash") || normalized.includes("liquidity")) {
-    return ["1000", "750", "400", "250"][index] ?? "0";
-  }
-
-  if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
-    return ["100", "50", "75", "25"][index] ?? "0";
-  }
-
-  if (normalized.includes("percent") || normalized.includes("pct")) {
-    return ["12.5", "8.25", "-3.5", "6"][index] ?? "0";
-  }
-
-  return String((index + 1) * 10);
-}
-
-export function previewContributionPnlValue(index: number, profile: ReportWriterPreviewDatasetProfile): string {
-  if (profile === "ledgerFacts") {
-    return ["150", "-50", "0", "25"][index] ?? "0";
-  }
-
-  if (profile === "cashLadder") {
-    return ["12", "-4", "0", "2"][index] ?? "0";
-  }
-
-  return ["150", "-50", "0", "25"][index] ?? "0";
-}
-
-export function previewFilterValue(
-  filter: ReportWriterFilterDefinition,
-  index: number,
-  profile: ReportWriterPreviewDatasetProfile
-): string {
-  const operator = normalizeReportWriterFilterOperator(filter.operator);
-  const value = filter.value ?? "";
-  if (operator === "IsBlank") {
-    return index === 0 ? "" : previewDimensionValue(filter.field, index, profile);
-  }
-
-  if (operator === "IsNotBlank") {
-    return index === 0 ? previewDimensionValue(filter.field, index, profile) : "";
-  }
-
-  if (["GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual"].includes(operator)) {
-    const numeric = Number.parseFloat(value);
-    if (Number.isFinite(numeric)) {
-      return index < 2 ? String(numeric + 10 + index) : String(numeric - 10 - index);
-    }
-  }
-
-  if (operator === "Contains") {
-    return index < 2 ? `Preview ${value} ${index + 1}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "StartsWith") {
-    return index < 2 ? `${value}${index + 1}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "EndsWith") {
-    return index < 2 ? `Preview ${index + 1}${value}` : `Other ${index + 1}`;
-  }
-
-  if (operator === "NotEquals") {
-    return index < 2 ? `${value}-alternate-${index + 1}` : value;
-  }
-
-  return index < 2 ? value : previewDimensionValue(filter.field, index, profile);
-}
-
-export function formatPreviewFieldLabel(field: string): string {
-  const spaced = field
-    .replace(/[_-]+/g, " ")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .trim();
-  if (!spaced) {
-    return "Value";
-  }
-
-  return spaced.replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 export function normalizeAggregateFunction(value: ReportWriterAggregateFunction | string | null | undefined): ReportWriterAggregateFunction {

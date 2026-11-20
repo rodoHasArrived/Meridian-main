@@ -3044,13 +3044,12 @@ when ad-hoc or scheduled automation uses a governed source-backed dataset. `Repo
 `/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}` as JSON by default, with
 `format=csv`, `format=pdf`, and `format=xlsx` downloads for operators that need direct grid extracts
 or allocator-ready grid previews from a governed run artifact; `format=xls` and `format=excel` are
-compatibility aliases for the same canonical `.xlsx` workbook. JSON, PDF, and XLSX downloads enrich
-the retained render with a data dictionary or lineage summary plus validation checks for row-count,
-column coverage, source-field lineage, and render warnings, while CSV stays a flat grid extract for
-downstream ingestion. Those retained
-grid downloads evaluate the source template access policy at read time, so private, restricted
-user/group/company, and company-wide report audiences are enforced for JSON, CSV, and XLSX artifact
-retrieval.
+compatibility aliases for the same canonical `.xlsx` workbook. PDF shows up to 28 retained rows
+in tables with repeated headers and column bands for wide pivots. XLSX includes the retained rows
+with numeric formatting, plus lineage, data dictionary, validation, and branding sheets.
+Values beyond Excel's numeric precision are carried as exact text and counted on the validation
+sheet. CSV uses canonical field keys for downstream ingestion. All grid downloads evaluate the
+retained run's access policy at read time.
 `ReportPackRunReadService` uses the same registry list when it is registered, so Reporting payloads
 include custom template drafts, in-review records, approvals, latest-approved status, and
 report-writer grid metadata alongside built-in templates. For custom templates, that projection

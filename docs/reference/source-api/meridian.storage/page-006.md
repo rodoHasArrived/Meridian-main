@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IIntercompanyAgreementBatchPostingAuthority
+
+Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementBatchPostingAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:14](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L14).
+
+Validates a transaction&#x27;s union of agreement IDs under one sorted retained lease.
+
+```csharp
+public interface IIntercompanyAgreementBatchPostingAuthority : IIntercompanyAgreementPostingAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IAsyncDisposable&gt; AcquireValidatedBatchLeaseAsync(IReadOnlyList&lt;IntercompanyAgreementPostingRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:16](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L16) |  |
+
 ## IIntercompanyAgreementJournalValidation
 
 Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementJournalValidation</code>. Kind: `interface`.
@@ -901,21 +919,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public LedgerMigrationRunner(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs:12](../../../../src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs#L12) |  |
 | <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs:36](../../../../src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs#L36) |  |
-
-## LedgerOpenLotProjection
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerOpenLotProjection</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs:7](../../../../src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs#L7).
-
-Projects the existing lot of record without inventing missing acquisition facts.
-
-```csharp
-public static class LedgerOpenLotProjection
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OpenLotDto ToOpenLot(this LedgerTaxLotRecord record);</code> | [src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs:9](../../../../src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs#L9) |  |
