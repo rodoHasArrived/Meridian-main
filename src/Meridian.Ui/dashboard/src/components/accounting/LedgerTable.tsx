@@ -5,7 +5,8 @@
 import { useState, type ThHTMLAttributes } from "react";
 import type { AriaAttributes, KeyboardEvent } from "react";
 import { AmountCell } from "./AmountCell";
-import { EvidenceAmount, type AmountEvidenceSubject } from "./EvidenceAmount";
+import { EvidenceAmount, PostedEvidenceAmount, type AmountEvidenceSubject } from "./EvidenceAmount";
+import type { AmountPassportReference } from "@/types/amount-passport";
 import { toNumber } from "./money";
 
 export interface LedgerRow {
@@ -24,6 +25,8 @@ export interface LedgerRow {
   balance?: number | string;
   /** Exact retained entry subject; no source is inferred from the amount. */
   evidenceSubject?: AmountEvidenceSubject | null;
+  /** Null means a displayed posting without an authorized retained address. */
+  amountPassport?: AmountPassportReference | null;
 }
 
 export interface LedgerTableProps {
@@ -214,12 +217,16 @@ export function LedgerTable({
               {showAccount && <td className="ldg__acct">{r.account}</td>}
               <td className="ldg__memo">{r.memo}</td>
               <td className="ldg--r">
-                {r.evidenceSubject !== undefined
+                {r.amountPassport !== undefined && r.debit !== undefined
+                  ? <PostedEvidenceAmount value={r.debit} reference={r.amountPassport} label={`${r.account ?? "Posting"} debit`} asOf={r.date} currency={currency} zeroDash />
+                  : r.evidenceSubject !== undefined
                   ? <EvidenceAmount value={r.debit ?? ""} currency={currency} zeroDash subject={r.evidenceSubject} />
                   : <AmountCell value={r.debit ?? ""} currency={currency} zeroDash />}
               </td>
               <td className="ldg--r">
-                {r.evidenceSubject !== undefined
+                {r.amountPassport !== undefined && r.credit !== undefined
+                  ? <PostedEvidenceAmount value={r.credit} reference={r.amountPassport} label={`${r.account ?? "Posting"} credit`} asOf={r.date} currency={currency} zeroDash />
+                  : r.evidenceSubject !== undefined
                   ? <EvidenceAmount value={r.credit ?? ""} currency={currency} zeroDash subject={r.evidenceSubject} />
                   : <AmountCell value={r.credit ?? ""} currency={currency} zeroDash />}
               </td>
