@@ -1,6 +1,7 @@
 using Meridian.Application.Backfill;
 using Meridian.Core.Config;
 using Meridian.Core.IO;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Storage.Backfill;
 using Meridian.Storage.Archival;
 using Meridian.Contracts.Coordination;
@@ -38,7 +39,10 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
             new BackfillServiceFactory(
                 sp.GetRequiredService<IAtomicFileWriter>(),
                 dataRoot => new JsonlBackfillBarWriter(dataRoot),
-                symbolResolver: sp.GetService<ISymbolResolver>()));
+                symbolResolver: sp.GetService<ISymbolResolver>(),
+                retainReceiptAsync: (dataRoot, job, ct) => new BackfillStatusStore(dataRoot).WriteRetainedResultAsync(
+                    new(job.ProviderProvenance!, job.Status == BackfillJobStatus.Completed,
+                        job.Statistics.TotalBarsRetrieved, job.ProvenanceAccess), ct)));
 
         // BackfillCoordinator - uses ProviderRegistry for unified provider discovery and
         // the canonical-registry symbol resolution spine when registered.
@@ -55,7 +59,8 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
                 factory,
                 symbolResolver: symbolResolver,
                 symbolTimelineResolver: symbolTimelineResolver,
-                providerCatalog: sp.GetService<Meridian.Contracts.Api.IProviderCatalog>())
+                providerCatalog: sp.GetService<Meridian.Contracts.Api.IProviderCatalog>(),
+                cloneCredentials: sp.GetService<IProviderCredentialStore>() as IScopedProviderCredentialStore)
             {
                 ResolveSessionsAsync = new Meridian.Platform.Scheduling.HistoricalSessionScheduleResolver(
                     sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService>()).ResolveAsync

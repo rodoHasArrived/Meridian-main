@@ -6,25 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## NullSecurityMasterImportService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterImportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:284](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L284).
-
-Reports an unavailable Security Master import service and refuses imports.
-
-```csharp
-public sealed class NullSecurityMasterImportService : ISecurityMasterImportService, ISecurityMasterIngestStatusService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterIngestStatusSnapshot GetSnapshot() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:286](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L286) |  |
-| <code>public Task&lt;SecurityMasterImportResult&gt; ImportAsync(string fileContent, string fileExtension, string actor, IProgress&lt;SecurityMasterImportProgress&gt;? progress = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:289](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L289) |  |
-
 ## NullSecurityMasterPricingService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterPricingService</code>. Kind: `class`.
@@ -1030,4 +1011,16 @@ Progress update for ongoing Security Master imports.
 
 ```csharp
 public sealed record SecurityMasterImportProgress(int Total, int Processed, int Imported, int Failed);
+```
+
+## SecurityMasterImportResult
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterImportResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L12).
+
+Defines the import result for bulk Security Master imports.
+
+```csharp
+public sealed record SecurityMasterImportResult(int Imported, int Skipped, int Failed, int ConflictsDetected, IReadOnlyList<string> Errors);
 ```

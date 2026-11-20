@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MetricsData
+
+Qualified name: <code>Meridian.Contracts.Api.MetricsData</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Api/StatusModels.cs:59](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L59).
+
+Metrics data snapshot with staleness and provenance tracking.
+
+```csharp
+public sealed class MetricsData
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;published&quot;)] public long Published { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:62](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L62) |  |
+| <code>[JsonPropertyName(&quot;dropped&quot;)] public long Dropped { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:65](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L65) |  |
+| <code>[JsonPropertyName(&quot;integrity&quot;)] public long Integrity { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:68](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L68) |  |
+| <code>[JsonPropertyName(&quot;historicalBars&quot;)] public long HistoricalBars { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:71](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L71) |  |
+| <code>[JsonPropertyName(&quot;eventsPerSecond&quot;)] public float EventsPerSecond { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:74](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L74) |  |
+| <code>[JsonPropertyName(&quot;dropRate&quot;)] public float DropRate { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:77](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L77) |  |
+| <code>[JsonPropertyName(&quot;trades&quot;)] public long Trades { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:80](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L80) |  |
+| <code>[JsonPropertyName(&quot;depthUpdates&quot;)] public long DepthUpdates { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:83](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L83) |  |
+| <code>[JsonPropertyName(&quot;quotes&quot;)] public long Quotes { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:86](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L86) |  |
+| <code>[JsonPropertyName(&quot;lastUpdatedUtc&quot;)] public DateTimeOffset? LastUpdatedUtc { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:93](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L93) | UTC timestamp when these metrics were last updated from the provider. Null indicates no data has been received yet. |
+| <code>[JsonPropertyName(&quot;sourceProvider&quot;)] public string? SourceProvider { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:99](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L99) | Name of the provider that sourced these metrics. |
+| <code>[JsonPropertyName(&quot;isStale&quot;)] public bool IsStale { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:105](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L105) | Whether the metrics are considered stale (no update in &gt;15 seconds). |
+| <code>[JsonPropertyName(&quot;ageSeconds&quot;)] public float AgeSeconds { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:111](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L111) | Age of these metrics in seconds since last update. |
+
 ## MetricsFreshness
 
 Qualified name: <code>Meridian.Contracts.Api.MetricsFreshness</code>. Kind: `class`.
@@ -452,38 +482,6 @@ Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:20](../../../../src/Me
 public sealed record ProviderConnectionHealthSnapshotDto([property : JsonPropertyName("providerId")] string ProviderId, [property : JsonPropertyName("displayName")] string DisplayName, [property : JsonPropertyName("isEnabled")] bool IsEnabled, [property : JsonPropertyName("isConnected")] bool? IsConnected, [property : JsonPropertyName("connectionState")] string ConnectionState, [property : JsonPropertyName("diagnosticsAvailable")] bool DiagnosticsAvailable, [property : JsonPropertyName("lastFailureKind")] string? LastFailureKind, [property : JsonPropertyName("reconnectAttempts")] int? ReconnectAttempts = null);
 ```
 
-## ProviderConnectionTemplateDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:8](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L8).
-
-The portable allowlist. Semantics and checklist entries are catalog codes.
-
-```csharp
-public sealed record ProviderConnectionTemplateDto(string Name, string ProviderKind, int ProviderVersion, string Environment, string ConnectionType, string ConnectionMode, string AllowedScope, ProviderTemplateCapabilityDto[] RequestedCapabilities, ProviderTemplateBindingDto SuggestedBinding, string ExpectedDataSemantics, string[] VerificationChecklist);
-```
-
-## ProviderConnectionTemplateFile
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateFile</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:28](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L28).
-
-```csharp
-public sealed record ProviderConnectionTemplateFile(int SchemaVersion, ProviderConnectionTemplateDto[] Templates);
-```
-
-## ProviderConnectionTemplateOption
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateOption</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:32](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L32).
-
-```csharp
-public sealed record ProviderConnectionTemplateOption(ProviderConnectionTemplateDto Template, string Revision, bool IsBuiltIn, bool RequiresExternalAccount, ProviderTemplateReviewRow[] ReviewRows, string[] VerificationChecks);
-```
-
 ## ProviderConnectionTest
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTest</code>. Kind: `record`.
@@ -705,4 +703,28 @@ Policy DTO exposed to clients.
 
 ```csharp
 public sealed record ProviderPolicyDto(string PolicyId, string Capability, string SafetyMode, bool RequireExplicitBinding, bool RequireProductionReady, string[] AllowedFailoverConnectionIds, string[] AllowedProviderFamilies, string? Description);
+```
+
+## ProviderPresetDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderPresetDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:132](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L132).
+
+Preset DTO exposed to clients.
+
+```csharp
+public sealed record ProviderPresetDto(string PresetId, string Name, string Description, string[] Highlights, bool IsBuiltIn, bool IsEnabled);
+```
+
+## ProviderRateLimitCapabilitiesDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitCapabilitiesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:78](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L78).
+
+Historical-data capabilities preserved from the previous rate-limit endpoint shape.
+
+```csharp
+public sealed record ProviderRateLimitCapabilitiesDto([property : JsonPropertyName("adjustedPrices")] bool AdjustedPrices, [property : JsonPropertyName("intraday")] bool Intraday, [property : JsonPropertyName("dividends")] bool Dividends, [property : JsonPropertyName("splits")] bool Splits, [property : JsonPropertyName("quotes")] bool Quotes, [property : JsonPropertyName("trades")] bool Trades, [property : JsonPropertyName("auctions")] bool Auctions, [property : JsonPropertyName("supportedMarkets")] IReadOnlyList<string> SupportedMarkets);
 ```

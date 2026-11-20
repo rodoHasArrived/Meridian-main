@@ -6,42 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## OperationsCloseChecklistVersionGapDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistVersionGapDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L18).
-
-```csharp
-public sealed record OperationsCloseChecklistVersionGapDto(long AfterVersion, long BeforeVersion, Guid BeforeAuditId);
-```
-
-## OperationsClosePackagePublicationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsClosePackagePublicationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1189](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1189).
-
-```csharp
-public sealed record OperationsClosePackagePublicationDto(string ClosePackageId, string ReportPackId, string RetainedManifestId, string RetainedManifestRoute, string EvidenceHash, DateTimeOffset PublishedAtUtc, string PublishedBy, string SignOffRationale, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<OperationsChecklistControlApprovalDto> ChecklistControlApprovals, IReadOnlyList<EvidenceDocumentDto>? DocumentSnapshots = null, EvidenceManifestDto? ManifestSnapshot = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;EvidenceDocumentDto&gt; DocumentSnapshots { get; init; } = DocumentSnapshots??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1203](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1203) |  |
-
-## OperationsCloseReadinessBlockerDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1361](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1361).
-
-```csharp
-public sealed record OperationsCloseReadinessBlockerDto(string Code, string Category, string Severity, string Message, OperationsGateKeyDto? Gate, string? RouteHint);
-```
-
 ## OperationsCloseReadinessComponentDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessComponentDto</code>. Kind: `record`.
@@ -715,4 +679,42 @@ One WPF desktop shortcut&#x27;s difference from its default. Each value is optio
 
 ```csharp
 public sealed record OperatorDesktopShortcutDto(string? Key = null, string? Modifiers = null, bool? IsEnabled = null);
+```
+
+## OperatorInboxDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorInboxDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L95).
+
+```csharp
+public sealed record OperatorInboxDto(DateTimeOffset AsOf, IReadOnlyList<OperatorWorkItemDto> Items, int CriticalCount, int WarningCount, int ReviewCount, string Summary)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;OperatorWorkItemDto&gt; WorkItems =&gt; …;</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L104) | Compatibility alias for workstation readiness callers that still use the readiness work-item name. |
+
+## OperatorInboxTriageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorInboxTriageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L41).
+
+```csharp
+public sealed record OperatorInboxTriageDto(DateTimeOffset AsOf, string ActorId, IReadOnlyList<OperatorTriageItemDto> Items, bool PersistenceAvailable, string? UnavailableReason);
+```
+
+## OperatorNotificationPreferencesDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorNotificationPreferencesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L66).
+
+The operator&#x27;s pop-up notification choices. Each value is optional: null keeps the client default (pop-ups on, every type on, quiet hours off from 22:00 to 07:00). Quiet hours are wall-clock times (HH:mm, 24-hour) in the operator&#x27;s display time zone; a window whose start is later than its end runs past midnight, and an equal start and end is an empty window. Pop-ups only: notification feeds, history and alert records are unaffected.
+
+```csharp
+public sealed record OperatorNotificationPreferencesDto(bool? Enabled = null, bool? ConnectionStatus = null, bool? Errors = null, bool? BackfillComplete = null, bool? DataGaps = null, bool? StorageWarnings = null, bool? QuietHoursEnabled = null, string? QuietHoursStart = null, string? QuietHoursEnd = null);
 ```

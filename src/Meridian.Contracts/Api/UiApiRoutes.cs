@@ -60,6 +60,9 @@ public static class UiApiRoutes
     public const string BackfillStatus = "/api/backfill/status";
     public const string BackfillRun = "/api/backfill/run";
     public const string BackfillRunPreview = "/api/backfill/run/preview";
+    public const string BackfillClone = "/api/backfill/receipts/{receiptId:guid}/clone";
+    public const string BackfillReceipts = "/api/backfill/receipts";
+    public const string BackfillReceipt = "/api/backfill/receipts/{receiptId:guid}";
     public const string BackfillProgress = "/api/backfill/progress";
     public const string BackfillHealth = "/api/backfill/health";
     public const string BackfillResolve = "/api/backfill/resolve/{symbol}";

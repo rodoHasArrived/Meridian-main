@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CapabilityInfo
+
+Qualified name: <code>Meridian.Contracts.Api.CapabilityInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Api/ProviderCatalog.cs:767](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L767).
+
+Capability flags for standardized UI consumption. Maps to the core ProviderCapabilities but optimized for JSON serialization.
+
+```csharp
+public sealed class CapabilityInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;marketDataCapabilities&quot;)] public IReadOnlyList&lt;MarketDataCapabilityInfo&gt; MarketDataCapabilities { get; init; } = Array.Empty&lt;MarketDataCapabilityInfo&gt;();</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:771](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L771) | Granular, entitlement-aware market-data product declarations. |
+| <code>[JsonPropertyName(&quot;supportsStreaming&quot;)] public bool SupportsStreaming { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:776](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L776) | Gets a value indicating whether streaming is supported. |
+| <code>[JsonPropertyName(&quot;supportsBackfill&quot;)] public bool SupportsBackfill { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:780](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L780) | Gets whether a historical backfill factory is declared. |
+| <code>[JsonPropertyName(&quot;supportsSymbolSearch&quot;)] public bool SupportsSymbolSearch { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:784](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L784) | Gets whether a symbol search factory is declared. |
+| <code>[JsonPropertyName(&quot;supportsCorporateActions&quot;)] public bool SupportsCorporateActions { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:788](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L788) | Gets whether an on-demand corporate action factory is declared. |
+| <code>[JsonPropertyName(&quot;supportsMarketDepth&quot;)] public bool SupportsMarketDepth { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:794](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L794) | Gets a value indicating whether market depth is supported. |
+| <code>[JsonPropertyName(&quot;maxDepthLevels&quot;)] public int? MaxDepthLevels { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:800](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L800) | Gets the maximum number of depth levels supported, if any. |
+| <code>[JsonPropertyName(&quot;supportsAdjustedPrices&quot;)] public bool SupportsAdjustedPrices { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:806](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L806) | Gets a value indicating whether adjusted prices are supported. |
+| <code>[JsonPropertyName(&quot;supportsDividends&quot;)] public bool SupportsDividends { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:812](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L812) | Gets a value indicating whether dividend data is supported. |
+| <code>[JsonPropertyName(&quot;supportsSplits&quot;)] public bool SupportsSplits { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:818](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L818) | Gets a value indicating whether split data is supported. |
+| <code>[JsonPropertyName(&quot;supportsIntraday&quot;)] public bool SupportsIntraday { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:824](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L824) | Gets a value indicating whether intraday bars are supported. |
+| <code>[JsonPropertyName(&quot;supportsTrades&quot;)] public bool SupportsTrades { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:830](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L830) | Gets a value indicating whether trade data is supported. |
+| <code>[JsonPropertyName(&quot;supportsQuotes&quot;)] public bool SupportsQuotes { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:836](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L836) | Gets a value indicating whether quote data is supported. |
+| <code>[JsonPropertyName(&quot;supportsOptionsChain&quot;)] public bool SupportsOptionsChain { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:842](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L842) | Gets a value indicating whether options chain data is supported. |
+| <code>[JsonPropertyName(&quot;supportsBrokerage&quot;)] public bool SupportsBrokerage { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:848](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L848) | Gets a value indicating whether brokerage execution is supported. |
+| <code>[JsonPropertyName(&quot;supportsAuctions&quot;)] public bool SupportsAuctions { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:854](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L854) | Gets a value indicating whether auction data is supported. |
+| <code>public IReadOnlyDictionary&lt;string, object&gt; ToDictionary();</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:859](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L859) | Converts to dictionary for JSON serialization (only includes true values). |
+
 ## ConnectionHealthDto
 
 Qualified name: <code>Meridian.Contracts.Api.ConnectionHealthDto</code>. Kind: `record`.
@@ -493,7 +527,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.GapFillRequest</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:422](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L422).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:431](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L431).
 
 Request for running a gap-fill operation.
 
@@ -505,9 +539,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:428](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L428) | Gets or sets the symbols targeted by the gap-fill request. |
-| <code>[JsonPropertyName(&quot;lookbackDays&quot;)] public int LookbackDays { get; set; } = 30;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:434](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L434) | Gets or sets the lookback window in days for the gap-fill. |
-| <code>[JsonPropertyName(&quot;priority&quot;)] public string Priority { get; set; } = &quot;High&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:440](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L440) | Gets or sets the processing priority for the request. |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:437](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L437) | Gets or sets the symbols targeted by the gap-fill request. |
+| <code>[JsonPropertyName(&quot;lookbackDays&quot;)] public int LookbackDays { get; set; } = 30;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:443](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L443) | Gets or sets the lookback window in days for the gap-fill. |
+| <code>[JsonPropertyName(&quot;priority&quot;)] public string Priority { get; set; } = &quot;High&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:449](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L449) | Gets or sets the processing priority for the request. |
 
 ## GreeksSnapshotDto
 
@@ -866,33 +900,3 @@ Wire-safe granular market-data capability declaration for catalog consumers.
 ```csharp
 public sealed record MarketDataCapabilityInfo([property : JsonPropertyName("capability")] string Capability, [property : JsonPropertyName("assetClasses")] IReadOnlyList<string> AssetClasses, [property : JsonPropertyName("geographies")] IReadOnlyList<string> Geographies, [property : JsonPropertyName("venues")] IReadOnlyList<string> Venues, [property : JsonPropertyName("feed")] string Feed, [property : JsonPropertyName("delivery")] string Delivery, [property : JsonPropertyName("entitlementState")] string EntitlementState, [property : JsonPropertyName("maxRequestsPerWindow")] int? MaxRequestsPerWindow, [property : JsonPropertyName("pacingWindowSeconds")] double? PacingWindowSeconds, [property : JsonPropertyName("minimumRequestDelayMs")] double? MinimumRequestDelayMs, [property : JsonPropertyName("sourceTimestamp")] string SourceTimestamp, [property : JsonPropertyName("qualityPosture")] string QualityPosture);
 ```
-
-## MetricsData
-
-Qualified name: <code>Meridian.Contracts.Api.MetricsData</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/StatusModels.cs:59](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L59).
-
-Metrics data snapshot with staleness and provenance tracking.
-
-```csharp
-public sealed class MetricsData
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;published&quot;)] public long Published { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:62](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L62) |  |
-| <code>[JsonPropertyName(&quot;dropped&quot;)] public long Dropped { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:65](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L65) |  |
-| <code>[JsonPropertyName(&quot;integrity&quot;)] public long Integrity { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:68](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L68) |  |
-| <code>[JsonPropertyName(&quot;historicalBars&quot;)] public long HistoricalBars { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:71](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L71) |  |
-| <code>[JsonPropertyName(&quot;eventsPerSecond&quot;)] public float EventsPerSecond { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:74](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L74) |  |
-| <code>[JsonPropertyName(&quot;dropRate&quot;)] public float DropRate { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:77](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L77) |  |
-| <code>[JsonPropertyName(&quot;trades&quot;)] public long Trades { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:80](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L80) |  |
-| <code>[JsonPropertyName(&quot;depthUpdates&quot;)] public long DepthUpdates { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:83](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L83) |  |
-| <code>[JsonPropertyName(&quot;quotes&quot;)] public long Quotes { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:86](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L86) |  |
-| <code>[JsonPropertyName(&quot;lastUpdatedUtc&quot;)] public DateTimeOffset? LastUpdatedUtc { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:93](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L93) | UTC timestamp when these metrics were last updated from the provider. Null indicates no data has been received yet. |
-| <code>[JsonPropertyName(&quot;sourceProvider&quot;)] public string? SourceProvider { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:99](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L99) | Name of the provider that sourced these metrics. |
-| <code>[JsonPropertyName(&quot;isStale&quot;)] public bool IsStale { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:105](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L105) | Whether the metrics are considered stale (no update in &gt;15 seconds). |
-| <code>[JsonPropertyName(&quot;ageSeconds&quot;)] public float AgeSeconds { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:111](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L111) | Age of these metrics in seconds since last update. |

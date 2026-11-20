@@ -90,7 +90,16 @@ function RecordName({ record, originWorkspace }: { record: RecordIdentity; origi
 function IdentityFacts({ record, captured = false }: { record: RecordIdentity; captured?: boolean }) {
   return (
     <dl className="record-identity-facts">
-      <IdentityFact label="Identifiers" value={[record.identifier, record.id].filter((value, index, all) => value && all.indexOf(value) === index).join(" · ")} mono />
+      <div>
+        <dt>Identifiers</dt>
+        {record.identifier && record.identifier !== record.id ? <dd className="font-mono">{record.identifier}</dd> : null}
+        <dd>
+          <details className="record-identity-disclosure">
+            <summary><ChevronRight aria-hidden="true" />Record ID</summary>
+            <code>{record.id}</code>
+          </details>
+        </dd>
+      </div>
       <IdentityFact label="Asset class" value={record.assetClass} />
       <IdentityFact label="Entity / book" value={[record.entity, record.book].filter(Boolean).join(" / ")} />
       <IdentityFact label={captured ? "Origin status" : "Status"} value={record.status} />

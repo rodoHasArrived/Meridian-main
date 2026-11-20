@@ -20,6 +20,34 @@ namespace Meridian.Tests.Strategies;
 /// </remarks>
 public sealed class StrategyRunResearchRecorderTests
 {
+    [Fact]
+    public async Task WorkerReceiptProjectionAndRetainedResearchExcludeUnclassifiedStrings()
+    {
+        const string secret = "test-secret-123";
+        var result = Result();
+        var request = result.Request with { DataRoot = $"/local/{secret}", Symbols = ["SPY", "DU12345678", "sk-test-value"] };
+        var ended = DateTimeOffset.UtcNow;
+        var workerReceipt = ResearchProviderProvenance.Create(request, ended.AddSeconds(-1), ended,
+            new Dictionary<string, long> { ["alpaca"] = 5 }, preflightEnabled: true) with
+        {
+            ReproductionUnavailableReason = secret
+        };
+        workerReceipt = workerReceipt with { Providers = [workerReceipt.Providers[0] with { ConnectionId = secret, FeedLabel = secret }] };
+        result = result with { Request = request, ProviderProvenance = workerReceipt };
+        var receipt = ResearchProviderProvenance.FromWorkerResult(result, ended);
+        var recorder = CreateRecorder(out var store);
+        var runId = await recorder.RecordAsync(new ResearchRunDescriptor("receipt-test", "Receipt test"),
+            result with { ProviderProvenance = receipt });
+        var retained = (await store.GetRunByIdAsync(runId!))!.ProviderProvenance!;
+
+        retained.ReceiptId.Should().Be(receipt.ReceiptId);
+        retained.Providers.Should().ContainSingle().Which.ProviderId.Should().Be("alpaca");
+        retained.Request.Symbols.Should().Equal("SPY");
+        retained.Request.WithheldSymbolCount.Should().Be(2);
+        retained.ReproductionUnavailableReason.Should().Be(ResearchProviderProvenance.MissingRevision);
+        System.Text.Json.JsonSerializer.Serialize(retained).Should().NotContain(secret).And.NotContain("DU12345678");
+    }
+
     private static StrategyRunResearchRecorder CreateRecorder(out StrategyRunStore store)
     {
         store = new StrategyRunStore();
@@ -259,6 +287,10 @@ public sealed class StrategyRunResearchRecorderTests
             // report what its simulation produced rather than the zero its trimmed list shows.
             recorded.Metrics!.Fills.Should().BeEmpty();
             recorded.RetainedFillCount.Should().Be(20_000);
+            var reopened = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var receipt = (await reopened.GetRunByIdAsync(runId!))!.ProviderProvenance;
+            receipt.Should().NotBeNull();
+            receipt!.ReceiptId.Should().Be(recorded.ProviderProvenance!.ReceiptId);
         }
         finally
         {
