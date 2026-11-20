@@ -309,6 +309,14 @@ describe("appendOperatingScopeToRoute", () => {
 });
 
 describe("carryOperatingScopeIntoSearch (Phase 1)", () => {
+  it("preserves the explicit account in a record link independently of remembered filters", async () => {
+    const { carryOperatingScopeIntoSearch } = await import("./app-shell.operating-scope");
+    const search = "?recordScope=1&fundAccountId=account-b&workflowId=workflow-b";
+    expect(carryOperatingScopeIntoSearch("/accounting/operations-continuity", search, {
+      entityId: "entity-a", fundId: "fund-a", fundAccountId: "account-a"
+    })).toBe(search);
+  });
+
   it("adds the stored fund hierarchy to a route that lacks it", async () => {
     const { carryOperatingScopeIntoSearch } = await import("./app-shell.operating-scope");
     const next = carryOperatingScopeIntoSearch("/portfolio/accounts", "?view=household", { entityId: "entity-1", fundId: "fund-1", fundAccountId: "acct-1", symbol: "MSFT" });

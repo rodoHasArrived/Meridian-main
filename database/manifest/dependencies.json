@@ -23452,6 +23452,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchHit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationReportAccessAuditSummaryDto"
     },
     {
@@ -59301,6 +59313,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchResult",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchHit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationReportWriterDatasetSourcePayload",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationReportWriterFieldPayload"
     },
@@ -70412,7 +70430,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "c17a38ec519e2a5fb092e39ceed0c3d1a3c7d5ab19e8c1fcdc9a702bcfeace85",
+  "fingerprint": "87f1f0b3539d6a827721c57521099ee079076f63e6fecb0676094fe010f3bb0a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -93914,6 +93932,18 @@
       "label": "Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchHit",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationRecordSearchHit"
+    },
+    {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationRecordSearchResult"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.WorkstationReportAccessAuditSummaryDto",
       "kind": "contract-type",
@@ -103503,11 +103533,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4318,
-    "contract_set_memberships": 5671,
-    "edges": 11697,
+    "contract_references": 4319,
+    "contract_set_memberships": 5673,
+    "edges": 11700,
     "foreign_keys": 213,
     "logical_references": 6,
-    "nodes": 5757
+    "nodes": 5759
   }
 }

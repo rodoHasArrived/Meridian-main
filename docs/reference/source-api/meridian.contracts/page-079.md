@@ -126,6 +126,28 @@ Healthy providers out of every provider the Data workspace lists.
 public sealed record WorkstationProviderHealthCount(int Healthy, int Total, string Definition);
 ```
 
+## WorkstationRecordSearchHit
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRecordSearchHit</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs#L4).
+
+A navigation projection of an authorized record. Financial values stay in the detail view.
+
+```csharp
+public sealed record WorkstationRecordSearchHit(string RecordType, string RecordId, string Label, string Scope, string AsOfPosture, string Status, string Href);
+```
+
+## WorkstationRecordSearchResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRecordSearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs#L13).
+
+```csharp
+public sealed record WorkstationRecordSearchResult(IReadOnlyList<WorkstationRecordSearchHit> Items, bool IsPartial);
+```
+
 ## WorkstationReportAccessAuditSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportAccessAuditSummaryDto</code>. Kind: `record`.
@@ -552,32 +574,3 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:37](../.
 ```csharp
 public sealed record WorkstationTableExportDto(string Filename, string Csv, int RowCount, DateTimeOffset AsOf);
 ```
-
-## WorkstationTableExportRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTableExportRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L33).
-
-```csharp
-public sealed record WorkstationTableExportRequest(IReadOnlyList<string> ColumnIds, string SearchText = "", string? SortColumnId = null, string? SortDirection = null, IReadOnlyDictionary<string, string>? Filters = null);
-```
-
-## WorkstationTableViewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTableViewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L4).
-
-Personal table presentation. Contains no financial records or authority.
-
-```csharp
-public sealed record WorkstationTableViewDto(string ViewId, string Label, string SearchText, IReadOnlyList<string> ColumnIds, string Density, string? SortColumnId = null, string? SortDirection = null, IReadOnlyDictionary<string, string>? Filters = null, bool IsReadOnly = false, string? Origin = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? Description { get; init; }</code> | [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L16) |  |
-| <code>public IReadOnlyList&lt;FinancialRecordExplorerFilterDto&gt;? ExplorerFilters { get; init; }</code> | [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L17) |  |

@@ -338,7 +338,10 @@ public sealed record LedgerJournalEntryQuery(
     // execution journal's own identifier (the retained source.orderId tag), or its GUID form.
     Guid? FillId = null,
     string? OrderId = null,
-    Guid? SourceJournalEntryId = null);
+    Guid? SourceJournalEntryId = null)
+{
+    public string? JournalEntryIdPrefix { get; init; }
+}
 
 public sealed record LedgerJournalEntryRecord(
     JournalEntry Entry,

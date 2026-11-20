@@ -39,6 +39,8 @@ export function JournalEntryDetailScreen() {
   // in the manual workbench and not in any strategy run, so without this the fund's own postings
   // were the one kind of entry this screen could not open.
   const periodId = searchParams.get("periodId");
+  const fundProfileId = searchParams.get("fundProfileId");
+  const ledgerBookId = searchParams.get("ledgerBookId");
 
   const [draft, setDraft] = useState<ManualJournalEntryDraft | null>(null);
   const [journalLine, setJournalLine] = useState<LedgerJournalLine | null>(null);
@@ -124,7 +126,7 @@ export function JournalEntryDetailScreen() {
     // for a run journal they could in fact read.
     let workbenchUnavailable = false;
 
-    getManualJournalEntryWorkbench({})
+    getManualJournalEntryWorkbench(fundProfileId && ledgerBookId ? { fundProfileId, ledgerBookId, journalEntryId } : {})
       .then((workbench) => workbench.drafts.find((candidate) => candidate.journalEntryId === journalEntryId) ?? null)
       .catch(() => {
         workbenchUnavailable = true;
@@ -175,7 +177,7 @@ export function JournalEntryDetailScreen() {
     return () => {
       cancelled = true;
     };
-  }, [journalEntryId, periodId, reloadVersion, runId]);
+  }, [journalEntryId, periodId, fundProfileId, ledgerBookId, reloadVersion, runId]);
 
   if (!journalEntryId) {
     return (

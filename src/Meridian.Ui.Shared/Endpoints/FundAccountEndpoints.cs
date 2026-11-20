@@ -5,6 +5,7 @@ using Meridian.Application.FundStructure;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Meridian.Contracts.Reconciliation;
@@ -274,7 +275,7 @@ public static partial class FundAccountEndpoints
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireWorkstationTenantCompanyScope();
 
-        app.MapGet("/api/portfolio/household", async (string? provider, HttpContext context) =>
+        app.MapGet("/api/portfolio/household", async (string? provider, Guid? fundAccountId, HttpContext context) =>
         {
             if (!HasBrokerageSyncAccess(context))
                 return EndpointHelpers.Forbidden();
@@ -286,8 +287,8 @@ public static partial class FundAccountEndpoints
             var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var household = await sync.GetHouseholdAsync(
                     provider,
-                    (fundAccountIds, ct) => ResolveAccessibleBrokerageFundAccountsAsync(fundAccountIds, context, ct),
-                    context.RequestAborted, tenant.TenantId, tenant.CompanyId)
+                    (fundAccountIds, ct) => ResolveAccessibleBrokerageFundAccountsAsync(fundAccountIds, context, ct, fundAccountId),
+                    ct: context.RequestAborted, passportTenantId: tenant.TenantId, passportCompanyId: tenant.CompanyId)
                 .ConfigureAwait(false);
             return Results.Json(household, jsonOptions);
         })
@@ -1066,7 +1067,8 @@ public static partial class FundAccountEndpoints
     private static async Task<IReadOnlySet<Guid>> ResolveAccessibleBrokerageFundAccountsAsync(
         IReadOnlyCollection<Guid> candidateIds,
         HttpContext context,
-        CancellationToken ct)
+        CancellationToken ct,
+        Guid? requestedAccountId = null)
     {
         if (candidateIds.Count == 0 || !HasBrokerageSyncAccess(context))
         {
@@ -1079,12 +1081,34 @@ public static partial class FundAccountEndpoints
             return new HashSet<Guid>();
         }
 
-        var candidateSet = candidateIds.ToHashSet();
-        var existingIds = (await queryService.ListAccountsAsync(null, null, null, ct).ConfigureAwait(false))
-            .Select(static account => account.AccountId)
-            .Where(candidateSet.Contains)
-            .Distinct()
-            .ToArray();
+        Guid[] existingIds;
+        if (requestedAccountId is { } requested)
+        {
+            var account = candidateIds.Contains(requested)
+                ? await queryService.GetAccountAsync(requested, ct).ConfigureAwait(false) : null;
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var registry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
+            var owner = account is { IsActive: true, FundId: { } fund } && registry is not null
+                ? await registry.ResolveAsync(fund.ToString("D"), ct).ConfigureAwait(false) : null;
+            if (account?.AccountId != requested || owner is null ||
+                !string.Equals(owner.FundProfileId, account.FundId?.ToString("D"), StringComparison.OrdinalIgnoreCase) ||
+                !owner.IsHeldBy(tenant.TenantId) ||
+                !string.Equals(owner.CompanyId?.Trim(), tenant.CompanyId, StringComparison.OrdinalIgnoreCase))
+            {
+                return new HashSet<Guid>();
+            }
+
+            existingIds = [requested];
+        }
+        else
+        {
+            var candidateSet = candidateIds.ToHashSet();
+            existingIds = (await queryService.ListAccountsAsync(null, null, null, ct).ConfigureAwait(false))
+                .Select(static account => account.AccountId)
+                .Where(candidateSet.Contains)
+                .Distinct()
+                .ToArray();
+        }
         if (EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
         {
             return existingIds.ToHashSet();

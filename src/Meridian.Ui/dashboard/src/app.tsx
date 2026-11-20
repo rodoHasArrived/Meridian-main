@@ -17,6 +17,7 @@ import {
   buildOperatingScopeFromSearch,
   carryOperatingScopeIntoSearch,
   describeOperatingScopeForRoute,
+  hasExplicitRecordScope,
   operatingScopeDimensionsForRoute,
   readOperatingScopeFromSearch,
   removeOperatingScopeFromSearch,
@@ -406,16 +407,21 @@ function AppShell({
   const activeWorkspace = resolveWorkspaceKeyFromPath(pathname);
   const routeOperatingScope = useMemo(() => readOperatingScopeFromSearch(search), [search]);
   const recordWorkspaceContext = useMemo(() => readRecordWorkspaceContext(search), [search]);
+  const recordScopedRoute = hasExplicitRecordScope(search) || recordWorkspaceContext !== null;
+  const recordScopedRouteRef = useRef(recordScopedRoute);
+  recordScopedRouteRef.current = recordScopedRoute;
   const operatingScopeInput = useMemo(
-    () => recordWorkspaceContext ? compactOperatingScope(routeOperatingScope) : mergeOperatingScopes(storedOperatingScope, routeOperatingScope),
-    [recordWorkspaceContext, storedOperatingScope, routeOperatingScope]
+    () => recordScopedRoute ? compactOperatingScope(routeOperatingScope) : mergeOperatingScopes(storedOperatingScope, routeOperatingScope),
+    [recordScopedRoute, storedOperatingScope, routeOperatingScope]
   );
   const operatingContextSymbol = operatingScopeInput.symbol ?? null;
   // C1: load the operator's default scope once. It is applied only when this session opened with
   // no scope at all (none in the link, none remembered in this browser) and the operator has not
   // chosen one since, so it never overrides a shared link or the operator's own choice.
   const openedUnscopedRef = useRef<boolean | null>(null);
-  if (openedUnscopedRef.current === null) openedUnscopedRef.current = !hasOperatingScopeValues(operatingScopeInput);
+  if (openedUnscopedRef.current === null) {
+    openedUnscopedRef.current = !recordScopedRoute && !hasOperatingScopeValues(operatingScopeInput);
+  }
   const currentOperatingScopeRef = useRef(operatingScopeInput);
   currentOperatingScopeRef.current = operatingScopeInput;
   useEffect(() => {
@@ -428,6 +434,7 @@ function AppShell({
       setDefaultScope(saved && hasOperatingScopeValues(saved) ? saved : null);
       if (
         openedUnscopedRef.current
+        && !recordScopedRouteRef.current
         && !operatorChoseScopeRef.current
         && !hasOperatingScopeValues(currentOperatingScopeRef.current)
         && saved
@@ -590,8 +597,8 @@ function AppShell({
       return;
     }
 
-    // A related screen's route filters apply there without replacing the operator's saved scope.
-    if (recordWorkspaceContext || dismissedHandoff || !hasOperatingScopeValues(routeOperatingScope)) {
+    // Record links apply their route filters without replacing the operator's saved scope.
+    if (recordScopedRoute || dismissedHandoff || !hasOperatingScopeValues(routeOperatingScope)) {
       return;
     }
 
@@ -602,15 +609,15 @@ function AppShell({
 
     writeStoredOperatingScope(nextScope);
     setStoredOperatingScope(nextScope);
-  }, [locationKey, pathname, search, recordWorkspaceContext, routeOperatingScope, storedOperatingScope]);
+  }, [locationKey, pathname, search, recordScopedRoute, recordWorkspaceContext, routeOperatingScope, storedOperatingScope]);
 
   // Scope survives every in-app link (Phase 1, P2 step 1). A plain catalog link drops the query
   // string; screens that read the URL then lost their fund filter while the bar still showed it.
   // Routes render against the scoped location on the first render, so no screen fetches unscoped,
   // and the address bar is brought in line so copied links carry the same scope.
   const scopedSearch = useMemo(
-    () => recordWorkspaceContext ? search : carryOperatingScopeIntoSearch(pathname, search, storedOperatingScope),
-    [pathname, recordWorkspaceContext, search, storedOperatingScope]
+    () => recordScopedRoute ? search : carryOperatingScopeIntoSearch(pathname, search, storedOperatingScope),
+    [pathname, recordScopedRoute, search, storedOperatingScope]
   );
   const scopedLocation = useMemo(
     () => (scopedSearch === search ? location : { ...location, search: scopedSearch }),
