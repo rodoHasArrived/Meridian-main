@@ -158,6 +158,24 @@ Declared public members:
 | <code>Task RecordConnectionAsync(bool success, string? externalCompanyId, string? error, DateTimeOffset? occurredAtUtc = null, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:247](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L247) |  |
 | <code>Task RecordConnectionAsync(bool success, string? externalCompanyId, string? error, string? expectedCredentialGeneration, DateTimeOffset? occurredAtUtc = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:254](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L254) |  |
 
+## IQuickBooksPostingConnectionResolver
+
+Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.IQuickBooksPostingConnectionResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs:17](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs#L17).
+
+Resolves the encrypted credential store for one retained, tenant-owned connection.
+
+```csharp
+public interface IQuickBooksPostingConnectionResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>QuickBooksPostingConnection Resolve(string tenantId, string connectionId);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs:19](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs#L19) |  |
+
 ## QuickBooksFixtureAccountingProvider
 
 Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.QuickBooksFixtureAccountingProvider</code>. Kind: `class`.
@@ -264,6 +282,28 @@ Declared public members:
 | <code>public async Task&lt;QuickBooksOnlineTokenExchangeResult&gt; ExchangeAuthorizationCodeAsync(QuickBooksOnlineAuthorizationCodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:362](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L362) |  |
 | <code>public async Task&lt;QuickBooksOnlineCompanyEvidence&gt; ReadCompanyEvidenceAsync(QuickBooksOnlineConnection connection, string accessToken, AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs:426](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlineAccountingProvider.cs#L426) |  |
 
+## QuickBooksOnlinePostingProvider
+
+Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.QuickBooksOnlinePostingProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs:23](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs#L23).
+
+Creates and recovers balanced QuickBooks Online JournalEntry documents.
+
+```csharp
+public sealed class QuickBooksOnlinePostingProvider(IQuickBooksPostingConnectionResolver connections, IQuickBooksOnlineClient oauth, HttpClient client) : IExternalGlPostingProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs:30](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs#L30) |  |
+| <code>public async Task&lt;ExternalGlDestination&gt; ResolveDestinationAsync(string tenantId, string connectionId, CancellationToken ct);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs:32](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs#L32) |  |
+| <code>public void ValidateDocument(ExternalGlPostingDocument document);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs:50](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs#L50) |  |
+| <code>public async Task&lt;ExternalGlProviderReceipt&gt; PostAsync(string tenantId, ExternalGlDestination destination, ExternalGlPostingDocument document, CancellationToken ct);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs:69](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs#L69) |  |
+| <code>public async Task&lt;ExternalGlProviderReceipt&gt; FindAsync(string tenantId, ExternalGlDestination destination, ExternalGlPostingDocument document, CancellationToken ct);</code> | [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs:98](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs#L98) |  |
+
 ## QuickBooksOnlineProviderCredentialConnectionStore
 
 Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.QuickBooksOnlineProviderCredentialConnectionStore</code>. Kind: `class`.
@@ -301,6 +341,16 @@ Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnli
 
 ```csharp
 public sealed record QuickBooksOnlineTokenExchangeResult(string AccessToken, string? RefreshToken, DateTimeOffset ExpiresAtUtc, IReadOnlyList<string> Warnings);
+```
+
+## QuickBooksPostingConnection
+
+Qualified name: <code>Meridian.DataIntegration.AccountingSystem.QuickBooks.QuickBooksPostingConnection</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs:13](../../../../src/Meridian.DataIntegration/AccountingSystem/QuickBooks/QuickBooksOnlinePostingProvider.cs#L13).
+
+```csharp
+public sealed record QuickBooksPostingConnection(ExternalGlDestination Destination, IQuickBooksOnlineConnectionStore Credentials);
 ```
 
 ## XeroAccountingProvider
@@ -974,68 +1024,3 @@ Declared public members:
 | <code>Task&lt;ProviderCredentialMigrationReceipt&gt; MigrateToScopeAsync(string providerId, ProviderCredentialScope scope, string migrationId, string expectedGeneration, string actor, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs:6](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs#L6) |  |
 | <code>Task&lt;ProviderCredentialMigrationReceipt&gt; RollbackMigrationAsync(string providerId, ProviderCredentialScope scope, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs:8](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs#L8) |  |
 | <code>Task&lt;ProviderCredentialMigrationReceipt&gt; FinalizeMigrationAsync(string providerId, ProviderCredentialScope scope, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs:15](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialOwnershipMigration.cs#L15) | Retires a completed migration after the owned record has been verified under its new ownership: the receipt stays in the audit trail, rollback is no longer available, and the provider-wide record is no longer blocked by the migration. Idempotent for an already finalized receipt. |
-
-## IProviderCredentialStore
-
-Qualified name: <code>Meridian.DataIntegration.Credentials.IProviderCredentialStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:6](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L6).
-
-Reads provider credential status and manages saved credentials through a credential vault.
-
-```csharp
-public interface IProviderCredentialStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string VaultPath { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:8](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L8) |  |
-| <code>Task&lt;ProviderCredentialStoreStatus&gt; GetStatusAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:10](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L10) |  |
-| <code>Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:12](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L12) |  |
-| <code>Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:15](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L15) | Save a complete rotated credential snapshot in both current and recovery generations. |
-| <code>Task&lt;string&gt; SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialReadResult expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:19](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L19) | Atomically replace the expected connection and return its new credential generation. |
-| <code>Task&lt;ProviderCredentialReadResult?&gt; ReadForProviderAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:23](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L23) |  |
-| <code>Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:25](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L25) |  |
-| <code>Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:27](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L27) |  |
-
-## IProviderSetupHandler
-
-Qualified name: <code>Meridian.DataIntegration.Credentials.IProviderSetupHandler</code>. Kind: `interface`.
-
-Source: [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:9](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L9).
-
-Validates provider setup input and derives credential and routing configuration for a supported provider.
-
-```csharp
-public interface IProviderSetupHandler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ProviderSetupDescriptor Descriptor { get; }</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:11](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L11) |  |
-| <code>bool CanHandle(string providerIdOrAlias);</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:12](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L12) |  |
-| <code>ProviderSetupValidationResult Validate(ProviderSetupContext context);</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:13](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L13) |  |
-| <code>ProviderSetupExecutionResult BuildExecution(ProviderSetupContext context, ProviderCredentialStoreStatus credentialStatus);</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:14](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L14) |  |
-
-## IProviderSetupRegistry
-
-Qualified name: <code>Meridian.DataIntegration.Credentials.IProviderSetupRegistry</code>. Kind: `interface`.
-
-Source: [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:57](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L57).
-
-Lists provider setup handlers and resolves a handler by provider identifier or alias.
-
-```csharp
-public interface IProviderSetupRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;IProviderSetupHandler&gt; Handlers { get; }</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:59](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L59) |  |
-| <code>IProviderSetupHandler? Find(string providerIdOrAlias);</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:60](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L60) |  |

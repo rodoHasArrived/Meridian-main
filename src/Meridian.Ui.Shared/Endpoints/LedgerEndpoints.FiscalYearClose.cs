@@ -109,6 +109,7 @@ public static partial class LedgerEndpoints
             catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
             catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
             catch (Exception ex) when (ex is InvalidDataException or JsonException) { return FiscalCloseIntegrityConflict(); }
+            catch (LedgerPeriodTransitionException ex) { return Results.Conflict(new { error = ex.Message }); }
             catch (InvalidOperationException ex) { return Results.Conflict(new { error = ex.Message }); }
         })
         .WithName("FinalizeLedgerFiscalYearClose")

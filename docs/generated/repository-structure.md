@@ -5801,7 +5801,8 @@ Meridian-main
 │   │   │       ├── ShortCorrection.cs
 │   │   │       └── ShortCoverTerms.cs
 │   │   ├── AccountingSystem
-│   │   │   └── AccountingSystemDtos.cs
+│   │   │   ├── AccountingSystemDtos.cs
+│   │   │   └── ExternalGlPosting.cs
 │   │   ├── Api
 │   │   │   ├── Quality
 │   │   │   │   └── QualityApiModels.cs
@@ -6534,6 +6535,7 @@ Meridian-main
 │   │   │   ├── QuickBooks
 │   │   │   │   ├── QuickBooksFixtureAccountingProvider.cs
 │   │   │   │   ├── QuickBooksOnlineAccountingProvider.cs
+│   │   │   │   ├── QuickBooksOnlinePostingProvider.cs
 │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStore.cs
 │   │   │   ├── AccountingProviderJson.cs
 │   │   │   ├── CredentialedAccountingProvider.cs
@@ -6924,9 +6926,12 @@ Meridian-main
 │   │   ├── AccountingSystem
 │   │   │   ├── AccountingSystemIntegrationService.cs
 │   │   │   ├── AccountingSystemIntegrationService.Onboarding.cs
+│   │   │   ├── AccountingSystemIntegrationService.Posting.cs
 │   │   │   ├── AccountingSystemIntegrationService.ProviderMetadata.cs
 │   │   │   ├── AccountingSystemIntegrationService.Reconciliation.cs
-│   │   │   └── AccountingSystemIntegrationStateStore.cs
+│   │   │   ├── AccountingSystemIntegrationStateStore.cs
+│   │   │   ├── ExternalGlPostingDispatcher.cs
+│   │   │   └── ExternalGlPostingService.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
 │   │   │   ├── IBankingService.cs
@@ -7930,7 +7935,8 @@ Meridian-main
 │   ├── Meridian.ProviderSdk
 │   │   ├── AccountingSystem
 │   │   │   ├── IAccountingSystemExportValidator.cs
-│   │   │   └── IAccountingSystemProvider.cs
+│   │   │   ├── IAccountingSystemProvider.cs
+│   │   │   └── IExternalGlPostingProvider.cs
 │   │   ├── Backfill
 │   │   │   ├── BackfillJob.cs
 │   │   │   └── IBackfillBarWriter.cs
@@ -8378,7 +8384,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_078__intercompany_confirmation_close_policies.sql
 │   │   │   │   ├── V_ledger_079__chart_codes_and_journal_memos.sql
 │   │   │   │   ├── V_ledger_080__fiscal_year_close_receipts.sql
-│   │   │   │   └── V_ledger_081__book_fx_settlement_receipts.sql
+│   │   │   │   ├── V_ledger_081__book_fx_settlement_receipts.sql
+│   │   │   │   └── V_ledger_082__external_gl_posting.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -8476,6 +8483,8 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.DiscreteLotRelief.cs
 │   │   │   ├── PostgresLedgerJournalStore.EntitlementAuthority.cs
 │   │   │   ├── PostgresLedgerJournalStore.EntityControls.cs
+│   │   │   ├── PostgresLedgerJournalStore.ExternalGlOutbox.cs
+│   │   │   ├── PostgresLedgerJournalStore.ExternalGlPosting.cs
 │   │   │   ├── PostgresLedgerJournalStore.FactorPaydown.cs
 │   │   │   ├── PostgresLedgerJournalStore.FeeCorrections.cs
 │   │   │   ├── PostgresLedgerJournalStore.FiscalYearClose.cs
@@ -9670,6 +9679,7 @@ Meridian-main
 │   │   │   │   │   │   ├── execution-blotter.api.ts
 │   │   │   │   │   │   ├── execution-evidence.api.ts
 │   │   │   │   │   │   ├── execution-workflows.api.ts
+│   │   │   │   │   │   ├── external-gl-posting.api.ts
 │   │   │   │   │   │   ├── factor-paydown.api.test.ts
 │   │   │   │   │   │   ├── factor-paydown.api.ts
 │   │   │   │   │   │   ├── family-office.api.ts
@@ -10141,6 +10151,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.entity-timeline.tsx
 │   │   │   │   │   ├── accounting-screen.evidence-timeline.ts
 │   │   │   │   │   ├── accounting-screen.external-gl-panel.tsx
+│   │   │   │   │   ├── accounting-screen.external-gl-posting.tsx
 │   │   │   │   │   ├── accounting-screen.factor-paydown-panel.test.tsx
 │   │   │   │   │   ├── accounting-screen.factor-paydown-panel.tsx
 │   │   │   │   │   ├── accounting-screen.fiscal-year-close.test.tsx
@@ -11050,6 +11061,7 @@ Meridian-main
 │   │   │   ├── ExecutionEndpoints.Sessions.cs
 │   │   │   ├── ExecutionEndpoints.Workflows.cs
 │   │   │   ├── ExportEndpoints.cs
+│   │   │   ├── ExternalGlPostingEndpoints.cs
 │   │   │   ├── FailoverControlOperations.cs
 │   │   │   ├── FailoverEndpoints.cs
 │   │   │   ├── FirstRunEndpoints.cs
@@ -11396,6 +11408,7 @@ Meridian-main
 │   │   │   ├── EntityTimelineService.cs
 │   │   │   ├── EquityOrderSessionPolicy.cs
 │   │   │   ├── ExecutionWorkflowWorker.cs
+│   │   │   ├── ExternalGlPostingHostedService.cs
 │   │   │   ├── FamilyOfficeReadService.cs
 │   │   │   ├── FeatureCapabilitySettingsService.cs
 │   │   │   ├── FileAccountingAuditPendingMarkerStore.cs
@@ -11528,6 +11541,7 @@ Meridian-main
 │   │   │   ├── PrivateCapitalUnitRegisterPreview.cs
 │   │   │   ├── PromotionTrustEvidenceServiceCollectionExtensions.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
+│   │   │   ├── ProviderConnectionLifecycleService.ExternalGl.cs
 │   │   │   ├── ProviderConnectionLifecycleService.Ownership.cs
 │   │   │   ├── ProviderConnectionLifecycleService.VerificationHistory.cs
 │   │   │   ├── ProviderCredentialStore.cs
@@ -14785,6 +14799,7 @@ Meridian-main
 │   │   │   ├── EventBufferTests.cs
 │   │   │   ├── ExclusiveFileLockTests.cs
 │   │   │   ├── ExportValidatorTests.cs
+│   │   │   ├── ExternalGlPostingPostgresTests.cs
 │   │   │   ├── FileLedgerJournalLogTests.cs
 │   │   │   ├── FileMaintenanceServiceTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
