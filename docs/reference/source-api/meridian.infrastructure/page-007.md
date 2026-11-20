@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CredentialConfig
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.CredentialConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:412](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L412).
+
+Credential configuration for a data source.
+
+```csharp
+public sealed record CredentialConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Source { get; init; } = &quot;Environment&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:417](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L417) | Source of credentials: Environment, File, Vault, Config. |
+| <code>public string? ApiKeyVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:422](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L422) | Environment variable name for API key. |
+| <code>public string? KeyIdVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:427](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L427) | Environment variable name for key ID. |
+| <code>public string? SecretKeyVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:432](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L432) | Environment variable name for secret key. |
+| <code>public string? UsernameVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:437](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L437) | Environment variable name for username. |
+| <code>public string? PasswordVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:442](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L442) | Environment variable name for password. |
+| <code>public string? CredentialsPath { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:447](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L447) | Path to credentials file (if Source is File). |
+| <code>public string? VaultPath { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:453](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L453) | Vault path for credentials (if Source is Vault). Supports logical paths like &quot;marketdata/alpaca/prod&quot;. |
+| <code>public string? VaultProvider { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:458](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L458) | Vault provider name: AwsSecretsManager or AzureKeyVault. |
+| <code>public string ApiKeyKey { get; init; } = &quot;apiKey&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:464](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L464) | Optional key names within the vault payload for each credential. Defaults: apiKey, keyId, secretKey, username, password. |
+| <code>public string KeyIdKey { get; init; } = &quot;keyId&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:465](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L465) |  |
+| <code>public string SecretKeyKey { get; init; } = &quot;secretKey&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:466](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L466) |  |
+| <code>public string UsernameKey { get; init; } = &quot;username&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:467](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L467) |  |
+| <code>public string PasswordKey { get; init; } = &quot;password&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:468](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L468) |  |
+| <code>public static ISecretProvider SecretProvider { get; set; } = new EnvironmentSecretProvider();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:482](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L482) | Secret provider used for vault-backed credential resolution. Set at application startup via DI. Defaults to EnvironmentSecretProvider which uses MDC_VAULT__* environment variables as a bridge for local/test environments. Replace with a real vault provider (AWS Secrets Manager, Azure Key Vault) for production. |
+| <code>public string? ResolveApiKey();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:487](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L487) | Resolves the API key from configured source. |
+| <code>public string? ResolveKeyId();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:496](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L496) | Resolves the key ID from configured source. |
+| <code>public string? ResolveSecretKey();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:505](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L505) | Resolves the secret key from configured source. |
+| <code>public string? ResolveUsername();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:514](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L514) | Resolves the username from configured source. |
+| <code>public string? ResolvePassword();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:523](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L523) | Resolves the password from configured source. |
+| <code>public CredentialValidationResult Validate(bool requireApiKey = false, bool requireKeyIdAndSecret = false, bool requireUsernameAndPassword = false);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:577](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L577) | Validates that required credentials are configured and resolvable. Use this for pre-flight checks before starting a data source. |
+| <code>public void EnsureValid(string sourceName, bool requireApiKey = false, bool requireKeyIdAndSecret = false, bool requireUsernameAndPassword = false);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:711](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L711) | Performs a pre-flight check ensuring all credentials can be resolved. Throws InvalidOperationException if validation fails. |
+
 ## CredentialValidationResult
 
 Qualified name: <code>Meridian.Infrastructure.DataSources.CredentialValidationResult</code>. Kind: `record`.
@@ -1090,36 +1129,3 @@ Declared public members:
 | <code>public static ResiliencePipeline CreateCircuitBreakerPipeline(int failureThreshold = 5, TimeSpan? breakDuration = null);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:105](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L105) | Creates a circuit breaker policy for WebSocket operations. Prevents cascading failures by opening the circuit after consecutive failures. |
 | <code>public static ResiliencePipeline CreateTimeoutPipeline(TimeSpan? timeout = null);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:149](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L149) | Creates a timeout policy for WebSocket operations. |
 | <code>public static ResiliencePipeline CreateComprehensivePipeline(int maxRetries = 5, TimeSpan? retryBaseDelay = null, TimeSpan? maxRetryDelay = null, int circuitBreakerFailureThreshold = 5, TimeSpan? circuitBreakerDuration = null, TimeSpan? operationTimeout = null);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:173](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L173) | Creates a comprehensive resilience pipeline combining retry, circuit breaker, and timeout. This is the recommended pipeline for production WebSocket clients. |
-
-## ExpiringSymbolStateStore (generic arity 1)
-
-Qualified name: <code>Meridian.Infrastructure.Shared.ExpiringSymbolStateStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:286](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L286).
-
-Symbol state store with automatic expiration based on last access time.
-
-```csharp
-public sealed class ExpiringSymbolStateStore<T>: ISymbolStateStore<T> where T : class
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ExpiringSymbolStateStore(TimeSpan expirationTime, TimeSpan? cleanupInterval = null, bool ignoreCase = true);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:299](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L299) | Creates a new expiring symbol state store. |
-| <code>public int Count =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:318](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L318) |  |
-| <code>public T GetOrAdd(string symbol, Func&lt;string, T&gt; factory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:321](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L321) |  |
-| <code>public bool TryGet(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:329](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L329) |  |
-| <code>public void Set(string symbol, T state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:347](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L347) |  |
-| <code>public T AddOrUpdate(string symbol, Func&lt;string, T&gt; addFactory, Func&lt;string, T, T&gt; updateFactory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:353](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L353) |  |
-| <code>public bool Remove(string symbol) =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:367](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L367) |  |
-| <code>public bool TryRemove(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:370](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L370) |  |
-| <code>public bool Contains(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:382](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L382) |  |
-| <code>public IReadOnlyList&lt;string&gt; GetSymbols() =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:392](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L392) |  |
-| <code>public IReadOnlyDictionary&lt;string, T&gt; GetSnapshot();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:395](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L395) |  |
-| <code>public void Clear() =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:403](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L403) |  |
-| <code>public void ForEach(Action&lt;string, T&gt; action);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:406](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L406) |  |
-| <code>public int RemoveStale(Func&lt;string, T, bool&gt; isStale);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:418](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L418) |  |
-| <code>public int RemoveExpired();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:428](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L428) | Removes all expired entries. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:438](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L438) |  |

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Net;
 using System.Threading;
 using Meridian.Core.Exceptions;
@@ -34,6 +35,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     private readonly CrossProviderValidator _validator;
     private readonly bool _enableCrossValidation;
     private readonly TimeSpan _maxRateLimitRetryBudget;
+    private readonly TimeSpan _failureBackoffDuration;
     private readonly BackfillProgressTracker _progressTracker;
     private readonly bool _ownsProgressTracker;
     private readonly bool _ownsProviders;
@@ -44,6 +46,17 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     // Maximum number of times the whole provider chain is retried after every candidate has
     // been rate limited. Kept small so a persistent rate limit cannot wedge a single request.
     private const int MaxRateLimitRetries = 3;
+
+    internal bool ResolvesSymbols => _symbolResolver is not null;
+    internal bool CrossValidates => _enableCrossValidation;
+    internal bool RotatesProviders => _rotation.Enabled;
+    internal double RotationThreshold => _rotation.ApproachingThreshold;
+    internal int RateLimitRetries => MaxRateLimitRetries;
+    internal double RateLimitRetryBudgetSeconds => _maxRateLimitRetryBudget.TotalSeconds;
+    internal double FailureBackoffSeconds => _failureBackoffDuration.TotalSeconds;
+
+    internal ImmutableArray<IHistoricalDataProvider> GetReceiptCandidates(DataGranularity granularity) =>
+        _providers.Where(p => !granularity.IsIntraday() || SupportsAggregateBars(p, granularity)).ToImmutableArray();
 
     /// <summary>
     /// Event raised as a request progresses through the provider chain: when a provider
@@ -152,15 +165,14 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         _rotation = new ProviderRotationStrategy(rateLimitTracker, enableRateLimitRotation, rateLimitRotationThreshold, rateLimitHistory);
 
         // Per-provider health status and failure backoff bookkeeping.
-        _health = new ProviderHealthTracker(
-            _providers.Select(p => p.Name),
-            failureBackoffDuration ?? TimeSpan.FromMinutes(5));
+        _failureBackoffDuration = failureBackoffDuration ?? TimeSpan.FromMinutes(5);
+        _health = new ProviderHealthTracker(_providers.Select(p => p.Name), _failureBackoffDuration);
 
         // Best-effort cross-provider validation (only invoked when enabled).
         _validator = new CrossProviderValidator(_providers, ResolveSymbolForProviderAsync, _log, crossValidationPolicy);
     }
 
-    private ProviderValidationProfile ResolveValidationProfile(string provider) =>
+    internal ProviderValidationProfile ResolveValidationProfile(string provider) =>
         _validationProfiles?.FirstOrDefault(pair => string.Equals(pair.Key, provider, StringComparison.OrdinalIgnoreCase)).Value
         ?? ProviderValidationProfile.Default;
 
@@ -175,7 +187,11 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         return false;
     }
 
-    public async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+        => GetDailyBarsAsync(symbol, from, to, capture: null, ct);
+
+    public async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to,
+        BackfillProvenanceCapture? capture, CancellationToken ct)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -195,15 +211,20 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             rangeEnd: to,
             recencyEvaluator: (bars, provider) => BackfillBarValidation.EvaluateDailyRecency(bars, to,
                 staleToleranceDays: ResolveValidationProfile(provider).StaleToleranceDays),
+            capture: capture,
             ct: ct).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(
+    public Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(
         string symbol,
         DataGranularity granularity,
         DateOnly? from,
         DateOnly? to,
-        CancellationToken ct = default)
+        CancellationToken ct = default) => GetAggregateBarsAsync(symbol, granularity, from, to, capture: null, ct);
+
+    public async Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(
+        string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to,
+        BackfillProvenanceCapture? capture, CancellationToken ct)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -216,9 +237,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         return await ExecuteWithFailoverAsync<AggregateBar>(
             symbol,
             operationLabel: $"{granularity.ToDisplayName()} aggregate bars",
-            candidateSelector: () => GetOrderedProviders().Where(p =>
-                p is IHistoricalAggregateBarProvider aggregateProvider &&
-                aggregateProvider.SupportedGranularities.Contains(granularity)),
+            candidateSelector: () => GetOrderedProviders().Where(p => SupportsAggregateBars(p, granularity)),
             fetchAsync: (provider, resolved, token) =>
                 ((IHistoricalAggregateBarProvider)provider).GetAggregateBarsAsync(resolved, granularity, from, to, token),
             onSuccessAsync: null,
@@ -227,8 +246,12 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             rangeStart: from,
             rangeEnd: to,
             recencyEvaluator: null,
+            capture: capture,
             ct: ct).ConfigureAwait(false);
     }
+
+    private static bool SupportsAggregateBars(IHistoricalDataProvider provider, DataGranularity granularity) =>
+        provider is IHistoricalAggregateBarProvider aggregate && aggregate.SupportedGranularities.Contains(granularity);
 
     /// <summary>
     /// Shared failover skeleton for the daily-bar and aggregate-bar paths: iterate the ordered
@@ -253,6 +276,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         DateOnly? rangeStart,
         DateOnly? rangeEnd,
         Func<IReadOnlyList<TResult>, string, StaleBarsVerdict?>? recencyEvaluator,
+        BackfillProvenanceCapture? capture,
         CancellationToken ct)
     {
         var requestStartedAt = DateTimeOffset.UtcNow;
@@ -260,7 +284,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         var providerAttempt = 0;
         IReadOnlyList<TResult>? freshestStaleResult = null;
         StaleBarsVerdict? freshestStaleVerdict = null;
-        string? freshestStaleProvider = null;
+        IHistoricalDataProvider? freshestStaleProvider = null;
         string? throttledProvider = null;
 
         for (var attempt = 0; ; attempt++)
@@ -296,6 +320,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 // Skip providers in backoff period
                 if (_health.IsInBackoffPeriod(provider.Name))
                 {
+                    capture?.Observe(provider, BackfillProviderObservation.Unavailable);
                     _log.Debug("Skipping {Provider} - in backoff period", provider.Name);
                     var unavailable = new DataProviderException(
                         "Provider is unavailable during failure backoff; coverage was not checked.",
@@ -309,6 +334,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 // Skip rate-limited providers if rotation is enabled
                 if (_rotation.Enabled && _rotation.IsRateLimited(provider.Name))
                 {
+                    capture?.Observe(provider, BackfillProviderObservation.Unavailable);
                     var resetTime = _rotation.GetTimeUntilReset(provider.Name);
                     _log.Debug("Skipping {Provider} - rate limited, resets in {ResetTime}", provider.Name, resetTime);
                     var unavailable = new RateLimitException(
@@ -324,6 +350,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 }
 
                 providerAttempt++;
+                capture?.Observe(provider, BackfillProviderObservation.Requested);
                 try
                 {
                     // Resolve symbol for this provider if resolver is available
@@ -364,6 +391,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                         var staleVerdict = recencyEvaluator?.Invoke(results, provider.Name);
                         if (staleVerdict is not null)
                         {
+                            capture?.Observe(provider, BackfillProviderObservation.Stale);
                             _log.Warning(
                                 "Provider {Provider} returned stale {Operation} for {Symbol}: {StaleReason}. Trying fresher providers before accepting.",
                                 provider.Name, operationLabel, symbol, staleVerdict.Description);
@@ -374,7 +402,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                             {
                                 freshestStaleResult = results;
                                 freshestStaleVerdict = staleVerdict;
-                                freshestStaleProvider = provider.Name;
+                                freshestStaleProvider = provider;
                             }
 
                             continue;
@@ -391,11 +419,13 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                             await onSuccessAsync(results, provider, ct).ConfigureAwait(false);
                         }
 
+                        capture?.Observe(provider, BackfillProviderObservation.Data);
                         return results;
                     }
 
                     _log.Debug("No {Operation} returned from {Provider} for {Symbol}, trying next", operationLabel, provider.Name, symbol);
                     Report(provider.Name, "no-data");
+                    capture?.Observe(provider, BackfillProviderObservation.Empty);
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
@@ -403,6 +433,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 }
                 catch (Exception ex)
                 {
+                    capture?.Observe(provider, BackfillProviderObservation.Unavailable);
                     // Check if this is a rate limit error
                     if (IsRateLimitException(ex))
                     {
@@ -451,12 +482,13 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             // No provider produced a fresh result. If a stale result was held back, return it
             // loudly rather than failing outright — old data with an error-level signal beats
             // no data — but never let it masquerade as fresh coverage.
-            if (freshestStaleResult is not null)
+            if (freshestStaleResult is not null && freshestStaleProvider is not null)
             {
                 _log.Error(
                     "All providers returned stale {Operation} for {Symbol}; accepting freshest stale result from {Provider} ({StaleReason})",
-                    operationLabel, symbol, freshestStaleProvider, freshestStaleVerdict!.Description);
-                Report(freshestStaleProvider!, "stale-data-accepted", freshestStaleResult.Count, error: freshestStaleVerdict.Description);
+                    operationLabel, symbol, freshestStaleProvider.Name, freshestStaleVerdict!.Description);
+                Report(freshestStaleProvider.Name, "stale-data-accepted", freshestStaleResult.Count, error: freshestStaleVerdict.Description);
+                capture?.Observe(freshestStaleProvider, BackfillProviderObservation.StaleAccepted);
                 return freshestStaleResult;
             }
 
@@ -606,6 +638,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             rangeEnd: to,
             recencyEvaluator: (result, provider) => BackfillBarValidation.EvaluateAdjustedDailyRecency(result, to,
                 staleToleranceDays: ResolveValidationProfile(provider).StaleToleranceDays),
+            capture: null,
             ct: ct).ConfigureAwait(false);
         if (bars.Count == 0)
             throw new DataProviderException("No provider could supply adjusted history. Raw bars were not substituted.",

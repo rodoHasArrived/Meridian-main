@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StreamingFailoverService
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L23).
+
+Orchestrates automatic failover between streaming market data providers. Monitors provider health via IConnectionHealthMonitor, evaluates configured FailoverRuleConfig rules, and triggers switchover when consecutive failures exceed the threshold.
+
+```csharp
+public sealed class StreamingFailoverService : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event Action&lt;FailoverTriggeredEvent&gt;? OnFailoverTriggered;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L44) | Raised when a failover is triggered, providing the rule ID, the failed provider, and the new active provider. |
+| <code>public event Action&lt;FailoverRecoveredEvent&gt;? OnFailoverRecovered;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L49) | Raised when a provider recovers and becomes the active provider again. |
+| <code>public StreamingFailoverService(IConnectionHealthMonitor healthMonitor);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L51) |  |
+| <code>public void Start(DataSourcesConfig config, IReadOnlyDictionary&lt;string, string&gt;? initialActiveProviderIds = null);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:63](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L63) | Starts periodic health evaluation based on the configured interval. |
+| <code>public void RegisterProvider(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:133](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L133) | Registers a provider for health tracking. |
+| <code>public IDisposable RegisterTransitionHandler(string ruleId, Action&lt;FailoverTransitionRequest&gt; handler);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:145](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L145) | Registers the runtime that can execute provider switches for a rule. Rule state is committed only after that runtime confirms the connection and subscription hand-off completed. |
+| <code>public bool HasLiveTransitionHandler(string ruleId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:169](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L169) | Returns whether a live runtime is registered to execute transitions for the rule. |
+| <code>public void RecordHeartbeat(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:205](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L205) | Records transport-level liveness for a provider&#x27;s current connection. This keeps the connection&#x27;s inactivity window open without counting as a successful operation, so a quiet but connected feed stays healthy and recovery evidence is not inflated by heartbeats. |
+| <code>public void RecordSuccess(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:224](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L224) | Records a successful operation for a provider (resets failure counter, increments success counter). |
+| <code>public void RecordFailure(string providerId, string reason);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:239](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L239) | Records a failure for a provider. |
+| <code>public void RecordLatency(string providerId, double latencyMs);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:256](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L256) | Records latency for a provider. If latency exceeds the configured threshold for any rule, it counts as a failure for that rule. |
+| <code>public bool ForceFailover(string ruleId, string targetProviderId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:274](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L274) | Forces failover for a specific rule to a target provider. |
+| <code>public async Task&lt;bool&gt; ForceFailoverAsync(string ruleId, string targetProviderId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:325](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L325) | Forces a failover and waits until the registered runtime either commits or rejects the provider hand-off. A false result never changes the active provider. |
+| <code>public async Task&lt;bool&gt; FailoverAfterConnectionFailureAsync(string ruleId, string failedProviderId, string reason, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:384](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L384) | Records an active-provider connection failure and performs an immediate, coordinator-owned hand-off to the next configured healthy provider. Each candidate transition remains two-phase: the coordinator commits its active provider only after the runtime confirms the connection and subscription hand-off. |
+| <code>public IReadOnlyList&lt;FailoverRuleApplyOutcome&gt; ApplyConfiguration(DataSourcesConfig config);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:478](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L478) | Applies a saved failover configuration to the running coordinator without a restart. |
+| <code>public int EvaluationIntervalSeconds { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:565](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L565) | Current health-evaluation interval in seconds (0 before Start). |
+| <code>public bool SetProviderEnabled(string providerId, bool enabled);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:576](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L576) | Excludes a provider from (or re-includes it in) failover candidate selection and automatic recovery. Excluding the active provider does not switch away from it; call MoveOffDisabledProviderAsync for that. |
+| <code>public bool IsProviderEnabled(string providerId) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:593](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L593) | Whether a provider is currently eligible for failover selection. |
+| <code>public async Task&lt;bool?&gt; MoveOffDisabledProviderAsync(string ruleId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:604](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L604) | When a rule&#x27;s active provider has been disabled, hands the rule off to the next enabled, healthy provider through the normal two-phase transition so subscriptions move with it. |
+| <code>public string? GetActiveProviderId(string ruleId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:627](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L627) | Gets the current active provider ID for a given rule. |
+| <code>public IReadOnlyList&lt;FailoverRuleSnapshot&gt; GetRuleSnapshots();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:636](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L636) | Gets the current failover state for all rules. |
+| <code>public IReadOnlyList&lt;ProviderHealthSnapshot&gt; GetProviderHealthSnapshots();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:645](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L645) | Gets the health state for all registered providers. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1065](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1065) |  |
+
 ## FinnhubCompanyProfile
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile</code>. Kind: `record`.
@@ -1551,48 +1591,3 @@ Declared public members:
 | <code>public const string HistoricalVolatility = &quot;HISTORICAL_VOLATILITY&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:372](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L372) | 30-day historical volatility. No volume. |
 | <code>public const string OptionImpliedVolatility = &quot;OPTION_IMPLIED_VOLATILITY&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:375](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L375) | 30-day implied volatility. No volume. |
 | <code>public const string Schedule = &quot;SCHEDULE&quot;;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:378](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L378) | Trading schedule only. |
-
-## IIBBrokerageClient
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:10](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L10).
-
-Compile-neutral brokerage-facing contract that abstracts the native IB socket client. The real implementation is provided by EnhancedIBConnectionManager in IBAPI builds, while tests can inject a fake implementation without referencing the vendor SDK.
-
-```csharp
-public interface IIBBrokerageClient : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string Host { get; }</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:12](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L12) |  |
-| <code>int Port { get; }</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:13](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L13) |  |
-| <code>int ClientId { get; }</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:14](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L14) |  |
-| <code>bool IsConnected { get; }</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:15](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L15) |  |
-| <code>event EventHandler&lt;int&gt;? NextValidIdReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:17](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L17) |  |
-| <code>event EventHandler&lt;IBOrderStatusUpdate&gt;? OrderStatusReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:18](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L18) |  |
-| <code>event EventHandler&lt;IBOpenOrderUpdate&gt;? OpenOrderReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:19](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L19) |  |
-| <code>event EventHandler? OpenOrdersCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:20](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L20) |  |
-| <code>event EventHandler&lt;IBExecutionUpdate&gt;? ExecutionDetailsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:21](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L21) |  |
-| <code>event EventHandler&lt;IBPositionUpdate&gt;? PositionReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:22](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L22) |  |
-| <code>event EventHandler? PositionsCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:23](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L23) |  |
-| <code>event EventHandler&lt;IBAccountSummaryUpdate&gt;? AccountSummaryReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:24](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L24) |  |
-| <code>event EventHandler&lt;int&gt;? AccountSummaryCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:25](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L25) |  |
-| <code>event EventHandler&lt;IBApiError&gt;? ErrorOccurred;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:26](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L26) |  |
-| <code>event EventHandler&lt;IReadOnlyList&lt;string&gt;&gt;? ManagedAccountsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:28](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L28) | Accounts IB reports for the connected login. |
-| <code>event EventHandler? ConnectionLost;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:30](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L30) | The transport dropped; raised before any automatic reconnect. |
-| <code>event EventHandler? ConnectionRestored;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:32](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L32) | The client re-established the transport on its own. |
-| <code>Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:34](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L34) |  |
-| <code>Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:35](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L35) |  |
-| <code>void RequestNextValidId();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:36](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L36) |  |
-| <code>Task PlaceOrderAsync(int orderId, OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:37](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L37) |  |
-| <code>Task CancelOrderAsync(int orderId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:38](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L38) |  |
-| <code>int ReserveAccountSummaryRequestId();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:39](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L39) |  |
-| <code>void RequestAccountSummary(int requestId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:40](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L40) |  |
-| <code>void CancelAccountSummary(int requestId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:41](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L41) |  |
-| <code>void RequestPositions();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:42](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L42) |  |
-| <code>void CancelPositions();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:43](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L43) |  |
-| <code>void RequestOpenOrders();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:44](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L44) |  |

@@ -1154,6 +1154,7 @@ export interface BackfillTriggerResult {
   completedUtc: string;
   error: string | null;
   quotaReceipt?: BackfillQuotaReceipt | null;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
   batchReceipts?: BackfillBatchReceipt[] | null;
 }
 

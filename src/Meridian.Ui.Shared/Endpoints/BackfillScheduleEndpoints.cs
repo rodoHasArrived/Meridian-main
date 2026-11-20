@@ -107,7 +107,7 @@ public static class BackfillScheduleEndpoints
                     req.Symbols,
                     req.From,
                     req.To);
-                backfill.ValidateRequest(request);
+                backfill.ValidateRequest(request, HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId);
             }
             catch (InvalidOperationException ex)
             {
@@ -116,8 +116,9 @@ public static class BackfillScheduleEndpoints
 
             try
             {
-                var result = await backfill.RunAsync(request, ct).ConfigureAwait(false);
-                return Results.Json(result, jsonOptions);
+                var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+                var result = await backfill.RunAsync(request, tenantId, ct).ConfigureAwait(false);
+                return Results.Json(result.ForTenant(tenantId), jsonOptions);
             }
             catch (InvalidOperationException)
             {

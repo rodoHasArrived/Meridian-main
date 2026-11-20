@@ -35,7 +35,7 @@ public sealed class WorkstationBackfillQueue(
             if (history.GetWorkstationQueue().Count >= QueueCapacity)
                 throw new BackfillSubmissionConflictException("The backfill queue is full. Try again when a job completes.");
 
-            var plan = await coordinator.PlanSubmissionAsync(request, alternativeFor, _clock, ct).ConfigureAwait(false);
+            var plan = await coordinator.PlanSubmissionAsync(request, tenantId, alternativeFor, _clock, ct).ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
             now = plan.PlannedAt;
             if (runAt <= now)
@@ -95,7 +95,7 @@ public sealed class WorkstationBackfillQueue(
         var submission = execution.WorkstationSubmission!;
         try
         {
-            var result = await coordinator.RunQueuedAsync(submission.Request, submission.Estimate, submission.AlternativeFor,
+            var result = await coordinator.RunQueuedAsync(submission.Request, submission.TenantId, submission.Estimate, submission.AlternativeFor,
                 onStarted: () =>
                 {
                     var running = execution with { Status = ExecutionStatus.Running, StartedAt = _clock.GetUtcNow() };

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CompositeDataQualityGap
+
+Qualified name: <code>Meridian.Application.DataQuality.CompositeDataQualityGap</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:28](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L28).
+
+Server-owned remediation target resolved from an opaque composite gap identifier.
+
+```csharp
+public sealed record CompositeDataQualityGap(string GapId, string DashboardVersion, StreamingDataGap Gap, string? Provider);
+```
+
 ## CompositeDataQualityReadService
 
 Qualified name: <code>Meridian.Application.DataQuality.CompositeDataQualityReadService</code>. Kind: `class`.
@@ -1317,24 +1329,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IntercompanyStructuredTermsPreviewDto Preview(IntercompanyAgreementDraftDto draft, string subjectHash);</code> | [src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs:12](../../../../src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs#L12) |  |
-
-## LifecycleLedgerPostingAuthority
-
-Qualified name: <code>Meridian.Application.FundStructure.LifecycleLedgerPostingAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:11](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L11).
-
-Resolves entity identity and lifecycle from authoritative structure and retained revisions.
-
-```csharp
-public sealed class LifecycleLedgerPostingAuthority(IFundStructureService structure, IEntityLifecycleStore history, Func<IControlledCloseAuthorizationStore?> closeAuthorizations, Func<CancellationToken, Task<IAsyncDisposable>>? structureAuthority = null) : ILedgerPostingAuthority, ILedgerBookControlPreflight, ILedgerStructurePostingAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ControlName =&gt; …;</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:15](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L15) |  |
-| <code>public Task&lt;IAsyncDisposable&gt; AcquireStructureAuthorityAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L16) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:18](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L18) |  |
-| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:128](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L128) |  |

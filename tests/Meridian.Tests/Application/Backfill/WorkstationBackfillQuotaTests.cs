@@ -10,6 +10,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Stooq;
+using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -37,14 +38,14 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
         using var httpServices = services.BuildServiceProvider();
         using var client = httpServices.GetRequiredService<IHttpClientFactory>().CreateClient(HttpClientNames.StooqHistorical);
         using var registry = new ProviderRegistry();
-        registry.Register(new MeteredProvider(client));
+        registry.Register(ProviderRuntimeProvenance.Attach(new MeteredProvider(client), new TenantCredentialContext(Tenant)));
         var store = await CreateConfigAsync(new(ReserveHeadroomPercent: 50, MaxConcurrentRequests: 1));
         using var coordinator = new BackfillCoordinator(store, registry);
         var history = new BackfillExecutionHistory(HistoryPath);
         using var queue = new WorkstationBackfillQueue(coordinator, history, NullLogger<WorkstationBackfillQueue>.Instance);
         var plan = new BackfillRequest("quota-test", ["SPY", "QQQ", "spy"], Day, Day);
 
-        var preview = await coordinator.PreviewAsync(plan);
+        var preview = await coordinator.PreviewAsync(plan, Tenant, CancellationToken.None);
         responses.Dispatched.Should().BeEmpty();
         preview.Quota.ExpectedRequests.Should().Be(2);
         preview.Quota.RequestsPerWindow.Should().Be(2);
@@ -62,6 +63,10 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
         await differentResumeSetting.Should().ThrowAsync<BackfillSubmissionConflictException>();
         var otherTenantAttempt = () => queue.SubmitAsync(submissionId, "other-tenant", plan, null, null);
         await otherTenantAttempt.Should().ThrowAsync<BackfillSubmissionConflictException>();
+        var otherTenantPreview = () => coordinator.PreviewAsync(plan, "other-tenant", CancellationToken.None);
+        await otherTenantPreview.Should().ThrowAsync<InvalidOperationException>();
+        var otherTenantSubmission = () => queue.SubmitAsync(Guid.NewGuid(), "other-tenant", plan, null, null);
+        await otherTenantSubmission.Should().ThrowAsync<InvalidOperationException>();
         history.GetRecentExecutions(workstationTenant: "other-tenant").Should().BeEmpty();
 
         await queue.StartAsync(CancellationToken.None);
@@ -117,6 +122,10 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
         var projected = BackfillExecutionContractProjection.Build([completed], "stooq").Executions.Single();
         projected.QuotaReceipt!.ActualRequests.Should().Be(3);
         projected.BatchReceipts.Should().BeEquivalentTo(completed.BatchReceipts);
+        var provenanceStore = coordinator.GetReceiptStore();
+        provenanceStore.ReadRecentRetainedResults(10, Tenant).Should().HaveCount(2);
+        provenanceStore.ReadRecentRetainedResults(10, "other-tenant").Should().BeEmpty();
+        coordinator.TryReadLast().Should().BeNull();
     }
 
     [Fact]
@@ -193,6 +202,13 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
     }
 
     public void Dispose() => Directory.Delete(_root, recursive: true);
+
+    private sealed class TenantCredentialContext(string tenantId) : ICredentialContext
+    {
+        public string? ProvenanceTenantId => tenantId;
+        public string? Get(string name) => null;
+        public bool IsConfigured(string name) => false;
+    }
 
     private sealed class MeteredProvider(HttpClient? client = null, RateLimiter? quota = null) : BaseHistoricalDataProvider(client)
     {

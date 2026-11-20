@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ApplicationLifecycleCoordinator
+
+Qualified name: <code>Meridian.Application.Composition.Startup.ApplicationLifecycleCoordinator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:55](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L55).
+
+Single process lifetime owner used by shared startup orchestration.
+
+```csharp
+public sealed class ApplicationLifecycleCoordinator : IApplicationLifecycleCoordinator, IRuntimeLifecycleControlPlane
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string LocalShutdownTokenEnvironmentVariable = &quot;MDC_SHUTDOWN_TOKEN&quot;;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:57](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L57) |  |
+| <code>public DateTimeOffset StartedAtUtc { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:106](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L106) |  |
+| <code>public bool IsShutdownRequested =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:108](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L108) |  |
+| <code>public string? ShutdownReason { get; private set; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:110](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L110) |  |
+| <code>public CancellationToken ShutdownToken =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:116](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L116) | Compatibility token. New code should use StopWorkToken and TerminationToken explicitly. |
+| <code>public CancellationToken StopWorkToken =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:118](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L118) |  |
+| <code>public CancellationToken TerminationToken =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:120](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L120) |  |
+| <code>public string? LocalShutdownToken { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:122](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L122) |  |
+| <code>public RuntimeLifecycleSnapshotDto Snapshot { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:124](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L124) |  |
+| <code>public LifecycleShutdownOperationDto? ActiveShutdownOperation { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:135](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L135) |  |
+| <code>public LifecycleShutdownReceiptDto? LatestShutdownReceipt { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:146](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L146) |  |
+| <code>public static ApplicationLifecycleCoordinator Create(ILogger log, CancellationToken externalToken = default) =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:157](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L157) |  |
+| <code>public void TransitionTo(RuntimeLifecycleState state, string activePhase);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:160](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L160) |  |
+| <code>public void UpdateReadiness(RuntimeReadinessStatus readiness, IReadOnlyList&lt;RuntimeLifecycleCheckDto&gt; checks);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:189](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L189) |  |
+| <code>public Task RequestShutdownAsync(string reason, string? detail = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:222](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L222) |  |
+| <code>public ValueTask&lt;LifecycleShutdownAcceptedDto&gt; RequestShutdownAsync(LifecycleShutdownRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:236](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L236) |  |
+| <code>public void AdvanceShutdown(LifecycleShutdownStage stage, LifecycleShutdownOutcome outcome = LifecycleShutdownOutcome.Pending, string? message = null);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:244](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L244) |  |
+| <code>public void CompleteShutdown(LifecycleShutdownReceiptDto receipt);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:302](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L302) |  |
+| <code>public void SignalTermination();</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:346](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L346) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:358](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L358) |  |
+
 ## DelegateRuntimeReadinessCheck
 
 Qualified name: <code>Meridian.Application.Composition.Startup.DelegateRuntimeReadinessCheck</code>. Kind: `class`.
@@ -995,15 +1032,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Development = 0</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:545](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L545) | All self-healing fixes are applied. SelfHealingSeverity.Warn-level changes are applied but logged as Warning. Suitable for local development and CI environments where operator attention is not required for every startup. |
 | <code>Production = 1</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:553](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L553) | Only safe cosmetic fixes (SelfHealingSeverity.AutoFix) are applied silently. SelfHealingSeverity.Warn-level fixes are refused and surfaced as validation errors so that the process cannot start until a human corrects the configuration. Use MDC_CONFIG_STRICTNESS=production to enable. |
-
-## CompositeDataQualityGap
-
-Qualified name: <code>Meridian.Application.DataQuality.CompositeDataQualityGap</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:28](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L28).
-
-Server-owned remediation target resolved from an opaque composite gap identifier.
-
-```csharp
-public sealed record CompositeDataQualityGap(string GapId, string DashboardVersion, StreamingDataGap Gap, string? Provider);
-```

@@ -39,12 +39,15 @@ internal static class BackfillQuotaPlanner
     }
 
     public static IHistoricalDataProvider[] GetApprovedAlternatives(
-        BackfillConfig? config, string provider, DataGranularity granularity, IReadOnlyList<IHistoricalDataProvider> providers)
+        BackfillConfig? config, string provider, DataGranularity granularity, IReadOnlyCollection<IHistoricalDataProvider> providers)
     {
-        var approved = GetPolicy(config, provider).ApprovedEquivalentProviders ?? [];
         var original = providers.FirstOrDefault(candidate => candidate.Name.Equals(provider, StringComparison.OrdinalIgnoreCase));
+        if (original is null)
+            return [];
+
+        var approved = GetPolicy(config, provider).ApprovedEquivalentProviders ?? [];
         return providers.Where(candidate => candidate is not CompositeHistoricalDataProvider &&
-            candidate.IsSimulated == (original?.IsSimulated ?? false) &&
+            candidate.IsSimulated == original.IsSimulated &&
             !candidate.Name.Equals(provider, StringComparison.OrdinalIgnoreCase) &&
             approved.Contains(candidate.Name, StringComparer.OrdinalIgnoreCase) &&
             (!granularity.IsIntraday() || candidate is IHistoricalAggregateBarProvider aggregate &&

@@ -7,6 +7,7 @@ import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state"
 import { Pagination } from "@/components/data/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { BackfillCoverageChart } from "@/components/meridian/backfill-coverage-chart";
@@ -38,8 +39,8 @@ const backfillQueueColumns: TableWorkbenchColumn<DataOperationsBackfillRow>[] = 
     label: "Job",
     render: (backfill) => (
       <span className="block min-w-0">
-        <span className="block font-mono font-semibold text-foreground">{backfill.jobId}</span>
-        <span className="mt-1 block text-xs text-muted-foreground">{backfill.provider}</span>
+        <span className="block break-all font-mono font-semibold text-foreground">{backfill.jobId}</span>
+        <span className="mt-1 block text-xs text-muted-foreground">{backfill.provider}{backfill.usedFallback ? " · Fallback used" : ""}</span>
       </span>
     )
   },
@@ -54,7 +55,7 @@ const backfillQueueColumns: TableWorkbenchColumn<DataOperationsBackfillRow>[] = 
     label: "Status",
     render: (backfill) => (
       <Badge
-        variant={backfill.status === "Review" ? "warning" : backfill.status === "Running" ? "default" : "outline"}
+        variant={backfill.status === "Review" || backfill.status === "Failed" ? "warning" : backfill.status === "Running" ? "default" : "outline"}
       >
         {backfill.status}
       </Badge>
@@ -186,7 +187,11 @@ const exportColumns: TableWorkbenchColumn<DataOperationsExportRow>[] = [
   }
 ];
 
-export function DataBackfillWorkstream({ vm }: { vm: DataOperationsVm }) {
+export function DataBackfillWorkstream({ vm, onBackfillCompleted, children }: {
+  vm: DataOperationsVm;
+  onBackfillCompleted?: () => void;
+  children?: React.ReactNode;
+}) {
   return (
     <section aria-labelledby="data-backfill-queue-title" className="workspace-region">
       <CardHeader>
@@ -228,10 +233,13 @@ export function DataBackfillWorkstream({ vm }: { vm: DataOperationsVm }) {
           <BackfillDetailPanel
             detail={vm.selectedBackfillDetail}
             emptyState={vm.backfillDetailEmptyState ?? vm.backfillSection.emptyState}
+            receipt={vm.selectedBackfill?.providerProvenance}
+            onBackfillCompleted={onBackfillCompleted}
           />
         </div>
         <WorkstationBackfillReceipts rows={vm.queuedBackfills} error={vm.queuedBackfills.length > 0 ? vm.remediationHistoryError : null} />
         {vm.retainedBackfillHistory && !vm.remediationHistoryError && !vm.remediationHistoryLoading ? <BackfillCoverageChart history={vm.retainedBackfillHistory} /> : null}
+        {children}
         <section aria-labelledby="backfill-remediation-sla-title" className="mt-5 space-y-3 border-t border-border/70 pt-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
@@ -509,10 +517,14 @@ export function DataQueryWorkstream({
 
 function BackfillDetailPanel({
   detail,
-  emptyState
+  emptyState,
+  receipt,
+  onBackfillCompleted
 }: {
   detail: DataOperationsBackfillDetailState | null;
   emptyState: DataOperationsEmptyState | null;
+  receipt?: import("@/types/provider-provenance").ProviderProvenanceReceipt | null;
+  onBackfillCompleted?: () => void;
 }) {
   if (!detail) {
     return (
@@ -554,6 +566,9 @@ function BackfillDetailPanel({
           <FieldTile key={field.id} field={field} />
         ))}
       </div>
+      {receipt || detail.statusLabel === "Completed" || detail.statusLabel === "Failed" ? (
+        <ProviderProvenancePanel receipt={receipt} onBackfillCompleted={onBackfillCompleted} />
+      ) : null}
     </DenseRowDetailPanel>
   );
 }

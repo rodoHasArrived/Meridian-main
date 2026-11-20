@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderDataQualityValidator
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderDataQualityValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:11](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L11).
+
+Shared provider-boundary validation for normalized market-data updates before they enter collectors and downstream pipelines.
+
+```csharp
+public static class ProviderDataQualityValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateTrade(string providerName, MarketTradeUpdate update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L15) |  |
+| <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateQuote(string providerName, MarketQuoteUpdate update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L50) |  |
+| <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateAggregate(string providerName, AggregateBar update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:115](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L115) |  |
+
 ## ProviderFactory
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderFactory</code>. Kind: `class`.
@@ -1061,43 +1081,3 @@ Declared public members:
 | <code>public static StreamingFailoverRegistry Process { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L19) | Process-wide instance. Desktop mode runs the UI server and the collector in separate DI containers; both register this instance so the UI reads the collector&#x27;s live coordinator. |
 | <code>public StreamingFailoverService? Service { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:24](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L24) | The runtime failover service, or null if failover is disabled. |
 | <code>public bool IsAvailable =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L31) | Whether a runtime failover service is available. |
-
-## StreamingFailoverService
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L23).
-
-Orchestrates automatic failover between streaming market data providers. Monitors provider health via IConnectionHealthMonitor, evaluates configured FailoverRuleConfig rules, and triggers switchover when consecutive failures exceed the threshold.
-
-```csharp
-public sealed class StreamingFailoverService : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event Action&lt;FailoverTriggeredEvent&gt;? OnFailoverTriggered;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L44) | Raised when a failover is triggered, providing the rule ID, the failed provider, and the new active provider. |
-| <code>public event Action&lt;FailoverRecoveredEvent&gt;? OnFailoverRecovered;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L49) | Raised when a provider recovers and becomes the active provider again. |
-| <code>public StreamingFailoverService(IConnectionHealthMonitor healthMonitor);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L51) |  |
-| <code>public void Start(DataSourcesConfig config, IReadOnlyDictionary&lt;string, string&gt;? initialActiveProviderIds = null);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:63](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L63) | Starts periodic health evaluation based on the configured interval. |
-| <code>public void RegisterProvider(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:133](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L133) | Registers a provider for health tracking. |
-| <code>public IDisposable RegisterTransitionHandler(string ruleId, Action&lt;FailoverTransitionRequest&gt; handler);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:145](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L145) | Registers the runtime that can execute provider switches for a rule. Rule state is committed only after that runtime confirms the connection and subscription hand-off completed. |
-| <code>public bool HasLiveTransitionHandler(string ruleId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:169](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L169) | Returns whether a live runtime is registered to execute transitions for the rule. |
-| <code>public void RecordHeartbeat(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:205](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L205) | Records transport-level liveness for a provider&#x27;s current connection. This keeps the connection&#x27;s inactivity window open without counting as a successful operation, so a quiet but connected feed stays healthy and recovery evidence is not inflated by heartbeats. |
-| <code>public void RecordSuccess(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:224](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L224) | Records a successful operation for a provider (resets failure counter, increments success counter). |
-| <code>public void RecordFailure(string providerId, string reason);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:239](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L239) | Records a failure for a provider. |
-| <code>public void RecordLatency(string providerId, double latencyMs);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:256](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L256) | Records latency for a provider. If latency exceeds the configured threshold for any rule, it counts as a failure for that rule. |
-| <code>public bool ForceFailover(string ruleId, string targetProviderId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:274](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L274) | Forces failover for a specific rule to a target provider. |
-| <code>public async Task&lt;bool&gt; ForceFailoverAsync(string ruleId, string targetProviderId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:325](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L325) | Forces a failover and waits until the registered runtime either commits or rejects the provider hand-off. A false result never changes the active provider. |
-| <code>public async Task&lt;bool&gt; FailoverAfterConnectionFailureAsync(string ruleId, string failedProviderId, string reason, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:384](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L384) | Records an active-provider connection failure and performs an immediate, coordinator-owned hand-off to the next configured healthy provider. Each candidate transition remains two-phase: the coordinator commits its active provider only after the runtime confirms the connection and subscription hand-off. |
-| <code>public IReadOnlyList&lt;FailoverRuleApplyOutcome&gt; ApplyConfiguration(DataSourcesConfig config);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:478](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L478) | Applies a saved failover configuration to the running coordinator without a restart. |
-| <code>public int EvaluationIntervalSeconds { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:565](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L565) | Current health-evaluation interval in seconds (0 before Start). |
-| <code>public bool SetProviderEnabled(string providerId, bool enabled);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:576](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L576) | Excludes a provider from (or re-includes it in) failover candidate selection and automatic recovery. Excluding the active provider does not switch away from it; call MoveOffDisabledProviderAsync for that. |
-| <code>public bool IsProviderEnabled(string providerId) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:593](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L593) | Whether a provider is currently eligible for failover selection. |
-| <code>public async Task&lt;bool?&gt; MoveOffDisabledProviderAsync(string ruleId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:604](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L604) | When a rule&#x27;s active provider has been disabled, hands the rule off to the next enabled, healthy provider through the normal two-phase transition so subscriptions move with it. |
-| <code>public string? GetActiveProviderId(string ruleId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:627](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L627) | Gets the current active provider ID for a given rule. |
-| <code>public IReadOnlyList&lt;FailoverRuleSnapshot&gt; GetRuleSnapshots();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:636](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L636) | Gets the current failover state for all rules. |
-| <code>public IReadOnlyList&lt;ProviderHealthSnapshot&gt; GetProviderHealthSnapshots();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:645](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L645) | Gets the health state for all registered providers. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1065](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1065) |  |

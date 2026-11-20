@@ -15,6 +15,7 @@ using Meridian.Platform.Tracing;
 using Serilog;
 using Meridian.Contracts.Monitoring;
 using Meridian.Contracts.Backfill;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Pipeline;
 using Meridian.Storage.Backfill;
 
@@ -76,6 +77,15 @@ public sealed class HistoricalBackfillService : IDisposable
 
     public void Dispose() => _ownedProvider?.Dispose();
 
+    internal BackfillProvenanceCapture DescribeRoute(BackfillRequest request) => new(
+        _providers[request.Provider.ToLowerInvariant()], request.Granularity,
+        !request.Granularity.IsIntraday() && request.From.HasValue && _symbolTimelineResolver is not null,
+        resolveStaleToleranceDays: ResolveStaleToleranceDays);
+
+    private int ResolveStaleToleranceDays(string provider) => _validationProfiles
+        ?.FirstOrDefault(pair => string.Equals(pair.Key, provider, StringComparison.OrdinalIgnoreCase))
+        .Value?.StaleToleranceDays ?? BackfillBarValidation.DefaultStaleToleranceDays;
+
     public void ValidateRequest(BackfillRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -116,6 +126,8 @@ public sealed class HistoricalBackfillService : IDisposable
         var provider = _providers[request.Provider.ToLowerInvariant()];
         var aggregateProvider = provider as IHistoricalAggregateBarProvider;
         var observation = HistoricalBackfillRequestScope.Current;
+        var composite = provider as CompositeHistoricalDataProvider;
+        var provenance = DescribeRoute(request);
         await using var receiptLease = _checkpointStore is not null
             ? await _checkpointStore.Batches.AcquireRunLeaseAsync(ct).ConfigureAwait(false)
             : null;
@@ -282,19 +294,15 @@ public sealed class HistoricalBackfillService : IDisposable
                         {
                             foreach (var partition in executionPartitions)
                             {
-                                var bars = await FetchWithQuotaAsync(provider, () => aggregateProvider.GetAggregateBarsAsync(
-                                    symbol,
-                                    request.Granularity,
-                                    partition.From,
-                                    BackfillPartitionPlanner.ToInclusiveEnd(partition),
-                                    ct), ct).ConfigureAwait(false);
+                                var bars = await FetchAggregateAsync(partition.From, BackfillPartitionPlanner.ToInclusiveEnd(partition))
+                                    .ConfigureAwait(false);
 
                                 await PublishAggregateBarsAsync(bars, partition.From, BackfillPartitionPlanner.ToInclusiveEnd(partition)).ConfigureAwait(false);
                             }
                         }
                         else
                         {
-                            var bars = await FetchWithQuotaAsync(provider, () => aggregateProvider.GetAggregateBarsAsync(symbol, request.Granularity, rangeFrom, rangeTo, ct), ct).ConfigureAwait(false);
+                            var bars = await FetchAggregateAsync(rangeFrom, rangeTo).ConfigureAwait(false);
                             await PublishAggregateBarsAsync(bars, rangeFrom, rangeTo).ConfigureAwait(false);
                         }
                     }
@@ -307,11 +315,8 @@ public sealed class HistoricalBackfillService : IDisposable
                                 // A range spanning a ticker rename must query the provider with the
                                 // era-correct symbol per chunk, then land under the requested symbol.
                                 var eraSymbol = await ResolveEraSymbolAsync(symbol, partition.From, ct).ConfigureAwait(false);
-                                var bars = await FetchWithQuotaAsync(provider, () => provider.GetDailyBarsAsync(
-                                    eraSymbol,
-                                    partition.From,
-                                    BackfillPartitionPlanner.ToInclusiveEnd(partition),
-                                    ct), ct).ConfigureAwait(false);
+                                var bars = await FetchDailyAsync(eraSymbol, partition.From, BackfillPartitionPlanner.ToInclusiveEnd(partition))
+                                    .ConfigureAwait(false);
 
                                 await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol),
                                     partition.From, BackfillPartitionPlanner.ToInclusiveEnd(partition)).ConfigureAwait(false);
@@ -322,7 +327,7 @@ public sealed class HistoricalBackfillService : IDisposable
                             var eraSymbol = rangeFrom.HasValue
                                 ? await ResolveEraSymbolAsync(symbol, rangeFrom.Value, ct).ConfigureAwait(false)
                                 : symbol;
-                            var bars = await FetchWithQuotaAsync(provider, () => provider.GetDailyBarsAsync(eraSymbol, rangeFrom, rangeTo, ct), ct).ConfigureAwait(false);
+                            var bars = await FetchDailyAsync(eraSymbol, rangeFrom, rangeTo).ConfigureAwait(false);
                             await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol), rangeFrom, rangeTo).ConfigureAwait(false);
                         }
                     }
@@ -341,9 +346,7 @@ public sealed class HistoricalBackfillService : IDisposable
                 var newestKnownDate = lastBarDate.HasValue && newestCoveredDate.HasValue && newestCoveredDate.Value > lastBarDate.Value
                     ? newestCoveredDate
                     : lastBarDate;
-                var toleranceDays = _validationProfiles?.FirstOrDefault(pair =>
-                    string.Equals(pair.Key, servedBy.Count == 1 ? servedBy.First() : provider.Name, StringComparison.OrdinalIgnoreCase)).Value?.StaleToleranceDays
-                    ?? BackfillBarValidation.DefaultStaleToleranceDays;
+                var toleranceDays = ResolveStaleToleranceDays(servedBy.Count == 1 ? servedBy.First() : provider.Name);
                 var staleDays = newestKnownDate.HasValue ? expectedThrough.DayNumber - newestKnownDate.Value.DayNumber : 0;
                 // Only requests that expect data through (roughly) now can be "stale"; an
                 // explicitly historical range that falls short is partial coverage, not staleness.
@@ -376,9 +379,21 @@ public sealed class HistoricalBackfillService : IDisposable
                 else
                     validationSignals.Add(SymbolValidationSignal.Warn(symbol, effectiveFrom, effectiveTo, "Provider returned zero bars for the requested date range"));
 
+                Task<IReadOnlyList<HistoricalBar>> FetchDailyAsync(string eraSymbol, DateOnly? from, DateOnly? to) =>
+                    composite is not null
+                        ? composite.GetDailyBarsAsync(eraSymbol, from, to, provenance, ct)
+                        : FetchWithQuotaAsync(provider, () => provenance.ObserveDirectAsync(provider,
+                            () => provider.GetDailyBarsAsync(eraSymbol, from, to, ct)), ct);
+
+                Task<IReadOnlyList<AggregateBar>> FetchAggregateAsync(DateOnly? from, DateOnly? to) =>
+                    composite is not null
+                        ? composite.GetAggregateBarsAsync(symbol, request.Granularity, from, to, provenance, ct)
+                        : FetchWithQuotaAsync(provider, () => provenance.ObserveDirectAsync(provider,
+                            () => aggregateProvider!.GetAggregateBarsAsync(symbol, request.Granularity, from, to, ct)), ct);
+
                 async Task PublishAggregateBarsAsync(IReadOnlyList<AggregateBar> bars, DateOnly? from, DateOnly? to)
                 {
-                    var futureCutoff = DateTimeOffset.UtcNow.AddDays(1);
+                    var futureCutoff = DateTimeOffset.UtcNow.AddDays(BackfillBarValidation.FutureToleranceDays);
                     var futureDropped = 0;
                     var events = new List<(MarketEvent Event, DateOnly Date)>(bars.Count);
                     foreach (var bar in bars)
@@ -596,6 +611,10 @@ public sealed class HistoricalBackfillService : IDisposable
             SkippedSymbols: skippedSymbols.ToArray(),
             SymbolValidationSignals: validationSignals.ToArray())
         {
+            ProvenanceAccess = provenance.Access,
+            ProviderProvenance = provenance.Complete(BackfillProvenanceCapture.DescribeRequest(
+                request.From, request.To, symbols, request.Granularity, maxConcurrent, normalizedPriorities,
+                request.ResumeFromCheckpoint), started, completed),
             BatchReceipts = batchReceipts.Length > 0 ? batchReceipts : null
         };
 

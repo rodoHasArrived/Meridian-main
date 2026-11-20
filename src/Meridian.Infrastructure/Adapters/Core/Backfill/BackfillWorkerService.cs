@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Meridian.Core.Config;
 using Meridian.Core.Exceptions;
@@ -38,6 +39,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
     private readonly ConcurrentDictionary<BackfillRequest, byte> _requestsBeingCancelled =
         new(ReferenceEqualityComparer.Instance);
     private readonly ConcurrentQueue<Exception> _cleanupFailures = new();
+    private readonly ConditionalWeakTable<BackfillJob, JobProvenance> _jobProvenance = new();
     private readonly object _lifecycleSync = new();
     private readonly object _lifecycleNotificationSync = new();
     private readonly object _jobCancellationSync = new();
@@ -134,6 +136,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
         _jobCancellationRegistration = _jobManager.RegisterJobCancellationHandler(
             CancelJobAttemptsAsync,
             CancelUncommittedBatchAsync);
+        _jobManager.CaptureReceipt = CompleteJobReceipt;
     }
 
     private void HandleProviderProgress(ProviderBackfillProgress progress)
@@ -1057,10 +1060,42 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
             request.Symbol,
             request.FromDate,
             request.ToDate,
+            _jobManager.GetJob(request.JobId) is { } job ? GetJobProvenance(job).Capture : null,
             ct).ConfigureAwait(false);
 
         return bars;
     }
+
+    private JobProvenance GetJobProvenance(BackfillJob job) => _jobProvenance.GetValue(job, key => new(
+        new BackfillProvenanceCapture(_provider, DataGranularity.Daily, symbolTimelineResolution: false, background: true,
+            resolveStaleToleranceDays: provider => ProviderValidationProfile.Resolve(_appConfig.Backfill, provider).StaleToleranceDays),
+        key.Statistics.TotalRequestsMade > 0));
+
+    private void CompleteJobReceipt(BackfillJob job, DateTimeOffset completedUtc)
+    {
+        lock (job)
+        {
+            if (job.ProviderProvenance is not null)
+                return;
+
+            var evidence = GetJobProvenance(job);
+            var request = BackfillProvenanceCapture.DescribeRequest(job.FromDate, job.ToDate, job.Symbols, job.Granularity, _config.MaxConcurrentRequests) with
+            {
+                SkipExistingData = job.Options.SkipExistingData,
+                FillGapsOnly = job.Options.FillGapsOnly
+            };
+            var receipt = evidence.Capture.Complete(request, job.StartedAt ?? job.CreatedAt, completedUtc,
+                "The background job's queue and archive state were not retained for reproduction.");
+            job.ProvenanceAccess = evidence.Capture.Access;
+            job.ProviderProvenance = receipt with
+            {
+                RoutingHistoryComplete = !evidence.HadPriorProgress,
+                DataSemantics = job.Granularity == DataGranularity.Daily ? receipt.DataSemantics : $"Daily worker retrieval. {receipt.DataSemantics}"
+            };
+        }
+    }
+
+    private sealed record JobProvenance(BackfillProvenanceCapture Capture, bool HadPriorProgress);
 
     /// <summary>
     /// Write bars to storage.
@@ -1252,18 +1287,21 @@ public sealed class BackfillServiceFactory
     private readonly ISymbolResolver? _symbolResolver;
 
     private readonly IAtomicFileWriter _atomicFileWriter;
+    private readonly Func<string, BackfillJob, CancellationToken, Task>? _retainReceiptAsync;
     private readonly Func<string, IBackfillBarWriter> _barWriterFactory;
 
     public BackfillServiceFactory(
         IAtomicFileWriter atomicFileWriter,
         Func<string, IBackfillBarWriter> barWriterFactory,
         ILogger? log = null,
-        ISymbolResolver? symbolResolver = null)
+        ISymbolResolver? symbolResolver = null,
+        Func<string, BackfillJob, CancellationToken, Task>? retainReceiptAsync = null)
     {
         _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         _barWriterFactory = barWriterFactory ?? throw new ArgumentNullException(nameof(barWriterFactory));
         _log = log ?? LoggingSetup.ForContext<BackfillServiceFactory>();
         _symbolResolver = symbolResolver;
+        _retainReceiptAsync = retainReceiptAsync;
     }
 
     /// <summary>
@@ -1311,7 +1349,10 @@ public sealed class BackfillServiceFactory
         };
 
         // Create job manager
-        var jobManager = new BackfillJobManager(gapAnalyzer, requestQueue, jobsDirectory, _atomicFileWriter, _log);
+        var jobManager = new BackfillJobManager(gapAnalyzer, requestQueue, jobsDirectory, _atomicFileWriter, _log)
+        {
+            RetainReceiptAsync = _retainReceiptAsync is null ? null : (job, ct) => _retainReceiptAsync(dataRoot, job, ct)
+        };
 
         // Create worker service with offline-first support
         var worker = new BackfillWorkerService(

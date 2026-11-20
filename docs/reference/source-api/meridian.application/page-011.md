@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DiscountedCashFlowValuationModel
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Valuation.DiscountedCashFlowValuationModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:17](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L17).
+
+The discounted-cash-flow model: the base-scenario projection as of the valuation date (fixed legs from terms, floating legs from the registered forward-curve provider) discounted on a stored Discount curve. The curve comes from the request (pinned by id, optionally by version) or, when none is pinned, from the one Discount definition in the security&#x27;s currency; ambiguity and missing inputs block, and zero is never substituted. The value is dirty: it includes the full next coupon. A schedule generated from declared conventions also names its kernel, mapping and calendars as inputs.
+
+```csharp
+public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Key = &quot;discounted-cash-flow&quot;;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:19](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L19) |  |
+| <code>public const string Version = &quot;v2&quot;;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:20](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L20) |  |
+| <code>public const string DiscountRole = &quot;Discount&quot;;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:21](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L21) |  |
+| <code>public DiscountedCashFlowValuationModel(ISecurityMasterCashFlowService cashFlows, ISecurityCurveStore curves, ILogger&lt;DiscountedCashFlowValuationModel&gt; logger, IBondCalculationPolicy? bondPolicy = null);</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:31](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L31) |  |
+| <code>public SecurityValuationModelKind Kind =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:43](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L43) |  |
+| <code>public string ModelKey =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:45](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L45) |  |
+| <code>public string ModelVersion =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:47](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L47) |  |
+| <code>public async Task&lt;SecurityValuationResult&gt; ValueAsync(SecurityValuationRequest request, SecurityDetailDto security, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs:49](../../../../src/Meridian.Application/SecurityMaster/Valuation/DiscountedCashFlowValuationModel.cs#L49) |  |
+
 ## QuotedPriceValuationModel
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Valuation.QuotedPriceValuationModel</code>. Kind: `class`.
@@ -838,7 +863,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Services.StoredProviderCredentialResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:13](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L13).
+Source: [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:14](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L14).
 
 Resolves catalog-managed provider credentials exclusively through the credential store. Unmanaged provider types retain their legacy resolver; managed records never mix sources.
 
@@ -850,11 +875,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:22](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L22) |  |
-| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, UI.ConfigStore configStore, ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:31](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L31) | Resolves host defaults from the current retained configuration at provider construction. |
-| <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:44](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L44) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
-| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:53](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L53) |  |
-| <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:110](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L110) |  |
+| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:23](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L23) |  |
+| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, UI.ConfigStore configStore, ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:32](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L32) | Resolves host defaults from the current retained configuration at provider construction. |
+| <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:45](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L45) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
+| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:54](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L54) |  |
+| <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:113](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L113) |  |
 
 ## SymbolPreset
 
@@ -977,24 +1002,3 @@ Result of a single webhook delivery.
 ```csharp
 public readonly record struct WebhookDeliveryResult(string WebhookName, WebhookType WebhookType, bool Success, int? StatusCode, string? ErrorMessage, DateTimeOffset SentAt);
 ```
-
-## WebhookType
-
-Qualified name: <code>Meridian.Application.Services.WebhookType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:701](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L701).
-
-Supported webhook types.
-
-```csharp
-public enum WebhookType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Generic</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:704](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L704) | Generic JSON webhook. |
-| <code>Slack</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:707](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L707) | Slack incoming webhook. |
-| <code>Discord</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:710](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L710) | Discord webhook. |
-| <code>Teams</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:713](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L713) | Microsoft Teams webhook connector. |

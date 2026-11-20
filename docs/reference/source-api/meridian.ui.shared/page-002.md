@@ -669,7 +669,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.BackfillEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs#L24).
+Source: [src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs#L27).
 
 Extension methods for registering backfill-related API endpoints. Shared between web dashboard and desktop application hosts.
 
@@ -681,7 +681,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapBackfillEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions jsonOptionsIndented);</code> | [src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:34](../../../../src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs#L34) | Maps all backfill API endpoints. |
+| <code>public static void MapBackfillEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions jsonOptionsIndented);</code> | [src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs#L37) | Maps all backfill API endpoints. |
 
 ## BackfillScheduleEndpoints
 

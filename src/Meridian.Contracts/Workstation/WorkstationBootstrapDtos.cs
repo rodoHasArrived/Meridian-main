@@ -1153,7 +1153,10 @@ public sealed record WorkstationDataBackfillRecord(
     string Provider,
     string Status,
     string Progress,
-    string UpdatedAt);
+    string UpdatedAt)
+{
+    public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }
+}
 
 /// <summary>
 /// Export row returned by the Data workspace bootstrap payload.

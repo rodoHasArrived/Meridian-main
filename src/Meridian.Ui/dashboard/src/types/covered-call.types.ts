@@ -121,6 +121,7 @@ export interface CoveredCallMetrics {
 }
 
 export interface CoveredCallRunResult {
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
   runId: string;
   underlyingSymbol: string;
   from: string;
