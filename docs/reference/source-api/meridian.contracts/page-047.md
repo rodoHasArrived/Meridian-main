@@ -6,6 +6,169 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionEffectiveStateProjector
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEffectiveStateProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L11).
+
+Pure fold over a security&#x27;s append-only corporate-action events: normalizes stored EventType aliases via CorporateActionTypeDescriptorCatalog, follows SupersedesCorpActId chains to their tips, and derives the effective lifecycle state at a given as-of time. Consumers that apply economic effects (price adjustment, ledger posting) should act on the projected effective actions, never the raw rows, so amendments collapse to their latest terms and cancellations drop out.
+
+```csharp
+public static class CorporateActionEffectiveStateProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;CorporateActionEffectiveState&gt; Project(IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L13) |  |
+| <code>public static IReadOnlyList&lt;CorporateActionDto&gt; ProjectEffectiveActions(IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEffectiveStateProjector.cs#L62) | Effective, non-cancelled actions only — the list economic consumers act on. |
+
+## CorporateActionElectionCalendar
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendar</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L27).
+
+Reads only the versioned electionCalendar companion retained in the provider action payload. No offer expiry, ex-date, record date, or operational due date is promoted to an election cutoff. A malformed declared calendar is unavailable as a whole, preventing a partial set of deadlines from appearing complete. Empty declared calendars explicitly mean no supplied cutoffs.
+
+```csharp
+public static partial class CorporateActionElectionCalendar
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static CorporateActionElectionCalendarDto Read(JsonElement? payload);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L29) |  |
+
+## CorporateActionElectionCalendarDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L16).
+
+Read-only source facts, independent of case SLA, ex-date and accounting authority.
+
+```csharp
+public sealed record CorporateActionElectionCalendarDto(string EvidenceState, IReadOnlyList<CorporateActionElectionCutoffDto> Cutoffs, IReadOnlyList<string> Messages);
+```
+
+## CorporateActionElectionCutoffDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L8).
+
+An explicitly retained election cutoff. DeadlineAt preserves the source offset.
+
+```csharp
+public sealed record CorporateActionElectionCutoffDto(string Id, string Label, DateTimeOffset DeadlineAt, string Source, string EvidenceReference);
+```
+
+## CorporateActionElectionDeadlineDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionDeadlineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L8).
+
+A sourced operational cutoff. This is separate from corporate-action economics.
+
+```csharp
+public sealed record CorporateActionElectionDeadlineDto(Guid SeriesId, string Kind, string SourceParty, DateOnly? Date = null, [property : JsonConverter(typeof(CorporateActionDeadlineInstantConverter))] DateTimeOffset? At = null, string? TimeZoneId = null, string? FinancialAccountId = null, string? CustodyAccountId = null, Guid? SupersedesEvidenceId = null, bool Withdrawn = false, string? SourceText = null);
+```
+
+## CorporateActionEventTypeCount
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEventTypeCount</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs#L22).
+
+A stored value that could not be resolved to a canonical event type.
+
+```csharp
+public sealed record CorporateActionEventTypeCount(string StoredValue, int RowCount);
+```
+
+## CorporateActionEventTypeNormalizationResult
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEventTypeNormalizationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs#L10).
+
+Outcome of the one-time stored-value normalization sweep over corporate-action EventType strings (e.g. legacy &quot;Split&quot; rows rewritten to &quot;StockSplit&quot;). Read paths normalize aliases permanently, so this sweep is cosmetic — it cleans raw exports and ad-hoc SQL. Values that do not normalize to a canonical name are reported in UnmappedValues and left untouched, never guessed.
+
+```csharp
+public sealed record CorporateActionEventTypeNormalizationResult(bool Applied, IReadOnlyList<CorporateActionEventTypeRename> Renames, IReadOnlyList<CorporateActionEventTypeCount> UnmappedValues)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static CorporateActionEventTypeNormalizationResult Empty { get; } = new (false, [], []);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs#L15) |  |
+
+## CorporateActionEventTypeRename
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEventTypeRename</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs#L19).
+
+One planned or applied rewrite: every row holding StoredValue becomes CanonicalName.
+
+```csharp
+public sealed record CorporateActionEventTypeRename(string StoredValue, string CanonicalName, int RowCount);
+```
+
+## CorporateActionEventTypes
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEventTypes</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L8).
+
+Canonical Security Master corporate-action event vocabulary. The constants are the stored wire values; per-type metadata, provider aliases, and ISO 15022 alignment live in CorporateActionTypeDescriptorCatalog, which this class delegates to.
+
+```csharp
+public static class CorporateActionEventTypes
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Dividend = &quot;Dividend&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L10) |  |
+| <code>public const string StockSplit = &quot;StockSplit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L11) |  |
+| <code>public const string ReverseStockSplit = &quot;ReverseStockSplit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L12) |  |
+| <code>public const string SpinOff = &quot;SpinOff&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L13) |  |
+| <code>public const string MergerAbsorption = &quot;MergerAbsorption&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L14) |  |
+| <code>public const string RightsIssue = &quot;RightsIssue&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L15) |  |
+| <code>public const string PrincipalPaydown = &quot;PrincipalPaydown&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L16) |  |
+| <code>public const string BondCall = &quot;BondCall&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L17) |  |
+| <code>public const string FuturesExpiry = &quot;FuturesExpiry&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L18) |  |
+| <code>public const string OptionContractAdjustment = &quot;OptionContractAdjustment&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L19) |  |
+| <code>public const string CryptoFork = &quot;CryptoFork&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L20) |  |
+| <code>public const string TenderOffer = &quot;TenderOffer&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L21) |  |
+| <code>public const string SpecialDividend = &quot;SpecialDividend&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L22) |  |
+| <code>public const string SymbolChange = &quot;SymbolChange&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L23) |  |
+| <code>public const string NameChange = &quot;NameChange&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L24) |  |
+| <code>public const string Delisting = &quot;Delisting&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L25) |  |
+| <code>public const string BondMaturityRedemption = &quot;BondMaturityRedemption&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L26) |  |
+| <code>public const string ReturnOfCapital = &quot;ReturnOfCapital&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L27) |  |
+| <code>public const string Rule144ARegSExchange = &quot;Rule144ARegSExchange&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L28) |  |
+| <code>public const string AdvanceRefunding = &quot;AdvanceRefunding&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L29) |  |
+| <code>public const string BankruptcyDistribution = &quot;BankruptcyDistribution&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L30) |  |
+| <code>public const string ConsentSolicitation = &quot;ConsentSolicitation&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L31) |  |
+| <code>public const string Conversion = &quot;Conversion&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L32) |  |
+| <code>public const string ExchangeOffer = &quot;ExchangeOffer&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L33) |  |
+| <code>public const string FractionalUnitsCashInLieu = &quot;FractionalUnitsCashInLieu&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L34) |  |
+| <code>public const string PaymentInKind = &quot;PaymentInKind&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L35) |  |
+| <code>public const string PutRedemption = &quot;PutRedemption&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L36) |  |
+| <code>public const string RightsDistribution = &quot;RightsDistribution&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L37) |  |
+| <code>public const string RightsExercise = &quot;RightsExercise&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L38) |  |
+| <code>public static string Normalize(string eventType);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L45) | Resolves canonical names, provider aliases, and CAEV codes to the canonical name. Unknown values are returned trimmed so callers can surface them verbatim in rejection reasons. |
+| <code>public static bool IsKnown(string eventType) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypes.cs#L55) |  |
+
 ## CorporateActionEvidenceDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEvidenceDto</code>. Kind: `record`.
@@ -767,196 +930,3 @@ The date uses UTC; account and book identities are exact, case-sensitive scopes.
 ```csharp
 public sealed record CreateSecurityClosePriceSetRequest(string AccountId, string BookId, DateOnly ValuationDate, DateTimeOffset EvaluatedAsOf, IReadOnlyList<SecurityClosePriceInputDto> Securities, decimal MaxSourceDispersionPercent, string CreatedBy, Guid? CorrectsSnapshotId = null, string? CorrectionRationale = null, DateTimeOffset? KnowledgeAsOf = null, Guid? RequestId = null);
 ```
-
-## CreateSecurityRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CreateSecurityRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:5](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L5).
-
-```csharp
-public sealed record CreateSecurityRequest(Guid SecurityId, string AssetClass, JsonElement CommonTerms, JsonElement AssetSpecificTerms, IReadOnlyList<SecurityIdentifierDto> Identifiers, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## DataQualityRuleCategory
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L7).
-
-```csharp
-public enum DataQualityRuleCategory
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>FileMappingSufficiency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L9) |  |
-| <code>DataTypeRestriction</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L10) |  |
-| <code>MinimumAttribute</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L11) |  |
-| <code>TaxonomyCheck</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L12) |  |
-| <code>ValueConsistency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L13) |  |
-| <code>RefreshControl</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L14) |  |
-| <code>StalenessMonitor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L15) |  |
-| <code>ExternalComparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L16) |  |
-
-## DataQualityRuleSeverity
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L20).
-
-```csharp
-public enum DataQualityRuleSeverity
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Warning</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L22) |  |
-| <code>Error</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L23) |  |
-| <code>HardBlock</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L24) |  |
-
-## DataQualityRuleViolationDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleViolationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L27).
-
-```csharp
-public sealed record DataQualityRuleViolationDto(string RuleId, string RuleName, DataQualityRuleCategory Category, Guid SecurityId, string? FieldPath, string Message, DataQualityRuleSeverity Severity, DateTimeOffset DetectedAt);
-```
-
-## DataVendorDataType
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorDataType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L16).
-
-```csharp
-public enum DataVendorDataType
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Identifiers</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L18) |  |
-| <code>TermsAndConditions</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L19) |  |
-| <code>CreditRatings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L20) |  |
-| <code>Pricing</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L21) |  |
-| <code>CashFlows</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L22) |  |
-| <code>FxRates</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L23) |  |
-| <code>CreditRisk</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L24) |  |
-| <code>Classification</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L25) |  |
-| <code>RateFixings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L26) |  |
-| <code>InflationIndexes</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L27) |  |
-| <code>Curves</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L28) |  |
-| <code>Holdings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L29) |  |
-
-## DataVendorEntitlementDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorEntitlementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L32).
-
-```csharp
-public sealed record DataVendorEntitlementDto(Guid EntitlementId, string VendorName, DataVendorDataType DataType, string? ContractReference, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, decimal? AumThresholdUsd, bool RequiresDirectClientContract, string? ContactEmail, int RenewalReminderDays, DataVendorEntitlementStatus Status, string CreatedBy, DateTimeOffset CreatedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? ClientId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L47) |  |
-| <code>public string? AccountId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L48) |  |
-| <code>public string? FundProfileId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L49) |  |
-| <code>public Guid? SecurityId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L50) |  |
-| <code>public string? SourceCategory { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L51) |  |
-| <code>public string? ExpectedRefreshCadence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L52) |  |
-| <code>public int? DefaultMaxDaysStale { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L53) |  |
-| <code>public string? OperatorMetadata { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L54) |  |
-
-## DataVendorEntitlementStatus
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorEntitlementStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L7).
-
-```csharp
-public enum DataVendorEntitlementStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Active</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L9) |  |
-| <code>ExpiringSoon</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L10) |  |
-| <code>Expired</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L11) |  |
-| <code>PendingRenewal</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L12) |  |
-
-## DayCountConvention
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DayCountConvention</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L10).
-
-Canonical day-count basis for fixed-income accrual, coupon, amortization, and cost-basis math. Unknown is a real, non-throwing member: unrecognized raw conventions parse to it and evaluate through a documented Actual/365 fallback instead of failing a posting.
-
-```csharp
-public enum DayCountConvention
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Actual360</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L13) | Actual calendar days over a 360-day year (money-market: CP, CD, repo, T-bills). |
-| <code>Actual365</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L16) | Actual calendar days over a 365-day year, ignoring leap days in the denominator (UK gilts, CAD/AUD money markets). |
-| <code>Thirty360</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L19) | 30/360 US &quot;Bond Basis&quot; per ISDA 2006 §4.16(f) (US corporates, munis, agencies). |
-| <code>Business252</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L22) | Business/252 — Brazilian convention; business days over 252. Needs a business-day calendar; without one it degrades to Actual/365. |
-| <code>ActualActualIsda</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L25) | Actual/Actual (ISDA) per ISDA 2006 §4.16(b) — actual days per calendar year weighted by that year&#x27;s length (US Treasuries, many sovereigns). |
-| <code>ThirtyE360</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L28) | 30E/360 &quot;Eurobond Basis&quot; per ISDA 2006 §4.16(g) — both D1 and D2 of 31 become 30 unconditionally. |
-| <code>ThirtyE360Isda</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L31) | 30E/360 (ISDA) per ISDA 2006 §4.16(h) — D1/D2 snap to 30 when they are the last day of their month, including February. |
-| <code>ActualActualIcma</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L34) | Actual/Actual (ICMA) per ISDA 2006 §4.16(c) — needs the coupon period; without period context it degrades to Actual/Actual (ISDA). |
-| <code>Nl365</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L37) | NL/365 (Actual/365 No-Leap) — actual days excluding any 29 February, over 365. |
-| <code>Actual36525</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L40) | Actual/365.25 — actual days over the mean Julian year; used by some analytics and insurance conventions. |
-| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L43) | Unrecognized or absent convention; evaluated through the Actual/365 safe fallback. |
-
-## DayCountConventions
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DayCountConventions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L78).
-
-The single canonical day-count engine for Meridian&#x27;s fixed-income math. Every accrual, coupon, premium/discount amortization, cost-basis relief, and read-model preview path MUST route through this type so the same bond produces the same day-count fraction everywhere — otherwise GL postings and cost-basis relief silently fail to tie. The F# DayCount module delegates here as well, so there is exactly one 30/360 (and Actual/Actual) implementation across the C# and F# lanes.
-
-```csharp
-public static class DayCountConventions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const decimal DaysPerYear365 = 365m;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L81) | Actual/365 Fixed year basis shared by discount-time, payment-lag and CPR survival arithmetic. |
-| <code>public static bool TryParseTerm(string? raw, out DayCountConvention convention);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L87) | Parses the declared terms vocabulary without the analytics parser&#x27;s heuristic fallback. |
-| <code>public static string TermLabel(DayCountConvention convention) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L107) | Canonical flat-term spelling; enum values are never serialized as numeric economics. |
-| <code>public static DayCountConvention Parse(string? raw) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:129](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L129) | Parses a raw convention string (e.g. &quot;30/360&quot;, &quot;30E/360&quot;, &quot;ACT/365&quot;, &quot;Act/Act ICMA&quot;, &quot;NL/365&quot;, &quot;BUS/252&quot;, &quot;Thirty360&quot;, &quot;ActualActualISDA&quot;) into a DayCountConvention. Never throws: blank or unrecognized input returns DayCountConvention.Unknown. |
-| <code>public static bool TryParse(string? raw, out DayCountConvention convention);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:137](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L137) | Attempts to parse a raw convention string. Returns true when a specific convention was recognized; returns false and yields DayCountConvention.Unknown for blank or unrecognized input. |
-| <code>public static decimal Fraction(DayCountConvention convention, DateOnly start, DateOnly end);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:227](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L227) | The day-count fraction of a year between start (inclusive) and end (exclusive) under the given convention. Returns 0 when end is not after start. Conventions that need extra context degrade explicitly: DayCountConvention.ActualActualIcma evaluates as Act/Act ISDA (use ActualActualIcmaFraction for exact ICMA) and DayCountConvention.Business252 evaluates as Actual/365 (use the calendar overload). |
-| <code>public static decimal Fraction(string? raw, DateOnly start, DateOnly end) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:251](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L251) | Parses raw and returns the day-count fraction for it. |
-| <code>public static decimal Fraction(DayCountConvention convention, DateOnly start, DateOnly end, Func&lt;DateOnly, bool&gt; isBusinessDay);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:259](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L259) | Calendar-aware fraction: identical to Fraction(DayCountConvention, DateOnly, DateOnly) except that DayCountConvention.Business252 counts days in &#91;start, end) satisfying isBusinessDay over 252 instead of degrading to Actual/365. |
-| <code>public static bool TryFraction(DayCountConvention convention, DateOnly start, DateOnly end, DayCountPeriodContext context, out decimal fraction, [NotNullWhen(false)] out string? refusal);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:292](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L292) | Period-aware fraction that refuses instead of degrading when a convention&#x27;s context is missing. Returns 0 when end is not after start. |
-| <code>public static decimal Fraction(DayCountConvention convention, DateOnly start, DateOnly end, DayCountPeriodContext context) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:335](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L335) | Period-aware fraction; see TryFraction(DayCountConvention, DateOnly, DateOnly, DayCountPeriodContext, out decimal, out string?). |
-| <code>public static decimal ActualActualIcmaFraction(DateOnly start, DateOnly end, DateOnly periodStart, DateOnly periodEnd, int couponsPerYear);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:396](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L396) | Actual/Actual (ICMA) per ISDA 2006 §4.16(c) for an accrual window inside a single coupon period: actual days accrued over (couponsPerYear × actual days in the period &#91;periodStart, periodEnd)). This is the exact US Treasury / ICMA bond accrued-interest convention; the period-less dispatch cannot express it. |
-| <code>public static int Days(DayCountConvention convention, DateOnly start, DateOnly end);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:424](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L424) | The numerator day count consistent with Fraction(DayCountConvention, DateOnly, DateOnly): the convention&#x27;s 30/360 count for the 30/360 family, leap-day-excluded actual days for DayCountConvention.Nl365, otherwise actual calendar days. |
-| <code>public static int Days(string? raw, DateOnly start, DateOnly end) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:442](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L442) | Parses raw and returns the numerator day count for it. |
-| <code>public static int Thirty360Days(DateOnly start, DateOnly end);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:450](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L450) | 30/360 US &quot;Bond Basis&quot; day count (ISDA 2006 §4.16(f)): D1 of 31 becomes 30; D2 of 31 becomes 30 only when D1 is (already) 30 or 31. Returns 0 when end is not after start. |
-| <code>public static int ThirtyE360Days(DateOnly start, DateOnly end);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:466](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L466) | 30E/360 &quot;Eurobond Basis&quot; day count (ISDA 2006 §4.16(g)): D1 and D2 of 31 both become 30, unconditionally. Returns 0 when end is not after start. |
-| <code>public static int ThirtyE360IsdaDays(DateOnly start, DateOnly end, bool endIsMaturityDate = false);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:483](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L483) | 30E/360 (ISDA) day count (ISDA 2006 §4.16(h)): D1 and D2 become 30 when they are the last day of their month, February included — except that when endIsMaturityDate is true and the end date is the last day of February, D2 keeps February&#x27;s true day per the §4.16(h) termination-date carve-out. Returns 0 when end is not after start. |
-| <code>public static int Nl365Days(DateOnly start, DateOnly end);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:500](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L500) | NL/365 day count: actual calendar days between start and end minus any 29 February falling in (start, end&#93;. Returns 0 when end is not after start. |
-| <code>public static int Business252Days(DateOnly start, DateOnly end, Func&lt;DateOnly, bool&gt; isBusinessDay);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:515](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L515) | Business/252 day count: the number of days in &#91;start, end) satisfying isBusinessDay. Returns 0 when end is not after start. |

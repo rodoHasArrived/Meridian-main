@@ -6,6 +6,69 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GapAnalyzerConfig
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapAnalyzerConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:538](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L538).
+
+Configuration for gap analysis.
+
+```csharp
+public sealed record GapAnalyzerConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int GapThresholdSeconds { get; init; } = 60;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:543](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L543) | Minimum gap duration in seconds to be considered a gap. |
+| <code>public int TradingStartHour { get; init; } = 13;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:548](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L548) | Trading start hour (UTC). |
+| <code>public int TradingStartMinute { get; init; } = 30;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:553](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L553) | Trading start minute. |
+| <code>public int TradingEndHour { get; init; } = 20;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:558](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L558) | Trading end hour (UTC). |
+| <code>public int TradingEndMinute { get; init; } = 0;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:563](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L563) | Trading end minute. |
+| <code>public long ExpectedEventsPerHour { get; init; } = 1000;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:568](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L568) | Expected events per hour for estimation. |
+| <code>public bool IncludeExtendedHours { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:573](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L573) | Include pre-market and after-hours in timeline. |
+| <code>public double PreMarketHours { get; init; } = 5.5;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:578](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L578) | Pre-market hours before regular trading. |
+| <code>public double AfterHoursHours { get; init; } = 4.0;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:583](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L583) | After-hours duration after regular trading. |
+| <code>public int MaxGapsPerSymbol { get; init; } = 1000;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:588](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L588) | Maximum gaps to retain per symbol. |
+| <code>public int RetentionDays { get; init; } = 30;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:593](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L593) | Days to retain gap history. |
+| <code>public static GapAnalyzerConfig Default =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:595](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L595) |  |
+
+## GapSeverity
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:59](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L59).
+
+Gap severity classification.
+
+```csharp
+public enum GapSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Minor</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:61](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L61) |  |
+| <code>Moderate</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:62](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L62) |  |
+| <code>Significant</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:63](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L63) |  |
+| <code>Major</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:64](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L64) |  |
+| <code>Critical</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:65](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L65) |  |
+
+## GapStatistics
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapStatistics</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:601](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L601).
+
+Gap statistics summary.
+
+```csharp
+public sealed record GapStatistics(int TotalGaps, TimeSpan TotalGapDuration, TimeSpan AverageGapDuration, TimeSpan MaxGapDuration, TimeSpan MinGapDuration, Dictionary<GapSeverity, int> GapsBySeverity, int SymbolsAffected, string[] MostAffectedSymbols, DateTimeOffset CalculatedAt);
+```
+
 ## HealthState
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.HealthState</code>. Kind: `enum`.
@@ -846,46 +909,4 @@ Weekly data quality report.
 
 ```csharp
 public sealed record WeeklyQualityReport(DateOnly WeekStart, DateOnly WeekEnd, DateTimeOffset GeneratedAt, IReadOnlyList<DailyQualityReport> DailyReports, double AverageScore, double ScoreTrend, IReadOnlyList<string> TopIssues, IReadOnlyList<string> Improvements, IReadOnlyList<string> Recommendations, WeeklyStatistics Statistics);
-```
-
-## WeeklyStatistics
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.WeeklyStatistics</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:381](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L381).
-
-Weekly statistics.
-
-```csharp
-public sealed record WeeklyStatistics(long TotalEvents, long EventsPerDay, int TotalGaps, int GapsPerDay, int TotalAnomalies, double AverageScore, double BestDayScore, double WorstDayScore, DateOnly BestDay, DateOnly WorstDay);
-```
-
-## IncidentSeverity
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.IncidentSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:47](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L47).
-
-```csharp
-public enum IncidentSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:49](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L49) |  |
-| <code>Minor = 1</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:50](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L50) |  |
-| <code>Moderate = 2</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:51](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L51) |  |
-| <code>Major = 3</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:52](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L52) |  |
-| <code>Critical = 4</code> | [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:53](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L53) |  |
-
-## KernelLineageMetadata
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.KernelLineageMetadata</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs:102](../../../../src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs#L102).
-
-```csharp
-public sealed record KernelLineageMetadata(string BaselineKernelVersion, string CandidateKernelVersion, string DatasetId, DateTimeOffset CalibratedAt, string CalibratedBy);
 ```

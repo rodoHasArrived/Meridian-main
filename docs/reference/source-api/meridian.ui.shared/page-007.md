@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ContractualCashFlowDraftAttestationSubjectResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.ContractualCashFlowDraftAttestationSubjectResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs#L10).
+
+Exact, scoped preparer checks over immutable calculation-only Security Master runs.
+
+```csharp
+public sealed class ContractualCashFlowDraftAttestationSubjectResolver(IContractualCashFlowRunStore? runs = null, ISecurityMasterQueryService? securities = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SubjectKind = &quot;contractual-cashflow-draft&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs#L13) |  |
+| <code>public const string SourceSubjectKind = &quot;contractual-cashflow-security&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs:14](../../../../src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs#L14) |  |
+| <code>public async Task&lt;SinglePrincipalAttestationSubjectSnapshotDto?&gt; ResolveAsync(Guid securityId, Guid runId, string tenantId, string companyId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs#L17) |  |
+| <code>public static bool TryParseSubjectId(string? subjectId, out Guid securityId, out Guid runId);</code> | [src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs:54](../../../../src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs#L54) |  |
+
+## EvidenceAttestationSubjectResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceAttestationSubjectResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs#L8).
+
+Resolves evidence acknowledgments without granting document review or accounting authority.
+
+```csharp
+public sealed class EvidenceAttestationSubjectResolver(IEvidenceArtifactStore artifacts)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SubjectKind = &quot;evidence-document&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs#L10) |  |
+| <code>public async Task&lt;EvidenceAttestationSubjectSnapshot?&gt; ResolveAsync(string vaultId, string documentId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs#L17) | Reads the exact retained source and current document operands. The assertion&#x27;s preparer is a separate task owner; the source creator/importer is never substituted for that owner. |
+
+## EvidenceAttestationSubjectSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceAttestationSubjectSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs:105](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs#L105).
+
+```csharp
+public sealed record EvidenceAttestationSubjectSnapshot(string SubjectKind, string SubjectId, string Revision, string Hash, string SourceArtifactId, string SourceHash, string? SourceActor, string SourceProvenance, bool Eligible, IReadOnlyList<string> Checks, string? SourceSubjectKind = null, string? SourceSubjectId = null, string? SubjectSnapshotJson = null);
+```
+
 ## EvidenceContribution
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceContribution</code>. Kind: `record`.
@@ -995,64 +1045,3 @@ Declared public members:
 | <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L32) |  |
 | <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L34) |  |
 | <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L37) |  |
-
-## ExtensibilityCatalogService
-
-Qualified name: <code>Meridian.Ui.Shared.Extensibility.ExtensibilityCatalogService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs:8](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs#L8).
-
-Combines extension providers into the workstation extensibility catalog.
-
-```csharp
-public sealed class ExtensibilityCatalogService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ExtensibilityCatalogService(IEnumerable&lt;IExtensibilityCatalogProvider&gt; providers);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs:12](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs#L12) |  |
-| <code>public ExtensibilityCatalogDto GetCatalog(DateTimeOffset generatedAt);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs:17](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs#L17) |  |
-
-## ExtensibilityConfigurationService
-
-Qualified name: <code>Meridian.Ui.Shared.Extensibility.ExtensibilityConfigurationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:342](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L342).
-
-Applies extension configuration changes against the available extension catalog.
-
-```csharp
-public sealed class ExtensibilityConfigurationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ExtensibilityConfigurationService(IExtensibilityConfigurationStore store);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:348](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L348) |  |
-| <code>public Task&lt;IReadOnlyList&lt;TenantTemplateConfigurationBundleDto&gt;&gt; ListTenantTemplatesAsync(string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:353](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L353) |  |
-| <code>public Task&lt;TenantTemplateConfigurationBundleDto?&gt; GetTenantTemplateAsync(string tenantId, string tenantTemplateId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:356](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L356) |  |
-| <code>public async Task&lt;TenantTemplateConfigurationBundleDto&gt; UpsertTenantTemplateAsync(string tenantId, TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:359](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L359) |  |
-| <code>public async Task&lt;ExtensibilityActivationReadinessDto&gt; EvaluateTenantTemplateActivationAsync(string tenantId, string tenantTemplateId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:371](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L371) |  |
-| <code>public async Task&lt;TenantTemplateActivationResultDto&gt; ActivateTenantTemplateAsync(string tenantId, string tenantTemplateId, string actor, TenantTemplateActivationRequestDto? request, DateTimeOffset evaluatedAt, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:381](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L381) |  |
-| <code>public Task&lt;IReadOnlyList&lt;TenantTemplateActivationResultDto&gt;&gt; ListActivationHistoryAsync(string tenantId, string? tenantTemplateId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:442](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L442) |  |
-
-## ExtensibilityServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Extensibility.ExtensibilityServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Extensibility/ExtensibilityServiceCollectionExtensions.cs:9](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityServiceCollectionExtensions.cs#L9).
-
-Registers extension catalogs and their configuration services.
-
-```csharp
-public static class ExtensibilityServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddExtensibilityCatalog(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityServiceCollectionExtensions.cs:11](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityServiceCollectionExtensions.cs#L11) |  |

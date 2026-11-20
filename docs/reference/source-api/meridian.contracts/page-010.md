@@ -6,6 +6,166 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AssetCashFlowProjectionRunDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetCashFlowProjectionRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:52](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L52).
+
+```csharp
+public sealed record AssetCashFlowProjectionRunDto(Guid ProjectionRunId, Guid SecurityId, DateOnly ProjectionAsOf, string EngineVersion, string Status, DateTimeOffset GeneratedAt, string SourceDomain, string? SourceEntityId, JsonElement? ExtensionPayload = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto? Blocker { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:64](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L64) |  |
+| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:66](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L66) |  |
+
+## AssetDisposalLotSelectionDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetDisposalLotSelectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:353](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L353).
+
+```csharp
+public sealed record AssetDisposalLotSelectionDto(Guid TaxLotRecordId, string LotId, long ExpectedVersion, decimal ExpectedOpenQuantity, decimal Quantity, int SelectionOrdinal, string SelectionEvidenceId, decimal ExpectedUnitCost = 0m, decimal ExpectedCostBasis = 0m);
+```
+
+## AssetLedgerProjectionDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:139](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L139).
+
+```csharp
+public sealed record AssetLedgerProjectionDto(Guid LedgerProjectionId, Guid SecurityId, string ProjectionType, DateOnly AccountingDate, string LedgerBasis, string Status, decimal? DebitAmount, decimal? CreditAmount, string Currency, string SourceDomain, string? SourceEntityId, string? LedgerReferenceId, JsonElement? ExtensionPayload = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:154](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L154) |  |
+
+## AssetLifecycleEventDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetLifecycleEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:37](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L37).
+
+```csharp
+public sealed record AssetLifecycleEventDto(Guid LifecycleEventId, Guid SecurityId, string EventType, string LifecycleState, DateOnly EffectiveDate, DateTimeOffset RecordedAt, string SourceDomain, string? SourceEntityId, string Summary, JsonElement? ExtensionPayload = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:49](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L49) |  |
+
+## AssetLotMutationInstructionDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:368](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L368).
+
+Lot intent retained with the accounting event. Persistence still re-resolves and locks the authoritative lots; client-provided selections are expected-version assertions, not truth.
+
+```csharp
+public sealed record AssetLotMutationInstructionDto(AssetLotMutationIntentDto Intent, AssetAcquisitionLotDto? Acquisition = null, IReadOnlyList<AssetDisposalLotSelectionDto>? DisposalSelections = null, string? ReliefMethod = null, string? PolicyRevision = null, Guid? CorrectsMutationBatchId = null, Guid? CorrectsJournalEntryId = null, LedgerAdjustmentApprovalMetadataDto? CorrectionApproval = null, string? AssetAccountId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? DisposalSalePrice = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public OpenLotDirection Direction { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:390](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L390) |  |
+| <code>public IReadOnlyList&lt;AssetDisposalLotSelectionDto&gt; DisposalSelections { get; init; } = DisposalSelections??[];</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:392](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L392) |  |
+
+## AssetLotMutationInstructionValidator
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetLotMutationInstructionValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:1045](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L1045).
+
+Checks lot mutation instructions against the event amount, effective date, direction, and retained evidence.
+
+```csharp
+public static class AssetLotMutationInstructionValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AssetLotMutationInstructionDto? CanonicalizeDisposalSelections(AssetLotMutationInstructionDto? instruction);</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:1054](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L1054) | Orders a disposal&#x27;s versioned selections by their retained ordinal before freezing or comparing the instruction. Every selection field and all other instruction fields remain exact. Null historical instructions and already ordered instructions keep their original shape. |
+| <code>public static IReadOnlyList&lt;string&gt; Validate(AssetAccountingEventKindDto eventKind, AssetLotMutationInstructionDto? instruction, decimal eventAmount, DateOnly effectiveDate, IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; retainedEvidence);</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:1063](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L1063) |  |
+| <code>public static string Fingerprint(AssetLotMutationInstructionDto instruction);</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:1293](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L1293) |  |
+
+## AssetLotMutationIntentDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetLotMutationIntentDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:302](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L302).
+
+```csharp
+public enum AssetLotMutationIntentDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:304](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L304) |  |
+| <code>Acquire = 1</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:305](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L305) |  |
+| <code>Dispose = 2</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:306](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L306) |  |
+| <code>Amortize = 3</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:307](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L307) |  |
+| <code>CorporateAction = 4</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:308](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L308) |  |
+| <code>CapitalReturn = 5</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:309](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L309) |  |
+| <code>FactorPaydown = 6</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:310](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L310) |  |
+
+## AssetOperationsDetailDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetOperationsDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:240](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L240).
+
+```csharp
+public sealed record AssetOperationsDetailDto(AssetOperationSubjectDto Subject, IReadOnlyList<AssetTermsVersionDto> TermsHistory, IReadOnlyList<AssetLifecycleEventDto> LifecycleEvents, IReadOnlyList<AssetCashFlowProjectionRunDto> CashFlowProjectionRuns, IReadOnlyList<AssetProjectedCashFlowDto> ProjectedCashFlows, IReadOnlyList<AssetActualActivityDto> ActualActivity, IReadOnlyList<AssetReconciliationRunDto> ReconciliationRuns, IReadOnlyList<AssetReconciliationResultDto> ReconciliationResults, IReadOnlyList<AssetLedgerProjectionDto> LedgerProjections, AssetOperationsReadinessDto Readiness, IReadOnlyList<AssetLifecycleEventDto> WorkflowAudit)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AssetTermsObligationsTimelineDto? TermsObligationsTimeline { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:253](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L253) |  |
+| <code>public IReadOnlyList&lt;InstrumentRoleDto&gt; InstrumentRoles { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:255](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L255) |  |
+| <code>public IReadOnlyList&lt;BookPositionDto&gt; BookPositions { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:257](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L257) |  |
+| <code>public IReadOnlyList&lt;PositionEconomicStateDto&gt; PositionEconomicStates { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:259](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L259) |  |
+| <code>public IReadOnlyList&lt;ProjectionLineageDto&gt; ProjectionLineages { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:261](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L261) |  |
+| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:263](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L263) |  |
+
+## AssetOperationsOptions
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetOperationsOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:8](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L8).
+
+Configures the PostgreSQL connection and schema used for asset operations persistence.
+
+```csharp
+public sealed class AssetOperationsOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:10](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L10) |  |
+| <code>public string Schema { get; set; } = &quot;asset_operations&quot;;</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:12](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L12) |  |
+
 ## AssetOperationsProjectionDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.AssetOperationsProjectionDto</code>. Kind: `record`.
@@ -743,151 +903,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;CorporateActionPostingComponentDto&gt; Components { get; init; } = Components??[];</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:879](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L879) |  |
-
-## CorporateActionProjectionBlockerDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:977](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L977).
-
-```csharp
-public sealed record CorporateActionProjectionBlockerDto(string Code, string Message);
-```
-
-## CorporateActionProjectionEvidenceDependencyDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionEvidenceDependencyDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:906](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L906).
-
-Typed evidence dependency. URI, hash, version, and subject stay paired when projection identity is calculated; independently sorted URI/hash lists are deliberately not accepted.
-
-```csharp
-public sealed record CorporateActionProjectionEvidenceDependencyDto(CorporateActionProjectionEvidenceRoleDto Role, string EvidenceId, string EvidenceUri, string ContentHashSha256, long EvidenceVersion, string SubjectType, string SubjectId);
-```
-
-## CorporateActionProjectionEvidenceRoleDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionEvidenceRoleDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:893](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L893).
-
-```csharp
-public enum CorporateActionProjectionEvidenceRoleDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>SourceEvent = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:895](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L895) |  |
-| <code>PositionSnapshot = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:896](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L896) |  |
-| <code>LotSnapshot = 2</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:897](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L897) |  |
-| <code>Election = 3</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:898](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L898) |  |
-| <code>PolicyDecision = 4</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:899](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L899) |  |
-
-## CorporateActionProjectionStatusDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:971](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L971).
-
-```csharp
-public enum CorporateActionProjectionStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Blocked = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:973](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L973) |  |
-| <code>Projected = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:974](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L974) |  |
-
-## CorporateActionSpinOffTaxTreatmentDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionSpinOffTaxTreatmentDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:133](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L133).
-
-```csharp
-public enum CorporateActionSpinOffTaxTreatmentDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NonTaxableBasisAllocation = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:135](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L135) |  |
-| <code>TaxableDividendAndPurchase = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:136](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L136) |  |
-
-## CorporateActionStockDividendBasisTreatmentDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionStockDividendBasisTreatmentDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:140](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L140).
-
-```csharp
-public enum CorporateActionStockDividendBasisTreatmentDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>PreserveTotalCarryingValue = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:142](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L142) |  |
-| <code>PolicyDefinedAdjustment = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:143](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L143) |  |
-
-## CorporateActionSuccessorAllocationDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionSuccessorAllocationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:185](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L185).
-
-```csharp
-public sealed record CorporateActionSuccessorAllocationDto(Guid SecurityId, CorporateActionSuccessorRoleDto Role, decimal Quantity, decimal? BookValueAllocationPercent = null, decimal? FairValue = null);
-```
-
-## CorporateActionSuccessorRoleDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionSuccessorRoleDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:172](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L172).
-
-```csharp
-public enum CorporateActionSuccessorRoleDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Successor = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:174](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L174) |  |
-| <code>Refunded = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:175](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L175) |  |
-| <code>Unrefunded = 2</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:176](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L176) |  |
-| <code>Acquirer = 3</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:177](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L177) |  |
-| <code>Child = 4</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:178](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L178) |  |
-| <code>Escrow = 5</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:179](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L179) |  |
-| <code>Underlying = 6</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:180](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L180) |  |
-| <code>Right = 7</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:181](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L181) |  |
-| <code>Scrip = 8</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:182](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L182) |  |
-
-## CorporateActionTaxClassificationDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionTaxClassificationDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:54](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L54).
-
-Preliminary classification from the selected rule profile. It is not a legal tax conclusion.
-
-```csharp
-public enum CorporateActionTaxClassificationDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:56](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L56) |  |
-| <code>PreliminaryNonTaxable = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:57](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L57) |  |
-| <code>PreliminaryTaxable = 2</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:58](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L58) |  |
-| <code>FactDependent = 3</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:59](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L59) |  |

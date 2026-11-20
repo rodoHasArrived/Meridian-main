@@ -6,6 +6,154 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionProjectionBlockerDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:977](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L977).
+
+```csharp
+public sealed record CorporateActionProjectionBlockerDto(string Code, string Message);
+```
+
+## CorporateActionProjectionEvidenceDependencyDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionEvidenceDependencyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:906](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L906).
+
+Typed evidence dependency. URI, hash, version, and subject stay paired when projection identity is calculated; independently sorted URI/hash lists are deliberately not accepted.
+
+```csharp
+public sealed record CorporateActionProjectionEvidenceDependencyDto(CorporateActionProjectionEvidenceRoleDto Role, string EvidenceId, string EvidenceUri, string ContentHashSha256, long EvidenceVersion, string SubjectType, string SubjectId);
+```
+
+## CorporateActionProjectionEvidenceRoleDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionEvidenceRoleDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:893](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L893).
+
+```csharp
+public enum CorporateActionProjectionEvidenceRoleDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>SourceEvent = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:895](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L895) |  |
+| <code>PositionSnapshot = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:896](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L896) |  |
+| <code>LotSnapshot = 2</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:897](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L897) |  |
+| <code>Election = 3</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:898](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L898) |  |
+| <code>PolicyDecision = 4</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:899](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L899) |  |
+
+## CorporateActionProjectionStatusDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionProjectionStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:971](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L971).
+
+```csharp
+public enum CorporateActionProjectionStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Blocked = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:973](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L973) |  |
+| <code>Projected = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:974](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L974) |  |
+
+## CorporateActionSpinOffTaxTreatmentDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionSpinOffTaxTreatmentDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:133](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L133).
+
+```csharp
+public enum CorporateActionSpinOffTaxTreatmentDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NonTaxableBasisAllocation = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:135](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L135) |  |
+| <code>TaxableDividendAndPurchase = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:136](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L136) |  |
+
+## CorporateActionStockDividendBasisTreatmentDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionStockDividendBasisTreatmentDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:140](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L140).
+
+```csharp
+public enum CorporateActionStockDividendBasisTreatmentDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>PreserveTotalCarryingValue = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:142](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L142) |  |
+| <code>PolicyDefinedAdjustment = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:143](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L143) |  |
+
+## CorporateActionSuccessorAllocationDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionSuccessorAllocationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:185](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L185).
+
+```csharp
+public sealed record CorporateActionSuccessorAllocationDto(Guid SecurityId, CorporateActionSuccessorRoleDto Role, decimal Quantity, decimal? BookValueAllocationPercent = null, decimal? FairValue = null);
+```
+
+## CorporateActionSuccessorRoleDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionSuccessorRoleDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:172](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L172).
+
+```csharp
+public enum CorporateActionSuccessorRoleDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Successor = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:174](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L174) |  |
+| <code>Refunded = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:175](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L175) |  |
+| <code>Unrefunded = 2</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:176](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L176) |  |
+| <code>Acquirer = 3</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:177](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L177) |  |
+| <code>Child = 4</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:178](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L178) |  |
+| <code>Escrow = 5</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:179](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L179) |  |
+| <code>Underlying = 6</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:180](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L180) |  |
+| <code>Right = 7</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:181](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L181) |  |
+| <code>Scrip = 8</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:182](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L182) |  |
+
+## CorporateActionTaxClassificationDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionTaxClassificationDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:54](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L54).
+
+Preliminary classification from the selected rule profile. It is not a legal tax conclusion.
+
+```csharp
+public enum CorporateActionTaxClassificationDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:56](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L56) |  |
+| <code>PreliminaryNonTaxable = 1</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:57](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L57) |  |
+| <code>PreliminaryTaxable = 2</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:58](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L58) |  |
+| <code>FactDependent = 3</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:59](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L59) |  |
+
 ## CorporateActionTreatmentDecisionDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionTreatmentDecisionDto</code>. Kind: `record`.
@@ -680,157 +828,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:163](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L163) |  |
 | <code>public Guid? BookPositionId { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:165](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L165) |  |
 | <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:167](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L167) |  |
-
-## RetainedEvidenceIdentityDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs:10](../../../../src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs#L10).
-
-Provider-neutral identity for evidence whose bytes, source, review, retention, and subject scope have all been retained. A URI or source reference alone is not retained evidence.
-
-```csharp
-public sealed record RetainedEvidenceIdentityDto(string EvidenceId, string EvidenceUri, string ContentHashSha256, string SourceSystem, string SourceReference, string ReviewStatus, string ReviewedBy, DateTimeOffset ReviewedAtUtc, DateOnly EffectiveDate, long EvidenceVersion, DateTimeOffset RetainedAtUtc, string RetainedBy, string SubjectType, string SubjectId);
-```
-
-## RetainedEvidenceIdentityValidator
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityValidator</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs:202](../../../../src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs#L202).
-
-Fail-closed completeness checks for retained evidence identities.
-
-```csharp
-public static class RetainedEvidenceIdentityValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AcceptedReviewStatus = &quot;Accepted&quot;;</code> | [src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs:204](../../../../src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs#L204) |  |
-| <code>public static IReadOnlyList&lt;string&gt; Validate(RetainedEvidenceIdentityDto? evidence);</code> | [src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs:206](../../../../src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs#L206) |  |
-| <code>public static bool IsComplete(RetainedEvidenceIdentityDto? evidence) =&gt; …;</code> | [src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs:261](../../../../src/Meridian.Contracts/AssetOperations/RetainedEvidenceIdentityDto.cs#L261) |  |
-
-## StructuredCreditFactorPointDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.StructuredCreditFactorPointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs:71](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs#L71).
-
-One dated pool-factor point: the outstanding factor effective on AsOfDate.
-
-```csharp
-public sealed record StructuredCreditFactorPointDto(Guid SecurityId, int Ordinal, DateOnly AsOfDate, decimal Factor);
-```
-
-## StructuredCreditReferenceDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.StructuredCreditReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs:45](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsReferenceDtos.cs#L45).
-
-The reference view of a StructuredCredit tranche, read from its relational terms projection. FactorScheduleReference is the free-text trustee-report pointer; dated factors come from the factor schedule.
-
-```csharp
-public sealed record StructuredCreditReferenceDto(Guid SecurityId, string DisplayName, string Currency, string Tranche, string? PoolId, string CollateralType, decimal OriginalFace, decimal? CurrentFactor, string CouponOrIndex, string? FactorScheduleReference, DateOnly? Maturity, string PrimaryIdentifier, long Version, string? StructuredCreditKind = null, string? Seniority = null, decimal? AttachmentPoint = null, decimal? DetachmentPoint = null, decimal? WeightedAverageCoupon = null, int? WeightedAverageMaturityMonths = null, int? WeightedAverageLoanAgeMonths = null, DateOnly? ReinvestmentPeriodEnd = null, DateOnly? NonCallPeriodEnd = null);
-```
-
-## BackfillBatchReceipt
-
-Qualified name: <code>Meridian.Contracts.Backfill.BackfillBatchReceipt</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:4](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L4).
-
-Immutable evidence for a backfill response whose accepted rows reached storage.
-
-```csharp
-public sealed record BackfillBatchReceipt(string RevisionId, string RequestedProvider, string? ServingProvider, string Feed, string Instrument, string Granularity, DateOnly? From, DateOnly? To, string Status, int RowCount, string ContentHash, string? Calendar, IReadOnlyList<DateOnly>? ExpectedSessions, IReadOnlyList<DateOnly> ReceivedSessions);
-```
-
-## BackfillJobStatus
-
-Qualified name: <code>Meridian.Contracts.Backfill.BackfillJobStatus</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:9](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L9).
-
-Backfill job status constants. Use these constants to avoid magic strings when setting or comparing job status.
-
-```csharp
-public static class BackfillJobStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:12](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L12) | Job is queued but not yet started. |
-| <code>public const string Running = &quot;Running&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:15](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L15) | Job is actively downloading data. |
-| <code>public const string Paused = &quot;Paused&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:18](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L18) | Job has been temporarily paused. |
-| <code>public const string Completed = &quot;Completed&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:21](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L21) | Job has successfully completed all symbols. |
-| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:24](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L24) | Job encountered a fatal error and stopped. |
-| <code>public const string Cancelled = &quot;Cancelled&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:27](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L27) | Job was cancelled by user request. |
-| <code>public static readonly IReadOnlyList&lt;string&gt; AllStatuses = new[] { Pending, Running, Paused, Completed, Failed, Cancelled };</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:32](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L32) | All valid status values. |
-| <code>public static bool IsTerminal(string status) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:40](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L40) | Checks if the given status represents a terminal state (job is finished). |
-| <code>public static bool IsValid(string status) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:46](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L46) | Checks if the given status is valid. |
-
-## BackfillProgress
-
-Qualified name: <code>Meridian.Contracts.Backfill.BackfillProgress</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:100](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L100).
-
-Tracks overall progress of a backfill job. This is the primary contract for communicating backfill status to clients.
-
-```csharp
-public sealed class BackfillProgress
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;jobId&quot;)] public string JobId { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:113](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L113) | Unique identifier for the backfill job. |
-| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:119](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L119) | Current status of the job. Use BackfillJobStatus constants. |
-| <code>[JsonPropertyName(&quot;totalSymbols&quot;)] public int TotalSymbols { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:129](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L129) | Total number of symbols to process in this job. |
-| <code>[JsonPropertyName(&quot;completedSymbols&quot;)] public int CompletedSymbols { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:139](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L139) | Number of symbols successfully completed. |
-| <code>[JsonPropertyName(&quot;failedSymbols&quot;)] public int FailedSymbols { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:149](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L149) | Number of symbols that failed after all retries. |
-| <code>[JsonPropertyName(&quot;totalBars&quot;)] public long TotalBars { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:160](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L160) | Expected total number of bars across all symbols. May be zero if not known in advance. |
-| <code>[JsonPropertyName(&quot;downloadedBars&quot;)] public long DownloadedBars { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:170](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L170) | Number of bars successfully downloaded so far. |
-| <code>[JsonPropertyName(&quot;barsPerSecond&quot;)] public float BarsPerSecond { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:180](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L180) | Current throughput in bars per second. |
-| <code>[JsonPropertyName(&quot;estimatedSecondsRemaining&quot;)] public int? EstimatedSecondsRemaining { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:187](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L187) | Estimated seconds remaining based on current throughput. Null if not enough data to estimate. |
-| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime StartedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:193](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L193) | UTC timestamp when the job started. |
-| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:200](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L200) | UTC timestamp when the job completed (or failed/cancelled). Null if still in progress. |
-| <code>[JsonPropertyName(&quot;symbolProgress&quot;)] public SymbolBackfillProgress[]? SymbolProgress { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:207](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L207) | Per-symbol progress details. May be null for summary-only responses. |
-| <code>[JsonPropertyName(&quot;currentProvider&quot;)] public string? CurrentProvider { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:213](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L213) | Name of the provider currently being used. |
-| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:219](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L219) | Error message if the job failed. |
-| <code>[JsonIgnore] public double ProgressPercent =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:225](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L225) | Gets the overall progress percentage based on completed symbols. |
-| <code>[JsonIgnore] public double BarsProgressPercent =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:231](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L231) | Gets the progress percentage based on downloaded bars. |
-| <code>[JsonIgnore] public TimeSpan Elapsed =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:237](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L237) | Gets the elapsed time since the job started. |
-| <code>[JsonIgnore] public bool IsComplete =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:243](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L243) | Gets whether the job is in a terminal state. |
-| <code>[JsonIgnore] public int RemainingSymbols =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:249](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L249) | Gets the number of remaining symbols to process. |
-
-## BackfillProviderAttemptProgressDto
-
-Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderAttemptProgressDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:366](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L366).
-
-One provider attempt in the live fallback chain for a requested symbol/range.
-
-```csharp
-public sealed record BackfillProviderAttemptProgressDto(string Symbol, string Provider, DateOnly? RangeStart, DateOnly? RangeEnd, int ProviderAttempt, int RetryRound, string? Operation, string? Status, int BarsDownloaded, DateTimeOffset StartedAt, DateTimeOffset ObservedAt, string? Error);
-```
-
-## BackfillProviderProgressSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderProgressSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:405](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L405).
-
-Bounded live provider-attempt snapshot shared by browser and desktop clients.
-
-```csharp
-public sealed record BackfillProviderProgressSnapshotDto(IReadOnlyDictionary<string, BackfillProviderSymbolProgressDto> Symbols, IReadOnlyList<BackfillProviderAttemptProgressDto> RecentProviderAttempts, double OverallPercentComplete, int TotalSymbols, int CompletedSymbols, int FailedSymbols, long DroppedProviderNotifications, DateTimeOffset Timestamp);
-```

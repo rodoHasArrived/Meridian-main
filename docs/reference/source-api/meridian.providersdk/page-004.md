@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderInstrument
+
+Qualified name: <code>Meridian.ProviderSdk.ProviderInstrument</code>. Kind: `record`.
+
+Source: [src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs:13](../../../../src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs#L13).
+
+Provider-neutral instrument identity returned by discovery.
+
+```csharp
+public sealed record ProviderInstrument(string Symbol, string Name, string AssetClass, string? Exchange, string? Currency, string? ProviderInstrumentId, ProviderDataProvenance Provenance);
+```
+
 ## ProviderInstrumentDiscoveryRequest
 
 Qualified name: <code>Meridian.ProviderSdk.ProviderInstrumentDiscoveryRequest</code>. Kind: `record`.

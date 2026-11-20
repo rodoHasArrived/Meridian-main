@@ -27,7 +27,10 @@
 External GL provider work also follows [External GL Providers](../../operators/external-gl-providers.md).
 Xero and NetSuite credentialed imports remain external evidence. Their provider-owned
 export checks require current connection/import scope and exact retained human control
-references; a certified review artifact still cannot post externally.
+references. Use the exact journal export workflow for provider posting. It freezes the certified
+mapping, source checkpoint and journal line IDs, then commits approval and the outbox together.
+Recover ambiguous submissions by querying the retained provider key. Keep Meridian authoritative
+and gate final close and reports only on a book's explicit confirmation policy.
 
 Load this context before generating or reviewing code for ledgers, journal entries, capital accounts, close workflows, reconciliation postings, reports with accounting balances, or audit evidence involving accounting records.
 

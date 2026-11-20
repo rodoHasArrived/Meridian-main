@@ -6,6 +6,227 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderConnectionHealthResponse
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionHealthResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:16](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L16).
+
+Minimal typed projection of GET /api/providers/health used by operator clients. A null connection value means no runtime diagnostic probe exists; it must not be treated as false.
+
+```csharp
+public sealed record ProviderConnectionHealthResponse([property : JsonPropertyName("providers")] IReadOnlyList<ProviderConnectionHealthSnapshotDto> Providers, [property : JsonPropertyName("timestamp")] DateTimeOffset Timestamp);
+```
+
+## ProviderConnectionHealthSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionHealthSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:20](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L20).
+
+```csharp
+public sealed record ProviderConnectionHealthSnapshotDto([property : JsonPropertyName("providerId")] string ProviderId, [property : JsonPropertyName("displayName")] string DisplayName, [property : JsonPropertyName("isEnabled")] bool IsEnabled, [property : JsonPropertyName("isConnected")] bool? IsConnected, [property : JsonPropertyName("connectionState")] string ConnectionState, [property : JsonPropertyName("diagnosticsAvailable")] bool DiagnosticsAvailable, [property : JsonPropertyName("lastFailureKind")] string? LastFailureKind, [property : JsonPropertyName("reconnectAttempts")] int? ReconnectAttempts = null);
+```
+
+## ProviderConnectionTest
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/DataIngestionContracts.cs:138](../../../../src/Meridian.Contracts/Api/DataIngestionContracts.cs#L138).
+
+Provider connection test result.
+
+```csharp
+public sealed record ProviderConnectionTest(string Provider, bool IsConnected = false, int? ResponseTimeMs = null, string Status = "Unknown", string? ErrorMessage = null, DateTime TestedAt = default);
+```
+
+## ProviderCredentialMigrationRequest
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderCredentialMigrationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderCredentialOwnershipApiModels.cs:26](../../../../src/Meridian.Contracts/Api/ProviderCredentialOwnershipApiModels.cs#L26).
+
+ExpectedGeneration comes from the non-secret migration preview, never from a secret value.
+
+```csharp
+public sealed record ProviderCredentialMigrationRequest(string ProviderId, string MigrationId, string? ExpectedGeneration = null);
+```
+
+## ProviderCredentialRequest
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderCredentialRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/DataIngestionContracts.cs:119](../../../../src/Meridian.Contracts/Api/DataIngestionContracts.cs#L119).
+
+Provider credential validation request.
+
+```csharp
+public sealed record ProviderCredentialRequest(string Provider, Dictionary<string, string> Credentials);
+```
+
+## ProviderCredentialValidationResult
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderCredentialValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/DataIngestionContracts.cs:127](../../../../src/Meridian.Contracts/Api/DataIngestionContracts.cs#L127).
+
+Provider credential validation result.
+
+```csharp
+public sealed record ProviderCredentialValidationResult(bool IsValid = false, string Status = "Unknown", string? ErrorMessage = null, DateTime? LastVerified = null, Dictionary<string, string>? Details = null);
+```
+
+## ProviderDiscoveryFailureDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderDiscoveryFailureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs:97](../../../../src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs#L97).
+
+A data-source discovery or registration failure surfaced alongside the matrix so a gray provider row has a visible explanation.
+
+```csharp
+public sealed record ProviderDiscoveryFailureDto(string Stage, string Subject, string? ModuleId, string ErrorType, string ErrorMessage);
+```
+
+## ProviderFixedIncomeConnectionEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderFixedIncomeConnectionEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs:51](../../../../src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs#L51).
+
+Secret-free, tenant-scoped evidence. General connection certification is displayed as such; it cannot establish a bond&#x27;s entitlement, an observation&#x27;s freshness, or task verification.
+
+```csharp
+public sealed record ProviderFixedIncomeConnectionEvidenceDto(string ConnectionId, string DisplayName, bool Enabled, string ConfigurationState, string EntitlementState, string FreshnessState, string VerificationState, DateTimeOffset? ObservationAsOf, DateTimeOffset? VerifiedAt, IReadOnlyList<ProviderFixedIncomeEvidenceDto> Evidence);
+```
+
+## ProviderFixedIncomeEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderFixedIncomeEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs:63](../../../../src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs#L63).
+
+```csharp
+public sealed record ProviderFixedIncomeEvidenceDto(string Kind, string Detail, DateTimeOffset? ObservedAt = null);
+```
+
+## ProviderFixedIncomeTaskCapabilityDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderFixedIncomeTaskCapabilityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs:41](../../../../src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs#L41).
+
+An input task is distinct from broad bond coverage. Adapter declarations describe potential supply; configured connections and retained task evidence determine operational availability.
+
+```csharp
+public sealed record ProviderFixedIncomeTaskCapabilityDto(string Task, string AdapterSupport, string Detail, IReadOnlyList<ProviderFixedIncomeConnectionEvidenceDto> Connections);
+```
+
+## ProviderHealthResponse
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderHealthResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:179](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L179).
+
+Response containing provider health information.
+
+```csharp
+public record ProviderHealthResponse(string ProviderId, int ConsecutiveFailures, int ConsecutiveSuccesses, DateTimeOffset? LastIssueTime, DateTimeOffset? LastSuccessTime, double DegradationScore, ProviderScoreReasonResponse[] Reasons, HealthIssueResponse[] RecentIssues, ProviderKernelProvenanceResponse? KernelProvenance, KernelPromotionRecommendationResponse? PromotionRecommendation);
+```
+
+## ProviderInstrumentCapabilityCellDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderInstrumentCapabilityCellDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs:84](../../../../src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs#L84).
+
+One matrix cell: whether the provider declares coverage for the instrument type, and which capability surfaces apply to it. Corporate-action and options-chain flags are additionally gated by whether the instrument type itself carries those capabilities.
+
+```csharp
+public sealed record ProviderInstrumentCapabilityCellDto(string InstrumentType, bool Supported, bool Stream, bool Backfill, bool CorporateActions, bool SymbolSearch, bool OptionsChain);
+```
+
+## ProviderInstrumentCapabilityMatrixDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderInstrumentCapabilityMatrixDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs:20](../../../../src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs#L20).
+
+Provider × instrument-type capability matrix with discovery failures.
+
+```csharp
+public sealed record ProviderInstrumentCapabilityMatrixDto(DateTimeOffset GeneratedAt, IReadOnlyList<string> InstrumentTypes, IReadOnlyList<ProviderInstrumentCapabilityRowDto> Providers, IReadOnlyList<ProviderDiscoveryFailureDto> DiscoveryFailures);
+```
+
+## ProviderInstrumentCapabilityRowDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderInstrumentCapabilityRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs:30](../../../../src/Meridian.Contracts/Api/ProviderInstrumentCapabilityMatrix.cs#L30).
+
+One provider row: its declared instrument coverage, the capability surfaces its adapters implement, and one cell per instrument type.
+
+```csharp
+public sealed record ProviderInstrumentCapabilityRowDto(string ProviderId, IReadOnlyList<string> DeclaredInstrumentTypes, ProviderCapabilitySurfaceDto Surfaces, IReadOnlyList<ProviderInstrumentCapabilityCellDto> Cells, IReadOnlyList<ProviderFixedIncomeTaskCapabilityDto>? FixedIncomeTasks = null);
+```
+
+## ProviderKernelProvenanceResponse
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderKernelProvenanceResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:191](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L191).
+
+```csharp
+public record ProviderKernelProvenanceResponse(string BaselineKernelVersion, string CandidateKernelVersion, string DatasetId, DateTimeOffset CalibratedAt, string CalibratedBy);
+```
+
+## ProviderLatencyStatsDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderLatencyStatsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/StatusEndpointModels.cs:62](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L62).
+
+Provider latency statistics.
+
+```csharp
+public sealed record ProviderLatencyStatsDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;provider&quot;)] public string Provider { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:68](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L68) | Gets the name of the provider. |
+| <code>[JsonPropertyName(&quot;averageMs&quot;)] public float AverageMs { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:74](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L74) | Gets the average latency in milliseconds. |
+| <code>[JsonPropertyName(&quot;minMs&quot;)] public float MinMs { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:80](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L80) | Gets the minimum latency in milliseconds. |
+| <code>[JsonPropertyName(&quot;maxMs&quot;)] public float MaxMs { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:86](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L86) | Gets the maximum latency in milliseconds. |
+| <code>[JsonPropertyName(&quot;p50Ms&quot;)] public float P50Ms { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:92](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L92) | Gets the 50th percentile (median) latency in milliseconds. |
+| <code>[JsonPropertyName(&quot;p95Ms&quot;)] public float P95Ms { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:98](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L98) | Gets the 95th percentile latency in milliseconds. |
+| <code>[JsonPropertyName(&quot;p99Ms&quot;)] public float P99Ms { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:104](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L104) | Gets the 99th percentile latency in milliseconds. |
+| <code>[JsonPropertyName(&quot;sampleCount&quot;)] public long SampleCount { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:110](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L110) | Gets the number of latency samples collected. |
+| <code>[JsonPropertyName(&quot;isHealthy&quot;)] public bool IsHealthy { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:116](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L116) | Gets a value indicating whether the provider latency is within healthy thresholds. |
+
+## ProviderLatencySummaryDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderLatencySummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/StatusEndpointModels.cs:122](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L122).
+
+Provider latency summary response.
+
+```csharp
+public sealed record ProviderLatencySummaryDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;timestamp&quot;)] public DateTimeOffset Timestamp { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:125](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L125) |  |
+| <code>[JsonPropertyName(&quot;providers&quot;)] public IReadOnlyList&lt;ProviderLatencyStatsDto&gt; Providers { get; init; } = Array.Empty&lt;ProviderLatencyStatsDto&gt;();</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:128](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L128) |  |
+| <code>[JsonPropertyName(&quot;globalAverageMs&quot;)] public float GlobalAverageMs { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:131](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L131) |  |
+| <code>[JsonPropertyName(&quot;globalP99Ms&quot;)] public float GlobalP99Ms { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:134](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L134) |  |
+
 ## ProviderMetricsResponse
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderMetricsResponse</code>. Kind: `record`.
@@ -357,36 +578,6 @@ Response containing provider connection status.
 public record ProviderStreamStatusResponse(string AssetClass, string Feed, string Entitlement, string LifecycleState, bool IsConnected, bool IsDegraded, string? DegradationReason);
 ```
 
-## ProviderTemplateBindingDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateBindingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:25](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L25).
-
-```csharp
-public sealed record ProviderTemplateBindingDto(string Capability, int Priority);
-```
-
-## ProviderTemplateCapabilityDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateCapabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:22](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L22).
-
-```csharp
-public sealed record ProviderTemplateCapabilityDto(string Capability, int Version);
-```
-
-## ProviderTemplateImportIssue
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateImportIssue</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:53](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L53).
-
-```csharp
-public sealed record ProviderTemplateImportIssue(string Field, string Code, string Message);
-```
-
 ## ProviderTemplateOutput
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateOutput</code>. Kind: `class`.
@@ -420,36 +611,6 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;supportedMarkets&quot;)] public string[] SupportedMarkets { get; init; } = new[] { &quot;US&quot; };</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:360](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L360) |  |
 | <code>[JsonPropertyName(&quot;dataTypes&quot;)] public string[] DataTypes { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:363](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L363) |  |
 | <code>public static ProviderTemplateOutput FromCatalogEntry(ProviderCatalogEntry entry);</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:368](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L368) | Creates a ProviderTemplateOutput from a ProviderCatalogEntry. |
-
-## ProviderTemplateReviewRow
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateReviewRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:30](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L30).
-
-```csharp
-public sealed record ProviderTemplateReviewRow(string Field, string Value);
-```
-
-## ProviderTemplateSetupDraft
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateSetupDraft</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:46](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L46).
-
-```csharp
-public sealed record ProviderTemplateSetupDraft(Guid SetupId, string ProviderKind, string Environment, ProviderCredentialFieldMetadataDto[] CredentialFields);
-```
-
-## ProviderTemplateSetupTestResult
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateSetupTestResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:49](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L49).
-
-```csharp
-public sealed record ProviderTemplateSetupTestResult(bool CanSave, string Detail);
-```
 
 ## ProviderTrustSnapshotDto
 
@@ -530,136 +691,4 @@ Anomaly statistics payload returned by the dashboard.
 
 ```csharp
 public sealed record QualityAnomalyStatisticsResponse(long TotalAnomalies, IReadOnlyDictionary<byte, int> AnomaliesByType, IReadOnlyDictionary<byte, int> AnomaliesBySeverity, IReadOnlyList<QualityCountBySymbolResponse> SymbolsWithMostAnomalies, int UnacknowledgedCount, int AnomaliesLast24Hours, DateTimeOffset CalculatedAt);
-```
-
-## QualityComparisonRequest
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityComparisonRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:6](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L6).
-
-Request contract for provider comparison queries used by desktop clients.
-
-```csharp
-public sealed record QualityComparisonRequest(string Symbol, DateOnly? Date, string? EventType);
-```
-
-## QualityComparisonResponse
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityComparisonResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:323](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L323).
-
-Cross-provider comparison payload returned by /api/quality/comparison/{symbol}.
-
-```csharp
-public sealed record QualityComparisonResponse(string Symbol, DateOnly Date, string EventType, IReadOnlyList<QualityProviderDataSummaryResponse> Providers, IReadOnlyList<QualityProviderDiscrepancyResponse> Discrepancies, string RecommendedProvider, DateTimeOffset ComparedAt);
-```
-
-## QualityCompletenessSummaryResponse
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityCompletenessSummaryResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:180](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L180).
-
-Completeness summary returned inside the dashboard.
-
-```csharp
-public sealed record QualityCompletenessSummaryResponse(int TotalSymbolDates, double AverageScore, double MinScore, double MaxScore, int SymbolsTracked, int DatesTracked, long TotalEvents, long TotalExpectedEvents, double OverallCoverage, IReadOnlyDictionary<string, int> GradeDistribution, DateTimeOffset CalculatedAt);
-```
-
-## QualityComponentResponse
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityComponentResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:69](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L69).
-
-Normalized evidence emitted by one quality subsystem.
-
-```csharp
-public sealed record QualityComponentResponse(string Kind, string Label, double Weight, double? Score, string Availability, DateTimeOffset? ObservedAt, int IssueCount, string Detail);
-```
-
-## QualityCompositeDashboardResponse
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityCompositeDashboardResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:37](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L37).
-
-Canonical cross-source quality projection shared by browser and desktop clients.
-
-```csharp
-public sealed record QualityCompositeDashboardResponse(string Version, DateTimeOffset ObservedAt, double? CompositeScore, string Status, bool IsPartial, double CoverageWeight, IReadOnlyList<QualityComponentResponse> Components, IReadOnlyList<QualityCompositeSymbolResponse> Symbols, IReadOnlyList<QualityCompositeGapResponse> OpenGaps, int AnomalyCount);
-```
-
-## QualityCompositeGapResponse
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityCompositeGapResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:82](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L82).
-
-Stable, server-resolvable gap entry used by contextual remediation actions.
-
-```csharp
-public sealed record QualityCompositeGapResponse(string GapId, string Symbol, string? Provider, string EventType, DateTimeOffset From, DateTimeOffset To, long EstimatedMissingEvents, string Severity, string Status, bool CanBackfill, string? DisabledReason);
-```
-
-## QualityCompositeSymbolResponse
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityCompositeSymbolResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:52](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L52).
-
-Per-symbol composite quality row and its drill-down evidence.
-
-```csharp
-public sealed record QualityCompositeSymbolResponse(string Symbol, double? CompositeScore, string Status, bool IsPartial, double CoverageWeight, long? ExpectedEvents, long? ObservedEvents, int AnomalyCount, IReadOnlyList<QualityComponentResponse> Components, IReadOnlyList<QualityCompositeGapResponse> OpenGaps, IReadOnlyList<QualityProviderFreshnessResponse> ProviderFreshness, IReadOnlyList<string> Issues);
-```
-
-## QualityCountBySymbolResponse
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityCountBySymbolResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:316](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L316).
-
-Symbol/count pair used in anomaly statistics.
-
-```csharp
-public sealed record QualityCountBySymbolResponse(string Symbol, int Count);
-```
-
-## QualityDashboardResponse
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityDashboardResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:20](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L20).
-
-Dashboard payload returned by /api/quality/dashboard.
-
-```csharp
-public sealed record QualityDashboardResponse(DateTimeOffset Timestamp, QualityRealTimeMetricsResponse RealTimeMetrics, QualityCompletenessSummaryResponse CompletenessStats, QualityGapStatisticsResponse GapStats, QualitySequenceErrorStatisticsResponse SequenceStats, QualityAnomalyStatisticsResponse AnomalyStats, QualityLatencyStatisticsResponse LatencyStats, IReadOnlyList<QualityGapResponse> RecentGaps, IReadOnlyList<QualitySequenceErrorResponse> RecentErrors, IReadOnlyList<QualityAnomalyResponse> RecentAnomalies, IReadOnlyList<string> StaleSymbols, QualityCompositeDashboardResponse? Composite = null);
-```
-
-## QualityGapRemediationRequest
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityGapRemediationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:110](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L110).
-
-Requests remediation of a gap from a specific composite dashboard version. The server resolves provider and range from the retained gap identifier.
-
-```csharp
-public sealed record QualityGapRemediationRequest(string GapId, string DashboardVersion);
-```
-
-## QualityGapRemediationResponse
-
-Qualified name: <code>Meridian.Contracts.Api.Quality.QualityGapRemediationResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:117](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L117).
-
-Truthful outcome returned by a contextual data-quality remediation request.
-
-```csharp
-public sealed record QualityGapRemediationResponse(string GapId, string Symbol, string Status, string Provider, DateOnly From, DateOnly To, string IdempotencyKey, string Message);
 ```
