@@ -346,14 +346,13 @@ public sealed class HistoricalBackfillService
                 var newestKnownDate = lastBarDate.HasValue && newestCoveredDate.HasValue && newestCoveredDate.Value > lastBarDate.Value
                     ? newestCoveredDate
                     : lastBarDate;
-                var toleranceDays = _validationProfiles?.FirstOrDefault(pair =>
-                    string.Equals(pair.Key, servedBy.Count == 1 ? servedBy.First() : provider.Name, StringComparison.OrdinalIgnoreCase)).Value?.StaleToleranceDays
-                    ?? BackfillBarValidation.DefaultStaleToleranceDays;
+                var toleranceDays = ProviderValidationProfile.ResolveProfiles(
+                    _validationProfiles, servedBy.Count == 1 ? servedBy.First() : provider.Name).StaleToleranceDays;
                 var staleDays = newestKnownDate.HasValue ? expectedThrough.DayNumber - newestKnownDate.Value.DayNumber : 0;
                 // Only requests that expect data through (roughly) now can be "stale"; an
                 // explicitly historical range that falls short is partial coverage, not staleness.
                 var requestExpectsFreshData = request.To is null ||
-                    request.To.Value.DayNumber >= utcToday.DayNumber - toleranceDays;
+                    request.To.Value.DayNumber >= utcToday.DayNumber - BackfillBarValidation.DefaultStaleToleranceDays;
                 var isStale = requestExpectsFreshData && symbolBars > 0 && lastBarDate.HasValue &&
                     staleDays > toleranceDays;
 

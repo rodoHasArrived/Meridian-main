@@ -158,8 +158,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     }
 
     private ProviderValidationProfile ResolveValidationProfile(string provider) =>
-        _validationProfiles?.FirstOrDefault(pair => string.Equals(pair.Key, provider, StringComparison.OrdinalIgnoreCase)).Value
-        ?? ProviderValidationProfile.Default;
+        ProviderValidationProfile.ResolveProfiles(_validationProfiles, provider);
 
     public async Task<bool> IsAvailableAsync(CancellationToken ct = default)
     {

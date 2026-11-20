@@ -4,6 +4,7 @@ import { providerConnectionScopeEndpoint, type ProviderCredentialRequestOptions 
 import type { BackfillPreviewResult, BackfillExecutionHistoryResponse, BackfillProgressResponse, BackfillTriggerRequest, BackfillTriggerResult, AlpacaBrokerageConnectionRequest, BrokerageConnectionStatus, BrokerageHouseholdPortfolio, AssetOperationsDetail, MultiAssetCoverageSummary, NetSymbolPosition, ProviderConnectionRow, ProviderCredentialMutationResult, ProviderCredentialUpsertRequest, ProviderCredentialVerificationResult, ProviderReadinessSummary, ProviderRoutePreviewRequest, ProviderRoutePreviewResponse, ProviderRoutingBinding, ProviderRoutingConnection, ProviderRoutingTrustSnapshot, ManualCsvProviderIntegrationDryRunRequest, ProviderIntegrationActivationReadiness, ProviderIntegrationActivationRequest, ProviderIntegrationActivationResult, ProviderIntegrationConnectionMonitor, ProviderIntegrationDryRunResult, ProviderIntegrationManifest, ProviderIntegrationOpenApiImportRequest, ProviderIntegrationOpenApiImportResult, ProviderIntegrationPromotionReadinessPreview, ProviderIntegrationQuarantineReplayRequest, ProviderIntegrationQuarantineReplayResult, ProviderIntegrationQuarantineResolutionRequest, ProviderIntegrationQuarantineResolutionResult, ProviderIntegrationQuarantineReview, ProviderIntegrationReconciliationHandoffHistory, ProviderIntegrationReconciliationHandoffRequest, ProviderIntegrationReconciliationHandoffResult, ProviderIntegrationRestDryRunRequest, ProviderIntegrationRunDueSyncRequest, ProviderIntegrationRunDueSyncResult, ProviderIntegrationSchemaDriftCheckRequest, ProviderIntegrationSchemaDriftCheckResult, ProviderIntegrationSetupSaveRequest, ProviderIntegrationSetupSaveResult, ProviderIntegrationStagingIdentityResolutionPreview, ProviderIntegrationStagingReview, ProviderIntegrationSyncPlan, ProviderIntegrationSyncRunHistory, ProviderIntegrationTemplateCatalogEntry, PlaidLinkTokenRequest, PlaidLinkTokenResponse, PlaidPublicTokenExchangeRequest, PlaidPublicTokenExchangeResult, PlaidInstitutionSearchResult } from "@/types";
 import { BACKFILL_API_ENDPOINTS, PORTFOLIO_API_ENDPOINTS, PLAID_API_ENDPOINTS, PROVIDER_API_ENDPOINTS, PROVIDER_INTEGRATION_API_ENDPOINTS, PROVIDER_ROUTING_API_ENDPOINTS, QUALITY_API_ENDPOINTS, SECURITY_MASTER_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, securityMasterCoverageDraftEndpoint, brokerageConnectionConnectEndpoint, brokerageConnectionEndpoint, brokerageConnectionStatusEndpoint, portfolioHouseholdEndpoint, portfolioSymbolExposureEndpoint, providerCredentialEndpoint, providerVerifyEndpoint, workstationProviderIntegrationConnectionMonitorEndpoint, workstationProviderIntegrationConnectionRunDueSyncEndpoint, workstationProviderIntegrationConnectionSyncPlanEndpoint, workstationProviderIntegrationConnectionSyncRunsEndpoint, workstationProviderIntegrationIdentityResolutionEndpoint, workstationProviderIntegrationPromotionReadinessEndpoint, workstationProviderIntegrationQuarantineReviewEndpoint, workstationProviderIntegrationReadinessEndpoint, workstationProviderIntegrationReconciliationHandoffHistoryEndpoint, workstationProviderIntegrationStagingReviewEndpoint, workstationProviderIntegrationTemplateEndpoint, providerRemoveEndpoint, providerTestEndpoint, qualityAnomalyAcknowledgeEndpoint, securityMasterCorporateActionSourceProposalAcceptEndpoint, workstationAssetOperationsEndpoint } from "@/lib/workstation-endpoints";
 import { deleteJson, getJson, postJson, putJson, type ApiRequestOptions } from "@/lib/api/http-client";
+import type { ProviderReadinessEvidence, ProviderReadinessRow, ProviderReadinessStatus } from "@/types";
 
 // --- Backfill mutations ---
 
@@ -355,8 +356,45 @@ export function getProviderConnections(options: ProviderCredentialRequestOptions
   return getJson<ProviderConnectionRow[]>(providerConnectionScopeEndpoint(PROVIDER_API_ENDPOINTS.connections, options.connectionId), options);
 }
 
-export function getProviderReadiness(options: ApiRequestOptions = {}) {
-  return getJson<ProviderReadinessSummary>(PROVIDER_API_ENDPOINTS.readiness, options);
+type ReadinessWireEvidence = Omit<ProviderReadinessEvidence, "status" | "kind"> & {
+  status: ProviderReadinessStatus | number;
+  kind: ProviderReadinessEvidence["kind"] | number;
+};
+
+type ReadinessWireRow = Omit<ProviderReadinessRow, "status" | "evidence"> & {
+  status: ProviderReadinessStatus | number;
+  evidence: ReadinessWireEvidence[];
+};
+
+type ReadinessWireSummary = Omit<ProviderReadinessSummary, "status" | "providers"> & {
+  status: ProviderReadinessStatus | number;
+  providers: ReadinessWireRow[];
+};
+
+const readinessStatuses: readonly ProviderReadinessStatus[] = ["Ready", "Review", "Degraded", "Blocked", "Unknown"];
+const readinessEvidenceKinds: readonly ProviderReadinessEvidence["kind"][] = [
+  "Credential", "Connection", "Validation", "Degradation", "Plaid", "Routing"
+];
+
+function readReadinessStatus(status: ProviderReadinessStatus | number): ProviderReadinessStatus {
+  return typeof status === "number" ? readinessStatuses[status] ?? "Unknown" : status;
+}
+
+export async function getProviderReadiness(options: ApiRequestOptions = {}): Promise<ProviderReadinessSummary> {
+  const summary = await getJson<ReadinessWireSummary>(PROVIDER_API_ENDPOINTS.readiness, options);
+  return {
+    ...summary,
+    status: readReadinessStatus(summary.status),
+    providers: summary.providers.map(provider => ({
+      ...provider,
+      status: readReadinessStatus(provider.status),
+      evidence: provider.evidence.map(item => ({
+        ...item,
+        status: readReadinessStatus(item.status),
+        kind: typeof item.kind === "number" ? readinessEvidenceKinds[item.kind] ?? "Unknown" : item.kind
+      }))
+    }))
+  };
 }
 
 export function putProviderCredentials(

@@ -38,6 +38,10 @@ namespace Meridian.Infrastructure.Adapters.Core;
 [ImplementsAdr("ADR-001", "Unified provider factory for capability-driven registration")]
 public sealed partial class ProviderFactory
 {
+    /// <summary>Returns the validation profile captured by this host's provider factory.</summary>
+    public ProviderValidationProfile GetStartupValidationProfile(string providerId)
+        => ProviderValidationProfile.Resolve(_config.Backfill, providerId);
+
     private readonly AppConfig _config;
     private readonly IProviderCredentialResolver _credentialResolver;
     private readonly ISymbolResolver? _symbolResolver;

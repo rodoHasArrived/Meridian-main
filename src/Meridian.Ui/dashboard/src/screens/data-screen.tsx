@@ -491,6 +491,7 @@ function DataScreenContent({
                   detail={vm.providerSection.selectedDetail}
                   emptyState={vm.providerSection.detailEmptyState}
                   activeTab={vm.selectedProviderTab}
+                  session={session}
                   onTabSelect={vm.selectProviderTab}
                   onVerify={vm.verifySelectedProvider}
                 />
@@ -508,7 +509,6 @@ function DataScreenContent({
             <FailoverRegion />
             <BackfillProviderEditorRegion />
             <DataRoutingPreviewPanel />
-            <ProviderValidationPanel />
             <RateLimitHistoryPanel />
           </>
         ) : null}
@@ -962,12 +962,14 @@ function ProviderDetailPanel({
   detail,
   emptyState,
   activeTab,
+  session,
   onTabSelect,
   onVerify
 }: {
   detail: DataOperationsProviderDetailState | null;
   emptyState: DataOperationsEmptyState | null;
   activeTab: DataOperationsProviderDetailState["activeTab"];
+  session: SessionInfo | null;
   onTabSelect: (tab: DataOperationsProviderDetailState["activeTab"]) => void;
   onVerify: () => void;
 }) {
@@ -1017,11 +1019,13 @@ function ProviderDetailPanel({
       >
         {detail.tabs.map((tab) => (
           <TabPanel key={tab.id}>
-            <ProviderDetailTabPanel
-              detail={detail}
-              activeTab={tab.id as DataOperationsProviderDetailState["activeTab"]}
-              onVerify={onVerify}
-            />
+            {tab.id === "quality-rules" ? (
+              activeTab === tab.id ? <ProviderValidationPanel
+                key={JSON.stringify([detail.qualityProfileProviderId, detail.providerId, session?.displayName, session?.role])}
+                providerId={detail.qualityProfileProviderId}
+                providerName={detail.title}
+              /> : null
+            ) : <ProviderDetailTabPanel detail={detail} activeTab={tab.id} onVerify={onVerify} />}
           </TabPanel>
         ))}
       </Tabs>
