@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ITemplateBrokerStreamingClient
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.ITemplateBrokerStreamingClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L65).
+
+Defines asynchronous streaming and disposal for the template broker adapter.
+
+```csharp
+public interface ITemplateBrokerStreamingClient : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IAsyncEnumerable&lt;TemplateBrokerStreamMessage&gt; StreamAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L67) |  |
+
 ## TemplateBrokerageGateway
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway</code>. Kind: `class`.
@@ -872,21 +890,3 @@ Declared public members:
 | <code>public string? ResolvePassword();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:523](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L523) | Resolves the password from configured source. |
 | <code>public CredentialValidationResult Validate(bool requireApiKey = false, bool requireKeyIdAndSecret = false, bool requireUsernameAndPassword = false);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:577](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L577) | Validates that required credentials are configured and resolvable. Use this for pre-flight checks before starting a data source. |
 | <code>public void EnsureValid(string sourceName, bool requireApiKey = false, bool requireKeyIdAndSecret = false, bool requireUsernameAndPassword = false);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:711](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L711) | Performs a pre-flight check ensuring all credentials can be resolved. Throws InvalidOperationException if validation fails. |
-
-## CredentialValidationResult
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.CredentialValidationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:729](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L729).
-
-Result of credential validation.
-
-```csharp
-public sealed record CredentialValidationResult(bool IsValid, IReadOnlyList<string> Errors)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static CredentialValidationResult Success { get; } = new (true, Array.Empty&lt;string&gt;());</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:734](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L734) | Creates a successful validation result. |

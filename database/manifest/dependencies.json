@@ -3190,6 +3190,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillEquivalentProvider"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillJobReceipt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Backfill.BackfillJobStatus"
     },
     {
@@ -3220,6 +3232,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillProviderUsage"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillQuotaEstimate"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillQuotaReceipt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Backfill.BackfillResult"
     },
     {
@@ -3232,6 +3262,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillThrottleEvent"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Backfill.HistoricalSessionEvidence"
     },
     {
@@ -3239,6 +3275,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Backfill.HistoricalSessionSchedule"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Backfill.QueueBackfillRequest"
     },
     {
       "kind": "contract-set-member",
@@ -23398,6 +23440,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchHit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationReportAccessAuditSummaryDto"
     },
     {
@@ -35295,6 +35349,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Api.BackfillExecution",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillJobReceipt"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Api.BackfillExecutionHistoryResponse",
       "target": "contract:Meridian.Contracts.Api.BackfillAutoRemediationSummary"
     },
@@ -37305,6 +37365,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillJobReceipt",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillBatchReceipt"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillJobReceipt",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillQuotaEstimate"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillJobReceipt",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillQuotaReceipt"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillJobReceipt",
+      "target": "contract:Meridian.Contracts.Operations.ProviderProvenanceReceipt"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Backfill.BackfillProgress",
       "target": "contract:Meridian.Contracts.Backfill.SymbolBackfillProgress"
     },
@@ -37323,8 +37407,32 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillQuotaReceipt",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillProviderUsage"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillQuotaReceipt",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillQuotaEstimate"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillQuotaReceipt",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillThrottleEvent"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Backfill.BackfillResult",
       "target": "contract:Meridian.Contracts.Backfill.BackfillBatchReceipt"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Backfill.BackfillResult",
+      "target": "contract:Meridian.Contracts.Backfill.BackfillQuotaReceipt"
     },
     {
       "kind": "contract-reference",
@@ -59151,6 +59259,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchResult",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchHit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationReportWriterDatasetSourcePayload",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationReportWriterFieldPayload"
     },
@@ -70262,7 +70376,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "a51d6af255ea1ab19cc890aa333f54df6e4d74b3261e59c678e3fcd70490f0c8",
+  "fingerprint": "d929a9b816bf069714fbd4dd2c17cf5992e772fa4dc4b531c4e5deb7795ff3f9",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -73502,6 +73616,18 @@
       "label": "Meridian.Contracts.Backfill.BackfillBatchReceipt"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Backfill.BackfillEquivalentProvider",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Backfill.BackfillEquivalentProvider"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Backfill.BackfillJobReceipt",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Backfill.BackfillJobReceipt"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.Backfill.BackfillJobStatus",
       "kind": "contract-type",
@@ -73532,6 +73658,24 @@
       "label": "Meridian.Contracts.Backfill.BackfillProviderSymbolProgressDto"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Backfill.BackfillProviderUsage",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Backfill.BackfillProviderUsage"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Backfill.BackfillQuotaEstimate",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Backfill.BackfillQuotaEstimate"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Backfill.BackfillQuotaReceipt",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Backfill.BackfillQuotaReceipt"
+    },
+    {
       "classification": "result",
       "id": "contract:Meridian.Contracts.Backfill.BackfillResult",
       "kind": "contract-type",
@@ -73544,6 +73688,12 @@
       "label": "Meridian.Contracts.Backfill.BackfillRunProgressResponse"
     },
     {
+      "classification": "event",
+      "id": "contract:Meridian.Contracts.Backfill.BackfillThrottleEvent",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Backfill.BackfillThrottleEvent"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.Backfill.HistoricalSessionEvidence",
       "kind": "contract-type",
@@ -73554,6 +73704,12 @@
       "id": "contract:Meridian.Contracts.Backfill.HistoricalSessionSchedule",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Backfill.HistoricalSessionSchedule"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Backfill.QueueBackfillRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Backfill.QueueBackfillRequest"
     },
     {
       "classification": "class",
@@ -93710,6 +93866,18 @@
       "label": "Meridian.Contracts.Workstation.WorkstationProviderHealthCount"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchHit",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationRecordSearchHit"
+    },
+    {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationRecordSearchResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationRecordSearchResult"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.WorkstationReportAccessAuditSummaryDto",
       "kind": "contract-type",
@@ -103299,11 +103467,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4302,
-    "contract_set_memberships": 5662,
-    "edges": 11672,
+    "contract_references": 4312,
+    "contract_set_memberships": 5671,
+    "edges": 11691,
     "foreign_keys": 213,
     "logical_references": 6,
-    "nodes": 5748
+    "nodes": 5757
   }
 }

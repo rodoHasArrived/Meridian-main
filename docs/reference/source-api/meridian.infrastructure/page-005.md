@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IIBDataCallbackSource
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBDataCallbackSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:58](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L58).
+
+Callback bridge used to correlate vendor callbacks without exposing IB API types above Infrastructure.
+
+```csharp
+public interface IIBDataCallbackSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>event EventHandler&lt;(int RequestId, ProviderContractDetails Details)&gt;? ContractDetailsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:60](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L60) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderOptionChainDefinition Definition)&gt;? OptionChainDefinitionReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:61](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L61) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderNewsHeadline Headline)&gt;? HistoricalNewsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:62](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L62) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderNewsArticlePayload Article)&gt;? NewsArticleReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:63](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L63) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderFundamentalReport Report)&gt;? FundamentalReportReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:64](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L64) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderTickByTickObservation Observation)&gt;? TickByTickReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:65](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L65) |  |
+| <code>event EventHandler&lt;(int RequestId, IReadOnlyList&lt;ProviderDepthExchangeDescription&gt; Exchanges)&gt;? DepthExchangesReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:66](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L66) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderDividendEarnings Payload)&gt;? DividendEarningsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:67](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L67) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderOptionContract Contract)&gt;? OptionContractReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:68](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L68) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderScannerResult Result)&gt;? ScannerResultReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:69](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L69) |  |
+| <code>event EventHandler&lt;int&gt;? ScannerBatchCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:75](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L75) | Non-terminal batch delimiter for a live scanner subscription (IB&#x27;s scannerDataEnd): the vendor re-sends the full current ranked list each refresh cycle, so the rows after this delimiter REPLACE the request&#x27;s accumulated results rather than extending them. |
+| <code>event EventHandler&lt;(int RequestId, ProviderRealTimeBar Bar)&gt;? RealTimeBarReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:76](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L76) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderHistoricalTick Tick, bool Completed)&gt;? HistoricalTickReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:77](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L77) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderAccountPnl Pnl)&gt;? PnlReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:78](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L78) |  |
+| <code>event EventHandler&lt;(int RequestId, IReadOnlyList&lt;ProviderMarketRuleIncrement&gt; Increments)&gt;? MarketRuleReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:79](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L79) |  |
+| <code>event EventHandler&lt;int&gt;? RequestCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:80](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L80) |  |
+| <code>event EventHandler&lt;(int RequestId, string Code, string Message)&gt;? RequestRejected;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:81](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L81) |  |
+
 ## IIBDataLineageSource
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBDataLineageSource</code>. Kind: `interface`.
@@ -77,7 +111,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IntradayBar</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:544](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L544).
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:546](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L546).
 
 Intraday bar data from IB.
 
@@ -109,7 +143,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:577](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L577).
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:579](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L579).
 
 Stub IB historical data provider for non-IBAPI builds. Registers in the provider list so users can see IB is available but requires IBAPI.
 
@@ -121,27 +155,27 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IBHistoricalDataProvider();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:581](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L581) |  |
-| <code>public IBHistoricalDataProvider(EnhancedIBConnectionManager connectionManager, int priority = 10, Serilog.ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:583](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L583) |  |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:592](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L592) |  |
-| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:593](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L593) |  |
-| <code>public string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:594](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L594) |  |
-| <code>public int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:598](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L598) |  |
-| <code>public TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:599](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L599) |  |
-| <code>public int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:600](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L600) |  |
-| <code>public TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:601](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L601) |  |
-| <code>public HistoricalDataCapabilities Capabilities { get; } = (HistoricalDataCapabilities.BarsOnly with { Intraday = true }).WithMarkets(&quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot;);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:603](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L603) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:607](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L607) |  |
-| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:608](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L608) |  |
-| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:609](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L609) |  |
-| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:610](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L610) |  |
-| <code>public ProviderCapabilities ProviderCapabilities { get; } = new () { SupportsBackfill = true, SupportsIntraday = true, SupportsAdjustedPrices = true, SupportedMarkets = new[] { &quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot; }, DeclaredMarketDataCapabilities = new[] { new MarketDataCapabilityProfile(MarketDataCapabilityKind.Bars, new[] { &quot;Equity&quot;, &quot;Option&quot;, &quot;Future&quot;, &quot;Forex&quot;, &quot;Bond&quot; }, new[] { &quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot; }, new[] { &quot;SMART&quot; }, &quot;IBKR TWS/Gateway&quot;, &quot;Historical&quot;, &quot;Account and market-data subscription may be required&quot;, 60, TimeSpan.FromMinutes(10), TimeSpan.FromSeconds(15), &quot;IB historical bar timestamp&quot;, &quot;Entitlement-dependent; unavailable without an IBAPI-enabled build&quot;) }, MaxRequestsPerWindow = 60, RateLimitWindow = TimeSpan.FromMinutes(10), MinRequestDelay = TimeSpan.FromSeconds(15) };</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:612](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L612) |  |
-| <code>public ProviderCredentialField[] ProviderCredentialFields =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:627](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L627) |  |
-| <code>public string[] ProviderNotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:633](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L633) |  |
-| <code>public string[] ProviderWarnings =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:639](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L639) |  |
-| <code>public Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:645](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L645) |  |
-| <code>public Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:651](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L651) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:658](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L658) |  |
+| <code>public IBHistoricalDataProvider();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:583](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L583) |  |
+| <code>public IBHistoricalDataProvider(EnhancedIBConnectionManager connectionManager, int priority = 10, Serilog.ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:585](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L585) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:594](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L594) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:595](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L595) |  |
+| <code>public string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:596](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L596) |  |
+| <code>public int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:600](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L600) |  |
+| <code>public TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:601](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L601) |  |
+| <code>public int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:602](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L602) |  |
+| <code>public TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:603](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L603) |  |
+| <code>public HistoricalDataCapabilities Capabilities { get; } = (HistoricalDataCapabilities.BarsOnly with { Intraday = true }).WithMarkets(&quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot;);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:605](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L605) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:609](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L609) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:610](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L610) |  |
+| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:611](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L611) |  |
+| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:612](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L612) |  |
+| <code>public ProviderCapabilities ProviderCapabilities { get; } = new () { SupportsBackfill = true, SupportsIntraday = true, SupportsAdjustedPrices = true, SupportedMarkets = new[] { &quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot; }, DeclaredMarketDataCapabilities = new[] { new MarketDataCapabilityProfile(MarketDataCapabilityKind.Bars, new[] { &quot;Equity&quot;, &quot;Option&quot;, &quot;Future&quot;, &quot;Forex&quot;, &quot;Bond&quot; }, new[] { &quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot; }, new[] { &quot;SMART&quot; }, &quot;IBKR TWS/Gateway&quot;, &quot;Historical&quot;, &quot;Account and market-data subscription may be required&quot;, 60, TimeSpan.FromMinutes(10), TimeSpan.FromSeconds(15), &quot;IB historical bar timestamp&quot;, &quot;Entitlement-dependent; unavailable without an IBAPI-enabled build&quot;) }, MaxRequestsPerWindow = 60, RateLimitWindow = TimeSpan.FromMinutes(10), MinRequestDelay = TimeSpan.FromSeconds(15) };</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:614](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L614) |  |
+| <code>public ProviderCredentialField[] ProviderCredentialFields =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:629](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L629) |  |
+| <code>public string[] ProviderNotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:635](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L635) |  |
+| <code>public string[] ProviderWarnings =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:641](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L641) |  |
+| <code>public Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:647](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L647) |  |
+| <code>public Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:653](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L653) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:660](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L660) |  |
 
 ## NasdaqDataLinkCorporateActionProvider
 
@@ -1236,21 +1270,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void Register(IServiceCollection services);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:17](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L17) |  |
-
-## ITemplateBrokerStreamingClient
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.ITemplateBrokerStreamingClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L65).
-
-Defines asynchronous streaming and disposal for the template broker adapter.
-
-```csharp
-public interface ITemplateBrokerStreamingClient : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IAsyncEnumerable&lt;TemplateBrokerStreamMessage&gt; StreamAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L67) |  |

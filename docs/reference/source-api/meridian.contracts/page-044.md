@@ -6,6 +6,84 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationQueueAccountStatusDto
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:38](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L38).
+
+```csharp
+public sealed record ReconciliationQueueAccountStatusDto(Guid AccountId, string AccountCode, string QueueState, int UnresolvedBreakCount, bool SignOffReady, string NextBestAction, string BlockerReason, IReadOnlyList<string> EvidenceLinks);
+```
+
+## StatementImportSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.StatementImportSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:3](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L3).
+
+```csharp
+public sealed record StatementImportSummaryDto(string ImportId, string Broker, string StatementDate, string ImportedAtUtc, int RawRowCount, int NormalizedRowCount);
+```
+
+## StatementReconciliationRunAuthorization
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:9](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L9).
+
+```csharp
+public sealed record StatementReconciliationRunAuthorization(string RunId, Guid FundAccountId, string FundProfileId, Guid LedgerBookId, Guid AccountingPeriodId, DateOnly AsOfDate, DateOnly PeriodStart, DateOnly PeriodEnd);
+```
+
+## StatementRunEvidenceLinkDto
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:48](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L48).
+
+```csharp
+public sealed record StatementRunEvidenceLinkDto(string EvidenceId, string EvidenceRoute, string RunId, string SourceFileHash, string BrokerCustodian, string Account, string StatementPeriodStart, string StatementPeriodEnd, string MappingProfileId, int MappingProfileVersion, string ToleranceProfileId, int ToleranceProfileVersion, string ValidationSummary, string MatchSummary, IReadOnlyList<string> BreakIds, IReadOnlyList<string> CaseIds, string ImportedBy, string ImportedAtUtc, string ReconciledBy, string ReconciledAtUtc);
+```
+
+## GovernedReportingRunDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.GovernedReportingRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:144](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L144).
+
+Immutable governed reporting run projection returned by canonical lifecycle routes.
+
+```csharp
+public sealed record GovernedReportingRunDto(string RunId, string SeriesId, int Revision, string TemplateId, string TemplateVersion, ReportingGovernanceOperationalScopeDto Scope, ReportingGovernanceAccessScopeDto Access, ReportingGovernanceCertifiedSnapshotDto Snapshot, ReportingGovernanceAuthorityDto CreationAuthority, DateTimeOffset CreatedAtUtc, string? RestatementOfRunId, string ExecutionState, string GovernanceState, long Version, ReportingGovernanceReadinessDto? Readiness, ReportingGovernanceApprovalDto? Approval, ReportingGovernanceReleaseDto? Release, IReadOnlyList<ReportingGovernanceAuditEntryDto> AuditTrail, ReportingRunParametersDto? NormalizedParameters = null, IReadOnlyList<ReportingGovernanceActionAvailabilityDto>? ActionAvailability = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ReportingGovernanceActionAvailabilityDto&gt; ActionAvailability { get; init; } = ActionAvailability??[];</code> | [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:166](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L166) |  |
+
+## ReportingGovernanceAccessPrincipalDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAccessPrincipalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:48](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L48).
+
+```csharp
+public sealed record ReportingGovernanceAccessPrincipalDto(string Kind, string PrincipalId);
+```
+
+## ReportingGovernanceAccessScopeDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAccessScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:39](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L39).
+
+```csharp
+public sealed record ReportingGovernanceAccessScopeDto(string PolicyId, string PolicyVersion, string Mode, string? OwnerPrincipalId, bool AllowOwnerAccess, IReadOnlyList<ReportingGovernanceAccessPrincipalDto> Principals, string PolicyHash);
+```
+
 ## ReportingGovernanceActionAvailabilityDto
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceActionAvailabilityDto</code>. Kind: `record`.
@@ -584,90 +662,3 @@ Declared public members:
 | <code>public static readonly IReadOnlyList&lt;string&gt; FixedIncome = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1574](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1574) |  |
 | <code>public static readonly IReadOnlyList&lt;string&gt; DirectLending = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1588](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1588) |  |
 | <code>public static readonly IReadOnlyList&lt;string&gt; AlternativeAssetOperations = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1602](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1602) |  |
-
-## AssetPackAccountingRules
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackAccountingRules</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:889](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L889).
-
-```csharp
-public sealed record AssetPackAccountingRules(IReadOnlyList<string> JournalTemplateEvents, IReadOnlyList<AssetPackJournalTemplateRule> JournalTemplates, IReadOnlyList<string> AccountingBases, IReadOnlyList<string> Currencies, IReadOnlyList<string> EntityScopes);
-```
-
-## AssetPackAdmissionPolicy
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackAdmissionPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:855](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L855).
-
-```csharp
-public sealed record AssetPackAdmissionPolicy(bool AllowsWideCapture, bool RequiresJournalTemplateBeforeAutomatedPosting, string AccountingPostingPolicy, string EvidencePolicy, string CoreLedgerMutationPolicy, IReadOnlyList<string> AutomationEscalationTriggers);
-```
-
-## AssetPackAutomationDepth
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackAutomationDepth</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:823](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L823).
-
-```csharp
-public enum AssetPackAutomationDepth
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>WideCapture = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:825](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L825) |  |
-| <code>DeepAccountingAutomation = 1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:826](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L826) |  |
-
-## AssetPackClassTermsSchema
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackClassTermsSchema</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Admission.cs:63](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Admission.cs#L63).
-
-Machine-readable admission shape for one asset class at this node&#x27;s write version. Fields and nested item shapes come from the canonical terms schema, independently of descriptive pack policies.
-
-```csharp
-public sealed record AssetPackClassTermsSchema(string AssetClass, int TermsVersion, IReadOnlyList<SecurityAssetTermField> Fields, IReadOnlyDictionary<string, IReadOnlyList<SecurityAssetTermField>> ElementFieldsByPath);
-```
-
-## AssetPackContractSchema
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackContractSchema</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:873](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L873).
-
-A pack&#x27;s contract. The nine prose lists are shared descriptive metadata, identical for every pack; AssetClassTerms is the per-pack, machine-checked part.
-
-```csharp
-public sealed record AssetPackContractSchema(IReadOnlyList<string> Terms, IReadOnlyList<string> Counterparties, IReadOnlyList<string> Dates, IReadOnlyList<string> Currencies, IReadOnlyList<string> Ownership, IReadOnlyList<string> Seniority, IReadOnlyList<string> Collateral, IReadOnlyList<string> Rates, IReadOnlyList<string> OptionalAttributes, IReadOnlyList<AssetPackClassTermsSchema>? AssetClassTerms = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;AssetPackClassTermsSchema&gt; AssetClassTerms { get; init; } = AssetClassTerms??[];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:886](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L886) | The executable per-class writable schema; the preceding prose lists are descriptions only. |
-
-## AssetPackJournalTemplateRule
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackJournalTemplateRule</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:896](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L896).
-
-```csharp
-public sealed record AssetPackJournalTemplateRule(string LifecycleEvent, string TemplateId, IReadOnlyList<string> AccountingBases, IReadOnlyList<string> CurrencyScopes, IReadOnlyList<string> EntityScopes);
-```
-
-## AssetPackLifecycleCoverage
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackLifecycleCoverage</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:863](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L863).
-
-```csharp
-public sealed record AssetPackLifecycleCoverage(string LifecycleEvent, string CapturePolicy, string AccountingAutomationStatus, IReadOnlyList<string> JournalTemplateIds);
-```

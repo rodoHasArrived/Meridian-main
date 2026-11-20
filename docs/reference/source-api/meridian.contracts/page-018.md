@@ -6,6 +6,89 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReplayDirectLendingRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ReplayDirectLendingRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:490](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L490).
+
+```csharp
+public sealed record ReplayDirectLendingRequest(bool RecomputeDerivedArtifacts);
+```
+
+## ReplayDirectLendingResultDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ReplayDirectLendingResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:493](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L493).
+
+```csharp
+public sealed record ReplayDirectLendingResultDto(int LoansProcessed, int EventsProcessed, DateTimeOffset CompletedAt);
+```
+
+## RequestProjectionRunRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.RequestProjectionRunRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:132](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L132).
+
+```csharp
+public sealed record RequestProjectionRunRequest(DateOnly ProjectionAsOf, DateOnly? MarketDataAsOf, string? TriggerType, string? EngineVersion);
+```
+
+## ResolveReconciliationExceptionRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ResolveReconciliationExceptionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:250](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L250).
+
+```csharp
+public sealed record ResolveReconciliationExceptionRequest(string ResolutionNote, string AssignedTo);
+```
+
+## RestructureLoanRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.RestructureLoanRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:564](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L564).
+
+```csharp
+public sealed record RestructureLoanRequest(RestructuringType RestructuringType, string Reason, DateOnly EffectiveDate, DirectLendingTermsDto? NewTerms = null, decimal? HaircutAmount = null);
+```
+
+## RestructuringType
+
+Qualified name: <code>Meridian.Contracts.DirectLending.RestructuringType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:45](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L45).
+
+```csharp
+public enum RestructuringType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>MaturityExtension = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:47](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L47) |  |
+| <code>RateReduction = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:48](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L48) |  |
+| <code>PrincipalHaircut = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:49](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L49) |  |
+| <code>DebtForEquitySwap = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:50](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L50) |  |
+| <code>PikConversion = 4</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:51](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L51) |  |
+| <code>Full = 5</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:52](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L52) |  |
+
+## ScheduledRateResetPreviewDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ScheduledRateResetPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:147](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L147).
+
+One upcoming reset date and the fixing it needs.
+
+```csharp
+public sealed record ScheduledRateResetPreviewDto(DateOnly ResetDate, DateOnly FixingObservationDate, string IndexName, bool FixingAvailable, decimal? FixingRate, bool Applied);
+```
+
 ## ServicerPositionReportLineDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ServicerPositionReportLineDto</code>. Kind: `record`.
@@ -785,169 +868,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;interval&quot;)] public string Interval { get; set; } = &quot;Daily&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:308](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L308) | Gets or sets the bar interval label. |
 | <code>[JsonPropertyName(&quot;source&quot;)] public string? Source { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:314](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L314) | Gets or sets the data source identifier. |
 | <code>[JsonPropertyName(&quot;isAdjusted&quot;)] public bool IsAdjusted { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:320](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L320) | Gets or sets a value indicating whether prices are adjusted. |
-
-## IntegrityEventDto
-
-Qualified name: <code>Meridian.Contracts.Domain.IntegrityEventDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:434](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L434).
-
-Integrity event data transfer object.
-
-```csharp
-public sealed class IntegrityEventDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;timestamp&quot;)] public DateTimeOffset Timestamp { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:440](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L440) | Gets or sets the event timestamp. |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:446](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L446) | Gets or sets the symbol associated with the event. |
-| <code>[JsonPropertyName(&quot;kind&quot;)] public string Kind { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:452](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L452) | Gets or sets the event kind. |
-| <code>[JsonPropertyName(&quot;severity&quot;)] public string Severity { get; set; } = &quot;Warning&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:458](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L458) | Gets or sets the severity level of the event. |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:464](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L464) | Gets or sets the event description. |
-| <code>[JsonPropertyName(&quot;expectedValue&quot;)] public string? ExpectedValue { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:470](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L470) | Gets or sets the expected value for the event, if applicable. |
-| <code>[JsonPropertyName(&quot;actualValue&quot;)] public string? ActualValue { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:476](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L476) | Gets or sets the actual value observed for the event, if applicable. |
-
-## IPositionSnapshotStore
-
-Qualified name: <code>Meridian.Contracts.Domain.IPositionSnapshotStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:164](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L164).
-
-Provides crash-safe persistence for per-account portfolio snapshots. Implementations must follow the WAL pattern (ADR-007) and respect the LifecyclePolicyEngine tiered-storage rules (ADR-002).
-
-```csharp
-public interface IPositionSnapshotStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task SaveSnapshotAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:171](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L171) | Persists an account snapshot with the same atomic equivalence/conflict semantics as SaveSnapshotConditionallyAsync. This retained compatibility method does not expose whether an equivalent retry was skipped. |
-| <code>Task&lt;PositionSnapshotSaveOutcome&gt; SaveSnapshotConditionallyAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:188](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L188) | Atomically persists an account snapshot using the logical identity of run, account, exact owner scope, and UTC AccountSnapshotRecord.AsOf. An equivalent retry must be a no-op; a different payload at the same identity must throw PositionSnapshotConflictException. The check and append must be serialized for concurrent writers to the same durable partition. Implementations must resolve &quot;latest&quot; by the greatest AccountSnapshotRecord.AsOf value rather than physical append order. |
-| <code>Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:201](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L201) | Retrieves the snapshot with the greatest AccountSnapshotRecord.AsOf value for the given run / account pair. Returns null when none exists. Equal-time conflicting legacy records must throw PositionSnapshotConflictException rather than return a file-order-dependent winner. |
-| <code>Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:209](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L209) | Retrieves the snapshot with the greatest AccountSnapshotRecord.AsOf value owned by the exact accounting scope. Implementations must not fall back to an unowned or differently owned run/account snapshot. Equal-time conflicting legacy records must throw PositionSnapshotConflictException. |
-| <code>IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:219](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L219) | Streams all snapshots for the given run / account pair between from and to (both inclusive, UTC). |
-| <code>IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:230](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L230) | Streams snapshots for the exact accounting owner between the inclusive UTC bounds. Implementations must not fall back to legacy unowned or differently owned history. |
-
-## ListingId
-
-Qualified name: <code>Meridian.Contracts.Domain.ListingId</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Contracts/Domain/ListingId.cs:10](../../../../src/Meridian.Contracts/Domain/ListingId.cs#L10).
-
-A listing identity: a ticker on a specific market, written TICKER:MIC (for example &quot;AAPL:XNAS&quot;, &quot;BRK.B:XNYS&quot;). A ticker alone is ambiguous across markets; the pair is not.
-
-```csharp
-public readonly record struct ListingId(SymbolId Ticker, Mic Mic)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const char Separator = &#x27;:&#x27;;</code> | [src/Meridian.Contracts/Domain/ListingId.cs:13](../../../../src/Meridian.Contracts/Domain/ListingId.cs#L13) | The separator between ticker and MIC in the canonical form. |
-| <code>public static bool TryParse(string? value, out ListingId listing);</code> | [src/Meridian.Contracts/Domain/ListingId.cs:20](../../../../src/Meridian.Contracts/Domain/ListingId.cs#L20) | Parses the canonical TICKER:MIC form (case-insensitive). The MIC is taken after the last separator, so a ticker may itself contain punctuation; neither part may be blank or carry surrounding whitespace. |
-| <code>public static ListingId Parse(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ListingId.cs:48](../../../../src/Meridian.Contracts/Domain/ListingId.cs#L48) | Parses the canonical form or throws. |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/ListingId.cs:54](../../../../src/Meridian.Contracts/Domain/ListingId.cs#L54) |  |
-
-## MarketDataSources
-
-Qualified name: <code>Meridian.Contracts.Domain.MarketDataSources</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Domain/MarketDataSources.cs:11](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L11).
-
-Canonical market-data source identifiers stamped on MarketEvent.Source and on adapter ingress updates. Streaming adapters must stamp their real vendor identity at origin; collectors refuse to fabricate one. Spellings match the provider keys used by the canonicalization tables in config/condition-codes.json and config/venue-mics.json (lookups normalize case, storage partitions do not — keep these spellings stable).
-
-```csharp
-public static class MarketDataSources
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Unknown = &quot;UNKNOWN&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:17](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L17) | Honest sentinel for events whose provenance genuinely cannot be determined. Never use this to paper over a missing adapter stamp on a live ingress path. |
-| <code>public const string Ib = &quot;IB&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:20](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L20) | Interactive Brokers. |
-| <code>public const string Alpaca = &quot;ALPACA&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:23](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L23) | Alpaca Markets (equity, options, crypto, and news streams). |
-| <code>public const string Polygon = &quot;POLYGON&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:26](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L26) | Polygon.io. |
-| <code>public const string Nyse = &quot;NYSE&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:29](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L29) | NYSE direct feed. |
-| <code>public const string Robinhood = &quot;ROBINHOOD&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:32](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L32) | Robinhood quote polling. |
-| <code>public const string Sample = &quot;SAMPLE&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:35](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L35) | Repository sample-data generator and demo collector harness. |
-| <code>public static bool IsMissing(string? source) =&gt; …;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:40](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L40) | True when the value cannot serve as a source identity (null, empty, or whitespace). |
-
-## MarketStateValues
-
-Qualified name: <code>Meridian.Contracts.Domain.MarketStateValues</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:360](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L360).
-
-Market state enumeration values.
-
-```csharp
-public static class MarketStateValues
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Normal = &quot;Normal&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:365](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L365) | Indicates a normal trading state. |
-| <code>public const string PreMarket = &quot;PreMarket&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:369](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L369) | Indicates a pre-market trading state. |
-| <code>public const string AfterHours = &quot;AfterHours&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:373](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L373) | Indicates an after-hours trading state. |
-| <code>public const string Closed = &quot;Closed&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:377](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L377) | Indicates the market is closed. |
-| <code>public const string Halted = &quot;Halted&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:381](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L381) | Indicates trading is halted. |
-| <code>public const string Auction = &quot;Auction&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:385](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L385) | Indicates the market is in an auction state. |
-
-## Mic
-
-Qualified name: <code>Meridian.Contracts.Domain.Mic</code>. Kind: `struct`.
-
-Source: [src/Meridian.Contracts/Domain/Mic.cs:15](../../../../src/Meridian.Contracts/Domain/Mic.cs#L15).
-
-An ISO 10383 Market Identifier Code: four upper-case letters or digits identifying an operating or segment market (for example &quot;XNAS&quot;, &quot;XNYS&quot;, &quot;ARCX&quot;).
-
-```csharp
-public readonly struct Mic : IEquatable<Mic>, IComparable<Mic>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Value =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:22](../../../../src/Meridian.Contracts/Domain/Mic.cs#L22) | The upper-case four-character code. |
-| <code>public bool IsRegistered =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:25](../../../../src/Meridian.Contracts/Domain/Mic.cs#L25) | Whether the code appears in the bundled MicReference list. |
-| <code>public static bool TryParse(string? value, out Mic mic);</code> | [src/Meridian.Contracts/Domain/Mic.cs:31](../../../../src/Meridian.Contracts/Domain/Mic.cs#L31) | Parses value after trimming and upper-casing it; returns false unless the result is exactly four letters or digits. |
-| <code>public static Mic Parse(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:46](../../../../src/Meridian.Contracts/Domain/Mic.cs#L46) | Parses value or throws when it is not a well-formed MIC. |
-| <code>public static implicit operator string(Mic mic) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:52](../../../../src/Meridian.Contracts/Domain/Mic.cs#L52) | Implicitly converts a Mic to its code. |
-| <code>public bool Equals(Mic other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:55](../../../../src/Meridian.Contracts/Domain/Mic.cs#L55) |  |
-| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:58](../../../../src/Meridian.Contracts/Domain/Mic.cs#L58) |  |
-| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:61](../../../../src/Meridian.Contracts/Domain/Mic.cs#L61) |  |
-| <code>public int CompareTo(Mic other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:64](../../../../src/Meridian.Contracts/Domain/Mic.cs#L64) |  |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:67](../../../../src/Meridian.Contracts/Domain/Mic.cs#L67) |  |
-| <code>public static bool operator == (Mic left, Mic right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:70](../../../../src/Meridian.Contracts/Domain/Mic.cs#L70) |  |
-| <code>public static bool operator != (Mic left, Mic right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:73](../../../../src/Meridian.Contracts/Domain/Mic.cs#L73) |  |
-
-## MicReference
-
-Qualified name: <code>Meridian.Contracts.Domain.MicReference</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Domain/Mic.cs:80](../../../../src/Meridian.Contracts/Domain/Mic.cs#L80).
-
-A small bundled subset of the ISO 10383 registry: the markets Meridian&#x27;s providers and seed data reference, with the common exchange names that map onto each one.
-
-```csharp
-public static class MicReference
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyCollection&lt;string&gt; Codes =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:146](../../../../src/Meridian.Contracts/Domain/Mic.cs#L146) | The bundled MIC codes. |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt; ExchangeNames =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:149](../../../../src/Meridian.Contracts/Domain/Mic.cs#L149) | The exchange names and legacy codes TryResolve maps, keyed case-insensitively. |
-| <code>public static bool TryGetName(string? mic, out string name);</code> | [src/Meridian.Contracts/Domain/Mic.cs:152](../../../../src/Meridian.Contracts/Domain/Mic.cs#L152) | Looks up the market name for a bundled MIC. |
-| <code>public static bool TryResolve(string? exchange, out Mic mic);</code> | [src/Meridian.Contracts/Domain/Mic.cs:169](../../../../src/Meridian.Contracts/Domain/Mic.cs#L169) | Resolves an exchange label to a MIC: a bundled MIC is returned as-is, and a known exchange name or legacy code (for example &quot;NYSE&quot;, &quot;Nasdaq&quot;) is mapped. Anything else, including an unbundled four-character code, returns false so callers keep the raw label. |

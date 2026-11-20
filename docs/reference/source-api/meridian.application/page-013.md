@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConfigureSymbolsStep
+
+Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureSymbolsStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L11).
+
+Step 6: Lets the user pick a symbol preset or enter custom symbols. Writes WizardContext.Symbols.
+
+```csharp
+public sealed class ConfigureSymbolsStep : IWizardStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L16) |  |
+| <code>public ConfigureSymbolsStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L18) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L24) |  |
+
+## CredentialGuidanceStep
+
+Qualified name: <code>Meridian.Application.Wizard.Steps.CredentialGuidanceStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:10](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L10).
+
+Step 2: Shows credential setup guidance when no providers are configured. Skipped automatically when at least one provider has credentials.
+
+```csharp
+public sealed class CredentialGuidanceStep : IWizardStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:15](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L15) |  |
+| <code>public CredentialGuidanceStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L17) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:23](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L23) |  |
+
 ## DetectProvidersStep
 
 Qualified name: <code>Meridian.Application.Wizard.Steps.DetectProvidersStep</code>. Kind: `class`.

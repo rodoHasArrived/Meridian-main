@@ -535,6 +535,26 @@ Immutable evidence for a backfill response whose accepted rows reached storage.
 public sealed record BackfillBatchReceipt(string RevisionId, string RequestedProvider, string? ServingProvider, string Feed, string Instrument, string Granularity, DateOnly? From, DateOnly? To, string Status, int RowCount, string ContentHash, string? Calendar, IReadOnlyList<DateOnly>? ExpectedSessions, IReadOnlyList<DateOnly> ReceivedSessions);
 ```
 
+## BackfillEquivalentProvider
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillEquivalentProvider</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:27](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L27).
+
+```csharp
+public sealed record BackfillEquivalentProvider(string Provider, string DisplayName);
+```
+
+## BackfillJobReceipt
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillJobReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:49](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L49).
+
+```csharp
+public sealed record BackfillJobReceipt(string ExecutionId, string Status, string Provider, string[] Symbols, DateOnly? From, DateOnly? To, DateTimeOffset SubmittedAt, DateTimeOffset? NotBeforeUtc, DateTimeOffset? StartedAt, DateTimeOffset? CompletedAt, long? BarsWritten, string? Error, BackfillQuotaEstimate Estimate, BackfillQuotaReceipt? Actual, IReadOnlyList<BackfillBatchReceipt>? BatchReceipts = null, ProviderProvenanceReceipt? ProviderProvenance = null);
+```
+
 ## BackfillJobStatus
 
 Qualified name: <code>Meridian.Contracts.Backfill.BackfillJobStatus</code>. Kind: `class`.
@@ -633,6 +653,40 @@ Current provider-attempt posture for a single symbol in an active or recently co
 public sealed record BackfillProviderSymbolProgressDto(string Symbol, DateOnly? RangeStart, DateOnly? RangeEnd, int TotalDays, int CompletedDays, double PercentComplete, bool IsCompleted, bool IsFailed, bool IsSkipped, string? CurrentProvider, string? CurrentStatus, int ProviderAttempt, int RetryRound, string? Operation, DateTimeOffset? AttemptStartedAt, DateTimeOffset? LastUpdatedAt, string? Error);
 ```
 
+## BackfillProviderUsage
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderUsage</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:29](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L29).
+
+```csharp
+public sealed record BackfillProviderUsage(string Provider, long FetchAttempts, long? ObservedRequests);
+```
+
+## BackfillQuotaEstimate
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillQuotaEstimate</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:6](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L6).
+
+Historical provider quota and the shared policy observed when a plan was estimated.
+
+```csharp
+public sealed record BackfillQuotaEstimate(long? ExpectedRequests, int? ProviderLimit, double? WindowSeconds, int? ObservedRemainingRequests, int? BackfillRequestsPerWindow, int? AvailableBackfillRequests, int ReserveHeadroomPercent, int? MaxConcurrentRequests, double? EstimatedDurationSeconds, bool ExceedsBudget, DateTimeOffset? ObservedAt, DateTimeOffset? RetryAt, string? LimitSource, string Uncertainty, string QuotaUnit = "requests", int? DailyProviderLimit = null, int? DailyRemaining = null, int? DailyBackfillLimit = null, DateTimeOffset? DailyResetAt = null);
+```
+
+## BackfillQuotaReceipt
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillQuotaReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:37](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L37).
+
+Evidence from one run. Null counts indicate incomplete request instrumentation.
+
+```csharp
+public sealed record BackfillQuotaReceipt(BackfillQuotaEstimate? Estimate, IReadOnlyList<string> ObservedProviders, IReadOnlyList<BackfillProviderUsage> ProviderUsage, IReadOnlyList<BackfillThrottleEvent> ThrottlingEvents, long? ActualRequests, double ActualDurationSeconds, long? RequestVariance, double? DurationVarianceSeconds);
+```
+
 ## BackfillResult
 
 Qualified name: <code>Meridian.Contracts.Backfill.BackfillResult</code>. Kind: `record`.
@@ -654,8 +708,9 @@ Declared public members:
 | <code>public BackfillResult ForTenant(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:30](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L30) |  |
 | <code>public string[] SkippedSymbols { get; init; } = SkippedSymbols??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:37](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L37) | Symbols skipped because their checkpoint already covered the requested date range. Only populated when resume-from-checkpoint mode is enabled on the backfill request. |
 | <code>public SymbolValidationSignal[] SymbolValidationSignals { get; init; } = SymbolValidationSignals??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:43](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L43) | Per-symbol completeness signals (pass / warn / fail) produced at the end of the run. Provides operator-visible trust data for each symbol in Symbols. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BackfillBatchReceipt&gt;? BatchReceipts { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:47](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L47) | Immutable response revisions that were retained after storage confirmed this run&#x27;s data. |
-| <code>public static BackfillResult Failed(string provider, IReadOnlyList&lt;string&gt; symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:49](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L49) |  |
+| <code>public BackfillQuotaReceipt? QuotaReceipt { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:45](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L45) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BackfillBatchReceipt&gt;? BatchReceipts { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:49](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L49) | Immutable response revisions that were retained after storage confirmed this run&#x27;s data. |
+| <code>public static BackfillResult Failed(string provider, IReadOnlyList&lt;string&gt; symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:51](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L51) |  |
 
 ## BackfillRunProgressResponse
 
@@ -667,6 +722,16 @@ Response from /api/backfill/progress. Legacy last-run fields remain available wh
 
 ```csharp
 public sealed record BackfillRunProgressResponse(BackfillResult? LastRun, bool IsActive, BackfillProviderProgressSnapshotDto ProviderProgress, DateTimeOffset Timestamp);
+```
+
+## BackfillThrottleEvent
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillThrottleEvent</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:34](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L34).
+
+```csharp
+public sealed record BackfillThrottleEvent(string Provider, string Reason, int Count, double WaitSeconds);
 ```
 
 ## HistoricalSessionEvidence
@@ -700,126 +765,12 @@ The session dates supported by a positively identified exchange calendar.
 public sealed record HistoricalSessionSchedule(string Calendar, IReadOnlyList<DateOnly> Sessions);
 ```
 
-## SymbolBackfillProgress
+## QueueBackfillRequest
 
-Qualified name: <code>Meridian.Contracts.Backfill.SymbolBackfillProgress</code>. Kind: `class`.
+Qualified name: <code>Meridian.Contracts.Backfill.QueueBackfillRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:255](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L255).
-
-Tracks progress of backfill operation for a single symbol.
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:47](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L47).
 
 ```csharp
-public sealed class SymbolBackfillProgress
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:266](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L266) | The symbol being backfilled (e.g., &quot;AAPL&quot;, &quot;SPY&quot;). |
-| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:272](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L272) | Current status of the symbol backfill. Use SymbolBackfillStatus constants. |
-| <code>[JsonPropertyName(&quot;progress&quot;)] public double Progress { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:282](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L282) | Progress percentage (0-100) based on bars downloaded vs expected. |
-| <code>[JsonPropertyName(&quot;barsDownloaded&quot;)] public int BarsDownloaded { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:288](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L288) | Number of bars successfully downloaded for this symbol. |
-| <code>[JsonPropertyName(&quot;expectedBars&quot;)] public int ExpectedBars { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:299](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L299) | Expected number of bars to download for this symbol. May be zero if not known in advance. |
-| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime? StartedAt { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:310](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L310) | UTC timestamp when the symbol backfill started. Null if not yet started. |
-| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:317](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L317) | UTC timestamp when the symbol backfill completed. Null if still in progress. |
-| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:323](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L323) | Error message if the symbol backfill failed. |
-| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:329](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L329) | Name of the provider used for this symbol. |
-| <code>[JsonPropertyName(&quot;retryCount&quot;)] public int RetryCount { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:335](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L335) | Number of retry attempts made for this symbol. |
-| <code>[JsonIgnore] public bool IsComplete =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:345](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L345) | Gets whether the symbol backfill is in a terminal state. |
-| <code>[JsonIgnore] public double CalculatedProgress =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:351](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L351) | Gets the calculated progress percentage based on downloaded vs expected bars. |
-| <code>[JsonIgnore] public TimeSpan? Duration =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:358](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L358) | Gets the duration of the symbol backfill. Null if not started or still in progress. |
-
-## SymbolBackfillStatus
-
-Qualified name: <code>Meridian.Contracts.Backfill.SymbolBackfillStatus</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:54](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L54).
-
-Symbol backfill status constants. Use these constants to avoid magic strings when setting or comparing symbol status.
-
-```csharp
-public static class SymbolBackfillStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:57](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L57) | Symbol is queued for download. |
-| <code>public const string Downloading = &quot;Downloading&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:60](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L60) | Symbol data is currently being downloaded. |
-| <code>public const string Completed = &quot;Completed&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:63](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L63) | Symbol data has been successfully downloaded. |
-| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:66](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L66) | Symbol download failed after all retries. |
-| <code>public const string Skipped = &quot;Skipped&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:69](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L69) | Symbol was skipped (e.g., data already exists). |
-| <code>public static readonly IReadOnlyList&lt;string&gt; AllStatuses = new[] { Pending, Downloading, Completed, Failed, Skipped };</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:74](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L74) | All valid status values. |
-| <code>public static bool IsTerminal(string status) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:82](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L82) | Checks if the given status represents a terminal state. |
-| <code>public static bool IsValid(string status) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:88](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L88) | Checks if the given status is valid. |
-
-## SymbolValidationSignal
-
-Qualified name: <code>Meridian.Contracts.Backfill.SymbolValidationSignal</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:24](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L24).
-
-Shared per-symbol completeness signal produced at the end of a backfill run.
-
-```csharp
-public sealed record SymbolValidationSignal(string Symbol, string Status, long BarsWritten, long? CheckpointBarsWritten, DateOnly? EffectiveFrom, DateOnly? EffectiveTo, string? Reason = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SymbolValidationSignal Pass(string symbol, long barsWritten, DateOnly? from, DateOnly? to) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:35](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L35) | Creates a Pass signal for a symbol that was fetched and returned bars. |
-| <code>public static SymbolValidationSignal PassSkipped(string symbol, long checkpointBarsWritten, DateOnly? coveredThrough) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:42](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L42) | Creates a Pass signal for a symbol that was skipped because its checkpoint fully covered the requested date range. |
-| <code>public static SymbolValidationSignal Warn(string symbol, DateOnly? from, DateOnly? to, string reason) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:47](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L47) | Creates a Warn signal for a symbol fetched without error but returning zero bars. |
-| <code>public static SymbolValidationSignal Fail(string symbol, DateOnly? from, DateOnly? to, string reason) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:51](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L51) | Creates a Fail signal for a symbol that threw an exception during fetch. |
-
-## BacktestPreflightCheckResultDto
-
-Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightCheckResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:19](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L19).
-
-```csharp
-public sealed record BacktestPreflightCheckResultDto(string Name, BacktestPreflightCheckStatusDto Status, string Message, string? Remediation = null, IReadOnlyDictionary<string, string>? Details = null);
-```
-
-## BacktestPreflightCheckStatusDto
-
-Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightCheckStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:26](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L26).
-
-```csharp
-public enum BacktestPreflightCheckStatusDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Passed = 0</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:28](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L28) |  |
-| <code>Warning = 1</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:29](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L29) |  |
-| <code>Failed = 2</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:30](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L30) |  |
-
-## BacktestPreflightReportV2Dto
-
-Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightReportV2Dto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:11](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L11).
-
-```csharp
-public sealed record BacktestPreflightReportV2Dto(bool IsReadyToRun, bool HasWarnings, IReadOnlyList<BacktestPreflightCheckResultDto> Checks, long TotalDurationMs, DateTimeOffset CheckedAt, string? SummaryMessage = null);
-```
-
-## BacktestPreflightRequestDto
-
-Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:3](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L3).
-
-```csharp
-public sealed record BacktestPreflightRequestDto(DateOnly From, DateOnly To, string DataRoot, IReadOnlyList<string>? Symbols = null, string? RequiredExecutionModel = null, IReadOnlyList<string>? RequiredReplayDataTypes = null);
+public sealed record QueueBackfillRequest(Guid PreviewId, bool AcceptThrottle = false, DateTimeOffset? NotBeforeUtc = null);
 ```

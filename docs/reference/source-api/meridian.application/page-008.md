@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LivePositionCorporateActionAdjusterAdapter
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.LivePositionCorporateActionAdjusterAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:8](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L8).
+
+```csharp
+public sealed class LivePositionCorporateActionAdjusterAdapter : ILivePositionCorporateActionAdjuster
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LivePositionCorporateActionAdjusterAdapter(CanonicalAdjuster adjuster);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:12](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L12) |  |
+| <code>public async Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L17) |  |
+| <code>public async Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:23](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L23) |  |
+
+## NullCorporateActionRestatementTrigger
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.NullCorporateActionRestatementTrigger</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:31](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L31).
+
+Default trigger for hosts without the workstation restatement stack; a superseding append succeeds with no restatement proposal.
+
+```csharp
+public sealed class NullCorporateActionRestatementTrigger : ICorporateActionRestatementTrigger
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityMasterRestatementDecision?&gt; OnSupersededAsync(CorporateActionDto superseding, CorporateActionDto superseded, string? fundProfileId, string actor, string? correlationId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:33](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L33) |  |
+
 ## RecordTickerChangeRequest
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.RecordTickerChangeRequest</code>. Kind: `record`.
@@ -938,41 +974,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task&lt;SecurityMasterCorporateActionAppendResultDto&gt; AppendAsync(SecurityMasterCorporateActionAppendRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:162](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L162) |  |
-
-## NullSecurityMasterDataQualityService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterDataQualityService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:115](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L115).
-
-Returns no retained quality report and rejects quality checks when Security Master is unavailable.
-
-```csharp
-public sealed class NullSecurityMasterDataQualityService : ISecurityMasterDataQualityService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityMasterQualityReportDto&gt; RunQualityChecksAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:117](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L117) |  |
-| <code>public Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:121](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L121) |  |
-
-## NullSecurityMasterImportService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterImportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:284](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L284).
-
-Reports an unavailable Security Master import service and refuses imports.
-
-```csharp
-public sealed class NullSecurityMasterImportService : ISecurityMasterImportService, ISecurityMasterIngestStatusService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterIngestStatusSnapshot GetSnapshot() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:286](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L286) |  |
-| <code>public Task&lt;SecurityMasterImportResult&gt; ImportAsync(string fileContent, string fileExtension, string actor, IProgress&lt;SecurityMasterImportProgress&gt;? progress = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:289](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L289) |  |

@@ -398,6 +398,31 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool HasMore =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:418](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L418) |  |
 
+## HistoricalBackfillQuotaSession
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.HistoricalBackfillQuotaSession</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:12](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L12).
+
+Job-scoped policy and evidence shared by direct and composite historical calls.
+
+```csharp
+public sealed class HistoricalBackfillQuotaSession(IReadOnlyDictionary<string, BackfillQuotaPolicy>? policies, bool retryRateLimits) : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsThrottled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:21](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L21) |  |
+| <code>public IDisposable Enter();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L23) |  |
+| <code>public static async Task&lt;T&gt; FetchAsync&lt;T&gt;(IHistoricalDataProvider provider, Func&lt;Task&lt;T&gt;&gt; fetch, CancellationToken ct, bool allowRateLimitRetry = true);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L30) |  |
+| <code>public static async Task WaitForRequestAsync(IHistoricalDataProvider provider, RateLimiter limiter, CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:77](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L77) |  |
+| <code>public static IDisposable? WaitForProviderReset(string provider) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:94](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L94) |  |
+| <code>public static void RecordProviderRateLimit(string provider);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:96](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L96) |  |
+| <code>public BackfillQuotaReceipt BuildReceipt(BackfillQuotaEstimate? estimate, TimeSpan duration, IEnumerable&lt;string&gt; sources);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:106](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L106) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:148](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L148) |  |
+
 ## HistoricalQuotesResult
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.HistoricalQuotesResult</code>. Kind: `record`.
@@ -1009,34 +1034,3 @@ Declared public members:
 | <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateTrade(string providerName, MarketTradeUpdate update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L15) |  |
 | <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateQuote(string providerName, MarketQuoteUpdate update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L50) |  |
 | <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateAggregate(string providerName, AggregateBar update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:115](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L115) |  |
-
-## ProviderFactory
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderFactory</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:39](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L39).
-
-Configured construction context for the streaming, historical, search, corporate-action, options, and brokerage factories declared by ProviderCapabilityDescriptorCatalog.
-
-```csharp
-public sealed partial class ProviderFactory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderFactory(AppConfig config, IProviderCredentialResolver credentialResolver, ILogger? log = null, ISymbolResolver? symbolResolver = null, IServiceProvider? services = null, IReadOnlyDictionary&lt;string, ProviderModuleContext&gt;? moduleContexts = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:47](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L47) |  |
-| <code>public Task&lt;ProviderCreationResult&gt; CreateAndRegisterAllAsync(ProviderRegistry registry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L71) | Creates backfill and symbol search providers and registers them with the provided registry. Streaming providers are registered separately via ProviderRegistry factory functions. |
-| <code>public ValueTask&lt;IPreparedProviderCredentials&gt; PrepareCredentialsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:135](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L135) | Asynchronously reads the credentials provider construction will need. Await it at an asynchronous entry point and construct inside IPreparedProviderCredentials.Activate. |
-| <code>public IReadOnlyList&lt;IHistoricalDataProvider&gt; CreateBackfillProviders() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:141](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L141) | Creates all configured backfill providers. |
-| <code>public async Task&lt;IReadOnlyList&lt;IHistoricalDataProvider&gt;&gt; CreateBackfillProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:147](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L147) | Creates all configured backfill providers, reading their credentials without blocking. |
-| <code>public IReadOnlyList&lt;ISymbolSearchProvider&gt; CreateSymbolSearchProviders() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:160](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L160) | Creates all configured symbol search providers. Symbol search uses the same credentials as backfill providers. |
-| <code>public async Task&lt;IReadOnlyList&lt;ISymbolSearchProvider&gt;&gt; CreateSymbolSearchProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:166](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L166) | Creates all configured symbol search providers, reading their credentials without blocking. |
-| <code>public CompositeHistoricalDataProvider CreateCompositeBackfillProvider(IReadOnlyList&lt;IHistoricalDataProvider&gt; providers);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:421](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L421) | Creates a composite backfill provider with automatic failover. |
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs#L23).
-
-```csharp
-public sealed partial class ProviderFactory
-```

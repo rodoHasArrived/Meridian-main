@@ -380,7 +380,7 @@ public sealed record ApplyProviderRuntimeCredentialRequest(string ProviderId);
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillAutoRemediationSummary</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:304](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L304).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:308](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L308).
 
 Aggregate remediation evidence retained at the existing top-level JSON property.
 
@@ -392,16 +392,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;total&quot;)] public int Total { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:307](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L307) |  |
-| <code>[JsonPropertyName(&quot;withReason&quot;)] public int WithReason { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:310](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L310) |  |
-| <code>[JsonPropertyName(&quot;lastOutcome&quot;)] public string? LastOutcome { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:313](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L313) |  |
-| <code>[JsonPropertyName(&quot;defaultProvider&quot;)] public string DefaultProvider { get; set; } = &quot;stooq&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:316](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L316) |  |
+| <code>[JsonPropertyName(&quot;total&quot;)] public int Total { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:311](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L311) |  |
+| <code>[JsonPropertyName(&quot;withReason&quot;)] public int WithReason { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:314](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L314) |  |
+| <code>[JsonPropertyName(&quot;lastOutcome&quot;)] public string? LastOutcome { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:317](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L317) |  |
+| <code>[JsonPropertyName(&quot;defaultProvider&quot;)] public string DefaultProvider { get; set; } = &quot;stooq&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:320](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L320) |  |
 
 ## BackfillCloneConfirmation
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillCloneConfirmation</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:12](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L12).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:13](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L13).
 
 ```csharp
 public sealed record BackfillCloneConfirmation(string ConfirmationCode);
@@ -411,7 +411,7 @@ public sealed record BackfillCloneConfirmation(string ConfirmationCode);
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillClonePlan</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:6](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L6).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:7](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L7).
 
 ```csharp
 public sealed record BackfillClonePlan(ProviderProvenanceRequest Request, string Status, IReadOnlyList<string> Messages, string? ConfirmationCode = null);
@@ -433,7 +433,7 @@ public sealed record BackfillCompletenessSummary(int TotalSymbols = 0, int Compl
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillExecution</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:149](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L149).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:150](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L150).
 
 Backfill execution record for history tracking.
 
@@ -445,30 +445,31 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;executionId&quot;)] public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:155](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L155) | Gets or sets the unique execution identifier. |
-| <code>[JsonPropertyName(&quot;scheduleName&quot;)] public string ScheduleName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:161](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L161) | Gets or sets the display name of the schedule or remediation workflow. |
-| <code>[JsonPropertyName(&quot;trigger&quot;)] public string Trigger { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:167](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L167) | Gets or sets how the execution was initiated. |
-| <code>[JsonPropertyName(&quot;scheduleId&quot;)] public string ScheduleId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:173](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L173) | Gets or sets the schedule identifier that triggered the execution. |
-| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; } = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:179](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L179) | Gets or sets the current execution status. |
-| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime StartedAt { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:185](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L185) | Gets or sets the time the execution started. |
-| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:191](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L191) | Gets or sets the time the execution completed, if finished. |
-| <code>[JsonPropertyName(&quot;symbolsProcessed&quot;)] public int SymbolsProcessed { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:197](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L197) | Gets or sets the number of symbols processed by the execution. |
-| <code>[JsonPropertyName(&quot;barsDownloaded&quot;)] public int BarsDownloaded { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:203](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L203) | Gets or sets the number of bars downloaded during execution. |
-| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:209](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L209) | Gets or sets the error message if the execution failed. |
-| <code>[JsonPropertyName(&quot;fromDate&quot;)] public DateOnly FromDate { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:215](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L215) | Gets or sets the inclusive requested range. |
-| <code>[JsonPropertyName(&quot;toDate&quot;)] public DateOnly ToDate { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:218](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L218) |  |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:224](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L224) | Gets or sets the symbols retained with the execution evidence. |
-| <code>[JsonPropertyName(&quot;autoRemediationTriggerReason&quot;)] public string? AutoRemediationTriggerReason { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:227](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L227) |  |
-| <code>[JsonPropertyName(&quot;autoRemediationAttemptCount&quot;)] public int AutoRemediationAttemptCount { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:230](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L230) |  |
-| <code>[JsonPropertyName(&quot;autoRemediationLastOutcome&quot;)] public string? AutoRemediationLastOutcome { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:233](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L233) |  |
-| <code>[JsonPropertyName(&quot;autoRemediationIdempotencyKey&quot;)] public string? AutoRemediationIdempotencyKey { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:236](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L236) |  |
-| <code>[JsonPropertyName(&quot;autoRemediationSla&quot;)] public BackfillRemediationSlaDto? AutoRemediationSla { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:242](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L242) | Gets or sets typed remediation SLA evidence. Null for non-remediation executions. |
+| <code>[JsonPropertyName(&quot;executionId&quot;)] public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:156](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L156) | Gets or sets the unique execution identifier. |
+| <code>[JsonPropertyName(&quot;scheduleName&quot;)] public string ScheduleName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:162](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L162) | Gets or sets the display name of the schedule or remediation workflow. |
+| <code>[JsonPropertyName(&quot;trigger&quot;)] public string Trigger { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:168](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L168) | Gets or sets how the execution was initiated. |
+| <code>[JsonPropertyName(&quot;scheduleId&quot;)] public string ScheduleId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:174](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L174) | Gets or sets the schedule identifier that triggered the execution. |
+| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; } = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:180](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L180) | Gets or sets the current execution status. |
+| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime StartedAt { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:186](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L186) | Gets or sets the time the execution started. |
+| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:192](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L192) | Gets or sets the time the execution completed, if finished. |
+| <code>[JsonPropertyName(&quot;symbolsProcessed&quot;)] public int SymbolsProcessed { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:198](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L198) | Gets or sets the number of symbols processed by the execution. |
+| <code>[JsonPropertyName(&quot;barsDownloaded&quot;)] public int BarsDownloaded { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:204](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L204) | Gets or sets the number of bars downloaded during execution. |
+| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:210](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L210) | Gets or sets the error message if the execution failed. |
+| <code>[JsonPropertyName(&quot;fromDate&quot;)] public DateOnly FromDate { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:216](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L216) | Gets or sets the inclusive requested range. |
+| <code>[JsonPropertyName(&quot;toDate&quot;)] public DateOnly ToDate { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:219](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L219) |  |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:225](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L225) | Gets or sets the symbols retained with the execution evidence. |
+| <code>[JsonPropertyName(&quot;autoRemediationTriggerReason&quot;)] public string? AutoRemediationTriggerReason { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:228](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L228) |  |
+| <code>[JsonPropertyName(&quot;autoRemediationAttemptCount&quot;)] public int AutoRemediationAttemptCount { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:231](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L231) |  |
+| <code>[JsonPropertyName(&quot;autoRemediationLastOutcome&quot;)] public string? AutoRemediationLastOutcome { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:234](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L234) |  |
+| <code>[JsonPropertyName(&quot;autoRemediationIdempotencyKey&quot;)] public string? AutoRemediationIdempotencyKey { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:237](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L237) |  |
+| <code>[JsonPropertyName(&quot;autoRemediationSla&quot;)] public BackfillRemediationSlaDto? AutoRemediationSla { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:243](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L243) | Gets or sets typed remediation SLA evidence. Null for non-remediation executions. |
+| <code>[JsonPropertyName(&quot;job&quot;)] public BackfillJobReceipt? Job { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:246](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L246) |  |
 
 ## BackfillExecutionHistoryResponse
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillExecutionHistoryResponse</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:323](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L323).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:327](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L327).
 
 Typed response from /api/backfill/executions. Property names preserve the legacy anonymous envelope while nested execution rows are now contract governed.
 
@@ -480,16 +481,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;executions&quot;)] public BackfillExecution[] Executions { get; set; } = Array.Empty&lt;BackfillExecution&gt;();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:326](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L326) |  |
-| <code>[JsonPropertyName(&quot;total&quot;)] public int Total { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:329](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L329) |  |
-| <code>[JsonPropertyName(&quot;autoRemediation&quot;)] public BackfillAutoRemediationSummary AutoRemediation { get; set; } = new ();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:332](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L332) |  |
-| <code>[JsonPropertyName(&quot;timestamp&quot;)] public DateTimeOffset Timestamp { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:335](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L335) |  |
+| <code>[JsonPropertyName(&quot;executions&quot;)] public BackfillExecution[] Executions { get; set; } = Array.Empty&lt;BackfillExecution&gt;();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:330](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L330) |  |
+| <code>[JsonPropertyName(&quot;total&quot;)] public int Total { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:333](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L333) |  |
+| <code>[JsonPropertyName(&quot;autoRemediation&quot;)] public BackfillAutoRemediationSummary AutoRemediation { get; set; } = new ();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:336](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L336) |  |
+| <code>[JsonPropertyName(&quot;timestamp&quot;)] public DateTimeOffset Timestamp { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:339](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L339) |  |
 
 ## BackfillExecutionResponse
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillExecutionResponse</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:119](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L119).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:120](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L120).
 
 Response for backfill execution initiation.
 
@@ -501,10 +502,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;executionId&quot;)] public string ExecutionId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:125](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L125) | Gets or sets the execution identifier for the backfill request. |
-| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; } = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:131](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L131) | Gets or sets the current status of the backfill execution. |
-| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime StartedAt { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:137](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L137) | Gets or sets the timestamp when the execution started. |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:143](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L143) | Gets or sets the list of symbols included in the execution. |
+| <code>[JsonPropertyName(&quot;executionId&quot;)] public string ExecutionId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:126](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L126) | Gets or sets the execution identifier for the backfill request. |
+| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; } = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:132](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L132) | Gets or sets the current status of the backfill execution. |
+| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime StartedAt { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:138](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L138) | Gets or sets the timestamp when the execution started. |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:144](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L144) | Gets or sets the list of symbols included in the execution. |
 
 ## BackfillGapInfo
 
@@ -522,7 +523,7 @@ public sealed record BackfillGapInfo(string Symbol, DateTime StartDate, DateTime
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillHealthResponse</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:21](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L21).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:22](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L22).
 
 Response model for backfill provider health check.
 
@@ -534,14 +535,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;isHealthy&quot;)] public bool IsHealthy { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:27](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L27) | Gets or sets whether the backfill system reports healthy status. |
-| <code>[JsonPropertyName(&quot;providers&quot;)] public Dictionary&lt;string, BackfillProviderHealth&gt;? Providers { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:33](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L33) | Gets or sets per-provider health details keyed by provider identifier. |
+| <code>[JsonPropertyName(&quot;isHealthy&quot;)] public bool IsHealthy { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:28](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L28) | Gets or sets whether the backfill system reports healthy status. |
+| <code>[JsonPropertyName(&quot;providers&quot;)] public Dictionary&lt;string, BackfillProviderHealth&gt;? Providers { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:34](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L34) | Gets or sets per-provider health details keyed by provider identifier. |
 
 ## BackfillPreset
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillPreset</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:345](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L345).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:349](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L349).
 
 Backfill preset definition for scheduled operations.
 
@@ -553,17 +554,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:351](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L351) | Gets or sets the preset identifier. |
-| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:357](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L357) | Gets or sets the friendly display name for the preset. |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:363](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L363) | Gets or sets the description of the preset. |
-| <code>[JsonPropertyName(&quot;cronExpression&quot;)] public string CronExpression { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:369](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L369) | Gets or sets the cron expression that schedules the preset. |
-| <code>[JsonPropertyName(&quot;lookbackDays&quot;)] public int LookbackDays { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:375](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L375) | Gets or sets the lookback window in days for backfill. |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:355](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L355) | Gets or sets the preset identifier. |
+| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:361](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L361) | Gets or sets the friendly display name for the preset. |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:367](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L367) | Gets or sets the description of the preset. |
+| <code>[JsonPropertyName(&quot;cronExpression&quot;)] public string CronExpression { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:373](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L373) | Gets or sets the cron expression that schedules the preset. |
+| <code>[JsonPropertyName(&quot;lookbackDays&quot;)] public int LookbackDays { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:379](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L379) | Gets or sets the lookback window in days for backfill. |
 
 ## BackfillProviderHealth
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillProviderHealth</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:39](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L39).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:40](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L40).
 
 Individual backfill provider health status.
 
@@ -575,10 +576,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;isAvailable&quot;)] public bool IsAvailable { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:45](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L45) | Gets or sets whether the provider is currently available. |
-| <code>[JsonPropertyName(&quot;latencyMs&quot;)] public float? LatencyMs { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:51](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L51) | Gets or sets the most recent latency measurement in milliseconds. |
-| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:57](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L57) | Gets or sets the last error message reported by the provider, if any. |
-| <code>[JsonPropertyName(&quot;lastChecked&quot;)] public DateTime? LastChecked { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:63](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L63) | Gets or sets the last time the provider was checked. |
+| <code>[JsonPropertyName(&quot;isAvailable&quot;)] public bool IsAvailable { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:46](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L46) | Gets or sets whether the provider is currently available. |
+| <code>[JsonPropertyName(&quot;latencyMs&quot;)] public float? LatencyMs { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:52](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L52) | Gets or sets the most recent latency measurement in milliseconds. |
+| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:58](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L58) | Gets or sets the last error message reported by the provider, if any. |
+| <code>[JsonPropertyName(&quot;lastChecked&quot;)] public DateTime? LastChecked { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:64](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L64) | Gets or sets the last time the provider was checked. |
 
 ## BackfillProviderInfo
 
@@ -608,7 +609,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillRemediationSlaDto</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:271](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L271).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:275](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L275).
 
 Typed remediation SLA evidence projected for browser and desktop queues.
 
@@ -620,21 +621,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;tier&quot;)] public BackfillRemediationSlaTierDto Tier { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:274](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L274) |  |
-| <code>[JsonPropertyName(&quot;status&quot;)] public BackfillRemediationSlaStatusDto Status { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:277](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L277) |  |
-| <code>[JsonPropertyName(&quot;dueAtUtc&quot;)] public DateTimeOffset DueAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:280](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L280) |  |
-| <code>[JsonPropertyName(&quot;requiresOwnerAssignment&quot;)] public bool RequiresOwnerAssignment { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:283](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L283) |  |
-| <code>[JsonPropertyName(&quot;downstreamWorkflow&quot;)] public string DownstreamWorkflow { get; set; } = &quot;unassigned&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:286](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L286) |  |
-| <code>[JsonPropertyName(&quot;reasonCode&quot;)] public string ReasonCode { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:289](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L289) |  |
-| <code>[JsonPropertyName(&quot;provider&quot;)] public string Provider { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:292](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L292) |  |
-| <code>[JsonPropertyName(&quot;triggerSource&quot;)] public string? TriggerSource { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:295](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L295) |  |
-| <code>[JsonPropertyName(&quot;isCompatibilityDerived&quot;)] public bool IsCompatibilityDerived { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:298](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L298) |  |
+| <code>[JsonPropertyName(&quot;tier&quot;)] public BackfillRemediationSlaTierDto Tier { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:278](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L278) |  |
+| <code>[JsonPropertyName(&quot;status&quot;)] public BackfillRemediationSlaStatusDto Status { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:281](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L281) |  |
+| <code>[JsonPropertyName(&quot;dueAtUtc&quot;)] public DateTimeOffset DueAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:284](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L284) |  |
+| <code>[JsonPropertyName(&quot;requiresOwnerAssignment&quot;)] public bool RequiresOwnerAssignment { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:287](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L287) |  |
+| <code>[JsonPropertyName(&quot;downstreamWorkflow&quot;)] public string DownstreamWorkflow { get; set; } = &quot;unassigned&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:290](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L290) |  |
+| <code>[JsonPropertyName(&quot;reasonCode&quot;)] public string ReasonCode { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:293](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L293) |  |
+| <code>[JsonPropertyName(&quot;provider&quot;)] public string Provider { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:296](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L296) |  |
+| <code>[JsonPropertyName(&quot;triggerSource&quot;)] public string? TriggerSource { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:299](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L299) |  |
+| <code>[JsonPropertyName(&quot;isCompatibilityDerived&quot;)] public bool IsCompatibilityDerived { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:302](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L302) |  |
 
 ## BackfillRemediationSlaStatusDto
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillRemediationSlaStatusDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:259](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L259).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:263](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L263).
 
 Evaluated SLA state at the time the execution-history response is projected.
 
@@ -646,17 +647,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Open</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:261](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L261) |  |
-| <code>DueSoon</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:262](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L262) |  |
-| <code>Overdue</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:263](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L263) |  |
-| <code>Failed</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:264](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L264) |  |
-| <code>Completed</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:265](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L265) |  |
+| <code>Open</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:265](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L265) |  |
+| <code>DueSoon</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:266](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L266) |  |
+| <code>Overdue</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:267](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L267) |  |
+| <code>Failed</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:268](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L268) |  |
+| <code>Completed</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:269](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L269) |  |
 
 ## BackfillRemediationSlaTierDto
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillRemediationSlaTierDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:249](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L249).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:253](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L253).
 
 Contract-safe remediation SLA tier.
 
@@ -668,8 +669,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Standard</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:251](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L251) |  |
-| <code>SameBusinessDay</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:252](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L252) |  |
+| <code>Standard</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:255](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L255) |  |
+| <code>SameBusinessDay</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:256](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L256) |  |
 
 ## BackfillRequest
 
@@ -703,14 +704,14 @@ Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:73](../../../../src/Mer
 Request to run a backfill operation.
 
 ```csharp
-public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To, string? Granularity = null)
+public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To, string? Granularity = null, bool PrepareQueuedJob = false)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool ResumeFromCheckpoint { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:76](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L76) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool ResumeFromCheckpoint { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:77](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L77) |  |
 
 ## BackfillResultDto
 
@@ -752,7 +753,7 @@ public sealed record BackfillRoutingProviderChange(string ProviderId, int? Prior
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillStatistics</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:385](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L385).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:389](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L389).
 
 Backfill statistics summary.
 
@@ -764,12 +765,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;totalExecutions&quot;)] public int TotalExecutions { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:391](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L391) | Gets or sets the total number of backfill executions. |
-| <code>[JsonPropertyName(&quot;successfulExecutions&quot;)] public int SuccessfulExecutions { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:397](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L397) | Gets or sets the number of successful executions. |
-| <code>[JsonPropertyName(&quot;failedExecutions&quot;)] public int FailedExecutions { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:403](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L403) | Gets or sets the number of failed executions. |
-| <code>[JsonPropertyName(&quot;totalBarsDownloaded&quot;)] public long TotalBarsDownloaded { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:409](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L409) | Gets or sets the total count of bars downloaded. |
-| <code>[JsonPropertyName(&quot;averageExecutionTimeSeconds&quot;)] public float AverageExecutionTimeSeconds { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:415](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L415) | Gets or sets the average execution time in seconds. |
-| <code>[JsonPropertyName(&quot;lastSuccessfulExecution&quot;)] public DateTime? LastSuccessfulExecution { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:421](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L421) | Gets or sets the timestamp of the last successful execution. |
+| <code>[JsonPropertyName(&quot;totalExecutions&quot;)] public int TotalExecutions { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:395](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L395) | Gets or sets the total number of backfill executions. |
+| <code>[JsonPropertyName(&quot;successfulExecutions&quot;)] public int SuccessfulExecutions { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:401](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L401) | Gets or sets the number of successful executions. |
+| <code>[JsonPropertyName(&quot;failedExecutions&quot;)] public int FailedExecutions { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:407](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L407) | Gets or sets the number of failed executions. |
+| <code>[JsonPropertyName(&quot;totalBarsDownloaded&quot;)] public long TotalBarsDownloaded { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:413](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L413) | Gets or sets the total count of bars downloaded. |
+| <code>[JsonPropertyName(&quot;averageExecutionTimeSeconds&quot;)] public float AverageExecutionTimeSeconds { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:419](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L419) | Gets or sets the average execution time in seconds. |
+| <code>[JsonPropertyName(&quot;lastSuccessfulExecution&quot;)] public DateTime? LastSuccessfulExecution { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:425](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L425) | Gets or sets the timestamp of the last successful execution. |
 
 ## BackfillValidationResult
 
@@ -834,7 +835,7 @@ public sealed record BindProviderRuntimeCredentialRequest(string ProviderId);
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalProviderAliasResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:270](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L270).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:271](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L271).
 
 Arbitrary provider-scoped symbol plus merge provenance.
 
@@ -846,7 +847,7 @@ public sealed record CanonicalProviderAliasResponse(string Provider, string Symb
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolAliasResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:261](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L261).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:262](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L262).
 
 Validity-dated alias with its source and optional provider scope.
 
@@ -858,7 +859,7 @@ public sealed record CanonicalSymbolAliasResponse(string Alias, string? Source, 
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolIdentifiersResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:253](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L253).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:254](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L254).
 
 Industry identifiers that can resolve to the same durable security identity.
 
@@ -870,7 +871,7 @@ public sealed record CanonicalSymbolIdentifiersResponse(string? Isin, string? Fi
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolMigrationResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:288](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L288).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:289](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L289).
 
 Idempotent migration receipt proving a legacy source was imported.
 
@@ -882,7 +883,7 @@ public sealed record CanonicalSymbolMigrationResponse(string MigrationId, string
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolRegistryEntryResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:239](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L239).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:240](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L240).
 
 Canonical security identity with aliases, provider symbols, and provenance.
 
@@ -894,7 +895,7 @@ public sealed record CanonicalSymbolRegistryEntryResponse(Guid? SecurityId, stri
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolRegistryResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:228](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L228).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:229](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L229).
 
 Additive registry projection used by both workstations during canonical-symbol migration.
 
@@ -906,7 +907,7 @@ public sealed record CanonicalSymbolRegistryResponse(string RegistryVersion, Sym
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolResolutionMismatchResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:278](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L278).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:279](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L279).
 
 Recent Legacy-versus-Canonical comparison disagreement.
 

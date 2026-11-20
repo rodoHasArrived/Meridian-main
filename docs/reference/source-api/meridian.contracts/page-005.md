@@ -136,7 +136,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.CredentialFieldOutput</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:419](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L419).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:420](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L420).
 
 Credential field output for UI form generation.
 
@@ -148,12 +148,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:422](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L422) |  |
-| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:425](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L425) |  |
-| <code>[JsonPropertyName(&quot;environmentVariable&quot;)] public string? EnvironmentVariable { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:428](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L428) |  |
-| <code>[JsonPropertyName(&quot;required&quot;)] public bool Required { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:431](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L431) |  |
-| <code>[JsonPropertyName(&quot;defaultValue&quot;)] public string? DefaultValue { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:434](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L434) |  |
-| <code>[JsonPropertyName(&quot;hasValue&quot;)] public bool HasValue { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:437](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L437) |  |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:423](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L423) |  |
+| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:426](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L426) |  |
+| <code>[JsonPropertyName(&quot;environmentVariable&quot;)] public string? EnvironmentVariable { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:429](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L429) |  |
+| <code>[JsonPropertyName(&quot;required&quot;)] public bool Required { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:432](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L432) |  |
+| <code>[JsonPropertyName(&quot;defaultValue&quot;)] public string? DefaultValue { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:435](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L435) |  |
+| <code>[JsonPropertyName(&quot;hasValue&quot;)] public bool HasValue { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:438](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L438) |  |
 
 ## DataSourceConfigRequest
 
@@ -258,7 +258,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.DryRunPlanRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:80](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L80).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:81](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L81).
 
 Request to generate a dry-run backfill plan.
 
@@ -422,7 +422,7 @@ public record FailoverConfigRequest(bool EnableFailover, int HealthCheckInterval
 
 Qualified name: <code>Meridian.Contracts.Api.FailoverConfigResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:158](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L158).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:159](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L159).
 
 Response containing failover configuration.
 
@@ -458,7 +458,7 @@ public record FailoverRuleRequest(string? Id, string PrimaryProviderId, string[]
 
 Qualified name: <code>Meridian.Contracts.Api.FailoverRuleResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:167](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L167).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:168](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L168).
 
 Response containing a failover rule.
 
@@ -527,7 +527,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.GapFillRequest</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:431](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L431).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:435](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L435).
 
 Request for running a gap-fill operation.
 
@@ -539,9 +539,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:437](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L437) | Gets or sets the symbols targeted by the gap-fill request. |
-| <code>[JsonPropertyName(&quot;lookbackDays&quot;)] public int LookbackDays { get; set; } = 30;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:443](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L443) | Gets or sets the lookback window in days for the gap-fill. |
-| <code>[JsonPropertyName(&quot;priority&quot;)] public string Priority { get; set; } = &quot;High&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:449](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L449) | Gets or sets the processing priority for the request. |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:441](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L441) | Gets or sets the symbols targeted by the gap-fill request. |
+| <code>[JsonPropertyName(&quot;lookbackDays&quot;)] public int LookbackDays { get; set; } = 30;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:447](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L447) | Gets or sets the lookback window in days for the gap-fill. |
+| <code>[JsonPropertyName(&quot;priority&quot;)] public string Priority { get; set; } = &quot;High&quot;;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:453](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L453) | Gets or sets the processing priority for the request. |
 
 ## GreeksSnapshotDto
 
@@ -600,7 +600,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.HealthIssueResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:210](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L210).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:211](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L211).
 
 Response containing a health issue.
 
@@ -695,7 +695,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.KernelPromotionRecommendationResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:198](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L198).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:199](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L199).
 
 ```csharp
 public record KernelPromotionRecommendationResponse(bool Approved, bool CalibrationPass, bool FreshnessPass, string[] BlockingReasons);

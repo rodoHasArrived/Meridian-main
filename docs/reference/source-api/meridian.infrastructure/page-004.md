@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FinnhubCompanyProfile
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:480](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L480).
+
+Finnhub company profile data.
+
+```csharp
+public sealed record FinnhubCompanyProfile
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;country&quot;)] public string? Country { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:483](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L483) |  |
+| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:486](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L486) |  |
+| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:489](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L489) |  |
+| <code>[JsonPropertyName(&quot;finnhubIndustry&quot;)] public string? Industry { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:492](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L492) |  |
+| <code>[JsonPropertyName(&quot;ipo&quot;)] public string? IpoDate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:495](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L495) |  |
+| <code>[JsonPropertyName(&quot;logo&quot;)] public string? LogoUrl { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:498](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L498) |  |
+| <code>[JsonPropertyName(&quot;marketCapitalization&quot;)] public decimal? MarketCap { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:501](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L501) |  |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string? Name { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:504](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L504) |  |
+| <code>[JsonPropertyName(&quot;phone&quot;)] public string? Phone { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:507](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L507) |  |
+| <code>[JsonPropertyName(&quot;shareOutstanding&quot;)] public decimal? SharesOutstanding { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:510](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L510) |  |
+| <code>[JsonPropertyName(&quot;ticker&quot;)] public string? Ticker { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:513](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L513) |  |
+| <code>[JsonPropertyName(&quot;weburl&quot;)] public string? WebUrl { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:516](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L516) |  |
+
 ## FinnhubCorporateActionProvider
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubCorporateActionProvider</code>. Kind: `class`.
@@ -1210,7 +1239,7 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:169](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L169) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:179](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L179) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;IntradayBar&gt;&gt; GetIntradayBarsAsync(string symbol, DateTimeOffset start, DateTimeOffset end, string barSize = &quot;1 min&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:352](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L352) | Request intraday bars for a symbol. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:532](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L532) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:534](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L534) |  |
 
 ## IBHistoricalTickRequest
 
@@ -1567,37 +1596,3 @@ Declared public members:
 | <code>void RequestPositions();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:42](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L42) |  |
 | <code>void CancelPositions();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:43](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L43) |  |
 | <code>void RequestOpenOrders();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:44](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L44) |  |
-
-## IIBDataCallbackSource
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBDataCallbackSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:58](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L58).
-
-Callback bridge used to correlate vendor callbacks without exposing IB API types above Infrastructure.
-
-```csharp
-public interface IIBDataCallbackSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>event EventHandler&lt;(int RequestId, ProviderContractDetails Details)&gt;? ContractDetailsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:60](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L60) |  |
-| <code>event EventHandler&lt;(int RequestId, ProviderOptionChainDefinition Definition)&gt;? OptionChainDefinitionReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:61](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L61) |  |
-| <code>event EventHandler&lt;(int RequestId, ProviderNewsHeadline Headline)&gt;? HistoricalNewsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:62](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L62) |  |
-| <code>event EventHandler&lt;(int RequestId, ProviderNewsArticlePayload Article)&gt;? NewsArticleReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:63](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L63) |  |
-| <code>event EventHandler&lt;(int RequestId, ProviderFundamentalReport Report)&gt;? FundamentalReportReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:64](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L64) |  |
-| <code>event EventHandler&lt;(int RequestId, ProviderTickByTickObservation Observation)&gt;? TickByTickReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:65](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L65) |  |
-| <code>event EventHandler&lt;(int RequestId, IReadOnlyList&lt;ProviderDepthExchangeDescription&gt; Exchanges)&gt;? DepthExchangesReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:66](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L66) |  |
-| <code>event EventHandler&lt;(int RequestId, ProviderDividendEarnings Payload)&gt;? DividendEarningsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:67](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L67) |  |
-| <code>event EventHandler&lt;(int RequestId, ProviderOptionContract Contract)&gt;? OptionContractReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:68](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L68) |  |
-| <code>event EventHandler&lt;(int RequestId, ProviderScannerResult Result)&gt;? ScannerResultReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:69](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L69) |  |
-| <code>event EventHandler&lt;int&gt;? ScannerBatchCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:75](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L75) | Non-terminal batch delimiter for a live scanner subscription (IB&#x27;s scannerDataEnd): the vendor re-sends the full current ranked list each refresh cycle, so the rows after this delimiter REPLACE the request&#x27;s accumulated results rather than extending them. |
-| <code>event EventHandler&lt;(int RequestId, ProviderRealTimeBar Bar)&gt;? RealTimeBarReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:76](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L76) |  |
-| <code>event EventHandler&lt;(int RequestId, ProviderHistoricalTick Tick, bool Completed)&gt;? HistoricalTickReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:77](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L77) |  |
-| <code>event EventHandler&lt;(int RequestId, ProviderAccountPnl Pnl)&gt;? PnlReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:78](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L78) |  |
-| <code>event EventHandler&lt;(int RequestId, IReadOnlyList&lt;ProviderMarketRuleIncrement&gt; Increments)&gt;? MarketRuleReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:79](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L79) |  |
-| <code>event EventHandler&lt;int&gt;? RequestCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:80](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L80) |  |
-| <code>event EventHandler&lt;(int RequestId, string Code, string Message)&gt;? RequestRejected;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:81](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L81) |  |

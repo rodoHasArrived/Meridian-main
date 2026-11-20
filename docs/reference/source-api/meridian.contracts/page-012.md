@@ -6,6 +6,130 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolBackfillProgress
+
+Qualified name: <code>Meridian.Contracts.Backfill.SymbolBackfillProgress</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:255](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L255).
+
+Tracks progress of backfill operation for a single symbol.
+
+```csharp
+public sealed class SymbolBackfillProgress
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:266](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L266) | The symbol being backfilled (e.g., &quot;AAPL&quot;, &quot;SPY&quot;). |
+| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:272](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L272) | Current status of the symbol backfill. Use SymbolBackfillStatus constants. |
+| <code>[JsonPropertyName(&quot;progress&quot;)] public double Progress { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:282](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L282) | Progress percentage (0-100) based on bars downloaded vs expected. |
+| <code>[JsonPropertyName(&quot;barsDownloaded&quot;)] public int BarsDownloaded { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:288](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L288) | Number of bars successfully downloaded for this symbol. |
+| <code>[JsonPropertyName(&quot;expectedBars&quot;)] public int ExpectedBars { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:299](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L299) | Expected number of bars to download for this symbol. May be zero if not known in advance. |
+| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime? StartedAt { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:310](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L310) | UTC timestamp when the symbol backfill started. Null if not yet started. |
+| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:317](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L317) | UTC timestamp when the symbol backfill completed. Null if still in progress. |
+| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:323](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L323) | Error message if the symbol backfill failed. |
+| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:329](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L329) | Name of the provider used for this symbol. |
+| <code>[JsonPropertyName(&quot;retryCount&quot;)] public int RetryCount { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:335](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L335) | Number of retry attempts made for this symbol. |
+| <code>[JsonIgnore] public bool IsComplete =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:345](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L345) | Gets whether the symbol backfill is in a terminal state. |
+| <code>[JsonIgnore] public double CalculatedProgress =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:351](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L351) | Gets the calculated progress percentage based on downloaded vs expected bars. |
+| <code>[JsonIgnore] public TimeSpan? Duration =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:358](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L358) | Gets the duration of the symbol backfill. Null if not started or still in progress. |
+
+## SymbolBackfillStatus
+
+Qualified name: <code>Meridian.Contracts.Backfill.SymbolBackfillStatus</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:54](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L54).
+
+Symbol backfill status constants. Use these constants to avoid magic strings when setting or comparing symbol status.
+
+```csharp
+public static class SymbolBackfillStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:57](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L57) | Symbol is queued for download. |
+| <code>public const string Downloading = &quot;Downloading&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:60](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L60) | Symbol data is currently being downloaded. |
+| <code>public const string Completed = &quot;Completed&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:63](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L63) | Symbol data has been successfully downloaded. |
+| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:66](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L66) | Symbol download failed after all retries. |
+| <code>public const string Skipped = &quot;Skipped&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:69](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L69) | Symbol was skipped (e.g., data already exists). |
+| <code>public static readonly IReadOnlyList&lt;string&gt; AllStatuses = new[] { Pending, Downloading, Completed, Failed, Skipped };</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:74](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L74) | All valid status values. |
+| <code>public static bool IsTerminal(string status) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:82](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L82) | Checks if the given status represents a terminal state. |
+| <code>public static bool IsValid(string status) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:88](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L88) | Checks if the given status is valid. |
+
+## SymbolValidationSignal
+
+Qualified name: <code>Meridian.Contracts.Backfill.SymbolValidationSignal</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:24](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L24).
+
+Shared per-symbol completeness signal produced at the end of a backfill run.
+
+```csharp
+public sealed record SymbolValidationSignal(string Symbol, string Status, long BarsWritten, long? CheckpointBarsWritten, DateOnly? EffectiveFrom, DateOnly? EffectiveTo, string? Reason = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SymbolValidationSignal Pass(string symbol, long barsWritten, DateOnly? from, DateOnly? to) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:35](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L35) | Creates a Pass signal for a symbol that was fetched and returned bars. |
+| <code>public static SymbolValidationSignal PassSkipped(string symbol, long checkpointBarsWritten, DateOnly? coveredThrough) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:42](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L42) | Creates a Pass signal for a symbol that was skipped because its checkpoint fully covered the requested date range. |
+| <code>public static SymbolValidationSignal Warn(string symbol, DateOnly? from, DateOnly? to, string reason) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:47](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L47) | Creates a Warn signal for a symbol fetched without error but returning zero bars. |
+| <code>public static SymbolValidationSignal Fail(string symbol, DateOnly? from, DateOnly? to, string reason) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:51](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L51) | Creates a Fail signal for a symbol that threw an exception during fetch. |
+
+## BacktestPreflightCheckResultDto
+
+Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightCheckResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:19](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L19).
+
+```csharp
+public sealed record BacktestPreflightCheckResultDto(string Name, BacktestPreflightCheckStatusDto Status, string Message, string? Remediation = null, IReadOnlyDictionary<string, string>? Details = null);
+```
+
+## BacktestPreflightCheckStatusDto
+
+Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightCheckStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:26](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L26).
+
+```csharp
+public enum BacktestPreflightCheckStatusDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Passed = 0</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:28](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L28) |  |
+| <code>Warning = 1</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:29](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L29) |  |
+| <code>Failed = 2</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:30](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L30) |  |
+
+## BacktestPreflightReportV2Dto
+
+Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightReportV2Dto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:11](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L11).
+
+```csharp
+public sealed record BacktestPreflightReportV2Dto(bool IsReadyToRun, bool HasWarnings, IReadOnlyList<BacktestPreflightCheckResultDto> Checks, long TotalDurationMs, DateTimeOffset CheckedAt, string? SummaryMessage = null);
+```
+
+## BacktestPreflightRequestDto
+
+Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:3](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L3).
+
+```csharp
+public sealed record BacktestPreflightRequestDto(DateOnly From, DateOnly To, string DataRoot, IReadOnlyList<string>? Symbols = null, string? RequiredExecutionModel = null, IReadOnlyList<string>? RequiredReplayDataTypes = null);
+```
+
 ## ApprovePaymentRequest
 
 Qualified name: <code>Meridian.Contracts.Banking.ApprovePaymentRequest</code>. Kind: `record`.
@@ -696,103 +820,3 @@ Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:153](.
 ```csharp
 public sealed record ContractualCashFlowEvidence(string EngineVersion, string MappingVersion, string PrepaymentVersion, string KernelVersion, string InputHash, string OutputHash, string SourceTermsHash, string SourceVersion, bool HasContractOverride, IReadOnlyList<CashFlowCalendarSnapshot> Calendars, IReadOnlyList<CashFlowCurveSnapshot> Curves, IReadOnlyList<string> Warnings);
 ```
-
-## ContractualCashFlowInputDigest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowInputDigest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L8).
-
-Exactly the members the engine hashes as a run&#x27;s input identity, in the retained property order.
-
-```csharp
-public sealed record ContractualCashFlowInputDigest(ContractualCashFlowContract Contract, ContractualCashFlowRequest Request, IReadOnlyList<CashFlowCalendarSnapshot> CalendarEvidence, IReadOnlyList<CashFlowCurveSnapshot> CurveEvidence, string SourceVersion, string SourceTermsHash);
-```
-
-## ContractualCashFlowJsonContext
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:89](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L89).
-
-Source-generated serialization for every contractual cash-flow shape that is hashed or retained. Hash bytes are a compatibility contract with retained packets, so the options here reproduce the web defaults the packets were written with (camelCase names, case-insensitive reads).
-
-```csharp
-public sealed partial class ContractualCashFlowJsonContext : JsonSerializerContext;
-```
-
-## ContractualCashFlowOutputDigest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowOutputDigest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:17](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L17).
-
-Exactly the members the engine hashes as a run&#x27;s output identity, in the retained property order.
-
-```csharp
-public sealed record ContractualCashFlowOutputDigest(IReadOnlyList<ContractualCashFlowEvent> Events, IReadOnlyList<CashFlowExerciseEligibility> Eligibility, IReadOnlyList<CashFlowExerciseCalculation> Calculations, IReadOnlyList<CashFlowCalculationBlocker> Blockers);
-```
-
-## ContractualCashFlowRequest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:108](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L108).
-
-ContractOverride is explicitly hypothetical; it never changes authoritative terms.
-
-```csharp
-public sealed record ContractualCashFlowRequest(DateOnly ValuationDate, DateTimeOffset KnowledgeCutoff, DateOnly? Horizon = null, StructuredCashFlowScenario RateScenario = StructuredCashFlowScenario.Base, IReadOnlyList<SelectedCashFlowExercise>? Exercises = null, IReadOnlyList<CashFlowPrepaymentAssumption>? Prepayments = null, IReadOnlyList<CashFlowCurvePin>? CurvePins = null, ContractualCashFlowContract? ContractOverride = null, string EngineVersion = ContractualCashFlowVersions.Engine);
-```
-
-## ContractualCashFlowResult
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:158](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L158).
-
-```csharp
-public sealed record ContractualCashFlowResult(IReadOnlyList<ContractualCashFlowEvent> Events, IReadOnlyList<CashFlowExerciseEligibility> ExerciseEligibility, IReadOnlyList<CashFlowExerciseCalculation> ExerciseCalculations, IReadOnlyList<CashFlowCalculationBlocker> Blockers, ContractualCashFlowEvidence Evidence)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ContractualCashFlowContract? ResolvedContract { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:165](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L165) |  |
-| <code>public bool IsPostable =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:166](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L166) |  |
-| <code>public bool IsCalculated =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:167](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L167) |  |
-
-## ContractualCashFlowRun
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRun</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:171](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L171).
-
-Complete immutable replay packet; no live term/calendar/curve lookup is needed.
-
-```csharp
-public sealed record ContractualCashFlowRun(Guid RunId, string SubjectKind, Guid SubjectId, DateTimeOffset RecordedAt, ContractualCashFlowContract Contract, ContractualCashFlowRequest Request, ContractualCashFlowResult Result, string Actor = "")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public ContractualCashFlowAttestationContextDto? AttestationContext { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:179](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L179) | Server-stamped review scope for new non-posting draft checks; old packets remain unbound. |
-
-## ContractualCashFlowRunComparer
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:32](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L32).
-
-```csharp
-public static class ContractualCashFlowRunComparer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ContractualCashFlowRunComparison Compare(ContractualCashFlowRun left, ContractualCashFlowRun right);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:34](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L34) |  |

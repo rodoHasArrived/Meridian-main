@@ -5165,8 +5165,10 @@ Meridian-main
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── BackfillCoordinatorExecutionGateway.cs
 │   │   │   ├── BackfillCostEstimator.cs
+│   │   │   ├── BackfillJobQueue.cs
 │   │   │   ├── BackfillPartitionPlanner.cs
 │   │   │   ├── BackfillPreview.cs
+│   │   │   ├── BackfillQuotaPlanner.cs
 │   │   │   ├── BackfillRequest.cs
 │   │   │   ├── BackfillSymbolNormalizer.cs
 │   │   │   ├── CrossSourceBackfillReconciliationService.cs
@@ -5848,6 +5850,7 @@ Meridian-main
 │   │   ├── Backfill
 │   │   │   ├── BackfillBatchReceipt.cs
 │   │   │   ├── BackfillProgress.cs
+│   │   │   ├── BackfillQuota.cs
 │   │   │   ├── BackfillResult.cs
 │   │   │   └── SymbolValidationSignal.cs
 │   │   ├── Backtesting
@@ -6408,6 +6411,7 @@ Meridian-main
 │   │   │   ├── WorkflowLibraryDtos.cs
 │   │   │   ├── WorkflowSummaryDtos.cs
 │   │   │   ├── WorkstationBootstrapDtos.cs
+│   │   │   ├── WorkstationRecordSearchDtos.cs
 │   │   │   ├── WorkstationScopeOptionsDtos.cs
 │   │   │   ├── WorkstationTableViewDtos.cs
 │   │   │   └── WorkstationWorkspaceCatalog.cs
@@ -7322,6 +7326,7 @@ Meridian-main
 │   │   │   │   │   ├── BackfillProvenanceCapture.cs
 │   │   │   │   │   ├── BackfillRequestQueue.cs
 │   │   │   │   │   ├── BackfillWorkerService.cs
+│   │   │   │   │   ├── HistoricalBackfillQuotaSession.cs
 │   │   │   │   │   ├── MarketDataTracing.cs
 │   │   │   │   │   └── PriorityBackfillQueue.cs
 │   │   │   │   ├── GapAnalysis
@@ -9129,6 +9134,7 @@ Meridian-main
 │   │   │   │   │   │   └── use-chart-size.ts
 │   │   │   │   │   ├── data
 │   │   │   │   │   │   ├── add-provider-drawer.tsx
+│   │   │   │   │   │   ├── backfill-quota.tsx
 │   │   │   │   │   │   ├── concrete.ts
 │   │   │   │   │   │   ├── edit-provider-drawer.tsx
 │   │   │   │   │   │   ├── editable-cell.test.tsx
@@ -10234,6 +10240,7 @@ Meridian-main
 │   │   │   │   │   ├── corporate-action-calendar.view-state.ts
 │   │   │   │   │   ├── corporate-action-deadline-panel.tsx
 │   │   │   │   │   ├── covered-call-screen.formatters.ts
+│   │   │   │   │   ├── covered-call-screen.payoff-chart.ts
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
@@ -10257,6 +10264,7 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.analytics-status.test.tsx
 │   │   │   │   │   ├── data-screen.analytics-status.tsx
 │   │   │   │   │   ├── data-screen.backfill-batch-receipts.tsx
+│   │   │   │   │   ├── data-screen.backfill-jobs.ts
 │   │   │   │   │   ├── data-screen.backfill-provider-editor.test.tsx
 │   │   │   │   │   ├── data-screen.backfill-provider-editor.tsx
 │   │   │   │   │   ├── data-screen.canonical-symbols.test.tsx
@@ -10346,6 +10354,7 @@ Meridian-main
 │   │   │   │   │   ├── ledger-record-identity.tsx
 │   │   │   │   │   ├── live-quotes-screen.quick-trade.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
+│   │   │   │   │   ├── live-quotes-screen.trade-evidence.ts
 │   │   │   │   │   ├── live-quotes-screen.tsx
 │   │   │   │   │   ├── live-quotes-screen.view-model.test.ts
 │   │   │   │   │   ├── live-quotes-screen.view-model.ts
@@ -11206,6 +11215,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.ReconciliationCalibration.cs
 │   │   │   ├── WorkstationEndpoints.ReconciliationCasework.cs
 │   │   │   ├── WorkstationEndpoints.ReconciliationRegistration.cs
+│   │   │   ├── WorkstationEndpoints.RecordSearch.cs
 │   │   │   ├── WorkstationEndpoints.ReportingAuthority.cs
 │   │   │   ├── WorkstationEndpoints.Routing.cs
 │   │   │   ├── WorkstationEndpoints.ScopeOptions.cs
@@ -12984,6 +12994,7 @@ Meridian-main
 │   │   │   │   ├── BackfillExecutionHistoryTests.cs
 │   │   │   │   ├── BackfillJobProgressAndGranularityTests.cs
 │   │   │   │   ├── BackfillProviderProvenanceTests.cs
+│   │   │   │   ├── BackfillQuotaTests.cs
 │   │   │   │   ├── BackfillRequestTraceContextTests.cs
 │   │   │   │   ├── BackfillScheduleManagerDurabilityTests.cs
 │   │   │   │   ├── BackfillSourceAttributionTests.cs
@@ -15438,6 +15449,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.ProviderIdentityDecisions.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpointsTests.ReconciliationAndContinuity.cs
+│   │   │   ├── WorkstationEndpointsTests.RecordSearch.cs
 │   │   │   ├── WorkstationEndpointsTests.RecurringJournals.cs
 │   │   │   ├── WorkstationEndpointsTests.ReportAuthority.cs
 │   │   │   ├── WorkstationEndpointsTests.RunComparison.cs

@@ -33,7 +33,7 @@ describe("CommandPalette", () => {
     expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveFocus();
     expect(screen.getByRole("searchbox", { name: "Search command palette" })).toHaveAttribute(
       "placeholder",
-      "Go to route, action, evidence..."
+      "Go to route, action, or record..."
     );
     expect(screen.getByRole("region", { name: "Recommended commands" })).toBeInTheDocument();
     expect(screen.getAllByLabelText(/^Recommended command:/)).toHaveLength(4);
@@ -144,28 +144,18 @@ describe("CommandPalette", () => {
           hasHistoricalData: true
         }
       ]),
-      searchSecurities: vi.fn().mockResolvedValue([
-        {
-          securityId: "sec-aapl",
-          displayName: "Apple Inc.",
+      searchRecords: vi.fn().mockResolvedValue({
+        items: [{
+          recordType: "Instrument",
+          recordId: "sec-aapl",
+          label: "Apple Inc.",
+          scope: "Security Master catalog",
+          asOfPosture: "Current reference",
           status: "Active",
-          classification: {
-            assetClass: "Equity",
-            subType: "Common",
-            primaryIdentifierKind: "Ticker",
-            primaryIdentifierValue: "AAPL"
-          },
-          economicDefinition: {
-            currency: "USD",
-            version: 1,
-            effectiveFrom: null,
-            effectiveTo: null,
-            subType: "Common",
-            assetFamily: "Equity",
-            issuerType: "Corporate"
-          }
-        }
-      ])
+          href: "/accounting/security-master/detail?securityId=sec-aapl"
+        }],
+        isPartial: false
+      })
     };
 
     renderWithRouter(
@@ -180,10 +170,12 @@ describe("CommandPalette", () => {
       "href",
       "/data/quotes?symbol=AAPL"
     );
-    expect(screen.getByLabelText("Open security Apple Inc. in Security Master detail")).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Open Instrument Apple Inc., sec-aapl, Security Master catalog, Current reference, Active" })).toHaveAttribute(
       "href",
       "/accounting/security-master/detail?securityId=sec-aapl"
     );
+    expect(screen.getByText("Instrument")).toBeInTheDocument();
+    expect(screen.getByText("Security Master catalog · Current reference")).toBeInTheDocument();
     expect(screen.getByText("2 entity results")).toBeInTheDocument();
   });
 
