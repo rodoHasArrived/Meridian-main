@@ -486,6 +486,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
   const governedApprovals = useGovernedApprovalsViewModel(LIVE_GOVERNED_APPROVAL_SERVICES);
   const orderTicket = useOrderTicketViewModel({
     fundAccountId,
+    scopedPaperIntentKey: data?.scopedPaperOrderIntentKey,
     positions: data?.positions ?? [],
     risk: data?.risk ?? null,
     manualOrderEntry: data?.manualOrderEntry ?? null,
@@ -854,6 +855,11 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
               riskWarnings={orderTicket.riskWarnings}
             />
           )}
+          {!orderTicket.open && orderTicket.phase === "reconciliation" ? (
+            <CardContent className="border-b border-border/60 py-3">
+              <p role="status" className="text-sm text-warning">{orderTicket.errorText}</p>
+            </CardContent>
+          ) : null}
           <CardContent className="space-y-3 px-3 py-2">
             <TableWorkbench
               workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}

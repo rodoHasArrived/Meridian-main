@@ -2,6 +2,7 @@ namespace Meridian.Contracts.Workstation;
 
 /// <summary>
 /// Workstation-facing strategy design document persisted by the Strategy Builder.
+/// The opaque server revision is required when updating or running a scoped draft.
 /// </summary>
 public sealed record StrategyDesignDocument(
     string DocumentId,
@@ -14,7 +15,8 @@ public sealed record StrategyDesignDocument(
     IReadOnlyList<StrategyDesignTransition> Transitions,
     IReadOnlyDictionary<string, string>? Metadata,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    string? Revision = null);
 
 /// <summary>
 /// A visual, formula, code, governance, or template cell inside a strategy design.
@@ -136,12 +138,13 @@ public sealed record StrategyDesignDraftSummary(
     int CellCount,
     int TransitionCount,
     DateTimeOffset UpdatedAt,
-    string ValidationSummary);
+    string ValidationSummary,
+    string? Revision = null);
 
 /// <summary>
 /// Request body for saving a strategy design draft.
 /// </summary>
-public sealed record StrategyDesignDraftSaveRequest(StrategyDesignDocument Document);
+public sealed record StrategyDesignDraftSaveRequest(StrategyDesignDocument Document, string? ExpectedRevision = null);
 
 /// <summary>
 /// Response returned after saving a strategy design draft.
@@ -159,6 +162,10 @@ public sealed record StrategyDesignRunBacktestRequest(
     StrategyDesignDocument Document,
     IReadOnlyDictionary<string, string>? Parameters = null)
 {
+    public Guid? FundAccountId { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; }
+
     private IReadOnlyList<string> _operatorAcceptanceCriteria = [];
     private IReadOnlyList<string> _retainedEvidenceReferences = [];
     private IReadOnlyList<string> _accountingRecordReferences = [];
@@ -221,4 +228,7 @@ public sealed record StrategyDesignRunBacktestResponse(
     string? RuntimeError,
     string? PromotionCandidatePath,
     string? ReviewPacketPath,
-    BiasDisclosureDto? BiasDisclosure = null);
+    BiasDisclosureDto? BiasDisclosure = null,
+    string? StrategyVersionSha256 = null,
+    string? DataSnapshotSha256 = null,
+    string? DataProvenanceToken = null);

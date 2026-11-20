@@ -277,6 +277,17 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<StrategyDesignStoreOptions>(),
                 sp.GetRequiredService<ILogger<JsonlStrategyDesignRepository>>()));
         services.TryAddSingleton<StrategyDesignService>();
+        services.TryAddSingleton<ScopedStrategyDesignStore>();
+        services.TryAddSingleton(sp => new DesignerBacktestService(
+            ResolveConfigDataRoot(sp),
+            sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>(),
+            sp.GetRequiredService<IStrategyRepository>(),
+            sp.GetRequiredService<IEvidenceArtifactStore>(),
+            sp.GetRequiredService<StrategyDesignService>(),
+            sp.GetService<Meridian.Contracts.Services.IOperationalTradingCalendar>() ??
+                new Meridian.Platform.Scheduling.TradingCalendar(),
+            sp.GetService<ISecurityIdentityQueryService>() ?? sp.GetService<ISecurityMasterQueryService>(),
+            sp.GetService<ISecurityCorporateActionsQueryService>() ?? sp.GetService<ISecurityMasterQueryService>()));
         services.TryAddSingleton<StrategyEngineRegistry>();
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();

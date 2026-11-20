@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Threading.Channels;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Operations;
 using Meridian.Execution.Events;
 using Meridian.Execution.Logging;
 using Meridian.Execution.OrderManagement;
@@ -19,10 +20,11 @@ namespace Meridian.Execution;
 /// for backpressure-aware execution event processing.
 /// </summary>
 [ImplementsAdr("ADR-013", "Uses bounded channels for execution event pipeline")]
-public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagementLifecycle, IDisposable, IAsyncDisposable
+public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentSubmitter, IOrderManagementLifecycle, IDisposable, IAsyncDisposable
 {
     private readonly OrderStateTable _orders = new();
     private readonly IExecutionGateway _gateway;
+    private readonly OrderIntentJournal? _intentJournal;
     private readonly OrderFillProcessor _fillProcessor;
     private readonly OrderExecutionAudit _executionAudit;
     private readonly AccountingHandoffCoordinator _accountingHandoff;
@@ -100,9 +102,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         IOrderMarketReferenceSource? marketReferences = null,
         IOrderInstrumentCoverageSource? instrumentCoverage = null,
         IStrategyRunAuthoritySource? strategyRunAuthority = null,
-        OrderAuthorityOptions? authorityOptions = null)
+        OrderAuthorityOptions? authorityOptions = null,
+        IOperationalCaseHistoryStore? orderIntentHistory = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
+        _intentJournal = orderIntentHistory is null ? null : new OrderIntentJournal(orderIntentHistory);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _riskValidator = riskValidator;
         _journal = journal;
@@ -117,8 +121,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         _sessionPersistence = sessionPersistence;
         _recoveryJournal = new BrokerageOrderRecoveryJournal(recoveryStore);
         _brokerageConfiguration = brokerageConfiguration;
-        _accountingHandoff = new AccountingHandoffCoordinator(
-            tradeEventPublisher, tradeFillHandoffFailureStore, logger);
         _options = options ?? new OrderManagementSystemOptions();
         if (portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true })
         {
@@ -127,6 +129,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 throw new InvalidOperationException("Canonical paper execution requires its exact v2 accounting publisher and in-process synthetic gateway.");
             synthetic.EnableCanonicalSyntheticPricing();
         }
+        _accountingHandoff = new AccountingHandoffCoordinator(
+            ScopedPaperBook is null ? tradeEventPublisher : null, tradeFillHandoffFailureStore, logger);
         if (_options.RequireProductionSafetyDependencies)
         {
             if (_riskValidator is null)
@@ -150,7 +154,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             new OrderFillContext(_orders, _orderFinancialAccountIds, _orderContractMultipliers, _orderFaceValueSizing,
                 tradeEventPublisher is IScopedTradeEventPublisher scopedPublisher && scopedPublisher.ScopeIdentity.AccountingProtocolVersion == 2,
                 gateway is PaperTradingGateway),
-            portfolioState, sessionPersistence, _accountingHandoff, _executionReportHub, _executionAudit, logger);
+            portfolioState, sessionPersistence, _accountingHandoff, _executionReportHub, _executionAudit, logger, _intentJournal);
         _lifecycle = new OrderManagementLifecycleCoordinator(
             PumpGatewayExecutionReportsAsync, _accountingHandoff, _executionReportHub,
             _executionFailureState, operatorControls, ResolveWorkingReductionQuantity);
@@ -165,13 +169,13 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     /// <inheritdoc />
     /// <remarks>Legacy entry point: identity comes from request metadata (unattributed authority).</remarks>
     public Task<OrderResult> PlaceOrderAsync(OrderRequest request, CancellationToken ct = default) =>
-        PlaceOrderSerializedAsync(request, authority: null, ct);
+        SubmitWithoutIntentAsync(request, authority: null, ct);
 
     /// <inheritdoc />
     public Task<OrderResult> SubmitAsync(OrderSubmitCommand command, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(command);
-        return PlaceOrderSerializedAsync(OrderAuthorityMetadata.Bind(command.Order, command.Authority), command.Authority, ct);
+        return SubmitWithoutIntentAsync(OrderAuthorityMetadata.Bind(command.Order, command.Authority), command.Authority, ct);
     }
 
     /// <summary>
@@ -444,6 +448,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 Status = OrderStatus.PendingNew,
                 CreatedAt = DateTimeOffset.UtcNow,
                 StrategyId = safeRequest.StrategyId,
+                IntentId = safeRequest.IntentId,
                 FundAccountId = safeRequest.FundAccountId,
                 SessionIntent = safeRequest.SessionIntent,
                 RunId = runId,
@@ -664,9 +669,10 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
 
             try
             {
-                await RecordSessionOrderUpdateAsync(sessionId, updatedState, ct).ConfigureAwait(false);
+                await RecordSessionOrderUpdateAsync(sessionId, updatedState,
+                    updatedState.IntentId.HasValue ? CancellationToken.None : ct).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!updatedState.IntentId.HasValue)
             {
                 _logger.LogError(
                     ex,

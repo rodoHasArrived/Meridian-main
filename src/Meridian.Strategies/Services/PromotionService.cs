@@ -5,6 +5,8 @@ using Meridian.Execution.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
+using Meridian.Strategies.Live.Designer;
+using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging;
 using Interop = Meridian.FSharp.Interop;
 
@@ -26,6 +28,7 @@ public sealed class PromotionService
     private readonly BrokerageConfiguration? _brokerageConfiguration;
     private readonly IPromotedRunLauncher? _runLauncher;
     private readonly IPromotionTrustEvidenceProvider? _trustEvidenceProvider;
+    private readonly ScopedStrategyDesignStore? _scopedDesigns;
 
     public PromotionService(
         IStrategyRepository repository,
@@ -36,7 +39,8 @@ public sealed class PromotionService
         ExecutionAuditTrailService? auditTrail = null,
         BrokerageConfiguration? brokerageConfiguration = null,
         IPromotedRunLauncher? runLauncher = null,
-        IPromotionTrustEvidenceProvider? trustEvidenceProvider = null)
+        IPromotionTrustEvidenceProvider? trustEvidenceProvider = null,
+        ScopedStrategyDesignStore? scopedDesigns = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _promoter = promoter ?? throw new ArgumentNullException(nameof(promoter));
@@ -47,6 +51,7 @@ public sealed class PromotionService
         _brokerageConfiguration = brokerageConfiguration;
         _runLauncher = runLauncher;
         _trustEvidenceProvider = trustEvidenceProvider;
+        _scopedDesigns = scopedDesigns;
     }
 
     /// <summary>
@@ -96,6 +101,9 @@ public sealed class PromotionService
             return PromotionEvaluationResult.NotReady(runId,
                 "Run did not complete successfully. Resolve failed cleanup or reconcile terminal evidence before promotion.");
         }
+
+        if (await CheckDesignerPromotionAsync(run, ct).ConfigureAwait(false) is { } designerBlocker)
+            return PromotionEvaluationResult.NotReady(runId, designerBlocker);
 
         if (run.RunType == RunType.Live)
         {
@@ -318,6 +326,9 @@ public sealed class PromotionService
                 NewRunId: null,
                 Reason: "Run did not complete successfully. Resolve failed cleanup or reconcile terminal evidence before promotion.");
         }
+
+        if (await CheckDesignerPromotionAsync(run, ct).ConfigureAwait(false) is { } designerBlocker)
+            return new PromotionDecisionResult(false, null, null, designerBlocker);
 
         if (run.RunType == RunType.Live)
         {
@@ -577,6 +588,12 @@ public sealed class PromotionService
             evidenceReferences: evidenceReferences,
             manualOverrideId: request.ManualOverrideId,
             auditReference: auditReference);
+        if (DesignerStrategyVersion.Read(run) is { } strategyVersion)
+            promotionRecord = promotionRecord with
+            {
+                StrategyVersionSha256 = strategyVersion,
+                SourceInputHashSha256 = run.InputHashSha256
+            };
         if (!TryValidatePromotionRecord(promotionRecord, out var validationError))
         {
             return new PromotionDecisionResult(
@@ -790,7 +807,7 @@ public sealed class PromotionService
             ct).ConfigureAwait(false);
     }
 
-    private static StrategyRunEntry CreatePromotedRun(
+    internal static StrategyRunEntry CreatePromotedRun(
         StrategyRunEntry sourceRun,
         StrategyPromotionRecord promotionRecord) =>
         new(
@@ -810,7 +827,11 @@ public sealed class PromotionService
             ParentRunId: sourceRun.RunId,
             FundProfileId: sourceRun.FundProfileId,
             FundDisplayName: sourceRun.FundDisplayName,
-            FundAccountId: sourceRun.FundAccountId);
+            FundAccountId: sourceRun.FundAccountId,
+            DatasetReference: promotionRecord.StrategyVersionSha256 is null ? null : sourceRun.DatasetReference,
+            FeedReference: promotionRecord.StrategyVersionSha256 is null ? null : sourceRun.FeedReference,
+            DataProvenanceToken: promotionRecord.StrategyVersionSha256 is null ? null : sourceRun.DataProvenanceToken,
+            ExecutionRealism: promotionRecord.StrategyVersionSha256 is null ? null : sourceRun.ExecutionRealism);
 
     private static string? GetRetainedTargetValidationError(
         StrategyRunEntry sourceRun,
@@ -822,12 +843,36 @@ public sealed class PromotionService
             !string.Equals(retainedTarget.StrategyId, sourceRun.StrategyId, StringComparison.Ordinal) ||
             retainedTarget.FundAccountId != sourceRun.FundAccountId ||
             retainedTarget.RunType != promotionRecord.TargetRunType ||
-            !string.Equals(retainedTarget.AuditReference, promotionRecord.AuditReference, StringComparison.Ordinal))
+            !string.Equals(retainedTarget.AuditReference, promotionRecord.AuditReference, StringComparison.Ordinal) ||
+            !string.Equals(DesignerStrategyVersion.Read(retainedTarget), promotionRecord.StrategyVersionSha256, StringComparison.Ordinal))
         {
             return "The retained target run conflicts with the durable promotion decision; no launch was attempted.";
         }
 
         return null;
+    }
+
+    private async Task<string?> CheckDesignerPromotionAsync(StrategyRunEntry run, CancellationToken ct)
+    {
+        if (DesignerStrategyVersion.Read(run) is null)
+            return null;
+        if (!DesignerStrategyVersion.HasRetainedProvenance(run) ||
+            !string.Equals(run.DataProvenanceToken, "real", StringComparison.OrdinalIgnoreCase))
+            return "Simulated Designer data cannot enter ordinary promotion evidence.";
+        if (run.RunType != RunType.Backtest)
+            return "Versioned Designer strategies support paper execution only.";
+        if (_scopedDesigns is null || run.FundAccountId is null ||
+            !StrategyRunRepositoryVisibility.TryGetRetainedScope(run, out var retainedScope) ||
+            run.ParameterSet is not { } parameters ||
+            !parameters.TryGetValue(DesignerDocumentLiveSource.DesignerDocumentParameterKey, out var documentId))
+            return "The Designer run is missing scoped strategy authority.";
+
+        var scope = new StrategyRunRepositoryScope(retainedScope.TenantId, retainedScope.CompanyId);
+        var draft = await _scopedDesigns.GetAsync(scope, documentId, revision: null, ct).ConfigureAwait(false);
+        return draft is not null &&
+            string.Equals(draft.Revision, parameters.GetValueOrDefault(DesignerStrategyVersion.DraftRevisionKey), StringComparison.Ordinal) &&
+            DesignerStrategyVersion.Matches(draft, parameters)
+            ? null : "The saved design changed. Backtest the current revision before reviewing it.";
     }
 
     private static PromotionDecisionResult CreateDurableApprovalCompletionFailure(

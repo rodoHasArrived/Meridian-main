@@ -458,7 +458,8 @@ public sealed record WorkstationTradingPayload(
     TradingOperatorReadinessDto Readiness,
     IReadOnlyList<WorkstationModeComparisonGroup> Comparisons,
     WorkstationRunDrillInLinks? DrillIn,
-    WorkstationManualOrderEntry? ManualOrderEntry = null);
+    WorkstationManualOrderEntry? ManualOrderEntry = null,
+    string? ScopedPaperOrderIntentKey = null);
 
 // ---------------------------------------------------------------------------
 // /api/workstation/accounting and /api/workstation/reporting (legacy alias: /api/workstation/governance)

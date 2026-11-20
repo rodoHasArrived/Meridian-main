@@ -32,6 +32,11 @@ import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction 
 import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
+import {
+  clearPendingPaperIntent,
+  readPendingPaperIntent,
+  unresolvedPaperIntentMessage
+} from "./trading-screen.pending-paper-intent";
 import { formatCurrency, formatDecimal, formatMoney as formatMoneyValue, formatPercent, formatQuantity as formatQuantityValue, pluralizeCount } from "@/lib/format";
 import { buildExecutionAuditRow, type ExecutionAuditRow, type ExecutionEvidenceTone } from "./trading-screen.execution-audit-rows";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
@@ -3153,6 +3158,7 @@ export function useOrderTicketViewModel({
   services = defaultOrderTicketServices,
   onOrderAccepted,
   fundAccountId,
+  scopedPaperIntentKey,
   positions = [],
   risk = null,
   manualOrderEntry = null
@@ -3160,19 +3166,25 @@ export function useOrderTicketViewModel({
   services?: OrderTicketServices;
   onOrderAccepted?: () => Promise<void> | void;
   fundAccountId?: string | null;
+  scopedPaperIntentKey?: string | null;
   positions?: TradingPosition[];
   risk?: TradingRiskState | null;
   /** The server's verdict on manual orders for the active routing path (refused live). */
   manualOrderEntry?: TradingManualOrderEntry | null;
 } = {}) {
-  const [form, setForm] = useState<OrderSubmitRequest>(emptyOrderTicketForm);
-  const [open, setOpen] = useState(false);
-  const [phase, setPhase] = useState<OrderTicketPhase>("idle");
+  const normalizedAccountScope = normalizeFundAccountGuid(fundAccountId) ?? null;
+  const paperIntentStorageKey = scopedPaperIntentKey && normalizedAccountScope
+    ? `meridian.workstation.paper-order-intent.v1.${scopedPaperIntentKey}.${normalizedAccountScope}`
+    : null;
+  const [restoredRequest] = useState(() => readPendingPaperIntent(paperIntentStorageKey, normalizedAccountScope));
+  const pendingPaperIntent = useRef<OrderSubmitRequest | null>(restoredRequest);
+  const [form, setForm] = useState<OrderSubmitRequest>(restoredRequest ?? emptyOrderTicketForm);
+  const [open, setOpen] = useState(restoredRequest !== null);
+  const [phase, setPhase] = useState<OrderTicketPhase>(restoredRequest ? "reconciliation" : "idle");
   const [escalationId, setEscalationId] = useState<string | null>(null);
   const [riskWarnings, setRiskWarnings] = useState<string[]>([]);
   const [orderId, setOrderId] = useState<string | null>(null);
-  const [errorText, setErrorText] = useState<string | null>(null);
-  const normalizedAccountScope = normalizeFundAccountGuid(fundAccountId) ?? null;
+  const [errorText, setErrorText] = useState<string | null>(restoredRequest ? unresolvedPaperIntentMessage : null);
   const [editor, setEditor] = useState<{
     scope: string | null;
     values: Partial<Record<"quantity" | "limitPrice", string>>;
@@ -3200,13 +3212,17 @@ export function useOrderTicketViewModel({
   const serverPreviewBlocked = unconfirmedSubmission !== null
     || (Boolean(services.previewOrder) && (serverPreviewLoading || !serverPreview?.canSubmit || serverPreviewExpired));
   const manualEntryDisabledReason = manualOrderEntryDisabledReason(manualOrderEntry);
+  const scopedTermsBlocker = paperIntentStorageKey &&
+    (form.type !== "Market" || !Number.isSafeInteger(form.quantity) || sessionIntent !== "RegularOnly")
+    ? "This paper book supports regular-session market orders in whole shares."
+    : null;
   useEffect(() => {
     setServerPreview(null); setServerPreviewError(null);
     if (services.previewOrder) setAcknowledged(false);
     draftClientId.current = null;
   }, [form, fundAccountId, sessionIntent, services.previewOrder]);
   useEffect(() => {
-    if (!open || !services.previewOrder || validateOrderTicketForm(form) || !normalizeFundAccountGuid(fundAccountId)) return;
+    if (!open || pendingPaperIntent.current || !services.previewOrder || validateOrderTicketForm(form) || !normalizeFundAccountGuid(fundAccountId)) return;
     const controller = new AbortController();
     setServerPreviewLoading(true); setServerPreviewError(null);
     const timer = window.setTimeout(() => {
@@ -3252,6 +3268,7 @@ export function useOrderTicketViewModel({
 
   const openTicket = useCallback(() => {
     setOpen(true);
+    if (phase === "reconciliation") return;
     setErrorText(null);
     if (phase !== "submitted") {
       return;
@@ -3267,6 +3284,7 @@ export function useOrderTicketViewModel({
     }
 
     setOpen(false);
+    if (phase === "reconciliation") return;
     setPhase("idle");
     setOrderId(null);
     setErrorText(null);
@@ -3283,6 +3301,7 @@ export function useOrderTicketViewModel({
   }, [closeTicket, open, openTicket]);
 
   const updateField = useCallback((field: OrderTicketField, value: string) => {
+    if (pendingPaperIntent.current) return;
     setForm((current) => updateOrderTicketForm(current, field, value));
     // Keep local editor text such as "188.0" while the existing model parses it as 188.
     // Rendering String(188) after that keystroke would make the next "5" become 1885.
@@ -3302,6 +3321,7 @@ export function useOrderTicketViewModel({
   }, [normalizedAccountScope]);
 
   const normalizeSymbol = useCallback(() => {
+    if (pendingPaperIntent.current) return;
     setForm((current) => ({
       ...current,
       symbol: normalizeOrderSymbol(current.symbol)
@@ -3323,11 +3343,12 @@ export function useOrderTicketViewModel({
   }, [onOrderAccepted]);
 
   const submitOrderTicket = useCallback(async () => {
-    if (phase === "submitting" || submittingRef.current || unconfirmedSubmissionRef.current) {
+    if (phase === "submitting" || submittingRef.current || unconfirmedSubmissionRef.current || manualEntryDisabledReason) {
       return;
     }
 
-    const validationError = validateOrderTicketForm(form);
+    const pending = pendingPaperIntent.current;
+    const validationError = pending ? null : scopedTermsBlocker ?? validateOrderTicketForm(form);
     if (validationError) {
       setPhase("error");
       setOrderId(null);
@@ -3335,17 +3356,17 @@ export function useOrderTicketViewModel({
       return;
     }
 
-    if (!acknowledged) {
+    if (!pending && !acknowledged) {
       setPhase("error");
       setOrderId(null);
       setErrorText("Review the order preview and acknowledge before submitting.");
       return;
     }
 
-    const request = buildOrderSubmitRequest(form, fundAccountId);
+    const draft = buildOrderSubmitRequest(form, fundAccountId);
     const clientOrderId = services.previewOrder ? draftClientId.current : null;
-    const submission = clientOrderId && request.fundAccountId ? { account: request.fundAccountId, id: clientOrderId } : null;
-    if (services.previewOrder && (!submission || serverPreviewBlocked || !serverPreview || Date.parse(serverPreview.expiresAt) <= Date.now())) {
+    const submission = clientOrderId && draft.fundAccountId ? { account: draft.fundAccountId, id: clientOrderId } : null;
+    if (!pending && services.previewOrder && (!submission || serverPreviewBlocked || !serverPreview || Date.parse(serverPreview.expiresAt) <= Date.now())) {
       setErrorText("Run checks again and review the authoritative order checks before submitting.");
       setAcknowledged(false);
       return;
@@ -3357,14 +3378,34 @@ export function useOrderTicketViewModel({
     setRiskWarnings([]);
     setErrorText(null);
 
+    const request = pending ?? (submission ? { ...draft, sessionIntent, clientOrderId: submission.id } : draft);
     let refusal: string;
+    let submitted = false;
     try {
-      const result = await services.submitOrder(submission ? { ...request, sessionIntent, clientOrderId: submission.id } : request);
+      if (!pending && paperIntentStorageKey) {
+        request.intentId = crypto.randomUUID();
+        window.sessionStorage.setItem(paperIntentStorageKey, JSON.stringify(request));
+        pendingPaperIntent.current = request;
+      }
+      submitted = true;
+      const result = await services.submitOrder(request);
       if (typeof result?.success !== "boolean") {
         throw new Error("Meridian did not confirm the order submission outcome.");
       }
       if (result.requiresOrderReconciliation) {
         throw new Error(result.errorMessage ?? "Order submission requires reconciliation.");
+      }
+      if (request.intentId) {
+        const resolved = result.intentStatus === "Retained" || (!pending && result.intentStatus === "Blocked");
+        if (!resolved) {
+          setPhase("reconciliation");
+          setOrderId(result.orderId);
+          setErrorText(result.errorMessage ?? unresolvedPaperIntentMessage);
+          await refreshAfterSettledOutcome();
+          return;
+        }
+        clearPendingPaperIntent(paperIntentStorageKey);
+        pendingPaperIntent.current = null;
       }
       if (result.success) {
         setPhase("submitted");
@@ -3399,15 +3440,21 @@ export function useOrderTicketViewModel({
 
       refusal = formatAuthorityRefusal(result.authorityDecision) ?? result.errorMessage ?? result.reason ?? "Order failed.";
     } catch (err) {
+      if (pendingPaperIntent.current) {
+        setPhase("reconciliation");
+        setErrorText(unresolvedPaperIntentMessage);
+        return;
+      }
       const confirmedRefusal = workstationApi.readOrderSubmissionRefusal(err);
-      if (submission && confirmedRefusal === null) {
+      if (submitted && submission && confirmedRefusal === null) {
         unconfirmedSubmissionRef.current = submission;
         setUnconfirmedSubmission(submission);
         setPhase("error");
         setErrorText(`Submission outcome is unconfirmed for ${submission.id}. Inspect the journal and use Run checks again before another submission.`);
         return;
       }
-      refusal = confirmedRefusal ?? toErrorMessage(err, "Order submission failed.");
+      refusal = !submitted && paperIntentStorageKey ? "The browser could not save the paper intent. Enable session storage to submit it."
+        : confirmedRefusal ?? toErrorMessage(err, "Order submission failed.");
     } finally {
       submittingRef.current = false;
     }
@@ -3421,7 +3468,7 @@ export function useOrderTicketViewModel({
     }
     setPhase("error");
     setErrorText(refusal);
-  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, resetEditor, services, serverPreviewBlocked, serverPreview, sessionIntent]);
+  }, [acknowledged, form, fundAccountId, manualEntryDisabledReason, paperIntentStorageKey, refreshAfterSettledOutcome, phase, resetEditor, scopedTermsBlocker, services, serverPreviewBlocked, serverPreview, sessionIntent]);
 
   return {
     ...state,
@@ -3449,11 +3496,12 @@ export function useOrderTicketViewModel({
         void refreshAfterSettledOutcome();
       }).catch(() => { /* Absence is not proof that nothing reached the broker. */ });
     },
-    canSubmit: state.canSubmit && !serverPreviewBlocked && manualEntryDisabledReason === null,
+    canSubmit: manualEntryDisabledReason === null && (phase === "reconciliation" ||
+      (state.canSubmit && !serverPreviewBlocked && scopedTermsBlocker === null)),
     // The manual-entry verdict comes first: on a live routing path no check the operator can run
     // makes a manual order routable.
-    submitDisabledReason: manualEntryDisabledReason
-      ?? (serverPreviewBlocked ? "Current authoritative order checks are required." : state.submitDisabledReason),
+    submitDisabledReason: manualEntryDisabledReason ?? (phase === "reconciliation" ? null : scopedTermsBlocker
+      ?? (serverPreviewBlocked ? "Current authoritative order checks are required." : state.submitDisabledReason)),
     manualEntryDisabledReason,
     openTicket,
     closeTicket,

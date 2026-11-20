@@ -1765,7 +1765,7 @@ public sealed partial class EventDrivenDecouplingTests
         }
     }
 
-    private sealed class InMemoryTradeFillLedgerPostingTarget : ITradeFillLedgerPostingTarget
+    internal sealed class InMemoryTradeFillLedgerPostingTarget : ITradeFillLedgerPostingTarget
     {
         private readonly object _sync = new();
         private readonly Dictionary<Guid, LedgerJournalEntryRecord> _retained = [];
@@ -2045,7 +2045,7 @@ public sealed partial class EventDrivenDecouplingTests
         public ValueTask DisposeAsync() => _inner.DisposeAsync();
     }
 
-    private sealed class PassingSecurityValidationGate : ISecurityValidationGateService
+    internal sealed class PassingSecurityValidationGate : ISecurityValidationGateService
     {
         public static readonly Guid SecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         private readonly Guid _securityId;

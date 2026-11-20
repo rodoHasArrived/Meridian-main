@@ -22,6 +22,11 @@ internal sealed class OrderApprovalReservations(RiskEscalationQueueService? queu
     internal bool Contains(string orderId) => _reservations.ContainsKey(orderId);
     internal string[] SnapshotOrderIds() => _reservations.Keys.ToArray();
 
+    internal bool IsApprovedRelease(string orderId, OrderRequest request) =>
+        _reservations.TryGetValue(orderId, out var escalationId) &&
+        _queue?.TryGet(escalationId)?.Status == RiskEscalationStatus.Approved &&
+        HasApprovalToken(request, escalationId);
+
     internal void RehydrateParkedOrderReservations()
     {
         if (_queue is null)
@@ -101,11 +106,13 @@ internal sealed class OrderApprovalReservations(RiskEscalationQueueService? queu
         // execute, after which the original approval could still release a second order
         // under the same id. ReleaseParkedOrderReservation clears it once the order is
         // registered, and the live order itself guards the id from then on.
-        return entry.Status != RiskEscalationStatus.Approved ||
-            request.Metadata is null ||
-            !request.Metadata.TryGetValue(RiskEscalationQueueService.ApprovalMetadataKey, out var tokens) ||
-            !RiskEscalationQueueService.SplitTokens(tokens).Contains(escalationId, StringComparer.OrdinalIgnoreCase);
+        return entry.Status != RiskEscalationStatus.Approved || !HasApprovalToken(request, escalationId);
     }
+
+    private static bool HasApprovalToken(OrderRequest request, string escalationId) =>
+        request.Metadata is not null &&
+        request.Metadata.TryGetValue(RiskEscalationQueueService.ApprovalMetadataKey, out var tokens) &&
+        RiskEscalationQueueService.SplitTokens(tokens).Contains(escalationId, StringComparer.OrdinalIgnoreCase);
 
     internal void RestoreConsumedApprovals(string? consumedApprovalId, string cause, string? rearmedOrderId = null)
     {

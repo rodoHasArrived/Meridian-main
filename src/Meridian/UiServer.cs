@@ -370,6 +370,7 @@ public sealed class UiServer : IAsyncDisposable
                 CancelAllMaxConcurrency = configuredOrderManagement.CancelAllMaxConcurrency,
                 CancelAllInFlightSettleTimeout = configuredOrderManagement.CancelAllInFlightSettleTimeout,
                 ExecutionSubscriberDrainTimeout = configuredOrderManagement.ExecutionSubscriberDrainTimeout,
+                PaperIntentScope = configuredOrderManagement.PaperIntentScope,
                 RequireProductionSafetyDependencies =
                     ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)
             });

@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
+import { Select } from "@/components/ui/select";
+import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { useHostedDesigner, type HostedDesigner } from "@/screens/strategy-designer-hosted";
 import {
   useStrategyDesignerViewModel,
   type ParticipationSliceViewModel,
@@ -26,10 +30,7 @@ import {
 } from "@/screens/strategy-designer-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
-const SAVE_DRAFT_BLOCKER_ID = "strategy-designer-save-draft-blocker";
 const BACKTEST_BLOCKER_ID = "strategy-designer-backtest-blocker";
-const SAVE_DRAFT_BLOCKER =
-  "Saving drafts needs a canvas-to-design-document mapping that is not implemented yet, so this action would discard your work.";
 
 function cellKindBadgeVariant(kind: StrategyBuilderCellKind): "default" | "outline" | "success" | "warning" | "danger" | "research" {
   switch (kind) {
@@ -54,12 +55,13 @@ function CellKindIcon({ kind }: { kind: StrategyBuilderCellKind }) {
   }
 }
 
-export function StrategyDesignerScreen() {
+export function StrategyDesignerScreen({ fundAccountId }: { fundAccountId?: string | null } = {}) {
   const vm = useStrategyDesignerViewModel();
+  const hosted = useHostedDesigner(vm.workbench.document, vm.applyBuilderDocument, fundAccountId);
 
   return (
     <div className="space-y-6" data-testid="strategy-designer-screen">
-      <WorkbenchHero vm={vm.workbench} />
+      <WorkbenchHero vm={vm.workbench} hosted={hosted} />
 
       <div
         className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]"
@@ -72,7 +74,7 @@ export function StrategyDesignerScreen() {
         </div>
       </div>
 
-      <details className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
+      <details open={hosted.supportedTemplate || undefined} className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
         <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
           Templates and backtest proof
         </summary>
@@ -80,8 +82,8 @@ export function StrategyDesignerScreen() {
           Load an approved starting point or inspect validation, trace, and endpoint proof after the active design is ready.
         </p>
         <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <TemplateGallery vm={vm.workbench} />
-          <BacktestProofPanel vm={vm.workbench} />
+          <TemplateGallery vm={vm.workbench} hosted={hosted} />
+          <BacktestProofPanel vm={vm.workbench} hosted={hosted} />
         </div>
       </details>
 
@@ -101,7 +103,7 @@ export function StrategyDesignerScreen() {
   );
 }
 
-function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
+function WorkbenchHero({ vm, hosted }: { vm: StrategyBuilderWorkbenchViewModel; hosted: HostedDesigner }) {
   return (
     <section className="space-y-4" aria-labelledby="strategy-builder-title">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -116,58 +118,39 @@ function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           </p>
         </div>
         <div className="flex flex-col items-start gap-2">
-          {/*
-            Both actions are deliberately disabled rather than bound to a handler. The workstation
-            endpoints and typed clients exist (`saveStrategyDesignerDraft`,
-            `runStrategyDesignerBacktest`), but two contract gaps block an honest wire-up:
-            the canvas holds a `StrategyBuilderDocument` and the API takes a `StrategyDesignDocument`
-            with no mapper between them, and a backtest run additionally requires governed evidence
-            references (operator acceptance, retained evidence, accounting, approvals, paper
-            validation, governed reports) that this screen cannot collect. Rendering an enabled
-            control that silently discards the operator's work — or posts empty evidence arrays into
-            a governance flow — is worse than a disabled one that says why.
-
-            A disabled native button cannot take keyboard focus and `disabledReason` reaches the DOM
-            only as `title`, so a pointer hover was the sole way to learn why. Each reason is
-            therefore also rendered as visible text and wired to its button through
-            `aria-describedby`, which keyboard and screen-reader operators can actually reach.
-          */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              aria-label="Save strategy design draft"
-              aria-describedby={SAVE_DRAFT_BLOCKER_ID}
-              disabled
-              disabledReason={SAVE_DRAFT_BLOCKER}
-            >
+          <div className="flex flex-wrap items-end gap-2">
+            <Button type="button" variant="outline" aria-label="Save strategy design draft"
+              disabled={hosted.busy !== null} onClick={hosted.save}>
               <Save className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">Save draft</span>
+              <span className="ml-1.5">{hosted.busy === "saving" ? "Saving" : "Save draft"}</span>
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              // The unconditional evidence blocker lives in the view-model, so the status label,
-              // proof summary, aria-label, and this button all state the same reason rather than
-              // the screen overriding a command the view-model still advertised as ready.
-              aria-label={vm.backtest.runCommand.ariaLabel}
-              aria-describedby={BACKTEST_BLOCKER_ID}
-              disabled={vm.backtest.runCommand.disabled}
-              disabledReason={vm.backtest.runCommand.disabledReason}
-            >
+            <Button type="button" variant="secondary" aria-describedby={BACKTEST_BLOCKER_ID}
+              disabled={hosted.busy !== null || hosted.blocker !== null} onClick={hosted.runBacktest}>
               <PlayCircle className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">{vm.backtest.runCommand.label}</span>
+              <span className="ml-1.5">{hosted.busy === "running" ? "Running backtest" : "Run backtest proof"}</span>
             </Button>
           </div>
-          <p id={SAVE_DRAFT_BLOCKER_ID} className="text-xs leading-5 text-muted-foreground">
-            <span className="font-medium text-foreground">Save draft unavailable:</span> {SAVE_DRAFT_BLOCKER}
-          </p>
-          {vm.backtest.runCommand.disabledReason ? (
-            <p id={BACKTEST_BLOCKER_ID} className="text-xs leading-5 text-muted-foreground">
-              <span className="font-medium text-foreground">Run backtest proof unavailable:</span>{" "}
-              {vm.backtest.runCommand.disabledReason}
-            </p>
+          {hosted.drafts.length > 0 ? (
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="grid gap-1 text-sm">
+                Open saved draft
+                <Select value={vm.document.revision ? vm.document.documentId : ""}
+                  onChange={event => hosted.openDraft(event.target.value)} disabled={hosted.busy !== null}>
+                  <option value="">Choose a draft</option>
+                  {hosted.drafts.map(draft => (
+                    <option key={draft.documentId} value={draft.documentId}>{draft.name} · {draft.updatedAt.slice(0, 10)}</option>
+                  ))}
+                </Select>
+              </label>
+              {vm.document.revision ? (
+                <Button type="button" variant="outline" disabled={hosted.busy !== null}
+                  onClick={() => hosted.openDraft(vm.document.documentId)}>Reload saved draft</Button>
+              ) : null}
+            </div>
           ) : null}
+          {hosted.blocker ? <p id={BACKTEST_BLOCKER_ID} className="text-xs text-muted-foreground">{hosted.blocker}</p> : null}
+          {hosted.message ? <p role="status" className="text-xs">{hosted.message}</p> : null}
+          {hosted.error ? <p role="alert" className="text-xs text-destructive">{hosted.error}</p> : null}
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -434,7 +417,7 @@ function StrategyDetailField({ field }: { field: StrategyLegDetailFieldViewModel
   );
 }
 
-function TemplateGallery({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
+function TemplateGallery({ vm, hosted }: { vm: StrategyBuilderWorkbenchViewModel; hosted: HostedDesigner }) {
   return (
     <Card data-testid="strategy-builder-template-gallery">
       <CardHeader>
@@ -444,16 +427,33 @@ function TemplateGallery({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
         </CardTitle>
         <CardDescription>Prototype concepts rebuilt as Meridian design templates.</CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-3 md:grid-cols-3">
+      <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-3">
+        {hosted.template ? (
+          <div className="space-y-2 rounded-md border border-border/70 p-3">
+            <h3 className="text-sm font-semibold">Equity price filter</h3>
+            <p className="text-xs text-muted-foreground">Closed expression for a single equity and fixed-share long sizing.</p>
+            <Button type="button" variant="outline" className="h-auto whitespace-normal text-left"
+              disabled={hosted.busy !== null} onClick={hosted.newEquityDraft}>
+              New equity price filter draft
+            </Button>
+          </div>
+        ) : null}
         {vm.templates.map((template) => (
-          <TemplateCard key={template.templateId} template={template} onLoad={vm.loadTemplate} />
+          <TemplateCard key={template.templateId} template={template} disabled={hosted.busy !== null}
+            onLoad={templateId => {
+              if (!vm.document.dirty || window.confirm("Discard unsaved changes to this draft?")) vm.loadTemplate(templateId);
+            }} />
         ))}
       </CardContent>
     </Card>
   );
 }
 
-function TemplateCard({ template, onLoad }: { template: StrategyBuilderTemplate; onLoad: (templateId: string) => void }) {
+function TemplateCard({ template, disabled, onLoad }: {
+  template: StrategyBuilderTemplate;
+  disabled: boolean;
+  onLoad: (templateId: string) => void;
+}) {
   return (
     <article className="rounded-md border border-border/70 bg-secondary/20 p-3">
       <div className="flex items-start justify-between gap-2">
@@ -465,6 +465,7 @@ function TemplateCard({ template, onLoad }: { template: StrategyBuilderTemplate;
           type="button"
           variant="outline"
           size="sm"
+          disabled={disabled}
           onClick={() => onLoad(template.templateId)}
           aria-label={template.loadCommand.ariaLabel}
         >
@@ -483,7 +484,9 @@ function TemplateCard({ template, onLoad }: { template: StrategyBuilderTemplate;
   );
 }
 
-function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
+function BacktestProofPanel({ vm, hosted }: { vm: StrategyBuilderWorkbenchViewModel; hosted: HostedDesigner }) {
+  const run = hosted.run?.strategyId === vm.document.documentId ? hosted.run : null;
+  const trace = hosted.supportedTemplate ? vm.trace.filter(step => step.stepId !== "quant-script") : vm.trace;
   return (
     <Card data-testid="strategy-builder-backtest-proof">
       <CardHeader>
@@ -491,14 +494,74 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           <PlayCircle className="h-4 w-4 text-primary" aria-hidden="true" />
           Backtest proof
         </CardTitle>
-        <CardDescription>{vm.backtest.proofSummary}</CardDescription>
+        <CardDescription>{run ? "Retained native replay" : hosted.blocker ?? "Ready to run"}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {vm.trace.length > 0 ? (
+        {hosted.supportedTemplate ? (
+          <fieldset disabled={hosted.busy !== null} className="grid gap-3 sm:grid-cols-2">
+            <label className="grid gap-1 text-sm">
+              Equity ticker
+              <Input value={vm.document.universe[0] ?? ""} onChange={event => hosted.edit("symbol", event.target.value)} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              Entry expression
+              <Input value={hosted.priceFilter?.source ?? ""} onChange={event => hosted.edit("condition", event.target.value)} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              Share quantity
+              <Input inputMode="numeric" value={hosted.fixedShares?.parameters?.sizingValue ?? ""}
+                onChange={event => hosted.edit("shares", event.target.value)} />
+            </label>
+            <div className="grid content-start gap-1 text-sm">
+              Execution account
+              <span className="break-all text-xs text-muted-foreground">{hosted.account ?? "Choose a workspace account"}</span>
+            </div>
+            <label className="grid gap-1 text-sm">
+              From date
+              <Input type="date" value={hosted.from} onChange={event => hosted.setFrom(event.target.value)} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              To date
+              <Input type="date" value={hosted.to} onChange={event => hosted.setTo(event.target.value)} />
+            </label>
+            <label className="grid gap-1 text-sm sm:col-span-2">
+              Acceptance criterion
+              <Input value={hosted.criteria} onChange={event => hosted.setCriteria(event.target.value)} />
+            </label>
+            <label className="grid gap-1 text-sm sm:col-span-2">
+              Evidence Vault reference
+              <Input list="designer-vault-manifests" value={hosted.vaultReference}
+                onChange={event => hosted.setVaultReference(event.target.value)} />
+              <datalist id="designer-vault-manifests">
+                {Array.from(new Map(hosted.evidence.map(item => [item.vaultId, item])).values()).map(item => (
+                  <option key={item.vaultId} value={"evidence://evidence-vault/" + item.vaultId}>
+                    {item.document.fileName}
+                  </option>
+                ))}
+              </datalist>
+            </label>
+          </fieldset>
+        ) : null}
+        {run?.runId ? (
+          <section aria-label="Retained Designer run" className="space-y-2 rounded-md border border-border/70 p-3">
+            {run.dataProvenanceToken === "simulated" ? <Badge variant="warning">Simulated</Badge> : null}
+            <dl className="grid gap-2 text-sm">
+              <div><dt>Strategy version</dt><dd className="break-all font-mono text-xs">{run.strategyVersionSha256 ?? "Version unrecorded"}</dd></div>
+              <div><dt>Replay snapshot</dt><dd className="break-all font-mono text-xs">{run.dataSnapshotSha256}</dd></div>
+              {Object.entries(run.metrics).map(([label, value]) => (
+                <div key={label}><dt>{label}</dt><dd className="tabular-nums">{value}</dd></div>
+              ))}
+            </dl>
+            <Link className="text-sm text-primary underline" to={evidenceWorkbenchPath("strategy-run", run.runId)}>
+              Open run evidence
+            </Link>
+          </section>
+        ) : null}
+        {trace.length > 0 ? (
           <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
             <div className="eyebrow-label mb-3">Review gates</div>
             <GateRail
-              gates={vm.trace.map((step) => ({
+              gates={trace.map((step) => ({
                 key: step.stepId,
                 label: step.label,
                 status: step.status
@@ -513,7 +576,7 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           </div>
           <div className="rounded-md border border-border/70 p-3">
             <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Execution mode</div>
-            <div className="mt-1 text-sm font-medium text-foreground">Backtest only</div>
+            <div className="mt-1 text-sm font-medium text-foreground">{hosted.supportedTemplate ? "Closed-expression replay" : "Preview"}</div>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -544,7 +607,7 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           ))}
         </div>
         <div className="space-y-2" role="list" aria-label="Strategy Builder run trace">
-          {vm.trace.map((step) => (
+          {trace.map((step) => (
             <div
               key={step.stepId}
               role="listitem"

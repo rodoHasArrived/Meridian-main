@@ -142,4 +142,11 @@ public sealed record StrategyPromotionRecord(
     string[]? EvidenceReferences = null,
     string? AuditReference = null,
     string? ApprovedBy = null,
-    string? ManualOverrideId = null);
+    string? ManualOverrideId = null)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? StrategyVersionSha256 { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceInputHashSha256 { get; init; }
+}

@@ -283,7 +283,22 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
     // ------------------------------------------------------------------
 
     /// <summary>Creates a new paper trading session and returns its summary.</summary>
-    public async Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, CancellationToken ct = default)
+    public Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, CancellationToken ct = default)
+        => CreateSessionCoreAsync(request, runSessionId: null, ct);
+
+    /// <summary>Resolves the stable paper session used by a retained strategy run.</summary>
+    public static string GetStrategyRunSessionId(string runId) =>
+        $"PAPER-RUN-{Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(runId)}";
+
+    public static bool IsStrategyRunSessionId(string? sessionId) =>
+        sessionId?.StartsWith("PAPER-RUN-", StringComparison.OrdinalIgnoreCase) == true;
+
+    public Task<PaperSessionSummaryDto> EnsureStrategyRunSessionAsync(
+        string runId, CreatePaperSessionDto request, CancellationToken ct = default) =>
+        CreateSessionCoreAsync(request, GetStrategyRunSessionId(runId), ct);
+
+    private async Task<PaperSessionSummaryDto> CreateSessionCoreAsync(
+        CreatePaperSessionDto request, string? runSessionId, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         using var operation = EnterOperation(ct);
@@ -295,6 +310,16 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         try
         {
             var sessions = CurrentSessions;
+            if (runSessionId is not null && sessions.TryGetValue(runSessionId, out var retained))
+            {
+                if (!string.Equals(retained.StrategyId, request.StrategyId, StringComparison.Ordinal) ||
+                    retained.InitialCash != request.InitialCash ||
+                    !retained.Symbols.SequenceEqual(request.Symbols ?? [], StringComparer.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("The retained paper session belongs to different run inputs.");
+
+                return ToSummarySnapshot(retained);
+            }
+
             TrimClosedSessionsIfNeeded(sessions);
             if (sessions.Count >= MaxRetainedSessions)
             {
@@ -302,7 +327,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
             }
 
             var createdAt = DateTimeOffset.UtcNow;
-            var sessionId = $"PAPER-{createdAt:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
+            var sessionId = runSessionId ?? $"PAPER-{createdAt:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
             // Retain an empty source checkpoint before publishing a bound session, so a
             // future historical read can prove that no financing was accepted.
             if (_financing is not null)
@@ -508,11 +533,12 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         }
     }
 
-    /// <summary>Returns summaries of all tracked sessions.</summary>
+    /// <summary>Returns sessions owned by the legacy paper-session workbench.</summary>
     public IReadOnlyList<PaperSessionSummaryDto> GetSessions()
     {
         ThrowIfDisposed();
         return CurrentSessions.Values
+            .Where(static session => !IsStrategyRunSessionId(session.SessionId))
             .Select(ToSummarySnapshot)
             .OrderByDescending(static s => s.CreatedAt)
             .ToArray();

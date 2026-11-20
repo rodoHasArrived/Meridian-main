@@ -1097,7 +1097,9 @@ function AppShell({
                       fundAccountId={operatingScopeInput.fundAccountId}
                     />
                   )} />
-                  <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
+                  <Route path="/trading/*" element={<TradingScreen
+                    key={`${operatingScopeInput.fundAccountId ?? ""}/${trading?.scopedPaperOrderIntentKey ?? ""}`}
+                    data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
                   <Route path="/portfolio/loan-book" element={<LoanBookScreen />} />
                   <Route path="/portfolio/nav" element={<NavComparisonScreen defaultFundProfileId={reporting?.selectedFundProfileId ?? reporting?.fundProfileId ?? null} />} />
@@ -1141,7 +1143,7 @@ function AppShell({
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} accounting={accounting} onRefreshLivePortfolioViews={refreshPortfolio} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
-                  <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
+                  <Route path="/strategy/designer" element={<StrategyDesignerScreen fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/run-ledger" element={<StrategyRunLedgerScreen />} />
