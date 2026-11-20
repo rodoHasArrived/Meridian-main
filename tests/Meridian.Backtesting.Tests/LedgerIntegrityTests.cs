@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Portfolio;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 
 namespace Meridian.Backtesting.Tests;
@@ -135,6 +136,49 @@ public sealed class LedgerIntegrityTests
         var act = () => Snapshot(portfolio);
         act.Should().Throw<LedgerIntegrityException>().Which.Breaks.Should().ContainSingle()
             .Which.Difference.Should().Be(10m);
+    }
+
+    [Fact]
+    public void DayEnd_DetectsQuantityDriftEvenWhenTheLedgerBasisAgrees()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var portfolio = Create(ledger);
+        portfolio.ProcessFill(Fill(2, 10m));
+        var snapshot = Snapshot(portfolio);
+        var account = snapshot.Accounts[AccountId];
+        var lot = account.OpenLots.Should().ContainSingle().Subject;
+        var wrongLots = account with { OpenLots = [lot with { Quantity = 1m, EntryPrice = 20m }] };
+
+        var difference = BacktestLedgerIntegrityValidator.Validate(ledger, snapshot with
+        {
+            Accounts = new Dictionary<string, FinancialAccountSnapshot> { [AccountId] = wrongLots }
+        }).Should().ContainSingle().Subject;
+
+        difference.Check.Should().Be("PositionLotQuantity");
+        difference.Expected.Should().Be(2m);
+        difference.Actual.Should().Be(1m);
+        difference.UnitKind.Should().Be(SecurityLotUnitKind.Shares);
+    }
+
+    [Fact]
+    public void DayEnd_DoesNotNetUnrelatedCashCurrencies()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var snapshot = Snapshot(Create(ledger));
+        var id = Guid.NewGuid();
+        const string description = "Foreign cash without a corresponding simulated balance";
+        ledger.Post(new JournalEntry(id, snapshot.Timestamp, description,
+        [
+            new LedgerEntry(Guid.NewGuid(), id, snapshot.Timestamp, LedgerAccounts.CashInCurrency("EUR", AccountId),
+                12m, 0m, description, currency: new LedgerEntryCurrency("EUR", "USD", 10m, 0m, 1.2m)),
+            new LedgerEntry(Guid.NewGuid(), id, snapshot.Timestamp, LedgerAccounts.CapitalAccountFor(AccountId),
+                0m, 12m, description, currency: new LedgerEntryCurrency("EUR", "USD", 0m, 10m, 1.2m))
+        ]));
+
+        var difference = BacktestLedgerIntegrityValidator.Validate(ledger, snapshot).Should().ContainSingle().Subject;
+        difference.Check.Should().Be("AccountCash");
+        difference.Currency.Should().Be("EUR");
+        difference.Actual.Should().Be(10m, "currency proof retains the original amount");
     }
 
     private static SimulatedPortfolio Create(Meridian.Ledger.Ledger ledger) =>

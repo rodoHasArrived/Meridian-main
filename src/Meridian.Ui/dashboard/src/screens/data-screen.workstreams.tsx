@@ -7,6 +7,7 @@ import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state"
 import { Pagination } from "@/components/data/pagination";
 import { BackfillJobDetails } from "@/components/data/backfill-quota";
 import type { BackfillJobReceipt } from "@/types";
+import { BackfillBatchReceipts } from "@/screens/data-screen.backfill-batch-receipts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -560,6 +561,7 @@ function BackfillDetailPanel({
         ))}
       </div>
       {receipt && <BackfillJobDetails job={receipt} />}
+      {receipt?.batchReceipts?.length ? <BackfillBatchReceipts receipts={receipt.batchReceipts} /> : null}
     </DenseRowDetailPanel>
   );
 }

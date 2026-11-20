@@ -71,6 +71,7 @@ import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-s
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
 import { FailoverRegion } from "@/screens/data-screen.failover";
 import { BackfillProviderEditorRegion } from "@/screens/data-screen.backfill-provider-editor";
+import { BackfillBatchReceipts } from "@/screens/data-screen.backfill-batch-receipts";
 import { DataRoutingPreviewPanel } from "@/screens/data-screen.routing-preview";
 import { ProviderValidationPanel } from "@/screens/data-screen.provider-validation";
 import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history";
@@ -1874,6 +1875,8 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
                 />
               </label>
             </div>
+            <Checkbox label="Resume using retained coverage" checked={vm.form.resumeFromCheckpoint ?? false}
+              disabled={vm.busy} onCheckedChange={checked => vm.updateBackfillForm("resumeFromCheckpoint", checked)} />
           </div>
 
           {!vm.backfillJob && <StatusBanner
@@ -1916,8 +1919,10 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
             onSchedule={supportsQueue ? (when) => void vm.runBackfill(when) : undefined}
           />}
           {vm.backfillJob && <BackfillJobDetails job={vm.backfillJob} statusError={vm.backfillJobStatusError} />}
+          {vm.backfillJob?.batchReceipts?.length ? <BackfillBatchReceipts receipts={vm.backfillJob.batchReceipts} /> : null}
           {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
           {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
+          {vm.result?.batchReceipts?.length ? <BackfillBatchReceipts receipts={vm.result.batchReceipts} /> : null}
           {vm.result?.quotaReceipt && <div className="mt-3"><BackfillQuotaActual receipt={vm.result.quotaReceipt} /></div>}
         </div>
 

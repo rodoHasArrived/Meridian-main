@@ -6,6 +6,132 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderHealthPage
+
+Qualified name: <code>Meridian.Wpf.Views.ProviderHealthPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:11](../../../../src/Meridian.Wpf/Views/Pages.cs#L11).
+
+```csharp
+public partial class ProviderHealthPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/ProviderHealthPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/ProviderHealthPage.xaml.cs#L14).
+
+Provider health page — thin code-behind. All state, HTTP loading, timers, and connection-event tracking live in ProviderHealthViewModel.
+
+```csharp
+public partial class ProviderHealthPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderHealthPage(WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/ProviderHealthPage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/ProviderHealthPage.xaml.cs#L18) |  |
+
+## ProviderPage
+
+Qualified name: <code>Meridian.Wpf.Views.ProviderPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:10](../../../../src/Meridian.Wpf/Views/Pages.cs#L10).
+
+```csharp
+public partial class ProviderPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/ProviderPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/ProviderPage.xaml.cs#L11).
+
+Page for viewing and managing backfill provider settings. Code-behind is thin lifecycle wiring only; all state and orchestration live in ProviderViewModel.
+
+```csharp
+public partial class ProviderPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderPage(ProviderViewModel viewModel);</code> | [src/Meridian.Wpf/Views/ProviderPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/ProviderPage.xaml.cs#L15) |  |
+
+## QualityArchivePage
+
+Qualified name: <code>Meridian.Wpf.Views.QualityArchivePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:28](../../../../src/Meridian.Wpf/Views/Pages.cs#L28).
+
+```csharp
+public partial class QualityArchivePage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/QualityArchivePage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/QualityArchivePage.xaml.cs#L10).
+
+QualityArchivePage: WPF page for perpetual symbol quality calendar heatmap. Code-behind is thin: only initialization and constructor DI.
+
+```csharp
+public partial class QualityArchivePage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public QualityArchivePage(QualityArchiveViewModel viewModel);</code> | [src/Meridian.Wpf/Views/QualityArchivePage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/QualityArchivePage.xaml.cs#L12) |  |
+
+## QuantScriptPage
+
+Qualified name: <code>Meridian.Wpf.Views.QuantScriptPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:53](../../../../src/Meridian.Wpf/Views/Pages.cs#L53).
+
+```csharp
+public partial class QuantScriptPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/QuantScriptPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/QuantScriptPage.xaml.cs#L11).
+
+Code-behind for QuantScriptPage. Intentionally thin: DI wiring and layout persistence. ScottPlot rendering is handled by Behaviors.PlotRenderBehavior via the attached property.
+
+```csharp
+public partial class QuantScriptPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public QuantScriptPage(QuantScriptViewModel viewModel);</code> | [src/Meridian.Wpf/Views/QuantScriptPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/QuantScriptPage.xaml.cs#L15) |  |
+
+## QuoteFloatWindow
+
+Qualified name: <code>Meridian.Wpf.Views.QuoteFloatWindow</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/QuoteFloatWindow.xaml.cs:11](../../../../src/Meridian.Wpf/Views/QuoteFloatWindow.xaml.cs#L11).
+
+Floating tear-off quote panel window — thin code-behind. All live-data state lives in QuoteFloatViewModel.
+
+```csharp
+public partial class QuoteFloatWindow : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public QuoteFloatWindow(QuoteFloatViewModel vm);</code> | [src/Meridian.Wpf/Views/QuoteFloatWindow.xaml.cs:15](../../../../src/Meridian.Wpf/Views/QuoteFloatWindow.xaml.cs#L15) |  |
+
+## ReportingWorkspaceShellPageBase
+
+Qualified name: <code>Meridian.Wpf.Views.ReportingWorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:442](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L442).
+
+Binds derived pages to the reporting workspace shell definition.
+
+```csharp
+public class ReportingWorkspaceShellPageBase : WorkspaceShellPageBase<ReportingWorkspaceShellStateProvider, ReportingWorkspaceShellViewModel>
+```
+
 ## RetentionAssurancePage
 
 Qualified name: <code>Meridian.Wpf.Views.RetentionAssurancePage</code>. Kind: `class`.
@@ -966,136 +1092,3 @@ Declared public members:
 | <code>public bool IsCompactSurface { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:75](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L75) |  |
 | <code>public ICommand? CommandInvokedCommand { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:81](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L81) |  |
 | <code>public ICommand? ResetLayoutCommand { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:87](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L87) |  |
-
-## WorkspaceCommandInvokedEventArgs
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceCommandInvokedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:12](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L12).
-
-Carries the workspace command selected by the operator.
-
-```csharp
-public sealed class WorkspaceCommandInvokedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspaceCommandInvokedEventArgs(WorkspaceCommandItem command);</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:14](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L14) |  |
-| <code>public WorkspaceCommandItem Command { get; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:19](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L19) |  |
-
-## WorkspaceCommandSurfaceControl
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceCommandSurfaceControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L9).
-
-Hosts the workspace header and global refresh, notification, and command-palette actions.
-
-```csharp
-public partial class WorkspaceCommandSurfaceControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty SurfaceAutomationIdProperty = DependencyProperty.Register(nameof(SurfaceAutomationId), typeof(string), typeof(WorkspaceCommandSurfaceControl), new PropertyMetadata(&quot;WorkspaceCommandSurface&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L11) |  |
-| <code>public static readonly DependencyProperty FixtureBannerAutomationIdProperty = DependencyProperty.Register(nameof(FixtureBannerAutomationId), typeof(string), typeof(WorkspaceCommandSurfaceControl), new PropertyMetadata(&quot;FixtureModeBanner&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:14](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L14) |  |
-| <code>public static readonly DependencyProperty PageHeaderAutomationIdProperty = DependencyProperty.Register(nameof(PageHeaderAutomationId), typeof(string), typeof(WorkspaceCommandSurfaceControl), new PropertyMetadata(&quot;WorkspacePageHeader&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L17) |  |
-| <code>public static readonly DependencyProperty RefreshButtonAutomationIdProperty = DependencyProperty.Register(nameof(RefreshButtonAutomationId), typeof(string), typeof(WorkspaceCommandSurfaceControl), new PropertyMetadata(&quot;ShellRefreshButton&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:20](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L20) |  |
-| <code>public static readonly DependencyProperty NotificationsButtonAutomationIdProperty = DependencyProperty.Register(nameof(NotificationsButtonAutomationId), typeof(string), typeof(WorkspaceCommandSurfaceControl), new PropertyMetadata(&quot;ShellNotificationsButton&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:23](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L23) |  |
-| <code>public static readonly DependencyProperty CommandPaletteButtonAutomationIdProperty = DependencyProperty.Register(nameof(CommandPaletteButtonAutomationId), typeof(string), typeof(WorkspaceCommandSurfaceControl), new PropertyMetadata(&quot;ShellCommandPaletteButton&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:26](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L26) |  |
-| <code>public WorkspaceCommandSurfaceControl();</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:29](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L29) |  |
-| <code>public string SurfaceAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:34](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L34) |  |
-| <code>public string FixtureBannerAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:40](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L40) |  |
-| <code>public string PageHeaderAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L46) |  |
-| <code>public string RefreshButtonAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:52](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L52) |  |
-| <code>public string NotificationsButtonAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:58](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L58) |  |
-| <code>public string CommandPaletteButtonAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs:64](../../../../src/Meridian.Wpf/Views/WorkspaceCommandSurfaceControl.xaml.cs#L64) |  |
-
-## WorkspaceDecisionActionKind
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceDecisionActionKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:8](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L8).
-
-```csharp
-public enum WorkspaceDecisionActionKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Primary</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:10](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L10) |  |
-| <code>Secondary</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L11) |  |
-
-## WorkspaceDecisionInvokedEventArgs
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceDecisionInvokedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L17).
-
-Carries the selected workspace decision and the invoked action kind and identity.
-
-```csharp
-public sealed class WorkspaceDecisionInvokedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspaceDecisionInvokedEventArgs(WorkspaceQueueItem decision, WorkspaceDecisionActionKind actionKind);</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:19](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L19) |  |
-| <code>public WorkspaceQueueItem Decision { get; }</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:28](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L28) |  |
-| <code>public WorkspaceDecisionActionKind ActionKind { get; }</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:30](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L30) |  |
-| <code>public string ActionId { get; }</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:32](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L32) |  |
-
-## WorkspaceDecisionQueueControl
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceDecisionQueueControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:38](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L38).
-
-Displays workspace decisions in configurable columns and raises selected decision actions.
-
-```csharp
-public partial class WorkspaceDecisionQueueControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(nameof(ItemsSource), typeof(IEnumerable), typeof(WorkspaceDecisionQueueControl), new PropertyMetadata(Array.Empty&lt;WorkspaceQueueItem&gt;()));</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:40](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L40) |  |
-| <code>public static readonly DependencyProperty QueueAutomationIdProperty = DependencyProperty.Register(nameof(QueueAutomationId), typeof(string), typeof(WorkspaceDecisionQueueControl), new PropertyMetadata(&quot;WorkspaceDecisionQueue&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:47](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L47) |  |
-| <code>public static readonly DependencyProperty ColumnsProperty = DependencyProperty.Register(nameof(Columns), typeof(int), typeof(WorkspaceDecisionQueueControl), new PropertyMetadata(2));</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:54](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L54) |  |
-| <code>public WorkspaceDecisionQueueControl();</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:61](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L61) |  |
-| <code>public event EventHandler&lt;WorkspaceDecisionInvokedEventArgs&gt;? DecisionInvoked;</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:66](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L66) |  |
-| <code>public IEnumerable ItemsSource { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:68](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L68) |  |
-| <code>public string QueueAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:74](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L74) |  |
-| <code>public int Columns { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs:80](../../../../src/Meridian.Wpf/Views/WorkspaceDecisionQueueControl.xaml.cs#L80) |  |
-
-## WorkspaceDeepPageHostPage
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceDeepPageHostPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L14).
-
-Wraps legacy deep pages in the shared workstation shell chrome so direct navigation preserves workspace context, related workflows, and trust signals.
-
-```csharp
-public partial class WorkspaceDeepPageHostPage : Page, IPageRefreshContentHost
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspaceDeepPageHostPage(NavigationService navigationService, WorkspaceShellContextService? shellContextService, string pageTag, Page hostedPage, object? navigationParameter, WorkspaceChromePresentationMode presentationMode);</code> | [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L25) |  |
-| <code>public Page HostedPage =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:51](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L51) |  |
-| <code>public object? HostedContent =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:53](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L53) |  |
-| <code>public object? PageRefreshContent =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:56](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L56) |  |

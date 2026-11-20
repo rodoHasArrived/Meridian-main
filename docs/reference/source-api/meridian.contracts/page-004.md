@@ -656,7 +656,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Api.BackfillRequest</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/StatusModels.cs:297](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L297).
+Source: [src/Meridian.Contracts/Api/StatusModels.cs:301](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L301).
 
 Backfill request.
 
@@ -668,11 +668,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:300](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L300) |  |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/StatusModels.cs:303](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L303) |  |
-| <code>[JsonPropertyName(&quot;from&quot;)] public string? From { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:306](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L306) |  |
-| <code>[JsonPropertyName(&quot;to&quot;)] public string? To { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:309](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L309) |  |
-| <code>[JsonPropertyName(&quot;granularity&quot;)] public string Granularity { get; set; } = &quot;Daily&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:312](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L312) |  |
+| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:304](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L304) |  |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/StatusModels.cs:307](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L307) |  |
+| <code>[JsonPropertyName(&quot;from&quot;)] public string? From { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:310](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L310) |  |
+| <code>[JsonPropertyName(&quot;to&quot;)] public string? To { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:313](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L313) |  |
+| <code>[JsonPropertyName(&quot;granularity&quot;)] public string Granularity { get; set; } = &quot;Daily&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:316](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L316) |  |
+| <code>[JsonPropertyName(&quot;resumeFromCheckpoint&quot;)][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool ResumeFromCheckpoint { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:320](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L320) |  |
 
 ## BackfillRequestDto
 
@@ -683,8 +684,14 @@ Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:73](../../../../src/Mer
 Request to run a backfill operation.
 
 ```csharp
-public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To, string? Granularity = null, bool PrepareQueuedJob = false);
+public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To, string? Granularity = null, bool PrepareQueuedJob = false)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool ResumeFromCheckpoint { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:77](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L77) |  |
 
 ## BackfillResultDto
 
@@ -710,6 +717,7 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;completedUtc&quot;)] public DateTimeOffset? CompletedUtc { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:264](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L264) |  |
 | <code>[JsonPropertyName(&quot;error&quot;)] public string? Error { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:267](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L267) |  |
 | <code>[JsonPropertyName(&quot;symbolResults&quot;)] public SymbolBackfillResult[]? SymbolResults { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:270](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L270) |  |
+| <code>[JsonPropertyName(&quot;batchReceipts&quot;)][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Meridian.Contracts.Backfill.BackfillBatchReceipt&gt;? BatchReceipts { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:274](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L274) |  |
 
 ## BackfillRoutingProviderChange
 
@@ -807,7 +815,7 @@ public sealed record BindProviderRuntimeCredentialRequest(string ProviderId);
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalProviderAliasResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:267](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L267).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:271](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L271).
 
 Arbitrary provider-scoped symbol plus merge provenance.
 
@@ -819,7 +827,7 @@ public sealed record CanonicalProviderAliasResponse(string Provider, string Symb
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolAliasResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:258](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L258).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:262](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L262).
 
 Validity-dated alias with its source and optional provider scope.
 
@@ -831,7 +839,7 @@ public sealed record CanonicalSymbolAliasResponse(string Alias, string? Source, 
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolIdentifiersResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:250](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L250).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:254](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L254).
 
 Industry identifiers that can resolve to the same durable security identity.
 
@@ -843,7 +851,7 @@ public sealed record CanonicalSymbolIdentifiersResponse(string? Isin, string? Fi
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolMigrationResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:285](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L285).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:289](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L289).
 
 Idempotent migration receipt proving a legacy source was imported.
 
@@ -855,7 +863,7 @@ public sealed record CanonicalSymbolMigrationResponse(string MigrationId, string
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolRegistryEntryResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:236](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L236).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:240](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L240).
 
 Canonical security identity with aliases, provider symbols, and provenance.
 
@@ -867,7 +875,7 @@ public sealed record CanonicalSymbolRegistryEntryResponse(Guid? SecurityId, stri
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolRegistryResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:225](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L225).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:229](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L229).
 
 Additive registry projection used by both workstations during canonical-symbol migration.
 
@@ -879,7 +887,7 @@ public sealed record CanonicalSymbolRegistryResponse(string RegistryVersion, Sym
 
 Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolResolutionMismatchResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:275](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L275).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:279](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L279).
 
 Recent Legacy-versus-Canonical comparison disagreement.
 

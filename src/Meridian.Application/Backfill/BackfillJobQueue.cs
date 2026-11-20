@@ -106,7 +106,7 @@ public sealed class BackfillJobQueue(
             work.Request.Symbols.ToArray(), work.Request.From, work.Request.To, execution.ScheduledAt,
             work.NotBeforeUtc, execution.StartedAt, execution.CompletedAt,
             execution.QuotaReceipt is null ? null : execution.Statistics.TotalBarsRetrieved,
-            execution.ErrorMessage, work.Estimate, execution.QuotaReceipt);
+            execution.ErrorMessage, work.Estimate, execution.QuotaReceipt, execution.BatchReceipts);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -142,7 +142,7 @@ public sealed class BackfillJobQueue(
 
         try
         {
-            var result = await coordinator.RunQueuedAsync(work.Request, execution.ExecutionId, work.Estimate, _dataRoot, () =>
+            var result = await coordinator.RunQueuedAsync(work, execution.ExecutionId, _dataRoot, () =>
             {
                 var started = WithStatus(execution, ExecutionStatus.Running, startedAt: _clock.GetUtcNow());
                 history.StoreQueuedExecution(started);
@@ -205,7 +205,8 @@ public sealed class BackfillJobQueue(
             CompletedAt = completedAt,
             ErrorMessage = error,
             Statistics = new ExecutionStatistics { TotalBarsRetrieved = result?.BarsWritten ?? 0 },
-            QuotaReceipt = result?.QuotaReceipt
+            QuotaReceipt = result?.QuotaReceipt,
+            BatchReceipts = result?.BatchReceipts
         };
 
     public override void Dispose()

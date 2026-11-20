@@ -69,7 +69,8 @@ public sealed partial class PostgresDirectLendingCommandServiceTests
             {
                 var request = call.Arg<ConfiguredLedgerAccountRequestDto>();
                 return new ChartOfAccountsNodeDto(request.AccountPath, request.AccountPath,
-                    request.AccountPath == "Assets:Cash" ? "Cash" : "Loan Principal", request.ExpectedAccountType);
+                    request.AccountPath == "Assets:Cash" ? "Cash" : "Loan Principal", request.ExpectedAccountType)
+                { AccountCode = request.AccountPath == "Assets:Cash" ? "1000" : "1500" };
             });
         var options = new DirectLendingOptions
         {
@@ -89,6 +90,9 @@ public sealed partial class PostgresDirectLendingCommandServiceTests
             new DateOnly(2026, 3, 24), payload, Guid.NewGuid(), new(null, null, Guid.NewGuid(), "synthetic", false), default);
 
         writes.Single().Entry.Lines.Select(line => line.Account.Name).Should().Equal("Loan Principal", "Cash");
+        writes.Single().Entry.Lines.Select(line => line.ChartAccount).Should().Equal(
+            new LedgerAccountChartReference("Assets:Loans", "approved-chart-v1", "1500"),
+            new LedgerAccountChartReference("Assets:Cash", "approved-chart-v1", "1000"));
         writes.Single().AccountingBasis.Should().Be(AccountingBasisKindDto.Gaap);
         writes.Single().AccountingPolicyId.Should().Be(book.AccountingPolicyId);
         writes.Single().AccountingPolicyVersion.Should().Be(book.AccountingPolicyVersion);

@@ -58,4 +58,5 @@ public sealed record BackfillJobReceipt(
     long? BarsWritten,
     string? Error,
     BackfillQuotaEstimate Estimate,
-    BackfillQuotaReceipt? Actual);
+    BackfillQuotaReceipt? Actual,
+    IReadOnlyList<BackfillBatchReceipt>? BatchReceipts = null);

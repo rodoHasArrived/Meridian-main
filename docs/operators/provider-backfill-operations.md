@@ -61,6 +61,9 @@ One workstation host owns the queue and data root. Scheduled and queued submissi
 restart. An interrupted run is retained as a failure for review because it may have written some
 bars. Drain the queue before moving the data root and transfer its execution history with the
 data. Queued jobs retain their own receipts for recovery.
+The resume option uses verified coverage retained by earlier queued runs for the same tenant,
+provider, and feed. The quota estimate uses the full requested scope as retained coverage can
+reduce the number of calls at execution.
 
 Select a job in the backfill queue to inspect observed providers, request counts, throttling and
 estimate variance. The request count records admissions through instrumented historical adapters,
@@ -148,8 +151,8 @@ mode:
 - Date-only checkpoints (`_status/backfill-symbol-checkpoints.json`) are still written for status
   surfaces, but they are never used to skip or advance. After upgrading, the first resume of a
   range that only has such a checkpoint fetches the range again once.
-- Fresh runs without the resume flag clear matching-granularity checkpoints and coverage before
-  writing new evidence; they do not clear another granularity's.
+- A fresh run without the resume flag resets date and bar-count status for the requested
+  granularity. It fetches the requested range and retains verified coverage and batch revisions.
 - Automatic gap-analyzer remediation batches same-provider, same-window scan gaps into one
   deterministic request with symbols normalized to uppercase and sorted lexically before execution
   history is retained. Data-quality and quality-alert triggers remain single-symbol remediation

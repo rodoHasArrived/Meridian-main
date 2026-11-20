@@ -1,6 +1,7 @@
 using Meridian.Identity.Auth;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -213,19 +214,23 @@ public static class CheckpointEndpoints
                 return Results.NotFound(new { error = $"No checkpoint found for job {jobId}" });
             }
 
-            if (status.Success)
+            if (status.Success && status.SymbolValidationSignals.All(static signal => signal.Status == "Pass"))
             {
-                return Results.BadRequest(new { error = "This job already completed successfully. Nothing to resume." });
+                return Results.BadRequest(new { error = "All requested symbols passed coverage validation. Nothing to resume." });
             }
 
-            // Trigger a new backfill for the same symbols
+            // Retry the same provider, range and data lane.
             try
             {
+                var retainedGranularity = status.BatchReceipts?.FirstOrDefault()?.Granularity;
+                var granularity = DataGranularityExtensions.TryParseValue(retainedGranularity, out var parsedGranularity)
+                    ? parsedGranularity : DataGranularity.Daily;
                 var request = new AppBackfillRequest(
                     status.Provider ?? "composite",
                     status.Symbols ?? Array.Empty<string>(),
                     status.From,
                     status.To ?? DateOnly.FromDateTime(DateTime.Today),
+                    granularity,
                     ResumeFromCheckpoint: true);
 
                 var result = await backfill.RunAsync(request, context.RequestAborted);

@@ -1146,6 +1146,7 @@ export interface BackfillTriggerRequest {
   symbols: string[];
   from: string | null;
   to: string | null;
+  resumeFromCheckpoint?: boolean;
 }
 
 export interface BackfillTriggerResult {
@@ -1159,6 +1160,24 @@ export interface BackfillTriggerResult {
   completedUtc: string;
   error: string | null;
   quotaReceipt?: BackfillQuotaReceipt | null;
+  batchReceipts?: BackfillBatchReceipt[] | null;
+}
+
+export interface BackfillBatchReceipt {
+  revisionId: string;
+  requestedProvider: string;
+  servingProvider: string | null;
+  feed: string;
+  instrument: string;
+  granularity: string;
+  from: string | null;
+  to: string | null;
+  status: string;
+  rowCount: number;
+  contentHash: string;
+  calendar: string | null;
+  expectedSessions: string[] | null;
+  receivedSessions: string[];
 }
 
 export interface BackfillQuotaEstimate {
@@ -1215,6 +1234,7 @@ export interface BackfillJobReceipt {
   error: string | null;
   estimate: BackfillQuotaEstimate;
   actual: BackfillQuotaReceipt | null;
+  batchReceipts?: BackfillBatchReceipt[] | null;
 }
 
 export interface BackfillPreviewSymbol {

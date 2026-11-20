@@ -74,6 +74,8 @@ internal static class BackfillQuotaPlanner
             ? "Current usage is unavailable. Duration assumes an unused first window."
             : "Remaining requests reflect this host's historical adapter. Other clients can consume the provider account's quota.";
         uncertainty += " Pagination, retries and queue time can change the result. Duration assumes at least 0.2 seconds per planned request plus quota waits.";
+        if (request.ResumeFromCheckpoint)
+            uncertainty += " Resuming from retained coverage can reduce the number of requests.";
         if (quotaUnit != "requests")
             uncertainty += $" Each planned single-symbol bars request is budgeted as one {quotaUnit.TrimEnd('s')}.";
 

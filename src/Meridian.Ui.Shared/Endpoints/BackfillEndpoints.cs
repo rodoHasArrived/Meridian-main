@@ -620,6 +620,7 @@ public static class BackfillEndpoints
             req.Symbols ?? Array.Empty<string>(),
             req.From,
             req.To,
-            granularity);
+            granularity,
+            ResumeFromCheckpoint: req.ResumeFromCheckpoint);
     }
 }

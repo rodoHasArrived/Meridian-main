@@ -9,6 +9,7 @@ using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Http;
+using Meridian.Storage.Backfill;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using BackfillCoordinator = Meridian.Application.Backfill.BackfillCoordinator;
@@ -100,9 +101,22 @@ public sealed class BackfillQuotaTests : IDisposable
             receipt.Actual.DurationVarianceSeconds.Should().NotBeNull();
             receipt.Actual.ThrottlingEvents.Select(e => e.Reason)
                 .Should().Contain(["headroom", "provider-rate-limit", "concurrency"]);
+            receipt.BatchReceipts.Should().HaveCount(2);
             coordinator.TryReadSymbolCheckpoints().Should().BeNull();
+            var dataRoot = Path.Combine(_root, "data");
+            var archiveBatches = new BackfillStatusStore(dataRoot).Batches;
+            foreach (var batch in receipt.BatchReceipts!)
+            {
+                var archived = await archiveBatches.ReadAsync(batch.RevisionId);
+                archived!.Receipt.Should().BeEquivalentTo(batch);
+            }
+            new BackfillStatusStore(dataRoot, Tenant)
+                .TryReadSymbolCoverage(DataGranularity.Daily, provider.Name, provider.CoverageFeed).Should().HaveCount(2);
+            new BackfillStatusStore(dataRoot, "another-tenant")
+                .TryReadSymbolCoverage(DataGranularity.Daily, provider.Name, provider.CoverageFeed).Should().BeNull();
             var retained = new BackfillExecutionHistory(historyPath).GetExecution(accepted.ExecutionId);
             retained!.QuotaReceipt.Should().BeEquivalentTo(receipt.Actual);
+            retained.BatchReceipts.Should().BeEquivalentTo(receipt.BatchReceipts);
         }
         finally
         {

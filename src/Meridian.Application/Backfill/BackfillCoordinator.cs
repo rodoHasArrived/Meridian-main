@@ -51,6 +51,8 @@ public sealed class BackfillCoordinator : IDisposable
     private volatile ActiveQuotaRun? _activeQuotaRun;
     private bool _disposed;
 
+    public Func<string, DateOnly, DateOnly, CancellationToken, Task<HistoricalSessionSchedule?>>? ResolveSessionsAsync { get; init; }
+
     /// <summary>
     /// Creates a BackfillCoordinator using the unified ProviderRegistry for provider discovery.
     /// </summary>
@@ -230,9 +232,9 @@ public sealed class BackfillCoordinator : IDisposable
         RunCoreAsync(request, null, null, null, null, ct);
 
     internal Task<BackfillResult> RunQueuedAsync(
-        BackfillRequest request, string jobId, BackfillQuotaEstimate estimate, string dataRoot,
+        BackfillQueuedWork work, string jobId, string dataRoot,
         Action onStarted, CancellationToken ct) =>
-        RunCoreAsync(request, jobId, estimate, dataRoot, onStarted, ct);
+        RunCoreAsync(work.Request, jobId, work, dataRoot, onStarted, ct);
 
     internal bool IsJobThrottled(string jobId) =>
         _activeQuotaRun is { } active && active.JobId == jobId && active.Session.IsThrottled;
@@ -240,7 +242,7 @@ public sealed class BackfillCoordinator : IDisposable
     private async Task<BackfillResult> RunCoreAsync(
         BackfillRequest request,
         string? jobId,
-        BackfillQuotaEstimate? retainedEstimate,
+        BackfillQueuedWork? queuedWork,
         string? queuedDataRoot,
         Action? onStarted,
         CancellationToken ct)
@@ -282,13 +284,13 @@ public sealed class BackfillCoordinator : IDisposable
             // Keep pipeline counters scoped per run
             _metrics.Reset();
 
-            var statusStore = new BackfillStatusStore(dataRoot);
+            var statusStore = new BackfillStatusStore(dataRoot, queuedWork?.TenantId);
             var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
             using var composite = CreateComposite(request, providers, cfg.Backfill, jobId is null ? _progressTracker : null);
             using var quotaSession = new HistoricalBackfillQuotaSession(cfg.Backfill?.QuotaPolicies, retryRateLimits: jobId is not null);
-            var estimate = retainedEstimate ?? EstimateQuota(request, providers, cfg.Backfill);
+            var estimate = queuedWork?.Estimate ?? EstimateQuota(request, providers, cfg.Backfill);
             _activeQuotaRun = new ActiveQuotaRun(jobId, quotaSession);
-            var service = CreateService(providers, composite, cfg.Backfill, jobId is null ? statusStore : null);
+            var service = CreateService(providers, composite, cfg.Backfill, statusStore);
             var result = await service.RunAsync(request, pipeline, quotaSession, estimate, ct).ConfigureAwait(false);
 
             // Queued jobs have their own tenant-scoped history and status.
@@ -520,7 +522,10 @@ public sealed class BackfillCoordinator : IDisposable
             jobsConfig: config?.Jobs,
             checkpointStore: checkpointStore,
             symbolTimelineResolver: _symbolTimelineResolver,
-            validationProfiles: config?.ValidationProfiles);
+            validationProfiles: config?.ValidationProfiles)
+        {
+            ResolveSessionsAsync = ResolveSessionsAsync
+        };
 
     private sealed record ActiveQuotaRun(string? JobId, HistoricalBackfillQuotaSession Session);
 

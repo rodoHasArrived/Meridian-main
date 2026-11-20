@@ -3,6 +3,7 @@ using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.Archival;
 using Meridian.Contracts.Backfill;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Storage.Backfill;
 
@@ -18,14 +19,25 @@ public sealed class BackfillStatusStore
     private readonly string _symbolCoveragePath;
 
     public BackfillStatusStore(string dataRoot)
+        : this(dataRoot, null)
+    {
+    }
+
+    public BackfillStatusStore(string dataRoot, string? tenantId)
     {
         var root = string.IsNullOrWhiteSpace(dataRoot) ? "data" : dataRoot;
         var statusDir = Path.Combine(root, "_status");
+        // Stored rows reference these revisions from the shared market-data archive.
+        Batches = new BackfillBatchStore(Path.Combine(statusDir, "backfill-batches"));
+        if (tenantId is not null)
+            statusDir = Path.Combine(statusDir, "backfill-tenants", Sha256Digest.ComputeUtf8(tenantId));
         _path = Path.Combine(statusDir, "backfill.json");
         _symbolCheckpointsPath = Path.Combine(statusDir, "backfill-symbol-checkpoints.json");
         _symbolBarCountsPath = Path.Combine(statusDir, "backfill-symbol-barcounts.json");
         _symbolCoveragePath = Path.Combine(statusDir, "backfill-symbol-coverage.json");
     }
+
+    public BackfillBatchStore Batches { get; }
 
     public static BackfillStatusStore FromConfig(AppConfig cfg) => new(cfg.DataRoot);
 
@@ -227,7 +239,7 @@ public sealed class BackfillStatusStore
 
     /// <summary>
     /// Removes all per-symbol checkpoints, bar-count data and verified coverage.
-    /// Call when starting a fresh (non-resume) backfill run.
+    /// Fresh backfill runs reset progress through <see cref="ResetSymbolCheckpointStatusAsync"/>.
     /// </summary>
     public async Task ClearSymbolCheckpointsAsync(CancellationToken ct = default)
     {
@@ -257,7 +269,16 @@ public sealed class BackfillStatusStore
     /// Removes only the checkpoints, bar-count data and verified coverage associated with the requested
     /// <paramref name="granularity"/>, preserving resume state for other backfill lanes.
     /// </summary>
-    public async Task ClearSymbolCheckpointsAsync(DataGranularity granularity, CancellationToken ct = default)
+    public Task ClearSymbolCheckpointsAsync(DataGranularity granularity, CancellationToken ct = default)
+        => ClearSymbolCheckpointsAsync(granularity, includeVerifiedCoverage: true, ct);
+
+    /// <summary>
+    /// Resets date and bar-count status for the requested granularity while retaining verified coverage.
+    /// </summary>
+    public Task ResetSymbolCheckpointStatusAsync(DataGranularity granularity, CancellationToken ct = default)
+        => ClearSymbolCheckpointsAsync(granularity, includeVerifiedCoverage: false, ct);
+
+    private async Task ClearSymbolCheckpointsAsync(DataGranularity granularity, bool includeVerifiedCoverage, CancellationToken ct)
     {
         await _checkpointLock.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -286,8 +307,7 @@ public sealed class BackfillStatusStore
                 await AtomicFileWriter.WriteAsync(_symbolBarCountsPath, barCountJson, ct);
             }
 
-            var coverage = TryReadCoverageDocument();
-            if (coverage is not null)
+            if (includeVerifiedCoverage && TryReadCoverageDocument() is { } coverage)
             {
                 var lane = granularity.ToUiValue();
                 coverage.Entries.RemoveAll(entry => string.Equals(entry.Granularity, lane, StringComparison.OrdinalIgnoreCase));

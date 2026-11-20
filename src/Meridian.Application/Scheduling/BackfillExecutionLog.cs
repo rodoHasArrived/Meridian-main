@@ -142,6 +142,7 @@ public sealed class BackfillExecutionLog
 
     public BackfillQueuedWork? QueuedWork { get; init; }
     public BackfillQuotaReceipt? QuotaReceipt { get; init; }
+    public IReadOnlyList<BackfillBatchReceipt>? BatchReceipts { get; init; }
 }
 
 /// <summary>

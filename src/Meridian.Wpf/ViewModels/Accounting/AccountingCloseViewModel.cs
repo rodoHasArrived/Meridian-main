@@ -69,11 +69,15 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
     public AccountingCloseViewModel(
         IAccountingProjectionQueryService queryService,
         IAccountingCloseManagementService? closeManagementService = null,
-        DesktopAuthenticationSession? authenticationSession = null)
+        DesktopAuthenticationSession? authenticationSession = null,
+        FiscalYearCloseViewModel? fiscalYearClose = null,
+        BookFxSettlementViewModel? bookFxSettlement = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _closeManagementService = closeManagementService;
         _authenticationSession = authenticationSession;
+        FiscalYearClose = fiscalYearClose;
+        BookFxSettlement = bookFxSettlement;
         LoadClosePlanCommand = new AsyncRelayCommand(LoadClosePlanAsync, CanLoadClosePlan);
         ConfigureClosePlanCommand = new AsyncRelayCommand(ConfigureClosePlanAsync, CanConfigureClosePlan);
         SignOffCloseTaskCommand = new AsyncRelayCommand(SignOffCloseTaskAsync, CanSignOffCloseTask);
@@ -85,6 +89,8 @@ public sealed partial class AccountingCloseViewModel : Meridian.Wpf.ViewModels.B
     }
 
     public ObservableCollection<TrialBalanceLine> TrialBalance { get; } = [];
+    public FiscalYearCloseViewModel? FiscalYearClose { get; }
+    public BookFxSettlementViewModel? BookFxSettlement { get; }
     public ObservableCollection<RollForwardLine> RollForward { get; } = [];
     public ObservableCollection<SourceLinkedAuditLine> AuditTrail { get; } = [];
     public ObservableCollection<CloseApprovalHistoryEntry> ApprovalHistory { get; } = [];

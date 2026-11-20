@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceNodeRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceNodeRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:46](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L46).
+
+```csharp
+public sealed record EvidenceNodeRowModel(string EvidenceId, string KindText, string StatusText, WorkstationReadinessTone ReadinessTone, string Tone, string SourceSystem, string FreshnessText, WorkstationReadinessTone FreshnessTone, string Summary, string ArtifactCountText, string WorkItemCountText);
+```
+
+## EvidencePacketActionRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidencePacketActionRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:81](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L81).
+
+```csharp
+public sealed record EvidencePacketActionRowModel(string ActionId, string Label, string Detail, string TargetPageTag, string TargetText);
+```
+
+## EvidenceProofChainLayerRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceProofChainLayerRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:35](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L35).
+
+```csharp
+public sealed record EvidenceProofChainLayerRowModel(string LayerId, string Label, string StatusText, WorkstationReadinessTone ReadinessTone, string Tone, string CoverageText, string CountsText, string KindsText, string Summary);
+```
+
+## EvidenceRequestListRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceRequestListRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:66](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L66).
+
+```csharp
+public sealed record EvidenceRequestListRowModel(string RequestListId, string KindText, string TargetText, string SeverityText, WorkstationReadinessTone SeverityTone, string Tone, string StatusText, string OpenRequestCountText, string EvidenceKindsText, string BlockedOutputsText, string Summary, string VaultText, string RetainedText);
+```
+
+## EvidenceVaultDocumentQueuePresentationModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultDocumentQueuePresentationModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:6](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L6).
+
+```csharp
+public sealed record EvidenceVaultDocumentQueuePresentationModel(string SummaryText, string ReadinessText, string ManifestSnapshotText, WorkstationReadinessTone ReadinessTone, string Tone, IReadOnlyList<EvidenceVaultDocumentRowModel> Documents, EvidenceVaultManifestSnapshotModel? ManifestSnapshot)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasFrozenManifestSnapshot =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:15](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L15) |  |
+
+## EvidenceVaultDocumentRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultDocumentRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:18](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L18).
+
+```csharp
+public sealed record EvidenceVaultDocumentRowModel(string DocumentId, string FileName, string ClassificationText, string ExtractionText, string ReviewText, string SourceHashText, string SourceText, string ActorText, string TenantScopeText, string ObjectLinksText, string OpenRequestCountText, string ManifestRoute, WorkstationReadinessTone ReadinessTone, string Tone, IReadOnlyList<WorkstationEvidenceLinkModel> EvidenceLinks);
+```
+
 ## EvidenceVaultManifestSnapshotModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultManifestSnapshotModel</code>. Kind: `record`.
@@ -680,76 +746,4 @@ Provides a content surface for connection-status presentation.
 
 ```csharp
 public sealed class ConnectionStatusIndicatorControl : ContentControl
-```
-
-## EmptyStatePanelControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.EmptyStatePanelControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:124](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L124).
-
-Provides a content surface for an empty-state explanation and action.
-
-```csharp
-public sealed class EmptyStatePanelControl : ContentControl
-```
-
-## ErrorStatePanelControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.ErrorStatePanelControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:131](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L131).
-
-Provides a content surface for an error explanation and recovery action.
-
-```csharp
-public sealed class ErrorStatePanelControl : ContentControl
-```
-
-## HealthBadgeControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.HealthBadgeControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:96](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L96).
-
-Provides a styled content surface for health-status presentation.
-
-```csharp
-public sealed class HealthBadgeControl : ContentControl
-```
-
-## LoadingOverlayControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.LoadingOverlayControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:117](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L117).
-
-Provides a content surface for loading overlays.
-
-```csharp
-public sealed class LoadingOverlayControl : ContentControl
-```
-
-## MetricTileControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.MetricTileControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:89](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L89).
-
-Provides a styled content surface for metric values.
-
-```csharp
-public sealed class MetricTileControl : ContentControl
-```
-
-## StatusRibbonControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.StatusRibbonControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:82](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L82).
-
-Provides an items-control surface for workstation status indicators.
-
-```csharp
-public sealed class StatusRibbonControl : ItemsControl
 ```

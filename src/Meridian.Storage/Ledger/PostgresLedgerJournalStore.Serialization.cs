@@ -23,6 +23,10 @@ public sealed partial class PostgresLedgerJournalStore
     private static JournalEntryMetadata DeserializeMetadata(string json)
         => JsonSerializer.Deserialize<JournalEntryMetadata>(json, JsonOptions) ?? new JournalEntryMetadata();
 
+    private static LedgerAccountChartReference DeserializeChartAccount(string json)
+        => JsonSerializer.Deserialize<LedgerAccountChartReference>(json, JsonOptions)
+           ?? throw new LedgerValidationException("Stored chart account evidence is invalid.");
+
     private static LedgerEntryCurrency? ReadLegCurrency(
         NpgsqlDataReader reader,
         int transactionCurrencyOrdinal,
