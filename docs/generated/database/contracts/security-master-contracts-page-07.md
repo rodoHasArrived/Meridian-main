@@ -198,6 +198,7 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecuritySearchRequest["SecuritySearchRequest"] {
         +bool ActiveOnly
         +string? CustomProfileId
+        +bool PrefixOnly
         +string? ProfileFieldKey
         +string? ProfileFieldValue
         +int? ProfileVersion

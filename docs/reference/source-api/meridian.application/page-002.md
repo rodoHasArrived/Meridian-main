@@ -103,7 +103,7 @@ public sealed record SymbolPreview(string Symbol, string DateRange, int Estimate
 
 Qualified name: <code>Meridian.Application.Backfill.WorkstationBackfillQueue</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:9](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L9).
+Source: [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:10](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L10).
 
 Retains one-off workstation jobs and executes them through the shared coordinator.
 
@@ -115,8 +115,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;BackfillSubmissionReceipt&gt; SubmitAsync(Guid submissionId, string tenantId, BackfillRequest request, DateTimeOffset? runAt, string? alternativeFor, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:18](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L18) |  |
-| <code>public static string GetStatus(BackfillExecutionLog execution, DateTimeOffset now) =&gt; …;</code> | [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:63](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L63) |  |
+| <code>public async Task&lt;BackfillSubmissionReceipt&gt; SubmitAsync(Guid submissionId, string tenantId, BackfillRequest request, DateTimeOffset? runAt, string? alternativeFor, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:19](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L19) |  |
+| <code>public static string GetStatus(BackfillExecutionLog execution, DateTimeOffset now) =&gt; …;</code> | [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:64](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L64) |  |
 
 ## CliArguments
 

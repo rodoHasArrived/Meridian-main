@@ -1650,6 +1650,11 @@ provider trust list.
 and local command search. Purpose descriptions and search-only aliases expose intents such as
 cash forecast, statement import, historical prices, and running reports. Local destinations remain
 searchable when remote command or entity search is unavailable; unwired routes stay excluded.
+Command search also looks up instruments, retained brokerage positions, journals, governed report
+runs, reconciliation cases, statement runs, and close workflows. After the typing pause, the server
+checks the session's family permissions, retained ownership, and applicable scoped grants or report
+audience. Exact record IDs precede identifier and name prefixes. Each result shows its scope,
+as-of posture, status, and a link that opens the selected record in its own scope.
 Accounting onboarding searches open the existing External GL surface, which hosts the bounded
 onboarding workspace and its retained comparison and readiness evidence. Its shadow-mode section
 (`accounting-screen.onboarding-shadow-panel.tsx`) covers shadow-book designation, incumbent

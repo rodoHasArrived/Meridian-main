@@ -1,6 +1,7 @@
 import { formatNumber as formatNumberAmount, formatRatioAsPercent as formatRatioAsPercentAmount, pluralizeCount, formatTimestamp } from "@/lib/format";
 import type { TradingWorkspaceResponse } from "@/types";
 import type {
+  PortfolioBrokerageAccountOption,
   PortfolioDetailField,
   PortfolioPositionDetail,
   PortfolioPositionRow,
@@ -87,3 +88,47 @@ export function formatDateTime(value: string): string {
     : formatTimestamp(date);
 }
 
+export function resolveBrokerageAccountFilterKeyCommand(
+  key: string
+): "next" | "previous" | "first" | "last" | null {
+  if (key === "ArrowRight" || key === "ArrowDown") {
+    return "next";
+  }
+
+  if (key === "ArrowLeft" || key === "ArrowUp") {
+    return "previous";
+  }
+
+  if (key === "Home") {
+    return "first";
+  }
+
+  if (key === "End") {
+    return "last";
+  }
+
+  return null;
+}
+
+export function nextBrokerageAccountKey(
+  options: PortfolioBrokerageAccountOption[],
+  selectedKey: string,
+  direction: "next" | "previous" | "first" | "last"
+): string {
+  if (options.length === 0) {
+    return selectedKey;
+  }
+
+  if (direction === "first") {
+    return options[0].key;
+  }
+
+  if (direction === "last") {
+    return options[options.length - 1].key;
+  }
+
+  const selectedIndex = Math.max(0, options.findIndex((option) => option.key === selectedKey));
+  const offset = direction === "next" ? 1 : -1;
+  const nextIndex = (selectedIndex + offset + options.length) % options.length;
+  return options[nextIndex].key;
+}

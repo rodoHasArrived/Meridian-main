@@ -81,6 +81,19 @@ public sealed class BackfillProviderProvenanceTests : TempDirectoryTestBase
         {
             Backfill = originalConfig.Backfill! with
             {
+                OperationalBudgets = new() { ["yahoo"] = new(MaxConcurrentRequests: 1) }
+            }
+        });
+        var capped = () => coordinator.RunCloneAsync(source.ReceiptId, conflict.Which.Plan.ConfirmationCode!, Tenant);
+        var cappedConflict = await capped.Should().ThrowAsync<Meridian.Application.Backfill.BackfillCloneConflictException>();
+        cappedConflict.Which.Plan.Status.Should().Be("Unavailable");
+        cappedConflict.Which.Plan.Messages.Should().ContainSingle().Which.Should().Contain("concurrency");
+        (await coordinator.GetClonePlanAsync(source.ReceiptId, Tenant))!.ConfirmationCode.Should().BeNull();
+
+        await config.SaveAsync(originalConfig with
+        {
+            Backfill = originalConfig.Backfill! with
+            {
                 ValidationProfiles = new Dictionary<string, ProviderValidationProfile>
                 {
                     ["yahoo"] = new(StaleToleranceDays: 21)

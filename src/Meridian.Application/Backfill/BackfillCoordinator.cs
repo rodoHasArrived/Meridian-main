@@ -235,15 +235,16 @@ public sealed partial class BackfillCoordinator : IDisposable
     public Task<BackfillResult> RunAsync(BackfillRequest request, CancellationToken ct = default)
         => RunAsync(request, null, ct);
 
-    public Task<BackfillResult> RunAsync(BackfillRequest request, string? tenantId, CancellationToken ct)
-        => RunCoreAsync(request, null, null, tenantId, ct);
+    public async Task<BackfillResult> RunAsync(BackfillRequest request, string? tenantId, CancellationToken ct)
+        => (await RunCoreAsync(request, null, null, tenantId, ct).ConfigureAwait(false)).Result;
 
-    internal Task<BackfillResult> RunQueuedAsync(
+    internal Task<(BackfillResult Result, BackfillStatusStore ReceiptStore)> RunQueuedAsync(
         BackfillRequest request, string tenantId, BackfillQuotaEstimate estimate, string? alternativeFor,
         Action onStarted, Action<DateTimeOffset> onThrottled, CancellationToken ct) =>
         RunCoreAsync(request, null, null, tenantId, ct, estimate, alternativeFor, onStarted, onThrottled);
 
-    private async Task<BackfillResult> RunCoreAsync(BackfillRequest? request, Guid? cloneReceiptId,
+    private async Task<(BackfillResult Result, BackfillStatusStore ReceiptStore)> RunCoreAsync(
+        BackfillRequest? request, Guid? cloneReceiptId,
         string? confirmationCode, string? tenantId, CancellationToken ct, BackfillQuotaEstimate? submissionEstimate = null,
         string? alternativeFor = null, Action? onStarted = null, Action<DateTimeOffset>? onThrottled = null)
     {
@@ -278,13 +279,7 @@ public sealed partial class BackfillCoordinator : IDisposable
             ValidateAlternative(request, alternativeFor, cfg.Backfill, service.Providers);
             var estimate = submissionEstimate ?? BackfillQuotaPlanner.Estimate(request, requestedProvider,
                 cfg.Backfill, statusStore, DateTimeOffset.UtcNow);
-            var policyProviders = requestedProvider is CompositeHistoricalDataProvider
-                ? service.Providers.Where(provider => provider is not CompositeHistoricalDataProvider)
-                : [requestedProvider];
-            var concurrency = Math.Max(1, request.MaxConcurrentSymbols ?? cfg.Backfill?.Jobs?.MaxConcurrentRequests ?? new BackfillJobsConfig().MaxConcurrentRequests);
-            foreach (var provider in policyProviders)
-                if (BackfillQuotaPlanner.GetPolicy(cfg.Backfill, provider.Name).MaxConcurrentRequests is { } maximum)
-                    concurrency = Math.Min(concurrency, maximum);
+            var concurrency = BackfillQuotaPlanner.ResolveConcurrency(request, cfg.Backfill, requestedProvider, service.Providers);
             request = request with { MaxConcurrentSymbols = concurrency };
 
             onStarted?.Invoke();
@@ -326,11 +321,6 @@ public sealed partial class BackfillCoordinator : IDisposable
                 await statusStore.WriteAsync(result).ConfigureAwait(false);
                 _lastRun = result;
             }
-            else if (result.ProviderProvenance is { } provenance)
-            {
-                await statusStore.WriteRetainedResultAsync(new(provenance, result.Success, result.BarsWritten, result.ProvenanceAccess))
-                    .ConfigureAwait(false);
-            }
             _receiptLookupRoot = dataRoot;
 
             var skipped = result.SkippedSymbols.ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -344,7 +334,7 @@ public sealed partial class BackfillCoordinator : IDisposable
                     tracker.MarkFailed(symbol, result.Error);
             }
 
-            return result;
+            return (result, statusStore);
         }
         catch (Exception ex)
         {

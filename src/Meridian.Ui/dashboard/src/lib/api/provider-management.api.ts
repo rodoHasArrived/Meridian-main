@@ -408,8 +408,11 @@ export function revokeAlpacaConnection(options: ApiRequestOptions = {}) {
   return deleteJson<BrokerageConnectionStatus>(brokerageConnectionEndpoint("alpaca"), options);
 }
 
-export function getBrokerageHouseholdPortfolio(provider = "alpaca", options: ApiRequestOptions = {}) {
-  return getJson<BrokerageHouseholdPortfolio>(portfolioHouseholdEndpoint(provider), options);
+export function getBrokerageHouseholdPortfolio(
+  provider = "alpaca",
+  options: ApiRequestOptions & { fundAccountId?: string | null } = {}
+) {
+  return getJson<BrokerageHouseholdPortfolio>(portfolioHouseholdEndpoint(provider, options.fundAccountId), options);
 }
 
 export function getPortfolioAggregate() {

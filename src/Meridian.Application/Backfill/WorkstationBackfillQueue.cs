@@ -1,5 +1,6 @@
 using Meridian.Application.Scheduling;
 using Meridian.Contracts.Backfill;
+using Meridian.Storage.Backfill;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -93,9 +94,11 @@ public sealed class WorkstationBackfillQueue(
     private async Task ExecuteJobAsync(BackfillExecutionLog execution, CancellationToken ct)
     {
         var submission = execution.WorkstationSubmission!;
+        Func<CancellationToken, Task>? retainProvenance = null;
         try
         {
-            var result = await coordinator.RunQueuedAsync(submission.Request, submission.TenantId, submission.Estimate, submission.AlternativeFor,
+            var (result, receiptStore) = await coordinator.RunQueuedAsync(
+                submission.Request, submission.TenantId, submission.Estimate, submission.AlternativeFor,
                 onStarted: () =>
                 {
                     var running = execution with { Status = ExecutionStatus.Running, StartedAt = _clock.GetUtcNow() };
@@ -103,6 +106,12 @@ public sealed class WorkstationBackfillQueue(
                     execution = running;
                 },
                 onThrottled: until => execution.ReportThrottle(until), ct).ConfigureAwait(false);
+
+            if (result.ProviderProvenance is { } provenance)
+            {
+                var retained = new RetainedBackfillResult(provenance, result.Success, result.BarsWritten, result.ProvenanceAccess);
+                retainProvenance = token => receiptStore.WriteRetainedResultAsync(retained, token);
+            }
 
             execution = execution with
             {
@@ -132,15 +141,21 @@ public sealed class WorkstationBackfillQueue(
             };
         }
 
-        await RetainCompletionAsync(execution, ct).ConfigureAwait(false);
+        await RetainCompletionAsync(execution, ct, retainProvenance).ConfigureAwait(false);
     }
 
-    private async Task RetainCompletionAsync(BackfillExecutionLog execution, CancellationToken ct)
+    private async Task RetainCompletionAsync(BackfillExecutionLog execution, CancellationToken ct,
+        Func<CancellationToken, Task>? retainProvenance = null)
     {
         while (!ct.IsCancellationRequested)
         {
             try
             {
+                if (retainProvenance is not null)
+                {
+                    await retainProvenance(ct).ConfigureAwait(false);
+                    retainProvenance = null;
+                }
                 history.RecordWorkstationExecution(execution);
                 return;
             }

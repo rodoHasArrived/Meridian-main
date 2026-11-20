@@ -393,7 +393,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Application.Backfill.BackfillCloneConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:210](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L210).
+Source: [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:215](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L215).
 
 ```csharp
 public sealed class BackfillCloneConflictException(BackfillClonePlan plan) : InvalidOperationException("The backfill clone requires a new review.")
@@ -403,7 +403,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BackfillClonePlan Plan { get; } = plan;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:213](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L213) |  |
+| <code>public BackfillClonePlan Plan { get; } = plan;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:218](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L218) |  |
 
 ## BackfillCoordinator
 
@@ -421,7 +421,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public BackfillStatusStore GetReceiptStore();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:20](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L20) |  |
 | <code>public async Task&lt;BackfillClonePlan?&gt; GetClonePlanAsync(Guid receiptId, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:25](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L25) |  |
-| <code>public Task&lt;BackfillResult&gt; RunCloneAsync(Guid receiptId, string confirmationCode, string? tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:41](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L41) |  |
+| <code>public async Task&lt;BackfillResult&gt; RunCloneAsync(Guid receiptId, string confirmationCode, string? tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:41](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs#L41) |  |
 
 Source: [src/Meridian.Application/Backfill/BackfillCoordinator.cs:38](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L38).
 
@@ -449,10 +449,10 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckProviderHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:187](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L187) | Get health status of all providers. |
 | <code>public async Task&lt;SymbolResolution?&gt; ResolveSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:224](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L224) | Resolve a symbol using OpenFIGI. |
 | <code>public Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:235](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L235) |  |
-| <code>public Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:238](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L238) |  |
-| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:366](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L366) | Previews a backfill operation without fetching data: which provider would serve it, estimated bar counts and duration, and existing on-disk coverage per symbol. |
-| <code>public async Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, string? tenantId, CancellationToken ct);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:369](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L369) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:665](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L665) |  |
+| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:238](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L238) |  |
+| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:356](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L356) | Previews a backfill operation without fetching data: which provider would serve it, estimated bar counts and duration, and existing on-disk coverage per symbol. |
+| <code>public async Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, string? tenantId, CancellationToken ct);</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:359](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L359) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Backfill/BackfillCoordinator.cs:655](../../../../src/Meridian.Application/Backfill/BackfillCoordinator.cs#L655) |  |
 
 ## BackfillCoordinatorExecutionGateway
 
@@ -677,7 +677,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Backfill.BackfillSubmissionConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:175](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L175).
+Source: [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:190](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L190).
 
 ```csharp
 public sealed class BackfillSubmissionConflictException(string message) : Exception(message);
