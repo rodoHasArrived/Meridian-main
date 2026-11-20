@@ -6,6 +6,233 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityFactorSource
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorSource</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L7).
+
+Where a dated factor point comes from.
+
+```csharp
+public enum SecurityFactorSource
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>TermsSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L10) | A point of the declared factor schedule in the security&#x27;s terms. |
+| <code>PrincipalPaydown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L13) | The post-paydown factor recorded on an effective principal-paydown corporate action. |
+| <code>CurrentFactor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L16) | The scalar current factor in the terms, dated by its retained factor date. |
+
+## SecurityFieldProvenance
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenance</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L46).
+
+Field-level provenance: which source system asserted the value at FieldPath, as of when, and with what confidence (null when the source carries no confidence score — never fabricated).
+
+```csharp
+public sealed record SecurityFieldProvenance(string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence);
+```
+
+## SecurityFieldProvenanceOrigins
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L58).
+
+Canonical origins for persisted field-level provenance rows. The origin distinguishes canonical golden-record attribution from overlay annotations, so an operator edit can never masquerade as (or clobber) a conflict-resolution winner.
+
+```csharp
+public static class SecurityFieldProvenanceOrigins
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConflictResolution = &quot;ConflictResolution&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L61) | The attribution written when a golden-record conflict resolves to a winning source. |
+| <code>public const string OperatorFieldEdit = &quot;OperatorFieldEdit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L64) | The attribution written when an operator stages an overlay field edit. |
+| <code>public const string CanonicalWrite = &quot;CanonicalWrite&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L72) | The attribution written when an ordinary canonical create/amend changes a governed field — the per-field record of WHICH source supplied the current value, kept so conflict detection can name the true incumbent even when the field was never conflicted (record-level provenance flips on every amendment and cannot answer that question). |
+
+## SecurityFieldProvenanceRecord
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L81).
+
+A persisted field-level provenance row: the durable form of SecurityFieldProvenance, keyed by (security, field path, origin). OriginReference points back at the artifact that asserted the attribution — the conflict id for conflict resolutions, the revision id for operator field edits — so lineage is traceable to its governing record.
+
+```csharp
+public sealed record SecurityFieldProvenanceRecord(Guid SecurityId, string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence, string Origin, string? OriginReference, DateTimeOffset RecordedAt, long? SourceVersion = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityFieldProvenance ToFieldProvenance() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L99) | Projects the durable row onto the display-level field-provenance shape. |
+
+## SecurityForwardCurve
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurve</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L15).
+
+Projected fixings for one floating-rate index, as observed on AsOfDate. A floating leg resets each period at the curve&#x27;s rate for the period&#x27;s accrual start date, linearly interpolated between points and held flat beyond the first and last point.
+
+```csharp
+public sealed record SecurityForwardCurve(string IndexName, DateOnly AsOfDate, IReadOnlyList<SecurityForwardCurvePoint> Points, string? Source = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondCalculationInput? RetainedInput { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L23) | The immutable stored curve version behind these projected fixings, when retained. |
+| <code>public decimal? RateAt(DateOnly resetDate);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L25) | The projected fixing for a reset on resetDate; null when the curve has no points. |
+| <code>public const string RateSourcePrefix = &quot;forwardCurve:&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L61) | The prefix of every Describe label, and so of a curve-projected leg&#x27;s RateSource. |
+| <code>public string Describe() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L70) | A short provenance label for projections: forwardCurve:{index}@{yyyy-MM-dd}, then ({source}) when a source is known. The date is written in the invariant culture, so TryReadAsOf reads it back on any host. |
+| <code>public static bool TryReadAsOf(string? rateSource, out DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L80) | Reads the curve&#x27;s as-of date back from a Describe label, such as a leg&#x27;s RateSource. The date is the first @yyyy-MM-dd that ends the label or is followed by the (source) suffix, so an index name or source that itself contains @ still reads. False for any other label. |
+
+## SecurityForwardCurveJsonContext
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L118).
+
+Supplies forward curves for floating-rate cash-flow projection. Hosts without one keep the flat-forward projection (last fixing plus spread). The stored implementation is StoredSecurityForwardCurveProvider in Application, reading ISecurityCurveStore.
+
+```csharp
+public sealed partial class SecurityForwardCurveJsonContext : JsonSerializerContext;
+```
+
+## SecurityForwardCurvePoint
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L8).
+
+A projected index fixing for a reset date. Rates above 1 are read as percentages.
+
+```csharp
+public sealed record SecurityForwardCurvePoint(DateOnly Date, decimal Rate);
+```
+
+## SecurityHistoryRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityHistoryRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L23).
+
+```csharp
+public sealed record SecurityHistoryRequest(Guid SecurityId, int Take = 100);
+```
+
+## SecurityIdentifierDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIdentifierDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L90).
+
+```csharp
+public sealed record SecurityIdentifierDto(SecurityIdentifierKind Kind, string Value, bool IsPrimary, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo = null, string? Provider = null, string? NormalizedValue = null, string? NormalizedProvider = null);
+```
+
+## SecurityIdentifierKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIdentifierKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L6).
+
+```csharp
+public enum SecurityIdentifierKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Ticker</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L8) |  |
+| <code>Isin</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L9) |  |
+| <code>Cusip</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L10) |  |
+| <code>Sedol</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L11) |  |
+| <code>Figi</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L12) |  |
+| <code>OccOptionSymbol</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L14) | OCC/OSI listed-option contract symbol such as AAPL240621C00150000. |
+| <code>ProviderSymbol</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L15) |  |
+| <code>InternalCode</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L16) |  |
+| <code>Lei</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L18) | Legal Entity Identifier (ISO 17442) — 20-char alphanumeric; required for OTC derivatives regulatory reporting. |
+| <code>PermId</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L20) | Refinitiv/LSEG PermID — stable cross-asset persistent identifier. |
+| <code>Bbgid</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L22) | Bloomberg Global Identifier (BBGID) — stable across corporate actions; distinct from ticker. |
+| <code>Wkn</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L24) | Wertpapierkennnummer — German/Austrian exchange standard (6 alphanumeric chars). |
+| <code>Valoren</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L26) | Valoren — Swiss SIX exchange security number. |
+| <code>PermTicker</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L28) | Meridian-stable ticker that survives corporate actions (Bloomberg PermTicker convention). |
+| <code>Ric</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L30) | Reuters Instrument Code — used by Refinitiv Eikon / LSEG feeds. |
+| <code>Cik</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L32) | SEC Central Index Key — identifies an EDGAR filer or issuer, not a standalone tradable security. |
+| <code>LoanX</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L37) | IHS Markit LoanX ID — the market-standard identifier for syndicated loans (&quot;LX&quot; followed by six digits). |
+| <code>Clip</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L42) | CUSIP-format loan identifier (CLIP) assigned to syndicated loan facilities and tranches — nine alphanumeric characters. |
+| <code>ListingId</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L47) | Listing identity — a ticker on a specific ISO 10383 market, written TICKER:MIC (for example AAPL:XNAS); see Meridian.Contracts.Domain.ListingId. |
+| <code>Uti</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L53) | Unique Transaction Identifier (ISO 23897) for regulatory derivatives reporting — up to 52 upper-case alphanumeric characters whose first 20 are the generating entity&#x27;s LEI. Names exactly one trade, so it participates in duplicate detection like other canonical kinds. |
+| <code>Upi</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L59) | Unique Product Identifier (ISO 4914), issued by the ANNA Derivatives Service Bureau — 12 characters: &quot;QZ&quot;, nine digits/consonants, and an ISO 7064 MOD 31,30 check character. Names an OTC derivative product, so many contracts legitimately share one value. |
+| <code>MarkitRedEntity</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L64) | IHS Markit RED reference-entity code (RED6) — six alphanumeric characters naming a CDS reference entity. Shared by every contract on that entity. |
+| <code>MarkitRedPair</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L69) | IHS Markit RED pair code (RED9) — nine alphanumeric characters: the six-character entity code plus a three-character reference-obligation suffix. Shared by every contract on that pair. |
+| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L76) | Read-tolerance member: a kind written by a newer node that this node does not recognize. Rows carrying it stay readable (mixed-version rollout) but cannot be written back as-is — the command mapping rejects Unknown so unrecognized kinds are never silently re-persisted. |
+
+## SecurityIdentifierNormalizer
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L11).
+
+Canonical normalization and lightweight format validation for Security Master identifiers. This keeps resolution, duplicate detection, and UI/search projections aligned without forcing the stored raw vendor string to become the only comparable form.
+
+```csharp
+public static class SecurityIdentifierNormalizer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsProviderScoped(SecurityIdentifierKind kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L20) | Identifiers whose value is meaningful only inside the supplied provider namespace. Provider distinguishes only ProviderSymbol identities, matching validation&#x27;s duplicate rules: on every other kind - tickers included, whose Provider carries the ingest feed rather than a listing venue - Provider is provenance, so the same value claimed by different feeds still collides. |
+| <code>public static bool IsIssuerScopedKind(SecurityIdentifierKind kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L30) | Kinds that identify an issuer or legal entity rather than a standalone tradable security — per their contract in SecurityIdentifierKind, CIK names an EDGAR filer and LEI names an ISO 17442 legal entity. Distinct securities of one issuer legitimately share these, so they never participate in identifier-ambiguity pairing, and ambiguity-candidate lookups skip them rather than loading every sibling security of a large filer. |
+| <code>public static bool IsExcludedFromAmbiguityPairing(SecurityIdentifierKind kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L42) | Kinds excluded from identifier-ambiguity pairing altogether: the issuer-scoped kinds above, plus SecurityIdentifierKind.Unknown — this node&#x27;s degraded reading of ANY kind minted by a newer node. Two different future kinds degrade to the same Unknown, so pairing such claims on value alone would assert an ambiguity this node cannot actually compare; the newer nodes that still read the kind own that detection. Conflict detection and the ambiguity-candidate lookup share this set so they can never disagree about which claims participate. |
+| <code>public static bool IsSharedReferenceKind(SecurityIdentifierKind kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L52) | Kinds that name shared reference data rather than one security: a UPI names an OTC derivative product and a RED code names a CDS reference entity or entity/obligation pair, so many contracts legitimately carry the same value. Like the issuer-scoped kinds they never pair as identifier ambiguities, and they cannot be a record&#x27;s primary identifier — the normalized primary-identifier unique index (migration 032) would refuse the second contract. |
+| <code>public static string GetIdentityScope(SecurityIdentifierDto identifier);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L61) | Returns the normalized namespace that participates in identifier identity. Provider data on canonical identifier kinds is provenance, not identity, and therefore returns an empty scope. |
+| <code>public static string NormalizeValue(SecurityIdentifierKind kind, string? value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L69) |  |
+| <code>public static string NormalizeProvider(string? provider) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L99) |  |
+| <code>public static string NormalizeAliasValue(string? aliasKind, string? aliasValue) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:102](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L102) |  |
+| <code>public static string GetOrComputeNormalizedValue(SecurityIdentifierDto identifier);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L107) |  |
+| <code>public static string GetOrComputeNormalizedProvider(SecurityIdentifierDto identifier);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:115](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L115) |  |
+| <code>public static bool TryValidateFormat(SecurityIdentifierKind kind, string? value, out string? message);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifierNormalizer.cs#L123) |  |
+
+## SecurityIncomeCashFlow
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L38).
+
+One declared income cash flow, per unit held, derived from an effective (amendment-folded, non-cancelled) corporate action. Amounts are per share or fund unit in Currency; holders multiply by their position at RecordDate (or ExDate).
+
+```csharp
+public sealed record SecurityIncomeCashFlow(Guid CorpActId, string EventType, SecurityIncomeCashFlowKind Kind, SecurityIncomeComponent Component, DateOnly ExDate, DateOnly? RecordDate, DateOnly PaymentDate, decimal AmountPerUnit, string Currency, bool IsIncome);
+```
+
+## SecurityIncomeCashFlowGap
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlowGap</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L51).
+
+A corporate action that is a cash distribution but could not be placed on the schedule.
+
+```csharp
+public sealed record SecurityIncomeCashFlowGap(Guid CorpActId, string EventType, DateOnly ExDate, string Reason);
+```
+
 ## SecurityIncomeCashFlowKind
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlowKind</code>. Kind: `enum`.
@@ -647,234 +874,3 @@ Declared public members:
 | <code>public static bool IsAcceptedAssetSpecificTermsVersion(int schemaVersion, bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L85) |  |
 | <code>public static IReadOnlyList&lt;int&gt; AcceptedAssetSpecificTermsVersions(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L89) |  |
 | <code>public static string DescribeAcceptedAssetSpecificTermsVersions(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L93) |  |
-
-## SecurityOptionRight
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityOptionRight</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L25).
-
-The right an option grants.
-
-```csharp
-public enum SecurityOptionRight
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Call</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L27) |  |
-| <code>Put</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L28) |  |
-
-## SecurityOverrideApprovalStatusDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityOverrideApprovalStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L7).
-
-```csharp
-public enum SecurityOverrideApprovalStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotRequested = 0</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L9) |  |
-| <code>Pending = 1</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L10) |  |
-| <code>Approved = 2</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L11) |  |
-| <code>Rejected = 3</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L12) |  |
-
-## SecurityOverrideAuditEntryDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityOverrideAuditEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L15).
-
-```csharp
-public sealed record SecurityOverrideAuditEntryDto(string EventType, string Actor, DateTimeOffset OccurredAt, SecurityOverrideApprovalStatusDto ApprovalStatus, string? ReasonCode = null, string? Comment = null, string? Reviewer = null, DateTimeOffset? ReviewedAt = null);
-```
-
-## SecurityPaymentFrequency
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPaymentFrequency</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L40).
-
-The cadence of a contractual payment, reset or sweep. This is the one payment-frequency vocabulary for Security Master terms: the F# PaymentFrequency union labels (Daily … Annual) and the direct-lending PaymentFrequency enum (Monthly … Bullet) both map onto it through SecurityTermConventions.TryParsePaymentFrequency and SecurityPaymentFrequencyExtensions.
-
-```csharp
-public enum SecurityPaymentFrequency
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Daily</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L42) |  |
-| <code>Weekly</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L43) |  |
-| <code>BiWeekly</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L45) | Every two weeks (fortnightly). |
-| <code>Monthly</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L46) |  |
-| <code>BiMonthly</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L48) | Every two months. |
-| <code>Quarterly</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L49) |  |
-| <code>SemiAnnual</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L50) |  |
-| <code>Annual</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L51) |  |
-| <code>AtMaturity</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L53) | A single payment at maturity (a bullet or zero-coupon structure). |
-| <code>Irregular</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L55) | No fixed cadence; the schedule is declared explicitly. |
-
-## SecurityPaymentFrequencyExtensions
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPaymentFrequencyExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L59).
-
-Period arithmetic over SecurityPaymentFrequency.
-
-```csharp
-public static class SecurityPaymentFrequencyExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static int? PeriodsPerYear(this SecurityPaymentFrequency frequency) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L65) | Regular periods per year, or null for SecurityPaymentFrequency.AtMaturity and SecurityPaymentFrequency.Irregular, which have no fixed cadence. |
-| <code>public static int? MonthsPerPeriod(this SecurityPaymentFrequency frequency) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:83](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L83) | Months between regular payments, or null when the cadence is shorter than a month or has no fixed period. |
-| <code>public static SecurityPaymentFrequency ToSecurityPaymentFrequency(this DirectLending.PaymentFrequency frequency) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:98](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L98) | The Security Master cadence for a direct-lending payment frequency; the loan enum stays the persisted direct-lending vocabulary, and this is the one place the two are reconciled. |
-
-## SecurityPriceBasis
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceBasis</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L33).
-
-```csharp
-public enum SecurityPriceBasis
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L33) |  |
-| <code>Clean</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L33) |  |
-| <code>Dirty</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L33) |  |
-
-## SecurityPriceGoldenCopyDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceGoldenCopyDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L93).
-
-The selected golden copy price with explicit units, exact hierarchy and comparison evidence. SelectionReceiptId replays the immutable evaluation. Economic/knowledge timestamps filter eligibility but do not identify a PostgreSQL visibility snapshot or certify close approval.
-
-```csharp
-public sealed record SecurityPriceGoldenCopyDto(Guid SecurityId, decimal GoldenCopyPrice, SecurityPriceKind PriceKind, string SelectedSource, DateTimeOffset PriceAsOf, bool IsStaleFallback, int? DaysStale, IReadOnlyList<SecurityComparisonPriceDto> ComparisonPrices, SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified, DateTimeOffset? EvaluatedAsOf = null, DateTimeOffset? HierarchyAsOf = null, DateTimeOffset? KnowledgeAsOf = null, Guid? SelectionReceiptId = null, SecurityPricingHierarchyDto? HierarchySnapshot = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityPriceQuotationEvidence? Quotation { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:110](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L110) |  |
-
-## SecurityPriceKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L10).
-
-Categories of price in the Security Master pricing taxonomy.
-
-```csharp
-public enum SecurityPriceKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Raw</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L12) |  |
-| <code>TradePrice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L13) |  |
-| <code>ClientOverride</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L14) |  |
-| <code>MarketGoldenCopy</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L15) |  |
-| <code>Comparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L16) |  |
-| <code>CalculatedPar</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L17) |  |
-| <code>CalculatedStraightLine</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L18) |  |
-
-## SecurityPriceQuotationEvidence
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceQuotationEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L42).
-
-Provider-declared quotation and settlement facts; absent legacy facts are never inferred.
-
-```csharp
-public sealed record SecurityPriceQuotationEvidence(SecurityPriceBasis Basis, SecurityQuotationConvention Convention, SecurityQuoteStatus Status, DateOnly SettlementDate, string SettlementBasis)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool EconomicallyComparable(SecurityPriceQuotationEvidence? left, SecurityPriceQuotationEvidence? right) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L49) |  |
-
-## SecurityPriceUnit
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceUnit</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L23).
-
-Quote basis; unspecified legacy observations cannot support valuation.
-
-```csharp
-public enum SecurityPriceUnit
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L23) |  |
-| <code>CurrencyPerUnit</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L23) |  |
-| <code>PercentOfPar</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L23) |  |
-
-## SecurityPricingHierarchyDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPricingHierarchyDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L67).
-
-Full pricing source hierarchy for a security, optionally scoped to an account.
-
-```csharp
-public sealed record SecurityPricingHierarchyDto(Guid SecurityId, string? AccountId, IReadOnlyList<PricingHierarchyEntryDto> Entries, DateTimeOffset AsOf, string UpdatedBy);
-```
-
-## SecurityProjectionRecord
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityProjectionRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L82).
-
-```csharp
-public sealed record SecurityProjectionRecord(Guid SecurityId, string AssetClass, SecurityStatusDto Status, string DisplayName, string Currency, string PrimaryIdentifierKind, string PrimaryIdentifierValue, JsonElement CommonTerms, JsonElement AssetSpecificTerms, JsonElement Provenance, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<SecurityIdentifierDto> Identifiers, IReadOnlyList<SecurityAliasDto> Aliases);
-```
-
-## SecurityProjectionRecordExtensions
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs:3](../../../../src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs#L3).
-
-```csharp
-public static class SecurityProjectionRecordExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityDetailDto ToDetail(this SecurityProjectionRecord security);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs#L10) | The retained projection row viewed as the detail contract that terms resolvers, schedule factories and calculation policies consume. Identity, terms, version and effective window are carried unchanged; provenance and primary identifier are projection-only facts. |

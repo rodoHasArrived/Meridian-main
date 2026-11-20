@@ -6,6 +6,200 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MixedPaymentResolutionDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.MixedPaymentResolutionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:21](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L21).
+
+How a mixed payment was applied. Breakdown is the allocation to amounts owed (the automatic waterfall, or a manual breakdown capped at the amount owed). Any cash left over is routed by the loan&#x27;s ExcessPaymentApplication rule (PRD-115). UnappliedAmount is the amount held as unapplied cash after that routing. The excess before routing is ExcessToPrincipal + ExcessToPrepaidInterest + UnappliedAmount. Events recorded before PRD-115 carry none of the excess members, which read as 0 or null.
+
+```csharp
+public sealed record MixedPaymentResolutionDto(PaymentBreakdownDto Breakdown, string ResolutionBasis, string? RuleVersion, decimal UnappliedAmount)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal ExcessToPrincipal { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:28](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L28) | Excess applied to principal as a prepayment, in addition to Breakdown.ToPrincipal. |
+| <code>public decimal ExcessToPrepaidInterest { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:31](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L31) | Excess credited to the prepaid-interest balance, which later accruals consume. |
+| <code>public ExcessPaymentApplication? ExcessRuleApplied { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:34](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L34) | The rule in force when there was excess to route; null when the payment had no excess. |
+| <code>public string? ExcessRuleNote { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:37](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L37) | Why some or all of the excess was held unapplied instead of following the rule; see ExcessPaymentRuleNotes. |
+| <code>public decimal PrepaymentPenaltyCharged { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:40](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L40) | Prepayment penalty charged on ExcessToPrincipal (rounded half away from zero to 2 dp). |
+
+## OutstandingBalancesDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.OutstandingBalancesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:233](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L233).
+
+Servicing balances for a loan. The first five members are receivables owed by the borrower. PrepaidInterest and UnappliedCash (PRD-115) are amounts owed to the borrower, so read models must not add them to outstanding exposure. Both default to 0, so state persisted before PRD-115 deserializes unchanged.
+
+```csharp
+public sealed record OutstandingBalancesDto(decimal PrincipalOutstanding, decimal InterestAccruedUnpaid, decimal CommitmentFeeAccruedUnpaid, decimal FeesAccruedUnpaid, decimal PenaltyAccruedUnpaid, decimal PrepaidInterest = 0m, decimal UnappliedCash = 0m);
+```
+
+## PaymentAllocationDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PaymentAllocationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:101](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L101).
+
+```csharp
+public sealed record PaymentAllocationDto(Guid AllocationId, Guid LoanId, Guid CashTransactionId, int AllocationSequenceNumber, string TargetType, string TargetReference, decimal AllocatedAmount, string AllocationRule, Guid SourceEventId, DateTimeOffset CreatedAt);
+```
+
+## PaymentBreakdownDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PaymentBreakdownDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:3](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L3).
+
+```csharp
+public sealed record PaymentBreakdownDto(decimal ToInterest, decimal ToCommitmentFee, decimal ToFees, decimal ToPenalty, decimal ToPrincipal)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal TotalAllocated =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:10](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L10) |  |
+
+## PaymentFrequency
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PaymentFrequency</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:61](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L61).
+
+```csharp
+public enum PaymentFrequency : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Monthly = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:63](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L63) |  |
+| <code>Quarterly = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:64](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L64) |  |
+| <code>SemiAnnual = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:65](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L65) |  |
+| <code>Annual = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:66](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L66) |  |
+| <code>Bullet = 4</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:67](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L67) |  |
+
+## PikCapitalizationDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PikCapitalizationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:113](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L113).
+
+One capitalization of accrued PIK interest into principal.
+
+```csharp
+public sealed record PikCapitalizationDto(DateOnly CapitalizationDate, DateOnly PeriodStart, DateOnly PeriodEnd, decimal Amount, DateTimeOffset RecordedAt);
+```
+
+## PikCapitalizationFrequency
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PikCapitalizationFrequency</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:21](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L21).
+
+How often accrued PIK interest is capitalized into principal.
+
+```csharp
+public enum PikCapitalizationFrequency : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Monthly = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:23](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L23) |  |
+| <code>Quarterly = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:24](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L24) |  |
+| <code>SemiAnnual = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:25](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L25) |  |
+| <code>Annual = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:26](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L26) |  |
+| <code>OnInterestPaymentDate = 4</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:29](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L29) | Capitalize on the loan&#x27;s interest payment dates (DirectLendingTermsDto.PaymentFrequency). |
+
+## PikCapitalizationPolicy
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PikCapitalizationPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:80](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L80).
+
+Contractual PIK capitalization rule. Accrued PIK interest is carried as a PIK receivable and moved into principal on each capitalization date, so it compounds from the following day.
+
+```csharp
+public sealed record PikCapitalizationPolicy(PikElection Mode, DeclaredRate PikShare, PikCapitalizationFrequency Frequency, DateOnly AnchorDate);
+```
+
+## PikElection
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PikElection</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:10](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L10).
+
+Whether PIK applies on every accrual day or only while the borrower&#x27;s PIK toggle is elected. See docs/engineering/blueprints/direct-lending-pik-capitalization-and-rate-resets.md.
+
+```csharp
+public enum PikElection : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Always = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:13](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L13) | Contractual PIK: the PIK share applies every accrual day. |
+| <code>WhenToggled = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:16](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L16) | PIK toggle: the PIK share applies only while LoanServicingStateDto.IsPikToggled is set. |
+
+## PostDailyAccrualRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PostDailyAccrualRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:347](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L347).
+
+```csharp
+public sealed record PostDailyAccrualRequest(DateOnly AccrualDate);
+```
+
+## ProjectedCashFlowDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ProjectedCashFlowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:153](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L153).
+
+```csharp
+public sealed record ProjectedCashFlowDto(Guid ProjectedCashFlowId, Guid ProjectionRunId, Guid LoanId, int FlowSequenceNumber, string FlowType, DateOnly DueDate, DateOnly? AccrualStartDate, DateOnly? AccrualEndDate, decimal Amount, CurrencyCode Currency, decimal? PrincipalBasis, decimal? AnnualRate, string? FormulaTraceJson, DateTimeOffset CreatedAt);
+```
+
+## ProjectionRunDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ProjectionRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:138](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L138).
+
+```csharp
+public sealed record ProjectionRunDto(Guid ProjectionRunId, Guid LoanId, int LoanTermsVersion, long ServicingRevision, DateOnly ProjectionAsOf, DateOnly? MarketDataAsOf, Guid? TriggerEventId, string TriggerType, string TermsHash, string EngineVersion, ProjectionRunStatus Status, Guid? SupersedesProjectionRunId, DateTimeOffset GeneratedAt);
+```
+
+## ProjectionRunStatus
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ProjectionRunStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:124](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L124).
+
+```csharp
+public enum ProjectionRunStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Requested = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:126](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L126) |  |
+| <code>Completed = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:127](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L127) |  |
+| <code>Failed = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:128](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L128) |  |
+| <code>Superseded = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:129](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L129) |  |
+
 ## RateNormalizationResult
 
 Qualified name: <code>Meridian.Contracts.DirectLending.RateNormalizationResult</code>. Kind: `record struct`.
@@ -476,283 +670,3 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:275](../../..
 ```csharp
 public sealed record ServicingRevisionDto(long RevisionNumber, string RevisionSourceType, DateOnly EffectiveAsOfDate, DateTimeOffset CreatedAt, string Notes);
 ```
-
-## TogglePikRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.TogglePikRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:559](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L559).
-
-```csharp
-public sealed record TogglePikRequest(bool EnablePik, DateOnly EffectiveDate, string? Reason = null);
-```
-
-## TransitionLoanStatusRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.TransitionLoanStatusRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:554](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L554).
-
-```csharp
-public sealed record TransitionLoanStatusRequest(LoanStatus NewStatus, string Reason, DateOnly EffectiveDate);
-```
-
-## UpdateCollateralValueRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.UpdateCollateralValueRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:549](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L549).
-
-```csharp
-public sealed record UpdateCollateralValueRequest(Guid CollateralId, decimal NewEstimatedValue, DateOnly NewAppraisalDate);
-```
-
-## AccountSnapshotRecord
-
-Qualified name: <code>Meridian.Contracts.Domain.AccountSnapshotRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:48](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L48).
-
-Serialisation-friendly per-account portfolio snapshot persisted by IPositionSnapshotStore.
-
-```csharp
-public sealed record AccountSnapshotRecord(string RunId, string AccountId, string AccountDisplayName, string AccountKind, decimal Cash, decimal MarginBalance, decimal UnrealisedPnl, decimal RealisedPnl, IReadOnlyList<PositionRecord> Positions, DateTimeOffset AsOf, string? TenantId = null, string? CompanyId = null, string? FundProfileId = null, Guid? LedgerBookId = null, string? EntityId = null);
-```
-
-## AggressorSideValues
-
-Qualified name: <code>Meridian.Contracts.Domain.AggressorSideValues</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:326](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L326).
-
-Aggressor side enumeration values.
-
-```csharp
-public static class AggressorSideValues
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Buy = &quot;Buy&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:331](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L331) | Indicates a buy-side aggressor. |
-| <code>public const string Sell = &quot;Sell&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:335](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L335) | Indicates a sell-side aggressor. |
-| <code>public const string Unknown = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:339](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L339) | Indicates an unknown aggressor side. |
-
-## BarIntervalValues
-
-Qualified name: <code>Meridian.Contracts.Domain.BarIntervalValues</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:391](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L391).
-
-Bar interval enumeration values.
-
-```csharp
-public static class BarIntervalValues
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Minute1 = &quot;Minute1&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:396](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L396) | Indicates a one-minute bar interval. |
-| <code>public const string Minute5 = &quot;Minute5&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:400](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L400) | Indicates a five-minute bar interval. |
-| <code>public const string Minute15 = &quot;Minute15&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:404](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L404) | Indicates a fifteen-minute bar interval. |
-| <code>public const string Minute30 = &quot;Minute30&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:408](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L408) | Indicates a thirty-minute bar interval. |
-| <code>public const string Hour1 = &quot;Hour1&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:412](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L412) | Indicates a one-hour bar interval. |
-| <code>public const string Hour4 = &quot;Hour4&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:416](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L416) | Indicates a four-hour bar interval. |
-| <code>public const string Daily = &quot;Daily&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:420](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L420) | Indicates a daily bar interval. |
-| <code>public const string Weekly = &quot;Weekly&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:424](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L424) | Indicates a weekly bar interval. |
-| <code>public const string Monthly = &quot;Monthly&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:428](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L428) | Indicates a monthly bar interval. |
-
-## CanonicalSymbol
-
-Qualified name: <code>Meridian.Contracts.Domain.CanonicalSymbol</code>. Kind: `struct`.
-
-Source: [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:14](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L14).
-
-Zero-cost value object representing a normalized, canonical market instrument symbol. Distinct from SymbolId (the raw provider symbol) to prevent accidental use of un-normalized symbols where a canonical symbol is expected and vice-versa.
-
-```csharp
-public readonly struct CanonicalSymbol : IEquatable<CanonicalSymbol>, IComparable<CanonicalSymbol>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CanonicalSymbol(string value);</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:21](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L21) | Initializes a new CanonicalSymbol with the given canonical ticker string. |
-| <code>public string Value =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:29](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L29) | Returns the canonical ticker string (uppercase). |
-| <code>public static implicit operator string(CanonicalSymbol s) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:32](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L32) | Implicitly converts a CanonicalSymbol to its underlying string value. |
-| <code>public static explicit operator CanonicalSymbol(string value) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:35](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L35) | Explicitly converts a raw string to a CanonicalSymbol. |
-| <code>public bool Equals(CanonicalSymbol other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:38](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L38) |  |
-| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:42](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L42) |  |
-| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:45](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L45) |  |
-| <code>public int CompareTo(CanonicalSymbol other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:49](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L49) |  |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:53](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L53) |  |
-| <code>public static bool operator == (CanonicalSymbol left, CanonicalSymbol right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:56](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L56) |  |
-| <code>public static bool operator != (CanonicalSymbol left, CanonicalSymbol right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:59](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L59) |  |
-
-## AggressorSide
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.AggressorSide</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/AggressorSide.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/AggressorSide.cs#L6).
-
-Indicates which side of the market initiated the trade.
-
-```csharp
-public enum AggressorSide : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Domain/Enums/AggressorSide.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/AggressorSide.cs#L11) | The aggressor side could not be determined. |
-| <code>Buy = 1</code> | [src/Meridian.Contracts/Domain/Enums/AggressorSide.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/AggressorSide.cs#L16) | The buyer initiated the trade (lifted the offer). |
-| <code>Sell = 2</code> | [src/Meridian.Contracts/Domain/Enums/AggressorSide.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/AggressorSide.cs#L21) | The seller initiated the trade (hit the bid). |
-
-## CanonicalTradeCondition
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.CanonicalTradeCondition</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:8](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L8).
-
-Provider-agnostic canonical trade condition codes. Maps raw provider-specific condition codes (CTA plan, SEC numeric, IB text) to a unified set of canonical conditions for cross-provider comparison.
-
-```csharp
-public enum CanonicalTradeCondition : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Regular = 0</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:13](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L13) | Regular trade (normal market conditions). |
-| <code>FormT_ExtendedHours = 1</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:18](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L18) | Form T / extended hours trade (pre-market or after-hours). |
-| <code>OddLot = 2</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:23](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L23) | Odd lot trade (fewer than 100 shares for equities). |
-| <code>AveragePrice = 3</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:28](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L28) | Average price trade. |
-| <code>Intermarket_Sweep = 4</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:33](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L33) | Intermarket sweep order (ISO). |
-| <code>OpeningPrint = 5</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:38](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L38) | Opening print. |
-| <code>ClosingPrint = 6</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:43](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L43) | Closing print. |
-| <code>DerivativelyPriced = 7</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:48](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L48) | Derivatively priced trade. |
-| <code>CrossTrade = 8</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:53](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L53) | Cross trade. |
-| <code>StockOption = 9</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:58](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L58) | Stock option trade. |
-| <code>Halted = 10</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:63](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L63) | Trading halt indicator. |
-| <code>CorrectedConsolidated = 11</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:68](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L68) | Corrected consolidated trade. |
-| <code>SoldOutOfSequence = 12</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:73](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L73) | Sold out of sequence (late report). |
-| <code>Contingent = 13</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:78](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L78) | Contingent trade. |
-| <code>Acquisition = 14</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:83](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L83) | Acquisition trade. |
-| <code>Bunched = 15</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:88](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L88) | Bunched trade. |
-| <code>Cash = 16</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:93](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L93) | Cash settlement. |
-| <code>NextDay = 17</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:98](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L98) | Next day settlement. |
-| <code>SellerInitiated = 18</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:103](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L103) | Seller-initiated trade (definitive aggressor inference). |
-| <code>PriorReferencePrice = 19</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:108](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L108) | Prior reference price. |
-| <code>CircuitBreakerLevel1 = 20</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:113](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L113) | Market-wide circuit breaker halt (MWCB Level 1: 7% drop in S&amp;P 500). |
-| <code>CircuitBreakerLevel2 = 21</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:118](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L118) | Market-wide circuit breaker halt (MWCB Level 2: 13% drop in S&amp;P 500). |
-| <code>CircuitBreakerLevel3 = 22</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:123](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L123) | Market-wide circuit breaker halt (MWCB Level 3: 20% drop in S&amp;P 500, trading halted for remainder of day). |
-| <code>LuldPause = 23</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:129](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L129) | LULD (Limit Up/Limit Down) trading pause. Individual stock halted due to price moving outside its LULD band for more than 15 seconds. |
-| <code>RegulatoryHalt = 24</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:134](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L134) | Regulatory halt (SEC or exchange-imposed trading halt, e.g., news pending). |
-| <code>TradingResumed = 25</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:139](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L139) | Trading resumed after halt. |
-| <code>IpoHalt = 26</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:144](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L144) | IPO halt (pre-opening, price discovery). |
-| <code>Unknown = 255</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:149](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L149) | Unknown / unmapped condition code. |
-
-## ConnectionStatus
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.ConnectionStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L6).
-
-Connection status for data providers.
-
-```csharp
-public enum ConnectionStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Disconnected = 0</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L11) | Not connected. |
-| <code>Connecting = 1</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L16) | Connection in progress. |
-| <code>Connected = 2</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L21) | Successfully connected. |
-| <code>Reconnecting = 3</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:26](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L26) | Reconnection in progress. |
-| <code>Faulted = 4</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:31](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L31) | Connection failed or in error state. |
-
-## DepthIntegrityKind
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.DepthIntegrityKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L6).
-
-Kind of depth integrity issue detected.
-
-```csharp
-public enum DepthIntegrityKind : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ok = 0</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L11) | No integrity issue detected. |
-| <code>Unknown = 1</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L16) | Unknown integrity issue. |
-| <code>Gap = 2</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L21) | Sequence gap detected. |
-| <code>OutOfOrder = 3</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:26](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L26) | Out-of-order message received. |
-| <code>InvalidPosition = 4</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:31](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L31) | Invalid position in order book. |
-| <code>Stale = 5</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:36](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L36) | Stale data detected. |
-
-## DepthOperation
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.DepthOperation</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L6).
-
-Type of operation for a depth update.
-
-```csharp
-public enum DepthOperation : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Insert = 0</code> | [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L11) | Insert a new level. |
-| <code>Update = 1</code> | [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L16) | Update an existing level. |
-| <code>Delete = 2</code> | [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L21) | Delete an existing level. |
-
-## InstrumentType
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.InstrumentType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:9](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L9).
-
-Classification of financial instruments supported by the system.
-
-```csharp
-public enum InstrumentType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Equity = 0</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:14](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L14) | Equity security (common stock, ETF, ADR). |
-| <code>EquityOption = 1</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:19](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L19) | Exchange-traded option on an individual equity or ETF. |
-| <code>IndexOption = 2</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:25](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L25) | Exchange-traded option on a market index (e.g., SPX, NDX, RUT, VIX). Typically European-style, cash-settled. |
-| <code>Future = 3</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:30](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L30) | Exchange-traded futures contract. |
-| <code>SingleStockFuture = 4</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:35](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L35) | Single stock future — a futures contract on an individual equity. |
-| <code>Forex = 5</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:40](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L40) | Foreign exchange spot pair (e.g. EUR/USD). Maps to IB SecType &quot;CASH&quot;. |
-| <code>Commodity = 6</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:45](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L45) | Physical or soft commodity (e.g. gold, oil, corn). Maps to IB SecType &quot;CMDTY&quot;. |
-| <code>Crypto = 7</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:50](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L50) | Cryptocurrency spot instrument (e.g. BTC/USD). Maps to IB SecType &quot;CRYPTO&quot;. |
-| <code>Bond = 8</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:55](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L55) | Bond or fixed-income instrument. Maps to IB SecType &quot;BOND&quot;. |
-| <code>FuturesOption = 9</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:60](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L60) | Option on a futures contract (e.g. option on ES). Maps to IB SecType &quot;FOP&quot;. |
-| <code>Index = 10</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:65](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L65) | Market index (non-tradeable reference, e.g. SPX, VIX). Maps to IB SecType &quot;IND&quot;. |
-| <code>CFD = 11</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:70](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L70) | Contract for Difference. Maps to IB SecType &quot;CFD&quot;. |
-| <code>Warrant = 12</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:75](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L75) | Equity or structured warrant. Maps to IB SecType &quot;WAR&quot;. |
-| <code>Swap = 13</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:80](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L80) | Over-the-counter or listed interest rate / credit / equity swap. |
-| <code>DirectLoan = 14</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:85](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L85) | Direct lending / private credit loan instrument. |
-| <code>Repo = 15</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:90](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L90) | Repo or reverse repo financing instrument. |
-| <code>Deposit = 16</code> | [src/Meridian.Contracts/Domain/Enums/InstrumentType.cs:95](../../../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs#L95) | Bank deposit, time deposit, or demand deposit. |
