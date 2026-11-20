@@ -1826,7 +1826,8 @@ public sealed partial class ExecutionWriteEndpointsTests
             }
         };
 
-    private static void RegisterSessionServices(IServiceCollection services, string rootPath)
+    private static void RegisterSessionServices(IServiceCollection services, string rootPath,
+        ExecutionServices.ResolvePaperAccountCurrency? resolveAccountCurrency = null)
     {
         services.AddSingleton(_ => new ExecutionServices.ExecutionAuditTrailService(
             new ExecutionServices.ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
@@ -1837,7 +1838,8 @@ public sealed partial class ExecutionWriteEndpointsTests
         services.AddSingleton<ExecutionServices.PaperSessionPersistenceService>(sp => new ExecutionServices.PaperSessionPersistenceService(
             NullLogger<ExecutionServices.PaperSessionPersistenceService>.Instance,
             sp.GetRequiredService<ExecutionServices.IPaperSessionStore>(),
-            sp.GetRequiredService<ExecutionServices.ExecutionAuditTrailService>()));
+            sp.GetRequiredService<ExecutionServices.ExecutionAuditTrailService>(),
+            resolveAccountCurrency: resolveAccountCurrency));
     }
 
     private static void RegisterPromotionServices(

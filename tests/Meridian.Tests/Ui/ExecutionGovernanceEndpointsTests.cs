@@ -621,6 +621,54 @@ public sealed class ExecutionGovernanceEndpointsTests
         await oms.DidNotReceive().PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SubmitPaperOrder_ExplicitSessionMustBelongToTheAuthorizedAccount(bool sameAccount)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"scoped-paper-ticket-{Guid.NewGuid():N}");
+        try
+        {
+            var store = new JsonlFilePaperSessionStore(root, NullLogger<JsonlFilePaperSessionStore>.Instance);
+            await using var persistence = new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance, store,
+                resolveAccountCurrency: static (_, _) => Task.FromResult<string?>("USD"));
+            var retained = await persistence.CreateSessionAsync(new("scoped", null)
+            {
+                FinancialAccountId = (sameAccount ? LiveFundAccountId : Guid.NewGuid()).ToString("D")
+            });
+            OrderSubmitCommand? submitted = null;
+            var oms = Substitute.For<IOrderManager>();
+            oms.SubmitAsync(Arg.Do<OrderSubmitCommand>(command => submitted = command), Arg.Any<CancellationToken>())
+                .Returns(new OrderResult { Success = true, OrderId = "paper-ticket" });
+            var gateway = Substitute.For<IExecutionGateway>();
+            gateway.GatewayId.Returns("paper");
+            await using var app = await CreateAppAsync(services =>
+            {
+                RegisterFundAccountScope(services, LiveFundAccountId);
+                services.AddSingleton(oms);
+                services.AddSingleton(gateway);
+                services.AddSingleton(persistence);
+            });
+
+            var client = app.GetTestClient();
+            client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
+            var response = await client.PostAsync($"/api/execution/orders/submit?paperSessionId={Uri.EscapeDataString(retained.SessionId)}",
+                JsonContent(new { symbol = "AAPL", side = 0, type = 0, quantity = 1, fundAccountId = LiveFundAccountId }));
+
+            response.StatusCode.Should().Be(sameAccount ? HttpStatusCode.Created : HttpStatusCode.Forbidden);
+            if (sameAccount)
+                submitted!.Authority.SessionId.Should().Be(retained.SessionId);
+            else
+                submitted.Should().BeNull();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task SubmitOrder_ClientCorrelationId_IsKeptAsClientTraceButNeverNamesTheOrder()
     {

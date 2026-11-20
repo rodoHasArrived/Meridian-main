@@ -929,6 +929,18 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         );
     }
 
+    internal async ValueTask<bool> HasDurableBackfillRowAsync(MarketEvent row, CancellationToken ct)
+    {
+        if (_dedupLedger is null)
+            return false;
+
+        // Recovery trusts only identities committed after the primary sink flushed.
+        var lookup = await _dedupLedger.TryReserveAsync(row, DedupLookupScope.WalRecovery, ct).ConfigureAwait(false);
+        if (lookup.IsReserved)
+            _dedupLedger.Release(lookup.Reservation);
+        return lookup.Status == DedupReservationStatus.Duplicate;
+    }
+
     // Each consumer reuses its own scratch storage, including when listeners sample
     // a batch out. Clear it for retries too so links describe only the retained batch.
     internal sealed class BatchTraceLinks
@@ -1113,7 +1125,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                                 try
                                 {
                                     reservationResult = await _dedupLedger
-                                        .TryReserveAsync(evt, DedupLookupScope.LiveIngress, _cts.Token).ConfigureAwait(false);
+                                        .TryReserveAsync(evt, evt.BackfillRevisionId is null
+                                            ? DedupLookupScope.LiveIngress : DedupLookupScope.WalRecovery, _cts.Token).ConfigureAwait(false);
                                 }
                                 catch (Exception dedupEx) when (dedupEx is not OperationCanceledException)
                                 {

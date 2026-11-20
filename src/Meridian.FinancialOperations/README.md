@@ -18,6 +18,14 @@ exact financial meaning. `StatementImportServiceTests.CsvMalformedTail_BlocksWho
 proves a valid prefix cannot make a malformed tail complete and that a corrected retry retains exact
 source bytes and remains idempotent after service restart.
 
+Statement transaction reconciliation pairs retained external IDs first within the authorized account
+and statement window. Economic, date, and identity conflicts preserve both evidence references
+for review. Transactions with an ID missing on either side can use a unique configured fallback
+pair or settlement group. Competing candidates become one ambiguity break with the associated
+source evidence. Recovered Alpaca FILL activity carries its provider identity to the journal.
+Historical Meridian-generated fill IDs have no provider identity and remain eligible for fallback.
+Casework keeps its existing operator review and approved adjustment path.
+
 The intercompany obligation monitor enriches the existing posted balance schedule with canonical
 legal expiry, coverage, lifecycle and guarantee observations. Its default expiry horizon is 30
 calendar days; retained source versions distinguish current, stale and unavailable evidence. The

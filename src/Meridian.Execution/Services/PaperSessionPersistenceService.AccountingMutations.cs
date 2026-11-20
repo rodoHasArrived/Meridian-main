@@ -4,13 +4,17 @@ namespace Meridian.Execution.Services;
 
 public sealed partial class PaperSessionPersistenceService
 {
+    public bool CanRecordFinancing(string sessionId)
+        => CurrentSessions.TryGetValue(sessionId, out var session)
+            && (session.JournalCurrency is not null || _financing is not null && session.AccountingContext == _financing.PostingContext);
+
     /// <summary>Retains and posts an assessed financing charge before changing session cash.
     /// A failed posting remains pending in the durable outbox and is retried on recovery.</summary>
     public async Task<bool> RecordFinancingAsync(PaperFinancingCharge charge, CancellationToken ct = default)
     {
         charge.Validate();
-        if (_store is null || _financing is null)
-            throw new InvalidOperationException("Financing requires durable paper sessions and a configured governed ledger posting scope.");
+        if (_store is null)
+            throw new InvalidOperationException("Financing requires a durable paper session.");
         using var operation = EnterOperation(ct);
         ct = operation.Token;
         await InitialiseAsync(ct).ConfigureAwait(false);
@@ -22,19 +26,25 @@ public sealed partial class PaperSessionPersistenceService
                 throw new InvalidOperationException($"Paper session '{charge.SessionId}' is not loaded.");
             lock (session.SyncRoot)
             {
-                if (!session.IsActive)
+                if (!session.IsActive && session.JournalCurrency is null)
                     throw new InvalidOperationException("A closed paper session cannot accept financing charges.");
                 EnsureCurrentAccountingScope(session);
                 if (charge.AccountId != PaperTradingPortfolio.DefaultAccountId)
                     throw new InvalidDataException("The single-account paper session requires its default account.");
-                if (session.AccountingContext != _financing.PostingContext)
-                    throw new InvalidDataException("The session is not bound to the configured accounting scope; legacy sessions require explicit migration.");
                 if (session.PendingFinancingSourceEventId is { } pending && pending != charge.SourceEventId)
                     throw new InvalidOperationException($"Financing source '{pending}' requires recovery before another assessment.");
                 var retained = session.FinancingHistory.Find(item => item.SourceEventId == charge.SourceEventId);
                 if (retained is not null)
                     return retained == charge ? false : throw new InvalidDataException("Financing identity has conflicting content.");
+                if (!session.IsActive)
+                    throw new InvalidOperationException("A closed paper session cannot accept financing charges.");
             }
+
+            if (session.JournalCurrency is not null)
+                return await RecordDurableFinancingAsync(session, charge, ct).ConfigureAwait(false);
+            if (_financing is null || session.AccountingContext != _financing.PostingContext)
+                throw new InvalidDataException("The session is not bound to a durable journal or the configured accounting scope.");
+
             // Validate the complete candidate off-side before accepting financial evidence.
             // The session gate prevents fills changing the source book while posting awaits.
             var replacement = BuildPortfolioProjection(session, candidateFinancing: charge);
@@ -128,18 +138,24 @@ public sealed partial class PaperSessionPersistenceService
 
             lock (session.SyncRoot)
             {
-                if (!session.IsActive)
+                if (!session.IsActive && session.JournalCurrency is null)
                     return false;
                 EnsureCurrentAccountingScope(session);
                 EnsureFinancingRecovered(session);
                 if (session.SettlementHistory.Find(existing => string.Equals(existing.Key, settlement.Key, StringComparison.Ordinal)) is { } applied)
                 {
-                    return applied.SettlementPrice == settlement.SettlementPrice
+                    var matches = session.JournalCurrency is null ? applied.SettlementPrice == settlement.SettlementPrice : applied == settlement;
+                    return matches
                         ? false
                         : throw new InvalidDataException(
                             $"Settlement '{settlement.Key}' was already applied at {applied.SettlementPrice}, not {settlement.SettlementPrice}.");
                 }
+                if (!session.IsActive)
+                    throw new InvalidOperationException("A closed paper session cannot accept a new settlement.");
             }
+
+            if (session.JournalCurrency is not null)
+                return await RecordDurableSettlementAsync(session, settlement, ct).ConfigureAwait(false);
 
             if (_store is not null)
             {

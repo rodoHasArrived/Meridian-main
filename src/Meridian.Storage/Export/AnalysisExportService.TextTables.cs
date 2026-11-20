@@ -7,6 +7,33 @@ namespace Meridian.Storage.Export;
 
 public sealed partial class AnalysisExportService
 {
+    /// <summary>Renders deterministic Parquet from a frozen table of invariant text cells.</summary>
+    public static async Task<byte[]> RenderInvariantTextParquetAsync(
+        IReadOnlyList<string> columns, IReadOnlyList<IReadOnlyList<string>> rows, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(columns);
+        ArgumentNullException.ThrowIfNull(rows);
+        if (columns.Count == 0 || columns.Any(string.IsNullOrWhiteSpace)
+            || columns.Distinct(StringComparer.Ordinal).Count() != columns.Count
+            || rows.Any(row => row.Count != columns.Count))
+            throw new ArgumentException("Parquet requires a uniquely named schema and rows with exactly those columns.");
+
+        var fields = columns.Select(static name => new Parquet.Schema.DataField<string>(name)).ToArray();
+        using var output = new MemoryStream();
+        using (var writer = await Parquet.ParquetWriter.CreateAsync(new Parquet.Schema.ParquetSchema(fields), output,
+                   cancellationToken: ct).ConfigureAwait(false))
+        {
+            using var group = writer.CreateRowGroup();
+            for (var index = 0; index < fields.Length; index++)
+            {
+                ct.ThrowIfCancellationRequested();
+                var values = rows.Select(row => row[index]).ToArray();
+                await group.WriteColumnAsync(new Parquet.Data.DataColumn(fields[index], values), ct).ConfigureAwait(false);
+            }
+        }
+        return output.ToArray();
+    }
+
     /// <summary>
     /// Writes a schema-preserving table of already formatted text cells. Domain projections own
     /// their interpretation and formatting; this primitive owns file formats and checksums only.

@@ -36,6 +36,7 @@ public sealed class TradingFeatureModule : IDesktopFeatureModule
         services.AddSingleton<IExecutionSafetyControlClient, ExecutionSafetyControlClient>();
         services.AddSingleton<TradingSafetyCommandService>();
         services.AddWorkspaceScoped<TradingWorkspaceShellPresentationService>();
+        services.AddTransient<PaperSessionReconciliationViewModel>();
         services.AddTransient<TradingWorkspaceShellStateProvider>();
         services.AddTransient<TradingWorkspaceShellViewModel>();
         services.AddTransient<TradingWorkspaceShellPage>();

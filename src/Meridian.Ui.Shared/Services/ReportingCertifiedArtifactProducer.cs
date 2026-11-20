@@ -118,7 +118,11 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                      artifact.Kind != ReportingDeclaredArtifactKind.Manifest))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var content = RenderArtifact(manifest, declaration, canonicalLedgerDocuments);
+            var content = declaration.Kind == ReportingDeclaredArtifactKind.StatementControlParquet
+                ? await RenderStatementControlParquetAsync(certifiedLedgerPresentation, cancellationToken).ConfigureAwait(false)
+                : declaration.Kind == ReportingDeclaredArtifactKind.StatementControlManifest
+                    ? GetStatementControlArtifact(certifiedLedgerPresentation).GetBytes()
+                    : RenderArtifact(manifest, declaration, canonicalLedgerDocuments);
             if (content.Length == 0)
             {
                 throw new ReportingGovernanceException(
@@ -421,10 +425,21 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
                 $"Capital-account primary document '{manifest.RunId}' is blocked because its signed ledger presentation checksum is missing from or changed relative to the certified source evidence.");
         }
 
+        if (ReportingCertifiedLedgerPresentationBinding.IsStatementControlTemplate(manifest.TemplateId))
+        {
+            var controls = reportPack.StatementControl;
+            var artifact = GetStatementControlArtifact(input);
+            if (controls is null || controls.Definition != request.StatementControl
+                || controls.Definition.AccountingBasis.ToString() != source.AccountingBasis
+                || controls.Currency != request.BaseCurrency
+                || artifact.Content != controls.Serialize())
+                throw new ReportingGovernanceException("The statement controls do not match the certified ledger presentation.");
+        }
+
         var partnersCapital = reportPack.Statements.PartnersCapital
             ?? throw new ReportingGovernanceException(
                 $"Capital-account primary document '{manifest.RunId}' is blocked because its canonical ledger report pack has no partners-capital statement.");
-        if (partnersCapital.Accounts.Count == 0
+        if ((partnersCapital.Accounts.Count == 0 && reportPack.StatementControl is null)
             || partnersCapital.PeriodStart != request.PeriodStart
             || partnersCapital.AsOf != request.AsOf
             || !partnersCapital.IsReconciled
@@ -438,6 +453,18 @@ public sealed class DeterministicReportingCertifiedArtifactProducer : IReporting
             throw new ReportingGovernanceException(
                 $"Capital-account primary document '{manifest.RunId}' is blocked because its canonical partners-capital roll-forward is incomplete, unbalanced, or unreconciled.");
         }
+    }
+
+    private static LedgerReportPackArtifact GetStatementControlArtifact(ReportingCertifiedLedgerPresentationInput? presentation)
+        => presentation?.ReportPack.Artifacts.SingleOrDefault(static item => item.Name == LedgerStatementControlPack.ArtifactName)
+            ?? throw new ReportingGovernanceException("The certified financial statement control artifact is unavailable.");
+
+    private static Task<byte[]> RenderStatementControlParquetAsync(
+        ReportingCertifiedLedgerPresentationInput? presentation, CancellationToken ct)
+    {
+        var table = presentation?.ReportPack.StatementControl?.ToTable()
+            ?? throw new ReportingGovernanceException("The certified financial statement table is unavailable.");
+        return AnalysisExportService.RenderInvariantTextParquetAsync(table.Headers, table.Rows, ct);
     }
 
     private static void ValidateLedgerReportPackIntegrity(
