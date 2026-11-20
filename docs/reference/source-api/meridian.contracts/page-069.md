@@ -6,6 +6,202 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderSecurityMasterPassportStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderSecurityMasterPassportStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:326](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L326).
+
+```csharp
+public enum ProviderSecurityMasterPassportStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Resolved = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:328](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L328) |  |
+| <code>Inferred = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:329](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L329) |  |
+| <code>Unresolved = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:330](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L330) |  |
+| <code>Blocked = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:331](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L331) |  |
+
+## ProviderSecurityMasterScheduleFeedDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderSecurityMasterScheduleFeedDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:488](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L488).
+
+```csharp
+public sealed record ProviderSecurityMasterScheduleFeedDto(string FeedId, string CandidateId, string CandidateType, string FeedKind, string RequiredFeed, string EvidenceSource, string ProviderId, string ExternalAccountId, string? ProviderEventId, string? Symbol, Guid? SecurityId, DateOnly? EffectiveDate, decimal? Factor, decimal? CashAmount, decimal? PrincipalAmount, decimal? IncomeAmount, string? Currency, string LedgerEffectKind, ProviderLedgerReconciliationCheckStatusDto Status, bool CanUpdateSecurityMaster, bool CanSupportLedgerValuation, string Reason);
+```
+
+## ProviderShadowBookComparisonDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderShadowBookComparisonDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:434](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L434).
+
+```csharp
+public sealed record ProviderShadowBookComparisonDto(Guid AccountId, DateTimeOffset CreatedAt, string Currency, int ComparableLineCount, int MatchedLineCount, int BreakLineCount, int UnavailableLineCount, IReadOnlyList<ProviderShadowBookComparisonLineDto> Lines);
+```
+
+## ProviderShadowBookComparisonLineDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderShadowBookComparisonLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:423](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L423).
+
+```csharp
+public sealed record ProviderShadowBookComparisonLineDto(string Dimension, string Label, string InternalSource, string ProviderSource, decimal? InternalAmount, decimal? ProviderAmount, decimal? Variance, ProviderLedgerReconciliationCheckStatusDto Status, string Reason);
+```
+
+## PublishSecurityMasterRevisionRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.PublishSecurityMasterRevisionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:116](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L116).
+
+Publishes an approved revision (durable append + downstream propagation). The downstream restatement impact is scoped to the fund captured on the draft revision (the fund the edit was made under, if any). Publish deliberately carries no caller-supplied fund scope, so a publisher cannot resolve impact for a fund the operator did not edit under. Publish-time re-scoping and cross-fund (multi-held) expansion are a separate slice gated on tenant-scoped holdings discovery.
+
+```csharp
+public sealed record PublishSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, string Actor, string ApproverActor, string? CorrelationId = null);
+```
+
+## RecommendedActionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.RecommendedActionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L85).
+
+```csharp
+public sealed record RecommendedActionDto(string Label, string Route, string Description);
+```
+
+## ReconciliationBreakCategory
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L54).
+
+Canonical classification for reconciliation outcomes.
+
+```csharp
+public enum ReconciliationBreakCategory : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AmountMismatch = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L56) |  |
+| <code>MissingLedgerCoverage = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L57) |  |
+| <code>MissingPortfolioCoverage = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L58) |  |
+| <code>ClassificationGap = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:59](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L59) |  |
+| <code>TimingMismatch = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L60) |  |
+| <code>MissingBankCoverage = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:61](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L61) |  |
+| <code>CashMismatch = 6</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L62) |  |
+| <code>MissingCashCoverage = 7</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L63) |  |
+| <code>MissingExternalStatementCoverage = 8</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L64) |  |
+| <code>ExternalStatementMismatch = 9</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L65) |  |
+| <code>PartialMatch = 10</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L66) |  |
+
+## ReconciliationBreakDispositionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakDispositionDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:459](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L459).
+
+```csharp
+public enum ReconciliationBreakDispositionDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Resolved = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:461](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L461) |  |
+| <code>Waived = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:462](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L462) |  |
+| <code>Superseded = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:463](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L463) |  |
+
+## ReconciliationBreakDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:141](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L141).
+
+Break row emitted by the reconciliation engine.
+
+```csharp
+public sealed record ReconciliationBreakDto(string CheckId, string Label, ReconciliationBreakCategory Category, ReconciliationBreakStatus Status, string MissingSource, decimal? ExpectedAmount, decimal? ActualAmount, decimal Variance, ReconciliationBreakSeverity Severity, string Reason, DateTimeOffset? ExpectedAsOf, DateTimeOffset? ActualAsOf, OperationsContinuityCorrelationKeysDto? CorrelationKeys = null, IReadOnlyList<ReconciliationBreakMeasureDto>? Measures = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset? FirstObservedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:161](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L161) | When this logical break was first observed. Reconciliation retries retain this value even when the current variance, category, or reason changes. Legacy records may omit it. |
+| <code>public string? LogicalBreakIdentity { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:168](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L168) | Canonical identity used to carry first-observation continuity across retries. The identity excludes variance, category, reason, and status so those attributes may evolve without creating a new logical break. |
+| <code>public Guid? BankEntityId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:170](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L170) |  |
+| <code>public string? SourceScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:172](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L172) |  |
+
+## ReconciliationBreakExplanationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakExplanationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:614](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L614).
+
+```csharp
+public sealed record ReconciliationBreakExplanationDto(string Summary, IReadOnlyList<string> SourceSystems, string ProbableCause, string LedgerImpact, string SuggestedNextAction, IReadOnlyList<string> EvidenceLinks);
+```
+
+## ReconciliationBreakLineageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakLineageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L6).
+
+Source observations do not resolve or approve governed casework.
+
+```csharp
+public sealed record ReconciliationBreakLineageDto(string LineageId, string ComparisonScopeId, string OccurrenceId, int OccurrenceNumber, string ObservationState, DateTimeOffset FirstObservedAt, DateTimeOffset OccurrenceFirstObservedAt, DateTimeOffset LastObservedAt, string LastObservedRunId, DateTimeOffset? ClearedAt = null, string? ClearedByRunId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? IdentityScopeId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L20) |  |
+
+## ReconciliationBreakMeasureDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:449](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L449).
+
+One typed, item-level reconciliation comparison. A measure that cannot be calculated must say why instead of substituting zeroes that could be mistaken for an actual tie-out.
+
+```csharp
+public sealed record ReconciliationBreakMeasureDto(ReconciliationBreakMeasureKindDto Kind, decimal? Expected, decimal? Actual, decimal? Variance, decimal? Tolerance, string Unit, string? UnavailableReason = null);
+```
+
+## ReconciliationBreakMeasureKindDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:438](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L438).
+
+```csharp
+public enum ReconciliationBreakMeasureKindDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Value = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:440](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L440) |  |
+| <code>Quantity = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:441](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L441) |  |
+| <code>CostBasis = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:442](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L442) |  |
+
 ## ReconciliationBreakObservation
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakObservation</code>. Kind: `record`.
@@ -592,173 +788,4 @@ Full detail payload for a single reconciliation run.
 
 ```csharp
 public sealed record ReconciliationRunDetail(ReconciliationRunSummary Summary, IReadOnlyList<ReconciliationMatchDto> Matches, IReadOnlyList<ReconciliationBreakDto> Breaks, IReadOnlyList<ReconciliationSecurityCoverageIssueDto>? SecurityCoverageIssues = null, IReadOnlyDictionary<string, SecurityClassificationSummaryDto>? SecurityClassifications = null, IReadOnlyList<ExpectedAccountingEventDto>? ExpectedAccountingEvents = null, IReadOnlyList<AccrualCalculationResultDto>? AccrualCalculations = null, IReadOnlyList<ExpectedJournalPreviewDto>? ExpectedJournalPreviews = null, IReadOnlyList<SecurityMasterAccountingIssueDto>? SecurityMasterAccountingIssues = null);
-```
-
-## ReconciliationRunObservationScope
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRunObservationScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L24).
-
-Exact authority and source population covered by a completed comparison.
-
-```csharp
-public sealed record ReconciliationRunObservationScope(string TenantId, string CompanyId, string FundProfileId, string FundAccountId, Guid LedgerBookId, string AccountingPeriodId, string SourceSystem, string ExternalAccountId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? LineageSourceIdentity { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L35) |  |
-
-## ReconciliationRunRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRunRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:72](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L72).
-
-Request to create a reconciliation run for a recorded strategy run.
-
-```csharp
-public sealed record ReconciliationRunRequest(string RunId, decimal AmountTolerance = 0.01m, int MaxAsOfDriftMinutes = 5, Guid? BankEntityId = null);
-```
-
-## ReconciliationRunSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRunSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L86).
-
-Summary of a completed reconciliation run.
-
-```csharp
-public sealed record ReconciliationRunSummary(string ReconciliationRunId, string RunId, DateTimeOffset CreatedAt, DateTimeOffset? PortfolioAsOf, DateTimeOffset? LedgerAsOf, int MatchCount, int BreakCount, int OpenBreakCount, bool HasTimingDrift, decimal AmountTolerance, int MaxAsOfDriftMinutes, int SecurityIssueCount = 0, bool HasSecurityCoverageIssues = false, int BankTransactionCount = 0, int BankBreakCount = 0, int ExpectedAccountingEventCount = 0, int ExpectedJournalPreviewCount = 0, int SecurityMasterAccountingIssueCount = 0, bool HasSecurityMasterAccountingIssues = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Guid? BankEntityId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:111](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L111) | Optional banking entity scope used when this reconciliation run included bank inputs. Kept outside the positional constructor so persisted legacy payloads remain readable. |
-
-## ReconciliationSchemaVersion
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSchemaVersion</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1046](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1046).
-
-Canonical schema version metadata for reconciliation ingress/egress payloads.
-
-```csharp
-public sealed record ReconciliationSchemaVersion(string ContractName, int Major, int Minor, int Patch, string ContentType = "application/vnd.meridian.reconciliation+json");
-```
-
-## ReconciliationSecurityCoverageIssueDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:215](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L215).
-
-Security Master coverage issue attached to a reconciliation run.
-
-```csharp
-public sealed record ReconciliationSecurityCoverageIssueDto(string Source, string Symbol, string? AccountName, string Reason, string? Code = null, ReconciliationBreakSeverity Severity = ReconciliationBreakSeverity.Medium, string? EvidenceLink = null);
-```
-
-## ReconciliationSlaComputationResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSlaComputationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:663](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L663).
-
-```csharp
-public sealed record ReconciliationSlaComputationResult(string PolicyId, DateTimeOffset DueAt, DateTimeOffset WarningAt, DateTimeOffset? BreachedAt, ReconciliationCaseSlaState State, string AgeBand, double BusinessAgeHours);
-```
-
-## ReconciliationSlaPolicy
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSlaPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:642](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L642).
-
-```csharp
-public sealed record ReconciliationSlaPolicy(string PolicyId, string? FundId, string? AccountId, string? BreakType, ReconciliationBreakSeverity Severity, ReconciliationCasePriority Priority, string TimeZoneId, TimeOnly BusinessDayStart, TimeOnly BusinessDayEnd, int DueBusinessHours, int WarningBusinessHours, bool StopOnResolved = true, bool StopOnSignedOff = false, bool PauseAwaitingEvidence = true, string? BusinessCalendarId = null, IReadOnlyList<string>? HolidayCalendarIds = null, IReadOnlyList<string>? PauseRules = null, IReadOnlyList<string>? StopRules = null, IReadOnlyList<string>? EscalationRules = null);
-```
-
-## ReconciliationSourceKind
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSourceKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L14).
-
-Source type participating in a reconciliation comparison.
-
-```csharp
-public enum ReconciliationSourceKind : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L16) |  |
-| <code>Portfolio = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L17) |  |
-| <code>Ledger = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L18) |  |
-| <code>Bank = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L19) |  |
-| <code>ExternalStatement = Bank</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L20) |  |
-| <code>Cash = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L21) |  |
-
-## ReconciliationSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:189](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L189).
-
-Summary of recent reconciliation posture for a fund.
-
-```csharp
-public sealed record ReconciliationSummary(int RunCount, int OpenBreakCount, decimal BreakAmountTotal, IReadOnlyList<FundReconciliationItem> RecentRuns, int SecurityCoverageIssueCount = 0, ReconciliationBreakQueueProjectionDto? BreakQueue = null, LedgerImpactPreviewDto? LedgerImpactPreview = null, bool HasCriticalBreakOpen = false);
-```
-
-## ReconciliationTaxonomySnapshot
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationTaxonomySnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:680](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L680).
-
-```csharp
-public sealed record ReconciliationTaxonomySnapshot(int Version, IReadOnlyList<ReconciliationTaxonomyValue> RootCauses, IReadOnlyList<ReconciliationTaxonomyValue> ResolutionCodes);
-```
-
-## ReconciliationTaxonomyValue
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationTaxonomyValue</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:673](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L673).
-
-```csharp
-public sealed record ReconciliationTaxonomyValue(string Code, string DisplayName, int Version, bool IsActive, IReadOnlyList<string>? RequiredEvidencePrefixes = null);
-```
-
-## RecordPreparerAttestationRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.RecordPreparerAttestationRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L31).
-
-```csharp
-public sealed record RecordPreparerAttestationRequestDto(Guid CommandId, long ExpectedDeclarationRevision, string ActionId, string SubjectKind, string SubjectId, string SubjectRevision, string SubjectHash, string Reason, string Confirmation, OperationsActionOriginDto Origin = OperationsActionOriginDto.HumanOperator);
-```
-
-## RecurringJournalOccurrenceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.RecurringJournalOccurrenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs#L8).
-
-Retained occurrence identity and approval-draft lineage shared by both Accounting queues. Evidence references identify retained source metadata; they do not assert that source bytes have been independently verified. State and approval status are authoritative server values.
-
-```csharp
-public sealed record RecurringJournalOccurrenceDto(string OccurrenceId, string ScheduleId, int ScheduleVersion, string TemplateId, int TemplateVersion, DateOnly EffectiveDate, string FundProfileId, Guid LedgerBookId, string EntityId, string? PeriodId, string State, Guid? JournalEntryId, string? ApprovalStatus, IReadOnlyList<string> Blockers, IReadOnlyList<string> SourceEvidenceReferences, string? PeriodLockOwner = null, string? GovernedReopenPath = null);
 ```

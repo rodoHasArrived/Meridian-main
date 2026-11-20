@@ -2009,6 +2009,7 @@ Meridian-main
 │   ├── operators
 │   │   ├── account-oversight.md
 │   │   ├── bond-workflows.md
+│   │   ├── book-receipt-queue.md
 │   │   ├── browser-workstation-installer.md
 │   │   ├── business-day-calendar-files.md
 │   │   ├── deployment-packaging.md
@@ -5839,6 +5840,7 @@ Meridian-main
 │   │   │   ├── AssetAcquisitionTermsCompletionDto.cs
 │   │   │   ├── AssetOperationsDtos.cs
 │   │   │   ├── AssetOperationsReferenceDtos.cs
+│   │   │   ├── BookReceiptDtos.cs
 │   │   │   ├── CorporateActionAccountingDtos.cs
 │   │   │   ├── FactorPaydownProjectionIdentity.cs
 │   │   │   ├── ICorporateActionRuleProfile.cs
@@ -8875,6 +8877,7 @@ Meridian-main
 │   │   │   ├── FileReconciliationBreakQueueRepository.cs
 │   │   │   ├── FileReconciliationBreakQueueRepository.Lineage.cs
 │   │   │   ├── FileReconciliationBreakQueueRepository.Persistence.cs
+│   │   │   ├── FileReconciliationBreakQueueRepository.ReceiptReversals.cs
 │   │   │   ├── FileReconciliationRunRepository.cs
 │   │   │   ├── GovernanceExceptionService.cs
 │   │   │   ├── IAggregatePortfolioService.cs
@@ -9667,6 +9670,8 @@ Meridian-main
 │   │   │   │   │   │   ├── fund-structure-setup.api.ts
 │   │   │   │   │   │   ├── fund-structure-setup.contracts.ts
 │   │   │   │   │   │   ├── http-client.ts
+│   │   │   │   │   │   ├── income-receipt-queue.api.test.ts
+│   │   │   │   │   │   ├── income-receipt-queue.api.ts
 │   │   │   │   │   │   ├── intercompany-agreements.api.test.ts
 │   │   │   │   │   │   ├── intercompany-agreements.api.ts
 │   │   │   │   │   │   ├── mark-freshness.api.ts
@@ -10234,6 +10239,7 @@ Meridian-main
 │   │   │   │   │   ├── corporate-action-calendar.view-state.ts
 │   │   │   │   │   ├── corporate-action-deadline-panel.tsx
 │   │   │   │   │   ├── covered-call-screen.formatters.ts
+│   │   │   │   │   ├── covered-call-screen.payoff-chart.ts
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
@@ -10338,12 +10344,16 @@ Meridian-main
 │   │   │   │   │   ├── family-ownership-graph.tsx
 │   │   │   │   │   ├── finance-standard-pages-screen.test.tsx
 │   │   │   │   │   ├── finance-standard-pages-screen.tsx
+│   │   │   │   │   ├── income-receipt-queue-panel.test.tsx
+│   │   │   │   │   ├── income-receipt-queue-panel.tsx
+│   │   │   │   │   ├── income-receipt-queue.details.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.test.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.view-model.ts
 │   │   │   │   │   ├── journal-entry-tax-results.test.tsx
 │   │   │   │   │   ├── journal-entry-tax-results.tsx
 │   │   │   │   │   ├── ledger-record-identity.tsx
+│   │   │   │   │   ├── live-quotes-screen.chart-evidence.ts
 │   │   │   │   │   ├── live-quotes-screen.quick-trade.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
 │   │   │   │   │   ├── live-quotes-screen.tsx
@@ -10657,6 +10667,7 @@ Meridian-main
 │   │   │   │   │   │   ├── quant-run-response.json
 │   │   │   │   │   │   └── security-asset-term-form-parity.json
 │   │   │   │   │   ├── asset-approval-fixtures.ts
+│   │   │   │   │   ├── book-receipt-fixture.ts
 │   │   │   │   │   ├── cash-dividend-attestation-fixtures.ts
 │   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── ledger-amount-proof-fixtures.ts
@@ -10697,6 +10708,7 @@ Meridian-main
 │   │   │   │   │   ├── execution-blotter.types.ts
 │   │   │   │   │   ├── factor-paydown.ts
 │   │   │   │   │   ├── family-office.types.ts
+│   │   │   │   │   ├── income-receipt-queue.types.ts
 │   │   │   │   │   ├── instrument-accounting.test.ts
 │   │   │   │   │   ├── instrument-accounting.ts
 │   │   │   │   │   ├── intercompany-accrual-schedules.ts
@@ -11171,6 +11183,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.AccountingWorkspace.cs
 │   │   │   ├── WorkstationEndpoints.ApprovalCollaboration.cs
 │   │   │   ├── WorkstationEndpoints.AuditTableExport.cs
+│   │   │   ├── WorkstationEndpoints.BookReceipts.cs
 │   │   │   ├── WorkstationEndpoints.ChartEvidence.cs
 │   │   │   ├── WorkstationEndpoints.CloseChecklistHistory.cs
 │   │   │   ├── WorkstationEndpoints.CloseReadiness.cs
@@ -11339,6 +11352,15 @@ Meridian-main
 │   │   │   ├── BondProviderIntakeService.cs
 │   │   │   ├── BondWorkflowConnectionReadinessService.cs
 │   │   │   ├── BondWorkflowServiceRegistration.cs
+│   │   │   ├── BookReceiptEvidenceSource.cs
+│   │   │   ├── BookReceiptEvidenceSource.Postings.cs
+│   │   │   ├── BookReceiptQueueService.Allocations.cs
+│   │   │   ├── BookReceiptQueueService.cs
+│   │   │   ├── BookReceiptQueueService.History.cs
+│   │   │   ├── BookReceiptQueueService.ProjectionIdentities.cs
+│   │   │   ├── BookReceiptServiceCollectionExtensions.cs
+│   │   │   ├── BookReceiptSource.cs
+│   │   │   ├── BookReceiptSource.Rules.cs
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioState.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
@@ -11379,6 +11401,7 @@ Meridian-main
 │   │   │   ├── FamilyOfficeReadService.cs
 │   │   │   ├── FeatureCapabilitySettingsService.cs
 │   │   │   ├── FileAccountingAuditPendingMarkerStore.cs
+│   │   │   ├── FileBookReceiptRunStore.cs
 │   │   │   ├── FileFundProfileTenancyRegistry.cs
 │   │   │   ├── FileOnboardingWorkspaceStore.cs
 │   │   │   ├── FileReconciliationSlaCalendarResolver.cs
@@ -13342,6 +13365,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
 │   │   │   ├── AssetOperationsReferenceProjectionServiceTests.cs
+│   │   │   ├── BookReceiptSourceTests.cs
 │   │   │   ├── CanonicalLotCorporateActionServiceTests.CapitalReturn.cs
 │   │   │   ├── CanonicalLotCorporateActionServiceTests.cs
 │   │   │   ├── ClearwaterCorporateActionRuleProfileV1Tests.cs
@@ -14225,6 +14249,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaActivityStatementConnectorTests.cs
 │   │   │   │   ├── Bai2StatementConnectorTests.cs
 │   │   │   │   ├── BankStatementCurrencyEvidenceTests.cs
+│   │   │   │   ├── BookReceiptCanonicalIntakeTests.cs
 │   │   │   │   ├── Camt053StatementConnectorTests.cs
 │   │   │   │   ├── CsvLineSplitterTests.cs
 │   │   │   │   ├── CsvStatementConnectorTests.cs
@@ -14899,6 +14924,7 @@ Meridian-main
 │   │   │   ├── DesignerExpressionTests.cs
 │   │   │   ├── Dk1PromotionTrustEvidenceProviderTests.cs
 │   │   │   ├── FileReconciliationBreakQueueLineageTests.cs
+│   │   │   ├── FileReconciliationBreakQueueRepository.BookReceiptReversalTests.cs
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
 │   │   │   ├── LiveRunMetricsTrackerTests.cs
@@ -15089,6 +15115,10 @@ Meridian-main
 │   │   │   ├── BondReferenceEndpointsTests.cs
 │   │   │   ├── BondWorkflowConnectionReadinessTests.cs
 │   │   │   ├── BondWorkflowEndpointsTests.cs
+│   │   │   ├── BookReceiptEvidenceSourceTests.cs
+│   │   │   ├── BookReceiptQueueExceptionVarianceTests.cs
+│   │   │   ├── BookReceiptQueueProjectionIdentityTests.cs
+│   │   │   ├── BookReceiptQueueServiceTests.cs
 │   │   │   ├── BrokerageConnectionEndpointsTests.cs
 │   │   │   ├── BrokerageConnectionIsolationTests.cs
 │   │   │   ├── BrokerageContractMultiplierTests.cs
@@ -15383,6 +15413,7 @@ Meridian-main
 │   │   │   ├── WorkflowLibraryEndpointTests.cs
 │   │   │   ├── WorkstationAuditTableExportTests.cs
 │   │   │   ├── WorkstationBondCandidateStagingTests.cs
+│   │   │   ├── WorkstationBookReceiptEndpointTests.cs
 │   │   │   ├── WorkstationCloseTenantContextCompositionTests.cs
 │   │   │   ├── WorkstationCollateralExposureEndpointsTests.cs
 │   │   │   ├── WorkstationContractSnapshotTests.cs

@@ -6,6 +6,285 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IOperationalCaseHistoryStore
+
+Qualified name: <code>Meridian.Contracts.Operations.IOperationalCaseHistoryStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs:6](../../../../src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs#L6).
+
+Append-only persistence boundary for hash-chained operational case history.
+
+```csharp
+public interface IOperationalCaseHistoryStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;OperationalCaseHistoryRecord&gt; AppendAsync(OperationalCaseHistoryAppendRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs:8](../../../../src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs#L8) |  |
+| <code>ValueTask&lt;IReadOnlyList&lt;OperationalCaseHistoryRecord&gt;&gt; ReadAsync(OperationalCaseHistoryQuery query, CancellationToken cancellationToken = default);</code> | [src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs:12](../../../../src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs#L12) |  |
+
+## IPreparerAttestationReferenceClassifier
+
+Qualified name: <code>Meridian.Contracts.Operations.IPreparerAttestationReferenceClassifier</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:66](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L66).
+
+Trusted server-side denial classifier for exact receipt identities in one authenticated scope. It exposes no receipt contents, never grants approval, and must not search other tenants. Missing state contains no receipts; unreadable state must throw instead of returning an ordinary classification.
+
+```csharp
+public interface IPreparerAttestationReferenceClassifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;bool&gt; IsPreparerReceiptReferenceAsync(string tenantId, string companyId, string? reference, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:68](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L68) |  |
+
+## OperationalCaseApproval
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseApproval</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:34](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L34).
+
+```csharp
+public sealed record OperationalCaseApproval
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string ApprovalId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:36](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L36) |  |
+| <code>public required string Decision { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:37](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L37) |  |
+| <code>public required string DecidedBy { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:38](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L38) |  |
+| <code>public required DateTimeOffset DecidedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:39](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L39) |  |
+| <code>public required string Reason { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:40](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L40) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:41](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L41) |  |
+
+## OperationalCaseAssignment
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseAssignment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:10](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L10).
+
+```csharp
+public sealed record OperationalCaseAssignment
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? PreviousAssigneeId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:12](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L12) |  |
+| <code>public string? AssigneeId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:13](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L13) |  |
+| <code>public required string AssignedBy { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:14](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L14) |  |
+| <code>public required DateTimeOffset AssignedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:15](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L15) |  |
+
+## OperationalCaseException
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseException</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:25](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L25).
+
+```csharp
+public sealed record OperationalCaseException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string ExceptionType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:27](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L27) |  |
+| <code>public required string Message { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:28](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L28) |  |
+| <code>public string? StackTrace { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:29](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L29) |  |
+| <code>public required DateTimeOffset OccurredAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:30](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L30) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:31](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L31) |  |
+
+## OperationalCaseHistoryAppendRequest
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:55](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L55).
+
+```csharp
+public sealed record OperationalCaseHistoryAppendRequest
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string CaseId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:57](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L57) |  |
+| <code>public required string CaseType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:58](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L58) |  |
+| <code>public required string HistoryEventId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:59](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L59) |  |
+| <code>public required string EventType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:60](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L60) |  |
+| <code>public required DateTimeOffset OccurredAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:61](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L61) |  |
+| <code>public required string ActorId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:62](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L62) |  |
+| <code>public required string Reason { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:63](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L63) |  |
+| <code>public required string CorrelationId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:64](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L64) |  |
+| <code>public required string InputHashSha256 { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:65](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L65) |  |
+| <code>public IReadOnlyDictionary&lt;string, string&gt; Data { get; init; } = new Dictionary&lt;string, string&gt;(StringComparer.Ordinal);</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:66](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L66) |  |
+| <code>public OperationalCaseStateTransition? Transition { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:68](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L68) |  |
+| <code>public OperationalCaseAssignment? Assignment { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:69](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L69) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseRetry&gt; Retries { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:70](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L70) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseException&gt; Exceptions { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:71](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L71) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseApproval&gt; Approvals { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:72](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L72) |  |
+| <code>public IReadOnlyList&lt;OperationArtifactReference&gt; Artifacts { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:73](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L73) |  |
+| <code>public IReadOnlyList&lt;OperationEvidenceReference&gt; Evidence { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:74](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L74) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseRecoveryAttempt&gt; RecoveryAttempts { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:75](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L75) |  |
+| <code>public VerifiedOperationOutcome? TerminalOutcome { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:76](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L76) |  |
+
+## OperationalCaseHistoryHashing
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseHistoryHashing</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:7](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L7).
+
+Canonical hash calculation for one persisted case-history record.
+
+```csharp
+public static class OperationalCaseHistoryHashing
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxDataEntries = 64;</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:9](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L9) |  |
+| <code>public const int MaxDataKeyLength = 128;</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:10](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L10) |  |
+| <code>public const int MaxDataValueLength = 1_048_576;</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:11](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L11) |  |
+| <code>public const int MaxDataTotalCharacters = 2_097_152;</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:12](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L12) |  |
+| <code>public static string ComputeRecordHashSha256(OperationalCaseHistoryRecord record);</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:14](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L14) |  |
+| <code>public static bool HasValidRecordHash(OperationalCaseHistoryRecord record) =&gt; …;</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:40](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L40) |  |
+| <code>public static IReadOnlyList&lt;string&gt; ValidateData(IReadOnlyDictionary&lt;string, string&gt;? data);</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs:46](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryHashing.cs#L46) |  |
+
+## OperationalCaseHistoryQuery
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseHistoryQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:107](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L107).
+
+```csharp
+public sealed record OperationalCaseHistoryQuery
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? CaseId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:109](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L109) |  |
+| <code>public string? CaseType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:110](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L110) |  |
+| <code>public long? AfterSequence { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:111](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L111) |  |
+
+## OperationalCaseHistoryRecord
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseHistoryRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:79](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L79).
+
+```csharp
+public sealed record OperationalCaseHistoryRecord
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string CaseId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:81](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L81) |  |
+| <code>public required string CaseType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:82](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L82) |  |
+| <code>public required string HistoryEventId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:83](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L83) |  |
+| <code>public required string EventType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:84](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L84) |  |
+| <code>public required long Sequence { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:85](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L85) |  |
+| <code>public string? PreviousRecordHashSha256 { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:86](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L86) |  |
+| <code>public required string RecordHashSha256 { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:87](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L87) |  |
+| <code>public required DateTimeOffset OccurredAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:88](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L88) |  |
+| <code>public required DateTimeOffset PersistedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:89](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L89) |  |
+| <code>public required string ActorId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:90](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L90) |  |
+| <code>public required string Reason { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:91](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L91) |  |
+| <code>public required string CorrelationId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:92](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L92) |  |
+| <code>public required string InputHashSha256 { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:93](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L93) |  |
+| <code>public IReadOnlyDictionary&lt;string, string&gt; Data { get; init; } = new Dictionary&lt;string, string&gt;(StringComparer.Ordinal);</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:94](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L94) |  |
+| <code>public OperationalCaseStateTransition? Transition { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:96](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L96) |  |
+| <code>public OperationalCaseAssignment? Assignment { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:97](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L97) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseRetry&gt; Retries { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:98](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L98) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseException&gt; Exceptions { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:99](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L99) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseApproval&gt; Approvals { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:100](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L100) |  |
+| <code>public IReadOnlyList&lt;OperationArtifactReference&gt; Artifacts { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:101](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L101) |  |
+| <code>public IReadOnlyList&lt;OperationEvidenceReference&gt; Evidence { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:102](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L102) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseRecoveryAttempt&gt; RecoveryAttempts { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:103](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L103) |  |
+| <code>public VerifiedOperationOutcome? TerminalOutcome { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:104](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L104) |  |
+
+## OperationalCaseRecoveryAttempt
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseRecoveryAttempt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:44](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L44).
+
+```csharp
+public sealed record OperationalCaseRecoveryAttempt
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string RecoveryActionId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:46](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L46) |  |
+| <code>public required int Attempt { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:47](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L47) |  |
+| <code>public required DateTimeOffset StartedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:48](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L48) |  |
+| <code>public DateTimeOffset? CompletedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:49](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L49) |  |
+| <code>public required string Result { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:50](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L50) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:51](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L51) |  |
+| <code>public IReadOnlyList&lt;string&gt; ArtifactIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:52](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L52) |  |
+
+## OperationalCaseRetry
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseRetry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:18](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L18).
+
+```csharp
+public sealed record OperationalCaseRetry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required int Attempt { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:20](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L20) |  |
+| <code>public required DateTimeOffset AttemptedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:21](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L21) |  |
+| <code>public required string Reason { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:22](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L22) |  |
+
+## OperationalCaseStateTransition
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseStateTransition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:3](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L3).
+
+```csharp
+public sealed record OperationalCaseStateTransition
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? PreviousState { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:5](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L5) |  |
+| <code>public required string CurrentState { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:6](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L6) |  |
+| <code>public required DateTimeOffset TransitionedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:7](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L7) |  |
+
+## OperationArtifactReference
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationArtifactReference</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:50](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L50).
+
+```csharp
+public sealed record OperationArtifactReference(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, string? Uri = null, string? PreviewUri = null);
+```
+
 ## OperationEvidenceReference
 
 Qualified name: <code>Meridian.Contracts.Operations.OperationEvidenceReference</code>. Kind: `record`.
@@ -592,257 +871,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;freshnessTargetSeconds&quot;)] public int FreshnessTargetSeconds { get; set; } = 60;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:318](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L318) | Target data freshness in seconds (how stale data can be before violation). |
 | <code>[JsonPropertyName(&quot;completionDeadline&quot;)] public DateTime? CompletionDeadline { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:324](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L324) | Deadline by which the job must complete (for historical workloads). |
 | <code>[JsonPropertyName(&quot;minimumCompleteness&quot;)] public float MinimumCompleteness { get; set; } = 0.95f;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:330](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L330) | Minimum completeness ratio (0.0 to 1.0) required for the job to be considered successful. |
-
-## IngestionSymbolProgress
-
-Qualified name: <code>Meridian.Contracts.Pipeline.IngestionSymbolProgress</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:336](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L336).
-
-Per-symbol progress within an ingestion job.
-
-```csharp
-public sealed class IngestionSymbolProgress
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:342](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L342) | The symbol being processed. |
-| <code>[JsonPropertyName(&quot;state&quot;)] public IngestionJobState State { get; set; } = IngestionJobState.Queued;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:348](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L348) | Current state of this symbol&#x27;s processing. |
-| <code>[JsonPropertyName(&quot;dataPointsProcessed&quot;)] public long DataPointsProcessed { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:354](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L354) | Number of data points (bars, ticks, etc.) processed. |
-| <code>[JsonPropertyName(&quot;expectedDataPoints&quot;)] public long ExpectedDataPoints { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:360](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L360) | Expected total data points (if known). |
-| <code>[JsonPropertyName(&quot;lastCommittedDate&quot;)] public DateTime? LastCommittedDate { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:366](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L366) | Last date/offset successfully committed. |
-| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:372](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L372) | Error message if this symbol failed. |
-| <code>[JsonPropertyName(&quot;retryCount&quot;)] public int RetryCount { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:378](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L378) | Number of retries for this specific symbol. |
-| <code>[JsonIgnore] public double ProgressPercent =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:384](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L384) | Progress percentage (0-100). |
-
-## IngestionWorkloadType
-
-Qualified name: <code>Meridian.Contracts.Pipeline.IngestionWorkloadType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:209](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L209).
-
-Type of ingestion workload.
-
-```csharp
-public enum IngestionWorkloadType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Realtime</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:212](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L212) | Real-time streaming data collection. |
-| <code>Historical</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:215](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L215) | Historical backfill from a provider. |
-| <code>GapFill</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:218](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L218) | Gap-fill for missing data periods. |
-| <code>ScheduledBackfill</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:221](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L221) | Scheduled recurring backfill. |
-
-## PipelinePolicyConstants
-
-Qualified name: <code>Meridian.Contracts.Pipeline.PipelinePolicyConstants</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:11](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L11).
-
-Constants for pipeline policy configuration. Shared between the main application and desktop projects to ensure consistent channel settings.
-
-```csharp
-public static class PipelinePolicyConstants
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int FullModeWait = 0;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:17](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L17) | Channel full mode: Wait (backpressure - blocks writers when full). Maps to BoundedChannelFullMode.Wait. |
-| <code>public const int FullModeDropNewest = 1;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:23](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L23) | Channel full mode: DropNewest (drop incoming items when full). Maps to BoundedChannelFullMode.DropNewest. |
-| <code>public const int FullModeDropOldest = 2;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:29](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L29) | Channel full mode: DropOldest (drop oldest items when full). Maps to BoundedChannelFullMode.DropOldest. |
-| <code>public const int FullModeDropWrite = 3;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:35](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L35) | Channel full mode: DropWrite (drop write attempt when full). Maps to BoundedChannelFullMode.DropWrite. |
-| <code>public const int DefaultCapacity = 100_000;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:41](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L41) | Default preset capacity for general-purpose event pipelines. |
-| <code>public const int DefaultFullMode = FullModeDropOldest;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:46](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L46) | Default preset full mode (DropOldest). |
-| <code>public const int HighThroughputCapacity = 50_000;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:53](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L53) | HighThroughput preset capacity for streaming data pipelines. |
-| <code>public const int HighThroughputFullMode = FullModeDropOldest;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:58](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L58) | HighThroughput preset full mode (DropOldest). |
-| <code>public const int DurableStreamingCapacity = 50_000;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:65](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L65) | DurableStreaming preset capacity for persistence-critical streaming pipelines. |
-| <code>public const int DurableStreamingFullMode = FullModeWait;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:70](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L70) | DurableStreaming preset full mode (Wait/backpressure - no silent eviction). |
-| <code>public const int MessageBufferCapacity = 50_000;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:77](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L77) | MessageBuffer preset capacity for internal message buffering. |
-| <code>public const int MessageBufferFullMode = FullModeDropOldest;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:82](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L82) | MessageBuffer preset full mode (DropOldest). |
-| <code>public const int MaintenanceQueueCapacity = 100;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:89](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L89) | MaintenanceQueue preset capacity for background tasks. |
-| <code>public const int MaintenanceQueueFullMode = FullModeWait;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:94](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L94) | MaintenanceQueue preset full mode (Wait/backpressure). |
-| <code>public const int LoggingCapacity = 1_000;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:101](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L101) | Logging preset capacity for log channels. |
-| <code>public const int LoggingFullMode = FullModeDropOldest;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:106](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L106) | Logging preset full mode (DropOldest). |
-| <code>public const int CompletionQueueCapacity = 500;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:113](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L113) | CompletionQueue preset capacity for completion notifications. |
-| <code>public const int CompletionQueueFullMode = FullModeWait;</code> | [src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs:118](../../../../src/Meridian.Contracts/Pipeline/PipelinePolicyConstants.cs#L118) | CompletionQueue preset full mode (Wait/backpressure - no drops). |
-
-## PipelineStatistics
-
-Qualified name: <code>Meridian.Contracts.Pipeline.PipelineStatistics</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Contracts/Pipeline/PipelineStatistics.cs:8](../../../../src/Meridian.Contracts/Pipeline/PipelineStatistics.cs#L8).
-
-Snapshot of pipeline performance statistics.
-
-```csharp
-public readonly record struct PipelineStatistics(long PublishedCount, long DroppedCount, long ConsumedCount, int CurrentQueueSize, long PeakQueueSize, int QueueCapacity, double QueueUtilization, double AverageProcessingTimeUs, TimeSpan TimeSinceLastFlush, DateTimeOffset Timestamp, long RecoveredCount = 0, long RejectedCount = 0, long DeduplicatedCount = 0, bool IsWalEnabled = false, bool IsValidationEnabled = false, bool IsDeduplicationEnabled = false, BoundedChannelFullMode QueueFullMode = BoundedChannelFullMode.Wait, bool HighWaterMarkWarned = false, int ConsumerCount = 1, int ActiveConsumers = 0, int FaultedConsumers = 0, long ConsumerIterationFailures = 0, DateTimeOffset? LastConsumerFaultAtUtc = null);
-```
-
-## RetryEnvelope
-
-Qualified name: <code>Meridian.Contracts.Pipeline.RetryEnvelope</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:263](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L263).
-
-Retry envelope tracking attempt count, backoff schedule, and policy.
-
-```csharp
-public sealed class RetryEnvelope
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;attemptCount&quot;)] public int AttemptCount { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:269](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L269) | Number of retry attempts made so far. |
-| <code>[JsonPropertyName(&quot;maxRetries&quot;)] public int MaxRetries { get; set; } = 3;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:275](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L275) | Maximum number of retries allowed. |
-| <code>[JsonPropertyName(&quot;nextRetryAt&quot;)] public DateTime? NextRetryAt { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:281](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L281) | Scheduled time for the next retry attempt. |
-| <code>[JsonPropertyName(&quot;policyClass&quot;)] public string PolicyClass { get; set; } = &quot;ExponentialBackoff&quot;;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:287](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L287) | The retry policy class name (e.g., ExponentialBackoff, Linear). |
-| <code>[JsonPropertyName(&quot;baseDelaySeconds&quot;)] public int BaseDelaySeconds { get; set; } = 30;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:293](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L293) | Base delay in seconds for retry backoff calculation. |
-| <code>[JsonIgnore] public bool IsExhausted =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:299](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L299) | Whether retries have been exhausted. |
-| <code>[JsonIgnore] public TimeSpan NextDelay =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:305](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L305) | Calculates the next retry delay using exponential backoff. |
-
-## UflCommandMetadataDto
-
-Qualified name: <code>Meridian.Contracts.Pipeline.UflCommandMetadataDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Pipeline/UflOutboxMessage.cs:6](../../../../src/Meridian.Contracts/Pipeline/UflOutboxMessage.cs#L6).
-
-Metadata propagated across UFL command, event, and outbox workflow boundaries.
-
-```csharp
-public sealed record UflCommandMetadataDto(Guid? CommandId, Guid? CorrelationId, Guid? CausationId, string? SourceAssetClass, string? EventType, string? SourceSystem, bool IsReplay);
-```
-
-## UflOutboxMessage (generic arity 1)
-
-Qualified name: <code>Meridian.Contracts.Pipeline.UflOutboxMessage</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Pipeline/UflOutboxMessage.cs:19](../../../../src/Meridian.Contracts/Pipeline/UflOutboxMessage.cs#L19).
-
-Durable outbox envelope for UFL workflow publication.
-
-```csharp
-public sealed record UflOutboxMessage<TPayload>(Guid MessageId, string Topic, UflCommandMetadataDto Metadata, TPayload Payload, DateTimeOffset EnqueuedAtUtc);
-```
-
-## IPlaidClient
-
-Qualified name: <code>Meridian.Contracts.Plaid.IPlaidClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:285](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L285).
-
-Defines Plaid API operations for linking institutions, retrieving account data, and transfers.
-
-```csharp
-public interface IPlaidClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;PlaidLinkTokenResponse&gt; CreateLinkTokenAsync(PlaidClientCredentials credentials, PlaidLinkTokenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:287](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L287) |  |
-| <code>Task&lt;PlaidInstitutionSearchResult&gt; SearchInstitutionsAsync(PlaidClientCredentials credentials, string query, IReadOnlyList&lt;PlaidProductDto&gt;? products = null, IReadOnlyList&lt;string&gt;? countryCodes = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:292](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L292) |  |
-| <code>Task&lt;(string ItemId, string AccessToken, string? RequestId)&gt; ExchangePublicTokenAsync(PlaidClientCredentials credentials, string publicToken, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:299](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L299) |  |
-| <code>Task&lt;IReadOnlyList&lt;PlaidBalanceDto&gt;&gt; GetBalancesAsync(PlaidClientCredentials credentials, string accessToken, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:304](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L304) |  |
-| <code>Task&lt;PlaidTransactionsSyncResult&gt; SyncTransactionsAsync(PlaidClientCredentials credentials, string accessToken, string? cursor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:309](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L309) |  |
-| <code>Task&lt;PlaidInvestmentsSnapshot&gt; GetInvestmentsAsync(PlaidClientCredentials credentials, string accessToken, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:315](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L315) |  |
-| <code>Task&lt;IReadOnlyList&lt;PlaidIdentitySnapshot&gt;&gt; GetIdentityAsync(PlaidClientCredentials credentials, string accessToken, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:320](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L320) |  |
-| <code>Task&lt;(string AuthorizationId, bool Approved, string? DecisionRationale)&gt; AuthorizeTransferAsync(PlaidClientCredentials credentials, string accessToken, PlaidTransferRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:325](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L325) |  |
-| <code>Task&lt;(string TransferId, string Status)&gt; CreateTransferAsync(PlaidClientCredentials credentials, string accessToken, PlaidTransferRequest request, string authorizationId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:331](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L331) |  |
-
-## IPlaidConnectionRepository
-
-Qualified name: <code>Meridian.Contracts.Plaid.IPlaidConnectionRepository</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:342](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L342).
-
-Retains Plaid items, accounts, sync cursors, status, and webhook processing state.
-
-```csharp
-public interface IPlaidConnectionRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;PlaidItemDto&gt;&gt; ListItemsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:344](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L344) |  |
-| <code>Task&lt;PlaidItemDto?&gt; GetItemAsync(string itemId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:346](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L346) |  |
-| <code>Task&lt;IReadOnlyList&lt;PlaidAccountDto&gt;&gt; ListAccountsAsync(string? itemId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:348](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L348) |  |
-| <code>Task UpsertItemAsync(PlaidItemDto item, IReadOnlyList&lt;PlaidAccountDto&gt; accounts, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:350](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L350) |  |
-| <code>Task UpdateTransactionsCursorAsync(string itemId, string? cursor, DateTimeOffset syncedAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:352](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L352) |  |
-| <code>Task UpdateItemStatusAsync(string itemId, PlaidItemStatusDto status, string? webhookType, string? webhookCode, string? error, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:354](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L354) |  |
-| <code>Task&lt;bool&gt; TryAppendWebhookAsync(PlaidWebhookEventDto webhook, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:362](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L362) |  |
-| <code>Task RecordTransferAsync(PlaidTransferResult result, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:364](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L364) |  |
-
-## IPlaidIngestionService
-
-Qualified name: <code>Meridian.Contracts.Plaid.IPlaidIngestionService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:370](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L370).
-
-Coordinates Plaid connection setup, account ingestion, synchronization, and webhook recording.
-
-```csharp
-public interface IPlaidIngestionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;PlaidLinkTokenResponse&gt; CreateLinkTokenAsync(PlaidLinkTokenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:372](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L372) |  |
-| <code>Task&lt;PlaidInstitutionSearchResult&gt; SearchInstitutionsAsync(string query, IReadOnlyList&lt;PlaidProductDto&gt;? products = null, IReadOnlyList&lt;string&gt;? countryCodes = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:374](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L374) |  |
-| <code>Task&lt;PlaidPublicTokenExchangeResult&gt; ExchangePublicTokenAsync(PlaidPublicTokenExchangeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:380](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L380) |  |
-| <code>Task&lt;IReadOnlyList&lt;PlaidItemDto&gt;&gt; ListItemsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:382](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L382) |  |
-| <code>Task&lt;IReadOnlyList&lt;PlaidAccountDto&gt;&gt; ListAccountsAsync(string? itemId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:384](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L384) |  |
-| <code>Task&lt;PlaidSyncResult&gt; SyncItemAsync(PlaidSyncRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:386](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L386) |  |
-| <code>Task&lt;PlaidWebhookEventDto&gt; RecordWebhookAsync(PlaidWebhookEventDto webhook, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:388](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L388) |  |
-
-## IPlaidTransferService
-
-Qualified name: <code>Meridian.Contracts.Plaid.IPlaidTransferService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:394](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L394).
-
-Creates sandbox Plaid transfers from explicit transfer requests.
-
-```csharp
-public interface IPlaidTransferService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;PlaidTransferResult&gt; CreateSandboxTransferAsync(PlaidTransferRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:396](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L396) |  |
-
-## PlaidAccountDto
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidAccountDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:158](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L158).
-
-```csharp
-public sealed record PlaidAccountDto(string PlaidAccountId, string ItemId, string Name, string? OfficialName, string? Mask, string Type, string? Subtype, string? PersistentAccountId, Guid? MeridianAccountId, Guid? EntityId, string? VerificationStatus);
-```
-
-## PlaidAccountLinkRequest
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidAccountLinkRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:118](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L118).
-
-```csharp
-public sealed record PlaidAccountLinkRequest(string PlaidAccountId, string Name, string? OfficialName, string? Mask, string Type, string? Subtype, string? PersistentAccountId = null, Guid? MeridianAccountId = null, Guid? EntityId = null);
-```

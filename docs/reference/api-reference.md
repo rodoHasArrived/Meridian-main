@@ -1827,8 +1827,8 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs](../../src/Mer
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/workstation` | GET | `(IWebHostEnvironment environment) => …` | — | — | [L1249](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1249) |
-| `/workstation/{*path}` | GET | `(string? path, IWebHostEnvironment environment) => …` | `Results.NotFound`; `Results.File` | — | [L1252](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1252) |
+| `/workstation` | GET | `(IWebHostEnvironment environment) => …` | — | — | [L1250](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1250) |
+| `/workstation/{*path}` | GET | `(string? path, IWebHostEnvironment environment) => …` | `Results.NotFound`; `Results.File` | — | [L1253](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1253) |
 
 ### WorkstationEndpoints.OperatorTriage
 
