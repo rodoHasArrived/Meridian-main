@@ -317,6 +317,13 @@ public interface IReportingGovernanceEndpointCoordinator
         ReportingGovernanceCallerContext caller,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<GovernedReportingRun>> SearchRunsAsync(
+        string query,
+        int limit,
+        ReportingGovernanceCallerContext caller,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<GovernedReportingRun>>([]);
+
     Task<IReadOnlyList<ReportingGovernedArtifactDescriptor>> ListRetainedArtifactsAsync(
         string runId,
         ReportingGovernanceCallerContext caller,
@@ -476,6 +483,47 @@ public sealed partial class ReportingGovernanceCoordinatorService : IReportingGo
         }
 
         return run;
+    }
+
+    public Task<IReadOnlyList<GovernedReportingRun>> SearchRunsAsync(
+        string query,
+        int limit,
+        ReportingGovernanceCallerContext caller,
+        CancellationToken cancellationToken = default)
+    {
+        RequireText(query, nameof(query));
+        ArgumentOutOfRangeException.ThrowIfLessThan(limit, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(limit, IReportingGovernanceTransaction.MaximumRunReadBatchSize);
+        ValidateCaller(caller);
+        EnsureReadPermission(caller);
+        return _repository.ExecuteTransactionAsync<IReadOnlyList<GovernedReportingRun>>(async (transaction, ct) =>
+        {
+            var tenant = caller.TenantId.Trim();
+            var company = caller.CompanyId!.Trim();
+            var visible = new List<GovernedReportingRun>(limit);
+            // Page matching candidates until the visible limit is filled. Private runs
+            // neither count against that limit nor appear in the response.
+            const int pageSize = 32;
+            for (var offset = 0; visible.Count < limit; offset += pageSize)
+            {
+                var ids = await transaction.FindRunIdsAsync(tenant, company, query, offset, pageSize, ct).ConfigureAwait(false);
+                if (ids.Count == 0)
+                {
+                    break;
+                }
+
+                var runs = (await transaction.GetRunsAsync(tenant, ids, ct).ConfigureAwait(false))
+                    .Where(run => CanRead(run, caller))
+                    .ToDictionary(static run => run.RunId, StringComparer.Ordinal);
+                visible.AddRange(ids.Where(runs.ContainsKey).Select(id => runs[id]).Take(limit - visible.Count));
+                if (ids.Count < pageSize)
+                {
+                    break;
+                }
+            }
+
+            return visible;
+        }, cancellationToken).AsTask();
     }
 
     public async Task<IReadOnlyList<ReportingGovernedArtifactDescriptor>> ListRetainedArtifactsAsync(

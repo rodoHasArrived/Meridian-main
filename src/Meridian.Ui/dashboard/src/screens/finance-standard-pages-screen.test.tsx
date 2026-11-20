@@ -1,5 +1,6 @@
-import { createLedgerAmountProofPacket } from "@/test/ledger-amount-proof-fixtures";
-import { getLedgerAmountProof } from "@/lib/ledger-amount-proof-api";
+import { createAmountPassport, passportIdentity } from "@/test/amount-passport-fixtures";
+import { getAmountPassport } from "@/lib/amount-passport-api";
+import { AmountPassportProvider } from "@/components/meridian/amount-passport";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
@@ -34,7 +35,9 @@ vi.mock("@/lib/api", async () => {
   };
 });
 
-vi.mock("@/lib/ledger-amount-proof-api", () => ({ getLedgerAmountProof: vi.fn() }));
+vi.mock("@/lib/amount-passport-api", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/amount-passport-api")>(), getAmountPassport: vi.fn()
+}));
 
 vi.mock("@/lib/ledger-reports-api", () => ({
   getLedgerBooks: vi.fn(),
@@ -81,15 +84,16 @@ function mockPostedBook() {
 
 function mockPostedAmount() {
   mockPostedBook();
+  const identity = passportIdentity({ subjectId: "je-proof:line-proof:debit" });
+  identity.scope = { ...identity.scope, ledgerBookId: LEDGER_BOOK_ID, periodId: LEDGER_PERIOD_ID, fundProfileId: "fund-alpha" };
+  const proofPacket = createAmountPassport(identity, "Cash debit", "500");
   vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockImplementation(async (periodId) => periodId === LEDGER_PERIOD_ID ? [{
     journalEntryId: "je-proof", periodId: LEDGER_PERIOD_ID, ledgerBookId: LEDGER_BOOK_ID,
     timestamp: "2026-07-31T00:00:00Z", description: "Scoped posting", totalDebits: 500, totalCredits: 500,
-    isBalanced: true, lines: [{ entryId: "line-proof", journalEntryId: "je-proof", timestamp: "2026-07-31T00:00:00Z",
+    isBalanced: true, lines: [{ entryId: "line-proof", journalEntryId: "je-proof", timestamp: "2026-07-31T00:00:00Z", amountPassport: proofPacket.reference,
       accountName: "Cash", accountType: "Asset", symbol: "AAPL", debit: 500, credit: 0, description: "Selected line" }]
   }] : []);
-  const proofPacket = createLedgerAmountProofPacket({ subjectId: "je-proof:line-proof:debit", ledgerBookId: LEDGER_BOOK_ID,
-    periodId: LEDGER_PERIOD_ID, fundProfileId: "fund-alpha", amount: 500, currency: "USD", label: "Cash" });
-  vi.mocked(getLedgerAmountProof).mockResolvedValue(proofPacket);
+  vi.mocked(getAmountPassport).mockResolvedValue(proofPacket);
   return proofPacket;
 }
 
@@ -185,7 +189,8 @@ const data = {
 } as unknown as AccountingWorkspaceResponse;
 
 async function renderPage(node: ReactElement, route: string) {
-  const result = renderWithRouter(node, { initialEntries: [route] });
+  const result = renderWithRouter(<AmountPassportProvider enabled scopeKey="test" session="controller">{node}</AmountPassportProvider>,
+    { initialEntries: [route] });
   await waitForAsyncEffects();
   return result;
 }
@@ -439,15 +444,12 @@ describe("finance standard pages", () => {
   it("selects a retained posting amount by entry identity and exact book, period and fund scope", async () => {
     const proofPacket = mockPostedAmount();
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
-    expect(getLedgerAmountProof).not.toHaveBeenCalled();
+    expect(getAmountPassport).not.toHaveBeenCalled();
     fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
-    const drawer = await screen.findByRole("dialog", { name: "Cash debit $500.00 proof detail" });
-    expect(await within(drawer).findByRole("link", { name: "Open Retained journal line" })).toHaveAttribute("href", proofPacket.ledgerAmount!.evidence[0]!.route);
-    expect(getLedgerAmountProof).toHaveBeenCalledWith(expect.objectContaining({
-      subjectId: "je-proof:line-proof:debit", ledgerBookId: LEDGER_BOOK_ID, periodId: LEDGER_PERIOD_ID,
-      fundProfileId: "fund-alpha", amount: 500
-    }), expect.objectContaining({ signal: expect.any(AbortSignal) }));
-    fireEvent.keyDown(window, { key: "Escape" });
+    const drawer = await screen.findByRole("dialog", { name: "Amount passport" });
+    expect(await within(drawer).findByRole("link", { name: /^Retained journal line/ })).toHaveAttribute("href", proofPacket.evidence[0]!.href);
+    expect(getAmountPassport).toHaveBeenCalledWith(proofPacket.reference.identity, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    fireEvent.keyDown(within(drawer).getByRole("button", { name: "Close drawer" }), { key: "Escape" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
@@ -455,7 +457,7 @@ describe("finance standard pages", () => {
     mockPostedAmount();
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
     fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
@@ -466,10 +468,10 @@ describe("finance standard pages", () => {
 
     const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
+    expect(getAmountPassport).toHaveBeenCalledTimes(1);
     fireEvent.click(amount);
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(2);
   });
 
   it.each(["book", "period"] as const)("requires a fresh amount click after a %s scope round trip", async (scope) => {
@@ -498,7 +500,7 @@ describe("finance standard pages", () => {
     });
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
     fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
 
     const selector = () => document.getElementById(`ledger-${scope}-select`) as HTMLSelectElement;
     fireEvent.change(selector(), { target: { value: scope === "book" ? otherBookId : otherPeriodId } });
@@ -511,20 +513,20 @@ describe("finance standard pages", () => {
 
     const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
+    expect(getAmountPassport).toHaveBeenCalledTimes(1);
     fireEvent.click(amount);
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(2);
   });
 
   it("discards pending evidence after a tab round trip until the operator selects the amount again", async () => {
     const proofPacket = mockPostedAmount();
     let completeProof!: (packet: typeof proofPacket) => void;
-    vi.mocked(getLedgerAmountProof).mockImplementationOnce(() => new Promise((resolve) => { completeProof = resolve; }));
+    vi.mocked(getAmountPassport).mockImplementationOnce(() => new Promise((resolve) => { completeProof = resolve; }));
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
     fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
-    expect(screen.getByRole("dialog")).toHaveTextContent("Loading retained amount evidence");
-    const signal = vi.mocked(getLedgerAmountProof).mock.calls[0][1]?.signal;
+    expect(await screen.findByRole("dialog")).toHaveTextContent("Loading amount passport");
+    const signal = vi.mocked(getAmountPassport).mock.calls[0][1]?.signal;
 
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
@@ -536,11 +538,11 @@ describe("finance standard pages", () => {
     await act(async () => { completeProof(proofPacket); });
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Open Retained journal line" })).not.toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("link", { name: /^Retained journal line/ })).not.toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(1);
     fireEvent.click(amount);
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(2);
   });
 
   it("labels posted amounts in the book's currency and claims no evidence it does not have", async () => {

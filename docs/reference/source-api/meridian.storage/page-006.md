@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IIntercompanyAgreementJournalValidation
+
+Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementJournalValidation</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:21](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L21).
+
+Read-only preparation/review validation using the same authority as durable append.
+
+```csharp
+public interface IIntercompanyAgreementJournalValidation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task ValidateIntercompanyAgreementReferencesAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:23](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L23) |  |
+
+## IIntercompanyAgreementPostingAuthority
+
+Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementPostingAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:6](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L6).
+
+Checks approved agreement authority and retains exclusion against amendments through ledger commit.
+
+```csharp
+public interface IIntercompanyAgreementPostingAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:8](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L8) |  |
+
 ## IIntercompanyProposalStore
 
 Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyProposalStore</code>. Kind: `interface`.
@@ -521,7 +557,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountingPeriod</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:360](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L360).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:364](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L364).
 
 ```csharp
 public sealed record LedgerAccountingPeriod(Guid PeriodId, Guid? LedgerBookId, int FiscalYear, int PeriodNo, string Label, DateOnly StartDate, DateOnly EndDate, string Status, DateTimeOffset OpenedAt, DateTimeOffset? ClosedAt, long Version)
@@ -531,13 +567,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? MutationActor { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:374](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L374) | Actual command actor for this mutation; absent legacy attribution remains explicit. |
+| <code>public string? MutationActor { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:378](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L378) | Actual command actor for this mutation; absent legacy attribution remains explicit. |
 
 ## LedgerAccountTaxLotPolicyRecord
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountTaxLotPolicyRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:405](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L405).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:409](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L409).
 
 ```csharp
 public sealed record LedgerAccountTaxLotPolicyRecord(Guid PolicyRecordId, Guid LedgerBookId, LedgerAccount Account, LedgerTaxLotReliefMethod ReliefMethod, string PolicyId, DateOnly EffectiveDate, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Rationale = null, WashSalePolicy? WashSalePolicy = null)
@@ -547,7 +583,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public WashSalePolicy EffectiveWashSalePolicy =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:418](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L418) | The configured wash-sale policy with its governing tax-lot revision, or the disabled default. |
+| <code>public WashSalePolicy EffectiveWashSalePolicy =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:422](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L422) | The configured wash-sale policy with its governing tax-lot revision, or the disabled default. |
 
 ## LedgerBalanceSnapshotExtensions
 
@@ -599,7 +635,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerBookRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:377](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L377).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:381](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L381).
 
 ```csharp
 public sealed record LedgerBookRecord(Guid LedgerBookId, string FundProfileId, Guid FundStructureNodeId, FundStructureNodeKindDto FundStructureNodeKind, string DisplayName, string BaseCurrency, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Description = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1");
@@ -753,14 +789,20 @@ Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:325](../../../../src
 Conjunctive journal filters; an exact journal identity remains subject to every supplied scope filter.
 
 ```csharp
-public sealed record LedgerJournalEntryQuery(Guid? LedgerBookId = null, Guid? PeriodId = null, Guid? AggregateId = null, LedgerLineDimensionSet? LineDimensions = null, string? AccountName = null, DateTimeOffset? OccurredFrom = null, DateTimeOffset? OccurredTo = null, Guid? SourceEventId = null, DateOnly? EffectiveFrom = null, DateOnly? EffectiveTo = null, Guid? JournalEntryId = null, Guid? FillId = null, string? OrderId = null);
+public sealed record LedgerJournalEntryQuery(Guid? LedgerBookId = null, Guid? PeriodId = null, Guid? AggregateId = null, LedgerLineDimensionSet? LineDimensions = null, string? AccountName = null, DateTimeOffset? OccurredFrom = null, DateTimeOffset? OccurredTo = null, Guid? SourceEventId = null, DateOnly? EffectiveFrom = null, DateOnly? EffectiveTo = null, Guid? JournalEntryId = null, Guid? FillId = null, string? OrderId = null, Guid? SourceJournalEntryId = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? JournalEntryIdPrefix { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:343](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L343) |  |
 
 ## LedgerJournalEntryRecord
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalEntryRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:342](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L342).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:346](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L346).
 
 ```csharp
 public sealed record LedgerJournalEntryRecord(JournalEntry Entry, Guid AggregateId, Guid PeriodId, Guid? CommandId, Guid? CorrelationId, long GlobalSequence, DateTimeOffset CreatedAt, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null);
@@ -877,32 +919,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static OpenLotDto ToOpenLot(this LedgerTaxLotRecord record);</code> | [src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs:9](../../../../src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs#L9) |  |
-
-## LedgerPeriodCloseSnapshot
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:15](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L15).
-
-Immutable journal population retained in the same transaction as a hard close. The payload includes opening history, closing journals, source lineage, currency and dimensions, so the closed trial balance can be rebuilt without consulting a subsequently restated journal.
-
-```csharp
-public sealed record LedgerPeriodCloseSnapshot(Guid? LedgerBookId, Guid PeriodId, long PeriodVersion, Guid CloseEventId, DateTimeOffset ClosedAt, string PayloadJson, string ContentHashSha256)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerPeriodCloseSnapshot Capture(LedgerAccountingPeriod period, PeriodCloseEventRecord closeEvent, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; entries);</code> | [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:24](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L24) |  |
-| <code>public LedgerPeriodCloseSnapshotPayload VerifyIntegrity();</code> | [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:63](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L63) | Checks retained bytes and the scope bound into them before serving a snapshot. |
-
-## LedgerPeriodCloseSnapshotJsonContext
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodCloseSnapshotJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs:123](../../../../src/Meridian.Storage/Ledger/LedgerPeriodCloseSnapshot.cs#L123).
-
-```csharp
-public sealed partial class LedgerPeriodCloseSnapshotJsonContext : JsonSerializerContext;
-```

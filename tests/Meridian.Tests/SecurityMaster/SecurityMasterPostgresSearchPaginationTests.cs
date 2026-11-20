@@ -37,6 +37,12 @@ public sealed class SecurityMasterPostgresSearchPaginationTests(SecurityMasterDa
 
         var includingInactive = await store.SearchAsync(new SecuritySearchRequest("Shared", pageSize + 4));
         includingInactive.Select(security => security.SecurityId).Should().Equal(new[] { inactiveId }.Concat(securityIds));
+
+        var exact = await store.SearchAsync(new SecuritySearchRequest(inactiveId.ToString("N")) { PrefixOnly = true });
+        exact.Should().ContainSingle().Which.SecurityId.Should().Be(inactiveId);
+        var prefix = await store.SearchAsync(new SecuritySearchRequest("x Shared", Take: 2) { PrefixOnly = true });
+        prefix.Select(security => security.SecurityId).Should().Equal(inactiveId, securityIds[0]);
+        (await store.SearchAsync(new SecuritySearchRequest("Shared") { PrefixOnly = true })).Should().BeEmpty();
     }
 
     private async Task SeedTiedSecuritiesAsync(Guid[] securityIds, Guid inactiveId)

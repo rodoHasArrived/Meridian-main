@@ -1561,9 +1561,13 @@ public sealed class ReconciliationBreakQueueRepositoryTests
 
         var execute = dryRun with
         {
-            BreakIds = [a.BreakId, b.BreakId], DryRun = false, AllowPartialSuccess = false,
-            CommandId = "bound-execute", IdempotencyKey = "bound-execute-key",
-            PreviewBulkActionId = preview.BulkActionId, RequireReviewedPreview = true
+            BreakIds = [a.BreakId, b.BreakId],
+            DryRun = false,
+            AllowPartialSuccess = false,
+            CommandId = "bound-execute",
+            IdempotencyKey = "bound-execute-key",
+            PreviewBulkActionId = preview.BulkActionId,
+            RequireReviewedPreview = true
         };
         repo = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
         foreach (var invalid in new[]
@@ -1596,9 +1600,14 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         var scope = new ReconciliationBreakQueueScope("tenant", "company");
         var source = CreateItem(ReconciliationBreakQueueStatus.Open) with
         {
-            BreakId = "supersession-source", TenantId = scope.TenantId, CompanyId = scope.CompanyId,
-            FundAccountId = "account", ExternalAccountId = "custodian", LedgerBookId = Guid.NewGuid(),
-            AccountingPeriodId = "period", AsOfDate = new DateOnly(2026, 7, 19)
+            BreakId = "supersession-source",
+            TenantId = scope.TenantId,
+            CompanyId = scope.CompanyId,
+            FundAccountId = "account",
+            ExternalAccountId = "custodian",
+            LedgerBookId = Guid.NewGuid(),
+            AccountingPeriodId = "period",
+            AsOfDate = new DateOnly(2026, 7, 19)
         };
         var successor = source with { BreakId = "supersession-successor", LifecycleState = ReconciliationCaseLifecycleState.Investigating };
         await repo.CreateIfMissingAsync(scope, source);
@@ -1617,8 +1626,12 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         changed.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         var result = await repo.ApplyBulkCaseworkAsync(scope, dryRun with
         {
-            DryRun = false, AllowPartialSuccess = false, CommandId = "supersession-execute", IdempotencyKey = "supersession-execute-key",
-            PreviewBulkActionId = preview.BulkActionId, RequireReviewedPreview = true
+            DryRun = false,
+            AllowPartialSuccess = false,
+            CommandId = "supersession-execute",
+            IdempotencyKey = "supersession-execute-key",
+            PreviewBulkActionId = preview.BulkActionId,
+            RequireReviewedPreview = true
         });
         result.Outcome.State.Should().Be(OperationTerminalState.Blocked);
         result.Results.Should().ContainSingle(item => item.Error!.Contains("superseding case version changed"));

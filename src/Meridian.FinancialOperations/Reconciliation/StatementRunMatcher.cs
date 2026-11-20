@@ -380,7 +380,8 @@ internal static class StatementRunMatcher
             amount,
             evidence,
             row.TradeDate,
-            IsForStatementPeriodEnd: row.TradeDate == statementPeriodEnd) { ComparisonCurrency = comparisonCurrency };
+            IsForStatementPeriodEnd: row.TradeDate == statementPeriodEnd)
+        { ComparisonCurrency = comparisonCurrency };
     }
 
     private static NormalizedStatementTransaction MapTransaction(

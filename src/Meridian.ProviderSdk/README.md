@@ -26,6 +26,11 @@ Connection verification results can carry an opaque expected credential generati
 The shared lifecycle uses it to reject stale results after concurrent credential
 replacement without exposing credential values to operator responses.
 
+`AccountingSystem/IExternalGlPostingProvider.cs` defines the provider write and receipt lookup
+boundary for certified journal exports. The provider receives an exact owned destination and
+balanced document with a retained Meridian idempotency key. Lookup can authorize a replay only
+after a conclusive absence check and with the same document identity.
+
 ## Purpose
 
 `ICredentialContext.IsAuthoritative` marks complete selected credential records: absent fields

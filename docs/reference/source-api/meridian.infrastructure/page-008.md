@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## Subscription
+
+Qualified name: <code>Meridian.Infrastructure.Shared.Subscription</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:18](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L18).
+
+Represents a subscription to market data.
+
+```csharp
+public sealed record Subscription(int Id, string Symbol, string Kind, DateTimeOffset CreatedAt, SubscriptionStatus Status = SubscriptionStatus.Active, DateTimeOffset? LastMessageAt = null, string? LastError = null, int RecoveryAttempts = 0, string? SourceOfRequest = null);
+```
+
 ## SubscriptionManager
 
 Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionManager</code>. Kind: `class`.

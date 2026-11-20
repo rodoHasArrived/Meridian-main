@@ -1573,7 +1573,9 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                 await AppendAuditAsync(CreateAudit(prepared.First(static entry => entry.Validation is null).Command!, target, target,
                     DateTimeOffset.UtcNow) with
                 {
-                    BreakId = target.BreakId, CommandId = bulkActionId, EventType = "BulkActionSuccessorReviewed"
+                    BreakId = target.BreakId,
+                    CommandId = bulkActionId,
+                    EventType = "BulkActionSuccessorReviewed"
                 }, ct).ConfigureAwait(false);
             }
             var outcome = CreateBulkOutcome(

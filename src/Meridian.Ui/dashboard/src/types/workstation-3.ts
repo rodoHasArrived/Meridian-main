@@ -797,6 +797,7 @@ export interface BrokerageHouseholdAccount {
 }
 
 export interface BrokerageHouseholdPosition {
+  amountPassports?: Record<string, import("./amount-passport").AmountPassportReference> | null;
   markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   fundAccountId: string;
   providerId: string;
@@ -1131,9 +1132,10 @@ export interface DataBackfillRecord {
   jobId: string;
   scope: string;
   provider: string;
-  status: "Queued" | "Running" | "Review";
+  status: "Queued" | "Running" | "Review" | "Completed" | "Failed";
   progress: string;
   updatedAt: string;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
 }
 
 export interface DataExportRecord {

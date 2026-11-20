@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Tenancy;
@@ -45,6 +46,14 @@ public sealed class FiscalYearClosePlanPostgresTests
             (LedgerAccounts.DividendIncome, 100m, 0m), (LedgerAccounts.RetainedEarnings, 0m, 100m));
         var originalPlan = await store.GetFiscalYearClosePlanAsync(bookId, 2026, ct);
         var request = new FinalizeFiscalYearCloseRequestDto(Guid.NewGuid(), originalPlan.PlanHashSha256!, "Approved close");
+        var postingPolicy = new ExternalGlBookPolicy(new("quickbooks", "synthetic-fiscal", "10001", "sandbox"),
+            true, controller, DateTimeOffset.UtcNow);
+        await store.SaveExternalGlPolicyAsync(bookId, tenant, company, fund, postingPolicy, ct);
+        var withoutExternalReceipt = () => Finalize(store, request);
+        await withoutExternalReceipt.Should().ThrowAsync<LedgerPeriodTransitionException>()
+            .WithMessage("*External GL confirmation is required*");
+        await store.SaveExternalGlPolicyAsync(bookId, tenant, company, fund, postingPolicy with { ConfirmationRequired = false }, ct);
+
         var concurrent = await Task.WhenAll(Finalize(store, request), Finalize(OpenStore(), request));
         var original = concurrent[0];
         concurrent[1].Should().BeEquivalentTo(original);

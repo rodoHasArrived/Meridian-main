@@ -1,5 +1,6 @@
 import { Link2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerBody } from "@/components/ui/drawer";
@@ -16,6 +17,22 @@ import type {
   PreparerAttestationEvidenceProjection
 } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
+
+export function AmountPassportRail({ onClose, width, children }: { onClose: () => void; width: number; children: ReactNode }) {
+  const viewport = useMemo(() => window.matchMedia?.(`(max-width: ${width}rem)`), [width]);
+  const subscribe = useMemo(() => (listener: () => void) => {
+    viewport?.addEventListener("change", listener);
+    return () => viewport?.removeEventListener("change", listener);
+  }, [viewport]);
+  const fillsViewport = useSyncExternalStore(subscribe, () => viewport?.matches ?? false);
+  return createPortal(
+    <Drawer open modal={fillsViewport} closeOnBackdrop={false} onClose={onClose} title="Amount passport"
+      className="relative motion-reduce:animate-none" panelStyle={{ width: `${width}rem`, maxWidth: "100vw" }}>
+      {children}
+    </Drawer>,
+    document.body
+  );
+}
 
 /** Browser presentation of the same subject-addressed payload consumed by WPF. */
 export function LedgerAmountProofDrawer({ selection, onClose }: {

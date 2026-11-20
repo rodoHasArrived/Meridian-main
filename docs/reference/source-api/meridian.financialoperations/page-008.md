@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IStatementMatchResultRepository
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementMatchResultRepository</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L42).
+
+Saves and retrieves statement matching result artifacts by run.
+
+```csharp
+public interface IStatementMatchResultRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task SaveAsync(string runId, StatementMatchResultArtifact result, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L44) |  |
+| <code>Task&lt;StatementMatchResultArtifact?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:45](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L45) |  |
+
+## IStatementNormalizedEntityRepository
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementNormalizedEntityRepository</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L33).
+
+Saves and retrieves normalized statement entities for a run.
+
+```csharp
+public interface IStatementNormalizedEntityRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task SaveAsync(string runId, StatementNormalizedEntities entities, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L35) |  |
+| <code>Task&lt;StatementNormalizedEntities?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:36](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L36) |  |
+
 ## IStatementReconciliationCheckpointStore
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementReconciliationCheckpointStore</code>. Kind: `interface`.
@@ -204,7 +242,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementCashBalance</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:885](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L885).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:894](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L894).
 
 ```csharp
 public sealed record NormalizedStatementCashBalance(string CashBalanceId, string Account, string Currency, decimal EndingBalance, string EvidenceReference, DateOnly AsOfDate, bool IsForStatementPeriodEnd = true) : IStatementMatchItem
@@ -214,7 +252,7 @@ public sealed record NormalizedStatementCashBalance(string CashBalanceId, string
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementPosition</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:870](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L870).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:879](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L879).
 
 ```csharp
 public sealed record NormalizedStatementPosition(string PositionId, string Account, string SecurityId, DateOnly AsOfDate, decimal Quantity, decimal? MarketValue, string EvidenceReference) : IStatementMatchItem
@@ -224,13 +262,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:880](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L880) | Unit price in the same currency as the monetary amount, when explicitly available. |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:889](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L889) | Unit price in the same currency as the monetary amount, when explicitly available. |
 
 ## NormalizedStatementTransaction
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementTransaction</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:899](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L899).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:908](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L908).
 
 ```csharp
 public sealed record NormalizedStatementTransaction(string TransactionId, string? ExternalTransactionId, string Account, string? SecurityId, string? Currency, DateOnly TradeDate, DateOnly SettlementDate, string TransactionType, decimal Quantity, decimal NetAmount, string EvidenceReference) : IStatementMatchItem
@@ -240,7 +278,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:913](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L913) | Unit price in the same currency as the monetary amount, when explicitly available. |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:922](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L922) | Unit price in the same currency as the monetary amount, when explicitly available. |
 
 ## PortfolioPositionInput
 
@@ -626,7 +664,7 @@ public sealed record SecurityLookupKey(SecurityIdentifierKind IdentifierKind, st
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementAccruedInterestReconciliation</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:543](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L543).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:544](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L544).
 
 Typed break codes and policy for reconciling custodian-stated accrued interest on a matched position against Meridian&#x27;s booked accrued interest receivable.
 
@@ -638,10 +676,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string VarianceBreakCode = &quot;POSITION_ACCRUED_INTEREST_VARIANCE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:546](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L546) | Booked and custodian accrued interest differ beyond tolerance. |
-| <code>public const string UnavailableBreakCode = &quot;POSITION_ACCRUED_INTEREST_UNAVAILABLE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:549](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L549) | The custodian states accrued interest but no comparable internal figure exists. |
-| <code>public const string RuleId = &quot;statement-position-accrued-interest-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:551](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L551) |  |
-| <code>public const decimal MinimumTolerance = 0.01m;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:554](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L554) | One minor unit: accrued interest is a rounded cash amount, so sub-cent drift is noise. |
+| <code>public const string VarianceBreakCode = &quot;POSITION_ACCRUED_INTEREST_VARIANCE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:547](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L547) | Booked and custodian accrued interest differ beyond tolerance. |
+| <code>public const string UnavailableBreakCode = &quot;POSITION_ACCRUED_INTEREST_UNAVAILABLE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:550](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L550) | The custodian states accrued interest but no comparable internal figure exists. |
+| <code>public const string RuleId = &quot;statement-position-accrued-interest-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:552](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L552) |  |
+| <code>public const decimal MinimumTolerance = 0.01m;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:555](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L555) | One minor unit: accrued interest is a rounded cash amount, so sub-cent drift is noise. |
 
 ## StatementBreakClassificationRequest
 
@@ -823,45 +861,3 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfile
 ```csharp
 public sealed record StatementFieldMapping(StatementCanonicalField CanonicalField, string SourceColumn, bool Required = true);
 ```
-
-## StatementMappingProfile
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMappingProfile</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:36](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L36).
-
-```csharp
-public sealed record StatementMappingProfile(string ProfileId, string DisplayName, IReadOnlyList<StatementFieldMapping> FieldMappings, IReadOnlyList<StatementTransactionCodeMapping> TransactionCodeMappings)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementFieldMapping? FindField(StatementCanonicalField field) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L42) |  |
-| <code>public string MapActivityType(string activityType);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:45](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L45) |  |
-
-## StatementMappingProfileRegistry
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMappingProfileRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L56).
-
-Resolves supported statement mapping profiles and supplies the built-in profile registry.
-
-```csharp
-public sealed class StatementMappingProfileRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string CanonicalCsvV1ProfileId = &quot;canonical-csv-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:58](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L58) |  |
-| <code>public const string SampleBrokerCsvV1ProfileId = &quot;sample-broker-csv-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:59](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L59) |  |
-| <code>public const string IbFlexV1ProfileId = &quot;ib-flex-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L60) |  |
-| <code>public StatementMappingProfileRegistry(IEnumerable&lt;StatementMappingProfile&gt; profiles);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:64](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L64) |  |
-| <code>public static StatementMappingProfileRegistry Defaults { get; } = new (CreateDefaultProfiles());</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:69](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L69) |  |
-| <code>public StatementMappingProfile Resolve(string? profileId);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:71](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L71) |  |
-| <code>public StatementMappingProfile ResolveForSourceKind(string normalizedSourceKind, string? profileId = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:82](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L82) |  |
-| <code>public IReadOnlyList&lt;StatementMappingProfile&gt; ListProfiles() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:97](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L97) |  |

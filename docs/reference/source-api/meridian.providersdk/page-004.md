@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderInstrument
+
+Qualified name: <code>Meridian.ProviderSdk.ProviderInstrument</code>. Kind: `record`.
+
+Source: [src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs:13](../../../../src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs#L13).
+
+Provider-neutral instrument identity returned by discovery.
+
+```csharp
+public sealed record ProviderInstrument(string Symbol, string Name, string AssetClass, string? Exchange, string? Currency, string? ProviderInstrumentId, ProviderDataProvenance Provenance);
+```
+
+## ProviderInstrumentDiscoveryRequest
+
+Qualified name: <code>Meridian.ProviderSdk.ProviderInstrumentDiscoveryRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs:6](../../../../src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs#L6).
+
+Provider-neutral request for discoverable instruments and contracts.
+
+```csharp
+public sealed record ProviderInstrumentDiscoveryRequest(string Query, string? AssetClass = null, string? Market = null, int? Limit = null);
+```
+
+## ProviderInstrumentDiscoveryResult
+
+Qualified name: <code>Meridian.ProviderSdk.ProviderInstrumentDiscoveryResult</code>. Kind: `record`.
+
+Source: [src/Meridian.ProviderSdk/IProviderDataReadService.cs:253](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L253).
+
+Presentation-safe instrument discovery result supplied by providers that support search.
+
+```csharp
+public sealed record ProviderInstrumentDiscoveryResult(string InstrumentId, string Symbol, string DisplayName, string? Exchange, string? AssetClass, ProviderDataProvenance Provenance)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderInstrumentDiscoveryResult(string instrumentId, string symbol, string displayName, string? exchange = null, string? assetClass = null) : this(instrumentId, symbol, displayName, exchange, assetClass, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));</code> | [src/Meridian.ProviderSdk/IProviderDataReadService.cs:261](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L261) |  |
+
 ## ProviderMarketRule
 
 Qualified name: <code>Meridian.ProviderSdk.ProviderMarketRule</code>. Kind: `record`.

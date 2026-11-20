@@ -105,7 +105,8 @@ public sealed partial class WorkstationEndpointsTests
         await repository.CreateIfMissingAsync(TestReconciliationQueueScope, BuildBreakQueueItem("changed-case", null));
         var client = app.GetTestClient();
         var request = BulkRequest("stale:preview", ReconciliationCaseworkAction.Assign, ["stable-case", "changed-case"], dryRun: true)
-            with { Assignee = "reviewer" };
+            with
+        { Assignee = "reviewer" };
         var execute = ReviewedExecute(request, "stale:execute");
 
         var unreviewed = await PostAsync(UiApiRoutes.ReconciliationBreakBulkExecute, execute with { PreviewBulkActionId = null });

@@ -44,6 +44,11 @@ describe("retained reconciliation case evidence", () => {
     const comparison = within(screen.getByRole("table", { name: "Exact residual components" }));
     expect(comparison.getByText("−9,007,199,254,740,992.123456")).toBeInTheDocument();
     expect(comparison.getByText("−0.000006")).toBeInTheDocument();
+    await user.click(comparison.getByRole("button", { name: /Inspect Net amount residual/ }));
+    const passport = await screen.findByRole("dialog", { name: "Amount passport" });
+    expect(within(passport).getByText("−0.000006")).toBeInTheDocument();
+    expect(within(passport).getByText("Statement minus ledger")).toBeInTheDocument();
+    await user.click(within(passport).getByRole("button", { name: "Close drawer" }));
     expect(within(screen.getByRole("region", { name: "Ledger records" })).getByText("15.32 USD")).toBeInTheDocument();
     const suggestion = within(screen.getByRole("region", { name: "Match candidate" }));
     expect(suggestion.getByText(/Review required/)).toBeInTheDocument();

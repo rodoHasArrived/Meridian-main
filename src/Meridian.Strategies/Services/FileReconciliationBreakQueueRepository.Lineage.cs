@@ -156,7 +156,9 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                     {
                         Lineage = item.Lineage! with
                         {
-                            ObservationState = "Cleared", ClearedAt = run.ObservedAt, ClearedByRunId = run.RunId,
+                            ObservationState = "Cleared",
+                            ClearedAt = run.ObservedAt,
+                            ClearedByRunId = run.RunId,
                             Regrouping = regroupings.GetValueOrDefault(item.Lineage.LineageId)
                         },
                         Version = item.Version + 1

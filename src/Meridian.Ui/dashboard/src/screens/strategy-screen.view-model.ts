@@ -740,6 +740,7 @@ export function useStrategyRunLibraryViewModel(
 ) {
   const [selectedRun, setSelectedRun] = useState<StrategyRunRecord | null>(null);
   const [selectedRunEvidenceLoop, setSelectedRunEvidenceLoop] = useState<StrategyRunEvidenceLoop | null>(null);
+  const [selectedRunProvenance, setSelectedRunProvenance] = useState<import("@/types/provider-provenance").ProviderProvenanceReceipt | null>(null);
   const [selectedRunAcceptanceChecklist, setSelectedRunAcceptanceChecklist] = useState<StrategyRunAcceptanceChecklistItem[]>([]);
   const [selectedRunEvidenceStatus, setSelectedRunEvidenceStatus] = useState<StrategyRunEvidenceLoadStatus>("idle");
   const [inspectedRunId, setInspectedRunId] = useState<string | null>(null);
@@ -874,6 +875,7 @@ export function useStrategyRunLibraryViewModel(
     const requestId = reviewPacketRequestId.current + 1;
     reviewPacketRequestId.current = requestId;
     setSelectedRun(run);
+    setSelectedRunProvenance(null);
     setSelectedRunEvidenceLoop(null);
     setSelectedRunAcceptanceChecklist([]);
     setSelectedRunEvidenceStatus("loading");
@@ -885,6 +887,7 @@ export function useStrategyRunLibraryViewModel(
         }
 
         const evidenceLoop = packet.run.evidenceLoop ?? null;
+        setSelectedRunProvenance(packet.run.providerProvenance ?? null);
         setSelectedRunEvidenceLoop(evidenceLoop);
         setSelectedRunAcceptanceChecklist(packet.run.acceptanceChecklist ?? []);
         setSelectedRunEvidenceStatus("ready");
@@ -1162,6 +1165,8 @@ export function useStrategyRunLibraryViewModel(
     comparisonOverlay,
     comparisonCurvesLoading,
     clearRunSelection,
+    selectedRunProvenance,
+    selectedRunEvidenceStatus,
     toggleRun,
     openRunDetail,
     closeRunDetail,
@@ -3005,16 +3010,14 @@ function ensurePlotToolWorkspaceChartState(workspace: StrategyPlotWorkspaceState
 }
 
 function ensurePlotToolStatisticsChartState(statistics: StrategyPlotStatisticsState): StrategyPlotStatisticsState {
-  if (statistics.distributionChart) {
-    return statistics;
-  }
-
   const distributionBars = statistics.distributionBars ?? [];
 
   return {
     ...statistics,
     distributionBars,
-    distributionChart: buildPlotToolDistributionChartState(distributionBars)
+    distributionChart: statistics.distributionChart ?? buildPlotToolDistributionChartState(distributionBars),
+    momentsTable: statistics.momentsTable ?? buildPlotToolMomentsTable(statistics.moments ?? []),
+    sampleTable: statistics.sampleTable ?? buildPlotToolSampleTable(statistics.sampleRows ?? [])
   };
 }
 

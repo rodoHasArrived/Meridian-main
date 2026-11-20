@@ -31,6 +31,7 @@ public static class BackfillBarValidation
     /// and provider publish lag; narrow enough to catch datasets frozen months or years ago.
     /// </summary>
     public const int DefaultStaleToleranceDays = 10;
+    public const int FutureToleranceDays = 1;
 
     /// <summary>
     /// Evaluates whether a non-empty daily-bar result is stale relative to the requested range.
@@ -88,7 +89,7 @@ public static class BackfillBarValidation
         if (bars.Count == 0)
             return bars;
 
-        var latestAllowed = (today ?? DateOnly.FromDateTime(DateTime.UtcNow)).AddDays(1);
+        var latestAllowed = (today ?? DateOnly.FromDateTime(DateTime.UtcNow)).AddDays(FutureToleranceDays);
         var hasFuture = false;
         foreach (var bar in bars)
         {

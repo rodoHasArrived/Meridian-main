@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportValidationSeverity
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidationSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Export/ExportValidator.cs:313](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L313).
+
+Severity level for export validation issues.
+
+```csharp
+public enum ExportValidationSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Storage/Export/ExportValidator.cs:315](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L315) |  |
+| <code>Warning</code> | [src/Meridian.Storage/Export/ExportValidator.cs:316](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L316) |  |
+| <code>Error</code> | [src/Meridian.Storage/Export/ExportValidator.cs:317](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L317) |  |
+
 ## ExportValidator
 
 Qualified name: <code>Meridian.Storage.Export.ExportValidator</code>. Kind: `class`.
@@ -963,22 +983,3 @@ Enum declarations:
 | <code>Imported = 0</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:154](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L154) |  |
 | <code>AlreadyImported = 1</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:155](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L155) |  |
 | <code>StoreNotEmpty = 2</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:156](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L156) |  |
-
-## FundStructureMigrationRunner
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureMigrationRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L8).
-
-Applies the PostgreSQL migrations used by fund structure persistence.
-
-```csharp
-public sealed class FundStructureMigrationRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundStructureMigrationRunner(FundStructureStoreOptions options);</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:12](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L12) |  |
-| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:30](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L30) |  |

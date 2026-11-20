@@ -1,5 +1,6 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
@@ -76,13 +77,26 @@ export function ReconciliationMatchCandidate({ item }: { item: ReconciliationBre
   </section>;
 }
 
-function exactResidualColumns(prior?: RetainedStatementCaseEvidence | null): DenseDataTableColumn<StatementMatchResidual>[] {
+function ResidualAmount({ label, unit, value, asOf, basis }: {
+  label: string; unit: string; value: string | number | null; asOf?: string | null; basis?: string;
+}) {
+  const amount = parseExactDecimal(value);
+  if (!amount) return "Unavailable";
+  const displayValue = displayAmount(value, true);
+  return <AmountPassportTrigger compact selection={{
+    label, displayValue, unit, currency: /^[A-Z]{3}$/.test(unit) ? unit : null,
+    origin: "calculated", zero: amount.units === 0n, asOf, basis,
+    unavailableReason: "The reconciliation case retains this value and its evidence. A separate amount revision is unavailable."
+  }}><span className="min-w-0 [overflow-wrap:anywhere]">{displayValue}</span></AmountPassportTrigger>;
+}
+
+function exactResidualColumns(asOf: string, prior?: RetainedStatementCaseEvidence | null): DenseDataTableColumn<StatementMatchResidual>[] {
   const columns: DenseDataTableColumn<StatementMatchResidual>[] = [
     { id: "measure", label: "Measure", rowHeader: true, render: (row) => <>{row.measure}<span className="block text-xs text-muted-foreground">{row.unit}</span></> },
     { id: "source", label: "Statement", numeric: true, render: (row) => displayAmount(row.sourceTotal) },
     { id: "ledger", label: "Ledger", numeric: true, render: (row) => displayAmount(row.ledgerTotal) },
     { id: "residual", label: "Residual", numeric: true, render: (row) => <>
-      {displayAmount(row.residual, true)}
+      <ResidualAmount label={`${row.measure} residual`} unit={row.unit} value={row.residual} asOf={asOf} basis="Statement minus ledger" />
       {row.tolerance !== null ? <span className="block text-xs text-muted-foreground">Tolerance {displayAmount(row.tolerance)}</span> : null}
     </> }
   ];
@@ -129,20 +143,21 @@ function StatementMatchComparison({ evidence, prior, grouped = false }: {
       <StatementAllocations heading={grouped ? "Statement allocations" : "Statement records"} allocations={match.sourceAllocations} amountMeasure={match.amountMeasure} />
       <StatementAllocations heading={grouped ? "Ledger allocations" : "Ledger records"} allocations={match.ledgerAllocations} amountMeasure={match.amountMeasure} />
     </div>
-    {match.residuals.length > 0 ? <DenseDataTable columns={exactResidualColumns(prior)} rows={match.residuals}
+    {match.residuals.length > 0 ? <DenseDataTable columns={exactResidualColumns(evidence.tolerancePolicy.effectiveDate, prior)} rows={match.residuals}
       getRowId={(row) => `${row.measure}:${row.unit}`} ariaLabel={grouped ? "Confirmed group residual components" : "Exact residual components"}
       emptyText="No exact residual components." caption="Residual equals the retained statement total minus the ledger total in the same unit." />
       : <p className="text-sm text-muted-foreground">An exact residual requires comparable statement and ledger observations.</p>}
   </>;
 }
 
-function compareColumns(statement: boolean, prior: ReconciliationBreakQueueItem | null): DenseDataTableColumn<ReconciliationBreakMeasure>[] {
+function compareColumns(statement: boolean, prior: ReconciliationBreakQueueItem | null, asOf?: string | null): DenseDataTableColumn<ReconciliationBreakMeasure>[] {
   const columns: DenseDataTableColumn<ReconciliationBreakMeasure>[] = [
     { id: "measure", label: "Measure", rowHeader: true, render: (measure) => <>{MEASURE_LABELS[measure.kind]}<span className="block text-xs font-normal text-muted-foreground">{measureUnit(measure.unit)}</span></> },
     { id: "observed", label: statement ? "Statement" : "Observed", numeric: true, render: (measure) => displayAmount(measure.actual) },
     { id: "expected", label: statement ? "Ledger" : "Expected", numeric: true, render: (measure) => displayAmount(measure.expected) },
     { id: "residual", label: "Residual", numeric: true, render: (measure) => <>
-      {displayAmount(retainedResidual(measure), true)}
+      <ResidualAmount label={`${MEASURE_LABELS[measure.kind]} residual`} unit={measureUnit(measure.unit)} value={retainedResidual(measure)}
+        asOf={asOf} basis={statement ? "Statement minus ledger" : "Observed minus expected"} />
       {measure.tolerance != null ? <span className="block text-xs font-normal text-muted-foreground">Tolerance {displayAmount(measure.tolerance)}</span> : null}
     </> }
   ];
@@ -235,14 +250,19 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
           {(statementEvidence?.match.residuals.length ?? measures.length) > 0 ? <p className="text-xs text-muted-foreground">Residual = {statement ? "statement − ledger" : "observed − expected"}</p> : null}
         </div>
         {statementEvidence ? <StatementMatchComparison evidence={statementEvidence} prior={comparable ? baseline?.statementEvidence : null} /> : measures.length > 0 ? <>
-          <DenseDataTable columns={compareColumns(statement, comparable ? baseline : null)} rows={measures}
+          <DenseDataTable columns={compareColumns(statement, comparable ? baseline : null, item.asOfDate)} rows={measures}
             getRowId={(measure) => `${measure.kind}:${measure.unit}:${measures.indexOf(measure)}`} ariaLabel="Retained residual components"
             emptyText="No retained residual components."
             caption="The retained residual is the observed amount minus the expected amount in the supplied unit." />
           {unavailable.length > 0 ? <TechnicalDetails label="Unavailable observations">
             <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">{unavailable.map((reason) => <li key={reason}>{reason}</li>)}</ul>
           </TechnicalDetails> : null}
-        </> : <StatusBanner tone="info" role="status" title="Comparison unavailable" detail="This case has no retained pair of observed and expected amounts." />}
+        </> : <>
+          <StatusBanner tone="info" role="status" title="Comparison unavailable" detail="This case has no retained pair of observed and expected amounts." />
+          <dl className="reconciliation-case-facts"><CaseFact label="Reported variance">
+            <ResidualAmount label="Reported variance" unit="Unit unavailable" value={item.variance} asOf={item.asOfDate} />
+          </CaseFact></dl>
+        </>}
         <dl className="reconciliation-case-facts">
           <CaseFact label="Fund account">{item.fundAccountId}</CaseFact>
           <CaseFact label="Ledger book">{item.ledgerBookId}</CaseFact>

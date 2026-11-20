@@ -581,7 +581,8 @@ public sealed partial class StatementMatchingEngine
                 null,
                 new StatementMatchVariance(Quantity: statement.Quantity, MarketValue: statement.MarketValue),
                 new StatementMatchTolerance(tolerance.PositionQuantity, tolerance.PositionMarketValue),
-                "Broker statement position did not match any internal portfolio position.") { BrokerRecords = [statement] });
+                "Broker statement position did not match any internal portfolio position.")
+            { BrokerRecords = [statement] });
         }
 
         // Statement rows surface in retained-import order; internal records arrive in provider
@@ -600,7 +601,8 @@ public sealed partial class StatementMatchingEngine
                 internalItem.EvidenceReference,
                 new StatementMatchVariance(Quantity: -internalItem.Quantity, MarketValue: internalItem.MarketValue is null ? null : -internalItem.MarketValue),
                 new StatementMatchTolerance(tolerance.PositionQuantity, tolerance.PositionMarketValue),
-                "Internal portfolio position did not match any broker statement position.") { InternalRecords = [internalItem] });
+                "Internal portfolio position did not match any broker statement position.")
+            { InternalRecords = [internalItem] });
         }
     }
 
@@ -623,7 +625,8 @@ public sealed partial class StatementMatchingEngine
                 null,
                 new StatementMatchVariance(Amount: statement.EndingBalance),
                 new StatementMatchTolerance(Amount: tolerance.CashBalance),
-                "Broker statement cash balance did not match any internal cash balance.") { BrokerRecords = [statement] });
+                "Broker statement cash balance did not match any internal cash balance.")
+            { BrokerRecords = [statement] });
         }
 
         foreach (var internalItem in internalItems
@@ -639,7 +642,8 @@ public sealed partial class StatementMatchingEngine
                 internalItem.EvidenceReference,
                 new StatementMatchVariance(Amount: -internalItem.Balance),
                 new StatementMatchTolerance(Amount: tolerance.CashBalance),
-                "Internal cash balance did not match any broker statement cash balance.") { InternalRecords = [internalItem] });
+                "Internal cash balance did not match any broker statement cash balance.")
+            { InternalRecords = [internalItem] });
         }
     }
 
@@ -662,7 +666,8 @@ public sealed partial class StatementMatchingEngine
                 null,
                 new StatementMatchVariance(Quantity: statement.Quantity, Amount: statement.NetAmount),
                 TransactionTolerance(tolerance),
-                "Broker statement transaction did not match any internal ledger transaction.") { BrokerRecords = [statement] });
+                "Broker statement transaction did not match any internal ledger transaction.")
+            { BrokerRecords = [statement] });
         }
 
         foreach (var internalItem in internalItems
@@ -678,7 +683,8 @@ public sealed partial class StatementMatchingEngine
                 internalItem.EvidenceReference,
                 new StatementMatchVariance(Quantity: -internalItem.Quantity, Amount: -internalItem.NetAmount),
                 TransactionTolerance(tolerance),
-                "Internal ledger transaction did not match any broker statement transaction.") { InternalRecords = [internalItem] });
+                "Internal ledger transaction did not match any broker statement transaction.")
+            { InternalRecords = [internalItem] });
         }
     }
 
@@ -699,7 +705,8 @@ public sealed partial class StatementMatchingEngine
             internalPosition.EvidenceReference,
             variance,
             tolerance,
-            explanation) { BrokerRecords = [statement], InternalRecords = [internalPosition] };
+            explanation)
+        { BrokerRecords = [statement], InternalRecords = [internalPosition] };
 
     private static StatementMatchResult CreateCashResult(
         NormalizedStatementCashBalance statement,
@@ -718,7 +725,8 @@ public sealed partial class StatementMatchingEngine
             internalCash.EvidenceReference,
             variance,
             tolerance,
-            explanation) { BrokerRecords = [statement], InternalRecords = [internalCash] };
+            explanation)
+        { BrokerRecords = [statement], InternalRecords = [internalCash] };
 
     private static StatementMatchResult CreateTransactionResult(
         NormalizedStatementTransaction statement,
@@ -737,7 +745,8 @@ public sealed partial class StatementMatchingEngine
             internalTransaction.EvidenceReference,
             variance,
             tolerance,
-            explanation) { BrokerRecords = [statement], InternalRecords = [internalTransaction] };
+            explanation)
+        { BrokerRecords = [statement], InternalRecords = [internalTransaction] };
 
     private static bool SamePositionIdentity(NormalizedStatementPosition statement, InternalPortfolioPosition internalPosition) =>
         SameText(statement.Account, internalPosition.Account)

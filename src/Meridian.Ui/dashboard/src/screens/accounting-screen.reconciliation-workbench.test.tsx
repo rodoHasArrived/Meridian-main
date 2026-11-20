@@ -394,7 +394,7 @@ describe("Reconciliation workbench", () => {
     renderWorkbench();
     queueRows()[0]!.focus();
     await user.keyboard("?");
-    const sheet = screen.getByRole("dialog", { name: "Break queue shortcuts" });
+    const sheet = await screen.findByRole("dialog", { name: "Break queue shortcuts" });
     for (const description of ["Move to the next break", "Move to the previous break", "Open the evidence drawer for the current break", "Show these shortcuts"]) {
       expect(within(sheet).getByText(description)).toBeInTheDocument();
     }

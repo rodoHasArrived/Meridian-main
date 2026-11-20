@@ -1017,6 +1017,11 @@ journal and retained wash-sale deferrals. They do not invent a source execution 
 an explicit retained quote exactly, while old unversioned batches keep the legacy allocator.
 Unsupported versions or inconsistent retained economics block reporting.
 
+Migration `V_ledger_082__external_gl_posting.sql` retains scoped mapping revisions, immutable
+packages, decisions and receipt observations. Approval atomically reserves a journal at the
+external destination and enqueues it. Worker leases fence receipt writes. Hard close checks
+required external-GL coverage under the existing period lock.
+
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period
 authority and this actor for blocked-occurrence evidence; its file-backed schedule store never

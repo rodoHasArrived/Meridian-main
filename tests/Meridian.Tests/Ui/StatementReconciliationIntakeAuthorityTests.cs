@@ -412,7 +412,8 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
     public async Task Published_group_requires_a_confirmed_assignment_before_clearing_prior_subjects(bool ambiguous)
     {
         var firstRow = new CanonicalStatementRow(StatementRunId, 1, ExternalAccountId, ambiguous ? "CUSIP1" : "UNMATCHED", 1m, 0m, 2m,
-            "trade", PeriodEnd, "source-row-1") { ExternalTransactionId = "first", Currency = "USD" };
+            "trade", PeriodEnd, "source-row-1")
+        { ExternalTransactionId = "first", Currency = "USD" };
         var secondRow = firstRow with { SourceRowNumber = 2, Symbol = "CUSIP1", ExternalTransactionId = "second" };
         var harness = CreateHarness([Book(LedgerBookId)],
             [Period(AccountingPeriodId, LedgerBookId, LedgerPeriodStatusDto.Open)], canonicalRow: firstRow, extraRow: secondRow,
@@ -445,7 +446,9 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         {
             var item = ReconciliationBreakQueueProjection.ProjectStatement(StatementBreak() with
             {
-                BreakId = $"previous-{row.SourceRowNumber}", StatementReference = $"previous:{row.SourceRowNumber}", InternalReference = "previous"
+                BreakId = $"previous-{row.SourceRowNumber}",
+                StatementReference = $"previous:{row.SourceRowNumber}",
+                InternalReference = "previous"
             }, accounting, FundAccountId.ToString("D"), access);
             await harness.Queue.CreateIfMissingAsync(access, item);
             priorBreaks.Add(new(item.BreakId, StatementReconciliationIntakeAuthority.SourceSubject(row)!));
@@ -453,7 +456,7 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         var comparisonSource = StatementReconciliationIntakeAuthority.ComparisonSourceIdentity(harness.Canonical.Import, harness.Artifact, SourceInstitution);
         await harness.Queue.ObserveCompletedRunAsync(new("previous", new(TenantId, CompanyId, FundProfileId.ToString("D"),
             FundAccountId.ToString("D"), LedgerBookId, AccountingPeriodId.ToString("D"), comparisonSource, ExternalAccountId)
-            { LineageSourceIdentity = SourceInstitution }, ObservedAt.AddMinutes(-1), true, true, priorBreaks));
+        { LineageSourceIdentity = SourceInstitution }, ObservedAt.AddMinutes(-1), true, true, priorBreaks));
 
         var published = await harness.Workflow.StartAsync(Command());
         published.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);

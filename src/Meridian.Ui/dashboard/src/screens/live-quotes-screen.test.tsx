@@ -1165,6 +1165,28 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(screen.getByLabelText(/Quote matrix updated/)).toBeInTheDocument();
   });
 
+  it("opens the exact trade print from the chart even when it falls outside the tape table limit", async () => {
+    const user = userEvent.setup();
+    const trades = Array.from({ length: 30 }, (_, index) => ({
+      ...tradesWithPrintsFixture.trades[0],
+      timestamp: new Date(Date.UTC(2026, 4, 8, 15, 0, 30 - index)).toISOString(),
+      sequenceNumber: 30 - index,
+      price: 188 + index / 100
+    }));
+    vi.mocked(api.getLiveTrades).mockResolvedValue({ ...tradesFixture, trades, count: trades.length });
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+
+    const chart = await screen.findByRole("group", { name: /Recent AAPL trade prices/ });
+    const oldest = within(chart).getByRole("button", { name: /^AAPL print 1\./ });
+    await user.hover(oldest);
+    const table = screen.getByRole("table", { name: "Recent trade prices chart data" });
+    expect(table).toHaveTextContent("188.29");
+    await user.click(screen.getByRole("link", { name: "Open trade print 1" }));
+    const detail = screen.getByRole("region", { name: "AAPL trade 1 detail" });
+    expect(detail).toHaveTextContent("188.29");
+    expect(detail).toHaveTextContent("15:00:01.000 UTC");
+  });
+
   it("seeds a buy ticket at the ask price when ask is clicked and submits", async () => {
     const submitSpy = vi.spyOn(api, "submitOrder").mockResolvedValue({
       success: true,
@@ -1449,7 +1471,7 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(firstTrade).toHaveAttribute("aria-controls", "live-quotes-trade-detail");
     expect(firstTrade).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "AAPL trade 11 detail" })).toBeInTheDocument();
-    expect(screen.getByText("AAPL print 11")).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "AAPL trade 11 detail" })).getByText("AAPL print 11")).toBeInTheDocument();
 
     await user.click(secondTrade);
 
@@ -1475,7 +1497,9 @@ describe("LiveQuotesScreen quick trade", () => {
     const depthCharts = screen.getAllByRole("img", { name: /depth profile/ });
     expect(depthCharts).toHaveLength(1);
     expect(depthCharts[0]).toHaveAccessibleName("Order-book depth profile for AAPL");
-    expect(depthCharts[0].tagName.toLowerCase()).toBe("svg");
+    const depthGroup = screen.getByRole("group", { name: "Order-book depth profile for AAPL" });
+    expect(depthGroup).toContainElement(depthCharts[0]);
+    expect(depthCharts[0]).not.toContainElement(within(depthGroup).getByRole("button", { name: /mid-price marker/ }));
     expect(depthCharts[0].parentElement?.closest('[role="img"]')).toBeNull();
     expect(depthCharts[0]).toHaveAccessibleDescription(
       "Cumulative bid and ask size. The quantity coverage table identifies fully and partly used displayed levels."
