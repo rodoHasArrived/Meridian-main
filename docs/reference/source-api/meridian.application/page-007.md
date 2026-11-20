@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InternalLedgerTransactionQuery
+
+Qualified name: <code>Meridian.Application.Reconciliation.InternalLedgerTransactionQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:19](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L19).
+
+Identifies the fund account and statement window an internal ledger-transaction population is projected for. AccountLabel is the label every projected record carries — the run&#x27;s external (custodian) account key, matching how the retained cash and position populations are labeled. AccountAliases are the identifiers a posted journal may be stamped with for this account (the fund-account GUID, the account&#x27;s ledger reference, the external custodian key); a journal attributable to none of them is never projected.
+
+```csharp
+public sealed record InternalLedgerTransactionQuery(string AccountLabel, IReadOnlyList<string> AccountAliases, DateOnly PeriodStart, DateOnly PeriodEnd, string BaseCurrency)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementAccountingScope? AccountingScope { get; init; }</code> | [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:27](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L27) | When present, journals must belong to this exact retained accounting authority. |
+
+## LedgerJournalInternalTransactionSource
+
+Qualified name: <code>Meridian.Application.Reconciliation.LedgerJournalInternalTransactionSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:97](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L97).
+
+Projects posted ledger journals into the custodian-visible internal transactions the StatementMatchingEngine matches statement movements against. This is the period-scoped journal→custodian-transaction projection the retained population provider&#x27;s remarks specify.
+
+```csharp
+public sealed class LedgerJournalInternalTransactionSource(ILedgerJournalStore? journalStore = null, ILogger<LedgerJournalInternalTransactionSource>? logger = null) : IInternalLedgerTransactionSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;InternalLedgerTransaction&gt;&gt; GetTransactionsAsync(InternalLedgerTransactionQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:160](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L160) |  |
+
 ## RetainedInternalReconciliationPopulationProvider
 
 Qualified name: <code>Meridian.Application.Reconciliation.RetainedInternalReconciliationPopulationProvider</code>. Kind: `class`.
@@ -1083,40 +1119,3 @@ Enum declarations:
 | <code>NoAffectedScope</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:24](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L24) | No scope holds the security, so there is no case to open. |
 | <code>ForeignScope</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:27](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L27) | The affected set reaches scopes the deciding caller does not own. |
 | <code>MultiScope</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:30](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L30) | The affected set spans several scopes and cannot be applied in one atomic command. |
-
-## CorporateActionSupersedeRestatementTrigger
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionSupersedeRestatementTrigger</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:57](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L57).
-
-Resolves the superseded action&#x27;s downstream impact (via the trust snapshot), maps the impacted fund to its durable ledger books, and delegates to IPeriodAwareRestatementResolver with a SecurityMasterRevisionPublishedEvent shaped as: RevisionId = superseding CorpActId, EffectiveFrom = superseded ExDate, ChangedFields = &#91;&quot;corporateActions.&lt;CanonicalName&gt;&quot;&#93;. Registered as a singleton beside the command services; the workstation restatement stack is scoped, so dependencies are resolved per invocation through IServiceScopeFactory. When any piece of the stack is absent (a host without the workstation layer), the result is non-authoritative (null) so a durable acceptance caller can fail closed instead of silently losing closed-period handling.
-
-```csharp
-public sealed class CorporateActionSupersedeRestatementTrigger : ICorporateActionRestatementTrigger
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionSupersedeRestatementTrigger(IServiceScopeFactory scopeFactory, ILogger&lt;CorporateActionSupersedeRestatementTrigger&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:62](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L62) |  |
-| <code>public async Task&lt;SecurityMasterRestatementDecision?&gt; OnSupersededAsync(CorporateActionDto superseding, CorporateActionDto superseded, string? fundProfileId, string actor, string? correlationId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:70](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L70) |  |
-
-## ICorporateActionCommandService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.ICorporateActionCommandService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:10](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs#L10).
-
-Defines validated append of corporate actions to a security&#x27;s retained history.
-
-```csharp
-public interface ICorporateActionCommandService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;CorporateActionAppendResult&gt; AppendAsync(Guid securityId, CorporateActionDto action, string? actor, string source, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:12](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs#L12) |  |

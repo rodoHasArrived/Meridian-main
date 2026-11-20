@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NullRestatementCandidateResolver
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullRestatementCandidateResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:78](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L78).
+
+No-op candidate resolver retained as the fallback for hosts without a report-pack backend. The report-pack-backed resolver (ReportPackRestatementCandidateResolver in the workstation layer) is the registered default; this surfaces no packs, leaving the caller&#x27;s default-deny safety net to flag a hard-closed book for manual locate.
+
+```csharp
+public sealed class NullRestatementCandidateResolver : IRestatementCandidateResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:80](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L80) |  |
+
+## NullSecurityMasterCashFlowService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterCashFlowService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:65](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L65).
+
+Supplies unavailable cash-flow results and refuses unsupported cash-flow mutations.
+
+```csharp
+public sealed class NullSecurityMasterCashFlowService : ISecurityMasterCashFlowService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityCashFlowSourceDto?&gt; GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:67](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L67) |  |
+| <code>public Task UpsertCashFlowSourceAsync(UpsertCashFlowSourceRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:71](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L71) |  |
+| <code>public Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:76](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L76) |  |
+| <code>public Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsOfAsync(Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:80](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L80) |  |
+
 ## NullSecurityMasterClassificationDriftReportService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterClassificationDriftReportService</code>. Kind: `class`.
@@ -991,46 +1030,3 @@ Enum declarations:
 | <code>Configuration = 1</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L15) | SecurityMasterWorkbenchOptions.GovernanceProfile declared it. |
 | <code>ProductionComposition = 2</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L21) | The host is a production composition, which always runs the Institutional profile. Reported in preference to Configuration because configuration cannot change it. |
 | <code>Latched = 3</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:28](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L28) | This process ran the Institutional profile earlier and configuration no longer declares it. The profile stays in force until the process restarts; the current configuration is ignored and SecurityMasterWorkbench:GovernanceProfile is reported as contradicted. |
-
-## SecurityMasterGovernanceRequirementBasis
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceRequirementBasis</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:32](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L32).
-
-Whether one governance requirement is in force, and what puts it in force.
-
-```csharp
-public enum SecurityMasterGovernanceRequirementBasis
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotInForce = 0</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:35](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L35) | Not in force: the Standard profile with the requirement&#x27;s own setting off. |
-| <code>Setting = 1</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L38) | In force because the requirement&#x27;s own boolean setting is on (Standard profile). |
-| <code>Profile = 2</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:41](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L41) | In force because of the Institutional profile; the requirement&#x27;s own setting cannot turn it off. |
-
-## SecurityMasterGovernanceRequirements
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceRequirements</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:127](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L127).
-
-```csharp
-public sealed class SecurityMasterGovernanceRequirements : ISecurityMasterGovernanceRequirements, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string GovernanceProfileKey = Section + nameof(SecurityMasterWorkbenchOptions.GovernanceProfile);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:132](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L132) | Configuration key of SecurityMasterWorkbenchOptions.GovernanceProfile. |
-| <code>public const string RequireGovernedTermAmendmentsKey = Section + nameof(SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:135](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L135) | Configuration key of SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments. |
-| <code>public const string RequireIndependentReviewerKey = Section + nameof(SecurityMasterWorkbenchOptions.RequireIndependentReviewer);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:138](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L138) | Configuration key of SecurityMasterWorkbenchOptions.RequireIndependentReviewer. |
-| <code>public const string RequireIndependentProfileApproverKey = Section + nameof(SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:141](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L141) | Configuration key of SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover. |
-| <code>public SecurityMasterGovernanceRequirements(IOptionsMonitor&lt;SecurityMasterWorkbenchOptions&gt; options, SecurityMasterGovernanceHostPosture hostPosture, IConfiguration? configuration = null, ILogger&lt;SecurityMasterGovernanceRequirements&gt;? logger = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:163](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L163) |  |
-| <code>public SecurityMasterGovernanceSnapshot Current =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:189](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L189) |  |
-| <code>public static SecurityMasterGovernanceSnapshot Evaluate(SecurityMasterWorkbenchOptions options, bool isProductionComposition, Func&lt;string, string?&gt;? configuredValue = null, bool institutionalLatched = false);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:206](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L206) | Decides the effective requirements for one options value. Nothing here can turn a requirement off under the Institutional profile: configuredValue only decides which keys are reported as contradicted. |
-| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:271](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L271) |  |

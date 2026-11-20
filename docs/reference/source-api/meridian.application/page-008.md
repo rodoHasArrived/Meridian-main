@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionSupersedeRestatementTrigger
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionSupersedeRestatementTrigger</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:57](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L57).
+
+Resolves the superseded action&#x27;s downstream impact (via the trust snapshot), maps the impacted fund to its durable ledger books, and delegates to IPeriodAwareRestatementResolver with a SecurityMasterRevisionPublishedEvent shaped as: RevisionId = superseding CorpActId, EffectiveFrom = superseded ExDate, ChangedFields = &#91;&quot;corporateActions.&lt;CanonicalName&gt;&quot;&#93;. Registered as a singleton beside the command services; the workstation restatement stack is scoped, so dependencies are resolved per invocation through IServiceScopeFactory. When any piece of the stack is absent (a host without the workstation layer), the result is non-authoritative (null) so a durable acceptance caller can fail closed instead of silently losing closed-period handling.
+
+```csharp
+public sealed class CorporateActionSupersedeRestatementTrigger : ICorporateActionRestatementTrigger
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionSupersedeRestatementTrigger(IServiceScopeFactory scopeFactory, ILogger&lt;CorporateActionSupersedeRestatementTrigger&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:62](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L62) |  |
+| <code>public async Task&lt;SecurityMasterRestatementDecision?&gt; OnSupersededAsync(CorporateActionDto superseding, CorporateActionDto superseded, string? fundProfileId, string actor, string? correlationId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:70](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L70) |  |
+
+## ICorporateActionCommandService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.ICorporateActionCommandService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:10](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs#L10).
+
+Defines validated append of corporate actions to a security&#x27;s retained history.
+
+```csharp
+public interface ICorporateActionCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CorporateActionAppendResult&gt; AppendAsync(Guid securityId, CorporateActionDto action, string? actor, string source, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:12](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs#L12) |  |
+
 ## ICorporateActionRestatementTrigger
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.ICorporateActionRestatementTrigger</code>. Kind: `interface`.
@@ -935,42 +972,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task InvalidateAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs:28](../../../../src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs#L28) |  |
-
-## NullRestatementCandidateResolver
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullRestatementCandidateResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:78](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L78).
-
-No-op candidate resolver retained as the fallback for hosts without a report-pack backend. The report-pack-backed resolver (ReportPackRestatementCandidateResolver in the workstation layer) is the registered default; this surfaces no packs, leaving the caller&#x27;s default-deny safety net to flag a hard-closed book for manual locate.
-
-```csharp
-public sealed class NullRestatementCandidateResolver : IRestatementCandidateResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:80](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L80) |  |
-
-## NullSecurityMasterCashFlowService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterCashFlowService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:65](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L65).
-
-Supplies unavailable cash-flow results and refuses unsupported cash-flow mutations.
-
-```csharp
-public sealed class NullSecurityMasterCashFlowService : ISecurityMasterCashFlowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityCashFlowSourceDto?&gt; GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:67](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L67) |  |
-| <code>public Task UpsertCashFlowSourceAsync(UpsertCashFlowSourceRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:71](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L71) |  |
-| <code>public Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:76](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L76) |  |
-| <code>public Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsOfAsync(Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:80](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L80) |  |

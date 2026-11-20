@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolTemplate
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolTemplate</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:7](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L7).
+
+Predefined template for bulk symbol subscriptions. Supports equity groups, sectors, and indices.
+
+```csharp
+public sealed record SymbolTemplate(string Id, string Name, string Description, TemplateCategory Category, string[] Symbols, TemplateSubscriptionDefaults Defaults);
+```
+
+## SymbolTradingEligibility
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolTradingEligibility</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:119](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L119).
+
+Provider-supplied borrow and order-increment evidence for a symbol.
+
+```csharp
+public sealed record SymbolTradingEligibility(bool? IsTradable, bool? IsMarginable, bool? IsShortable, bool? IsEasyToBorrow, bool? IsFractionable, decimal? MaintenanceMarginRequirement, decimal? MinimumOrderSize, decimal? MinimumTradeIncrement, decimal? PriceIncrement, string? Source);
+```
+
 ## TemplateCategory
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.TemplateCategory</code>. Kind: `enum`.

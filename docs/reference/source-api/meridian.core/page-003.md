@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduledBackfillConfig
+
+Qualified name: <code>Meridian.Core.Config.ScheduledBackfillConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:110](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L110).
+
+Configuration for scheduled backfill operations.
+
+```csharp
+public sealed record ScheduledBackfillConfig(bool Enabled = false, int ScheduleCheckIntervalSeconds = 60, int MaxExecutionDurationHours = 6, bool CatchUpMissedSchedules = true, int CatchUpWindowHours = 24, int MaxConcurrentExecutions = 1, bool PauseDuringMarketHours = false, DefaultScheduleConfig[]? DefaultSchedules = null);
+```
+
+## SemanticValidationStage
+
+Qualified name: <code>Meridian.Core.Config.SemanticValidationStage</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Config/IConfigValidator.cs:140](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L140).
+
+Semantic validation that checks cross-property constraints and configuration consistency. Duplicate-symbol and retention-days checks are now handled by AppConfigValidator in the field validation stage. This stage handles warning-level checks that should not affect FluentValidation.Results.ValidationResult.IsValid.
+
+```csharp
+public sealed class SemanticValidationStage : IConfigValidationStage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ConfigValidationResult&gt; Validate(AppConfig config);</code> | [src/Meridian.Core/Config/IConfigValidator.cs:142](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L142) |  |
+
 ## SensitiveKeyRegistry
 
 Qualified name: <code>Meridian.Core.Config.SensitiveKeyRegistry</code>. Kind: `class`.
@@ -904,47 +934,3 @@ Declared public members:
 | <code>public static HealthCheckResult Degraded(string componentName, string message, TimeSpan duration, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:52](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L52) | Creates a degraded result. |
 | <code>public static HealthCheckResult Unhealthy(string componentName, string message, TimeSpan duration, Exception? exception = null, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:59](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L59) | Creates an unhealthy result. |
 | <code>public static HealthCheckResult Unknown(string componentName, string message, TimeSpan duration) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:66](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L66) | Creates an unknown result. |
-
-## HealthSeverity
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.HealthSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:8](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L8).
-
-Represents the severity of a health status.
-
-```csharp
-public enum HealthSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Healthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:11](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L11) | Component is healthy and fully operational. |
-| <code>Degraded</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:14](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L14) | Component is operational but with minor issues. |
-| <code>Unhealthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:17](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L17) | Component has critical issues affecting functionality. |
-| <code>Unknown</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:20](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L20) | Component status is unknown or cannot be determined. |
-
-## IAlertDispatcher
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.IAlertDispatcher</code>. Kind: `interface`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:164](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L164).
-
-Centralized alert dispatcher for publishing and subscribing to monitoring alerts.
-
-```csharp
-public interface IAlertDispatcher
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void Publish(MonitoringAlert alert);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:170](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L170) | Publishes an alert to all subscribers. |
-| <code>Task PublishAsync(MonitoringAlert alert, CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:177](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L177) | Publishes an alert asynchronously. |
-| <code>IDisposable Subscribe(Action&lt;MonitoringAlert&gt; handler, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:185](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L185) | Subscribes to alerts with the specified filter. |
-| <code>IDisposable Subscribe(Func&lt;MonitoringAlert, Task&gt; handler, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:193](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L193) | Subscribes to alerts with an async handler. |
-| <code>IReadOnlyList&lt;MonitoringAlert&gt; GetRecentAlerts(int count = 100, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:201](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L201) | Gets recent alerts matching the filter. |
-| <code>AlertStatistics GetStatistics();</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:207](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L207) | Gets alert statistics. |

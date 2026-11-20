@@ -477,6 +477,16 @@ OpenFIGI symbol resolver configuration.
 public sealed record OpenFigiConfig(bool Enabled = true, string? ApiKey = null, bool CacheResults = true, string TierId = "free", int? RateLimitPerMinute = null);
 ```
 
+## OwnedProviderTemplateConfig
+
+Qualified name: <code>Meridian.Core.Config.OwnedProviderTemplateConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:37](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L37).
+
+```csharp
+public sealed record OwnedProviderTemplateConfig(string TenantId, ProviderConnectionTemplateDto Template);
+```
+
 ## PipelineRuntimeConfig
 
 Qualified name: <code>Meridian.Core.Config.PipelineRuntimeConfig</code>. Kind: `record`.
@@ -517,7 +527,7 @@ public sealed record PolygonOptions(string? ApiKey = null, bool UseDelayed = fal
 
 Qualified name: <code>Meridian.Core.Config.ProviderBindingConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:53](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L53).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:75](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L75).
 
 Capability binding targeting one connection and one scope.
 
@@ -529,7 +539,7 @@ public sealed record ProviderBindingConfig(string BindingId, ProviderCapabilityK
 
 Qualified name: <code>Meridian.Core.Config.ProviderCertificationConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:95](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L95).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:117](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L117).
 
 Stored certification state for a provider connection.
 
@@ -541,19 +551,26 @@ public sealed record ProviderCertificationConfig(string ConnectionId, string Sta
 
 Qualified name: <code>Meridian.Core.Config.ProviderConnectionConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:32](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L32).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:47](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L47).
 
 One credentialed provider relationship.
 
 ```csharp
-public sealed record ProviderConnectionConfig(string ConnectionId, string ProviderFamilyId, string DisplayName, ProviderConnectionType ConnectionType = ProviderConnectionType.DataVendor, ProviderConnectionMode ConnectionMode = ProviderConnectionMode.ReadOnly, bool Enabled = true, string? CredentialReference = null, string? InstitutionId = null, string? ExternalAccountId = null, ProviderConnectionScope? Scope = null, string[]? Tags = null, string? Description = null, bool ProductionReady = false, string? TenantId = null, string? CredentialEnvironment = null);
+public sealed record ProviderConnectionConfig(string ConnectionId, string ProviderFamilyId, string DisplayName, ProviderConnectionType ConnectionType = ProviderConnectionType.DataVendor, ProviderConnectionMode ConnectionMode = ProviderConnectionMode.ReadOnly, bool Enabled = true, string? CredentialReference = null, string? InstitutionId = null, string? ExternalAccountId = null, ProviderConnectionScope? Scope = null, string[]? Tags = null, string? Description = null, bool ProductionReady = false, string? TenantId = null, string? CredentialEnvironment = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public ProviderConnectionTemplateDto? SetupTemplate { get; init; }</code> | [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:66](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L66) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Guid? TemplateSetupId { get; init; }</code> | [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:69](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L69) |  |
 
 ## ProviderConnectionsConfig
 
 Qualified name: <code>Meridian.Core.Config.ProviderConnectionsConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:8](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L8).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:10](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L10).
 
 Relationship-aware provider operations configuration.
 
@@ -565,8 +582,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public ProviderRuntimeCredentialBinding[]? RuntimeCredentials { get; init; }</code> | [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:18](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L18) | Explicit host defaults. Each identity is revalidated against retained connection ownership. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string[]? OwnershipRequiredProviders { get; init; }</code> | [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:22](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L22) | Retains the ownership boundary after deletion; removing a connection cannot restore legacy fallback. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public ProviderRuntimeCredentialBinding[]? RuntimeCredentials { get; init; }</code> | [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:20](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L20) | Explicit host defaults. Each identity is revalidated against retained connection ownership. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string[]? OwnershipRequiredProviders { get; init; }</code> | [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:24](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L24) | Retains the ownership boundary after deletion; removing a connection cannot restore legacy fallback. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public OwnedProviderTemplateConfig[]? Templates { get; init; }</code> | [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:27](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L27) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public ProviderTemplateSetupConfig[]? TemplateSetups { get; init; }</code> | [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:30](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L30) |  |
 
 ## ProviderModulesConfig
 
@@ -615,7 +634,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.ProviderPolicyConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:68](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L68).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:90](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L90).
 
 Policy override for a capability.
 
@@ -627,7 +646,7 @@ public sealed record ProviderPolicyConfig(string PolicyId, ProviderCapabilityKin
 
 Qualified name: <code>Meridian.Core.Config.ProviderPresetConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:82](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L82).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:104](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L104).
 
 Reusable provider operations preset.
 
@@ -663,12 +682,24 @@ public sealed record ProviderRegistryConfig(bool UseAttributeDiscovery = false);
 
 Qualified name: <code>Meridian.Core.Config.ProviderRuntimeCredentialBinding</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:26](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L26).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:34](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L34).
 
 A host-selected provider connection; never a credential value or provider-wide fallback.
 
 ```csharp
 public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string TenantId, string ConnectionId, string? ExternalAccountId = null, string? Environment = null, string? SelectionId = null);
+```
+
+## ProviderTemplateSetupConfig
+
+Qualified name: <code>Meridian.Core.Config.ProviderTemplateSetupConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:40](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L40).
+
+The draft is outside the retained connection list until the operator saves it.
+
+```csharp
+public sealed record ProviderTemplateSetupConfig(Guid SetupId, string ConnectionId, string TenantId, string Actor, string ExternalAccountId, string Revision, DateTimeOffset ExpiresAt, ProviderConnectionTemplateDto Template, string? TestedCredentialGeneration = null);
 ```
 
 ## ProviderValidationProfile
@@ -715,33 +746,3 @@ Robinhood historical data provider configuration. Uses the unofficial Robinhood 
 ```csharp
 public sealed record RobinhoodConfig(bool Enabled = false, int Priority = 35, int RateLimitPerHour = 100);
 ```
-
-## ScheduledBackfillConfig
-
-Qualified name: <code>Meridian.Core.Config.ScheduledBackfillConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:110](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L110).
-
-Configuration for scheduled backfill operations.
-
-```csharp
-public sealed record ScheduledBackfillConfig(bool Enabled = false, int ScheduleCheckIntervalSeconds = 60, int MaxExecutionDurationHours = 6, bool CatchUpMissedSchedules = true, int CatchUpWindowHours = 24, int MaxConcurrentExecutions = 1, bool PauseDuringMarketHours = false, DefaultScheduleConfig[]? DefaultSchedules = null);
-```
-
-## SemanticValidationStage
-
-Qualified name: <code>Meridian.Core.Config.SemanticValidationStage</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Config/IConfigValidator.cs:140](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L140).
-
-Semantic validation that checks cross-property constraints and configuration consistency. Duplicate-symbol and retention-days checks are now handled by AppConfigValidator in the field validation stage. This stage handles warning-level checks that should not affect FluentValidation.Results.ValidationResult.IsValid.
-
-```csharp
-public sealed class SemanticValidationStage : IConfigValidationStage
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ConfigValidationResult&gt; Validate(AppConfig config);</code> | [src/Meridian.Core/Config/IConfigValidator.cs:142](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L142) |  |
