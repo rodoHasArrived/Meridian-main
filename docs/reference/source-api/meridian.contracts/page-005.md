@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CanonicalSymbolResolutionMismatchResponse
+
+Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolResolutionMismatchResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:278](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L278).
+
+Recent Legacy-versus-Canonical comparison disagreement.
+
+```csharp
+public sealed record CanonicalSymbolResolutionMismatchResponse(string Input, string FromProvider, string ToProvider, string? LegacyResult, string? CanonicalResult, Guid? SecurityId, DateTimeOffset ObservedAt);
+```
+
 ## CapabilityInfo
 
 Qualified name: <code>Meridian.Contracts.Api.CapabilityInfo</code>. Kind: `class`.
@@ -887,16 +899,4 @@ Response DTO for live data health.
 
 ```csharp
 public sealed record LiveDataHealthResponse(DateTimeOffset Timestamp, bool CollectorsAvailable, int SymbolsWithQuotes, int SymbolsWithDepth, long PipelinePublished, long PipelineDropped, long PipelineConsumed, int PipelineQueueSize, double PipelineUtilization, IReadOnlyList<SymbolDataHealthDto> Symbols);
-```
-
-## MarketDataCapabilityInfo
-
-Qualified name: <code>Meridian.Contracts.Api.MarketDataCapabilityInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderCatalog.cs:899](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L899).
-
-Wire-safe granular market-data capability declaration for catalog consumers.
-
-```csharp
-public sealed record MarketDataCapabilityInfo([property : JsonPropertyName("capability")] string Capability, [property : JsonPropertyName("assetClasses")] IReadOnlyList<string> AssetClasses, [property : JsonPropertyName("geographies")] IReadOnlyList<string> Geographies, [property : JsonPropertyName("venues")] IReadOnlyList<string> Venues, [property : JsonPropertyName("feed")] string Feed, [property : JsonPropertyName("delivery")] string Delivery, [property : JsonPropertyName("entitlementState")] string EntitlementState, [property : JsonPropertyName("maxRequestsPerWindow")] int? MaxRequestsPerWindow, [property : JsonPropertyName("pacingWindowSeconds")] double? PacingWindowSeconds, [property : JsonPropertyName("minimumRequestDelayMs")] double? MinimumRequestDelayMs, [property : JsonPropertyName("sourceTimestamp")] string SourceTimestamp, [property : JsonPropertyName("qualityPosture")] string QualityPosture);
 ```

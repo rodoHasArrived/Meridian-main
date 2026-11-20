@@ -820,6 +820,18 @@ Response DTO for best bid/offer data.
 public sealed record BboResponse(string Symbol, DateTimeOffset Timestamp, decimal BidPrice, long BidSize, decimal AskPrice, long AskSize, decimal? MidPrice, decimal? Spread, long SequenceNumber, string? StreamId, string? Venue);
 ```
 
+## BeginProviderTemplateSetupRequest
+
+Qualified name: <code>Meridian.Contracts.Api.BeginProviderTemplateSetupRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:44](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L44).
+
+The account identity, when required, belongs to this instance alone.
+
+```csharp
+public sealed record BeginProviderTemplateSetupRequest(Guid SetupId, string TemplateName, string Revision, string? ExternalAccountId = null);
+```
+
 ## BindProviderRuntimeCredentialRequest
 
 Qualified name: <code>Meridian.Contracts.Api.BindProviderRuntimeCredentialRequest</code>. Kind: `record`.
@@ -900,16 +912,4 @@ Additive registry projection used by both workstations during canonical-symbol m
 
 ```csharp
 public sealed record CanonicalSymbolRegistryResponse(string RegistryVersion, SymbolResolutionMode ResolutionMode, bool CompareModeReturnsLegacy, long TotalMismatchCount, DateTimeOffset? LastMismatchAt, IReadOnlyList<CanonicalSymbolResolutionMismatchResponse> RecentMismatches, IReadOnlyList<CanonicalSymbolMigrationResponse> Migrations, IReadOnlyList<CanonicalSymbolRegistryEntryResponse> Symbols);
-```
-
-## CanonicalSymbolResolutionMismatchResponse
-
-Qualified name: <code>Meridian.Contracts.Api.CanonicalSymbolResolutionMismatchResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:278](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L278).
-
-Recent Legacy-versus-Canonical comparison disagreement.
-
-```csharp
-public sealed record CanonicalSymbolResolutionMismatchResponse(string Input, string FromProvider, string ToProvider, string? LegacyResult, string? CanonicalResult, Guid? SecurityId, DateTimeOffset ObservedAt);
 ```

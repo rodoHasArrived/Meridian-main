@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MarketDataCapabilityInfo
+
+Qualified name: <code>Meridian.Contracts.Api.MarketDataCapabilityInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderCatalog.cs:899](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L899).
+
+Wire-safe granular market-data capability declaration for catalog consumers.
+
+```csharp
+public sealed record MarketDataCapabilityInfo([property : JsonPropertyName("capability")] string Capability, [property : JsonPropertyName("assetClasses")] IReadOnlyList<string> AssetClasses, [property : JsonPropertyName("geographies")] IReadOnlyList<string> Geographies, [property : JsonPropertyName("venues")] IReadOnlyList<string> Venues, [property : JsonPropertyName("feed")] string Feed, [property : JsonPropertyName("delivery")] string Delivery, [property : JsonPropertyName("entitlementState")] string EntitlementState, [property : JsonPropertyName("maxRequestsPerWindow")] int? MaxRequestsPerWindow, [property : JsonPropertyName("pacingWindowSeconds")] double? PacingWindowSeconds, [property : JsonPropertyName("minimumRequestDelayMs")] double? MinimumRequestDelayMs, [property : JsonPropertyName("sourceTimestamp")] string SourceTimestamp, [property : JsonPropertyName("qualityPosture")] string QualityPosture);
+```
+
 ## MetricsData
 
 Qualified name: <code>Meridian.Contracts.Api.MetricsData</code>. Kind: `class`.
@@ -482,6 +494,38 @@ Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:20](../../../../src/Me
 public sealed record ProviderConnectionHealthSnapshotDto([property : JsonPropertyName("providerId")] string ProviderId, [property : JsonPropertyName("displayName")] string DisplayName, [property : JsonPropertyName("isEnabled")] bool IsEnabled, [property : JsonPropertyName("isConnected")] bool? IsConnected, [property : JsonPropertyName("connectionState")] string ConnectionState, [property : JsonPropertyName("diagnosticsAvailable")] bool DiagnosticsAvailable, [property : JsonPropertyName("lastFailureKind")] string? LastFailureKind, [property : JsonPropertyName("reconnectAttempts")] int? ReconnectAttempts = null);
 ```
 
+## ProviderConnectionTemplateDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:8](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L8).
+
+The portable allowlist. Semantics and checklist entries are catalog codes.
+
+```csharp
+public sealed record ProviderConnectionTemplateDto(string Name, string ProviderKind, int ProviderVersion, string Environment, string ConnectionType, string ConnectionMode, string AllowedScope, ProviderTemplateCapabilityDto[] RequestedCapabilities, ProviderTemplateBindingDto SuggestedBinding, string ExpectedDataSemantics, string[] VerificationChecklist);
+```
+
+## ProviderConnectionTemplateFile
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateFile</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:28](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L28).
+
+```csharp
+public sealed record ProviderConnectionTemplateFile(int SchemaVersion, ProviderConnectionTemplateDto[] Templates);
+```
+
+## ProviderConnectionTemplateOption
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateOption</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:32](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L32).
+
+```csharp
+public sealed record ProviderConnectionTemplateOption(ProviderConnectionTemplateDto Template, string Revision, bool IsBuiltIn, bool RequiresExternalAccount, ProviderTemplateReviewRow[] ReviewRows, string[] VerificationChecks);
+```
+
 ## ProviderConnectionTest
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTest</code>. Kind: `record`.
@@ -680,51 +724,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;providers&quot;)] public IReadOnlyList&lt;ProviderLatencyStatsDto&gt; Providers { get; init; } = Array.Empty&lt;ProviderLatencyStatsDto&gt;();</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:128](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L128) |  |
 | <code>[JsonPropertyName(&quot;globalAverageMs&quot;)] public float GlobalAverageMs { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:131](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L131) |  |
 | <code>[JsonPropertyName(&quot;globalP99Ms&quot;)] public float GlobalP99Ms { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:134](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L134) |  |
-
-## ProviderMetricsResponse
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderMetricsResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:139](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L139).
-
-Response containing detailed provider metrics.
-
-```csharp
-public record ProviderMetricsResponse(string ProviderId, string ProviderType, long TradesReceived, long DepthUpdatesReceived, long QuotesReceived, long ConnectionAttempts, long ConnectionFailures, long MessagesDropped, long ActiveSubscriptions, double AverageLatencyMs, double MinLatencyMs, double MaxLatencyMs, double DataQualityScore, double ConnectionSuccessRate, DateTimeOffset Timestamp, bool IsSimulated = false);
-```
-
-## ProviderPolicyDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderPolicyDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:119](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L119).
-
-Policy DTO exposed to clients.
-
-```csharp
-public sealed record ProviderPolicyDto(string PolicyId, string Capability, string SafetyMode, bool RequireExplicitBinding, bool RequireProductionReady, string[] AllowedFailoverConnectionIds, string[] AllowedProviderFamilies, string? Description);
-```
-
-## ProviderPresetDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderPresetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:132](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L132).
-
-Preset DTO exposed to clients.
-
-```csharp
-public sealed record ProviderPresetDto(string PresetId, string Name, string Description, string[] Highlights, bool IsBuiltIn, bool IsEnabled);
-```
-
-## ProviderRateLimitCapabilitiesDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitCapabilitiesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:78](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L78).
-
-Historical-data capabilities preserved from the previous rate-limit endpoint shape.
-
-```csharp
-public sealed record ProviderRateLimitCapabilitiesDto([property : JsonPropertyName("adjustedPrices")] bool AdjustedPrices, [property : JsonPropertyName("intraday")] bool Intraday, [property : JsonPropertyName("dividends")] bool Dividends, [property : JsonPropertyName("splits")] bool Splits, [property : JsonPropertyName("quotes")] bool Quotes, [property : JsonPropertyName("trades")] bool Trades, [property : JsonPropertyName("auctions")] bool Auctions, [property : JsonPropertyName("supportedMarkets")] IReadOnlyList<string> SupportedMarkets);
-```

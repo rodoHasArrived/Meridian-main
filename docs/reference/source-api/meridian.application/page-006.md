@@ -308,7 +308,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.ProviderRouting.IProviderFamilyCatalogService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:552](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L552).
+Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:573](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L573).
 
 Exposes the provider-family adapters available to routing.
 
@@ -320,8 +320,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:554](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L554) |  |
-| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:556](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L556) |  |
+| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:575](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L575) |  |
+| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:577](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L577) |  |
 
 ## IProviderRuntimeCredentialApplier
 
@@ -561,8 +561,34 @@ Declared public members:
 | <code>public Task&lt;ProviderConnectionDto&gt; UpsertAsync(CreateProviderConnectionRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:54](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L54) |  |
 | <code>public Task&lt;ProviderConnectionDto&gt; UpsertForTenantAsync(CreateProviderConnectionRequest request, string tenantId, string environment, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:58](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L58) | Creates or updates a connection for a server-authorized tenant. Legacy ownership is never inferred. |
 | <code>public Task&lt;ProviderCredentialScope?&gt; GetCredentialScopeForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:66](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L66) | Resolves retained credential ownership only for the authorized tenant. |
-| <code>public Task&lt;bool&gt; DeleteAsync(string connectionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:163](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L163) |  |
-| <code>public Task&lt;bool&gt; DeleteForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:167](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L167) | Deletes configuration only after matching its retained tenant owner. |
+| <code>public Task&lt;bool&gt; DeleteAsync(string connectionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:167](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L167) |  |
+| <code>public Task&lt;bool&gt; DeleteForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:171](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L171) | Deletes configuration only after matching its retained tenant owner. |
+
+## ProviderConnectionTemplateService
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderConnectionTemplateService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:18](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L18).
+
+Owns the portable template library and the draft-to-connection transaction.
+
+```csharp
+public sealed class ProviderConnectionTemplateService(UI.ConfigStore store, IProviderCredentialStore credentialStore)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderConnectionTemplateOption[] List(string tenantId);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:23](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L23) |  |
+| <code>public ProviderConnectionTemplateFile Export(string tenantId, string name);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:33](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L33) |  |
+| <code>public Task&lt;ProviderConnectionTemplateOption&gt; SaveFromConnectionAsync(string tenantId, SaveProviderConnectionTemplateRequest request, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:41](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L41) |  |
+| <code>public Task&lt;int&gt; ImportAsync(string tenantId, JsonElement payload, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:59](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L59) |  |
+| <code>public Task&lt;ProviderTemplateSetupDraft&gt; BeginAsync(string tenantId, string actor, BeginProviderTemplateSetupRequest request, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:83](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L83) |  |
+| <code>public static ProviderCredentialScope RequireDraftScope(AppConfig config, Guid setupId, string tenantId, string actor, string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:129](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L129) | Called under the workstation configuration lease on every scoped vault operation. |
+| <code>public async Task&lt;ProviderTemplateSetupTestResult&gt; TestAsync(string tenantId, string actor, Guid setupId, Func&lt;string, CancellationToken, Task&lt;ProviderTemplateSetupTestResult&gt;&gt; verify, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:137](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L137) |  |
+| <code>public Task&lt;SavedProviderTemplateConnection&gt; SaveAsync(string tenantId, string actor, Guid setupId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:168](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L168) |  |
+| <code>public Task&lt;bool&gt; DiscardAsync(string tenantId, string actor, Guid setupId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:210](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L210) |  |
 
 ## ProviderCredentialOwnershipPolicy
 
@@ -736,7 +762,7 @@ Declared public members:
 | <code>public ValueTask&lt;ProviderRouteResult&gt; RouteAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L37) |  |
 | <code>public ValueTask&lt;ProviderRouteResult&gt; RouteForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:41](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L41) | Routes using only connections retained for the authorized tenant. |
 | <code>public ValueTask&lt;ProviderRouteResult&gt; PreviewForTenantAsync(ProviderRouteContext context, string tenantId, ProviderRoutingProposedConfig proposed, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:48](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L48) | Evaluates a cloned, restricted config without publishing a runtime snapshot or route history. |
-| <code>public IReadOnlyList&lt;ProviderRouteResult&gt; GetRouteHistory() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:303](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L303) |  |
+| <code>public IReadOnlyList&lt;ProviderRouteResult&gt; GetRouteHistory() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:308](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L308) |  |
 
 ## ProviderRuntimeCredentialApplicationTracker
 
@@ -835,7 +861,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:11](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L11).
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:12](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L12).
 
 Explicit host credential selection and ownership-checked migration commands.
 
@@ -847,14 +873,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;ProviderCredentialStoreStatus&gt; GetMigrationPreviewAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:23](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L23) |  |
-| <code>public async Task&lt;ProviderRuntimeCredentialBinding&gt; BindAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:35](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L35) |  |
-| <code>public ProviderRuntimeCredentialApplicationStatus GetApplicationStatus(string providerId, string connectionId, string tenantId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:69](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L69) | Whether the retained binding for this connection has reached running instances of this host. |
-| <code>public async Task&lt;ProviderRuntimeCredentialApplicationStatus&gt; ApplyAsync(string providerId, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:89](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L89) | Asks the host&#x27;s applier to recycle the provider&#x27;s running instances under the retained binding. The default host has no in-process recycle and reports the binding as pending a deliberate restart. |
-| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; TransferAsync(string providerId, string connectionId, string tenantId, string migrationId, string? expectedGeneration, string actor, bool rollback, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:135](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L135) |  |
-| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; FinalizeAsync(string providerId, string connectionId, string tenantId, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:159](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L159) | Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit. |
-| <code>public static ProviderCredentialScope? ResolveScope(AppConfig config, string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:175](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L175) | Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default. |
-| <code>public static ProviderCredentialScope RequireScope(AppConfig config, string providerId, string connectionId, string tenantId, bool requireEnabled = true);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:192](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L192) |  |
+| <code>public async Task&lt;ProviderCredentialStoreStatus&gt; GetMigrationPreviewAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:24](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L24) |  |
+| <code>public async Task&lt;ProviderRuntimeCredentialBinding&gt; BindAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:36](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L36) |  |
+| <code>public ProviderRuntimeCredentialApplicationStatus GetApplicationStatus(string providerId, string connectionId, string tenantId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:70](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L70) | Whether the retained binding for this connection has reached running instances of this host. |
+| <code>public async Task&lt;ProviderRuntimeCredentialApplicationStatus&gt; ApplyAsync(string providerId, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:90](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L90) | Asks the host&#x27;s applier to recycle the provider&#x27;s running instances under the retained binding. The default host has no in-process recycle and reports the binding as pending a deliberate restart. |
+| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; TransferAsync(string providerId, string connectionId, string tenantId, string migrationId, string? expectedGeneration, string actor, bool rollback, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:136](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L136) |  |
+| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; FinalizeAsync(string providerId, string connectionId, string tenantId, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:160](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L160) | Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit. |
+| <code>public static ProviderCredentialScope? ResolveScope(AppConfig config, string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:176](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L176) | Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default. |
+| <code>public static ProviderCredentialScope RequireScope(AppConfig config, string providerId, string connectionId, string tenantId, bool requireEnabled = true);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:205](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L205) |  |
 
 ## ProviderSetupService
 
@@ -875,6 +901,22 @@ Declared public members:
 | <code>public ProviderSetupService(UI.ConfigStore store, IProviderCredentialStore credentialStore, IProviderSetupRegistry setupRegistry, ProviderCredentialOwnershipPolicy? ownershipPolicy = null, ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:25](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L25) |  |
 | <code>public async Task&lt;ProviderSetupResult&gt; ConfigureForConnectionAsync(ProviderSetupRequest request, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L37) | Configures credentials for an existing connection whose tenant ownership is already retained. |
 | <code>public async Task&lt;ProviderSetupResult&gt; ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:86](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L86) |  |
+
+## ProviderTemplateCompatibilityException
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderTemplateCompatibilityException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:11](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L11).
+
+```csharp
+public sealed class ProviderTemplateCompatibilityException(IReadOnlyList<ProviderTemplateImportIssue> issues) : InvalidOperationException("The template file is incompatible with this host.")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ProviderTemplateImportIssue&gt; Issues { get; } = issues;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:14](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L14) |  |
 
 ## ProviderTrustScoringService
 
@@ -967,72 +1009,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;InternalReconciliationPopulations&gt; GetPopulationsAsync(InternalReconciliationPopulationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs:66](../../../../src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs#L66) |  |
-
-## BackfillExecutionHistory
-
-Qualified name: <code>Meridian.Application.Scheduling.BackfillExecutionHistory</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:262](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L262).
-
-Manager for querying and analyzing execution history.
-
-```csharp
-public sealed class BackfillExecutionHistory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BackfillExecutionHistory();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:275](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L275) | Creates an in-memory history. Retained for focused tests and callers that do not opt into restart durability. |
-| <code>public BackfillExecutionHistory(string persistencePath);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:282](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L282) | Creates a bounded history backed by an atomically replaced JSON snapshot. |
-| <code>public void AddExecution(BackfillExecutionLog execution);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:294](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L294) | Add an execution to the history. |
-| <code>public void UpdateExecution(BackfillExecutionLog execution);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:308](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L308) | Replaces and persists a previously added execution after mutable terminal fields change. |
-| <code>public BackfillExecutionLog? GetExecution(string executionId);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:322](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L322) | Get an execution by ID. |
-| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetExecutionsForSchedule(string scheduleId, int limit = 50);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:330](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L330) | Get all executions for a schedule. |
-| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetRecentExecutions(int limit = 50);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:342](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L342) | Get recent executions across all schedules. |
-| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetFailedExecutions(int limit = 50);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:353](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L353) | Get failed executions. |
-| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetExecutionsInRange(DateTimeOffset from, DateTimeOffset to, int limit = 100);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:365](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L365) | Get executions within a time range. |
-| <code>public ScheduleExecutionSummary GetScheduleSummary(string scheduleId, int recentCount = 30);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:380](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L380) | Get aggregate statistics for a schedule. |
-| <code>public SystemExecutionSummary GetSystemSummary(TimeSpan? period = null);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:407](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L407) | Get overall system statistics. |
-
-## BackfillExecutionLog
-
-Qualified name: <code>Meridian.Application.Scheduling.BackfillExecutionLog</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:15](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L15).
-
-Records the execution history of scheduled backfill jobs. Provides visibility into past runs, successes, failures, and performance metrics.
-
-```csharp
-public sealed class BackfillExecutionLog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ExecutionId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:20](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L20) | Unique identifier for this execution. |
-| <code>public string ScheduleId { get; init; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:25](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L25) | ID of the schedule that triggered this execution. |
-| <code>public string ScheduleName { get; init; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:30](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L30) | Name of the schedule for display purposes. |
-| <code>public string? JobId { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:35](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L35) | ID of the backfill job created for this execution. |
-| <code>public ExecutionTrigger Trigger { get; init; } = ExecutionTrigger.Scheduled;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:40](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L40) | How this execution was triggered. |
-| <code>public ExecutionStatus Status { get; set; } = ExecutionStatus.Pending;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:45](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L45) | Current status of the execution. |
-| <code>public DateTimeOffset ScheduledAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:50](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L50) | When the execution was scheduled to run. |
-| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:55](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L55) | When the execution actually started. |
-| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:60](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L60) | When the execution completed. |
-| <code>[JsonIgnore] public TimeSpan? Duration =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:66](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L66) | Duration of the execution. |
-| <code>public DateOnly FromDate { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:73](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L73) | Date range that was backfilled. |
-| <code>public DateOnly ToDate { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:78](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L78) | End date of the backfill range. |
-| <code>public List&lt;string&gt; Symbols { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:83](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L83) | Symbols that were processed. |
-| <code>public ExecutionStatistics Statistics { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:88](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L88) | Detailed statistics from the execution. |
-| <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:93](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L93) | Error message if the execution failed. |
-| <code>public string? ErrorStackTrace { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:98](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L98) | Stack trace for debugging (only for failures). |
-| <code>public List&lt;string&gt; Warnings { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:103](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L103) | Warnings generated during execution. |
-| <code>public Dictionary&lt;string, ProviderUsageStats&gt; ProviderStats { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:108](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L108) | Provider usage breakdown. |
-| <code>public ConcurrentDictionary&lt;string, SymbolExecutionResult&gt; SymbolResults { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:113](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L113) | Per-symbol results. |
-| <code>public string? AutoRemediationTriggerReason { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:118](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L118) | Auto-remediation trigger reason when execution was system-triggered. |
-| <code>public int AutoRemediationAttemptCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:123](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L123) | Attempt count for the same auto-remediation idempotency key. |
-| <code>public string? AutoRemediationLastOutcome { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:128](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L128) | Last known remediation outcome used by observability surfaces. |
-| <code>public string? AutoRemediationIdempotencyKey { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:133](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L133) | Idempotency key (symbol+range+provider) used to suppress duplicates. |
-| <code>public BackfillRemediationSlaMetadata? AutoRemediationSla { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:140](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L140) | Typed SLA metadata when this execution was created by auto gap remediation. Null for non-remediation executions; legacy remediation entries carry the same data as key=value strings in Warnings instead. |

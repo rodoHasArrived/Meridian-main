@@ -6,6 +6,245 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ArchiveIssue
+
+Qualified name: <code>Meridian.Contracts.Archive.ArchiveIssue</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:110](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L110).
+
+An issue detected in the archive.
+
+```csharp
+public sealed class ArchiveIssue
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;id&quot;)] public string Id { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:113](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L113) |  |
+| <code>[JsonPropertyName(&quot;severity&quot;)] public string Severity { get; set; } = ArchiveHealthSeverity.Warning;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:116](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L116) |  |
+| <code>[JsonPropertyName(&quot;category&quot;)] public string Category { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:119](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L119) |  |
+| <code>[JsonPropertyName(&quot;message&quot;)] public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:122](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L122) |  |
+| <code>[JsonPropertyName(&quot;affectedFiles&quot;)] public string[]? AffectedFiles { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:125](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L125) |  |
+| <code>[JsonPropertyName(&quot;affectedSymbols&quot;)] public string[]? AffectedSymbols { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:128](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L128) |  |
+| <code>[JsonPropertyName(&quot;suggestedAction&quot;)] public string? SuggestedAction { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:131](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L131) |  |
+| <code>[JsonPropertyName(&quot;detectedAt&quot;)] public DateTime DetectedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:134](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L134) |  |
+| <code>[JsonPropertyName(&quot;resolvedAt&quot;)] public DateTime? ResolvedAt { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:137](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L137) |  |
+| <code>[JsonPropertyName(&quot;isAutoFixable&quot;)] public bool IsAutoFixable { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:140](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L140) |  |
+
+## ArchiveIssueCategory
+
+Qualified name: <code>Meridian.Contracts.Archive.ArchiveIssueCategory</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:29](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L29).
+
+Archive issue category constants.
+
+```csharp
+public static class ArchiveIssueCategory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Integrity = &quot;Integrity&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:31](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L31) |  |
+| <code>public const string Completeness = &quot;Completeness&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:32](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L32) |  |
+| <code>public const string Storage = &quot;Storage&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:33](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L33) |  |
+| <code>public const string Performance = &quot;Performance&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:34](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L34) |  |
+
+## StorageHealthInfo
+
+Qualified name: <code>Meridian.Contracts.Archive.StorageHealthInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:146](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L146).
+
+Storage media health information.
+
+```csharp
+public sealed class StorageHealthInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;driveType&quot;)] public string DriveType { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:149](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L149) |  |
+| <code>[JsonPropertyName(&quot;healthStatus&quot;)] public string HealthStatus { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:152](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L152) |  |
+| <code>[JsonPropertyName(&quot;totalCapacity&quot;)] public long TotalCapacity { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:155](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L155) |  |
+| <code>[JsonPropertyName(&quot;freeSpace&quot;)] public long FreeSpace { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:158](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L158) |  |
+| <code>[JsonPropertyName(&quot;usedPercent&quot;)] public float UsedPercent { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:161](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L161) |  |
+| <code>[JsonPropertyName(&quot;averageWriteLatencyMs&quot;)] public float? AverageWriteLatencyMs { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:164](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L164) |  |
+| <code>[JsonPropertyName(&quot;readSpeedMbps&quot;)] public float? ReadSpeedMbps { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:167](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L167) |  |
+| <code>[JsonPropertyName(&quot;writeSpeedMbps&quot;)] public float? WriteSpeedMbps { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:170](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L170) |  |
+| <code>[JsonPropertyName(&quot;daysUntilFull&quot;)] public int? DaysUntilFull { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:173](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L173) |  |
+
+## VerificationJob
+
+Qualified name: <code>Meridian.Contracts.Archive.VerificationJob</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:179](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L179).
+
+Verification job status.
+
+```csharp
+public sealed class VerificationJob
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;id&quot;)] public string Id { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:182](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L182) |  |
+| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = VerificationJobType.Full;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:185](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L185) |  |
+| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; } = VerificationJobStatus.Pending;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:188](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L188) |  |
+| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime? StartedAt { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:191](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L191) |  |
+| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:194](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L194) |  |
+| <code>[JsonPropertyName(&quot;totalFiles&quot;)] public int TotalFiles { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:197](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L197) |  |
+| <code>[JsonPropertyName(&quot;processedFiles&quot;)] public int ProcessedFiles { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:200](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L200) |  |
+| <code>[JsonPropertyName(&quot;verifiedFiles&quot;)] public int VerifiedFiles { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:203](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L203) |  |
+| <code>[JsonPropertyName(&quot;failedFiles&quot;)] public int FailedFiles { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:206](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L206) |  |
+| <code>[JsonPropertyName(&quot;progressPercent&quot;)] public float ProgressPercent { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:209](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L209) |  |
+| <code>[JsonPropertyName(&quot;estimatedTimeRemainingSeconds&quot;)] public int? EstimatedTimeRemainingSeconds { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:212](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L212) |  |
+| <code>[JsonPropertyName(&quot;filesPerSecond&quot;)] public float FilesPerSecond { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:215](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L215) |  |
+| <code>[JsonPropertyName(&quot;errors&quot;)] public string[]? Errors { get; set; }</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:218](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L218) |  |
+
+## VerificationJobStatus
+
+Qualified name: <code>Meridian.Contracts.Archive.VerificationJobStatus</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:50](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L50).
+
+Verification job status constants.
+
+```csharp
+public static class VerificationJobStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:52](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L52) |  |
+| <code>public const string Running = &quot;Running&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:53](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L53) |  |
+| <code>public const string Completed = &quot;Completed&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:54](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L54) |  |
+| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:55](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L55) |  |
+| <code>public const string Cancelled = &quot;Cancelled&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:56](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L56) |  |
+
+## VerificationJobType
+
+Qualified name: <code>Meridian.Contracts.Archive.VerificationJobType</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:40](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L40).
+
+Verification job type constants.
+
+```csharp
+public static class VerificationJobType
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Full = &quot;Full&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:42](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L42) |  |
+| <code>public const string Incremental = &quot;Incremental&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:43](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L43) |  |
+| <code>public const string Selective = &quot;Selective&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:44](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L44) |  |
+
+## VerificationScheduleConfig
+
+Qualified name: <code>Meridian.Contracts.Archive.VerificationScheduleConfig</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:224](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L224).
+
+Scheduled verification configuration.
+
+```csharp
+public sealed class VerificationScheduleConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; } = true;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:227](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L227) |  |
+| <code>[JsonPropertyName(&quot;dailyVerificationTime&quot;)] public string DailyVerificationTime { get; set; } = &quot;03:00&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:230](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L230) |  |
+| <code>[JsonPropertyName(&quot;dailyVerificationScope&quot;)] public string DailyVerificationScope { get; set; } = &quot;Last7Days&quot;;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:233](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L233) |  |
+| <code>[JsonPropertyName(&quot;weeklyFullVerificationDay&quot;)] public int WeeklyFullVerificationDay { get; set; } = 0;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:236](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L236) |  |
+| <code>[JsonPropertyName(&quot;monthlyFullVerificationDay&quot;)] public int MonthlyFullVerificationDay { get; set; } = 1;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:239](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L239) |  |
+| <code>[JsonPropertyName(&quot;pauseDuringMarketHours&quot;)] public bool PauseDuringMarketHours { get; set; } = true;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:242](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L242) |  |
+| <code>[JsonPropertyName(&quot;maxConcurrentVerifications&quot;)] public int MaxConcurrentVerifications { get; set; } = 4;</code> | [src/Meridian.Contracts/Archive/ArchiveHealthModels.cs:245](../../../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs#L245) |  |
+
+## AccountBondHoldingsSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountBondHoldingsSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountBondHoldingsDtos.cs:6](../../../../src/Meridian.Contracts/AssetOperations/AccountBondHoldingsDtos.cs#L6).
+
+Accepted observed positions, retaining the exact full-statement authority.
+
+```csharp
+public sealed record AccountBondHoldingsSnapshotDto(Guid AccountId, DateOnly AsOfDate, Guid BatchId, string SourceContentHash, string EvidenceReference, IReadOnlyList<CustodianPositionLineDto> Positions);
+```
+
+## AccountCashEvidenceRole
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashEvidenceRole</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:10](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L10).
+
+```csharp
+public enum AccountCashEvidenceRole
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Observation</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:10](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L10) |  |
+| <code>Projection</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:10](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L10) |  |
+| <code>DeclaredFx</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:10](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L10) |  |
+
+## AccountCashFlowDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashFlowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:29](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L29).
+
+Signed account cash movement. All three dates are explicit; only CashReceiptDate changes cash. FlowId links an expectation to its observed movement; VersionId identifies the retained source revision.
+
+```csharp
+public sealed record AccountCashFlowDto(string FlowId, string VersionId, string AccountId, string BookId, AccountCashFlowStatus Status, string FlowType, decimal Amount, string Currency, DateOnly? EconomicDate, DateOnly? SettlementDate, DateOnly? CashReceiptDate, AccountCashProvenanceDto Provenance, Guid? SecurityId = null, Guid? ProjectionRunId = null, string? ProjectionEngineVersion = null, Guid? TermsVersionId = null, string? TermsHash = null, string? SupersedesVersionId = null);
+```
+
+## AccountCashFlowStatus
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashFlowStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:9](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L9).
+
+```csharp
+public enum AccountCashFlowStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Expected</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:9](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L9) |  |
+| <code>Actual</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:9](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L9) |  |
+
+## AccountCashForecastIssueDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:98](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L98).
+
+```csharp
+public sealed record AccountCashForecastIssueDto(string Code, string Message, string? InputId = null);
+```
+
 ## AccountCashForecastJsonContext
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext</code>. Kind: `class`.
@@ -637,194 +876,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:10](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L10) |  |
 | <code>public string Schema { get; set; } = &quot;asset_operations&quot;;</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:12](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L12) |  |
-
-## AssetOperationsProjectionDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetOperationsProjectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:266](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L266).
-
-```csharp
-public sealed record AssetOperationsProjectionDto(AssetOperationSubjectDto Subject, IReadOnlyList<AssetTermsVersionDto> TermsHistory, IReadOnlyList<AssetLifecycleEventDto> LifecycleEvents, IReadOnlyList<AssetCashFlowProjectionRunDto> CashFlowProjectionRuns, IReadOnlyList<AssetProjectedCashFlowDto> ProjectedCashFlows, IReadOnlyList<AssetActualActivityDto> ActualActivity, IReadOnlyList<AssetReconciliationRunDto> ReconciliationRuns, IReadOnlyList<AssetReconciliationResultDto> ReconciliationResults, IReadOnlyList<AssetLedgerProjectionDto> LedgerProjections, AssetOperationsReadinessDto Readiness, IReadOnlyList<AssetLifecycleEventDto> WorkflowAudit)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AssetTermsObligationsTimelineDto? TermsObligationsTimeline { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:279](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L279) |  |
-| <code>public IReadOnlyList&lt;InstrumentRoleDto&gt; InstrumentRoles { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:281](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L281) |  |
-| <code>public IReadOnlyList&lt;BookPositionDto&gt; BookPositions { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:283](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L283) |  |
-| <code>public IReadOnlyList&lt;PositionEconomicStateDto&gt; PositionEconomicStates { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:285](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L285) |  |
-| <code>public IReadOnlyList&lt;ProjectionLineageDto&gt; ProjectionLineages { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:287](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L287) |  |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:289](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L289) |  |
-
-## AssetOperationsReadinessDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetOperationsReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:225](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L225).
-
-```csharp
-public sealed record AssetOperationsReadinessDto(Guid SecurityId, string Status, IReadOnlyList<string> Capabilities, IReadOnlyList<string> ReadyCapabilities, IReadOnlyList<string> MissingCapabilities, IReadOnlyList<string> Warnings, DateTimeOffset EvaluatedAt, string SourceDomain, string? SourceEntityId, JsonElement? ExtensionPayload = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:237](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L237) |  |
-
-## AssetOperationSubjectDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetOperationSubjectDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:15](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L15).
-
-```csharp
-public sealed record AssetOperationSubjectDto(Guid SecurityId, string AssetClass, string DisplayName, string? PrimaryIdentifier, IReadOnlyList<string> OperationalProfile);
-```
-
-## AssetOperationsWriteApprovalDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetOperationsWriteApprovalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:292](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L292).
-
-```csharp
-public sealed record AssetOperationsWriteApprovalDto(string Actor, string ApprovalReference, string Rationale, DateTimeOffset ApprovedAt);
-```
-
-## AssetProjectedCashFlowDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetProjectedCashFlowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:69](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L69).
-
-```csharp
-public sealed record AssetProjectedCashFlowDto(Guid ProjectedCashFlowId, Guid ProjectionRunId, Guid SecurityId, int SequenceNumber, string FlowType, DateOnly DueDate, decimal Amount, string Currency, string Status, DateOnly? AccrualStartDate = null, DateOnly? AccrualEndDate = null, decimal? PrincipalBasis = null, decimal? AnnualRate = null, string? SourceDomain = null, string? SourceEntityId = null, JsonElement? ExtensionPayload = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:87](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L87) |  |
-
-## AssetReconciliationResultDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetReconciliationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:121](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L121).
-
-```csharp
-public sealed record AssetReconciliationResultDto(Guid ReconciliationResultId, Guid ReconciliationRunId, Guid SecurityId, string MatchStatus, decimal? ExpectedAmount, decimal? ActualAmount, decimal? VarianceAmount, DateOnly? ExpectedDate, DateOnly? ActualDate, string SourceDomain, string? SourceEntityId, string? EvidenceLink, JsonElement? ExtensionPayload = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:136](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L136) |  |
-
-## AssetReconciliationRunDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetReconciliationRunDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:107](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L107).
-
-```csharp
-public sealed record AssetReconciliationRunDto(Guid ReconciliationRunId, Guid SecurityId, Guid? ProjectionRunId, string Status, DateTimeOffset RequestedAt, DateTimeOffset? CompletedAt, string SourceDomain, string? SourceEntityId, JsonElement? ExtensionPayload = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:118](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L118) |  |
-
-## AssetTermsObligationsTimelineDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetTermsObligationsTimelineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:206](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L206).
-
-```csharp
-public sealed record AssetTermsObligationsTimelineDto(Guid SecurityId, DateOnly ProjectionAsOf, string EngineVersion, string Status, IReadOnlyList<AssetTermsObligationTimelineEventDto> Events, IReadOnlyList<string> Warnings, DateTimeOffset GeneratedAt, string SourceDomain, string? SourceEntityId, JsonElement? ExtensionPayload = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? AssetClass { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:218](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L218) |  |
-| <code>public IReadOnlyList&lt;AssetTimelineVarianceDto&gt; Variances { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:220](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L220) |  |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:222](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L222) |  |
-
-## AssetTermsObligationTimelineEventDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetTermsObligationTimelineEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:157](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L157).
-
-```csharp
-public sealed record AssetTermsObligationTimelineEventDto(Guid TimelineEventId, Guid SecurityId, string EventKind, string EventLane, DateOnly EffectiveDate, DateOnly? PayDate, DateOnly? AccrualStartDate, DateOnly? AccrualEndDate, decimal? ExpectedAmount, decimal? ActualAmount, decimal? VarianceAmount, string Currency, string Status, string SourceDomain, string? SourceEntityId, string? EvidenceLink, string? LedgerReferenceId, string Summary, JsonElement? ExtensionPayload = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? FormulaTrace { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:178](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L178) |  |
-| <code>public string? LedgerReference { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:180](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L180) |  |
-| <code>public string? NextAction { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:182](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L182) |  |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:184](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L184) |  |
-
-## AssetTermsVersionDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetTermsVersionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:22](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L22).
-
-```csharp
-public sealed record AssetTermsVersionDto(Guid TermsVersionId, Guid SecurityId, int VersionNumber, string TermsHash, DateOnly EffectiveDate, DateTimeOffset RecordedAt, string SourceDomain, string? SourceEntityId, string Summary, JsonElement? ExtensionPayload = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:34](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L34) |  |
-
-## AssetTimelineVarianceDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AssetTimelineVarianceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:187](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L187).
-
-```csharp
-public sealed record AssetTimelineVarianceDto(Guid VarianceId, Guid SecurityId, string EventKind, DateOnly ExpectedDate, DateOnly? ActualDate, decimal? ExpectedAmount, decimal? ActualAmount, decimal? VarianceAmount, string Currency, string Status, string SourceDomain, string? SourceEntityId, string Summary, string? EvidenceLink = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:203](../../../../src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs#L203) |  |
-
-## BookPositionDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookPositionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:72](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L72).
-
-```csharp
-public sealed record BookPositionDto(Guid PositionId, Guid SecurityId, Guid RoleId, AccountingBookContextDto BookContext, string PositionSide, string Status, DateOnly EffectiveFrom, DateOnly? EffectiveTo = null, long Version = 1, string? PrimaryAccountId = null, PositionEconomicStateDto? CurrentEconomicState = null, EconomicEventReferenceDto? OriginEvent = null, ProjectionLineageDto? ProjectionLineage = null, IReadOnlyList<string>? EvidenceLinks = null, JsonElement? ExtensionPayload = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:89](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L89) |  |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:91](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L91) |  |

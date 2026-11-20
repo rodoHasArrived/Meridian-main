@@ -5,39 +5,25 @@
 
 ## Overall Coverage
 
-**11661 / 11668** items documented (**99.9%**) &mdash; Grade: **A**
+**11685 / 11685** items documented (**100.0%**) &mdash; Grade: **A**
 
 ```text
-[====================] 99.9%
+[====================] 100.0%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 11055 | 11062 | 99.9% | A |
+| Public Classes / Interfaces | 11079 | 11079 | 100.0% | A |
 | API Endpoints | 448 | 448 | 100.0% | A |
 | Configuration Options | 147 | 147 | 100.0% | A |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
-## Undocumented Items
-
-### Public Classes / Interfaces (7 undocumented)
-
-| Item | Location |
-| ------ | ---------- |
-| `BackfillCloneConflictException` | `src/Meridian.Application/Backfill/BackfillCoordinator.Clone.cs:209` |
-| `BondHoldingImportService` | `src/Meridian.Application/Integrations/BondHoldingImportService.cs:12` |
-| `ResearchProviderProvenance` | `src/Meridian.Backtesting.Sdk/ResearchProviderProvenance.cs:7` |
-| `QualityTopErrorSymbolResponse` | `src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:173` |
-| `ProviderProvenanceSymbolPriority` | `src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:77` |
-| `ProviderProvenanceLabels` | `src/Meridian.Contracts/Operations/ProviderProvenanceReceipt.cs:94` |
-| `RetainedBackfillResult` | `src/Meridian.Storage/Backfill/BackfillStatusStore.cs:571` |
-
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7 undocumented type(s). Add entries to `docs/reference/api-reference.md` for the most important ones.
+1. All categories are fully documented. Great job!
 
 ---
 

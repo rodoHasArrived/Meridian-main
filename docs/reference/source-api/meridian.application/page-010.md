@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterImportProgress
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterImportProgress</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L22).
+
+Progress update for ongoing Security Master imports.
+
+```csharp
+public sealed record SecurityMasterImportProgress(int Total, int Processed, int Imported, int Failed);
+```
+
+## SecurityMasterImportResult
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterImportResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L12).
+
+Defines the import result for bulk Security Master imports.
+
+```csharp
+public sealed record SecurityMasterImportResult(int Imported, int Skipped, int Failed, int ConflictsDetected, IReadOnlyList<string> Errors);
+```
+
 ## SecurityMasterImportService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterImportService</code>. Kind: `class`.
@@ -1035,44 +1059,3 @@ Declared public members:
 | <code>public string ModelKey =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:27](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L27) |  |
 | <code>public string ModelVersion =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:29](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L29) |  |
 | <code>public async Task&lt;SecurityValuationResult&gt; ValueAsync(SecurityValuationRequest request, SecurityDetailDto security, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:31](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L31) |  |
-
-## SecurityValuationService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Valuation.SecurityValuationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs:12](../../../../src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs#L12).
-
-Dispatches a valuation request to the registered ISecurityValuationModel whose kind the request names, or failing that the kind the asset class declares as its SecurityAssetClassDescriptor.DefaultValuationModel. The dispatch reads the catalog fact, never the class name.
-
-```csharp
-public sealed class SecurityValuationService : ISecurityValuationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityValuationService(ISecurityMasterQueryService queryService, IEnumerable&lt;ISecurityValuationModel&gt; models, ILogger&lt;SecurityValuationService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs:20](../../../../src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs#L20) |  |
-| <code>public async Task&lt;SecurityValuationResult?&gt; ValueAsync(SecurityValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs:42](../../../../src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs#L42) |  |
-
-## AutoConfigurationService
-
-Qualified name: <code>Meridian.Application.Services.AutoConfigurationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:15](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L15).
-
-Service for automatic configuration based on available credentials and environment. Implements user-friendly auto-detection and configuration of data providers.
-
-```csharp
-public sealed class AutoConfigurationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;DetectedProvider&gt; DetectAvailableProviders();</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:48](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L48) | Detects all available providers based on environment variables. Uses ProviderRegistry as the single source of provider metadata. |
-| <code>public AutoConfigResult AutoConfigure(AppConfig? existingConfig = null);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:75](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L75) | Auto-configures the application based on detected providers and environment. |
-| <code>public AppConfig GenerateFirstTimeConfig(FirstTimeConfigOptions options);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:142](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L142) | Generates configuration for first-time users with interactive defaults. |
-| <code>public AppConfig ApplyPreset(ConfigPreset preset, AppConfig? existingConfig = null);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:734](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L734) | Applies a role-based configuration preset, setting ~15 config values at once. Presets: Researcher, DayTrader, OptionsTrader, Crypto. |
-| <code>public static IReadOnlyList&lt;ConfigPresetInfo&gt; GetPresetDescriptions() =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:752](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L752) | Lists available presets with descriptions. |
