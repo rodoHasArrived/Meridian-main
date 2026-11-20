@@ -198,7 +198,11 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             symbol,
             operationLabel: "bars",
             candidateSelector: GetOrderedProviders,
-            fetchAsync: (provider, resolved, token) => provider.GetDailyBarsAsync(resolved, from, to, token),
+            fetchAsync: async (provider, resolved, token) =>
+            {
+                var bars = await provider.GetDailyBarsAsync(resolved, from, to, token).ConfigureAwait(false);
+                return BindDailyBars(bars, symbol, resolved, provider.Name);
+            },
             onSuccessAsync: _enableCrossValidation
                 ? (bars, provider, token) => _validator.ValidateAsync(bars, symbol, from, to, provider.Name, token)
                 : null,
@@ -232,8 +236,12 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             candidateSelector: () => GetOrderedProviders().Where(p =>
                 p is IHistoricalAggregateBarProvider aggregateProvider &&
                 aggregateProvider.SupportedGranularities.Contains(granularity)),
-            fetchAsync: (provider, resolved, token) =>
-                ((IHistoricalAggregateBarProvider)provider).GetAggregateBarsAsync(resolved, granularity, from, to, token),
+            fetchAsync: async (provider, resolved, token) =>
+            {
+                var bars = await ((IHistoricalAggregateBarProvider)provider)
+                    .GetAggregateBarsAsync(resolved, granularity, from, to, token).ConfigureAwait(false);
+                return BindAggregateBars(bars, symbol, resolved, provider.Name);
+            },
             onSuccessAsync: null,
             allFailedMessageFactory: summary =>
                 $"All aggregate-capable providers failed for {symbol} ({granularity.ToDisplayName()}): {summary}",
@@ -242,6 +250,39 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             recencyEvaluator: null,
             ct: ct).ConfigureAwait(false);
     }
+
+    // A vendor receives a provider-specific symbol. Restore the request identity when the row
+    // names that verified alias, and attribute unstamped rows to the adapter that returned them.
+    private static IReadOnlyList<HistoricalBar> BindDailyBars(
+        IReadOnlyList<HistoricalBar> bars, string symbol, string resolved, string provider)
+    {
+        if (!bars.Any(bar => NeedsSource(bar.Source) || NeedsSymbol(bar.Symbol, symbol, resolved)))
+            return bars;
+
+        return bars.Select(bar => new HistoricalBar(
+            NeedsSymbol(bar.Symbol, symbol, resolved) ? symbol : bar.Symbol,
+            bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume,
+            NeedsSource(bar.Source) ? provider : bar.Source, bar.SequenceNumber, bar.IsAdjusted)).ToArray();
+    }
+
+    private static IReadOnlyList<AggregateBar> BindAggregateBars(
+        IReadOnlyList<AggregateBar> bars, string symbol, string resolved, string provider)
+    {
+        if (!bars.Any(bar => NeedsSource(bar.Source) || NeedsSymbol(bar.Symbol, symbol, resolved)))
+            return bars;
+
+        return bars.Select(bar => new AggregateBar(
+            NeedsSymbol(bar.Symbol, symbol, resolved) ? symbol : bar.Symbol, bar.StartTime, bar.EndTime,
+            bar.Open, bar.High, bar.Low, bar.Close, bar.Volume, bar.Vwap, bar.TradeCount, bar.Timeframe,
+            NeedsSource(bar.Source) ? provider : bar.Source, bar.SequenceNumber)).ToArray();
+    }
+
+    private static bool NeedsSource(string? source) => string.IsNullOrWhiteSpace(source) ||
+        string.Equals(source, "composite", StringComparison.OrdinalIgnoreCase);
+
+    private static bool NeedsSymbol(string value, string symbol, string resolved) =>
+        !string.Equals(value, symbol, StringComparison.Ordinal) &&
+        string.Equals(value, resolved, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Shared failover skeleton for the daily-bar and aggregate-bar paths: iterate the ordered
