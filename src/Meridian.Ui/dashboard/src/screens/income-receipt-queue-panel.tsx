@@ -73,7 +73,9 @@ function BookReceiptRuns({ book }: { book: LedgerBook }) {
   const activeMutation = useRef<AbortController | null>(null);
   const request = useRef(0);
   const runId = params.get("receiptRunId") || runs?.[0]?.runId || "";
-  const selectRun = (id: string) => { setRun(null); setParams(current => { const next = new URLSearchParams(current); next.set("ledgerBookId", book.ledgerBookId); next.set("receiptRunId", id); return next; }); };
+  // The view only renders matching run IDs. Keep valid evidence when batched choices return
+  // to the current run; the read effect clears it when the selected ID actually changes.
+  const selectRun = (id: string) => { setParams(current => { const next = new URLSearchParams(current); next.set("ledgerBookId", book.ledgerBookId); next.set("receiptRunId", id); return next; }); };
   useEffect(() => () => { request.current++; activeMutation.current?.abort(); }, []);
   useEffect(() => {
     const controller = new AbortController();

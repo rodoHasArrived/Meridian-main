@@ -1,4 +1,5 @@
 import { humanizeIdentifiersInText } from "@/lib/display-labels";
+import { buildSelectedPositionDetail } from "./portfolio-screen.position-detail";
 import { useState } from "react";
 import { resolveKpi } from "@/lib/kpi-registry";
 import { isBondAssetClass } from "@/lib/fixed-income-navigation";
@@ -26,7 +27,6 @@ import {
   pnlFieldTone,
   pnlTone,
   riskFieldTone,
-  riskTone,
   runStatusTone
 } from "@/screens/portfolio-screen.presentation";
 import type {
@@ -2341,54 +2341,6 @@ function modeBadgeVariant(mode: string): "paper" | "live" | "outline" {
   if (mode === "paper") return "paper";
   if (mode === "live") return "live";
   return "outline";
-}
-
-function buildSelectedPositionDetail(
-  position: PortfolioPositionRow,
-  risk: PortfolioRiskState | null,
-  brokerage: PortfolioBrokerageStatus | null,
-  record: RecordIdentity,
-  linkedRef: string
-): PortfolioPositionDetail {
-  const statusTone = position.markFreshness.reviewRequired ? "warning" : riskTone(risk?.state, position.pnlTone);
-  const guardrailSummary = risk?.activeGuardrails.length
-    ? risk.activeGuardrails.map((guardrail) => humanizeIdentifiersInText(guardrail)).join(" · ")
-    : "No active guardrails";
-
-  return {
-    id: position.id,
-    record,
-    linkedRef,
-    title: position.symbol,
-    subtitle: `${position.side} · ${position.quantity} shares`,
-    ariaLabel: `${position.symbol} holding detail`,
-    statusLabel: position.markFreshness.reviewRequired ? "Review required" : risk?.state ?? null,
-    statusTitle: position.markFreshness.reviewRequired ? `${position.symbol} · Review required` : `${position.symbol} selected`,
-    statusDetail: `${position.markFreshness.reason} Recorded: ${position.exposure} exposure with ${position.unrealizedPnl} unrealized P&L. ${risk?.summary ?? "Risk context unavailable."}`,
-    statusTone,
-    fields: [
-      { label: "Side", value: position.side, tone: "default" },
-      { label: "Quantity", value: position.quantity, tone: "default" },
-      { label: "Currency", value: position.currencyFigure.display, tone: "muted" },
-      { label: "Average price", value: position.avgPrice, tone: "muted" },
-      markPriceField(position.markPrice, position.markFreshness),
-      ...markFreshnessFields(position.markFreshness),
-      {
-        label: "Market value",
-        value: position.marketValueFigure.staleLabel ? `${position.marketValue} (${position.marketValueFigure.staleLabel})` : position.marketValue,
-        tone: position.marketValueFigure.stale ? "warning" : "default"
-      },
-      { label: "Weight", value: position.weight, tone: "muted" },
-      { label: "Exposure", value: position.exposure, tone: "default" },
-      { label: "Day P&L", value: position.dayPnl, tone: pnlFieldTone(position.dayPnl) },
-      { label: "Unrealized P&L", value: position.unrealizedPnl, tone: pnlFieldTone(position.unrealizedPnl) },
-      { label: "Risk state", value: risk?.state ?? "Unavailable", tone: riskFieldTone(risk?.state) },
-      { label: "Buying power", value: risk?.buyingPowerUsed ?? "—", tone: "muted" },
-      { label: "Guardrails", value: guardrailSummary, tone: risk?.activeGuardrails.length ? "warning" : "success" },
-      { label: "Brokerage", value: brokerage ? `${brokerage.provider} · ${brokerage.environment}` : "—", tone: "muted" },
-      { label: "Last heartbeat", value: brokerage?.lastHeartbeat ?? "—", tone: "muted" }
-    ]
-  };
 }
 
 function buildSelectedRunDetail(run: PortfolioRunRow, continuity: StrategyRunContinuityDto | null): PortfolioRunDetail {

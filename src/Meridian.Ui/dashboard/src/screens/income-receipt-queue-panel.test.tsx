@@ -82,6 +82,18 @@ describe("book receipt queue", () => {
     await waitFor(() => expect(receipts.getBookReceiptRun).toHaveBeenLastCalledWith("book-1", "backdated", expect.anything()));
     expect(receipts.runBookReceiptQueue).not.toHaveBeenCalled();
   });
+  it("keeps the current retained evidence when rapid run choices return to the same run", async () => {
+    vi.mocked(receipts.getBookReceiptRuns).mockResolvedValue([receiptRun(), receiptRun({ runId: "prior", asOfDate: "2026-11-19", sequence: 0 })]);
+    renderQueue(); await loaded();
+    const selector = screen.getByLabelText("Retained receipt run");
+    act(() => {
+      fireEvent.change(selector, { target: { value: "prior" } });
+      fireEvent.change(selector, { target: { value: "daily-run-1" } });
+    });
+    expect(await loaded()).toHaveTextContent("Atlas 5.25% 2028");
+    expect(selector).toHaveValue("daily-run-1");
+    expect(receipts.runBookReceiptQueue).not.toHaveBeenCalled();
+  });
   it("runs the explicit chosen date once while a command is pending", async () => {
     const pending = deferred<BookReceiptRun>(); vi.mocked(receipts.runBookReceiptQueue).mockReturnValue(pending.promise);
     renderQueue(); await loaded();
