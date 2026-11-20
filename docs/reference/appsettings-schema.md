@@ -74,6 +74,16 @@ and `Tracing.Enabled` alone does not add pipeline metrics instrumentation.
 
 ## Security and Mutation Guardrails
 
+### Required paper bond settlement
+
+Set `PaperTrading:Gateway:RequireBondAccruedInterest` to `true` in the host configuration for
+supported bond demonstrations. The hosted execution gateway rejects face-value fills when
+shared bond analytics cannot supply reconciled clean/dirty prices and accrued interest for
+the exact security and settlement date. Zero accrued interest is valid. The default is `false`,
+preserving legacy clean-only fallback; existing retained fills replay without recalculation.
+This setting does not enable canonical bond paper accounting, short-side settlement treatment,
+or live trading. See the [LOT evidence packet](../testing/evidence/next-work-20261029/bond-lot-golden-case.md).
+
 Before upgrading existing installations, follow the [tenant cutover and backfill runbook](../operators/fund-structure-tenant-backfill.md).
 Unattributed records cause an explicit startup refusal with remediation, rather than an apparently
 empty ledger. A configured posture in the host configuration takes precedence over the fallback
