@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Application.Backfill;
 using Meridian.Application.Scheduling;
@@ -14,6 +15,7 @@ using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 using Xunit;
 using BackfillCoordinator = Meridian.Application.Backfill.BackfillCoordinator;
 using BackfillExecutionContractProjection = Meridian.Ui.Shared.Services.BackfillExecutionContractProjection;
@@ -37,9 +39,12 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
             .AddSharedResiliencePolicy();
         using var httpServices = services.BuildServiceProvider();
         using var client = httpServices.GetRequiredService<IHttpClientFactory>().CreateClient(HttpClientNames.StooqHistorical);
-        using var registry = new ProviderRegistry();
-        registry.Register(ProviderRuntimeProvenance.Attach(new MeteredProvider(client), new TenantCredentialContext(Tenant)));
         var store = await CreateConfigAsync(new(ReserveHeadroomPercent: 50, MaxConcurrentRequests: 1));
+        var clock = new QuotaClock();
+        var window = TimeSpan.FromMinutes(1);
+        using var budget = new RateLimiter(2, window, timeProvider: clock);
+        using var registry = new ProviderRegistry();
+        registry.Register(ProviderRuntimeProvenance.Attach(new MeteredProvider(client, budget), new TenantCredentialContext(Tenant)));
         using var coordinator = new BackfillCoordinator(store, registry);
         var history = new BackfillExecutionHistory(HistoryPath);
         using var queue = new WorkstationBackfillQueue(coordinator, history, NullLogger<WorkstationBackfillQueue>.Instance);
@@ -73,6 +78,8 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
         try
         {
             using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            (await clock.ReleaseNextWaitAsync(deadline.Token)).Should().Be(window);
+            (await clock.ReleaseNextWaitAsync(deadline.Token)).Should().Be(window);
             while (history.GetExecution(submitted.ExecutionId)?.CompletedAt is null)
                 await Task.Delay(20, deadline.Token);
 
@@ -113,11 +120,10 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
         receipt.RequestVariance.Should().Be(1);
         receipt.DurationVarianceSeconds.Should().Be(receipt.ActualDurationSeconds - submitted.Quota.EstimatedDurationSeconds);
         receipt.ThrottlingEvents.Should().Contain(e => e.Reason == "provider-rate-limit" && e.WaitSeconds >= 1);
-        receipt.ThrottlingEvents.Should().Contain(e => e.Reason == "quota-admission");
+        receipt.ThrottlingEvents.Should().Contain(e => e.Reason == "quota-admission" && e.WaitSeconds == window.TotalSeconds);
         var dispatches = responses.Dispatched.ToArray();
         dispatches.Should().HaveCount(3);
         Stopwatch.GetElapsedTime(dispatches[0], dispatches[1]).Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(950));
-        Stopwatch.GetElapsedTime(dispatches[1], dispatches[2]).Should().BeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(350));
 
         var projected = BackfillExecutionContractProjection.Build([completed], "stooq").Executions.Single();
         projected.QuotaReceipt!.ActualRequests.Should().Be(3);
@@ -202,6 +208,28 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
     }
 
     public void Dispose() => Directory.Delete(_root, recursive: true);
+
+    private sealed class QuotaClock : TimeProvider
+    {
+        private readonly FakeTimeProvider _clock = new(DateTimeOffset.UtcNow);
+        private readonly Channel<TimeSpan> _admissionWaits = Channel.CreateUnbounded<TimeSpan>();
+
+        public override DateTimeOffset GetUtcNow() => _clock.GetUtcNow();
+
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            var timer = _clock.CreateTimer(callback, state, dueTime, period);
+            _admissionWaits.Writer.TryWrite(dueTime);
+            return timer;
+        }
+
+        public async Task<TimeSpan> ReleaseNextWaitAsync(CancellationToken ct)
+        {
+            var wait = await _admissionWaits.Reader.ReadAsync(ct);
+            _clock.Advance(wait);
+            return wait;
+        }
+    }
 
     private sealed class TenantCredentialContext(string tenantId) : ICredentialContext
     {

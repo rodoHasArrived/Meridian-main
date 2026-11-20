@@ -976,6 +976,132 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlBookPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDestination"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDocumentProgress"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlErrorCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlLineReceipt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlLineStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlMappingVersion"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPackageListItem"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingDecision"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingDocument"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingLine"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPackage"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPayload"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPurpose"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingScope"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlProviderReceipt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlReceiptKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlReceiptObservation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlSourceCheckpoint"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.IExternalGlConfirmationGate"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Api.ApiEndpointDefaults"
     },
     {
@@ -27628,6 +27754,132 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlBookPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDestination"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDocumentProgress"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlErrorCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlLineReceipt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlLineStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlMappingVersion"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPackageListItem"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingDecision"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingDocument"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingLine"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPackage"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPayload"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPurpose"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingScope"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlProviderReceipt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlReceiptKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlReceiptObservation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlSourceCheckpoint"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.AccountingSystem.IExternalGlConfirmationGate"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AccountingActionAuditEventDto"
     },
     {
@@ -35194,6 +35446,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemMappingProfileUpsertRequestDto",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDestination"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.AccountingSystemMappingProfileUpsertRequestDto",
       "target": "contract:Meridian.Contracts.Ledger.ExternalGlMappingProfileDto"
     },
     {
@@ -35375,6 +35633,150 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AccountingSystem.CertifyAccountingSystemExportPackageRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlBookPolicy",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDestination"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDocumentProgress",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDocumentProgress",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlReceiptObservation"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlLineReceipt",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlErrorCode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlLineReceipt",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlLineStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlMappingVersion",
+      "target": "contract:Meridian.Contracts.Ledger.ExternalGlMappingProfileDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPackageListItem",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPurpose"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPackageListItem",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingDocument",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingLine"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingLine",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPackage",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDocumentProgress"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPackage",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingDecision"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPackage",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPayload"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPackage",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPayload",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDestination"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPayload",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlMappingVersion"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPayload",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingDocument"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPayload",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPurpose"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPayload",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingScope"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPayload",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlSourceCheckpoint"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlProviderReceipt",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlErrorCode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlProviderReceipt",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlLineReceipt"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlProviderReceipt",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlReceiptKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AccountingSystem.ExternalGlReceiptObservation",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlProviderReceipt"
     },
     {
       "kind": "contract-reference",
@@ -44909,6 +45311,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ExternalGlExportPackageManifestDto",
       "target": "contract:Meridian.Contracts.Ledger.ExternalGlExportReconciliationSafeguardStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ExternalGlMappingProfileDto",
+      "target": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDestination"
     },
     {
       "kind": "contract-reference",
@@ -62641,6 +63049,176 @@
       "target": "database:ledger.ledger_books_pkey"
     },
     {
+      "constraint": "external_gl_book_policy_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.external_gl_book_policy",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_book_policy_ledger_book_id_fkey on ledger.external_gl_book_policy",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_book_policy_ledger_book_id_fkey on ledger.external_gl_book_policy",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "constraint": "external_gl_mapping_profiles_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.external_gl_mapping_profiles",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_mapping_profiles_ledger_book_id_fkey on ledger.external_gl_mapping_profiles",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_mapping_profiles_ledger_book_id_fkey on ledger.external_gl_mapping_profiles",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "constraint": "external_gl_posting_decisions_package_id_fkey",
+      "kind": "foreign-key",
+      "label": "package_id",
+      "source": "database:ledger.external_gl_posting_decisions",
+      "target": "database:ledger.external_gl_posting_packages"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_decisions_decision_kind_check on ledger.external_gl_posting_decisions",
+      "target": "database:ledger.external_gl_posting_decisions.decision_kind"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_decisions_package_id_fkey on ledger.external_gl_posting_decisions",
+      "target": "database:ledger.external_gl_posting_packages.package_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_decisions_package_id_fkey on ledger.external_gl_posting_decisions",
+      "target": "database:ledger.external_gl_posting_packages_pkey"
+    },
+    {
+      "constraint": "external_gl_posting_outbox_package_id_fkey",
+      "kind": "foreign-key",
+      "label": "package_id",
+      "source": "database:ledger.external_gl_posting_outbox",
+      "target": "database:ledger.external_gl_posting_packages"
+    },
+    {
+      "constraint": "external_gl_posting_outbox_journal_entry_id_fkey",
+      "kind": "foreign-key",
+      "label": "journal_entry_id",
+      "source": "database:ledger.external_gl_posting_outbox",
+      "target": "database:ledger.journal_entries"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_outbox_journal_entry_id_fkey on ledger.external_gl_posting_outbox",
+      "target": "database:ledger.journal_entries.journal_entry_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_outbox_journal_entry_id_fkey on ledger.external_gl_posting_outbox",
+      "target": "database:ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_outbox_package_id_fkey on ledger.external_gl_posting_outbox",
+      "target": "database:ledger.external_gl_posting_packages.package_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_outbox_package_id_fkey on ledger.external_gl_posting_outbox",
+      "target": "database:ledger.external_gl_posting_packages_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_outbox_post_attempts_check on ledger.external_gl_posting_outbox",
+      "target": "database:ledger.external_gl_posting_outbox.post_attempts"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_outbox_status_check on ledger.external_gl_posting_outbox",
+      "target": "database:ledger.external_gl_posting_outbox.status"
+    },
+    {
+      "constraint": "external_gl_posting_packages_period_id_fkey",
+      "kind": "foreign-key",
+      "label": "period_id",
+      "source": "database:ledger.external_gl_posting_packages",
+      "target": "database:ledger.accounting_periods"
+    },
+    {
+      "constraint": "external_gl_posting_packages_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.external_gl_posting_packages",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_packages_ledger_book_id_fkey on ledger.external_gl_posting_packages",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_packages_ledger_book_id_fkey on ledger.external_gl_posting_packages",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_packages_period_id_fkey on ledger.external_gl_posting_packages",
+      "target": "database:ledger.accounting_periods.period_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_packages_period_id_fkey on ledger.external_gl_posting_packages",
+      "target": "database:ledger.accounting_periods_pkey"
+    },
+    {
+      "constraint": "external_gl_posting_receipts_idempotency_key_fkey",
+      "kind": "foreign-key",
+      "label": "idempotency_key",
+      "source": "database:ledger.external_gl_posting_receipts",
+      "target": "database:ledger.external_gl_posting_outbox"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_receipts_idempotency_key_fkey on ledger.external_gl_posting_receipts",
+      "target": "database:ledger.external_gl_posting_outbox.idempotency_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.external_gl_posting_receipts_idempotency_key_fkey on ledger.external_gl_posting_receipts",
+      "target": "database:ledger.external_gl_posting_outbox_pkey"
+    },
+    {
       "constraint": "fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey",
       "kind": "foreign-key",
       "label": "ledger_book_id, fiscal_year, supersedes_receipt_id",
@@ -69186,6 +69764,54 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.external_gl_book_policy"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.external_gl_mapping_profiles"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.external_gl_mapping_profiles_revision_seq"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.external_gl_posting_decisions"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.external_gl_posting_outbox"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.external_gl_posting_packages"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.external_gl_posting_receipts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.external_gl_posting_receipts_observation_id_seq"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.fiscal_year_close_receipts"
     },
     {
@@ -70514,7 +71140,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "a60ee0f3f4da66abdfca3c942a0070b99fffac57ec9aaf61bb3a84797ac2d429",
+  "fingerprint": "f84c69e8641f8e4baac35db79b17e24c4f6ab91dcac980fcd446b5802af2f3a9",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -71538,6 +72164,132 @@
       "id": "contract:Meridian.Contracts.AccountingSystem.CertifyAccountingSystemExportPackageRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AccountingSystem.CertifyAccountingSystemExportPackageRequestDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlBookPolicy",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlBookPolicy"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDestination",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlDestination"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlDocumentProgress",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlDocumentProgress"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlErrorCode",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlErrorCode"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlLineReceipt",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlLineReceipt"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlLineStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlLineStatus"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlMappingVersion",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlMappingVersion"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPackageListItem",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlPackageListItem"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingDecision",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlPostingDecision"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingDocument",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlPostingDocument"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingLine",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlPostingLine"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPackage",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlPostingPackage"
+    },
+    {
+      "classification": "payload",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPayload",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlPostingPayload"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingPurpose",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlPostingPurpose"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingScope",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlPostingScope"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlPostingStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlPostingStatus"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlProviderReceipt",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlProviderReceipt"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlReceiptKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlReceiptKind"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlReceiptObservation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlReceiptObservation"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.AccountingSystem.ExternalGlSourceCheckpoint",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.ExternalGlSourceCheckpoint"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.AccountingSystem.IExternalGlConfirmationGate",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AccountingSystem.IExternalGlConfirmationGate"
     },
     {
       "classification": "class",
@@ -96992,6 +97744,144 @@
       "label": "ledger.entity_controlled_close_authorization_ledger_book_id_fkey on ledger.entity_controlled_close_authorization"
     },
     {
+      "id": "database:ledger.external_gl_book_policy",
+      "kind": "database-table",
+      "label": "ledger.external_gl_book_policy",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.external_gl_book_policy_ledger_book_id_fkey on ledger.external_gl_book_policy",
+      "kind": "database-object",
+      "label": "ledger.external_gl_book_policy_ledger_book_id_fkey on ledger.external_gl_book_policy"
+    },
+    {
+      "id": "database:ledger.external_gl_mapping_profiles",
+      "kind": "database-table",
+      "label": "ledger.external_gl_mapping_profiles",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.external_gl_mapping_profiles_ledger_book_id_fkey on ledger.external_gl_mapping_profiles",
+      "kind": "database-object",
+      "label": "ledger.external_gl_mapping_profiles_ledger_book_id_fkey on ledger.external_gl_mapping_profiles"
+    },
+    {
+      "id": "database:ledger.external_gl_mapping_profiles_revision_seq",
+      "kind": "database-sequence",
+      "label": "ledger.external_gl_mapping_profiles_revision_seq",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_decisions",
+      "kind": "database-table",
+      "label": "ledger.external_gl_posting_decisions",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_decisions.decision_kind",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_decisions.decision_kind"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_decisions_decision_kind_check on ledger.external_gl_posting_decisions",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_decisions_decision_kind_check on ledger.external_gl_posting_decisions"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_decisions_package_id_fkey on ledger.external_gl_posting_decisions",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_decisions_package_id_fkey on ledger.external_gl_posting_decisions"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_outbox",
+      "kind": "database-table",
+      "label": "ledger.external_gl_posting_outbox",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_outbox.idempotency_key",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_outbox.idempotency_key"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_outbox.post_attempts",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_outbox.post_attempts"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_outbox.status",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_outbox.status"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_outbox_journal_entry_id_fkey on ledger.external_gl_posting_outbox",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_outbox_journal_entry_id_fkey on ledger.external_gl_posting_outbox"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_outbox_package_id_fkey on ledger.external_gl_posting_outbox",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_outbox_package_id_fkey on ledger.external_gl_posting_outbox"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_outbox_pkey",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_outbox_pkey"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_outbox_post_attempts_check on ledger.external_gl_posting_outbox",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_outbox_post_attempts_check on ledger.external_gl_posting_outbox"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_outbox_status_check on ledger.external_gl_posting_outbox",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_outbox_status_check on ledger.external_gl_posting_outbox"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_packages",
+      "kind": "database-table",
+      "label": "ledger.external_gl_posting_packages",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_packages.package_id",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_packages.package_id"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_packages_ledger_book_id_fkey on ledger.external_gl_posting_packages",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_packages_ledger_book_id_fkey on ledger.external_gl_posting_packages"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_packages_period_id_fkey on ledger.external_gl_posting_packages",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_packages_period_id_fkey on ledger.external_gl_posting_packages"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_packages_pkey",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_packages_pkey"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_receipts",
+      "kind": "database-table",
+      "label": "ledger.external_gl_posting_receipts",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_receipts_idempotency_key_fkey on ledger.external_gl_posting_receipts",
+      "kind": "database-object",
+      "label": "ledger.external_gl_posting_receipts_idempotency_key_fkey on ledger.external_gl_posting_receipts"
+    },
+    {
+      "id": "database:ledger.external_gl_posting_receipts_observation_id_seq",
+      "kind": "database-sequence",
+      "label": "ledger.external_gl_posting_receipts_observation_id_seq",
+      "schema": "ledger"
+    },
+    {
       "id": "database:ledger.fiscal_year_close_receipts",
       "kind": "database-table",
       "label": "ledger.fiscal_year_close_receipts",
@@ -103653,11 +104543,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4327,
-    "contract_set_memberships": 5679,
-    "edges": 11714,
-    "foreign_keys": 213,
+    "contract_references": 4353,
+    "contract_set_memberships": 5721,
+    "edges": 11817,
+    "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5765
+    "nodes": 5812
   }
 }

@@ -190,6 +190,52 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapExportEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs#L24) |  |
 
+## ExternalGlPostingEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExternalGlPostingEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L15).
+
+```csharp
+public static class ExternalGlPostingEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapExternalGlPostingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L17) |  |
+
+## ExternalGlDecisionRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExternalGlPostingEndpoints.ExternalGlDecisionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs:140](../../../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L140).
+
+```csharp
+public sealed record ExternalGlDecisionRequest(bool Approve, string PayloadHash, string Notes, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## ExternalGlPolicyRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExternalGlPostingEndpoints.ExternalGlPolicyRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs:133](../../../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L133).
+
+```csharp
+public sealed record ExternalGlPolicyRequest(string ProviderId, string ConnectionId, bool ConfirmationRequired, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## ExternalGlPrepareRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExternalGlPostingEndpoints.ExternalGlPrepareRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs:136](../../../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L136).
+
+```csharp
+public sealed record ExternalGlPrepareRequest(string? MappingProfileId, IReadOnlyList<Guid>? JournalIds, string Rationale, ExternalGlPostingPurpose Purpose = ExternalGlPostingPurpose.Export, string? PredecessorPackageId = null, Guid? PredecessorPeriodId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
 ## FailoverEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.FailoverEndpoints</code>. Kind: `class`.
@@ -1171,75 +1217,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddMeridianApiProblemDetails(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiProblemDetailsServiceCollectionExtensions.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProblemDetails/MeridianApiProblemDetailsServiceCollectionExtensions.cs#L16) | Adds the RFC 7807 services used by the shared UI endpoint surface. Hosts should call UseExceptionHandler() after building the application. |
-
-## MessagingEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.MessagingEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs#L17).
-
-Extension methods for registering messaging and notification API endpoints. Wired to the actual DailySummaryWebhook and ConnectionStatusWebhook services.
-
-```csharp
-public static class MessagingEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapMessagingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs#L19) |  |
-
-## MoneyMarketFundEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.MoneyMarketFundEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs#L15).
-
-Minimal API endpoint group for money market fund reference data, liquidity projections, sweep profiles, fund-family views, and rebuild orchestration.
-
-```csharp
-public static class MoneyMarketFundEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapMoneyMarketFundEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs#L19) |  |
-
-## MoneyMarketFundReferenceEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.MoneyMarketFundReferenceEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs#L15).
-
-Maps money-market fund reference queries to HTTP endpoints.
-
-```csharp
-public static class MoneyMarketFundReferenceEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapMoneyMarketFundReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs#L17) |  |
-
-## MonitoringEndpointExemptions
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.MonitoringEndpointExemptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs#L7).
-
-Canonical unauthenticated lifecycle and scrape surface. Matching is exact (apart from a trailing slash) so comprehensive or nested health routes remain governed.
-
-```csharp
-public static class MonitoringEndpointExemptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsExempt(string path) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs#L15) |  |

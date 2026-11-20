@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunReviewPacketService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunReviewPacketService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:13](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L13).
+
+Builds a single review packet for Strategy, Trading, and Accounting to inspect the same run, portfolio, ledger, reconciliation, brokerage, and coverage evidence.
+
+```csharp
+public sealed class StrategyRunReviewPacketService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunReviewPacketService(StrategyRunReadService runReadService, StrategyRunContinuityService continuityService, IServiceProvider services, ILogger&lt;StrategyRunReviewPacketService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:20](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L20) |  |
+| <code>public Task&lt;StrategyRunReviewPacketDto?&gt; GetAsync(string runId, Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:32](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L32) |  |
+| <code>public Task&lt;StrategyRunReviewPacketDto?&gt; GetAsync(string runId, StrategyRunReadScope scope, Guid? fundAccountId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:38](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L38) |  |
+
+## SyncAccountSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SyncAccountSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:12](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L12).
+
+```csharp
+public sealed record SyncAccountSnapshot(string AccountId, string Counterparty, string Currency, decimal ClosingBalance, decimal NetDelta, DateOnly BusinessDate, bool IsComplete);
+```
+
+## SyncValidationIssue
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SyncValidationIssue</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:21](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L21).
+
+```csharp
+public sealed record SyncValidationIssue(string Code, string Message, string Severity);
+```
+
+## SyncValidationResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SyncValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:23](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L23).
+
+```csharp
+public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncValidationIssue> Issues);
+```
+
 ## ThreeWayAdjustmentDraftService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayAdjustmentDraftService</code>. Kind: `class`.
@@ -409,7 +459,7 @@ public sealed record WorkstationPersonalTableViewRecord(string TenantId, string 
 
 Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:88](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L88).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:89](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L89).
 
 Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
 
@@ -421,8 +471,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:90](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L90) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1614](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1614) |  |
+| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:91](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L91) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1632](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1632) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -876,43 +926,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L10) |  |
 | <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L12) |  |
-
-## OperatorPreferenceRecord
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:350](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L350).
-
-```csharp
-public sealed record OperatorPreferenceRecord(string OperatorKey, OperatorPreferenceValuesDto Preferences, DateTimeOffset UpdatedAt);
-```
-
-## OperatorPreferenceSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:352](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L352).
-
-```csharp
-public sealed record OperatorPreferenceSnapshot(int Version, IReadOnlyList<OperatorPreferenceRecord> Operators);
-```
-
-## OperatorScopePreferenceRecord
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorScopePreferenceRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:143](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L143).
-
-```csharp
-public sealed record OperatorScopePreferenceRecord(string OperatorKey, OperatingScopeValuesDto DefaultScope, DateTimeOffset UpdatedAt);
-```
-
-## OperatorScopePreferenceSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorScopePreferenceSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:145](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L145).
-
-```csharp
-public sealed record OperatorScopePreferenceSnapshot(int Version, IReadOnlyList<OperatorScopePreferenceRecord> Operators);
-```

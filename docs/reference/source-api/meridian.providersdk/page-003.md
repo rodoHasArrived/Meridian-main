@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IExternalGlPostingProvider
+
+Qualified name: <code>Meridian.ProviderSdk.AccountingSystem.IExternalGlPostingProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:6](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L6).
+
+Posts immutable, balanced Meridian documents and resolves their outcome by deterministic key.
+
+```csharp
+public interface IExternalGlPostingProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string ProviderId { get; }</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:8](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L8) |  |
+| <code>Task&lt;ExternalGlDestination&gt; ResolveDestinationAsync(string tenantId, string connectionId, CancellationToken ct);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:11](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L11) | Resolves a verified, explicitly owned connection without falling back to provider-wide credentials. |
+| <code>void ValidateDocument(ExternalGlPostingDocument document);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:14](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L14) | Checks that a document can be represented losslessly before operator review. |
+| <code>Task&lt;ExternalGlProviderReceipt&gt; PostAsync(string tenantId, ExternalGlDestination destination, ExternalGlPostingDocument document, CancellationToken ct);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:17](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L17) | Creates a document using its retained idempotency key on every attempt. |
+| <code>Task&lt;ExternalGlProviderReceipt&gt; FindAsync(string tenantId, ExternalGlDestination destination, ExternalGlPostingDocument document, CancellationToken ct);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:25](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L25) | Queries by the Meridian idempotency key or by its deterministic searchable provider reference. Return NotFound only after a successful, conclusive lookup. Replays after an ambiguous create use the exact same document and key, which the provider must deduplicate. |
+
 ## IBDataLineage
 
 Qualified name: <code>Meridian.ProviderSdk.IBDataLineage</code>. Kind: `record`.
@@ -872,15 +894,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public decimal? BidSize { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderDataReadService.cs:100](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L100) | Bid-side size when the tick carries per-side quantities (for example BID_ASK). |
 | <code>public decimal? AskSize { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderDataReadService.cs:103](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L103) | Ask-side size when the tick carries per-side quantities (for example BID_ASK). |
-
-## ProviderInstrument
-
-Qualified name: <code>Meridian.ProviderSdk.ProviderInstrument</code>. Kind: `record`.
-
-Source: [src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs:13](../../../../src/Meridian.ProviderSdk/IProviderInstrumentDiscoveryService.cs#L13).
-
-Provider-neutral instrument identity returned by discovery.
-
-```csharp
-public sealed record ProviderInstrument(string Symbol, string Name, string AssetClass, string? Exchange, string? Currency, string? ProviderInstrumentId, ProviderDataProvenance Provenance);
-```

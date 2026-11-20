@@ -1,3 +1,5 @@
+using Meridian.Storage.Ledger;
+using Meridian.Contracts.AccountingSystem;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -54,6 +56,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
     };
 
     private readonly IAccountingCloseManagementService? _closeManagementService;
+    private readonly IExternalGlConfirmationGate? _externalGl;
     private readonly object _readGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly string? _persistencePath;
@@ -66,10 +69,12 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
     public AccountingReportPackageService(
         IAccountingCloseManagementService? closeManagementService,
-        StorageOptions storageOptions)
+        StorageOptions storageOptions,
+        IExternalGlConfirmationGate? externalGl = null)
         : this(closeManagementService)
     {
         ArgumentNullException.ThrowIfNull(storageOptions);
+        _externalGl = externalGl;
         _persistencePath = Path.Combine(storageOptions.RootPath, "accounting", "accounting-report-packages.json");
     }
 
@@ -589,6 +594,22 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 "The close period is not locked; close-backed report package certification is blocked.",
                 closePlan.ClosePlanId,
                 "Lock the period after close approvals before final report certification."));
+        }
+
+        if (_externalGl is not null && package.FinancialStatements.LedgerBookId is { } bookId)
+        {
+            try
+            {
+                if (Guid.TryParse(closePlan.PeriodId, out var periodId))
+                    await _externalGl.RequireConfirmationAsync(bookId, periodId, ct).ConfigureAwait(false);
+                else
+                    await _externalGl.RequireConfirmationForRangeAsync(bookId, closePlan.PeriodStart, closePlan.PeriodEnd, ct).ConfigureAwait(false);
+            }
+            catch (LedgerPeriodTransitionException exception)
+            {
+                issues.Add(new AccountingConfigurationValidationIssueDto("ExternalGlConfirmationRequired",
+                    AccountingConfigurationValidationSeverityDto.Critical, exception.Message));
+            }
         }
 
         return issues;
