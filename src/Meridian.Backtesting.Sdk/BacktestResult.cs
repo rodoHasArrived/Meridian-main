@@ -123,9 +123,10 @@ public sealed record BacktestResult(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public BacktestCanonicalActionSnapshot? CanonicalCorporateActions { get; init; }
 
-    /// <summary>Includes the resolved source snapshot in the completed experiment's identity.</summary>
+    /// <summary>Includes observed replay and action evidence in the completed experiment's identity.</summary>
     public ExecutionRealismDescriptor ToResolvedRealismDescriptor() => Request.ToRealismDescriptor() with
     {
-        CorporateActionSnapshotHash = CanonicalCorporateActions?.ContentHash
+        CorporateActionSnapshotHash = CanonicalCorporateActions?.ContentHash,
+        SourceMixHash = EngineMetadata?.InputCoverage?.SourceMixHash
     };
 }

@@ -279,9 +279,43 @@ public sealed partial class StrategyRunReadService
             GovernanceHooks: BuildGovernanceHooks(run, promotionLookup),
             BiasDisclosure: MapBiasDisclosure(run.Metrics?.BiasDisclosure))
         {
+            ReplayProvenance = BuildReplayProvenance(run),
             EvidenceLoop = BuildEvidenceLoop(run),
             AcceptanceChecklist = BuildAcceptanceChecklist(run, promotionLookup, promotionTargetRun, scope)
         };
+    }
+
+    private static StrategyRunReplayProvenanceDto? BuildReplayProvenance(StrategyRunEntry run)
+    {
+        if (run.Metrics is not { EngineMetadata.InputCoverage: { } coverage })
+            return null;
+
+        var sourceMixHash = coverage.SourceMixHash;
+        if (sourceMixHash is null && coverage.Revisions.Count == 0)
+            return null;
+
+        string? completedInputHash = null;
+        if (sourceMixHash is not null)
+        {
+            // Keep the admitted lifecycle identity stable. The completed fingerprint binds the
+            // sources observed during replay, which are unavailable when a run is admitted.
+            var completed = run with
+            {
+                ExecutionRealism = (run.ExecutionRealism ?? run.Metrics.ToResolvedRealismDescriptor()) with
+                {
+                    SourceMixHash = sourceMixHash
+                }
+            };
+            completedInputHash = completed.FundAccountId.HasValue
+                ? StrategyRunEntry.ComputeAccountBoundInputHash(completed)
+                : StrategyRunEntry.ComputeRealismBoundInputHash(completed);
+        }
+
+        return new StrategyRunReplayProvenanceDto(
+            coverage.SourceMix?.Select(static row => new StrategyRunReplaySourceCountDto(row.Symbol, row.Source, row.Bars)).ToArray() ?? [],
+            coverage.Revisions.Select(static row => new StrategyRunReplayRevisionDto(
+                row.RevisionId, row.ContentHash, row.ServingProvider, row.Instrument, row.Granularity)).ToArray(),
+            sourceMixHash, completedInputHash);
     }
 
     private async Task<StrategyRunEntry?> GetRunForScopeAsync(
@@ -716,6 +750,7 @@ public sealed partial class StrategyRunReadService
                 CompatibilityWarnings: compatibilityWarnings,
                 ArtifactCompleteness: artifactCompleteness)
             {
+                SourceMixHash = run.Metrics?.EngineMetadata?.InputCoverage?.SourceMixHash,
                 FinancingCoverageStatus = run.Metrics?.EngineMetadata?.FinancingCoverageStatus,
                 RunAttributedMarginInterest = run.Metrics?.EngineMetadata?.RunAttributedMarginInterest
             });
@@ -814,6 +849,7 @@ public sealed partial class StrategyRunReadService
                 CompatibilityWarnings: compatibilityWarnings,
                 ArtifactCompleteness: artifactCompleteness)
             {
+                SourceMixHash = run.Metrics?.EngineMetadata?.InputCoverage?.SourceMixHash,
                 FinancingCoverageStatus = run.Metrics?.EngineMetadata?.FinancingCoverageStatus,
                 RunAttributedMarginInterest = run.Metrics?.EngineMetadata?.RunAttributedMarginInterest
             });

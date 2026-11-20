@@ -30,6 +30,7 @@ import type {
   StrategyRunAcceptanceChecklistItem,
   StrategyRunEvidenceLoop,
   StrategyRunRecord,
+  StrategyRunReplayProvenance,
   StrategyRunReviewPacket,
   StrategyPlotToolPayload,
   StrategyWorkspaceResponse,
@@ -308,6 +309,8 @@ export interface StrategyRunDetailState {
   closeButtonLabel: string;
   closeButtonAriaLabel: string;
   biasDisclosure: import("@/types/workstation-6").BiasDisclosure | null;
+  replayProvenance: StrategyRunReplayProvenance | null;
+  replayEvidenceLoading: boolean;
   acceptanceCriteriaLabel: string;
   acceptanceCriteria: string[];
   acceptanceCriteriaStatus: StrategyRunEvidenceLoadStatus;
@@ -740,6 +743,7 @@ export function useStrategyRunLibraryViewModel(
 ) {
   const [selectedRun, setSelectedRun] = useState<StrategyRunRecord | null>(null);
   const [selectedRunEvidenceLoop, setSelectedRunEvidenceLoop] = useState<StrategyRunEvidenceLoop | null>(null);
+  const [selectedRunReplayProvenance, setSelectedRunReplayProvenance] = useState<StrategyRunReplayProvenance | null>(null);
   const [selectedRunAcceptanceChecklist, setSelectedRunAcceptanceChecklist] = useState<StrategyRunAcceptanceChecklistItem[]>([]);
   const [selectedRunEvidenceStatus, setSelectedRunEvidenceStatus] = useState<StrategyRunEvidenceLoadStatus>("idle");
   const [inspectedRunId, setInspectedRunId] = useState<string | null>(null);
@@ -786,6 +790,7 @@ export function useStrategyRunLibraryViewModel(
       inspectedRunId,
       selectedRun,
       selectedRunEvidenceLoop,
+      selectedRunReplayProvenance,
       selectedRunAcceptanceChecklist,
       selectedRunEvidenceStatus,
       comparison,
@@ -828,6 +833,7 @@ export function useStrategyRunLibraryViewModel(
       inspectedRunId,
       selectedRun,
       selectedRunEvidenceLoop,
+      selectedRunReplayProvenance,
       selectedRunAcceptanceChecklist,
       selectedRunEvidenceStatus,
       activePlotToolView,
@@ -875,6 +881,7 @@ export function useStrategyRunLibraryViewModel(
     reviewPacketRequestId.current = requestId;
     setSelectedRun(run);
     setSelectedRunEvidenceLoop(null);
+    setSelectedRunReplayProvenance(null);
     setSelectedRunAcceptanceChecklist([]);
     setSelectedRunEvidenceStatus("loading");
 
@@ -886,6 +893,7 @@ export function useStrategyRunLibraryViewModel(
 
         const evidenceLoop = packet.run.evidenceLoop ?? null;
         setSelectedRunEvidenceLoop(evidenceLoop);
+        setSelectedRunReplayProvenance(packet.run.replayProvenance ?? null);
         setSelectedRunAcceptanceChecklist(packet.run.acceptanceChecklist ?? []);
         setSelectedRunEvidenceStatus("ready");
       })
@@ -915,6 +923,7 @@ export function useStrategyRunLibraryViewModel(
     reviewPacketRequestId.current += 1;
     setSelectedRun(null);
     setSelectedRunEvidenceLoop(null);
+    setSelectedRunReplayProvenance(null);
     setSelectedRunAcceptanceChecklist([]);
     setSelectedRunEvidenceStatus("idle");
   }, []);
@@ -923,13 +932,9 @@ export function useStrategyRunLibraryViewModel(
     if (!shouldCloseRunDetailForKey(key)) {
       return false;
     }
-    reviewPacketRequestId.current += 1;
-    setSelectedRun(null);
-    setSelectedRunEvidenceLoop(null);
-    setSelectedRunAcceptanceChecklist([]);
-    setSelectedRunEvidenceStatus("idle");
+    closeRunDetail();
     return true;
-  }, []);
+  }, [closeRunDetail]);
 
   const selectPlotToolViewForKey = useCallback((key: string) => {
     const nextView = nextPlotToolViewForKey(activePlotToolView, key);
@@ -1194,6 +1199,7 @@ export function buildStrategyRunLibraryState({
   inspectedRunId,
   selectedRun,
   selectedRunEvidenceLoop = null,
+  selectedRunReplayProvenance = null,
   selectedRunAcceptanceChecklist = [],
   selectedRunEvidenceStatus = "idle",
   comparison,
@@ -1223,6 +1229,7 @@ export function buildStrategyRunLibraryState({
   inspectedRunId?: string | null;
   selectedRun: StrategyRunRecord | null;
   selectedRunEvidenceLoop?: StrategyRunEvidenceLoop | null;
+  selectedRunReplayProvenance?: StrategyRunReplayProvenance | null;
   selectedRunAcceptanceChecklist?: StrategyRunAcceptanceChecklistItem[];
   selectedRunEvidenceStatus?: StrategyRunEvidenceLoadStatus;
   comparison: RunComparisonRow[];
@@ -1340,7 +1347,8 @@ export function buildStrategyRunLibraryState({
           selectedRun,
           selectedRunEvidenceLoop,
           selectedRunEvidenceStatus,
-          selectedRunAcceptanceChecklist)
+          selectedRunAcceptanceChecklist,
+          selectedRunReplayProvenance)
       : null,
     comparison,
     comparisonTable,
@@ -2777,7 +2785,8 @@ export function buildRunDetail(
   run: StrategyRunRecord,
   evidenceLoop: StrategyRunEvidenceLoop | null = null,
   evidenceStatus: StrategyRunEvidenceLoadStatus = "idle",
-  acceptanceChecklist: StrategyRunAcceptanceChecklistItem[] = []
+  acceptanceChecklist: StrategyRunAcceptanceChecklistItem[] = [],
+  replayProvenance: StrategyRunReplayProvenance | null = null
 ): StrategyRunDetailState {
   const title = formatText(run.strategyName);
   const modeLabel = formatText(run.mode).toUpperCase();
@@ -2828,6 +2837,8 @@ export function buildRunDetail(
     closeButtonLabel: "Close",
     closeButtonAriaLabel: `Close ${title} run detail`,
     biasDisclosure: run.biasDisclosure ?? null,
+    replayProvenance,
+    replayEvidenceLoading: evidenceStatus === "loading",
     acceptanceCriteriaLabel: "Operator acceptance requirements",
     acceptanceCriteria,
     acceptanceCriteriaStatus,

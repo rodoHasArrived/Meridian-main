@@ -5,6 +5,7 @@ import { Histogram } from "@/components/charts";
 import { CompareToggle } from "@/components/charts/SelectionCompare";
 import { Sparkline } from "@/components/charts/Sparkline";
 import { StrategyRunParityPanel } from "./strategy-screen.parity";
+import { StrategyReplayProvenance } from "./strategy-screen.replay-provenance";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
 import { DetailFields } from "@/components/meridian/detail-pane";
 import { DetailRail } from "@/components/meridian/detail-rail";
@@ -1151,6 +1152,11 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
             </section>
 
             <StrategyRunParityPanel accountId={fundAccountId} runId={vm.selectedRunDetail.runId} />
+
+            {vm.selectedRunDetail.modeBadgeVariant === "research" ? (
+              <StrategyReplayProvenance evidence={vm.selectedRunDetail.replayProvenance}
+                loading={vm.selectedRunDetail.replayEvidenceLoading} />
+            ) : null}
 
             <section className="mt-4 rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
               <div className={eyebrowClassName(vm.selectedRunDetail.acceptanceCriteriaLabel)}>{vm.selectedRunDetail.acceptanceCriteriaLabel}</div>

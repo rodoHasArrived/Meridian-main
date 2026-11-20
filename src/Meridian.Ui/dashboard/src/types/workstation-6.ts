@@ -1498,8 +1498,30 @@ export interface StrategyRunDetail {
   governance?: unknown | null;
   governanceHooks?: unknown[] | null;
   biasDisclosure?: BiasDisclosure | null;
+  replayProvenance?: StrategyRunReplayProvenance | null;
   evidenceLoop?: StrategyRunEvidenceLoop | null;
   acceptanceChecklist?: StrategyRunAcceptanceChecklistItem[] | null;
+}
+
+export interface StrategyRunReplayProvenance {
+  sourceMix: StrategyRunReplaySourceCount[];
+  revisions: StrategyRunReplayRevision[];
+  sourceMixHash?: string | null;
+  completedInputHashSha256?: string | null;
+}
+
+export interface StrategyRunReplaySourceCount {
+  symbol: string;
+  source: string;
+  bars: number;
+}
+
+export interface StrategyRunReplayRevision {
+  revisionId: string;
+  contentHash: string;
+  servingProvider: string;
+  instrument: string;
+  granularity: string;
 }
 
 export interface StrategyRunContinuityLink {

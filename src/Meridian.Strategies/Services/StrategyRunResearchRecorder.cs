@@ -55,6 +55,12 @@ public sealed class StrategyRunResearchRecorder(
         var runId = Guid.NewGuid().ToString("N");
         const string Engine = "MeridianNative";
 
+        var executionRealism = descriptor.ExecutionRealism;
+        if (result.EngineMetadata?.InputCoverage?.SourceMixHash is { } sourceMixHash)
+        {
+            executionRealism = (executionRealism ?? result.ToResolvedRealismDescriptor()) with { SourceMixHash = sourceMixHash };
+        }
+
         var entry = StrategyRunEntry.Start(
             descriptor.StrategyId,
             descriptor.StrategyName,
@@ -69,7 +75,7 @@ public sealed class StrategyRunResearchRecorder(
             // Retained so the durable store can recompute the v4 digest from the entry itself.
             // Without it the store falls back to the v3 recomputation, rejects the v4 hash, and
             // the catch below turns that into a silent loss of research lineage.
-            ExecutionRealism = descriptor.ExecutionRealism
+            ExecutionRealism = executionRealism
         };
 
         // Hash the entry we are about to persist rather than a parallel argument list, so the

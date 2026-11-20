@@ -201,6 +201,30 @@ describe("StrategyScreen", () => {
     expect(api.getRunReviewPacket).toHaveBeenCalledWith("run-1");
   });
 
+  it("shows replayed bar counts and verified revisions on the completed backtest", async () => {
+    const packet = buildRunReviewPacket();
+    vi.mocked(api.getRunReviewPacket).mockResolvedValue({ ...packet, run: {
+      ...packet.run,
+      replayProvenance: {
+        sourceMix: [{ symbol: "SPY", source: "ALPACA", bars: 120 }],
+        completedInputHashSha256: "completed-input-fingerprint",
+        revisions: [{ revisionId: "verified-2024", contentHash: "content-2024", servingProvider: "alpaca", instrument: "SPY", granularity: "daily" }]
+      }
+    } });
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyScreen data={{ ...twoRuns, runs: twoRuns.runs.map((run) => ({ ...run, mode: "Backtest" })) }} />);
+
+    await user.click(screen.getAllByRole("button", { name: /open/i })[0]);
+
+    const sources = await screen.findByRole("table", { name: "Replayed bars by source" });
+    expect(sources).toHaveTextContent("SPY");
+    expect(sources).toHaveTextContent("ALPACA");
+    expect(sources).toHaveTextContent("120");
+    await user.click(screen.getByText("Replay fingerprints and revisions"));
+    expect(screen.getByText("completed-input-fingerprint")).toBeVisible();
+    expect(screen.getByRole("table", { name: "Verified backfill revisions" })).toHaveTextContent("verified-2024");
+  });
+
   it("closes the run detail dialog with Escape", async () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);

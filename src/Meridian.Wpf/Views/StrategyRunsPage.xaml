@@ -405,6 +405,17 @@
                                            TextWrapping="Wrap"
                                            AutomationProperties.AutomationId="StrategyRunsComparisonPanelDetail" />
 
+                                <ItemsControl ItemsSource="{Binding ReplayComparisonWarnings}"
+                                              AutomationProperties.Name="Replay provider differences">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" TextWrapping="Wrap"
+                                                       Margin="0,0,0,8"
+                                                       Foreground="{DynamicResource ConsoleTextSecondaryBrush}" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
                                 <Grid Margin="0,0,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="110" />

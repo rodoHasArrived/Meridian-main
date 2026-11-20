@@ -98,12 +98,18 @@ public sealed class StrategyRunBrowserViewModel : BindableBase
                 RaisePropertyChanged(nameof(ComparisonRows));
                 RaisePropertyChanged(nameof(ComparisonPanelDetail));
                 RaisePropertyChanged(nameof(ComparisonPlaceholderText));
+                RaisePropertyChanged(nameof(ReplayComparisonWarnings));
             }
         }
     }
 
     /// <summary><c>true</c> when a comparison result is available to display.</summary>
     public bool IsComparisonVisible => ComparisonResult is { Count: > 0 };
+
+    public IReadOnlyList<string> ReplayComparisonWarnings =>
+        StrategyRunContractCompatibility.DescribeSourceMixDifferences(ComparisonResult?
+            .Where(static row => row.Mode == StrategyRunMode.Backtest)
+            .Select(static row => row.SourceMixHash).ToArray() ?? []);
 
     /// <summary>Flat metric rows suitable for binding in the comparison diff panel.</summary>
     public IReadOnlyList<ComparisonRow> ComparisonRows

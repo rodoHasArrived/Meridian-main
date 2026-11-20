@@ -1,9 +1,11 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
 using Meridian.Storage.Operations;
 using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared.Endpoints;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -168,6 +170,72 @@ public sealed class StrategyRunResearchRecorderTests
         b!.InputHashSha256.Should().Be(a!.InputHashSha256);
         b.RunId.Should().NotBe(a.RunId, "each execution is its own run even when the inputs match");
     }
+
+    [Fact]
+    public async Task RecordAsync_RetainsSourceMixAndDistinguishesProviderDifferencesAfterReload()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-research-recorder", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var recorder = new StrategyRunResearchRecorder(store, NullLogger<StrategyRunResearchRecorder>.Instance);
+            var descriptor = new ResearchRunDescriptor("strat-1", "Momentum", ExecutionRealism: Realism());
+
+            var firstRunId = await recorder.RecordAsync(descriptor, ResultWithSource("ALPACA"));
+            var secondRunId = await recorder.RecordAsync(descriptor, ResultWithSource("POLYGON"));
+            var legacyRunId = await recorder.RecordAsync(descriptor, Result());
+            firstRunId.Should().NotBeNull();
+            secondRunId.Should().NotBeNull();
+            legacyRunId.Should().NotBeNull();
+
+            var reloaded = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var first = (await reloaded.GetRunByIdAsync(firstRunId!))!;
+            var second = (await reloaded.GetRunByIdAsync(secondRunId!))!;
+            first.InputHashSha256.Should().NotBe(second.InputHashSha256);
+            first.ExecutionRealism!.SourceMixHash.Should().Be(first.Metrics!.EngineMetadata!.InputCoverage!.SourceMixHash);
+
+            var service = new StrategyRunReadService(reloaded, new PortfolioReadService(), new LedgerReadService());
+            var detail = (await service.GetRunDetailAsync(first.RunId))!;
+            detail.ReplayProvenance!.SourceMix.Should().Equal(new StrategyRunReplaySourceCountDto("SPY", "ALPACA", 100));
+            detail.ReplayProvenance.CompletedInputHashSha256.Should().Be(first.InputHashSha256);
+            var comparisons = new StrategyRunComparisonService(service);
+            var diff = await comparisons.BuildDiffAsync(new RunDiffRequest(first.RunId, second.RunId));
+            diff!.CompatibilityWarnings.Should().Contain("These backtests replayed different provider mixes.");
+            var rows = await comparisons.CompareRunsAsync(new RunComparisonRequest([first.RunId, legacyRunId!]));
+            rows.Should().OnlyContain(row => row.CompatibilityWarnings!.Contains("Replay provider mix is unavailable for at least one backtest."));
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task CompletedReplayFingerprint_PreservesTheStartedLifecycleIdentity()
+    {
+        var store = new StrategyRunStore();
+        var started = StrategyRunEntry.Start("strat-1", "Momentum", RunType.Backtest);
+        await store.RecordRunAsync(started);
+        await store.RecordRunAsync(started.Complete(ResultWithSource("ALPACA")));
+
+        var service = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
+        var retained = (await store.GetRunByIdAsync(started.RunId))!;
+        var detail = (await service.GetRunDetailAsync(started.RunId))!;
+        retained.InputHashSha256.Should().Be(started.InputHashSha256);
+        detail.ReplayProvenance!.CompletedInputHashSha256.Should().NotBeNull().And.NotBe(retained.InputHashSha256);
+    }
+
+    private static BacktestResult ResultWithSource(string source) => Result() with
+    {
+        EngineMetadata = new BacktestEngineMetadata("MeridianNative")
+        {
+            InputCoverage = new BacktestInputCoverage(1m, [], [])
+            {
+                SourceMix = [new BacktestSourceCount("SPY", source, 100)]
+            }
+        }
+    };
 
     // ── Guards ───────────────────────────────────────────────────────────────
 
