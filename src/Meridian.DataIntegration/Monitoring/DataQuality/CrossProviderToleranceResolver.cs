@@ -13,7 +13,7 @@ public readonly record struct CrossProviderToleranceResolution(
 /// <summary>Selects per-symbol thresholds for both live comparisons and historical previews.</summary>
 public static class CrossProviderToleranceResolver
 {
-    private static readonly ILogger Log = LoggingSetup.ForContext<CrossProviderToleranceResolver>();
+    private static readonly ILogger Log = LoggingSetup.ForContext(typeof(CrossProviderToleranceResolver));
 
     /// <summary>Uses the registry's canonical symbol, alias and identifier lookups.</summary>
     public static Func<string, string?>? FromSymbolRegistry(ISymbolRegistryService? registry)
