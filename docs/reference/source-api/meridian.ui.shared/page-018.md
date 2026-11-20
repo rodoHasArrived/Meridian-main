@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterDatasetSourceService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterDatasetSourceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:8](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L8).
+
+Builds report-writer dataset rows and field catalogs from supported reporting sources.
+
+```csharp
+public sealed class ReportWriterDatasetSourceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportWriterDatasetSourceService(ReportPackWorkflowService? workflowService = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L70) |  |
+| <code>public IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRows(ReportAccessQueryContext? accessContext = null, int recordLimit = DefaultRecordLimit);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:75](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L75) |  |
+| <code>public IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRowsForSource(string? sourceId, ReportAccessQueryContext? accessContext = null, int recordLimit = DefaultRecordLimit);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:89](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L89) |  |
+| <code>public static string? GetKnownDatasetSourceLabel(string? sourceId);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:134](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L134) |  |
+| <code>public IReadOnlyList&lt;WorkstationReportWriterFieldPayload&gt; BuildFieldCatalog(ReportAccessQueryContext? accessContext = null, int recordLimit = DefaultRecordLimit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:170](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L170) |  |
+| <code>public static IReadOnlyList&lt;WorkstationReportWriterDatasetSourcePayload&gt; BuildDatasetSources(IReadOnlyList&lt;PortfolioReportingCutDto&gt; portfolioCuts, IReadOnlyList&lt;PortfolioReportingAnalyticsRowDto&gt; analyticsRows, IReadOnlyList&lt;CrossFundReportingConsolidationDto&gt; crossFundRows);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:175](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L175) |  |
+| <code>public static IReadOnlyList&lt;WorkstationReportWriterFieldPayload&gt; BuildFieldCatalog(IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:398](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L398) |  |
+| <code>public static IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRows(WorkstationReportingPayload reporting);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:413](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L413) |  |
+| <code>public static IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRows(IReadOnlyList&lt;PortfolioReportingCutDto&gt; portfolioCuts, IReadOnlyList&lt;PortfolioReportingAnalyticsRowDto&gt; analyticsRows, IReadOnlyList&lt;CrossFundReportingConsolidationDto&gt; crossFundRows);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:423](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L423) |  |
+
+## ReportWriterGridArtifactContent
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactContent</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L10).
+
+```csharp
+public sealed record ReportWriterGridArtifactContent(string FileName, string ContentType, byte[] Content);
+```
+
 ## ReportWriterGridArtifactService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactService</code>. Kind: `class`.
@@ -837,31 +873,3 @@ Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:77](../
 ```csharp
 public sealed record StpTransitionResult(string EntityId, string State, string? ExceptionReason, bool RoutedToBreakQueue);
 ```
-
-## StrategyRunParityReport
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunParityReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:9](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L9).
-
-```csharp
-public sealed record StrategyRunParityReport(string RunId, string? BaselineRunId, string Status, string InputMode, decimal? BaselineNetPnl, decimal? ObservedNetPnl, int? BaselineFills, int? ObservedFills, IReadOnlyList<OrderCheck> Checks, string JournalRoute);
-```
-
-## StrategyRunParityService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunParityService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:14](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L14).
-
-Compares retained operands/results; agreement never grants promotion or live authority.
-
-```csharp
-public sealed class StrategyRunParityService(IStrategyRepository repository)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;StrategyRunParityReport?&gt; GetAsync(Guid account, string runId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:16](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L16) |  |

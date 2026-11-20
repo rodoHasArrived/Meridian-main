@@ -197,7 +197,7 @@ public sealed record DiscardSecurityMasterRevisionRequest(Guid SecurityId, Guid 
 
 Qualified name: <code>Meridian.Contracts.Workstation.EquityCurvePoint</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:899](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L899).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:904](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L904).
 
 A single point on the portfolio equity curve.
 
@@ -209,7 +209,7 @@ public sealed record EquityCurvePoint(DateOnly Date, decimal TotalEquity, decima
 
 Qualified name: <code>Meridian.Contracts.Workstation.EquityCurveSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:909](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L909).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:914](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L914).
 
 Full equity curve with summary drawdown statistics for one run. Downside-free Sortino retains positive infinity as the named JSON string.
 

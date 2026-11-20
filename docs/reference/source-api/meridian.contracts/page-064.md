@@ -522,7 +522,7 @@ public sealed record LedgerImpactPreviewDto(int DraftEntryCount, decimal NetDebi
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerJournalLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:650](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L650).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:655](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L655).
 
 Shared journal row for workstation audit surfaces.
 
@@ -554,7 +554,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:601](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L601).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:606](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L606).
 
 Shared ledger rollup for workstation Accounting and audit surfaces.
 
@@ -566,7 +566,7 @@ public sealed record LedgerSummary(string LedgerReference, string RunId, DateTim
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerTrialBalanceLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:629](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L629).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:634](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L634).
 
 Shared trial-balance row for workstation ledger views.
 

@@ -784,6 +784,34 @@ Outcome of seeding the demo workspace.
 public sealed record DemoWorkspaceSeedReport(string DemoRoot, string Provenance, DemoTenantProvisioningReport Provisioning, int MarketHistoryTradePrintsSeeded = 0);
 ```
 
+## DesignerBacktestBlockedException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DesignerBacktestBlockedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:260](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L260).
+
+```csharp
+public sealed class DesignerBacktestBlockedException(string message, Exception? cause = null) : Exception(message, cause);
+```
+
+## DesignerBacktestService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DesignerBacktestService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:24](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L24).
+
+Runs the hosted Designer&#x27;s bounded daily-equity replay against retained, exact inputs.
+
+```csharp
+public sealed class DesignerBacktestService(string dataRoot, Func<BacktestRequest, BacktestEngine> engineFactory, IStrategyRepository runs, IEvidenceArtifactStore evidence, StrategyDesignService designs, IOperationalTradingCalendar calendar, ISecurityIdentityQueryService? securities, ISecurityCorporateActionsQueryService? corporateActions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;StrategyRunEntry&gt; RunAsync(StrategyDesignDocument document, StrategyRunRepositoryScope scope, string actor, Guid accountId, DateOnly from, DateOnly to, StrategyRunEvidenceLoop evidenceLoop, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:38](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L38) |  |
+
 ## DesktopLaunchTicketService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DesktopLaunchTicketService</code>. Kind: `class`.
@@ -899,38 +927,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;JournalEvidenceReference&gt; PositionEvidenceReferences { get; init; } = PositionEvidenceReferences??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:37](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L37) |  |
-
-## Dk1PromotionTrustEvidenceProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Services.Dk1PromotionTrustEvidenceProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:8](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L8).
-
-Uses the retained DK1 packet selected by the source run as promotion trust evidence.
-
-```csharp
-public sealed class Dk1PromotionTrustEvidenceProvider : IPromotionTrustEvidenceProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Dk1PromotionTrustEvidenceProvider(Dk1TrustGateReadinessService readiness, Dk1TrustGateReadinessOptions options);</code> | [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:13](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L13) |  |
-| <code>public async Task&lt;PromotionTrustEvidence?&gt; GetEvidenceAsync(StrategyRunEntry run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:21](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L21) |  |
-
-## Dk1TrustGateReadinessOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.Dk1TrustGateReadinessOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs:7](../../../../src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs#L7).
-
-```csharp
-public sealed record Dk1TrustGateReadinessOptions(string AutomationRoot, TimeSpan? PromotionEvidenceMaximumAge = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static Dk1TrustGateReadinessOptions Default { get; } = new (Path.Combine(&quot;artifacts&quot;, &quot;provider-validation&quot;, &quot;_automation&quot;));</code> | [src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs:11](../../../../src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs#L11) |  |
