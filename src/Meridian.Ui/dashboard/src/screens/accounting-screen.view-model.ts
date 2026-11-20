@@ -666,6 +666,7 @@ export interface AccountingChartAccountDraft {
   path: string;
   accountName: string;
   accountType: string;
+  accountCode: string;
   parentPath: string;
   financialAccountId: string;
   evidenceText: string;
@@ -702,6 +703,8 @@ export interface AccountingChartAccountEditorViewModel {
   pathValue: string;
   accountNameValue: string;
   accountTypeValue: string;
+  accountCodeValue: string;
+  accountCodeReadOnly: boolean;
   parentPathValue: string;
   financialAccountIdValue: string;
   evidenceValue: string;

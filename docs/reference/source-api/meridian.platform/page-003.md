@@ -296,6 +296,25 @@ Declared public members:
 | <code>public QuickCheckResult PerformQuickCheck(AppConfig config);</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:265](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L265) | Displays a quick status check. |
 | <code>public void DisplayQuickCheck(QuickCheckResult result);</code> | [src/Meridian.Platform/Runtime/StartupSummary.cs:342](../../../../src/Meridian.Platform/Runtime/StartupSummary.cs#L342) | Displays the quick check results. |
 
+## HistoricalSessionScheduleResolver
+
+Qualified name: <code>Meridian.Platform.Scheduling.HistoricalSessionScheduleResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs:10](../../../../src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs#L10).
+
+Resolves session expectations only after positively identifying a supported listing.
+
+```csharp
+public sealed class HistoricalSessionScheduleResolver(ISecurityIdentityQueryService? identities, IOperationalTradingCalendar? calendar = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;HistoricalSessionSchedule?&gt; ResolveAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs:15](../../../../src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs#L15) |  |
+| <code>public HistoricalSessionSchedule UsSessions(DateOnly from, DateOnly to);</code> | [src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs:53](../../../../src/Meridian.Platform/Scheduling/HistoricalSessionScheduleResolver.cs#L53) |  |
+
 ## MarketHoliday
 
 Qualified name: <code>Meridian.Platform.Scheduling.MarketHoliday</code>. Kind: `record struct`.

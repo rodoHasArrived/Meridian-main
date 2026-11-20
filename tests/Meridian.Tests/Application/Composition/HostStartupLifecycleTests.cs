@@ -588,6 +588,7 @@ public sealed class HostStartupLifecycleTests
         provider.SetupGet(item => item.Name).Returns("synthetic");
         provider.SetupGet(item => item.DisplayName).Returns("Synthetic cancellation probe");
         provider.SetupGet(item => item.Description).Returns("Blocks until cancellation.");
+        provider.SetupGet(item => item.CoverageFeed).Returns("default");
         provider
             .Setup(item => item.GetDailyBarsAsync(
                 It.IsAny<string>(),

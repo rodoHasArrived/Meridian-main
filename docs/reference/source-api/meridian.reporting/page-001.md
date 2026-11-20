@@ -90,8 +90,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingTemplateMetadata Get(string templateId) =&gt; …;</code> | [src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs:83](../../../../src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs#L83) |  |
-| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates() =&gt; …;</code> | [src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs:88](../../../../src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs#L88) |  |
+| <code>public const string FinancialStatementControlTemplateId = &quot;financial-statement-control-pack&quot;;</code> | [src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs:8](../../../../src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs#L8) |  |
+| <code>public ReportingTemplateMetadata Get(string templateId) =&gt; …;</code> | [src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs:92](../../../../src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs#L92) |  |
+| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates() =&gt; …;</code> | [src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs:97](../../../../src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs#L97) |  |
 
 ## DesignModule
 

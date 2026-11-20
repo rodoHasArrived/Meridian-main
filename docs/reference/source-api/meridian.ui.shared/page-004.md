@@ -74,7 +74,7 @@ public sealed record ExecutionAccountSnapshot(decimal Cash, decimal PortfolioVal
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExecutionCircuitBreakerActivationResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:58](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L58).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:61](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L61).
 
 Structured result returned by every Trading write action (cancel, close, pause, etc.). Carries a correlation ID so UI and backend audit logs can be cross-referenced.
 
@@ -86,7 +86,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ExecutionCircuitBreakerActivationResponse From(ExecutionControlSnapshot snapshot, KillSwitchSweepResult sweep) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:67](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L67) |  |
+| <code>public static ExecutionCircuitBreakerActivationResponse From(ExecutionControlSnapshot snapshot, KillSwitchSweepResult sweep) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:70](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L70) |  |
 
 ## ExecutionEndpoints
 
@@ -113,6 +113,12 @@ Declared public members:
 | <code>public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L28) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Metadata.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Metadata.cs#L7).
+
+```csharp
+public static partial class ExecutionEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.PaperSessionReconciliation.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.PaperSessionReconciliation.cs#L13).
 
 ```csharp
 public static partial class ExecutionEndpoints
@@ -778,7 +784,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.LedgerEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs#L11).
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs#L12).
 
 ```csharp
 public static partial class LedgerEndpoints
@@ -833,6 +839,12 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapLedgerBondWorkflowEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs#L23) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BookFxSettlement.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BookFxSettlement.cs#L13).
+
+```csharp
+public static partial class LedgerEndpoints
+```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseExecution.cs:8](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseExecution.cs#L8).
 
@@ -930,7 +942,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:19](.
 public static partial class LedgerEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FiscalYearClose.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FiscalYearClose.cs#L12).
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FiscalYearClose.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FiscalYearClose.cs#L13).
 
 ```csharp
 public static partial class LedgerEndpoints
@@ -984,7 +996,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs:13
 public static partial class LedgerEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs#L21).
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs#L23).
 
 ```csharp
 public static partial class LedgerEndpoints

@@ -74,6 +74,11 @@ public sealed record JournalEntry
                     $"Ledger entry '{line.EntryId}' description must match the journal description.");
             }
 
+            if (line.ChartAccount is { } chart &&
+                (string.IsNullOrWhiteSpace(chart.NodeId) || string.IsNullOrWhiteSpace(chart.Revision) ||
+                 chart.AccountCode is not null && string.IsNullOrWhiteSpace(chart.AccountCode)))
+                throw new LedgerValidationException($"Ledger entry '{line.EntryId}' has incomplete chart account evidence.");
+
             if (!seenEntryIds.Add(line.EntryId))
                 throw new LedgerValidationException($"Ledger entry '{line.EntryId}' is duplicated within the journal entry.");
         }

@@ -1,11 +1,11 @@
 {
-  "total_files": 1290,
+  "total_files": 1292,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:276a7bb5a69b126d18ec36d747fb07df4c7d9e7949217011348c752b2de59c39",
+  "signal_digest": "sha256:aaf072993ebb5990d3c0f6d4fb10bbb85557bbc5f4c5c49039fb1af0e69fa788",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -4798,6 +4798,13 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.execution/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.financialoperations/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -6605,6 +6612,13 @@
     },
     {
       "path": "docs/testing/evidence/next-work-20261029/accounting-expansion.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/next-work-20261029/bond-lot-golden-case.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

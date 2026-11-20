@@ -41,7 +41,8 @@ public sealed record ShareClassUnitRegister(
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues)
 {
     /// <summary>Aggregate value of all holdings at the class NAV per unit; ties to class NAV.</summary>
-    public decimal AggregateHoldingValue => Holdings.Sum(holding => holding.Value(NavPerUnit));
+    public decimal AggregateHoldingValue =>
+        Holdings.Sum(holding => RoundCurrency(holding.Units * NavPerUnit, ShareClass.Currency));
 }
 
 /// <summary>
@@ -89,7 +90,7 @@ public static class ShareClassUnitRegisterProjector
                     : new EqualizationAdjustment(0m, 0m);
 
                 holding.Units = NavPerUnitCalculator.RoundUnits(holding.Units + units);
-                holding.Subscribed = RoundCurrency(holding.Subscribed + transaction.Amount);
+                holding.Subscribed = RoundCurrency(holding.Subscribed + transaction.Amount, shareClass.Currency);
                 holding.EqualisationCredit = RoundCurrency(holding.EqualisationCredit + adjustment.EqualisationCredit);
                 holding.ContingentRedemption = RoundCurrency(holding.ContingentRedemption + adjustment.ContingentRedemption);
                 unitsOutstanding = NavPerUnitCalculator.RoundUnits(unitsOutstanding + units);
@@ -144,7 +145,7 @@ public static class ShareClassUnitRegisterProjector
             ? NavPerUnitCalculator.ComputeNavPerUnit(nav, unitsOutstanding, shareClass.InceptionNavPerUnit)
             : NavPerUnitCalculator.RoundPrice(lastPrice);
         highWater = Math.Max(highWater, navPerUnit);
-        var resolvedClassNav = classNav ?? RoundCurrency(unitsOutstanding * navPerUnit);
+        var resolvedClassNav = classNav ?? RoundCurrency(unitsOutstanding * navPerUnit, shareClass.Currency);
 
         var holdingList = holdings
             .Where(static pair => pair.Value.Units > 0m

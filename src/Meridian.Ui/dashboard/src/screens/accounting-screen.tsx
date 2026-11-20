@@ -16,6 +16,8 @@ import { FinancialRecordExplorerShell } from "@/components/meridian/financial-re
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PrepareNextPeriodPanel } from "@/screens/accounting-screen.prepare-next-period";
+import { FiscalYearClosePanel } from "@/screens/accounting-screen.fiscal-year-close";
+import { BookFxSettlementPanel } from "@/screens/accounting-screen.book-fx-settlement";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
@@ -41,13 +43,14 @@ import { cn } from "@/lib/utils";
 import { StatusBadge, toneToSeverity } from "@/design-system/status";
 import { workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
+import { UnitRegisterPanel } from "@/screens/accounting-screen.unit-register";
 import { AccountingPostedLedgerSection } from "@/screens/accounting-screen.posted-ledger-panel";
 import { CorporateActionsPanel } from "@/screens/accounting-screen.corporate-actions-panel";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
 import { CalibrationSummaryPanel } from "@/screens/accounting-screen.calibration-panel";
 import { InstrumentPassportPanel, ReferenceDataWorkbenchPanel, SecurityOpenLotReadModelPanel } from "@/screens/accounting-screen.security-master-detail-panels";
-import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
+import { AccountingChip, AccountingHighlight, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
 import { OperationalExceptionWorkbenchPanel, ReconciliationQueueSummaryCard, TradingParametersPanel, reconciliationQueueColumns } from "@/screens/accounting-screen.operations-panels";
 import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.payment-approvals";
 import { AuditChainIntegrityPanel } from "@/screens/accounting-screen.audit-integrity";
@@ -800,7 +803,10 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {/* On the landing the queue leads and preparation follows it (below); elsewhere it stays here. */}
-      {sectionVisibility.showWorkflowDetails && !sectionVisibility.showCloseCockpitLanding ? <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} /> : null}
+      {sectionVisibility.showWorkflowDetails && !sectionVisibility.showCloseCockpitLanding ? <>
+        <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} />
+        <FiscalYearClosePanel initialBookId={closeWorkflowQuery.ledgerBookId} />
+      </> : null}
 
       {sectionVisibility.showCloseCockpitLanding ? (
         <>
@@ -828,6 +834,8 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           />
           {closeReportPackage.closeBoard ? <CloseBoard board={closeReportPackage.closeBoard} /> : null}
           <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} />
+          <FiscalYearClosePanel initialBookId={closeWorkflowQuery.ledgerBookId} />
+          <BookFxSettlementPanel />
           {closeWorkflow ? <CloseChecklistHistoryChart workflowId={closeWorkflow.workflowId} workflowVersion={closeWorkflow.version} /> : null}
           <TechnicalDetails label="System details" className="panel-surface">
             <div className="space-y-4">
@@ -971,9 +979,10 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
         <ManualJournalEntryWorkbenchPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment])} view={journalEntries} search={search} />
       ) : null}
 
-      {sectionVisibility.showCapitalAccounts ? (
+      {sectionVisibility.showCapitalAccounts ? <>
         <CapitalAccountWorkbenchPanel view={capitalAccountWorkbench} />
-      ) : null}
+        <UnitRegisterPanel />
+      </> : null}
 
       {sectionVisibility.showApprovals ? (
         <AccountingApprovalsWorkstream />
@@ -2085,24 +2094,6 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       ) : null}
         </>
       )}
-    </div>
-  );
-}
-
-function AccountingHighlight({
-  icon: Icon,
-  title,
-  description
-}: {
-  icon: typeof ShieldCheck;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="workspace-header-card">
-      <Icon className="mb-3 h-5 w-5 text-primary" />
-      <div className="font-semibold text-foreground">{title}</div>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
   );
 }

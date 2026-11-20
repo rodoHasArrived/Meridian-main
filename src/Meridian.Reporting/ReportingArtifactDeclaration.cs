@@ -11,7 +11,9 @@ public enum ReportingDeclaredArtifactKind
     CertifiedSourceSchedule,
     SupportingSchedules,
     EvidenceAppendix,
-    ReportWriterGrid
+    ReportWriterGrid,
+    StatementControlManifest,
+    StatementControlParquet
 }
 
 /// <summary>One exact byte-producing artifact declared by the orchestration manifest.</summary>
@@ -45,7 +47,8 @@ public static class ReportingArtifactDeclaration
             parameters,
             gridIds,
             includeCertifiedSourceSchedule,
-            includePreview: true);
+            includePreview: true,
+            includeStatementControl: IsStatementControlTemplate(template.TemplateId));
     }
 
     /// <summary>
@@ -73,7 +76,8 @@ public static class ReportingArtifactDeclaration
             includePreview: !manifest.Artifacts.IsDefault
                 && manifest.Artifacts.Contains(
                     $"{normalizedRunId}.preview.json",
-                    StringComparer.Ordinal));
+                    StringComparer.Ordinal),
+            includeStatementControl: IsStatementControlTemplate(manifest.TemplateId));
     }
 
     private static ImmutableArray<ReportingDeclaredArtifact> BuildCore(
@@ -81,7 +85,8 @@ public static class ReportingArtifactDeclaration
         ReportingRunParametersDto? parameters,
         IEnumerable<string> gridIds,
         bool includeCertifiedSourceSchedule,
-        bool includePreview)
+        bool includePreview,
+        bool includeStatementControl)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
         var normalizedRunId = runId.Trim();
@@ -96,6 +101,14 @@ public static class ReportingArtifactDeclaration
         foreach (var primaryOutput in BuildPrimaryOutputs(normalizedRunId, output))
         {
             artifacts.Add(primaryOutput);
+        }
+
+        if (includeStatementControl)
+        {
+            var controlId = $"{normalizedRunId}.statement-controls";
+            artifacts.Add(new($"{controlId}.json", $"{controlId}.json", "application/json", ReportingDeclaredArtifactKind.StatementControlManifest));
+            if (output is ReportingOutputFormatDto.Xlsx or ReportingOutputFormatDto.ClientPackage)
+                artifacts.Add(new($"{controlId}.parquet", $"{controlId}.parquet", "application/vnd.apache.parquet", ReportingDeclaredArtifactKind.StatementControlParquet));
         }
 
         if (includePreview)
@@ -163,6 +176,9 @@ public static class ReportingArtifactDeclaration
 
         return built;
     }
+
+    private static bool IsStatementControlTemplate(string? templateId) => string.Equals(templateId,
+        DefaultReportingTemplateCatalog.FinancialStatementControlTemplateId, StringComparison.OrdinalIgnoreCase);
 
     private static IEnumerable<ReportingDeclaredArtifact> BuildPrimaryOutputs(
         string normalizedRunId,

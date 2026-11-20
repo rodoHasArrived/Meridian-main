@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Contracts.Ledger;
 
 /// <summary>
@@ -23,7 +25,45 @@ public sealed record FiscalYearClosePlanDto(
     decimal OpeningEquity,
     decimal PreClosingEquity,
     decimal PostClosingEquity,
-    string? PlanHashSha256);
+    string? PlanHashSha256)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public FiscalYearCloseBookEvidenceDto? Book { get; init; }
+
+    /// <summary>Whether the authenticated reader can authorize the current plan.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool CanFinalizeFiscalYearClose { get; init; }
+}
+
+/// <summary>The retained book settings bound into the reviewed fiscal plan.</summary>
+public sealed record FiscalYearCloseBookEvidenceDto(
+    string FunctionalCurrency,
+    AccountingBasisKindDto AccountingBasis,
+    string AccountingPolicyId,
+    string AccountingPolicyVersion,
+    Guid OwningEntityId,
+    DateTimeOffset BookUpdatedAt);
+
+public sealed record FinalizeFiscalYearCloseRequestDto(
+    Guid CommandId,
+    string ExpectedPlanHashSha256,
+    string Reason,
+    Guid? SupersedesReceiptId = null);
+
+/// <summary>An immutable fiscal close and next-year opening representation for a continuous book.</summary>
+public sealed record FiscalYearCloseReceiptDto(
+    Guid ReceiptId,
+    Guid? SupersedesReceiptId,
+    DateTimeOffset RecordedAt,
+    string AuthorizedBy,
+    string ControllerRole,
+    string Reason,
+    FiscalYearClosePlanDto Plan,
+    string FunctionalCurrency,
+    AccountingBasisKindDto AccountingBasis,
+    string AccountingPolicyId,
+    string AccountingPolicyVersion,
+    IReadOnlyList<Guid> ClosingJournalEntryIds);
 
 /// <summary>One named reason the fiscal year cannot be closed yet.</summary>
 public sealed record FiscalYearCloseBlockerDto(string Code, string Message, Guid? PeriodId = null);

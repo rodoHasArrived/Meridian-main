@@ -1205,18 +1205,13 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
 
         if (string.Equals(activityType, TradeFillActivityType, StringComparison.Ordinal))
         {
-            // Trade-identity tags for statement reconciliation: the journal→custodian-transaction
-            // projection reads these opt-in tags so the posted trade exact-matches a statement row
-            // instead of degrading to the candidate stage. The canonical fill id is the only
-            // transaction-granular identity the execution report carries (order ids repeat across
-            // partial fills) and it is content-derived, so replay stamps the same value. No
-            // `settlementDate` is stamped — the execution report carries no settlement date, and
-            // estimating T+n conventions is a policy decision this consumer must not make; the
-            // projection then defaults settlement to the trade date. The commission journal is
-            // deliberately left untagged: a share quantity does not apply to a fee movement, and a
-            // fabricated fee FITID could never equal a custodian's.
+            // Preserve the original local identity tag for exact journal replay. The statement
+            // projection reads the broker activity ID when the provider supplied it for this fill.
+            // Order IDs recur across partial fills. Settlement dates require existing evidence.
             tags[ReconciliationQuantityTag] = FormatDecimal(evt.FilledQuantity);
             tags[ReconciliationExternalTransactionIdTag] = evt.FillId.ToString("D");
+            if (NormalizeOptional(evt.BrokerActivityId) is { } brokerActivityId)
+                tags["brokerActivityId"] = brokerActivityId;
         }
 
         if (NormalizeOptional(evt.RunId) is { } runId)
