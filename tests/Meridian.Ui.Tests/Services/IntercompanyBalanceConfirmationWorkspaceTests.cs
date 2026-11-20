@@ -31,6 +31,44 @@ public sealed class IntercompanyBalanceConfirmationWorkspaceTests
     }
 
     [Fact]
+    public async Task ClosePolicyIsProposedWithTheChosenFindings_ApprovedAtTheShownVersion_AndDisabledWithAReason()
+    {
+        var client = new Client { ServesClosePolicies = true };
+        using var view = await LoadAsync(client);
+        Assert.StartsWith("No active close policy", view.ClosePolicyText);
+        Assert.False(view.ProposeClosePolicyCommand.CanExecute(null));
+
+        view.BlockingCodeChoices.Single(item => item.Code == "balances-changed").IsSelected = true;
+        view.ClosePolicyReason = "Disputes block month-end close.";
+        Assert.True(view.ProposeClosePolicyCommand.CanExecute(null));
+        await view.ProposeClosePolicyCommand.ExecuteAsync(null);
+        var proposal = Assert.IsType<ProposeIntercompanyConfirmationClosePolicyRequest>(Assert.Single(client.ClosePolicyCommands));
+        Assert.Equal(LenderBook, proposal.LedgerBookId);
+        Assert.Equal(["disputed", "balances-changed"], proposal.BlockingCodes);
+        Assert.StartsWith("Proposed close policy v1", view.ClosePolicyText);
+
+        await view.ApproveClosePolicyCommand.ExecuteAsync(null);
+        var approval = Assert.IsType<DecideIntercompanyConfirmationClosePolicyRequest>(client.ClosePolicyCommands[1]);
+        Assert.Equal((IntercompanyConfirmationClosePolicyActionDto.Approve, 1L), (approval.Action, approval.ExpectedVersion));
+        Assert.StartsWith("Active close policy v2", view.ClosePolicyText);
+
+        Assert.False(view.DisableClosePolicyCommand.CanExecute(null));
+        view.ClosePolicyReason = "Pair wound down.";
+        await view.DisableClosePolicyCommand.ExecuteAsync(null);
+        Assert.Equal("Pair wound down.", Assert.IsType<DecideIntercompanyConfirmationClosePolicyRequest>(client.ClosePolicyCommands[2]).Reason);
+        Assert.StartsWith("No active close policy", view.ClosePolicyText);
+        Assert.Contains("advisory again", view.StatusText);
+    }
+
+    [Fact]
+    public async Task AnUnreadableClosePolicyIsReportedRatherThanShownAsNone()
+    {
+        using var view = await LoadAsync(new Client());
+        Assert.StartsWith("The book's confirmation close policy could not be read", view.ClosePolicyText);
+        Assert.False(view.ProposeClosePolicyCommand.CanExecute(null));
+    }
+
+    [Fact]
     public async Task ConfirmSendsThisBooksSideAgainstTheExactVersionAndDigestShown()
     {
         var client = new Client();
@@ -143,6 +181,39 @@ public sealed class IntercompanyBalanceConfirmationWorkspaceTests
         public List<(Guid Id, IntercompanyBalanceConfirmationActionRequest Request)> Actions { get; } = [];
         public List<ProposeIntercompanyBalanceConfirmationRequest> Proposals { get; } = [];
         public int ProfileReads { get; private set; }
+        public bool ServesClosePolicies { get; init; }
+        public IntercompanyConfirmationClosePolicyDto? ClosePolicy { get; set; }
+        public List<object> ClosePolicyCommands { get; } = [];
+
+        public Task<ApiResponse<IntercompanyConfirmationClosePolicyDto[]>> GetConfirmationClosePoliciesAsync(Guid ledgerBookId, CancellationToken ct = default)
+            => Task.FromResult(ServesClosePolicies
+                ? ApiResponse<IntercompanyConfirmationClosePolicyDto[]>.Ok(ClosePolicy is null ? [] : [ClosePolicy])
+                : ApiResponse<IntercompanyConfirmationClosePolicyDto[]>.Fail("Close policies unavailable.", 503));
+        public Task<ApiResponse<IntercompanyConfirmationClosePolicyDto>> ProposeConfirmationClosePolicyAsync(ProposeIntercompanyConfirmationClosePolicyRequest request, CancellationToken ct = default)
+        {
+            ClosePolicyCommands.Add(request);
+            ClosePolicy = new(Guid.NewGuid(), "tenant", null, request.LedgerBookId, request.BlockingCodes, 1, IntercompanyConfirmationClosePolicyStatusDto.Proposed, null,
+                [new(Guid.NewGuid(), request.RequestId, IntercompanyConfirmationClosePolicyActionDto.Propose, "maker", DateTimeOffset.UnixEpoch, request.Reason)]);
+            return Task.FromResult(ApiResponse<IntercompanyConfirmationClosePolicyDto>.Ok(ClosePolicy));
+        }
+        public Task<ApiResponse<IntercompanyConfirmationClosePolicyDto>> DecideConfirmationClosePolicyAsync(Guid policyId, Guid ledgerBookId,
+            DecideIntercompanyConfirmationClosePolicyRequest request, CancellationToken ct = default)
+        {
+            ClosePolicyCommands.Add(request);
+            ClosePolicy = ClosePolicy! with
+            {
+                Version = ClosePolicy.Version + 1,
+                Status = request.Action switch
+                {
+                    IntercompanyConfirmationClosePolicyActionDto.Approve => IntercompanyConfirmationClosePolicyStatusDto.Active,
+                    IntercompanyConfirmationClosePolicyActionDto.Reject => IntercompanyConfirmationClosePolicyStatusDto.Rejected,
+                    _ => IntercompanyConfirmationClosePolicyStatusDto.Disabled
+                },
+                ActiveFrom = request.Action == IntercompanyConfirmationClosePolicyActionDto.Approve ? MonthEnd : ClosePolicy.ActiveFrom,
+                Events = [.. ClosePolicy.Events, new(Guid.NewGuid(), request.RequestId, request.Action, "checker", DateTimeOffset.UnixEpoch, request.Reason)]
+            };
+            return Task.FromResult(ApiResponse<IntercompanyConfirmationClosePolicyDto>.Ok(ClosePolicy));
+        }
 
         public Task<ApiResponse<IntercompanyOperationCapabilities>> GetIntercompanyCapabilitiesAsync(CancellationToken ct = default)
             => Task.FromResult(ApiResponse<IntercompanyOperationCapabilities>.Ok(new(CanManageLedger: CanManageLedger, CanViewLedger: true)));

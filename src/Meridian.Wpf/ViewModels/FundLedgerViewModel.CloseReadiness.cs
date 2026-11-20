@@ -11,7 +11,7 @@ public sealed partial class FundLedgerViewModel
         {
             var advisory = _financialOperationsCommandCenter?.CloseReadiness?.IntercompanyAdvisories;
             return advisory is null ? "Intercompany monitoring is not evaluated for this close scope. Use Agreements > Obligation monitor for an explicitly dated evaluation."
-                : $"{advisory.Status} · cutoff {advisory.AsOf:yyyy-MM-dd} · evaluated {advisory.EvaluatedAtUtc:O}. Advisory only; close eligibility is unchanged.\n"
+                : $"{advisory.Status} · cutoff {advisory.AsOf:yyyy-MM-dd} · evaluated {advisory.EvaluatedAtUtc:O}. Advisory only; close eligibility is unchanged here. An approved confirmation close policy appears separately as the intercompany-confirmation requirement.\n"
                     + string.Join("\n", advisory.Findings.Select(f => $"{f.Severity} · {f.Code}: {f.Message}"));
         }
     }

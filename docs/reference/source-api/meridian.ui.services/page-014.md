@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QualityTrendData
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityTrendData</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:146](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L146).
+
+Groups overall and symbol-specific quality trends for a time window.
+
+```csharp
+public sealed class QualityTrendData
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;TrendDataPoint&gt; OverallTrend { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:148](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L148) |  |
+| <code>public Dictionary&lt;string, List&lt;TrendDataPoint&gt;&gt; BySymbol { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:149](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L149) |  |
+| <code>public string TimeWindow { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:150](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L150) |  |
+| <code>public double AverageScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:151](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L151) |  |
+| <code>public double TrendDirection { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:152](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L152) |  |
+
 ## IReportingStatusProjectionService
 
 Qualified name: <code>Meridian.Ui.Services.Services.Reporting.IReportingStatusProjectionService</code>. Kind: `interface`.
@@ -1121,23 +1143,3 @@ Declared public members:
 | <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:290](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L290) |  |
 | <code>public DateTime? LastEventAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:291](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L291) |  |
 | <code>public double EventsPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:292](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L292) |  |
-
-## SubscriptionResult
-
-Qualified name: <code>Meridian.Ui.Services.SubscriptionResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:310](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L310).
-
-Reports subscription creation success, assigned identity, and an explanatory message.
-
-```csharp
-public sealed class SubscriptionResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:312](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L312) |  |
-| <code>public int SubscriptionId { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:313](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L313) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:314](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L314) |  |

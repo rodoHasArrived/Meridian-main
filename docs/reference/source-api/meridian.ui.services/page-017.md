@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceSummaryStats
+
+Qualified name: <code>Meridian.Ui.Services.WorkspaceSummaryStats</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:239](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L239).
+
+Lightweight workspace summary statistics surfaced in shell tiles, session restore hints, and the quick-action rail. Computed on demand from the active session; not persisted.
+
+```csharp
+public sealed class WorkspaceSummaryStats
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int ActiveRunCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:242](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L242) | Number of strategy runs currently in a running or paused state. |
+| <code>public int PendingReviewCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:245](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L245) | Number of runs flagged for review (failed, cancelled, or promotion pending). |
+| <code>public int PromotionCandidateCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:248](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L248) | Number of completed runs eligible for paper or live promotion. |
+| <code>public bool HasLedgerCoverage { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:251](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L251) | Whether at least one run in this workspace has a ledger reference. |
+| <code>public bool HasPortfolioCoverage { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:254](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L254) | Whether at least one run in this workspace has a portfolio reference. |
+| <code>public DateTimeOffset? LastActivityAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:257](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L257) | When the most recently active page in this workspace was last visited. |
+| <code>public string Digest { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:263](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L263) | Human-readable one-line digest e.g. &quot;3 active · 2 review · ledger covered&quot;. Produced by WorkspaceService.BuildSummaryDigest; empty when stats are all zero. |
+
 ## WorkspaceTemplate
 
 Qualified name: <code>Meridian.Ui.Services.WorkspaceTemplate</code>. Kind: `class`.

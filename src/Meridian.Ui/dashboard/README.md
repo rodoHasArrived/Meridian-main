@@ -3497,6 +3497,14 @@ Browser reconciliation route helpers include the shared Accounting casework fami
 
 Browser extensibility route helpers expose the shared core extensibility catalog plus tenant-template activation-readiness, activation, and activation-history endpoints; keep `src/types.ts` aligned with `Meridian.Contracts.Extensibility` instead of adding UI-local workflow or rule shapes.
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+The counterpart-proposal panel picks the existing counterpart journal from the posted journals the server's link
+check would accept (`entityOperationEndpoints.counterpartCandidates`); changing the counterpart book clears the
+choice, and linking still re-checks it. The balance-confirmation screen includes
+`accounting-screen.entity-confirmation-close-policy.tsx`: propose which confirmation findings block close, then a
+different reviewer approves; reject or disable needs a reason. Without an active policy confirmation stays advisory.
+
 ## Accounting close browser surface
 
 The External GL route also hosts bounded accounting onboarding for one entity, explicit account

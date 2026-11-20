@@ -6,6 +6,79 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SqlStatementGuard
+
+Qualified name: <code>Meridian.Storage.Query.SqlStatementGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:248](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L248).
+
+Validates that a statement is a single, read-only SELECT-family query. The first token must be a query verb and no write/config verb may appear anywhere — DuckDB&#x27;s in-memory session cannot mutate the store through queries, but COPY/EXPORT/ATTACH/INSTALL can touch the filesystem or network, so they are rejected outright.
+
+```csharp
+public static partial class SqlStatementGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? Validate(string? sql, int maxSqlLength);</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:262](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L262) | Returns an error message, or null when the statement is allowed. |
+
+## QuotaEnforcementPolicy
+
+Qualified name: <code>Meridian.Storage.QuotaEnforcementPolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:259](../../../../src/Meridian.Storage/StorageOptions.cs#L259).
+
+Quota enforcement policy.
+
+```csharp
+public enum QuotaEnforcementPolicy : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Warn</code> | [src/Meridian.Storage/StorageOptions.cs:262](../../../../src/Meridian.Storage/StorageOptions.cs#L262) | Log warning, continue writing. |
+| <code>SoftLimit</code> | [src/Meridian.Storage/StorageOptions.cs:264](../../../../src/Meridian.Storage/StorageOptions.cs#L264) | Start cleanup, continue writing. |
+| <code>HardLimit</code> | [src/Meridian.Storage/StorageOptions.cs:266](../../../../src/Meridian.Storage/StorageOptions.cs#L266) | Stop writing until cleanup completes. |
+| <code>DropOldest</code> | [src/Meridian.Storage/StorageOptions.cs:268](../../../../src/Meridian.Storage/StorageOptions.cs#L268) | Delete oldest to make room. |
+
+## QuotaOptions
+
+Qualified name: <code>Meridian.Storage.QuotaOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:384](../../../../src/Meridian.Storage/StorageOptions.cs#L384).
+
+Quota configuration for capacity management.
+
+```csharp
+public sealed class QuotaOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StorageQuota? Global { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:387](../../../../src/Meridian.Storage/StorageOptions.cs#L387) | Global storage quota. |
+| <code>public Dictionary&lt;string, StorageQuota&gt;? PerSource { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:390](../../../../src/Meridian.Storage/StorageOptions.cs#L390) | Per-source quotas. |
+| <code>public Dictionary&lt;string, StorageQuota&gt;? PerSymbol { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:393](../../../../src/Meridian.Storage/StorageOptions.cs#L393) | Per-symbol quotas. |
+| <code>public Dictionary&lt;string, StorageQuota&gt;? PerEventType { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:396](../../../../src/Meridian.Storage/StorageOptions.cs#L396) | Per-event-type quotas. |
+| <code>public DynamicQuotaConfig? Dynamic { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:399](../../../../src/Meridian.Storage/StorageOptions.cs#L399) | Dynamic quota configuration. |
+
+## FileStatistics
+
+Qualified name: <code>Meridian.Storage.Replay.FileStatistics</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:500](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L500).
+
+Statistics about files in a directory.
+
+```csharp
+public readonly record struct FileStatistics(int TotalFiles, long TotalBytes, int CompressedFiles, int UncompressedFiles);
+```
+
 ## JsonlReplayer
 
 Qualified name: <code>Meridian.Storage.Replay.JsonlReplayer</code>. Kind: `class`.
@@ -842,61 +915,3 @@ Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore
 ```csharp
 public sealed record DirectLoanPrincipalPaymentRow(Guid SecurityId, int Ordinal, DateOnly PaymentDate, decimal Amount);
 ```
-
-## DirectLoanProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L32).
-
-```csharp
-public sealed record DirectLoanProjectionRow(Guid SecurityId, string DisplayName, string Currency, string Borrower, DateOnly? MaturityDate, string? ReferenceIndex, decimal? SpreadBps, decimal? CurrentCouponRate, string? ResetFrequency, string? PricingSource, string PrimaryIdentifierValue, long Version);
-```
-
-## EquityProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.EquityProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L13).
-
-```csharp
-public sealed record EquityProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? ShareClass, string? VotingRightsCat, string? Classification, string? ExchangeCode, string? CountryOfRisk, string? IssuerName, string PrimaryIdentifierValue, long Version);
-```
-
-## FileBondMarketDataStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.FileBondMarketDataStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L11).
-
-Atomic host-local observation history, partitioned by authenticated tenant and locked across processes.
-
-```csharp
-public sealed class FileBondMarketDataStore(string dataRoot) : IBondMarketDataStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;BondMarketImportResult&gt; AppendAsync(string tenantId, IReadOnlyList&lt;BondMarketObservationDto&gt; observations, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L15) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BondMarketObservationDto&gt;&gt; ReadAsync(string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:60](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L60) |  |
-
-## FileBondProviderResponseStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.FileBondProviderResponseStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L10).
-
-Immutable exact-response evidence. Content-addressed publication is atomic across processes.
-
-```csharp
-public sealed class FileBondProviderResponseStore(string dataRoot) : IBondProviderResponseStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;BondProviderResponseDto&gt; RetainAsync(string tenantId, string companyId, string providerId, string rawResponseJson, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L15) |  |
-| <code>public async Task&lt;BondProviderResponseDto?&gt; GetAsync(string tenantId, string companyId, string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:59](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L59) |  |

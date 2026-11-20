@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TierMigrationApiResult
+
+Qualified name: <code>Meridian.Ui.Services.TierMigrationApiResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1501](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1501).
+
+Response from /api/storage/tiers/migrate endpoint.
+
+```csharp
+public sealed class TierMigrationApiResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1503](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1503) |  |
+| <code>public int FilesMigrated { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1504](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1504) |  |
+| <code>public long BytesMigrated { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1505](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1505) |  |
+| <code>public TimeSpan Duration { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1506](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1506) |  |
+| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1507](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1507) |  |
+
 ## TierMigrationOptions
 
 Qualified name: <code>Meridian.Ui.Services.TierMigrationOptions</code>. Kind: `class`.
@@ -1067,27 +1089,3 @@ Declared public members:
 | <code>public string Tone { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:226](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L226) | Visual tone: default, primary, success, warning, or danger. |
 | <code>public bool IsEnabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:229](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L229) | When false the action is rendered but not interactive (e.g. locked behind context). |
 | <code>public int Order { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:232](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L232) | Display order within the action list (lower = earlier). |
-
-## WorkspaceSummaryStats
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceSummaryStats</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:239](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L239).
-
-Lightweight workspace summary statistics surfaced in shell tiles, session restore hints, and the quick-action rail. Computed on demand from the active session; not persisted.
-
-```csharp
-public sealed class WorkspaceSummaryStats
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int ActiveRunCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:242](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L242) | Number of strategy runs currently in a running or paused state. |
-| <code>public int PendingReviewCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:245](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L245) | Number of runs flagged for review (failed, cancelled, or promotion pending). |
-| <code>public int PromotionCandidateCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:248](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L248) | Number of completed runs eligible for paper or live promotion. |
-| <code>public bool HasLedgerCoverage { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:251](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L251) | Whether at least one run in this workspace has a ledger reference. |
-| <code>public bool HasPortfolioCoverage { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:254](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L254) | Whether at least one run in this workspace has a portfolio reference. |
-| <code>public DateTimeOffset? LastActivityAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:257](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L257) | When the most recently active page in this workspace was last visited. |
-| <code>public string Digest { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:263](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L263) | Human-readable one-line digest e.g. &quot;3 active · 2 review · ledger covered&quot;. Produced by WorkspaceService.BuildSummaryDigest; empty when stats are all zero. |

@@ -2721,21 +2721,23 @@ W12-FINRPT-001: planned; health green; evidence planned_evidence. Bind existing 
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | in_progress |
-| Health | yellow |
+| Status | ready_for_acceptance |
+| Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-11-17 |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-19 |
 
 ### Current Summary
 
-W12-ICACCRUAL-001: in_progress; health yellow; evidence in_progress. Fixed-rate interest from approved terms becomes a reviewed source draft with a proposed counterpart. Browser and WPF surfaces exist; since 2026-11-17 the PostgreSQL post-and-deliver run uses durable legal, profile, lifecycle and draft stores. Awaits owner acceptance and a Windows WPF run; fees and floating rates open.
+W12-ICACCRUAL-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: development verification on PR 3674 (hosted .NET, browser, workflow and PostgreSQL integration lanes; Windows WPF run 44431011339) including post-and-deliver over PostgreSQL drafts. Synthetic evidence only; acceptance is the owner's decision.
 
 ### Status References
 
 - Decisions: DEC-IC-ACCRUAL-001
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
 - Evidence: [docs/adr/028-governed-intercompany-interest-accrual.md](../../adr/028-governed-intercompany-interest-accrual.md)
 - Evidence: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs)
 - Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs)
@@ -2819,21 +2821,24 @@ W12-ICAGREE-001: accepted; health green; evidence complete. Accepted by the repo
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | in_progress |
-| Health | yellow |
+| Status | ready_for_acceptance |
+| Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-11-17 |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-19 |
 
 ### Current Summary
 
-W12-ICCOMPOUND-001: in_progress; health yellow; evidence in_progress. Rule intercompany-accrual-v3 compounds at each schedule period start on posted accrued interest, once every earlier day is posted; facts are pinned and re-checked. No capitalisation journal. Daily and mismatched compounding stay open.
+W12-ICCOMPOUND-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: periodic compounding on posted accrued interest verified on PR 3674 (hosted .NET, browser, workflow and PostgreSQL integration lanes; Windows WPF run 44431011339). Synthetic evidence only; daily compounding stays out of scope.
 
 ### Status References
 
 - Decisions: DEC-IC-COMPOUND-001
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
 - Evidence: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs)
 - Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs)
 - Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyCompoundingAccrualPreviewTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyCompoundingAccrualPreviewTests.cs)
@@ -2863,21 +2868,23 @@ W12-ICCOMPOUND-001: in_progress; health yellow; evidence in_progress. Rule inter
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | in_progress |
-| Health | yellow |
+| Status | ready_for_acceptance |
+| Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-11-17 |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-19 |
 
 ### Current Summary
 
-W12-ICCONFIRM-001: in_progress; health yellow; evidence in_progress. Per-period reciprocal confirmation pins both sides' posted balances; each side confirms or disputes through its own book. Status joins the close advisory and never blocks close. Opt-in close blocking is a separate later decision.
+W12-ICCONFIRM-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: advisory confirmation verified on PR 3674 (hosted lanes; Windows WPF run 44431011339). Opt-in close blocking exists behind a reviewed per-book policy (ADR-032); its decision DEC-IC-CONFIRM-002 awaits owner acceptance. Synthetic evidence only.
 
 ### Status References
 
-- Decisions: DEC-IC-CONFIRM-001
-- PR references (not inferred acceptance): none recorded
+- Decisions: DEC-IC-CONFIRM-001, DEC-IC-CONFIRM-002
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
 - Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs)
 - Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs)
 - Evidence: [src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql](../../../src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql)
@@ -2914,21 +2921,23 @@ W12-ICCONFIRM-001: in_progress; health yellow; evidence in_progress. Per-period 
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | in_progress |
-| Health | yellow |
+| Status | ready_for_acceptance |
+| Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-11-17 |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-19 |
 
 ### Current Summary
 
-W12-ICFEE-001: in_progress; health yellow; evidence in_progress. Rule intercompany-fee-v1 charges a declared fixed management fee per period or per year as a reviewed source draft with a proposed counterpart; direction comes from declared roles. Percentage and loan fees stay open.
+W12-ICFEE-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: fixed management fees verified on PR 3674 (hosted .NET, browser, workflow and PostgreSQL integration lanes; Windows WPF run 44431011339). Synthetic evidence only; percentage and loan commitment or utilisation fees stay out of scope.
 
 ### Status References
 
 - Decisions: DEC-IC-FEE-001
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
 - Evidence: [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs)
 - Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs)
@@ -2962,21 +2971,23 @@ W12-ICFEE-001: in_progress; health yellow; evidence in_progress. Rule intercompa
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | in_progress |
-| Health | yellow |
+| Status | ready_for_acceptance |
+| Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-11-17 |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-19 |
 
 ### Current Summary
 
-W12-ICFLOAT-001: in_progress; health yellow; evidence in_progress. Rule intercompany-accrual-v2 prices each period from the approved index fixing observed the declared lag before it starts, plus the spread. Fixings are maker-checker and append-only; a missing fixing refuses the window. v1 is unchanged. Fees, compounding, in-arrears rates and schedules stay open.
+W12-ICFLOAT-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: floating-rate accrual over reviewed fixings verified on PR 3674 (hosted .NET, browser, workflow and PostgreSQL integration lanes; Windows WPF run 44431011339). Synthetic evidence only; in-arrears or averaged rates, floors and caps stay out of scope.
 
 ### Status References
 
 - Decisions: DEC-IC-FLOAT-001
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
+- Evidence: [docs/roadmap/snapshots/2026-11-19-w12-ic-acceptance-pack.md](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
 - Evidence: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs)
 - Evidence: [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs](../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs)
 - Evidence: [src/Meridian.Storage/FundStructure/Migrations/009_intercompany_rate_fixings.sql](../../../src/Meridian.Storage/FundStructure/Migrations/009_intercompany_rate_fixings.sql)
@@ -3108,21 +3119,22 @@ W12-ICPAIR-001: accepted; health green; evidence complete. Accepted by the repos
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | in_progress |
-| Health | yellow |
+| Status | ready_for_acceptance |
+| Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
+| Evidence posture | complete |
 | Last reviewed | 2026-11-17 |
 
 ### Current Summary
 
-W12-ICSCHEDULE-001: in_progress; health yellow; evidence in_progress. Maker-checker schedules per book and loan-interest profile; a background runner drafts each completed period after approval through the ordinary path and never posts or overwrites a draft. Fee schedules follow fee drafting on main.
+W12-ICSCHEDULE-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: maker-checker accrual schedules, runner and run-now verified on PR 3674 (hosted .NET, browser, workflow and PostgreSQL integration lanes; Windows WPF run 44431011339). Synthetic evidence only; management-fee schedules stay out of scope.
 
 ### Status References
 
 - Decisions: DEC-IC-SCHEDULE-001
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3674](https://github.com/rodoHasArrived/Meridian-main/pull/3674)
+- [Retained implementation detail and boundaries](../snapshots/2026-11-19-w12-ic-acceptance-pack.md)
 - Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs)
 - Evidence: [src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql](../../../src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql)

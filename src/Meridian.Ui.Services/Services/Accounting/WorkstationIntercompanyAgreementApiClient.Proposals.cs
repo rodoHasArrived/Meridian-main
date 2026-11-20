@@ -22,6 +22,9 @@ public partial interface IWorkstationIntercompanyAgreementApiClient
         => Task.FromResult(ApiResponse<IntercompanyProposalDto>.Fail("Counterpart linking is unavailable.", 503));
     Task<ApiResponse<IntercompanyRefreshPreviewDto>> PreviewCounterpartRefreshAsync(Guid proposalId, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<IntercompanyRefreshPreviewDto>.Fail("Counterpart repricing preview is unavailable.", 503));
+    /// <summary>Posted journals in one approved destination book that the server's link check would accept.</summary>
+    Task<ApiResponse<IntercompanyCounterpartCandidateDto[]>> GetCounterpartCandidatesAsync(Guid proposalId, Guid targetBookId, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<IntercompanyCounterpartCandidateDto[]>.Fail("Counterpart journal choices are unavailable.", 503));
     Task<ApiResponse<ManualJournalEntryDraftDto>> RefreshCounterpartProposalAsync(Guid proposalId, RefreshIntercompanyProposalRequest request, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<ManualJournalEntryDraftDto>.Fail("Counterpart repricing is unavailable.", 503));
 }
@@ -57,6 +60,13 @@ public sealed partial class WorkstationIntercompanyAgreementApiClient
         return response.Success && (response.Data!.LatestLink is not { } link || link.ProposalId != proposalId
             || link.TargetBookId != request.TargetBookId || link.TargetJournalId != request.TargetJournalId)
             ? ApiResponse<IntercompanyProposalDto>.Fail("The server did not retain the requested counterpart link.", 502) : response;
+    }
+
+    public async Task<ApiResponse<IntercompanyCounterpartCandidateDto[]>> GetCounterpartCandidatesAsync(Guid proposalId, Guid targetBookId, CancellationToken ct = default)
+    {
+        var response = await apiClient.GetWithResponseAsync<IntercompanyCounterpartCandidateDto[]>(
+            $"{ProposalRoute}/{proposalId:D}/counterpart-candidates?targetBookId={targetBookId:D}", ct).ConfigureAwait(false);
+        return response.Success && response.Data is null ? ApiResponse<IntercompanyCounterpartCandidateDto[]>.Ok([]) : response;
     }
 
     public async Task<ApiResponse<IntercompanyRefreshPreviewDto>> PreviewCounterpartRefreshAsync(Guid proposalId, CancellationToken ct = default)

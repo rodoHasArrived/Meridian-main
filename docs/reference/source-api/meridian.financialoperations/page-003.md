@@ -6,6 +6,64 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyProposalDraftBuilder
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyProposalDraftBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs:8](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs#L8).
+
+Creates a balanced proposal from retained source facts, never a posting instruction.
+
+```csharp
+public static class IntercompanyProposalDraftBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string MirrorFundEventType = &quot;IntercompanyMirror&quot;;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs:14](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs#L14) | Classifies a generated counterpart&#x27;s treasury context. It is a label, not a private-capital fund event: a counterpart carries no fund event identity or capital account. |
+| <code>public static ManualJournalEntryDraftDto Build(IntercompanyProposalDto proposal, ResolvedIntercompanyAccountingArrangementDto agreement, LedgerBookRecord target, LedgerAccountingPeriod period, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; sourceBindings, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; targetBindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt;? sourceChart = null);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs:16](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs#L16) |  |
+
+## AccountingAutomaticPostingPolicyValidator
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingAutomaticPostingPolicyValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:31](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L31).
+
+```csharp
+public sealed class AccountingAutomaticPostingPolicyValidator(IAccountingPolicyService policies) : IAccountingAutomaticPostingPolicyValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireRetainedAuthorityAsync(AccountingPolicyDto snapshot, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:33](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L33) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:52](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L52) |  |
+| <code>public async Task ValidateAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:64](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L64) |  |
+| <code>public async Task&lt;AccountingPolicyRuleDto&gt; ResolveRuleAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, string sourceEventType, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:71](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L71) |  |
+
+## AccountingBasisProjectionRequest
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:40](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L40).
+
+```csharp
+public sealed record AccountingBasisProjectionRequest(JournalEntry SourceEntry, Guid AggregateId, Guid PeriodId, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, DateOnly? EffectiveDate = null, Guid? CommandId = null, Guid? CorrelationId = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, string? FundProfileId = null, Guid? FundStructureNodeId = null, string? InstrumentId = null, string? PolicyId = null, string? RuleId = null, string? RuleVersion = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, Guid? LedgerBookId = null, AccountingPostingCommandDto? PostingCommand = null, string? PolicyVersion = null);
+```
+
+## AccountingBasisProjectionResult
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionResult</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:62](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L62).
+
+```csharp
+public sealed record AccountingBasisProjectionResult(AccountingPolicyDto Policy, LedgerJournalEntryWrite Write);
+```
+
 ## AccountingBasisProjectionService
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionService</code>. Kind: `class`.
@@ -891,70 +949,4 @@ Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransacti
 
 ```csharp
 public sealed record LedgerTextTransaction(DateTimeOffset Date, string Payee, IReadOnlyList<LedgerTextPosting> Postings);
-```
-
-## DistributionRecipient
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.DistributionRecipient</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:265](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L265).
-
-A normalized distribution target: an administrator, custodian, or counterparty.
-
-```csharp
-public sealed record DistributionRecipient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DistributionRecipient(DistributionRecipientKind kind, string name, string channel, string address);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:267](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L267) |  |
-| <code>public DistributionRecipientKind Kind { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:282](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L282) |  |
-| <code>public string Name { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:284](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L284) |  |
-| <code>public string Channel { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:287](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L287) | Transport channel, e.g. &quot;SFTP&quot;, &quot;Email&quot;, &quot;SecurePortal&quot;. |
-| <code>public string Address { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:290](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L290) | Channel-specific destination (host, mailbox, portal id). |
-
-## DistributionRecipientKind
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.DistributionRecipientKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:257](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L257).
-
-Normalized category of a file-distribution recipient.
-
-```csharp
-public enum DistributionRecipientKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Administrator</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:259](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L259) |  |
-| <code>Custodian</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:260](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L260) |  |
-| <code>Counterparty</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:261](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L261) |  |
-
-## FileDeliveryOutcome
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDeliveryOutcome</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:335](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L335).
-
-The outcome of a single transport dispatch attempt.
-
-```csharp
-public sealed record FileDeliveryOutcome(bool Delivered, string? FailureReason = null);
-```
-
-## FileDeliveryRecord
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDeliveryRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:322](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L322).
-
-An immutable archived delivery-log entry: one file, one recipient, one outcome. The middle-office service retains these and also mirrors each into the tamper-evident fund-administration event log.
-
-```csharp
-public sealed record FileDeliveryRecord(string DeliveryId, string DistributionId, string FileName, string ContentSha256, long ContentLength, DistributionRecipient Recipient, FileDeliveryStatus Status, DateTimeOffset DeliveredAtUtc, string DistributedBy, string? FailureReason = null);
 ```

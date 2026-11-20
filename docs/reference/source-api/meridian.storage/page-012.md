@@ -6,6 +6,77 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityIdentifierRevision
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityIdentifierRevision</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L9).
+
+One retained revision of a security_identifiers row (migration 062). The identity is (security, kind, value, valid-from); ChangeKind is one of SecurityIdentifierRevisionKinds. IdentifierKind is the stored text, so a kind this node does not know is reported as written rather than as Unknown.
+
+```csharp
+public sealed record SecurityIdentifierRevision(Guid SecurityId, string IdentifierKind, string IdentifierValue, DateTimeOffset ValidFrom, int Revision, string ChangeKind, string NormalizedIdentifierValue, string? Provider, string? NormalizedProvider, bool IsPrimary, DateTimeOffset? ValidTo, string Source, decimal? Confidence, bool ManualOverride, string RecordedBy, DateTimeOffset RecordedAt, DateTimeOffset? HistoryAvailableFrom);
+```
+
+## SecurityIdentifierRevisionKinds
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityIdentifierRevisionKinds</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L29).
+
+The change kinds a SecurityIdentifierRevision records.
+
+```csharp
+public static class SecurityIdentifierRevisionKinds
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Baseline = &quot;Baseline&quot;;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L32) | A row that existed when history retention began (migration 062); its earlier history is unknown. |
+| <code>public const string Added = &quot;Added&quot;;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L35) | The projection began holding this identity, or held it again after a removal. |
+| <code>public const string Amended = &quot;Amended&quot;;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L38) | A held identity&#x27;s row changed other than by first setting its valid-to. |
+| <code>public const string Expired = &quot;Expired&quot;;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L41) | A held identity&#x27;s valid-to was first set: the identifier stopped being valid at that valid time. |
+| <code>public const string Removed = &quot;Removed&quot;;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:44](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L44) | The projection no longer holds this identity; the values repeat its last revision. |
+
+## SecurityIdentifiersRecordedView
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityIdentifiersRecordedView</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:53](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L53).
+
+The identifier rows the projection held as recorded at RecordedAsOfUtc, optionally restricted to those valid at ValidAsOfUtc. Rows migrated as a baseline are absent for a cutoff before HistoryAvailableFrom: their earlier history was never retained, so an incomplete or empty result before that boundary is unknown history, not evidence of none.
+
+```csharp
+public sealed record SecurityIdentifiersRecordedView(Guid SecurityId, DateTimeOffset RecordedAsOfUtc, DateTimeOffset? ValidAsOfUtc, IReadOnlyList<SecurityIdentifierRevision> Identifiers, DateTimeOffset? HistoryAvailableFrom)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsHistoryAvailable =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:64](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L64) | False when the cutoff precedes the migrated baseline, so rows that already existed then cannot be reported. True when no baseline applies or the cutoff is at or after it. |
+
+## SecurityMasterDbMapper
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterDbMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:8](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L8).
+
+Maps persisted Security Master projections to public security summary and detail contracts.
+
+```csharp
+public static class SecurityMasterDbMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecuritySummaryDto ToSummary(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:10](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L10) |  |
+| <code>public static SecurityDetailDto ToDetail(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:20](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L20) |  |
+
 ## SecurityMasterMigrationRunner
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterMigrationRunner</code>. Kind: `class`.
@@ -753,44 +824,4 @@ Source: [src/Meridian.Storage/Services/StorageSearchService.cs:756](../../../../
 
 ```csharp
 public sealed record EventSearchQuery(string Symbol, MarketEventType Type, DateTimeOffset From, DateTimeOffset To, decimal? MinPrice = null, decimal? MaxPrice = null, long? MinVolume = null, AggressorSide? Side = null, long? SequenceFrom = null, long? SequenceTo = null, int Limit = 1000);
-```
-
-## EventSearchResult
-
-Qualified name: <code>Meridian.Storage.Services.EventSearchResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:800](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L800).
-
-```csharp
-public sealed record EventSearchResult(DateTimeOffset Timestamp, string Symbol, string EventType, long Sequence, string Source, object? Payload);
-```
-
-## FacetedSearchQuery
-
-Qualified name: <code>Meridian.Storage.Services.FacetedSearchQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:770](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L770).
-
-```csharp
-public sealed record FacetedSearchQuery(string[]? Symbols = null, MarketEventType[]? Types = null, string[]? Sources = null, DateTimeOffset? From = null, DateTimeOffset? To = null, int MaxResults = 100);
-```
-
-## FacetedSearchResult
-
-Qualified name: <code>Meridian.Storage.Services.FacetedSearchResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:809](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L809).
-
-```csharp
-public sealed record FacetedSearchResult(int TotalMatches, int FileCount, Dictionary<string, Dictionary<string, int>> Facets, IReadOnlyList<FileSearchResult> Results);
-```
-
-## FileCompressionOptions
-
-Qualified name: <code>Meridian.Storage.Services.FileCompressionOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:426](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L426).
-
-```csharp
-public sealed record FileCompressionOptions(bool DryRun = false, bool BackupBeforeCompression = true, string? BackupPath = null, string[]? Paths = null, TimeSpan MinimumQuietPeriod = default, bool OnlyClosedPeriods = true);
 ```

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CredentialServiceRefusedException
+
+Qualified name: <code>Meridian.Ui.Services.Services.CredentialServiceRefusedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:764](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L764).
+
+Credential configuration state for a provider.
+
+```csharp
+public sealed class CredentialServiceRefusedException(string message) : InvalidOperationException(message);
+```
+
 ## CredentialState
 
 Qualified name: <code>Meridian.Ui.Services.Services.CredentialState</code>. Kind: `enum`.
@@ -1135,25 +1147,3 @@ Declared public members:
 | <code>public DateTime DateFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L52) |  |
 | <code>public DateTime DateTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:53](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L53) |  |
 | <code>public DateTime LastAnalyzed { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:54](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L54) |  |
-
-## QualityTrendData
-
-Qualified name: <code>Meridian.Ui.Services.Services.QualityTrendData</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:146](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L146).
-
-Groups overall and symbol-specific quality trends for a time window.
-
-```csharp
-public sealed class QualityTrendData
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;TrendDataPoint&gt; OverallTrend { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:148](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L148) |  |
-| <code>public Dictionary&lt;string, List&lt;TrendDataPoint&gt;&gt; BySymbol { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:149](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L149) |  |
-| <code>public string TimeWindow { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:150](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L150) |  |
-| <code>public double AverageScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:151](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L151) |  |
-| <code>public double TrendDirection { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:152](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L152) |  |

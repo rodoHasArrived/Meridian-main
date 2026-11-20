@@ -556,7 +556,7 @@ public interface INonProductionOnlyService;
 
 Qualified name: <code>Meridian.Application.Composition.IntercompanyEntityServiceRegistration</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs:18](../../../../src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs#L18).
+Source: [src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs:19](../../../../src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs#L19).
 
 Shared authority and persistence for CLI, browser and desktop hosts.
 
@@ -568,7 +568,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IServiceCollection AddIntercompanyEntityServices(this IServiceCollection services, CompositionConfiguration configuration);</code> | [src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs:20](../../../../src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs#L20) |  |
+| <code>public static IServiceCollection AddIntercompanyEntityServices(this IServiceCollection services, CompositionConfiguration configuration);</code> | [src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs:21](../../../../src/Meridian.Application/Composition/IntercompanyEntityServiceRegistration.cs#L21) |  |
 
 ## IStartupRefusalGuard
 

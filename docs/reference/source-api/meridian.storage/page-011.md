@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcCollateralMovementPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralMovementPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:126](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L126).
+
+A collateral movement inside an exposure-snapshot payload.
+
+```csharp
+public sealed record OtcCollateralMovementPayload(string Kind, string Mover, decimal Amount, string Currency);
+```
+
+## OtcExposureSnapshotRecordedPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OtcExposureSnapshotRecordedPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:129](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L129).
+
+OtcCollateral / ExposureSnapshotRecorded.
+
+```csharp
+public sealed record OtcExposureSnapshotRecordedPayload(Guid SnapshotId, Guid NettingSetId, Guid? CollateralAgreementId, DateOnly AsOfDate, int Version, string Status, string NettingBasis, string Provenance, string Currency, decimal NetExposure, decimal GrossPositive, decimal GrossNegative, IReadOnlyList<OtcCollateralMovementPayload> Movements, int BlockerCount, string PayloadSha256) : ISecurityGovernancePayload;
+```
+
+## OtcMarginCallIssuedPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallIssuedPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:203](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L203).
+
+OtcCollateral / MarginCallIssued.
+
+```csharp
+public sealed record OtcMarginCallIssuedPayload(OtcMarginCallPayload Call, OtcMarginCallSnapshotReferencePayload Snapshot) : ISecurityGovernancePayload;
+```
+
+## OtcMarginCallPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:174](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L174).
+
+A margin call as the OtcCollateral stream records it.
+
+```csharp
+public sealed record OtcMarginCallPayload(Guid CallId, Guid NettingSetId, Guid CollateralAgreementId, Guid SnapshotId, string Kind, string Mover, string Currency, decimal AmountCalled, decimal? AmountAgreed, string Status, DateOnly IssuedOn, DateOnly? DueOn, string? DisputeReason, DateOnly? SettledOn, decimal? SettledAmount, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
+```
+
 ## OtcMarginCallSnapshotReferencePayload
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallSnapshotReferencePayload</code>. Kind: `record`.
@@ -1188,74 +1236,3 @@ Declared public members:
 | <code>public const string UnderlyingGraph = &quot;UnderlyingGraph&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:16](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L16) | Declared underlying-graph links: declaration, amendment and removal (migration 051). |
 | <code>public const string Curves = &quot;Curves&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:19](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L19) | Stored market curves: definitions and published versions (migration 053). Events carry no security id; the curve id is in the payload. |
 | <code>public const string OtcCollateral = &quot;OtcCollateral&quot;;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:22](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L22) | OTC exposure snapshots, collateral balances and margin calls (migrations 054 and 055); events carry no security id and name a netting set (snapshots, calls) or a collateral agreement (balances). |
-
-## SecurityIdentifierRevision
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityIdentifierRevision</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L9).
-
-One retained revision of a security_identifiers row (migration 062). The identity is (security, kind, value, valid-from); ChangeKind is one of SecurityIdentifierRevisionKinds. IdentifierKind is the stored text, so a kind this node does not know is reported as written rather than as Unknown.
-
-```csharp
-public sealed record SecurityIdentifierRevision(Guid SecurityId, string IdentifierKind, string IdentifierValue, DateTimeOffset ValidFrom, int Revision, string ChangeKind, string NormalizedIdentifierValue, string? Provider, string? NormalizedProvider, bool IsPrimary, DateTimeOffset? ValidTo, string Source, decimal? Confidence, bool ManualOverride, string RecordedBy, DateTimeOffset RecordedAt, DateTimeOffset? HistoryAvailableFrom);
-```
-
-## SecurityIdentifierRevisionKinds
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityIdentifierRevisionKinds</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L29).
-
-The change kinds a SecurityIdentifierRevision records.
-
-```csharp
-public static class SecurityIdentifierRevisionKinds
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Baseline = &quot;Baseline&quot;;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L32) | A row that existed when history retention began (migration 062); its earlier history is unknown. |
-| <code>public const string Added = &quot;Added&quot;;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L35) | The projection began holding this identity, or held it again after a removal. |
-| <code>public const string Amended = &quot;Amended&quot;;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L38) | A held identity&#x27;s row changed other than by first setting its valid-to. |
-| <code>public const string Expired = &quot;Expired&quot;;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L41) | A held identity&#x27;s valid-to was first set: the identifier stopped being valid at that valid time. |
-| <code>public const string Removed = &quot;Removed&quot;;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:44](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L44) | The projection no longer holds this identity; the values repeat its last revision. |
-
-## SecurityIdentifiersRecordedView
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityIdentifiersRecordedView</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:53](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L53).
-
-The identifier rows the projection held as recorded at RecordedAsOfUtc, optionally restricted to those valid at ValidAsOfUtc. Rows migrated as a baseline are absent for a cutoff before HistoryAvailableFrom: their earlier history was never retained, so an incomplete or empty result before that boundary is unknown history, not evidence of none.
-
-```csharp
-public sealed record SecurityIdentifiersRecordedView(Guid SecurityId, DateTimeOffset RecordedAsOfUtc, DateTimeOffset? ValidAsOfUtc, IReadOnlyList<SecurityIdentifierRevision> Identifiers, DateTimeOffset? HistoryAvailableFrom)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsHistoryAvailable =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:64](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L64) | False when the cutoff precedes the migrated baseline, so rows that already existed then cannot be reported. True when no baseline applies or the cutoff is at or after it. |
-
-## SecurityMasterDbMapper
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterDbMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:8](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L8).
-
-Maps persisted Security Master projections to public security summary and detail contracts.
-
-```csharp
-public static class SecurityMasterDbMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecuritySummaryDto ToSummary(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:10](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L10) |  |
-| <code>public static SecurityDetailDto ToDetail(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:20](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L20) |  |

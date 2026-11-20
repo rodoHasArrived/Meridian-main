@@ -51,6 +51,18 @@ public sealed partial class IntercompanyNativeControlSmokeTests
                 // Only the counterparty entity's own book is offered for linking an existing counterpart.
                 var target = Named<ComboBox>(control, "Existing counterpart book");
                 Assert.Equal(client.CounterpartyBookId.ToString("D"), Assert.Single(target.Items.Cast<IntercompanyChoice>()).Id);
+                // Choosing that book lists only the posted journals the server's link check would accept.
+                var journal = Named<ComboBox>(control, "Existing counterpart journal");
+                Assert.Empty(journal.Items);
+                target.SelectedValue = client.CounterpartyBookId.ToString("D");
+                await ArrangeAsync(window, control);
+                var candidate = Assert.Single(journal.Items.Cast<IntercompanyChoice>());
+                Assert.Equal(client.CandidateJournalId.ToString("D"), candidate.Id);
+                Assert.Contains("12345678901234567890.12345678", candidate.Label);
+                journal.SelectedValue = candidate.Id;
+                await ArrangeAsync(window, control);
+                Assert.Equal(client.CandidateJournalId.ToString("D"), workspace.TargetJournal);
+                Assert.Contains("1 matching posted journal(s)", Named<TextBlock>(control, "Counterpart journal choices status").Text);
 
                 SetText(Named<TextBox>(control, "Delivery retry reason"), "Synthetic destination period reopened");
                 await ArrangeAsync(window, control);
@@ -75,6 +87,7 @@ public sealed partial class IntercompanyNativeControlSmokeTests
         public Guid CounterpartyBookId { get; } = Guid.NewGuid();
         private readonly Guid _counterparty = Guid.NewGuid();
         public RetryIntercompanyProposalRequest? LastRetry { get; private set; }
+        public Guid CandidateJournalId { get; } = Guid.NewGuid();
 
         public CounterpartClient()
         {
@@ -95,6 +108,9 @@ public sealed partial class IntercompanyNativeControlSmokeTests
         public Task<ApiResponse<IntercompanyBreakDto[]>> GetCounterpartBreaksAsync(Guid sourceBookId, DateOnly asOf, CancellationToken ct = default)
             => Task.FromResult(ApiResponse<IntercompanyBreakDto[]>.Ok([new IntercompanyBreakDto(_proposal.Source.ProposalId, _proposal.Source.AccountingArrangementId,
                 "SYN-TX-1", "DeliveryBlocked", new DateOnly(2026, 9, 30), 44, "Source effective date", "Synthetic destination period is closed", _proposal.Source.SourceJournalId, null)]));
+        public Task<ApiResponse<IntercompanyCounterpartCandidateDto[]>> GetCounterpartCandidatesAsync(Guid proposalId, Guid targetBookId, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<IntercompanyCounterpartCandidateDto[]>.Ok(targetBookId == CounterpartyBookId
+                ? [new IntercompanyCounterpartCandidateDto(CandidateJournalId, new DateOnly(2026, 9, 30), "Synthetic counterparty recharge", -ExactBalance, "USD")] : []));
         public Task<ApiResponse<IntercompanyProposalDto>> RetryCounterpartProposalAsync(Guid proposalId, RetryIntercompanyProposalRequest request, CancellationToken ct = default)
         {
             LastRetry = request;

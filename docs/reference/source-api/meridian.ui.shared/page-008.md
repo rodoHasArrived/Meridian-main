@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IExtensibilityCatalogProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Extensibility.IExtensibilityCatalogProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs:8](../../../../src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs#L8).
+
+Supplies extension registrations to the workstation catalog.
+
+```csharp
+public interface IExtensibilityCatalogProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ExtensibilityRegistrationDto&gt; GetRegistrations();</code> | [src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs:10](../../../../src/Meridian.Ui.Shared/Extensibility/IExtensibilityCatalogProvider.cs#L10) |  |
+
 ## IExtensibilityConfigurationStore
 
 Qualified name: <code>Meridian.Ui.Shared.Extensibility.IExtensibilityConfigurationStore</code>. Kind: `interface`.
@@ -960,16 +978,4 @@ Named durable position source used by a recurring dividend schedule.
 
 ```csharp
 public sealed record AutomatedJournalPositionSnapshotScope(string RunId, string AccountId);
-```
-
-## AutomatedJournalPreparedDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalPreparedDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:53](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L53).
-
-Batch of prebuilt automated journal drafts (for example period-close closing entries, whose lines come from a projection rather than a single economic event) to admit into the manual journal workbench queue for the named fund profile.
-
-```csharp
-public sealed record AutomatedJournalPreparedDraftIntakeRequest(string FundProfileId, string Currency, IReadOnlyList<AutomatedJournalDraft> Drafts, string Actor, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null, string? BatchCorrelationId = null, Guid? RecurringJournalEntryId = null, AccountingBasisKindDto? AccountingBasis = null);
 ```
