@@ -251,6 +251,7 @@ export interface AccountingPostedLedgerViewState {
 
 export interface AccountingPostedLedgerViewModel {
   selectedBook: LedgerBook | null;
+  selectedPeriod: LedgerPeriod | null;
   view: AccountingPostedLedgerViewState;
   selectBook: (ledgerBookId: string) => void;
   selectPeriod: (periodId: string) => void;
@@ -333,7 +334,7 @@ export function toTrialBalanceLine(line: LedgerPeriodTrialBalanceLine): LedgerTr
   };
 }
 
-function periodStatusLabel(status: LedgerPeriod["status"]): string {
+export function periodStatusLabel(status: LedgerPeriod["status"]): string {
   switch (status) {
     case "HardClosed":
       return "Hard closed";
@@ -1171,10 +1172,9 @@ export function useAccountingPostedLedgerViewModel(
     ]
   );
 
-  const selectedPeriodLabel = useMemo(() => {
-    const period = periods.find((candidate) => candidate.periodId === selectedPeriodId);
-    return period ? (period.label.trim() || `FY${period.fiscalYear} P${period.periodNo}`) : null;
-  }, [periods, selectedPeriodId]);
+  const period = periods.find((candidate) => candidate.periodId === selectedPeriodId) ?? null;
+  const selectedPeriodLabel = period ? (period.label.trim() || `FY${period.fiscalYear} P${period.periodNo}`) : null;
+  const selectedPeriod = periodsSettled ? period : null;
 
   return {
     view,
@@ -1189,8 +1189,9 @@ export function useAccountingPostedLedgerViewModel(
     journalErrorText,
     selectedPeriodId,
     selectedPeriodLabel,
-    selectedPeriodVersion: periodsSettled ? periods.find((period) => period.periodId === selectedPeriodId)?.version ?? null : null,
+    selectedPeriodVersion: selectedPeriod?.version ?? null,
     selectedBook,
+    selectedPeriod,
     /**
      * True once the selected book's period request has come back successfully. A deep link cannot
      * tell an empty book from a still-loading one without this, and waiting on the loading flags

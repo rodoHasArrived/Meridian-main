@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageSinkAttributeExtensions
+
+Qualified name: <code>Meridian.Storage.StorageSinkAttributeExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageSinkAttribute.cs:102](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L102).
+
+Extension methods for StorageSinkAttribute discovery on Type.
+
+```csharp
+public static class StorageSinkAttributeExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StorageSinkAttribute? GetStorageSinkAttribute(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:107](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L107) | Gets the StorageSinkAttribute from a type, if present. |
+| <code>public static StorageSinkMetadata? GetStorageSinkMetadata(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:116](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L116) | Gets the StorageSinkMetadata from a type decorated with StorageSinkAttribute, or null if not decorated. |
+| <code>public static bool IsStorageSinkPlugin(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:126](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L126) | Returns true when the type is a concrete class that implements IStorageSink and is decorated with StorageSinkAttribute. |
+
 ## StorageSinkMetadata
 
 Qualified name: <code>Meridian.Storage.StorageSinkMetadata</code>. Kind: `record`.

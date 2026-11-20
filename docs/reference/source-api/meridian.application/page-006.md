@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EventPipeline
+
+Qualified name: <code>Meridian.Application.Pipeline.EventPipeline</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Pipeline/EventPipeline.cs:46](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L46).
+
+High-throughput, backpressured pipeline that decouples producers from storage sinks. Includes periodic flushing, capacity monitoring, performance metrics, and optional Write-Ahead Log (WAL) integration for crash-safe durability.
+
+```csharp
+public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IBackpressureSignal, IAsyncDisposable, IFlushable, IFlushableQueueDiagnostics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EventPipeline(IStorageSink sink, int capacity = 100_000, BoundedChannelFullMode fullMode = BoundedChannelFullMode.DropOldest, TimeSpan? flushInterval = null, int batchSize = 100, bool enablePeriodicFlush = true, ILogger&lt;EventPipeline&gt;? logger = null, DroppedEventAuditTrail? auditTrail = null, WriteAheadLog? wal = null, IEventMetrics? metrics = null, TimeSpan? finalFlushTimeout = null, TimeSpan? sinkFlushTimeout = null, IEventValidator? validator = null, DeadLetterSink? deadLetterSink = null, IDedupStore? dedupLedger = null, int consumerCount = 1, TimeProvider? timeProvider = null) : this(sink, new EventPipelinePolicy(capacity, fullMode), flushInterval, batchSize, enablePeriodicFlush, logger, auditTrail, wal, metrics, finalFlushTimeout, sinkFlushTimeout, validator, deadLetterSink, dedupLedger, consumerCount, timeProvider);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:152](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L152) | Creates a new EventPipeline with configurable capacity and flush behavior. |
+| <code>public EventPipeline(IStorageSink sink, EventPipelinePolicy policy, TimeSpan? flushInterval = null, int batchSize = 100, bool enablePeriodicFlush = true, ILogger&lt;EventPipeline&gt;? logger = null, DroppedEventAuditTrail? auditTrail = null, WriteAheadLog? wal = null, IEventMetrics? metrics = null, TimeSpan? finalFlushTimeout = null, TimeSpan? sinkFlushTimeout = null, IEventValidator? validator = null, DeadLetterSink? deadLetterSink = null, IDedupStore? dedupLedger = null, int consumerCount = 1, TimeProvider? timeProvider = null);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:209](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L209) | Creates a new EventPipeline with a shared policy for capacity and backpressure. |
+| <code>public long PublishedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:311](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L311) | Gets the total number of events successfully published to the pipeline. |
+| <code>public long DroppedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:314](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L314) | Gets the total number of events dropped due to backpressure. |
+| <code>public long ConsumedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:317](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L317) | Gets the total number of events consumed and written to storage. |
+| <code>public long RecoveredCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:320](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L320) | Gets the total number of events recovered from WAL on startup. |
+| <code>public long RejectedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:323](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L323) | Gets the total number of events rejected by the validator and sent to the dead-letter sink. |
+| <code>public long DeduplicatedCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:326](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L326) | Gets the total number of duplicate events filtered by the dedup ledger. |
+| <code>public bool IsDeduplicationEnabled =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:329](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L329) | Gets whether deduplication is enabled for this pipeline. |
+| <code>public long PeakQueueSize =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:332](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L332) | Gets the peak queue size observed during operation. |
+| <code>public int CurrentQueueSize =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:335](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L335) | Gets the current number of events in the queue. |
+| <code>public long PendingFlushItemCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:338](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L338) | Gets the approximate number of events pending flush during shutdown diagnostics. |
+| <code>public double QueueUtilization =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:341](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L341) | Gets the queue capacity utilization as a percentage (0-100). |
+| <code>public BoundedChannelFullMode QueueFullMode =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:344](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L344) | Gets the active bounded-channel full mode for this pipeline. |
+| <code>public double AverageProcessingTimeUs { get; }</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:347](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L347) | Gets the average processing time per event in microseconds. |
+| <code>public TimeSpan TimeSinceLastFlush { get; }</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:360](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L360) | Gets the time since the last flush operation. |
+| <code>public bool IsWalEnabled =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:370](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L370) | Gets whether a WAL is configured for this pipeline. |
+| <code>public bool IsValidationEnabled =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:373](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L373) | Gets whether event validation is enabled for this pipeline. |
+| <code>public bool IsUnderPressure =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:379](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L379) | Returns true when the queue utilization has reached or exceeded 80 %. Upstream producers should observe this signal and slow down publishing to avoid data loss. |
+| <code>public async Task RecoverAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:403](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L403) | Recovers uncommitted events from the WAL and replays them to the storage sink. Call this method once on startup, before publishing new events, to ensure data from a prior crash is not lost. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryPublish(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:677](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L677) | Attempts to publish an event to the pipeline without blocking. Returns false if the queue is full (event will be dropped based on FullMode). |
+| <code>public PublishResult TryPublishWithResult(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:720](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L720) | Attempts to publish an event and returns a PublishResult that describes the outcome in detail — accepted, accepted under pressure, or dropped. |
+| <code>public async ValueTask PublishAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:772](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L772) | Publishes an event to the pipeline, waiting if necessary. |
+| <code>public void Complete() =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:823](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L823) | Signals that no more events will be published. |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:835](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L835) | Waits for the consumer to process all currently-queued events, then forces an immediate flush of buffered data to storage. |
+| <code>public PipelineStatistics GetStatistics();</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:902](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L902) | Gets a snapshot of current pipeline statistics. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1640](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1640) |  |
+| <code>public DroppedEventAuditTrail? AuditTrail =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1747](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1747) | Gets the dropped event audit trail, if configured. |
+| <code>public int QueueCapacity =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1752](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1752) | Gets the queue capacity. |
+| <code>public IEventMetrics EventMetrics =&gt; …;</code> | [src/Meridian.Application/Pipeline/EventPipeline.cs:1757](../../../../src/Meridian.Application/Pipeline/EventPipeline.cs#L1757) | Gets the injected event metrics instance. |
+
 ## FSharpEventValidator
 
 Qualified name: <code>Meridian.Application.Pipeline.FSharpEventValidator</code>. Kind: `class`.
@@ -989,50 +1036,3 @@ Declared public members:
 | <code>public string? AutoRemediationLastOutcome { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:128](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L128) | Last known remediation outcome used by observability surfaces. |
 | <code>public string? AutoRemediationIdempotencyKey { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:133](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L133) | Idempotency key (symbol+range+provider) used to suppress duplicates. |
 | <code>public BackfillRemediationSlaMetadata? AutoRemediationSla { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:140](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L140) | Typed SLA metadata when this execution was created by auto gap remediation. Null for non-remediation executions; legacy remediation entries carry the same data as key=value strings in Warnings instead. |
-
-## BackfillSchedule
-
-Qualified name: <code>Meridian.Application.Scheduling.BackfillSchedule</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillSchedule.cs:11](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L11).
-
-Represents a scheduled backfill configuration with cron-like scheduling. Supports daily, weekly, and custom cron expressions for automatic gap-fill.
-
-```csharp
-public sealed class BackfillSchedule
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ScheduleId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:16](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L16) | Unique identifier for this schedule. |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:21](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L21) | Human-readable name for the schedule. |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:26](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L26) | Description of what this schedule does. |
-| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:31](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L31) | Whether this schedule is active. |
-| <code>public string CronExpression { get; set; } = &quot;0 2 * * *&quot;;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:39](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L39) | Cron expression for scheduling (five-field cron plus Meridian&#x27;s explicit d#n ordinal-day extension). Examples: &quot;0 2 * * *&quot; (daily at 2am), &quot;0 3 * * 0&quot; (weekly on Sunday at 3am), and &quot;0 1 * * 0#1&quot; (first Sunday of the month at 1am). |
-| <code>public string TimeZoneId { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:44](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L44) | Timezone for cron expression evaluation. |
-| <code>public ScheduledBackfillType BackfillType { get; set; } = ScheduledBackfillType.GapFill;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:49](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L49) | Type of backfill operation. |
-| <code>public List&lt;string&gt; Symbols { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:54](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L54) | Symbols to include in backfill. Empty = use all configured symbols. |
-| <code>public int LookbackDays { get; set; } = 30;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:59](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L59) | Lookback period for gap detection (e.g., 30 days). |
-| <code>public DataGranularity Granularity { get; set; } = DataGranularity.Daily;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:64](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L64) | Data granularity for backfill. |
-| <code>public List&lt;string&gt; PreferredProviders { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:69](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L69) | Preferred providers in priority order. Empty = use default priority. |
-| <code>public BackfillPriority Priority { get; set; } = BackfillPriority.Normal;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:74](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L74) | Priority level for jobs created by this schedule. |
-| <code>public int MaxRetries { get; set; } = 3;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:79](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L79) | Maximum retries for failed requests. |
-| <code>public int MaxConcurrentRequests { get; set; } = 3;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:84](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L84) | Maximum concurrent requests for jobs from this schedule. |
-| <code>public bool SkipExistingData { get; set; } = true;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:89](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L89) | Whether to skip dates that already have data. |
-| <code>public bool AutoPauseOnRateLimit { get; set; } = true;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:94](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L94) | Auto-pause when rate limited. |
-| <code>public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:99](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L99) | When the schedule was created. |
-| <code>public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:104](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L104) | When the schedule was last modified. |
-| <code>public DateTimeOffset? LastExecutedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:109](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L109) | When the schedule last executed. |
-| <code>public DateTimeOffset? NextExecutionAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:114](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L114) | When the schedule is next scheduled to execute. |
-| <code>public string? LastJobId { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:119](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L119) | ID of the last job created by this schedule. |
-| <code>public int ExecutionCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:124](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L124) | Total number of times this schedule has executed. |
-| <code>public int SuccessfulExecutions { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:129](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L129) | Number of successful executions. |
-| <code>public int FailedExecutions { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:134](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L134) | Number of failed executions. |
-| <code>public List&lt;string&gt; Tags { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:139](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L139) | Tags for categorization and filtering. |
-| <code>public string? LastRepairReason { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:144](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L144) | Reason the schedule was last repaired automatically while loading retained state. |
-| <code>public DateTimeOffset? LastRepairedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:149](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L149) | UTC timestamp of the last automatic retained-state repair. |
-| <code>[JsonIgnore] public TimeZoneInfo TimeZone =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:155](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L155) | Gets the timezone info for cron evaluation. |
-| <code>public DateTimeOffset? CalculateNextExecution(DateTimeOffset? from = null);</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:160](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L160) | Calculate the next execution time based on the cron expression. |
-| <code>public BackfillJob CreateJob(DateOnly? fromDate = null, DateOnly? toDate = null);</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:169](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L169) | Create a BackfillJob from this schedule. |

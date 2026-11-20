@@ -2192,7 +2192,8 @@ Meridian-main
 │   │   │   │   ├── page-076.md
 │   │   │   │   ├── page-077.md
 │   │   │   │   ├── page-078.md
-│   │   │   │   └── page-079.md
+│   │   │   │   ├── page-079.md
+│   │   │   │   └── page-080.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -5160,6 +5161,7 @@ Meridian-main
 │   │   │   └── WaterfallMarkPriceSource.cs
 │   │   ├── Backfill
 │   │   │   ├── AutoGapRemediationService.cs
+│   │   │   ├── BackfillCoordinator.Clone.cs
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── BackfillCoordinatorExecutionGateway.cs
 │   │   │   ├── BackfillCostEstimator.cs
@@ -5762,6 +5764,7 @@ Meridian-main
 │   │   ├── PortfolioSnapshot.cs
 │   │   ├── Position.cs
 │   │   ├── README.md
+│   │   ├── ResearchProviderProvenance.cs
 │   │   ├── StrategyParameterAttribute.cs
 │   │   ├── TcaReportModels.cs
 │   │   ├── TradeTicket.cs
@@ -6132,6 +6135,7 @@ Meridian-main
 │   │   │   ├── OperationsContractsJsonContext.cs
 │   │   │   ├── OperationsOriginGuard.cs
 │   │   │   ├── PreparerAttestationApprovalBoundary.cs
+│   │   │   ├── ProviderProvenanceReceipt.cs
 │   │   │   └── VerifiedOperationOutcome.cs
 │   │   ├── Options
 │   │   │   ├── OptionAssessmentValidation.cs
@@ -7315,6 +7319,7 @@ Meridian-main
 │   │   │   ├── Core
 │   │   │   │   ├── Backfill
 │   │   │   │   │   ├── BackfillJobManager.cs
+│   │   │   │   │   ├── BackfillProvenanceCapture.cs
 │   │   │   │   │   ├── BackfillRequestQueue.cs
 │   │   │   │   │   ├── BackfillWorkerService.cs
 │   │   │   │   │   ├── MarketDataTracing.cs
@@ -7595,6 +7600,7 @@ Meridian-main
 │   │   │   ├── IOptionChainImportService.cs
 │   │   │   ├── IOptionReferenceService.cs
 │   │   │   ├── OptionProjectionService.cs
+│   │   │   ├── OptionsChainProvenance.cs
 │   │   │   └── OptionsChainService.cs
 │   │   ├── DesignModule.cs
 │   │   ├── InstrumentProjectionServiceBase.cs
@@ -7962,6 +7968,7 @@ Meridian-main
 │   │   ├── ProviderModuleContext.cs
 │   │   ├── ProviderModuleLoader.cs
 │   │   ├── ProviderRoutingModels.cs
+│   │   ├── ProviderRuntimeProvenance.cs
 │   │   ├── README.md
 │   │   └── RequiresCredentialAttribute.cs
 │   ├── Meridian.QuantScript
@@ -9094,6 +9101,7 @@ Meridian-main
 │   │   │   │   │   │   ├── CandleChart.tsx
 │   │   │   │   │   │   ├── CategoryBars.tsx
 │   │   │   │   │   │   ├── chart-a11y.tsx
+│   │   │   │   │   │   ├── chart-evidence.tsx
 │   │   │   │   │   │   ├── chart-interaction.test.ts
 │   │   │   │   │   │   ├── chart-interaction.tsx
 │   │   │   │   │   │   ├── chart-sync.test.tsx
@@ -9304,6 +9312,7 @@ Meridian-main
 │   │   │   │   │   │   ├── private-capital-lifecycle.view-model.ts
 │   │   │   │   │   │   ├── proof-drawer.test.tsx
 │   │   │   │   │   │   ├── proof-drawer.tsx
+│   │   │   │   │   │   ├── provider-provenance-panel.tsx
 │   │   │   │   │   │   ├── provider-verification-timeline.test.tsx
 │   │   │   │   │   │   ├── provider-verification-timeline.tsx
 │   │   │   │   │   │   ├── quant-notebook.test.tsx
@@ -9313,6 +9322,7 @@ Meridian-main
 │   │   │   │   │   │   ├── quant-plot.test.tsx
 │   │   │   │   │   │   ├── quant-plot.tsx
 │   │   │   │   │   │   ├── quant-plot.view-model.ts
+│   │   │   │   │   │   ├── record-identity-spine.tsx
 │   │   │   │   │   │   ├── report-writer-chart-preview.test.tsx
 │   │   │   │   │   │   ├── report-writer-chart-preview.tsx
 │   │   │   │   │   │   ├── report-writer-grid-diff-view.tsx
@@ -9573,6 +9583,7 @@ Meridian-main
 │   │   │   │   │       ├── entity-setup-wizard.test.tsx
 │   │   │   │   │       └── entity-setup-wizard.tsx
 │   │   │   │   ├── hooks
+│   │   │   │   │   ├── use-linked-record-selection.ts
 │   │   │   │   │   ├── use-notification-center.test.ts
 │   │   │   │   │   ├── use-notification-center.test.tsx
 │   │   │   │   │   ├── use-notification-center.ts
@@ -9846,6 +9857,7 @@ Meridian-main
 │   │   │   │   │   ├── identifiers.ts
 │   │   │   │   │   ├── income-movement-waterfall.test.ts
 │   │   │   │   │   ├── income-movement-waterfall.ts
+│   │   │   │   │   ├── instrument-record-identity.ts
 │   │   │   │   │   ├── internal-copy.test.ts
 │   │   │   │   │   ├── internal-copy.ts
 │   │   │   │   │   ├── keymap.test.ts
@@ -9912,6 +9924,8 @@ Meridian-main
 │   │   │   │   │   ├── quotes-stream.ts
 │   │   │   │   │   ├── recent-pages.test.ts
 │   │   │   │   │   ├── recent-pages.ts
+│   │   │   │   │   ├── record-workspace-context.test.ts
+│   │   │   │   │   ├── record-workspace-context.ts
 │   │   │   │   │   ├── reference-data-probe.ts
 │   │   │   │   │   ├── report-amount-proof-api.test.ts
 │   │   │   │   │   ├── report-amount-proof-api.ts
@@ -10329,6 +10343,7 @@ Meridian-main
 │   │   │   │   │   ├── journal-entry-detail-screen.view-model.ts
 │   │   │   │   │   ├── journal-entry-tax-results.test.tsx
 │   │   │   │   │   ├── journal-entry-tax-results.tsx
+│   │   │   │   │   ├── ledger-record-identity.tsx
 │   │   │   │   │   ├── live-quotes-screen.quick-trade.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
 │   │   │   │   │   ├── live-quotes-screen.tsx
@@ -10618,12 +10633,14 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.css
 │   │   │   │   │   ├── app-shell.css
 │   │   │   │   │   ├── breakpoints.test.ts
+│   │   │   │   │   ├── chart-evidence.css
 │   │   │   │   │   ├── command-palette.css
 │   │   │   │   │   ├── companion-pane.css
 │   │   │   │   │   ├── dense-row-detail-accessibility.css
 │   │   │   │   │   ├── index.css
 │   │   │   │   │   ├── print.css
 │   │   │   │   │   ├── reconciliation-workbench.css
+│   │   │   │   │   ├── record-identity-spine.css
 │   │   │   │   │   ├── status-badge.css
 │   │   │   │   │   ├── table-workbench.css
 │   │   │   │   │   ├── ui-kit-primitives.css
@@ -10707,6 +10724,7 @@ Meridian-main
 │   │   │   │   │   ├── provider-integration-identity.ts
 │   │   │   │   │   ├── provider-integration-provenance.ts
 │   │   │   │   │   ├── provider-ownership.types.ts
+│   │   │   │   │   ├── provider-provenance.ts
 │   │   │   │   │   ├── provider-setup.ts
 │   │   │   │   │   ├── reconciliation-readiness.types.ts
 │   │   │   │   │   ├── report-amount-proof.ts
@@ -12965,6 +12983,7 @@ Meridian-main
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillExecutionHistoryTests.cs
 │   │   │   │   ├── BackfillJobProgressAndGranularityTests.cs
+│   │   │   │   ├── BackfillProviderProvenanceTests.cs
 │   │   │   │   ├── BackfillRequestTraceContextTests.cs
 │   │   │   │   ├── BackfillScheduleManagerDurabilityTests.cs
 │   │   │   │   ├── BackfillSourceAttributionTests.cs

@@ -132,21 +132,21 @@ Declared public members:
 | <code>public StrategyRunStore(IOperationalCaseHistoryStore historyStore) : this(historyStore, null);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:53](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L53) | Creates a durable store backed by the shared operational case-history port. |
 | <code>public StrategyRunStore(IOperationalCaseHistoryStore historyStore, IStrategyRunLedgerArchive? ledgerArchive);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:58](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L58) | Creates a durable store with complete journals retained outside bounded snapshots. |
 | <code>public async Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:65](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L65) |  |
-| <code>public Task RecordLifecycleEventAsync(StrategyRunEntry entry, StrategyRunLifecycleEventType eventType, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:152](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L152) |  |
-| <code>public async Task&lt;VerifiedOperationOutcome?&gt; RecordLifecycleEventWithOutcomeAsync(StrategyRunEntry entry, StrategyRunLifecycleEventType eventType, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:159](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L159) |  |
-| <code>public async IAsyncEnumerable&lt;StrategyRunEntry&gt; GetRunsAsync(string strategyId, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:204](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L204) |  |
-| <code>public async Task&lt;StrategyRunEntry?&gt; GetLatestRunAsync(string strategyId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:227](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L227) |  |
-| <code>public async Task&lt;StrategyRunEntry?&gt; GetRunByIdAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:240](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L240) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunEntry&gt;&gt; GetRunsByIdsAsync(IReadOnlyCollection&lt;string&gt; runIds, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:304](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L304) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunEntry&gt;&gt; QueryRunsAsync(StrategyRunRepositoryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:327](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L327) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunEntry&gt;&gt; QueryVisibleRunsAsync(StrategyRunRepositoryQuery query, StrategyRunRepositoryScope? scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:373](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L373) |  |
-| <code>public async IAsyncEnumerable&lt;StrategyRunEntry&gt; GetAllRunsAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:435](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L435) |  |
+| <code>public Task RecordLifecycleEventAsync(StrategyRunEntry entry, StrategyRunLifecycleEventType eventType, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:154](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L154) |  |
+| <code>public async Task&lt;VerifiedOperationOutcome?&gt; RecordLifecycleEventWithOutcomeAsync(StrategyRunEntry entry, StrategyRunLifecycleEventType eventType, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:161](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L161) |  |
+| <code>public async IAsyncEnumerable&lt;StrategyRunEntry&gt; GetRunsAsync(string strategyId, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:206](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L206) |  |
+| <code>public async Task&lt;StrategyRunEntry?&gt; GetLatestRunAsync(string strategyId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:229](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L229) |  |
+| <code>public async Task&lt;StrategyRunEntry?&gt; GetRunByIdAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:242](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L242) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunEntry&gt;&gt; GetRunsByIdsAsync(IReadOnlyCollection&lt;string&gt; runIds, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:306](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L306) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunEntry&gt;&gt; QueryRunsAsync(StrategyRunRepositoryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:329](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L329) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunEntry&gt;&gt; QueryVisibleRunsAsync(StrategyRunRepositoryQuery query, StrategyRunRepositoryScope? scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:375](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L375) |  |
+| <code>public async IAsyncEnumerable&lt;StrategyRunEntry&gt; GetAllRunsAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:437](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L437) |  |
 
 ## StrategyRunStoreOptions
 
 Qualified name: <code>Meridian.Strategies.Storage.StrategyRunStoreOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1731](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1731).
+Source: [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1744](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1744).
 
 ```csharp
 public sealed record StrategyRunStoreOptions(string RootDirectory)
@@ -156,4 +156,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1733](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1733) |  |
+| <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1746](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1746) |  |

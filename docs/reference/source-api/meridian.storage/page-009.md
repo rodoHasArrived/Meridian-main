@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQueryRetentionReceipt
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryRetentionReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:12](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L12).
+
+```csharp
+public sealed record DataQueryRetentionReceipt(string ExecutionId, long RowCount, DateTimeOffset ExpiresAt);
+```
+
 ## DuckDbQueryService
 
 Qualified name: <code>Meridian.Storage.Query.DuckDbQueryService</code>. Kind: `class`.
@@ -927,14 +937,4 @@ One repeatable-read export cut: global actionable observations plus exact scoped
 
 ```csharp
 public sealed record CorporateActionInboxExportSource(IReadOnlyList<CorporateActionSourceProposalDto> Proposals, IReadOnlyList<CorporateActionProcessingCaseDto> Cases);
-```
-
-## CryptoProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CryptoProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs#L15).
-
-```csharp
-public sealed record CryptoProjectionRow(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string? Network, string PrimaryIdentifierValue, long Version);
 ```

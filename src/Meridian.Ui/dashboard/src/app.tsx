@@ -49,6 +49,8 @@ import { SectionDescriptionPreferences } from "@/components/ui/section-descripti
 import { EntityInspectorProvider } from "@/components/meridian/entity-inspector";
 import { MetricPassportSessionProvider } from "@/components/meridian/metric-passport";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
+import { RecordWorkspaceHandoff } from "@/components/meridian/record-identity-spine";
+import { readRecordWorkspaceContext, withoutRecordWorkspaceContext } from "@/lib/record-workspace-context";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
 import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
 import { isCompanionPaneRoute, openCompanionPane } from "@/lib/companion-pane/pane-window";
@@ -396,14 +398,16 @@ function AppShell({
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
   const scopeReplacementLocationRef = useRef<string | null>(null);
+  const previousHandoffRouteRef = useRef<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { hash, pathname, search, key: locationKey } = location;
   const activeWorkspace = resolveWorkspaceKeyFromPath(pathname);
   const routeOperatingScope = useMemo(() => readOperatingScopeFromSearch(search), [search]);
+  const recordWorkspaceContext = useMemo(() => readRecordWorkspaceContext(search), [search]);
   const operatingScopeInput = useMemo(
-    () => mergeOperatingScopes(storedOperatingScope, routeOperatingScope),
-    [storedOperatingScope, routeOperatingScope]
+    () => recordWorkspaceContext ? compactOperatingScope(routeOperatingScope) : mergeOperatingScopes(storedOperatingScope, routeOperatingScope),
+    [recordWorkspaceContext, storedOperatingScope, routeOperatingScope]
   );
   const operatingContextSymbol = operatingScopeInput.symbol ?? null;
   // C1: load the operator's default scope once. It is applied only when this session opened with
@@ -482,6 +486,7 @@ function AppShell({
     refreshStatus,
     portfolioRefreshStatus,
     refresh,
+    refreshWorkspace,
     refreshPortfolio,
     refreshProviderRouting,
     updateFeatureCapability,
@@ -573,6 +578,8 @@ function AppShell({
   );
 
   useEffect(() => {
+    const dismissedHandoff = previousHandoffRouteRef.current === `${pathname}${search}`;
+    previousHandoffRouteRef.current = recordWorkspaceContext ? `${pathname}${withoutRecordWorkspaceContext(search)}` : null;
     // An explicit replacement must not re-import the old route's scope while
     // React Router completes navigation (including partial clears and layout restores).
     if (scopeReplacementLocationRef.current !== null) {
@@ -582,7 +589,8 @@ function AppShell({
       return;
     }
 
-    if (!hasOperatingScopeValues(routeOperatingScope)) {
+    // A related screen's route filters apply there without replacing the operator's saved scope.
+    if (recordWorkspaceContext || dismissedHandoff || !hasOperatingScopeValues(routeOperatingScope)) {
       return;
     }
 
@@ -593,15 +601,15 @@ function AppShell({
 
     writeStoredOperatingScope(nextScope);
     setStoredOperatingScope(nextScope);
-  }, [locationKey, routeOperatingScope, storedOperatingScope]);
+  }, [locationKey, pathname, search, recordWorkspaceContext, routeOperatingScope, storedOperatingScope]);
 
   // Scope survives every in-app link (Phase 1, P2 step 1). A plain catalog link drops the query
   // string; screens that read the URL then lost their fund filter while the bar still showed it.
   // Routes render against the scoped location on the first render, so no screen fetches unscoped,
   // and the address bar is brought in line so copied links carry the same scope.
   const scopedSearch = useMemo(
-    () => carryOperatingScopeIntoSearch(pathname, search, storedOperatingScope),
-    [pathname, search, storedOperatingScope]
+    () => recordWorkspaceContext ? search : carryOperatingScopeIntoSearch(pathname, search, storedOperatingScope),
+    [pathname, recordWorkspaceContext, search, storedOperatingScope]
   );
   const scopedLocation = useMemo(
     () => (scopedSearch === search ? location : { ...location, search: scopedSearch }),
@@ -868,14 +876,17 @@ function AppShell({
     () => buildHeaderWorkspaceSummary(pathname, shell.activeWorkspace),
     [pathname, shell.activeWorkspace]
   );
-  const routeErrorContext = useMemo<WorkstationRouteErrorContext>(() => ({
-    routeKey: `${pathname}${search}${hash}`,
-    pathname,
-    search,
-    hash,
-    workspaceLabel: shell.activeWorkspace.label,
-    routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace, search)
-  }), [hash, pathname, search, shell.activeWorkspace]);
+  const routeErrorContext = useMemo<WorkstationRouteErrorContext>(() => {
+    const diagnosticSearch = withoutRecordWorkspaceContext(search);
+    return {
+      routeKey: `${pathname}${diagnosticSearch}${hash}`,
+      pathname,
+      search: diagnosticSearch,
+      hash,
+      workspaceLabel: shell.activeWorkspace.label,
+      routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace, search)
+    };
+  }, [hash, pathname, search, shell.activeWorkspace]);
   const dataRouteElement = (
     <DataScreen
       data={data}
@@ -888,6 +899,7 @@ function AppShell({
       providerRoutingRefreshing={providerRoutingRefreshing}
       onProviderSetupConfigured={refreshProviderRouting}
       onProviderRoutingRefresh={refreshProviderRouting}
+      onBackfillCompleted={refreshWorkspace}
     />
   );
   const settingsRouteElement = (
@@ -1054,14 +1066,17 @@ function AppShell({
             overflowActions={<CopyLinkButton operatingScope={operatingScopeInput} />}
             routeKey={shell.routeFocus.routeKey}
             scope={(
-              <OperatingScopeBar
-                operatingScope={shell.workflowContinuity.operatingScope}
-                onEditOperatingScope={openScopePicker}
-                scopeDimensionsInEffect={scopeDimensionsInEffect}
-                valueLabels={scopeBarValueLabels}
-                // Trading works one fund account at a time, so its account step is in the bar.
-                accountPicker={pathname.startsWith("/trading") ? <ScopeBarAccountPicker normalize={normalizeFundAccountGuid} invalidMessage="Trading needs a fund account with a GUID id." /> : undefined}
-              />
+              <>
+                <OperatingScopeBar
+                  operatingScope={shell.workflowContinuity.operatingScope}
+                  onEditOperatingScope={openScopePicker}
+                  scopeDimensionsInEffect={scopeDimensionsInEffect}
+                  valueLabels={scopeBarValueLabels}
+                  // Trading works one fund account at a time, so its account step is in the bar.
+                  accountPicker={pathname.startsWith("/trading") ? <ScopeBarAccountPicker normalize={normalizeFundAccountGuid} invalidMessage="Trading needs a fund account with a GUID id." /> : undefined}
+                />
+                {shell.canRenderRoutes && recordWorkspaceContext ? <RecordWorkspaceHandoff context={recordWorkspaceContext} /> : null}
+              </>
             )}
             breadcrumbItems={breadcrumbItems}
             workspace={headerWorkspace}

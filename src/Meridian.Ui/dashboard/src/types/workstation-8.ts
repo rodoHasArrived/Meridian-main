@@ -234,6 +234,7 @@ export interface QuantParameter {
 }
 
 export interface QuantRunResponse {
+  providerProvenanceReceipts?: import("./provider-provenance").ProviderProvenanceReceipt[];
   success: boolean;
   elapsedMs: number;
   compileTimeMs: number;
@@ -407,6 +408,7 @@ export interface StrategyDesignRunBacktestRequest {
 }
 
 export interface StrategyDesignRunBacktestResponse {
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
   success: boolean;
   runId: string | null;
   strategyId: string;
@@ -453,6 +455,7 @@ export interface NotebookCell {
   statusText: string;
   collapsed: boolean;
   output: CellOutput[];
+  outputSource?: string;
 }
 
 export interface CellSnippet {

@@ -11,6 +11,9 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Storage
 
+The backfill status store exposes a legacy summary only for a raw snapshot written without a
+provenance receipt. Reads of retained results continue to enforce tenant visibility.
+
 The `Meridian.Storage` assembly owns storage primitives and does not depend on Ledger or Reporting.
 Business adapters whose source remains under `Ledger/`, `Reporting/`, Security Master and other
 business folders compile through linked items in `Meridian.Storage.Accounting`. The workflow

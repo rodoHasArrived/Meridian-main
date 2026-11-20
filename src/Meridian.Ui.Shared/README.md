@@ -29,6 +29,9 @@ repositories or the provider credential vault are unavailable. Affected rows rep
 readiness evidence, and a failed vault read leaves the credential summary unavailable. Provider
 health returns connection state separately from performance measurements. Absent measurements
 are null, and measured average latency includes its observation timestamp.
+Data keeps independent records available when the backfill receipt store cannot be read.
+Retained backfill runs require a receipt visible to the requesting tenant. The legacy summary
+is available only from a snapshot written without provenance.
 
 `IntercompanyObligationEndpoints` adds an owned-book advisory monitor at
 `/api/ledger/intercompany/obligations` and dates-only native agreement `/{id}/schedule` reads.

@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TemplateBrokerageGateway
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:38](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L38).
+
+Template brokerage gateway scaffold. Copy this file and fill in the TODOs to implement a new brokerage provider. Steps to implement a new brokerage: 1. Copy this file to a new folder under Adapters/{BrokerName}/ 2. Rename the class to {BrokerName}BrokerageGateway 3. Replace the template &#91;DataSource&#93; and &#91;ImplementsAdr&#93; metadata with broker-specific values 4. Replace scaffold methods with broker-specific API calls 5. Add JSON DTOs and a JsonSerializerContext for ADR-014 compliance 6. Register in DI: services.AddBrokerageGateway&lt;{BrokerName}BrokerageGateway&gt;() 7. Add configuration options record if needed 8. Add tests under tests/Meridian.Tests/Brokerage/
+
+```csharp
+public sealed class TemplateBrokerageGateway : IBrokerageGateway
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TemplateBrokerageGateway(ILogger&lt;TemplateBrokerageGateway&gt; logger) : this(logger, new TemplateBrokerageGatewayOptions());</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L50) |  |
+| <code>public TemplateBrokerageGateway(ILogger&lt;TemplateBrokerageGateway&gt; logger, TemplateBrokerageGatewayOptions options);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L55) |  |
+| <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L67) |  |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L69) |  |
+| <code>public string BrokerDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L71) |  |
+| <code>public BrokerageCapabilities BrokerageCapabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:73](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L73) |  |
+| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L75) |  |
+| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L88) |  |
+| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:97](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L97) |  |
+| <code>public async Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:127](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L127) |  |
+| <code>public async Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:153](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L153) |  |
+| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:183](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L183) |  |
+| <code>public Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:192](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L192) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:207](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L207) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:214](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L214) |  |
+| <code>public async Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:225](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L225) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:240](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L240) |  |
+
 ## TemplateBrokerageGatewayOptions
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGatewayOptions</code>. Kind: `record`.
@@ -856,39 +890,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static CredentialValidationResult Success { get; } = new (true, Array.Empty&lt;string&gt;());</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:734](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L734) | Creates a successful validation result. |
-
-## DataSourceBase
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:16](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L16).
-
-Base class providing common functionality for data source implementations. Handles health tracking, rate limiting, retry logic, and lifecycle management.
-
-```csharp
-public abstract class DataSourceBase : IDataSource, IProviderRateLimitDiagnosticsSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public abstract string Id { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:36](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L36) |  |
-| <code>public abstract string DisplayName { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:39](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L39) |  |
-| <code>public abstract string Description { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:42](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L42) |  |
-| <code>public abstract DataSourceType Type { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:47](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L47) |  |
-| <code>public abstract DataSourceCategory Category { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:50](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L50) |  |
-| <code>public virtual int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:55](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L55) | Default priority, can be overridden by derived classes. |
-| <code>public abstract DataSourceCapabilities Capabilities { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:60](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L60) |  |
-| <code>public virtual DataSourceCapabilityInfo CapabilityInfo =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:63](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L63) |  |
-| <code>public abstract IReadOnlySet&lt;string&gt; SupportedMarkets { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:66](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L66) |  |
-| <code>public abstract IReadOnlySet&lt;AssetClass&gt; SupportedAssetClasses { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:69](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L69) |  |
-| <code>public DataSourceHealth Health =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:74](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L74) |  |
-| <code>public DataSourceStatus Status { get; protected set; } = DataSourceStatus.Uninitialized;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:77](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L77) |  |
-| <code>public RateLimitState RateLimitState =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:80](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L80) |  |
-| <code>public IObservable&lt;DataSourceHealthChanged&gt; HealthChanges =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:83](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L83) |  |
-| <code>public virtual async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:109](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L109) |  |
-| <code>public abstract Task&lt;bool&gt; ValidateCredentialsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:148](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L148) |  |
-| <code>public abstract Task&lt;bool&gt; TestConnectivityAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:151](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L151) |  |
-| <code>public virtual async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:154](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L154) |  |
-| <code>public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:387](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L387) |  |
