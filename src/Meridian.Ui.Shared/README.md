@@ -1448,7 +1448,14 @@ case as its own casework command (`{bulkActionId}:{breakId}`) and retain one aud
 The endpoint stamps the actor and source from the session. When `AssignToCurrentOperator` is set on
 an Assign request, it also replaces the assignee with the authenticated operator, then clears the
 flag before the queue hashes the request. `WorkstationEndpointsTests.BulkCasework.cs` covers the
-dry run, the per-case audit and the session assignee.
+dry run, the per-case audit and the session assignee. Fresh executions must submit the returned
+`bulkActionId` as `previewBulkActionId` and include the eligible cases in preview order. Validation
+uses the case versions retained by the server. A changed case blocks the reviewed batch, whose
+terminal result remains available through the bulk result route.
+
+Governed statement intake publishes retained rule and operand evidence from the verified match
+artifact. Completed, comparable runs may attach split or merge proof from accepted transaction
+groups. Multi-source ambiguity prevents a run from establishing source absence.
 
 ## Return figures on the brokerage performance seam
 

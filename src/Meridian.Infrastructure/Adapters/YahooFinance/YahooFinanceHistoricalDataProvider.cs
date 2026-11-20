@@ -47,6 +47,7 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
         : TimeSpan.FromSeconds(0.5);
     public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.YahooPerHour;
     public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromHours(1);
+    protected override bool HasKnownQuota => false; // The adapter's safety limit is not a published Yahoo quota.
 
     public override HistoricalDataCapabilities Capabilities { get; } =
         HistoricalDataCapabilities.BarsOnly with

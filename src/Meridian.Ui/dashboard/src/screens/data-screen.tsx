@@ -14,7 +14,7 @@ import {
   TimerReset
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { KpiProvider } from "@/lib/kpi-context";
@@ -72,12 +72,15 @@ import { ProviderAccountingRegion } from "@/screens/data-screen.provider-account
 import { FailoverRegion } from "@/screens/data-screen.failover";
 import { BackfillProviderEditorRegion } from "@/screens/data-screen.backfill-provider-editor";
 import { BackfillBatchReceipts } from "@/screens/data-screen.backfill-batch-receipts";
+import { BackfillLiveProgress } from "@/screens/data-screen.backfill-progress";
 import { DataRoutingPreviewPanel } from "@/screens/data-screen.routing-preview";
 import { ProviderValidationPanel } from "@/screens/data-screen.provider-validation";
 import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history";
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
+import { BackfillQuotaPanel, BackfillReceiptEvidence } from "@/screens/data-screen.backfill-quota";
+import { TimeText } from "@/components/ui/time-text";
 import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
@@ -87,7 +90,6 @@ import {
 } from "@/screens/data-screen.view-model";
 import type { DataWorkspaceResponse } from "@/types";
 import type {
-  BackfillLiveProgressState,
   BackfillResultCardState,
   DataOperationsEmptyState,
   DataUploadPanelState,
@@ -288,7 +290,8 @@ function DataScreenContent({
     if (!shared || !local || (shared.healthy === local.healthy && shared.total === local.total)) return null;
     return `Providers healthy counts every provider in use across the workstation (${formatProviderHealth(shared)}); the health cards below show ${formatProviderHealth(local)} loaded on this page.`;
   }, [sharedCounts, kpiProviders]);
-  const lastReceiptId = vm.result?.providerProvenance?.receiptId;
+  const lastReceiptId = vm.result?.providerProvenance?.receiptId
+    ?? vm.queuedBackfills.find((row) => row.completedAt && row.quotaReceipt)?.executionId;
   useEffect(() => {
     if (lastReceiptId) void onBackfillCompleted?.("data");
   }, [lastReceiptId, onBackfillCompleted]);
@@ -1775,12 +1778,17 @@ const providerSetupNextActionIcons: Record<ProviderSetupNextActionState["id"], L
 };
 
 function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperationsVm; onBackfillCompleted: () => void }) {
+  const providerField = useRef<HTMLSelectElement>(null);
+  const quota = vm.preview?.quota;
+  const queuedAction = vm.scheduleForLater ? "Schedule backfill" : quota?.exceedsBudget ? "Queue with throttling" : "Queue backfill";
+  const latestSubmission = vm.queuedBackfills.find((row) => row.executionId === vm.submission?.executionId);
+  const submissionStatus = latestSubmission?.status ?? vm.submission?.status;
   return (
     <Dialog open={vm.dialogOpen} onOpenChange={(open) => { if (!open) vm.closeBackfillDialog(); }}>
       <DialogContent
         aria-labelledby={vm.dialogState.titleId}
         aria-describedby={vm.dialogState.descriptionId}
-        className="max-w-xl p-6"
+        className="max-w-2xl! p-6"
       >
         <div className="flex items-start justify-between gap-4">
           <DialogHeader className="mb-0">
@@ -1813,6 +1821,7 @@ function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperations
           <label htmlFor={vm.dialogState.providerField.id} className="grid gap-1 text-sm">
             {vm.dialogState.providerField.label}
             <Select
+              ref={providerField}
               id={vm.dialogState.providerField.id}
               className="min-h-11"
               value={vm.form.provider}
@@ -1851,7 +1860,7 @@ function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperations
                   onClick={() => vm.updateBackfillForm("provider", provider.value)}
                 >
                   <span className="font-semibold">{provider.label}</span>{" "}
-                  <span className={cn("ml-2 text-xs text-primary", usesTrackedCaps(provider.badge) && "type-label--caps")}>{provider.badge}</span>
+                  <span className={cn("ml-2 text-xs text-foreground", usesTrackedCaps(provider.badge) && "type-label--caps")}>{provider.badge}</span>
                 </Button>
               ))}
             </div>
@@ -1923,7 +1932,7 @@ function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperations
           aria-live="polite"
           tone={dataStatusToneToBannerTone(vm.dialogState.formStatusTone)}
           title="Backfill request status"
-          detail={vm.dialogState.formStatusLabel}
+          detail={vm.submission ? `Backfill ${submissionStatus?.toLowerCase()}.` : quota && vm.phase === "running" ? "Submitting the previewed backfill." : vm.dialogState.formStatusLabel}
           className="mt-4"
         />
 
@@ -1945,8 +1954,40 @@ function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperations
         )}
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
         {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
+        {vm.preview && <BackfillQuotaPanel preview={vm.preview} submissionEstimate={vm.submission?.quota} busy={vm.busy}
+          selectAlternative={(alternative) => {
+            providerField.current?.focus();
+            vm.selectBackfillAlternative(alternative);
+          }} />}
+        {quota && !vm.submission && (
+          <div className="mt-3 space-y-2 text-sm">
+            <label className="flex w-fit items-center gap-2">
+              <input type="checkbox" checked={vm.scheduleForLater} disabled={vm.busy}
+                onChange={(event) => vm.setScheduleForLater(event.target.checked)} />
+              Schedule for later
+            </label>
+            {vm.scheduleForLater && (
+              <label className="grid max-w-xs gap-1">
+                Earliest start (UTC)
+                <Input type="datetime-local" value={vm.scheduledStart} disabled={vm.busy}
+                  onChange={(event) => vm.setScheduledStart(event.target.value)} />
+              </label>
+            )}
+          </div>
+        )}
+        {vm.submission && (
+          <div className="mt-4 space-y-2 rounded-md border border-border/70 p-3" role="status">
+            <p className="text-sm font-medium">{submissionStatus} · {vm.submission.provider}</p>
+            <p className="break-all font-mono text-xs text-muted-foreground">Job {vm.submission.executionId}</p>
+            {submissionStatus === "Scheduled" && <p className="text-xs">Eligible from <TimeText value={vm.submission.scheduledAt} />.</p>}
+            {vm.submission.quota.exceedsBudget && <p className="text-xs">Requests are paced to the shared provider budget.</p>}
+            {latestSubmission?.quotaReceipt && <BackfillReceiptEvidence receipt={latestSubmission.quotaReceipt} />}
+          </div>
+        )}
+        {latestSubmission?.batchReceipts?.length ? <BackfillBatchReceipts receipts={latestSubmission.batchReceipts} /> : null}
         {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
         {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
+        {vm.result?.quotaReceipt && <div className="mt-3"><BackfillReceiptEvidence receipt={vm.result.quotaReceipt} /></div>}
         {vm.runResultCard ? <ProviderProvenancePanel receipt={vm.result?.providerProvenance} onBackfillCompleted={onBackfillCompleted} /> : null}
         {vm.result?.batchReceipts?.length ? <BackfillBatchReceipts receipts={vm.result.batchReceipts} /> : null}
 
@@ -1962,16 +2003,16 @@ function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperations
           >
             {vm.dialogState.previewAction.label}
           </Button>
-          {vm.preview && (
+          {vm.preview && !vm.submission && (
             <Button
               onClick={() => void vm.runBackfill()}
               disabled={vm.dialogState.runAction.disabled}
               disabledReason={vm.dialogState.runAction.disabledReason}
               busy={vm.dialogState.runAction.busy}
-              busyLabel={vm.dialogState.runAction.busyLabel}
-              aria-label={vm.dialogState.runAction.ariaLabel}
+              busyLabel={quota ? "Submitting…" : vm.dialogState.runAction.busyLabel}
+              aria-label={quota ? queuedAction : vm.dialogState.runAction.ariaLabel}
             >
-              {vm.dialogState.runAction.label}
+              {quota ? queuedAction : vm.dialogState.runAction.label}
             </Button>
           )}
         </div>
@@ -2007,94 +2048,6 @@ function BackfillResultCard({ state }: { state: BackfillResultCardState }) {
       </div>
       {state.errorText && <p className="mt-3 text-xs leading-5">{state.errorText}</p>}
     </div>
-  );
-}
-
-function BackfillLiveProgress({ state }: { state: BackfillLiveProgressState }) {
-  return (
-    <section
-      role="status"
-      aria-live="polite"
-      aria-label={state.ariaLabel}
-      className="mt-4 space-y-3 rounded-md border border-primary/25 bg-primary/5 p-3 text-sm"
-    >
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <div className="font-semibold text-foreground">{state.title}</div>
-          <div className="mt-1 text-xs text-muted-foreground">{state.summary}</div>
-        </div>
-        <span className="rounded-full border border-border/70 bg-background px-2 py-1 text-xs font-medium text-foreground">
-          {state.active ? "Running" : "Settled"}
-        </span>
-      </div>
-
-      <div
-        role="progressbar"
-        aria-label="Overall backfill progress"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(state.overallPercent)}
-        className="h-2 overflow-hidden rounded-full bg-secondary"
-      >
-        <div
-          className="h-full rounded-full bg-primary transition-[width] duration-300"
-          style={{ width: `${state.overallPercent}%` }}
-        />
-      </div>
-
-      {state.symbols.length > 0 ? (
-        <div className="grid gap-2" aria-label="Backfill symbol provider progress">
-          {state.symbols.map((symbol) => (
-            <article key={symbol.symbol} className="rounded-md border border-border/70 bg-background/70 p-2.5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono font-semibold text-foreground">{symbol.symbol}</span>
-                <span className="text-xs font-medium text-foreground">{symbol.progress}</span>
-              </div>
-              <dl className="mt-2 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
-                <div><dt className="inline font-medium text-foreground">Range:</dt> <dd className="inline">{symbol.range}</dd></div>
-                <div><dt className="inline font-medium text-foreground">Provider:</dt> <dd className="inline">{symbol.provider}</dd></div>
-                <div><dt className="inline font-medium text-foreground">Fallback:</dt> <dd className="inline">{symbol.attempt}</dd></div>
-                <div><dt className="inline font-medium text-foreground">State:</dt> <dd className="inline">{symbol.status}</dd></div>
-              </dl>
-              {symbol.error ? <p className="mt-2 text-xs text-danger">{symbol.error}</p> : null}
-            </article>
-          ))}
-        </div>
-      ) : (
-        <p className="text-xs text-muted-foreground">Waiting for the first provider attempt.</p>
-      )}
-
-      {state.recentAttempts.length > 0 ? (
-        <div>
-          <div className="text-xs font-semibold text-muted-foreground">Recent fallback attempts</div>
-          <ul className="mt-2 space-y-1.5">
-            {state.recentAttempts.map((attempt) => (
-              <li
-                key={attempt.id}
-                className={cn(
-                  "rounded-md border px-2.5 py-2 text-xs",
-                  attempt.tone === "danger"
-                    ? "border-danger/30 bg-danger/10 text-danger"
-                    : attempt.tone === "warning"
-                      ? "border-warning/30 bg-warning/10 text-warning"
-                      : "border-border/70 bg-background/60 text-muted-foreground"
-                )}
-              >
-                <span className="font-semibold text-foreground">{attempt.label}</span>
-                <span> · {attempt.detail}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-
-      {state.droppedNotificationWarning ? (
-        <p role="alert" className="rounded-md border border-warning/30 bg-warning/10 px-2.5 py-2 text-xs text-warning">
-          {state.droppedNotificationWarning}
-        </p>
-      ) : null}
-      <p className="text-right text-xs text-muted-foreground">Observed {state.observedAt}</p>
-    </section>
   );
 }
 
