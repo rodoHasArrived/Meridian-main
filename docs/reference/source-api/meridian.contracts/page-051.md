@@ -6,6 +6,97 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcMarginCallRules
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarginCallRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:266](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L266).
+
+The margin call lifecycle as pure functions. A call is issued from a complete, real snapshot of a date that has come, whose movement has not already been called (a cancelled call aside); the store also requires the snapshot to be the latest version for its date, with no snapshot of the netting set for a later date up to the current one, computed under the netting set&#x27;s current master agreement version and current, unshared collateral agreement version, and computed from records and market data none of which has changed since (RequireUnchangedInputs). It copies the movement&#x27;s amount and then moves Issued → Agreed &#124; Disputed &#124; Cancelled, Disputed → Agreed &#124; Cancelled, Agreed → Settled &#124; Cancelled, and Settled and Cancelled are terminal. Settlement does not move a balance; the operator records the resulting balance.
+
+```csharp
+public static class OtcMarginCallRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsOpen(OtcMarginCallStatus status) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:269](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L269) | Whether a call still awaits agreement or settlement. |
+| <code>public static OtcMarginCallDto Issue(OtcExposureSnapshotDto snapshot, IssueOtcMarginCallRequest request, IEnumerable&lt;OtcMarginCallDto&gt; existingCalls, DateTimeOffset issuedAt);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:276](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L276) | The call a request issues from a snapshot, given the netting set&#x27;s existing calls: at least every call still open and every call already issued from this snapshot. |
+| <code>public static void RequireUnchangedInputs(OtcExposureSnapshotDto snapshot, OtcExposureSnapshotInputsDto current, IReadOnlyCollection&lt;OtcMarketDataRecordDto&gt; marketDataRecordedSince);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:348](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L348) | Refuses a call from a snapshot when anything it was computed from has changed since: the netting set amended; a contract added to, removed from or amended in the netting set; a collateral balance recorded, amended or removed under the collateral agreement; a netting set that now references the agreement, or no longer does; or market data for a valued security recorded after MarketDataKnownAt. current is the same record set as the store now holds it (its knowledge time and securities are not read); marketDataRecordedSince is every price observation and pricing hierarchy version for the snapshot&#x27;s securities, bearing on its as-of date, recorded after that instant. A snapshot that does not record its inputs is refused, since it cannot be shown to be current, and so is one valued at a knowledge time earlier than its computation: it replays what was known then and is evidence, not a current valuation. The message names every change with its ids and versions. |
+| <code>public static DateTimeOffset MarketDataKnownAt(OtcExposureSnapshotDto snapshot);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:396](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L396) | The instant after which a price observation or pricing hierarchy version for the snapshot&#x27;s securities counts as new: the earlier of its recorded knowledge time and its computation instant. The valuations read nothing recorded after the knowledge time; with a knowledge time later than the computation they may have read what was recorded meanwhile, or not, so that counts as new too. |
+| <code>public static OtcMarginCallDto Transition(OtcMarginCallDto current, TransitionOtcMarginCallRequest request, DateTimeOffset transitionedAt);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:405](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L405) | The call after one lifecycle action, with its version bumped. |
+| <code>public static string EventType(OtcMarginCallAction action) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:460](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L460) | The governance event type a transition records. |
+
+## OtcMarginCallStatus
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarginCallStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L44).
+
+Where a margin call is in its life. Settled and cancelled calls are terminal.
+
+```csharp
+public enum OtcMarginCallStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Issued</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L46) |  |
+| <code>Agreed</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L47) |  |
+| <code>Disputed</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L48) |  |
+| <code>Settled</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L49) |  |
+| <code>Cancelled</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L50) |  |
+
+## OtcMarketDataRecordDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarketDataRecordDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:199](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L199).
+
+A market data record for a security a snapshot valued that was recorded after the snapshot&#x27;s knowledge time: a price observation (Record names its source) or a pricing hierarchy version, with the instant it takes effect and the instant it was recorded.
+
+```csharp
+public sealed record OtcMarketDataRecordDto(Guid SecurityId, string Record, DateTimeOffset EffectiveAt, DateTimeOffset RecordedAt);
+```
+
+## OtcMasterAgreementDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMasterAgreementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L59).
+
+A master agreement (ISDA, GMRA, GMSLA) between one of the fund&#x27;s legal entities and a counterparty. Every bilateral contract hangs off one through its netting set, so close-out netting and collateral terms are facts about the relationship, not copied onto each trade.
+
+```csharp
+public sealed record OtcMasterAgreementDto(Guid AgreementId, string Counterparty, string? CounterpartyLei, string OurEntity, Guid? OurEntityId, OtcMasterAgreementType AgreementType, DateOnly AgreementDate, string? GoverningLaw, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
+```
+
+## OtcMasterAgreementType
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMasterAgreementType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L8).
+
+The form of master agreement a counterparty relationship is documented under.
+
+```csharp
+public enum OtcMasterAgreementType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Isda1992</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L11) | ISDA 1992 Master Agreement. |
+| <code>Isda2002</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L14) | ISDA 2002 Master Agreement. |
+| <code>Gmra</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L17) | Global Master Repurchase Agreement (repo). |
+| <code>Gmsla</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L20) | Global Master Securities Lending Agreement. |
+| <code>Other</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L23) | Any other bilateral master or long-form confirmation. |
+
 ## OtcMovementKind
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMovementKind</code>. Kind: `enum`.
@@ -700,85 +791,4 @@ Evidence of one calendar, identified by id and content hash, used for one purpos
 
 ```csharp
 public sealed record ScheduleCalendarUsage(string CalendarId, string ContentHash, ScheduleCalendarPurpose Purpose);
-```
-
-## ScheduleDayCount
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L16).
-
-Day-count fractions for schedule periods: builds the DayCountPeriodContext a generated period implies and dispatches to the canonical DayCountConventions.TryFraction(DayCountConvention, DateOnly, DateOnly, DayCountPeriodContext, out decimal, out string?).
-
-```csharp
-public static class ScheduleDayCount
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DayCountPeriodContext ContextFor(SchedulePeriod period, ScheduleGenerationResult schedule);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L21) | The day-count context of period within schedule. |
-| <code>public static bool TryFraction(DayCountConvention convention, SchedulePeriod period, ScheduleGenerationResult schedule, DateOnly start, DateOnly end, out decimal fraction, [NotNullWhen(false)] out string? refusal);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L44) | The fraction of &#91;start, end) inside period, or a refusal when the window leaves the period&#x27;s accrual dates, the convention lacks context, or ICMA is asked of an accrual-adjusted schedule. |
-| <code>public static bool TryPeriodFraction(DayCountConvention convention, SchedulePeriod period, ScheduleGenerationResult schedule, out decimal fraction, [NotNullWhen(false)] out string? refusal);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L79) | The fraction of the whole accrual period of period; see TryFraction. |
-
-## ScheduleDiagnostic
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L78).
-
-A non-fatal observation recorded while generating a schedule.
-
-```csharp
-public sealed record ScheduleDiagnostic(ScheduleDiagnosticCode Code, string CalendarId, DateOnly Date, string Message);
-```
-
-## ScheduleDiagnosticCode
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L67).
-
-A non-fatal observation recorded while generating a schedule.
-
-```csharp
-public enum ScheduleDiagnosticCode
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>CalendarCoverageExceeded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L70) | A calendar was asked about a date outside its declared coverage. |
-
-## ScheduleDirection
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L8).
-
-Which end of the schedule the regular grid is generated from.
-
-```csharp
-public enum ScheduleDirection
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L11) | Generate from the effective date (or first regular date) towards termination; any stub is at the end. |
-| <code>Backward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L14) | Generate from the termination date (or last regular date) towards the effective date; any stub is at the start. |
-
-## ScheduleFailure
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L64).
-
-A refusal from the schedule kernel.
-
-```csharp
-public sealed record ScheduleFailure(ScheduleFailureCode Code, string Message, DateOnly? Date = null);
 ```

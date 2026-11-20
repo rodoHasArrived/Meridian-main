@@ -388,6 +388,18 @@ Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:9](..
 public sealed record PrivateCapitalVehicle(string Name, string Strategy, int? VintageYear, long Version);
 ```
 
+## ExecutedStatementTolerancePolicy
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.ExecutedStatementTolerancePolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs:4](../../../../src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs#L4).
+
+The exact tolerance policy used by the run, effective for the recorded statement date.
+
+```csharp
+public sealed record ExecutedStatementTolerancePolicy(string ProfileId, int Version, DateOnly EffectiveDate, string ComparisonPolicyFingerprint);
+```
+
 ## IReconciliationApiService
 
 Qualified name: <code>Meridian.Contracts.Reconciliation.IReconciliationApiService</code>. Kind: `interface`.
@@ -449,6 +461,30 @@ Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:38](.
 public sealed record ReconciliationQueueAccountStatusDto(Guid AccountId, string AccountCode, string QueueState, int UnresolvedBreakCount, bool SignOffReady, string NextBestAction, string BlockerReason, IReadOnlyList<string> EvidenceLinks);
 ```
 
+## RetainedStatementCaseEvidence
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.RetainedStatementCaseEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs:41](../../../../src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs#L41).
+
+Case evidence from the immutable match artifact of the originating run.
+
+```csharp
+public sealed record RetainedStatementCaseEvidence(string RunId, string MatchArtifactSha256, ExecutedStatementTolerancePolicy TolerancePolicy, RetainedStatementMatchEvidence Match);
+```
+
+## RetainedStatementMatchEvidence
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.RetainedStatementMatchEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs:30](../../../../src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs#L30).
+
+A single result from the matcher, with its rule basis and the records it actually evaluated.
+
+```csharp
+public sealed record RetainedStatementMatchEvidence(string Tier, string Explanation, string? Confidence, string? AmountMeasure, IReadOnlyList<string> RuleIds, IReadOnlyList<StatementMatchAllocation> SourceAllocations, IReadOnlyList<StatementMatchAllocation> LedgerAllocations, IReadOnlyList<StatementMatchResidual> Residuals);
+```
+
 ## StatementImportSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Reconciliation.StatementImportSummaryDto</code>. Kind: `record`.
@@ -457,6 +493,30 @@ Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:3](..
 
 ```csharp
 public sealed record StatementImportSummaryDto(string ImportId, string Broker, string StatementDate, string ImportedAtUtc, int RawRowCount, int NormalizedRowCount);
+```
+
+## StatementMatchAllocation
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.StatementMatchAllocation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs:7](../../../../src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs#L7).
+
+One source or ledger record&#x27;s signed contribution in the units supplied to the matcher.
+
+```csharp
+public sealed record StatementMatchAllocation(string RecordId, string EvidenceReference, string? Instrument, DateOnly? RecordDate, DateOnly? SettlementDate, string? Quantity, string? Amount, string? Currency, string? UnitPrice = null, string? TransactionType = null, string? ExternalTransactionId = null);
+```
+
+## StatementMatchResidual
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.StatementMatchResidual</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs:21](../../../../src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs#L21).
+
+Exact comparison in one unit. Numeric values are invariant decimal text throughout the read contract.
+
+```csharp
+public sealed record StatementMatchResidual(string Measure, string Unit, string SourceTotal, string LedgerTotal, string Residual, string? Tolerance);
 ```
 
 ## StatementReconciliationRunAuthorization
@@ -525,56 +585,4 @@ Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:63](../.
 
 ```csharp
 public sealed record ReportingGovernanceActionAvailabilityDto(string Action, bool IsAllowed, string? BlockedReason, long ExpectedVersion);
-```
-
-## ReportingGovernanceApprovalDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceApprovalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:92](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L92).
-
-```csharp
-public sealed record ReportingGovernanceApprovalDto(ReportingGovernanceAuthorityDto Authority, DateTimeOffset ApprovedAtUtc, string DecisionNote);
-```
-
-## ReportingGovernanceApprovalRequestDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceApprovalRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:13](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L13).
-
-Human approval rationale plus the required optimistic concurrency token.
-
-```csharp
-public sealed record ReportingGovernanceApprovalRequestDto(long ExpectedVersion, string DecisionNote);
-```
-
-## ReportingGovernanceArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:97](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L97).
-
-```csharp
-public sealed record ReportingGovernanceArtifactDto(string ArtifactId, string ArtifactHash, long ByteLength);
-```
-
-## ReportingGovernanceAuditEntryDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAuditEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:124](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L124).
-
-```csharp
-public sealed record ReportingGovernanceAuditEntryDto(string EventId, string AggregateKind, string AggregateId, long AggregateVersion, DateTimeOffset OccurredAtUtc, string Action, ReportingGovernanceAuthorityDto Authority, string PermissionUsed, string? FromExecutionState, string? ToExecutionState, string? FromGovernanceState, string? ToGovernanceState, string? FromRestatementState, string? ToRestatementState, string? Note, string? PreviousHash, string Hash);
-```
-
-## ReportingGovernanceAuthorityDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAuthorityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:69](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L69).
-
-```csharp
-public sealed record ReportingGovernanceAuthorityDto(string ActorId, string TenantId, string OrganizationId, string? CompanyId, IReadOnlyList<string> Permissions, string Origin, string CorrelationId, IReadOnlyList<string> PrincipalIds);
 ```

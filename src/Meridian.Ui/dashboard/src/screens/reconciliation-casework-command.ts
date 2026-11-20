@@ -62,6 +62,10 @@ export function isCaseworkConflict(result: ReconciliationCaseworkOperationResult
   return result.transitionStatus === "Conflict" || result.errorCode === "ConcurrencyConflict";
 }
 
+export function isStatementHandoffMarker(reference: string): boolean {
+  return reference.startsWith("urn:meridian:statement-casework-handoff:");
+}
+
 /** Classify a casework result without throwing. */
 export function classifyCaseworkResult(
   result: ReconciliationCaseworkOperationResult,
@@ -87,6 +91,9 @@ export async function runReconciliationCaseworkCommand(
     return classifyCaseworkResult(await send(command), command.breakId);
   } catch (failure) {
     if (isApiError(failure) && failure.status === 409) return { kind: "conflict", message: CONFLICT_MESSAGE };
+    if (isApiError(failure) && [400, 401, 403, 404].includes(failure.status)) {
+      return { kind: "refused", message: failure.message, errorCode: `Http${failure.status}` };
+    }
     const message = failure instanceof Error ? failure.message : "Casework request failed.";
     return { kind: "failed", message: `${message} Retry uses the same command identity, so the change cannot be applied twice.` };
   }

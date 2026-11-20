@@ -15,26 +15,28 @@ public sealed partial class StatementMatchingEngine
                      .OrderBy(static trade => trade.TransactionId, StringComparer.Ordinal))
         {
             matchedStatements.Add(statement.TransactionId);
-            results.Add(OutsideWindow(statement.EvidenceReference, null));
+            results.Add(OutsideWindow(statement, null));
         }
 
         foreach (var transaction in request.InternalLedgerTransactions.Where(trade => IsOutside(trade.TradeDate))
                      .OrderBy(static trade => trade.TransactionId, StringComparer.Ordinal))
         {
             matchedInternal.Add(transaction.TransactionId);
-            results.Add(OutsideWindow(null, transaction.EvidenceReference));
+            results.Add(OutsideWindow(null, transaction));
         }
 
         bool IsOutside(DateOnly date) =>
             (request.StatementPeriodStart is { } start && date < start)
             || (request.StatementPeriodEnd is { } end && date > end);
 
-        StatementMatchResult OutsideWindow(string? statement, string? transaction) => new(
+        StatementMatchResult OutsideWindow(NormalizedStatementTransaction? statement, InternalLedgerTransaction? transaction) => new(
             StatementMatchKind.Transaction, StatementMatchTier.Unmatched, 0m, [TransactionBreakRuleId],
-            statement, transaction, new StatementMatchVariance(), TransactionTolerance(request.ToleranceProfile),
+            statement?.EvidenceReference, transaction?.EvidenceReference, new StatementMatchVariance(), TransactionTolerance(request.ToleranceProfile),
             "The transaction trade date lies outside the authorized statement window.")
         {
-            BreakCode = OutsideWindowBreakCode
+            BreakCode = OutsideWindowBreakCode,
+            BrokerRecords = statement is null ? [] : [statement],
+            InternalRecords = transaction is null ? [] : [transaction]
         };
     }
 
@@ -217,7 +219,9 @@ public sealed partial class StatementMatchingEngine
         {
             BreakCode = AmbiguousTransactionBreakCode,
             BrokerEvidenceReferences = brokerEvidence,
-            InternalEvidenceReferences = internalEvidence
+            InternalEvidenceReferences = internalEvidence,
+            BrokerRecords = statements,
+            InternalRecords = internals
         };
     }
 

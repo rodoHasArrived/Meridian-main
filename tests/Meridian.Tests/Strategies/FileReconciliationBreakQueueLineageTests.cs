@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,6 +13,56 @@ public sealed class FileReconciliationBreakQueueLineageTests : IDisposable
         Guid.NewGuid(), Guid.NewGuid().ToString("D"), "custodian-feed", "custody-account");
     private readonly DateTimeOffset _start = new(2026, 9, 1, 0, 0, 0, TimeSpan.Zero);
     private FileReconciliationBreakQueueRepository Repository() => new(_root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+
+    [Fact]
+    public async Task Confirmed_completed_group_splits_one_case_and_merges_all_proven_prior_cases()
+    {
+        var repo = Repository();
+        foreach (var id in new[] { "split-case", "merge-a", "merge-b" })
+            await Add(repo, id, importId: "prior");
+        await repo.ObserveCompletedRunAsync(PolicyRun("prior", 0, "same-policy",
+            new("split-case", Transaction("split")), new("merge-a", Transaction("merge-a")), new("merge-b", Transaction("merge-b"))));
+
+        var split = Group("split-group", ["split"], ["ledger-a", "ledger-b"]);
+        var merge = Group("merge-group", ["merge-a", "merge-b"], ["ledger-c"]);
+        var completed = PolicyRun("next", 1, "same-policy") with { ConfirmedMatchGroups = [split, merge] };
+        await Repository().ObserveCompletedRunAsync(completed);
+        repo = Repository();
+        await repo.ObserveCompletedRunAsync(completed);
+        var priorSplit = (await repo.GetByIdAsync("split-case"))!;
+        priorSplit.Lineage!.Regrouping.Should().BeEquivalentTo(new ReconciliationSourceRegrouping(
+            ReconciliationSourceRegroupingKind.Split, "prior", ["split-case"], split));
+        foreach (var id in new[] { "merge-a", "merge-b" })
+        {
+            var item = (await repo.GetByIdAsync(id))!;
+            item.Lineage!.Regrouping.Should().BeEquivalentTo(new ReconciliationSourceRegrouping(
+                ReconciliationSourceRegroupingKind.Merged, "prior", ["merge-a", "merge-b"], merge));
+            item.Status.Should().Be(ReconciliationBreakQueueStatus.Open);
+            item.BlockedOutputs.Should().Contain("PeriodClose");
+            (await repo.GetAuditHistoryAsync(id)).Should().ContainSingle(entry => entry.CorrelationId == "next"
+                && entry.EventType == "SourceBreakObserved" && entry.Note!.Contains("Merged"));
+        }
+    }
+
+    [Theory]
+    [InlineData("unobserved-member")]
+    [InlineData("candidate")]
+    [InlineData("changed-policy")]
+    public async Task Source_clearing_does_not_infer_regrouping_from_partial_or_incomparable_evidence(string scenario)
+    {
+        var repo = Repository();
+        await Add(repo, "previous");
+        await repo.ObserveCompletedRunAsync(PolicyRun("previous", 0, "same-policy", new ReconciliationBreakObservation("previous", Transaction("first"))));
+        var candidate = scenario == "unobserved-member" ? Group("partial", ["first", "unobserved"], ["ledger-a"])
+            : Group("split", ["first"], ["ledger-a", "ledger-b"], scenario == "candidate" ? "Candidate" : "Exact");
+        var policy = scenario == "changed-policy" ? "other-policy" : "same-policy";
+        await repo.ObserveCompletedRunAsync(PolicyRun("next", 1, policy) with { ConfirmedMatchGroups = [candidate] });
+
+        var retained = (await Repository().GetByIdAsync("previous"))!;
+        retained.Lineage!.Regrouping.Should().BeNull();
+        retained.Lineage.ObservationState.Should().Be(scenario == "changed-policy" ? "New" : "Cleared");
+        retained.Status.Should().Be(ReconciliationBreakQueueStatus.Open);
+    }
 
     [Fact]
     public async Task Restart_retains_new_aging_cleared_and_distinct_recurring_occurrence()
@@ -321,14 +372,27 @@ public sealed class FileReconciliationBreakQueueLineageTests : IDisposable
     private ReconciliationCompletedRunObservation Run(string id, int day, params ReconciliationBreakObservation[] breaks)
         => new(id, _scope, _start.AddDays(day), true, true, breaks);
 
-    private Task<bool> Add(FileReconciliationBreakQueueRepository repo, string id, decimal amount = 1m)
-        => repo.CreateIfMissingAsync(new ReconciliationBreakQueueItem(id, id, "Statement reconciliation",
+    private Task<bool> Add(FileReconciliationBreakQueueRepository repo, string id, decimal amount = 1m, string? importId = null)
+        => repo.CreateIfMissingAsync(new ReconciliationBreakQueueItem(id, importId ?? id, "Statement reconciliation",
             ReconciliationBreakCategory.CashMismatch, ReconciliationBreakQueueStatus.Open, amount,
             "Variance", null, _start, _start, FundAccountId: _scope.FundAccountId,
-            SourceType: "statement", SourceSystem: "statement-reconciliation", SourceImportId: id,
+            SourceType: "statement", SourceSystem: "statement-reconciliation", SourceImportId: importId ?? id,
             LedgerBookId: _scope.LedgerBookId, AccountingPeriodId: _scope.AccountingPeriodId,
             AsOfDate: new DateOnly(2026, 9, 30), BlockedOutputs: ["PeriodClose"])
         { TenantId = _scope.TenantId, CompanyId = _scope.CompanyId, FundProfileId = _scope.FundProfileId });
+
+    private static string Transaction(string id) => System.Text.Json.JsonSerializer.Serialize(new[] { "transaction", id });
+
+    private static ReconciliationObservedMatchGroup Group(string id, string[] subjects, string[] ledger, string tier = "Exact")
+    {
+        var statement = subjects.Select(subject => new ReconciliationObservedMatchSubject($"statement:{subject}", Transaction(subject))).ToArray();
+        return new(id, statement, new RetainedStatementCaseEvidence("next", new string('a', 64),
+            new ExecutedStatementTolerancePolicy("policy", 7, new DateOnly(2026, 9, 30), new string('b', 64)),
+            new RetainedStatementMatchEvidence(tier, "Matched settlement group", "1", "Net amount", ["rule"],
+                statement.Select(member => Leg(member.EvidenceReference)).ToArray(), ledger.Select(Leg).ToArray(), [])));
+
+        static StatementMatchAllocation Leg(string reference) => new(reference, reference, null, null, null, null, "10", "USD");
+    }
 
     public void Dispose() { if (Directory.Exists(_root)) Directory.Delete(_root, true); }
 }

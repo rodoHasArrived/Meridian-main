@@ -13090,6 +13090,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.ExecutedStatementTolerancePolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Reconciliation.IReconciliationApiService"
     },
     {
@@ -13114,7 +13120,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.RetainedStatementCaseEvidence"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.RetainedStatementMatchEvidence"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Reconciliation.StatementImportSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.StatementMatchAllocation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Reconciliation.StatementMatchResidual"
     },
     {
       "kind": "contract-set-member",
@@ -20776,6 +20806,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBulkReviewedCaseVersion"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationCalibrationProfileSummaryDto"
     },
     {
@@ -20902,6 +20938,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationObservedMatchGroup"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationObservedMatchSubject"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationPayloadEnvelope"
     },
     {
@@ -20969,6 +21017,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationSourceKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationSourceRegrouping"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationSourceRegroupingKind"
     },
     {
       "kind": "contract-set-member",
@@ -48273,6 +48333,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Reconciliation.RetainedStatementCaseEvidence",
+      "target": "contract:Meridian.Contracts.Reconciliation.ExecutedStatementTolerancePolicy"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Reconciliation.RetainedStatementCaseEvidence",
+      "target": "contract:Meridian.Contracts.Reconciliation.RetainedStatementMatchEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Reconciliation.RetainedStatementMatchEvidence",
+      "target": "contract:Meridian.Contracts.Reconciliation.StatementMatchAllocation"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Reconciliation.RetainedStatementMatchEvidence",
+      "target": "contract:Meridian.Contracts.Reconciliation.StatementMatchResidual"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Reporting.GovernedReportingRunDto",
       "target": "contract:Meridian.Contracts.Reporting.ReportingGovernanceAccessScopeDto"
     },
@@ -56097,8 +56181,20 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakLineageDto",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationSourceRegrouping"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureDto",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakMeasureKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationBreakQueueItem",
+      "target": "contract:Meridian.Contracts.Reconciliation.RetainedStatementCaseEvidence"
     },
     {
       "kind": "contract-reference",
@@ -56259,6 +56355,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationBulkCaseworkResult",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationBulkReviewedCaseVersion"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationCalibrationProfileSummaryDto",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationBreakSeverity"
     },
@@ -56356,6 +56458,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationCompletedRunObservation",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationObservedMatchGroup"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationCompletedRunObservation",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationRunObservationScope"
     },
     {
@@ -56363,6 +56471,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationMatchDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsContinuityCorrelationKeysDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationObservedMatchGroup",
+      "target": "contract:Meridian.Contracts.Reconciliation.RetainedStatementCaseEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationObservedMatchGroup",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationObservedMatchSubject"
     },
     {
       "kind": "contract-reference",
@@ -56453,6 +56573,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationSlaPolicy",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationCasePriority"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationSourceRegrouping",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationObservedMatchGroup"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ReconciliationSourceRegrouping",
+      "target": "contract:Meridian.Contracts.Workstation.ReconciliationSourceRegroupingKind"
     },
     {
       "kind": "contract-reference",
@@ -71326,7 +71458,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "f199fed185f1c12b978e4729e95fec123b3a0e0840c0cad964ce64d6caf937fd",
+  "fingerprint": "52afc8c27203275d3c207a9e722531b5d7338dc702fd44a433ef639598f2eb1a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -84466,6 +84598,12 @@
       "label": "Meridian.Contracts.PrivateCapital.PrivateCapitalVehicle"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Reconciliation.ExecutedStatementTolerancePolicy",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.ExecutedStatementTolerancePolicy"
+    },
+    {
       "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Reconciliation.IReconciliationApiService",
       "kind": "contract-type",
@@ -84490,10 +84628,34 @@
       "label": "Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Reconciliation.RetainedStatementCaseEvidence",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.RetainedStatementCaseEvidence"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Reconciliation.RetainedStatementMatchEvidence",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.RetainedStatementMatchEvidence"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Reconciliation.StatementImportSummaryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Reconciliation.StatementImportSummaryDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Reconciliation.StatementMatchAllocation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.StatementMatchAllocation"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Reconciliation.StatementMatchResidual",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Reconciliation.StatementMatchResidual"
     },
     {
       "classification": "record",
@@ -92152,6 +92314,12 @@
       "label": "Meridian.Contracts.Workstation.ReconciliationBulkCaseworkResult"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationBulkReviewedCaseVersion",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationBulkReviewedCaseVersion"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationCalibrationProfileSummaryDto",
       "kind": "contract-type",
@@ -92279,6 +92447,18 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationObservedMatchGroup",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationObservedMatchGroup"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationObservedMatchSubject",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationObservedMatchSubject"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationPayloadEnvelope",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationPayloadEnvelope"
@@ -92348,6 +92528,18 @@
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationSourceKind",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationSourceKind"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationSourceRegrouping",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationSourceRegrouping"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Workstation.ReconciliationSourceRegroupingKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ReconciliationSourceRegroupingKind"
     },
     {
       "classification": "record",
@@ -104849,11 +105041,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4364,
-    "contract_set_memberships": 5741,
-    "edges": 11848,
+    "contract_references": 4376,
+    "contract_set_memberships": 5751,
+    "edges": 11870,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5832
+    "nodes": 5842
   }
 }

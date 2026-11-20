@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityCurveVersionDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveVersionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L77).
+
+One immutable published version of a curve. AsOf is the economic date the points describe, RecordedAt the knowledge time the version was stored, SourcedAt the vendor timestamp when known, and ContentSha256 the canonical hash of the as-of and sorted points.
+
+```csharp
+public sealed record SecurityCurveVersionDto(Guid CurveVersionId, Guid CurveId, string CurveKey, long Version, DateOnly AsOf, DateTimeOffset RecordedAt, DateTimeOffset? SourcedAt, string Source, string PublishedBy, IReadOnlyList<SecurityCurvePointDto> Points, string ContentSha256);
+```
+
+## SecurityDeclaredConventionsRead
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsRead</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L29).
+
+The result of SecurityVersionedTerms.ReadDeclaredScheduleConventions or SecurityVersionedTerms.ReadDeclaredLegScheduleConventions.
+
+```csharp
+public sealed record SecurityDeclaredConventionsRead(SecurityDeclaredConventionsStatus Status, ScheduleConventionTerms Block, string? UnreadableReason)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ScheduleConventionTerms&gt; ElementBlocks { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L39) | On an element read (SecurityVersionedTerms.ReadDeclaredLegScheduleConventions): the non-empty blocks of the selected container&#x27;s object elements, in element order. Empty on a root read. |
+
+## SecurityDeclaredConventionsStatus
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L7).
+
+What a read of a row&#x27;s declared schedule conventions found.
+
+```csharp
+public enum SecurityDeclaredConventionsStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L13) | The row declares nothing this node decodes: no populated block, a class without the container, a container the row&#x27;s stamp or profile envelope does not decode, or a payload no reader takes. |
+| <code>Declared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L16) | The row decodes at least one non-empty block. |
+| <code>Unreadable</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L19) | The row is stamped at an asset-class terms version this node does not read. |
+
+## SecurityDetailDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L28).
+
+```csharp
+public sealed record SecurityDetailDto(Guid SecurityId, string AssetClass, SecurityStatusDto Status, string DisplayName, string Currency, JsonElement CommonTerms, JsonElement AssetSpecificTerms, IReadOnlyList<SecurityIdentifierDto> Identifiers, IReadOnlyList<SecurityAliasDto> Aliases, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo);
+```
+
+## SecurityDistributionCorporateActionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityDistributionCorporateActionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:163](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L163).
+
+New units of another security distributed per unit held (spin-off, rights distribution).
+
+```csharp
+public sealed record SecurityDistributionCorporateActionTerms(string EventType, Guid? DistributedSecurityId, decimal? UnitsPerHeldUnit) : CorporateActionTerms(EventType);
+```
+
 ## SecurityEconomicDefinitionRecord
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord</code>. Kind: `record`.
@@ -817,82 +889,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static TEnum ParseOrFallback&lt;TEnum&gt;(string? raw, TEnum fallback) where TEnum : struct, Enum =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterEnumReads.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterEnumReads.cs#L18) | Parses raw case-insensitively into TEnum, returning fallback for null, unrecognized, or numerically-undefined input. Numeric strings that do not name a defined member also degrade (bare Enum.TryParse would happily produce an undefined value for them). |
-
-## SecurityMasterEventEnvelope
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L14).
-
-```csharp
-public sealed record SecurityMasterEventEnvelope(long? GlobalSequence, Guid SecurityId, long StreamVersion, string EventType, DateTimeOffset EventTimestamp, string Actor, Guid? CorrelationId, Guid? CausationId, JsonElement Payload, JsonElement Metadata, string? PayloadType = null, int? PayloadVersion = null);
-```
-
-## SecurityMasterEventPayloadDescriptor
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloadDescriptor</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L29).
-
-A resolved event payload family and version.
-
-```csharp
-public readonly record struct SecurityMasterEventPayloadDescriptor(string PayloadType, int PayloadVersion);
-```
-
-## SecurityMasterEventPayloads
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloads</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L35).
-
-The payload families a Security Master event can carry, and the one place that resolves which family and version a stored or incoming event belongs to.
-
-```csharp
-public static class SecurityMasterEventPayloads
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string EconomicDefinition = &quot;SecurityEconomicDefinition&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L41) | The economic definition record (classification, economic terms and retained flat terms) written by every current command path. |
-| <code>public const int EconomicDefinitionVersion = 3;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L48) | The current EconomicDefinition event version. Version 3 carries the complete shared term modules; the nested economic-terms codec remains EconomicTermsSchema.Current. Event versions advance independently so older replay readers refuse richer events. |
-| <code>public const string LegacyProjection = &quot;SecurityProjection&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L58) | The flat projection record written before the economic definition existed. Still replayed by converting it into an economic definition. |
-| <code>public const int LegacyProjectionVersion = 1;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L61) | The only LegacyProjection payload version. |
-| <code>public const string PayloadTypeMetadataKey = &quot;payloadType&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L64) | The metadata key that historically carried the payload family. |
-| <code>public const string SchemaVersionMetadataKey = &quot;schemaVersion&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L67) | The metadata key that historically carried the payload version. |
-| <code>public static IReadOnlyDictionary&lt;string, int&gt; SupportedVersions { get; } = new Dictionary&lt;string, int&gt;(StringComparer.Ordinal) {[EconomicDefinition]= EconomicDefinitionVersion, [LegacyProjection]= LegacyProjectionVersion };</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L70) | Every payload family this node can replay, with its newest supported version. |
-| <code>public static SecurityMasterEventPayloadDescriptor Resolve(SecurityMasterEventEnvelope envelope);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L82) | Resolves an event&#x27;s payload family and version: explicit envelope values first, then the metadata keys every economic write has carried, then the payload&#x27;s shape (an economic definition carries classification and economicTerms; anything else is a legacy projection). Always returns a descriptor, so every persisted event gets a payload version. |
-| <code>public static void EnsureReplayable(SecurityMasterEventPayloadDescriptor descriptor, Guid securityId, long streamVersion);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:114](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L114) | Fails when a payload family or version is newer than this node can replay. Replaying it with an older decoder would drop whatever the newer payload added. |
-| <code>public static bool IsEconomicDefinitionShape(JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:131](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L131) | Whether a payload has the economic definition shape. |
-
-## SecurityMasterImportRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterImportRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L55).
-
-Request for bulk importing securities via the HTTP API.
-
-```csharp
-public sealed record SecurityMasterImportRequest(string FileContent, string FileExtension);
-```
-
-## SecurityMasterLedgerSymbol
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterLedgerSymbol</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs#L4).
-
-Resolves one dated ticker for instrument-bearing native ledger lines.
-
-```csharp
-public static class SecurityMasterLedgerSymbol
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string? ResolveUniqueActiveTicker(IReadOnlyList&lt;SecurityIdentifierDto&gt; identifiers, DateTimeOffset asOfUtc);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs#L6) |  |

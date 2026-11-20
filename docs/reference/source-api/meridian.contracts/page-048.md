@@ -6,6 +6,120 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionPayloadValueType
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionPayloadValueType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:250](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L250).
+
+```csharp
+public enum CorporateActionPayloadValueType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>String</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:252](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L252) |  |
+| <code>Decimal</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:253](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L253) |  |
+| <code>Boolean</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:254](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L254) |  |
+| <code>Date</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:255](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L255) |  |
+| <code>Guid</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:256](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L256) |  |
+
+## CorporateActionPermissionDeniedException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionPermissionDeniedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:979](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L979).
+
+Signals that the caller lacks the authority required for a corporate action transition.
+
+```csharp
+public sealed class CorporateActionPermissionDeniedException : CorporateActionOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionPermissionDeniedException(string targetState, string requiredAuthority) : base(CorporateActionProblemCodes.PermissionDenied, $&quot;Transition to &#x27;{targetState}&#x27; requires &#x27;{requiredAuthority}&#x27; authority.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:981](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L981) |  |
+| <code>public string TargetState { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:990](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L990) |  |
+| <code>public string RequiredAuthority { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:991](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L991) |  |
+
+## CorporateActionPersistenceUnavailableException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionPersistenceUnavailableException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:968](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L968).
+
+Signals that the persistence authority required by a corporate action operation is unavailable.
+
+```csharp
+public sealed class CorporateActionPersistenceUnavailableException : CorporateActionOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionPersistenceUnavailableException(string message) : base(CorporateActionProblemCodes.PersistenceUnavailable, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:970](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L970) |  |
+
+## CorporateActionProblemCodes
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionProblemCodes</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:290](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L290).
+
+Stable machine-readable problem codes for the corporate-action command surface.
+
+```csharp
+public static class CorporateActionProblemCodes
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string TermsIncomplete = &quot;corporate_action_terms_incomplete&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:292](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L292) |  |
+| <code>public const string SourceConflict = &quot;corporate_action_source_conflict&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:293](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L293) |  |
+| <code>public const string ElectionRequired = &quot;corporate_action_election_required&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:294](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L294) |  |
+| <code>public const string ElectionExpired = &quot;corporate_action_election_expired&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:295](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L295) |  |
+| <code>public const string EntitlementStale = &quot;corporate_action_entitlement_stale&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:296](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L296) |  |
+| <code>public const string AllocationInvalid = &quot;corporate_action_allocation_invalid&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:297](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L297) |  |
+| <code>public const string PolicyMissing = &quot;corporate_action_policy_missing&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:298](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L298) |  |
+| <code>public const string SpecialistReviewRequired = &quot;corporate_action_specialist_review_required&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:299](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L299) |  |
+| <code>public const string ProjectionStale = &quot;corporate_action_projection_stale&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:300](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L300) |  |
+| <code>public const string PeriodLocked = &quot;corporate_action_period_locked&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:301](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L301) |  |
+| <code>public const string ScopeMismatch = &quot;corporate_action_scope_mismatch&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:302](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L302) |  |
+| <code>public const string IdempotencyCollision = &quot;corporate_action_idempotency_collision&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:303](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L303) |  |
+| <code>public const string VersionConflict = &quot;corporate_action_version_conflict&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:304](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L304) |  |
+| <code>public const string ReconciliationIncomplete = &quot;corporate_action_reconciliation_incomplete&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:305](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L305) |  |
+| <code>public const string JournalUnbalanced = &quot;corporate_action_journal_unbalanced&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:306](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L306) |  |
+| <code>public const string MakerCheckerRequired = &quot;corporate_action_maker_checker_required&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:307](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L307) |  |
+| <code>public const string ValidationFailed = &quot;corporate_action_validation_failed&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:311](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L311) |  |
+| <code>public const string NotFound = &quot;corporate_action_not_found&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:312](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L312) |  |
+| <code>public const string IdempotencyConflict = IdempotencyCollision;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:313](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L313) |  |
+| <code>public const string StateConflict = &quot;corporate_action_state_conflict&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:314](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L314) |  |
+| <code>public const string DownstreamAuthorityRequired = &quot;corporate_action_downstream_authority_required&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:315](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L315) |  |
+| <code>public const string PersistenceUnavailable = &quot;corporate_action_persistence_unavailable&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:316](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L316) |  |
+| <code>public const string PermissionDenied = &quot;corporate_action_permission_denied&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:317](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L317) |  |
+
+## CorporateActionProcessingCaseDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:495](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L495).
+
+```csharp
+public sealed record CorporateActionProcessingCaseDto(Guid CaseId, Guid ProposalId, Guid CorporateActionId, Guid SecurityId, CorporateActionCaseScopeDto Scope, string State, long Version, string? MethodologyProfileId, string? AssignedTo, string? BlockedReason, string CreatedBy, DateTimeOffset CreatedAtUtc, string UpdatedBy, DateTimeOffset UpdatedAtUtc, CorporateActionCaseActionAvailabilityDto? ActionAvailability = null, CorporateActionCaseSourceSnapshotDto? SourceSnapshot = null, CorporateActionCaseAccountingStatusDto? AccountingStatus = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:514](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L514) |  |
+
 ## CorporateActionProcessingOptionDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionProcessingOptionDto</code>. Kind: `record`.
@@ -760,58 +874,4 @@ Stored fact partition for a single EDGAR filer.
 
 ```csharp
 public sealed record EdgarFactsRecord(string Cik, IReadOnlyList<EdgarXbrlFact> Facts, IssuerFactSnapshot? Snapshot, DateTimeOffset RetrievedAtUtc);
-```
-
-## EdgarFilerRecord
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFilerRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L32).
-
-Local EDGAR filer reference record derived from the SEC submissions API.
-
-```csharp
-public sealed record EdgarFilerRecord(string Cik, string Name, string? EntityType, string? Sic, string? SicDescription, string? Category, string? StateOfIncorporation, string? StateOfIncorporationDescription, string? FiscalYearEnd, string? Ein, string? Description, string? Website, string? InvestorWebsite, string? Phone, EdgarAddress? BusinessAddress, EdgarAddress? MailingAddress, bool? InsiderTransactionForOwnerExists, bool? InsiderTransactionForIssuerExists, IReadOnlyList<string> Flags, IReadOnlyList<string> Tickers, IReadOnlyList<string> Exchanges, IReadOnlyList<EdgarFormerName> FormerNames, IReadOnlyList<EdgarFilingSummary> RecentFilings, DateTimeOffset RetrievedAtUtc);
-```
-
-## EdgarFilingSummary
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFilingSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:84](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L84).
-
-```csharp
-public sealed record EdgarFilingSummary(string Cik, string AccessionNumber, string Form, DateOnly? FilingDate, DateOnly? ReportDate, string? PrimaryDocument, string? PrimaryDocDescription, string? FileNumber, string? FilmNumber, string? Items, long? Size, bool? IsXbrl, bool? IsInlineXbrl, IReadOnlyList<string> SecurityDataTags);
-```
-
-## EdgarFormerName
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFormerName</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L66).
-
-```csharp
-public sealed record EdgarFormerName(string Name, DateOnly? From, DateOnly? To);
-```
-
-## EdgarFundHolding
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFundHolding</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:142](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L142).
-
-```csharp
-public sealed record EdgarFundHolding(string Cik, string AccessionNumber, string Form, string SourceDocument, string? HoldingName, string? IssuerName, string? Title, string? Cusip, string? Isin, string? Ticker, string? Lei, string? AssetCategory, string? IssuerCategory, string? Country, string? Currency, decimal? Balance, string? Units, decimal? ValueUsd, decimal? PercentageOfNetAssets, decimal? CouponRate, DateOnly? MaturityDate, bool? Restricted, string? FairValueLevel);
-```
-
-## EdgarIngestRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarIngestRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L6).
-
-Request for EDGAR reference-data ingest.
-
-```csharp
-public sealed record EdgarIngestRequest(string Scope = "all-filers", bool IncludeXbrl = false, string? Cik = null, int? MaxFilers = null, bool DryRun = false, bool IncludeFilingDocuments = false);
 ```

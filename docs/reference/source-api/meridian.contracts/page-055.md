@@ -6,6 +6,85 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterEventEnvelope
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L14).
+
+```csharp
+public sealed record SecurityMasterEventEnvelope(long? GlobalSequence, Guid SecurityId, long StreamVersion, string EventType, DateTimeOffset EventTimestamp, string Actor, Guid? CorrelationId, Guid? CausationId, JsonElement Payload, JsonElement Metadata, string? PayloadType = null, int? PayloadVersion = null);
+```
+
+## SecurityMasterEventPayloadDescriptor
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloadDescriptor</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L29).
+
+A resolved event payload family and version.
+
+```csharp
+public readonly record struct SecurityMasterEventPayloadDescriptor(string PayloadType, int PayloadVersion);
+```
+
+## SecurityMasterEventPayloads
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloads</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L35).
+
+The payload families a Security Master event can carry, and the one place that resolves which family and version a stored or incoming event belongs to.
+
+```csharp
+public static class SecurityMasterEventPayloads
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string EconomicDefinition = &quot;SecurityEconomicDefinition&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L41) | The economic definition record (classification, economic terms and retained flat terms) written by every current command path. |
+| <code>public const int EconomicDefinitionVersion = 3;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L48) | The current EconomicDefinition event version. Version 3 carries the complete shared term modules; the nested economic-terms codec remains EconomicTermsSchema.Current. Event versions advance independently so older replay readers refuse richer events. |
+| <code>public const string LegacyProjection = &quot;SecurityProjection&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L58) | The flat projection record written before the economic definition existed. Still replayed by converting it into an economic definition. |
+| <code>public const int LegacyProjectionVersion = 1;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L61) | The only LegacyProjection payload version. |
+| <code>public const string PayloadTypeMetadataKey = &quot;payloadType&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L64) | The metadata key that historically carried the payload family. |
+| <code>public const string SchemaVersionMetadataKey = &quot;schemaVersion&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L67) | The metadata key that historically carried the payload version. |
+| <code>public static IReadOnlyDictionary&lt;string, int&gt; SupportedVersions { get; } = new Dictionary&lt;string, int&gt;(StringComparer.Ordinal) {[EconomicDefinition]= EconomicDefinitionVersion, [LegacyProjection]= LegacyProjectionVersion };</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L70) | Every payload family this node can replay, with its newest supported version. |
+| <code>public static SecurityMasterEventPayloadDescriptor Resolve(SecurityMasterEventEnvelope envelope);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L82) | Resolves an event&#x27;s payload family and version: explicit envelope values first, then the metadata keys every economic write has carried, then the payload&#x27;s shape (an economic definition carries classification and economicTerms; anything else is a legacy projection). Always returns a descriptor, so every persisted event gets a payload version. |
+| <code>public static void EnsureReplayable(SecurityMasterEventPayloadDescriptor descriptor, Guid securityId, long streamVersion);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:114](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L114) | Fails when a payload family or version is newer than this node can replay. Replaying it with an older decoder would drop whatever the newer payload added. |
+| <code>public static bool IsEconomicDefinitionShape(JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:131](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L131) | Whether a payload has the economic definition shape. |
+
+## SecurityMasterImportRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterImportRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L55).
+
+Request for bulk importing securities via the HTTP API.
+
+```csharp
+public sealed record SecurityMasterImportRequest(string FileContent, string FileExtension);
+```
+
+## SecurityMasterLedgerSymbol
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterLedgerSymbol</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs#L4).
+
+Resolves one dated ticker for instrument-bearing native ledger lines.
+
+```csharp
+public static class SecurityMasterLedgerSymbol
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? ResolveUniqueActiveTicker(IReadOnlyList&lt;SecurityIdentifierDto&gt; identifiers, DateTimeOffset asOfUtc);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterLedgerSymbol.cs#L6) |  |
+
 ## SecurityMasterOptions
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterOptions</code>. Kind: `class`.
@@ -786,89 +865,3 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:121](../../../../
 ```csharp
 public sealed record SecuritySnapshotRecord(Guid SecurityId, long Version, DateTimeOffset SnapshotTimestamp, JsonElement Payload);
 ```
-
-## SecurityStatusDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L7).
-
-```csharp
-public enum SecurityStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Active</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L9) |  |
-| <code>Inactive</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L10) |  |
-| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L16) | Read-tolerance member: a status written by a newer node that this node does not recognize. Treated as not-Active by filters, so unrecognized states degrade to conservative visibility instead of failing every read of the row. |
-
-## SecuritySummaryDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L19).
-
-```csharp
-public sealed record SecuritySummaryDto(Guid SecurityId, string AssetClass, SecurityStatusDto Status, string DisplayName, string PrimaryIdentifier, string Currency, long Version);
-```
-
-## SecurityTermBinding
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermBinding</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L58).
-
-One member of a per-class record and the flat key that carries it.
-
-```csharp
-public sealed record SecurityTermBinding(string Path, string? Key, SecurityTermRead? Read, string? DecodeExpression = null, string? WriteVia = null, bool DecodeOnly = false, bool WriteOnly = false, string? WriteExpression = null, IReadOnlyList<SecurityListItemBinding>? Items = null);
-```
-
-## SecurityTermBlocks
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermBlocks</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L26).
-
-The nested term blocks each asset class declares, taken from the asset-class registry: every SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array field. Scalars go through the governed field-edit route; blocks are replaced whole here, so no asset class needs its own amendment endpoint for its nested structures.
-
-```csharp
-public static class SecurityTermBlocks
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AmendedEventType = &quot;TermBlockAmended&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L29) | The event type recorded for a generic block replacement. |
-| <code>public static IReadOnlyList&lt;SecurityAssetTermField&gt; For(string assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L31) |  |
-| <code>public static bool TryDescribeReadableOnlyBlock(string assetClass, string blockKey, [NotNullWhen(true)] out string? reason);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L43) | Whether blockKey names a block assetClass declares but this node only reads (ADR-024, readable before writable), with the not-yet-writable reason a block amendment of it is refused with. |
-| <code>public static JsonElement BuildPatch(string assetClass, JsonElement currentTerms, string blockKey, JsonElement block);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L65) | Returns the asset-specific terms with blockKey replaced by block. Every other term is carried unchanged. Throws ArgumentException when the class declares no such block or the JSON kind does not match the declared type. |
-
-## SecurityTermConventionKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermConventionKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L116).
-
-The typed convention a string term field carries. A field declared with a convention keeps its raw text verbatim in the payload, so every value already stored still reads back, but writes and governed edits must name a value the convention&#x27;s parser recognizes, and consumers read the typed value through SecurityTermConventions instead of matching strings.
-
-```csharp
-public enum SecurityTermConventionKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L118) |  |
-| <code>DayCount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L121) | A day-count convention (DayCountConvention). |
-| <code>SettlementMethod</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L124) | A derivative settlement method (SecuritySettlementMethod). |
-| <code>PaymentFrequency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:127](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L127) | A payment, reset or sweep cadence (SecurityPaymentFrequency). |
-| <code>CouponFrequency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:135](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L135) | A coupon cadence that drives a calculated cash-flow schedule: a SecurityPaymentFrequency whose period is a whole number of months, or SecurityPaymentFrequency.AtMaturity. The schedule engines step coupon periods in months, so a sub-monthly or irregular cadence on these fields would silently produce the wrong number of coupons. |
-| <code>BusinessDayConvention</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L141) | A business-day convention (Meridian.Contracts.Calendars.BusinessDayConvention): how a schedule date that falls on a non-business day is moved. |
-| <code>RollConvention</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:147](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L147) | A schedule roll (Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll): the anchor&#x27;s day, the end of the month, the IMM date or a fixed day of the month from 1 to 31. |
-| <code>StubPolicy</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:153](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L153) | What a schedule does with a remainder that does not fill a regular period (Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy). |

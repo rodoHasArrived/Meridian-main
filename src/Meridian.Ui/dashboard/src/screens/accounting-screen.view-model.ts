@@ -3232,8 +3232,9 @@ export function useAccountingReconciliationViewModel(
   return {
     reconciliationQueue,
     sourceRows: scopedBreakQueue,
+    lineageRows: breakQueueReadScope === scopeRevision && !breakQueueLoading && !breakQueueError ? breakQueue : scopedBreakQueue,
     applyCaseworkUpdate: (updated: ReconciliationBreakQueueItem) => {
-      if (scopedBreakQueue.some((item) => item.breakId === updated.breakId)) {
+      if (activeScopeRef.current === scopeRevision && scopedBreakQueue.some((item) => item.breakId === updated.breakId)) {
         setBreakQueue((current) => {
           const retained = current.find((item) => item.breakId === updated.breakId);
           if (retained?.version != null && (updated.version == null || updated.version < retained.version)) return current;

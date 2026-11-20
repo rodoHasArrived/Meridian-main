@@ -1367,8 +1367,8 @@ describe("finance standard pages", () => {
 
     expect(screen.getByRole("heading", { name: "Reconciliation Match Workbench" })).toBeInTheDocument();
     expect(screen.getAllByText("Cash variance needs review").length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute("href", "/accounting/reconciliation");
-    expect(screen.getByRole("button", { name: "Record match decision" })).toBeDisabled();
+    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute("href", `/accounting/reconciliation?reconciliationBreak=${encodeURIComponent(data.breakQueue[0].breakId)}`);
+    expect(screen.getByRole("heading", { name: "Source lineage" })).toBeInTheDocument();
   });
 
   it.each([
