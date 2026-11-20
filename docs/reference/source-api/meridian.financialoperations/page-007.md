@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementProfileActivityCode
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementProfileActivityCode</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:43](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L43).
+
+```csharp
+public sealed record StatementProfileActivityCode(string SourceCode, string CanonicalActivityType);
+```
+
+## StatementProfileCsvOptions
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementProfileCsvOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L28).
+
+```csharp
+public sealed record StatementProfileCsvOptions(string Delimiter = ",", string Quote = "\"", bool HasHeader = true);
+```
+
 ## StatementProfileFieldMapping
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementProfileFieldMapping</code>. Kind: `record`.
@@ -44,7 +64,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementRecordKindResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:242](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L242).
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:252](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L252).
 
 Maps canonical activity types (position, cash, cashbalance, trade, fee, dividend, div) to record kinds with the same semantics as the downstream reconciliation row classifier, so every connector buckets mixed-kind statements identically.
 
@@ -56,7 +76,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static StatementRecordKind Resolve(string canonicalActivityType);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:244](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L244) |  |
+| <code>public static StatementRecordKind Resolve(string canonicalActivityType);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:254](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L254) |  |
 
 ## StatementSourceDocument
 
@@ -74,7 +94,7 @@ public sealed record StatementSourceDocument(string FileName, ReadOnlyMemory<byt
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.DataIntegrationIngestionRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:6](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L6).
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:7](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L7).
 
 ```csharp
 public sealed record DataIntegrationIngestionRequest(string SourceKind, string SourcePath, string? MappingProfileId);
@@ -84,7 +104,7 @@ public sealed record DataIntegrationIngestionRequest(string SourceKind, string S
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.DataIntegrationIngestionResult</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L26).
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:27](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L27).
 
 ```csharp
 public sealed record DataIntegrationIngestionResult(string ImportId, string SourceKind, string SourcePath, int ImportedRowCount);
@@ -480,7 +500,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IDataIntegrationIngestionService</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L35).
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:36](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L36).
 
 Ingests source data into normalized reconciliation input.
 
@@ -492,7 +512,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;DataIntegrationIngestionResult&gt; IngestAsync(DataIntegrationIngestionRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L37) |  |
+| <code>Task&lt;DataIntegrationIngestionResult&gt; IngestAsync(DataIntegrationIngestionRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:38](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L38) |  |
 
 ## IdentityReconciliationFxRateProvider
 
@@ -629,7 +649,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalCashBalance</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:935](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L935).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:950](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L950).
 
 ```csharp
 public sealed record InternalCashBalance(string CashBalanceId, string Account, string Currency, decimal Balance, string EvidenceReference, DateOnly AsOfDate) : IStatementMatchItem
@@ -639,7 +659,7 @@ public sealed record InternalCashBalance(string CashBalanceId, string Account, s
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalLedgerTransaction</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:946](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L946).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:963](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L963).
 
 ```csharp
 public sealed record InternalLedgerTransaction(string TransactionId, string? ExternalTransactionId, string Account, string? SecurityId, string? Currency, DateOnly TradeDate, DateOnly SettlementDate, string TransactionType, decimal Quantity, decimal NetAmount, string EvidenceReference) : IStatementMatchItem
@@ -649,13 +669,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:960](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L960) | Unit price in the same currency as the monetary amount, when explicitly available. |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:977](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L977) | Unit price in the same currency as the monetary amount, when explicitly available. |
 
 ## InternalPortfolioPosition
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalPortfolioPosition</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:912](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L912).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:927](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L927).
 
 ```csharp
 public sealed record InternalPortfolioPosition(string PositionId, string Account, string SecurityId, DateOnly AsOfDate, decimal Quantity, decimal? MarketValue, string EvidenceReference) : IStatementMatchItem
@@ -665,8 +685,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:922](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L922) | Unit price in the same currency as the monetary amount, when explicitly available. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:930](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L930) | Meridian&#x27;s accrued interest receivable for the holding (absolute, in the run&#x27;s base currency), when the internal book carries one. Null means the book states no accrued interest; a custodian row that states accrued interest against such a holding is a break, not a match. |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:937](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L937) | Unit price in the same currency as the monetary amount, when explicitly available. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:945](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L945) | Meridian&#x27;s accrued interest receivable for the holding (absolute, in the run&#x27;s base currency), when the internal book carries one. Null means the book states no accrued interest; a custodian row that states accrued interest against such a holding is a break, not a match. |
 
 ## InternalReconciliationBook
 
@@ -727,7 +747,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationCaseIntakeService</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:58](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L58).
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:59](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L59).
 
 Creates reconciliation casework from normalized intake requests and evidence.
 
@@ -739,7 +759,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;ReconciliationCaseIntakeResult&gt; IntakeAsync(ReconciliationCaseIntakeRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L60) |  |
+| <code>Task&lt;ReconciliationCaseIntakeResult&gt; IntakeAsync(ReconciliationCaseIntakeRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:61](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L61) |  |
 
 ## IReconciliationDecisionJournal
 
@@ -841,7 +861,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementMatchItem</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1037](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1037).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1059](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1059).
 
 Exposes normalized statement item fields used by matching rules.
 
@@ -853,43 +873,5 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string MatchId { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1039](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1039) |  |
-| <code>string EvidenceReference { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1047](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1047) | The durable evidence reference the item contributes to a match or break. Also the final pair-ordering tie-breaker: match ids are expected to be unique per side, but a population that repeats one must still order totally, or the assignment would fall back to input enumeration order. |
-
-## IStatementMatchResultRepository
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementMatchResultRepository</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L42).
-
-Saves and retrieves statement matching result artifacts by run.
-
-```csharp
-public interface IStatementMatchResultRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task SaveAsync(string runId, StatementMatchResultArtifact result, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L44) |  |
-| <code>Task&lt;StatementMatchResultArtifact?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:45](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L45) |  |
-
-## IStatementNormalizedEntityRepository
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementNormalizedEntityRepository</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L33).
-
-Saves and retrieves normalized statement entities for a run.
-
-```csharp
-public interface IStatementNormalizedEntityRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task SaveAsync(string runId, StatementNormalizedEntities entities, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L35) |  |
-| <code>Task&lt;StatementNormalizedEntities?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:36](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L36) |  |
+| <code>string MatchId { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1061](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1061) |  |
+| <code>string EvidenceReference { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1069](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1069) | The durable evidence reference the item contributes to a match or break. Also the final pair-ordering tie-breaker: match ids are expected to be unique per side, but a population that repeats one must still order totally, or the assignment would fall back to input enumeration order. |

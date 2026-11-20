@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConflictStrategy
+
+Qualified name: <code>Meridian.Storage.ConflictStrategy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:291](../../../../src/Meridian.Storage/StorageOptions.cs#L291).
+
+Conflict resolution strategy for multi-source data.
+
+```csharp
+public enum ConflictStrategy : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>FirstWins</code> | [src/Meridian.Storage/StorageOptions.cs:294](../../../../src/Meridian.Storage/StorageOptions.cs#L294) | Keep first source&#x27;s data. |
+| <code>LastWins</code> | [src/Meridian.Storage/StorageOptions.cs:296](../../../../src/Meridian.Storage/StorageOptions.cs#L296) | Keep latest source&#x27;s data. |
+| <code>HighestPriority</code> | [src/Meridian.Storage/StorageOptions.cs:298](../../../../src/Meridian.Storage/StorageOptions.cs#L298) | Use priority order. |
+| <code>LowestLatency</code> | [src/Meridian.Storage/StorageOptions.cs:300](../../../../src/Meridian.Storage/StorageOptions.cs#L300) | Prefer lowest-latency source. |
+| <code>MostComplete</code> | [src/Meridian.Storage/StorageOptions.cs:302](../../../../src/Meridian.Storage/StorageOptions.cs#L302) | Source with most fields populated. |
+| <code>Merge</code> | [src/Meridian.Storage/StorageOptions.cs:304](../../../../src/Meridian.Storage/StorageOptions.cs#L304) | Combine and deduplicate. |
+
 ## SharedStorageCoordinationStore
 
 Qualified name: <code>Meridian.Storage.Coordination.SharedStorageCoordinationStore</code>. Kind: `class`.
@@ -1206,23 +1229,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;diskSpaceMultiplier&quot;)] public double DiskSpaceMultiplier { get; set; } = 1.2;</code> | [src/Meridian.Storage/Export/ExportRequest.cs:291](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L291) | Multiplier applied to the estimated output size to determine required free disk space. A value of 1.2 means 20 % headroom is required. Defaults to 1.2. |
 | <code>[JsonPropertyName(&quot;requireData&quot;)] public bool RequireData { get; set; }</code> | [src/Meridian.Storage/Export/ExportRequest.cs:298](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L298) | When true the export is aborted (rather than warned) when no data is found for the requested filters. |
 | <code>[JsonPropertyName(&quot;warnCsvComplexTypes&quot;)] public bool WarnCsvComplexTypes { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportRequest.cs:304](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L304) | Emit a warning when exporting nested data (e.g. LOBSnapshot) to CSV format. |
-
-## ExportValidationSeverity
-
-Qualified name: <code>Meridian.Storage.Export.ExportValidationSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Export/ExportValidator.cs:313](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L313).
-
-Severity level for export validation issues.
-
-```csharp
-public enum ExportValidationSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Storage/Export/ExportValidator.cs:315](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L315) |  |
-| <code>Warning</code> | [src/Meridian.Storage/Export/ExportValidator.cs:316](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L316) |  |
-| <code>Error</code> | [src/Meridian.Storage/Export/ExportValidator.cs:317](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L317) |  |

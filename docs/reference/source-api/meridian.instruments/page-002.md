@@ -962,6 +962,26 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;DateOnly&gt;&gt; GetExpiryLadderAsync(string underlyingSymbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionProjectionService.cs:85](../../../../src/Meridian.Instruments/Options/OptionProjectionService.cs#L85) |  |
 | <code>public async Task&lt;OptionChainSnapshotDto&gt; ImportSnapshotAsync(OptionChainSnapshot snapshot, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Options/OptionProjectionService.cs:90](../../../../src/Meridian.Instruments/Options/OptionProjectionService.cs#L90) |  |
 
+## OptionsChainProvenance
+
+Qualified name: <code>Meridian.Instruments.Options.OptionsChainProvenance</code>. Kind: `class`.
+
+Source: [src/Meridian.Instruments/Options/OptionsChainProvenance.cs:8](../../../../src/Meridian.Instruments/Options/OptionsChainProvenance.cs#L8).
+
+Run-local options route evidence for a sequential chain acquisition.
+
+```csharp
+public sealed class OptionsChainProvenance
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int StrikeRange { get; }</code> | [src/Meridian.Instruments/Options/OptionsChainProvenance.cs:35](../../../../src/Meridian.Instruments/Options/OptionsChainProvenance.cs#L35) |  |
+| <code>public bool FallbackOccurred { get; private set; }</code> | [src/Meridian.Instruments/Options/OptionsChainProvenance.cs:36](../../../../src/Meridian.Instruments/Options/OptionsChainProvenance.cs#L36) |  |
+| <code>public ImmutableArray&lt;ProviderProvenanceSource&gt; Sources =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainProvenance.cs:37](../../../../src/Meridian.Instruments/Options/OptionsChainProvenance.cs#L37) |  |
+
 ## OptionsChainService
 
 Qualified name: <code>Meridian.Instruments.Options.OptionsChainService</code>. Kind: `class`.
@@ -984,23 +1004,26 @@ Declared public members:
 | <code>public const int MaxStrikeRange = 100;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:76](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L76) | Maximum allowed strike range for options chain queries. |
 | <code>public bool IsProviderAvailable =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:81](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L81) | Returns whether an options chain provider is available. |
 | <code>public OptionsProviderStatus GetProviderStatus();</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:86](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L86) | Returns a UI-friendly status summary for the active options provider. |
-| <code>public async Task&lt;IReadOnlyList&lt;DateOnly&gt;&gt; GetExpirationsAsync(string underlyingSymbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:117](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L117) | Gets available expiration dates for an underlying symbol. |
-| <code>public async Task&lt;OptionsExpirationDiscoveryResult&gt; DiscoverExpirationsAsync(string underlyingSymbol, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:127](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L127) | Preserves whether provider failover supplied expiration coverage before a caller applies its date filters. Empty provider payloads do not establish coverage: existing adapters also return empty payloads for unavailable credentials and remote failures. |
-| <code>public async Task&lt;IReadOnlyList&lt;decimal&gt;&gt; GetStrikesAsync(string underlyingSymbol, DateOnly expiration, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:151](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L151) | Gets available strikes for an underlying symbol and expiration. |
-| <code>public async Task&lt;OptionChainSnapshot?&gt; FetchChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:177](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L177) | Fetches a chain snapshot from the provider, routes it through the collector, and returns the snapshot. |
-| <code>public async Task&lt;OptionQuote?&gt; FetchOptionQuoteAsync(OptionContractSpec contract, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:208](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L208) | Fetches a quote for a specific option contract from the provider. |
-| <code>public async Task&lt;IReadOnlyList&lt;OptionChainSnapshot&gt;&gt; FetchConfiguredChainsAsync(DerivativesConfig config, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:235](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L235) | Fetches chain snapshots for all underlyings configured in the derivatives config, filtering expirations according to the configuration settings. |
-| <code>public OptionChainSnapshot? GetCachedChain(string underlyingSymbol, DateOnly expiration);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:299](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L299) | Returns the latest cached chain snapshot for an underlying and expiration. |
-| <code>public IReadOnlyList&lt;OptionChainSnapshot&gt; GetCachedChainsForUnderlying(string underlyingSymbol);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:308](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L308) | Returns all cached chain snapshots for an underlying symbol. |
-| <code>public IReadOnlyList&lt;OptionQuote&gt; GetQuotesForUnderlying(string underlyingSymbol);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:317](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L317) | Returns all option quotes for an underlying symbol. |
-| <code>public OptionDataSummary GetSummary() =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:326](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L326) | Returns a summary of collected option data. |
-| <code>public IReadOnlyList&lt;string&gt; GetTrackedUnderlyings() =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:332](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L332) | Returns all underlyings that have active option data. |
+| <code>public OptionsChainProvenance BeginProvenance(string? tenantId, int strikeRange) =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:115](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L115) | Starts a run-local receipt for a covered call chain acquisition. |
+| <code>public Task&lt;IReadOnlyList&lt;DateOnly&gt;&gt; GetExpirationsAsync(string underlyingSymbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:117](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L117) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;DateOnly&gt;&gt; GetExpirationsAsync(string underlyingSymbol, OptionsChainProvenance? provenance, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:120](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L120) |  |
+| <code>public Task&lt;OptionsExpirationDiscoveryResult&gt; DiscoverExpirationsAsync(string underlyingSymbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:130](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L130) | Preserves whether provider failover supplied expiration coverage before a caller applies its date filters. Empty provider payloads do not establish coverage: existing adapters also return empty payloads for unavailable credentials and remote failures. |
+| <code>public async Task&lt;IReadOnlyList&lt;decimal&gt;&gt; GetStrikesAsync(string underlyingSymbol, DateOnly expiration, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:157](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L157) | Gets available strikes for an underlying symbol and expiration. |
+| <code>public Task&lt;OptionChainSnapshot?&gt; FetchChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:183](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L183) | Fetches a chain snapshot from the provider, routes it through the collector, and returns the snapshot. |
+| <code>public async Task&lt;OptionChainSnapshot?&gt; FetchChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange, OptionsChainProvenance? provenance, CancellationToken ct);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:189](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L189) |  |
+| <code>public async Task&lt;OptionQuote?&gt; FetchOptionQuoteAsync(OptionContractSpec contract, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:217](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L217) | Fetches a quote for a specific option contract from the provider. |
+| <code>public async Task&lt;IReadOnlyList&lt;OptionChainSnapshot&gt;&gt; FetchConfiguredChainsAsync(DerivativesConfig config, CancellationToken ct = default);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:244](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L244) | Fetches chain snapshots for all underlyings configured in the derivatives config, filtering expirations according to the configuration settings. |
+| <code>public OptionChainSnapshot? GetCachedChain(string underlyingSymbol, DateOnly expiration);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:308](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L308) | Returns the latest cached chain snapshot for an underlying and expiration. |
+| <code>public IReadOnlyList&lt;OptionChainSnapshot&gt; GetCachedChainsForUnderlying(string underlyingSymbol);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:317](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L317) | Returns all cached chain snapshots for an underlying symbol. |
+| <code>public IReadOnlyList&lt;OptionQuote&gt; GetQuotesForUnderlying(string underlyingSymbol);</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:326](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L326) | Returns all option quotes for an underlying symbol. |
+| <code>public OptionDataSummary GetSummary() =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:335](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L335) | Returns a summary of collected option data. |
+| <code>public IReadOnlyList&lt;string&gt; GetTrackedUnderlyings() =&gt; …;</code> | [src/Meridian.Instruments/Options/OptionsChainService.cs:341](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L341) | Returns all underlyings that have active option data. |
 
 ## OptionsExpirationDiscoveryResult
 
 Qualified name: <code>Meridian.Instruments.Options.OptionsExpirationDiscoveryResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Instruments/Options/OptionsChainService.cs:504](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L504).
+Source: [src/Meridian.Instruments/Options/OptionsChainService.cs:521](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L521).
 
 Provider discovery outcome, distinct from an empty list after a consumer&#x27;s DTE filtering. The compatibility list-only read continues to return an empty list when coverage is unavailable.
 
@@ -1012,7 +1035,7 @@ public sealed record OptionsExpirationDiscoveryResult(bool IsAvailable, IReadOnl
 
 Qualified name: <code>Meridian.Instruments.Options.OptionsProviderStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Instruments/Options/OptionsChainService.cs:517](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L517).
+Source: [src/Meridian.Instruments/Options/OptionsChainService.cs:534](../../../../src/Meridian.Instruments/Options/OptionsChainService.cs#L534).
 
 Summary of the currently active options provider for UI status surfaces.
 

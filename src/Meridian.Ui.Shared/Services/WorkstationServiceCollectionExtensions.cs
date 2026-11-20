@@ -16,6 +16,7 @@ using Meridian.Audit.Compliance;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain;
@@ -146,6 +147,13 @@ public static class WorkstationServiceCollectionExtensions
             return new BackfillCoordinator(configStore, registry, factory,
                 providerCatalog: sp.GetService<Meridian.Contracts.Api.IProviderCatalog>());
         });
+
+        if (services.Any(descriptor => descriptor.ServiceType == typeof(Meridian.Application.Scheduling.BackfillExecutionHistory)) &&
+            services.Any(descriptor => descriptor.ServiceType == typeof(Meridian.Application.Backfill.BackfillCoordinator)))
+        {
+            services.TryAddSingleton<Meridian.Application.Backfill.WorkstationBackfillQueue>();
+            services.AddHostedService(sp => sp.GetRequiredService<Meridian.Application.Backfill.WorkstationBackfillQueue>());
+        }
 
         services.AddHttpClient();
         services.AddHttpContextAccessor();
@@ -302,6 +310,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
+        services.AddBookReceiptQueueServices(ResolveWorkstationDataDirectory);
         if (!services.Any(static descriptor =>
                 descriptor.ServiceType == typeof(IAssetOperationsProjectionStore)))
         {
@@ -389,6 +398,22 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(sp => new AccountingSystemIntegrationStateStore(
             Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "external-gl")));
         services.TryAddSingleton<AccountingSystemIntegrationService>();
+        if (configuration.IsConfigured("MERIDIAN_LEDGER_CONNECTION_STRING"))
+        {
+            services.TryAddSingleton<IQuickBooksPostingConnectionResolver>(sp => sp.GetRequiredService<ProviderConnectionLifecycleService>());
+            services.AddHttpClient("external-gl-posting", client => client.Timeout = TimeSpan.FromSeconds(20))
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+            services.TryAddSingleton<IExternalGlPostingProvider>(sp =>
+            {
+                var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-posting");
+                return new QuickBooksOnlinePostingProvider(sp.GetRequiredService<IQuickBooksPostingConnectionResolver>(),
+                    new QuickBooksOnlineHttpClient(client), client);
+            });
+            services.TryAddSingleton<ExternalGlPostingService>();
+            services.TryAddSingleton<ExternalGlPostingDispatcher>();
+            services.TryAddSingleton<IExternalGlConfirmationGate>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddHostedService<ExternalGlPostingHostedService>();
+        }
         services.TryAddSingleton<IOnboardingWorkspaceStore>(sp => new FileOnboardingWorkspaceStore(
             Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "onboarding-workspaces.json")));
         services.TryAddSingleton<OnboardingComparisonSource>();
@@ -1384,7 +1409,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IFundProfileTenancyRegistry>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
-                sp.GetService<IReportingReleaseConsistencyGate>()));
+                sp.GetService<IReportingReleaseConsistencyGate>(),
+                sp.GetService<IExternalGlConfirmationGate>()));
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());

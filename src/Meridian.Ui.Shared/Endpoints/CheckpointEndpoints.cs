@@ -24,9 +24,9 @@ public static class CheckpointEndpoints
         var group = app.MapGroup("").WithTags("Checkpoints");
 
         // Get all checkpoint history
-        group.MapGet(UiApiRoutes.BackfillCheckpoints, (BackfillCoordinator backfill) =>
+        group.MapGet(UiApiRoutes.BackfillCheckpoints, (BackfillCoordinator backfill, HttpContext context) =>
         {
-            var status = backfill.TryReadLast();
+            var status = backfill.TryReadLast()?.ForTenant(HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId);
             return status is null
                 ? Results.Json(Array.Empty<object>(), jsonOptions)
                 : Results.Json(new[] { status }, jsonOptions);
@@ -233,7 +233,7 @@ public static class CheckpointEndpoints
                     granularity,
                     ResumeFromCheckpoint: true);
 
-                var result = await backfill.RunAsync(request, context.RequestAborted);
+                var result = await backfill.RunAsync(request, HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId, context.RequestAborted);
 
                 return Results.Json(new
                 {

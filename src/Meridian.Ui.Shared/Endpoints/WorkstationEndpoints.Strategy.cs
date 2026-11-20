@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.Workstation;
@@ -298,6 +299,7 @@ public static partial class WorkstationEndpoints
             }
 
             var runId = Guid.NewGuid().ToString("N");
+            var scope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             var entry = (StrategyRunEntry
                 .StartWithEvidence(
                     document.DocumentId,
@@ -312,6 +314,8 @@ public static partial class WorkstationEndpoints
                         ["designerDocumentId"] = document.DocumentId,
                         ["datasetFingerprint"] = preview.Compiled.DatasetFingerprint,
                         ["cellCount"] = document.Cells.Count.ToString(CultureInfo.InvariantCulture),
+                        ["workstationTenantId"] = scope.TenantId ?? string.Empty,
+                        ["workstationCompanyId"] = scope.CompanyId ?? string.Empty,
 
                         // The document's universe is carried as 'symbols' because promotion copies
                         // this parameter set verbatim and LiveTradingEngine.ResolveUniverse reads
@@ -331,7 +335,10 @@ public static partial class WorkstationEndpoints
                     approvalReferences: evidenceLoop.ApprovalReferences,
                     paperValidationReferences: evidenceLoop.PaperValidationReferences,
                     governedReportReferences: evidenceLoop.GovernedReportReferences))
-                .Complete(capturedBacktest);
+                .Complete(capturedBacktest with
+                {
+                    ProviderProvenance = ResearchProviderProvenance.FromWorkerResult(capturedBacktest, DateTimeOffset.UtcNow)
+                });
             if (request.FundAccountId is { } fundAccount)
             {
                 var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
@@ -352,7 +359,10 @@ public static partial class WorkstationEndpoints
             }
             await repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
 
-            return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null, biasDisclosure), jsonOptions);
+            return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null, biasDisclosure) with
+            {
+                ProviderProvenance = entry.ProviderProvenance
+            }, jsonOptions);
         })
         .WithName("RunStrategyDesignerBacktest").RequirePermission(UserPermission.ManageStrategies)
         .Produces<StrategyDesignRunBacktestResponse>(200)

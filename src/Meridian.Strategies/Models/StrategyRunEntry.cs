@@ -132,6 +132,13 @@ public sealed record StrategyRunEntry(
     public IReadOnlyList<OperationArtifactReference> RetainedArtifacts { get; init; } =
         RetainedArtifacts ?? [];
 
+    /// <summary>Receipt retained when the result engine did not supply its own provider evidence.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ProviderProvenanceReceipt? RetainedProviderProvenance { get; init; }
+
+    [JsonIgnore]
+    public ProviderProvenanceReceipt? ProviderProvenance => RetainedProviderProvenance ?? Metrics?.ProviderProvenance;
+
     /// <summary>
     /// Terminal output payloads and summaries produced by the run. Unlike <see cref="ParameterSet"/>,
     /// this dictionary is not part of the immutable input hash and may first be populated only when
@@ -366,6 +373,10 @@ public sealed record StrategyRunEntry(
         {
             EndedAt = now,
             Metrics = metrics,
+            RetainedProviderProvenance = RunType == RunType.Backtest && metrics is { ProviderProvenance: null }
+                ? ResearchProviderProvenance.Create(metrics.Request,
+                    ResearchProviderProvenance.StartFromElapsed(now, metrics.ElapsedTime), now)
+                : null,
             LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             LifecycleFacts = [],
             LifecycleEventAtUtc = now,

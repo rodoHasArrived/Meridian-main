@@ -281,6 +281,7 @@ public sealed partial class StrategyRunReadService
         {
             StrategyArtifactId = run.StrategyArtifactId,
             EvidenceLoop = BuildEvidenceLoop(run),
+            ProviderProvenance = run.RunType == RunType.Backtest ? run.ProviderProvenance : null,
             AcceptanceChecklist = BuildAcceptanceChecklist(run, promotionLookup, promotionTargetRun, scope)
         };
     }

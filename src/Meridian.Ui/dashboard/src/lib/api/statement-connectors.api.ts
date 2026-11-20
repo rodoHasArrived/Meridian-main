@@ -1,6 +1,6 @@
 // Statement connector library endpoints. Re-exported through @/lib/api.
 import type { ReconciliationBreakQueueAuditEvent, MarginControlCenter, MarginCertificationRequest, MarginCertificationResult, ReconciliationBreakQueueItem, ReconciliationBulkCaseworkRequest, ReconciliationBulkCaseworkResult, ReconciliationCalibrationSummary, StatementConnectorDescriptor, StatementFetchPreviewRequest, StatementFetchSchedule, StatementFetchScheduleUpsertRequest, StatementImportCommitResult, StatementImportPreview, StatementImportPreviewRequest, StatementImportSourceKind, StatementMappingProfile, ReconciliationCaseworkCommand, ReconciliationCaseworkOperationResult, ResolveReconciliationBreakRequest, ReviewReconciliationBreakRequest } from "@/types";
-import { RECONCILIATION_API_ENDPOINTS, reconciliationBreakAssignEndpoint, reconciliationBreakAuditEndpoint, reconciliationBreakBulkDryRunEndpoint, reconciliationBreakBulkExecuteEndpoint, reconciliationBreakBulkStatusEndpoint, reconciliationBreakCommentEndpoint, reconciliationBreakCommentsEndpoint, reconciliationBreakEndpoint, reconciliationBreakQueueEndpoint, reconciliationBreakReopenEndpoint, reconciliationBreakResolutionEndpoint, reconciliationBreakResolveEndpoint, reconciliationBreakReviewEndpoint, reconciliationBreakSupersedeEndpoint, reconciliationBreakRootCauseEndpoint, reconciliationBreakSignOffEndpoint, reconciliationBreakTransitionEndpoint, reconciliationBreakWaiveEndpoint, reconciliationStatementFetchScheduleEndpoint, reconciliationStatementFetchScheduleRunEndpoint, reconciliationStatementMappingProfileEndpoint, STATEMENT_CONNECTOR_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { RECONCILIATION_API_ENDPOINTS, reconciliationBreakAssignEndpoint, reconciliationBreakAuditEndpoint, reconciliationBreakBulkDryRunEndpoint, reconciliationBreakBulkExecuteEndpoint, reconciliationBreakBulkResultEndpoint, reconciliationBreakBulkStatusEndpoint, reconciliationBreakCommentEndpoint, reconciliationBreakCommentsEndpoint, reconciliationBreakEndpoint, reconciliationBreakQueueEndpoint, reconciliationBreakReopenEndpoint, reconciliationBreakResolutionEndpoint, reconciliationBreakResolveEndpoint, reconciliationBreakReviewEndpoint, reconciliationBreakSupersedeEndpoint, reconciliationBreakRootCauseEndpoint, reconciliationBreakSignOffEndpoint, reconciliationBreakTransitionEndpoint, reconciliationBreakWaiveEndpoint, reconciliationStatementFetchScheduleEndpoint, reconciliationStatementFetchScheduleRunEndpoint, reconciliationStatementMappingProfileEndpoint, STATEMENT_CONNECTOR_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { isApiError } from "@/lib/api-errors";
 import { deleteJson, getJson, postFormData, postJson, putJson, type ApiRequestOptions } from "@/lib/api/http-client";
 
@@ -195,6 +195,15 @@ export function executeReconciliationBreakBulkAction(request: ReconciliationBulk
 
 export function getReconciliationBreakBulkActionStatus(bulkActionId: string) {
   return getJson<unknown>(reconciliationBreakBulkStatusEndpoint(bulkActionId));
+}
+
+export async function getReconciliationBreakBulkActionResult(bulkActionId: string): Promise<ReconciliationBulkCaseworkResult | null> {
+  try {
+    return await getJson<ReconciliationBulkCaseworkResult>(reconciliationBreakBulkResultEndpoint(bulkActionId), { allowDevelopmentFallback: false });
+  } catch (failure) {
+    if (isApiError(failure) && failure.status === 404) return null;
+    throw failure;
+  }
 }
 
 export function getReconciliationCalibrationSummary() {

@@ -34,12 +34,16 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
     }
 
     /// <inheritdoc/>
+    public ValueTask<IOptionChainProvider> CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to,
+        int maxDte, CancellationToken ct = default) => CreateAsync(underlyingSymbol, from, to, maxDte, null, ct);
+
     public async ValueTask<IOptionChainProvider> CreateAsync(
         string underlyingSymbol,
         DateOnly from,
         DateOnly to,
         int maxDte,
-        CancellationToken ct = default)
+        string? tenantId,
+        CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(underlyingSymbol);
         if (to < from)
@@ -48,7 +52,8 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
         var normalisedSymbol = underlyingSymbol.Trim().ToUpperInvariant();
         var opts = _options.CurrentValue;
 
-        var expirations = await _chainService.GetExpirationsAsync(normalisedSymbol, ct).ConfigureAwait(false);
+        var provenance = _chainService.BeginProvenance(tenantId, opts.MaxStrikesPerExpiration);
+        var expirations = await _chainService.GetExpirationsAsync(normalisedSymbol, provenance, ct).ConfigureAwait(false);
         if (expirations.Count == 0)
         {
             _logger.LogWarning(
@@ -73,7 +78,7 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
             // Empty adapter is still valid — the strategy will produce zero trades and the UI surfaces that.
             return new CoveredCallChainProviderAdapter(
                 new Dictionary<DateOnly, IReadOnlyList<OptionCandidateInfo>>(),
-                _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>());
+                _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>()) { Provenance = provenance };
         }
 
         // Slice 1: production IOptionsChainProvider implementations return a live (current-time)
@@ -93,7 +98,7 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
             try
             {
                 snapshot = await _chainService
-                    .FetchChainSnapshotAsync(normalisedSymbol, expiry, opts.MaxStrikesPerExpiration, ct)
+                    .FetchChainSnapshotAsync(normalisedSymbol, expiry, opts.MaxStrikesPerExpiration, provenance, ct)
                     .ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
@@ -126,7 +131,7 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
                 normalisedSymbol, from, to);
             return new CoveredCallChainProviderAdapter(
                 new Dictionary<DateOnly, IReadOnlyList<OptionCandidateInfo>>(),
-                _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>());
+                _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>()) { Provenance = provenance };
         }
 
         // Fan the snapshot out across every trading-day date in [from, to]. Each scan date sees the
@@ -154,7 +159,7 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
 
         return new CoveredCallChainProviderAdapter(
             snapshotsByDate,
-            _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>());
+            _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>()) { Provenance = provenance };
     }
 
     /// <inheritdoc/>

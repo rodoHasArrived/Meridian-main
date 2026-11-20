@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RiskEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:76](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L76).
+
+Exposes runtime risk rule status, operator-managed rule configuration, and the governed-approval queue for escalated orders.
+
+```csharp
+public static class RiskEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapRiskEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:78](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L78) |  |
+
+## RiskEscalationApprovalResponse
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEscalationApprovalResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:70](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L70).
+
+Approve response: the resolved escalation plus the release order result when resubmitted.
+
+```csharp
+public sealed record RiskEscalationApprovalResponse(RiskEscalationDto Escalation, OrderResult? ReleaseResult);
+```
+
+## RiskEscalationDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEscalationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L16).
+
+Flat projection of a parked risk escalation for API and workstation consumption.
+
+```csharp
+public sealed record RiskEscalationDto(string EscalationId, string Symbol, string Side, string Type, decimal Quantity, decimal? LimitPrice, string Reason, string? RuleName, string Status, DateTimeOffset ParkedAt, string? ResolvedBy, string? ResolutionReason, DateTimeOffset? ResolvedAt, decimal? StopPrice = null, decimal? TrailPrice = null, decimal? TrailPercent = null, string? TimeInForce = null, decimal? RoutedNotional = null, Guid? FundAccountId = null, string? StrategyId = null, string? PositionIntent = null, OptionContractIdentity? OptionContract = null, IReadOnlyList<OrderLeg>? Legs = null);
+```
+
+## RiskEscalationResolutionRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEscalationResolutionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:47](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L47).
+
+Operator resolution request for a parked escalation.
+
+```csharp
+public sealed record RiskEscalationResolutionRequest(string? Reason = null, bool Release = true);
+```
+
 ## RunAccrualScheduleInput
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.RunAccrualScheduleInput</code>. Kind: `record`.
@@ -470,11 +524,11 @@ Declared public members:
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L80) | Maps all UI API endpoints using default JSON serializer options. |
 | <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L94) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:126](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L126) | Maps all UI API endpoints with custom JSON serializer options. |
-| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:329](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L329) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
-| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:348](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L348) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
-| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:354](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L354) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
-| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:361](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L361) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
-| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:370](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L370) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
+| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:330](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L330) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
+| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:349](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L349) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
+| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:355](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L355) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
+| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:362](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L362) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
+| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:371](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L371) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
 
 ## UpdateExecutionCircuitBreakerRequest
 
@@ -574,6 +628,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AuditTableExport.
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs#L15).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ChartEvidence.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ChartEvidence.cs#L16).
 
 ```csharp
@@ -614,7 +674,7 @@ Cross-screen counts (A3): open orders, provider health and open breaks, counted 
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:51](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L51).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:52](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L52).
 
 Endpoints for the desktop workstation API surface.
 
@@ -626,7 +686,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:59](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L59) |  |
+| <code>public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:60](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L60) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs#L12).
 
@@ -812,6 +872,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationReg
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.RecordSearch.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.RecordSearch.cs#L26).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs#L13).
 
 ```csharp
@@ -886,7 +952,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconcil
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs#L24).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs#L25).
 
 Strategy Designer and Strategy Engine endpoints for the workstation API surface, split out of the WorkstationEndpoints core partial as a capability group.
 
@@ -950,6 +1016,16 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs:8](../../.
 
 ```csharp
 public static partial class WorkstationEndpoints
+```
+
+## BookReceiptRunRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationEndpoints.BookReceiptRunRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs#L17).
+
+```csharp
+public sealed record BookReceiptRunRequest(Guid LedgerBookId, DateOnly AsOfDate);
 ```
 
 ## WorkstationFundScopeTenantAccessor
@@ -1129,82 +1205,4 @@ Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:2
 
 ```csharp
 public sealed record AccountCashSourceReceiptRevision(string ExpectedFlowId, DateOnly ReceiptDate);
-```
-
-## AccountCashSourceWatchObservation
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceWatchObservation</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:28](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L28).
-
-```csharp
-public sealed record AccountCashSourceWatchObservation(string ObservationId, Guid SecurityId, string Kind, DateOnly EffectiveDate, string Value, string? Agency, string? SupersedesObservationId);
-```
-
-## BondCouponRecognitionEvidenceVerifier
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.BondCouponRecognitionEvidenceVerifier</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs#L8).
-
-Rechecks exact observed bank cash and independently reviewed deductions before recognition.
-
-```csharp
-public sealed class BondCouponRecognitionEvidenceVerifier(IEvidenceArtifactStore vault, TimeProvider? clock = null) : IBondCouponRecognitionEvidenceVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task VerifyAsync(AccountCashForecastScopeDto scope, IReadOnlyList&lt;BondCouponRecognizedCashDto&gt; cash, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs#L13) |  |
-
-## ContractualCashFlowDraftAttestationSubjectResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ContractualCashFlowDraftAttestationSubjectResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs#L10).
-
-Exact, scoped preparer checks over immutable calculation-only Security Master runs.
-
-```csharp
-public sealed class ContractualCashFlowDraftAttestationSubjectResolver(IContractualCashFlowRunStore? runs = null, ISecurityMasterQueryService? securities = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SubjectKind = &quot;contractual-cashflow-draft&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs#L13) |  |
-| <code>public const string SourceSubjectKind = &quot;contractual-cashflow-security&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs:14](../../../../src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs#L14) |  |
-| <code>public async Task&lt;SinglePrincipalAttestationSubjectSnapshotDto?&gt; ResolveAsync(Guid securityId, Guid runId, string tenantId, string companyId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs#L17) |  |
-| <code>public static bool TryParseSubjectId(string? subjectId, out Guid securityId, out Guid runId);</code> | [src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs:54](../../../../src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs#L54) |  |
-
-## EvidenceAttestationSubjectResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceAttestationSubjectResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs#L8).
-
-Resolves evidence acknowledgments without granting document review or accounting authority.
-
-```csharp
-public sealed class EvidenceAttestationSubjectResolver(IEvidenceArtifactStore artifacts)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SubjectKind = &quot;evidence-document&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs#L10) |  |
-| <code>public async Task&lt;EvidenceAttestationSubjectSnapshot?&gt; ResolveAsync(string vaultId, string documentId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs#L17) | Reads the exact retained source and current document operands. The assertion&#x27;s preparer is a separate task owner; the source creator/importer is never substituted for that owner. |
-
-## EvidenceAttestationSubjectSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceAttestationSubjectSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs:105](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs#L105).
-
-```csharp
-public sealed record EvidenceAttestationSubjectSnapshot(string SubjectKind, string SubjectId, string Revision, string Hash, string SourceArtifactId, string SourceHash, string? SourceActor, string SourceProvenance, bool Eligible, IReadOnlyList<string> Checks, string? SourceSubjectKind = null, string? SourceSubjectId = null, string? SubjectSnapshotJson = null);
 ```

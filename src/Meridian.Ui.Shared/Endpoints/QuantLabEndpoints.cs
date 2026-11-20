@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Operations;
 using Meridian.Identity.Auth;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
@@ -65,6 +66,14 @@ public static class QuantLabEndpoints
             try
             {
                 var result = await runner.RunAsync(request.Source, parameters, ct).ConfigureAwait(false);
+                var completedUtc = DateTimeOffset.UtcNow;
+                result = result with
+                {
+                    CapturedBacktests = result.CapturedBacktests.Select(backtest => backtest with
+                    {
+                        ProviderProvenance = ResearchProviderProvenance.FromWorkerResult(backtest, completedUtc)
+                    }).ToArray()
+                };
                 await RecordResearchRunsAsync(services, request, result, ct).ConfigureAwait(false);
                 return Results.Json(QuantRunResponse.From(result), jsonOptions);
             }
@@ -157,8 +166,8 @@ public static class QuantLabEndpoints
     /// worker returned.
     /// </para>
     /// <para>
-    /// This is a no-op unless the caller supplies a strategy identity and the host has registered a
-    /// recorder, so existing callers are unaffected. Failures are logged and swallowed: a recording
+    /// Scoped runs without a strategy identity use the Quant Lab research library identity.
+    /// Failures are logged and swallowed: a recording
     /// problem must not discard a completed run, and an unrecorded run simply carries no lineage.
     /// </para>
     /// </remarks>
@@ -168,7 +177,7 @@ public static class QuantLabEndpoints
         ScriptRunResult result,
         CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.StrategyId) || result.CapturedBacktests.Count == 0)
+        if (result.CapturedBacktests.Count == 0)
         {
             return;
         }
@@ -179,10 +188,6 @@ public static class QuantLabEndpoints
             return;
         }
 
-        var strategyName = string.IsNullOrWhiteSpace(request.StrategyName)
-            ? request.StrategyId
-            : request.StrategyName;
-
         // Scope comes from authenticated middleware, never the request body. An entry that
         // declares neither tenant nor company is treated as a legacy unscoped run and becomes
         // visible under every scope, so omitting it would leak one tenant's research into another's
@@ -191,6 +196,12 @@ public static class QuantLabEndpoints
             accessor.TryGetCurrent(out var trusted)
                 ? trusted
                 : null;
+        var isAdHoc = string.IsNullOrWhiteSpace(request.StrategyId);
+        if (scope?.HasTenantScope != true)
+            return;
+        var strategyId = isAdHoc ? "quant-lab-research" : request.StrategyId!;
+        var strategyName = isAdHoc ? "Quant Lab research" : string.IsNullOrWhiteSpace(request.StrategyName)
+            ? strategyId : request.StrategyName;
 
         for (var index = 0; index < result.CapturedBacktests.Count; index++)
         {
@@ -201,10 +212,10 @@ public static class QuantLabEndpoints
             // them gave materially different experiments the same input hash. The realism
             // descriptor and the per-run inputs come from the backtest's own request.
             var descriptor = new ResearchRunDescriptor(
-                StrategyId: request.StrategyId,
+                StrategyId: strategyId,
                 StrategyName: strategyName,
                 CorrelationId: BuildCorrelationId(request.CorrelationId, index),
-                DatasetReference: backtest.Request.DataRoot,
+                DatasetReference: isAdHoc ? null : backtest.Request.DataRoot,
                 ParameterSet: BuildParameterSet(backtest, index, scope),
                 ExecutionRealism: backtest.ToResolvedRealismDescriptor());
 
@@ -418,6 +429,8 @@ public sealed record QuantRunResponse(
     IReadOnlyList<QuantTradeDto> Trades,
     IReadOnlyList<QuantParameterDto> RuntimeParameters)
 {
+    public IReadOnlyList<ProviderProvenanceReceipt> ProviderProvenanceReceipts { get; init; } = [];
+
     /// <summary>Maps a strongly-typed <see cref="ScriptRunResult"/> into the JSON DTO.</summary>
     public static QuantRunResponse From(ScriptRunResult result) => new(
         Success: result.Success,
@@ -454,7 +467,11 @@ public sealed record QuantRunResponse(
                 Min: double.IsFinite(p.Min) ? p.Min : null,
                 Max: double.IsFinite(p.Max) ? p.Max : null,
                 Description: p.Description))
-            .ToArray());
+            .ToArray())
+    {
+        ProviderProvenanceReceipts = result.CapturedBacktests.Select(backtest => backtest.ProviderProvenance)
+            .OfType<ProviderProvenanceReceipt>().ToArray()
+    };
 
     /// <summary>Constructs an error response for unhandled exceptions.</summary>
     public static QuantRunResponse FromError(string message) => new(

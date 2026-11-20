@@ -4730,7 +4730,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).not.toHaveTextContent("run-42:cash");
     const breakMetadata = screen.getByText("Break metadata").closest("details");
     expect(breakMetadata).not.toHaveAttribute("open");
-    expect(within(breakMetadata!).getByText("run-42:cash")).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "Reconciliation break detail for run-42:cash" })).getByText("run-42:cash")).toBeVisible();
   });
 
   it("renders calibration tolerance profiles as selectable row-detail evidence", async () => {

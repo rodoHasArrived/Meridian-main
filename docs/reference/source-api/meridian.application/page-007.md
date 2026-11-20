@@ -6,6 +6,144 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RetainedInternalReconciliationPopulationProvider
+
+Qualified name: <code>Meridian.Application.Reconciliation.RetainedInternalReconciliationPopulationProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs:56](../../../../src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs#L56).
+
+Resolves the internal book (positions, cash, and journal-projected ledger transactions) a statement run reconciles against from Meridian&#x27;s own retained records, replacing the fail-closed empty default so shipped imports actually reconcile instead of surfacing every external row as an unmatched break. Lives in the application layer so both the browser workstation service graph and the CLI command graph resolve the same retained-book provider over shared account, position, and ledger-journal stores.
+
+```csharp
+public sealed class RetainedInternalReconciliationPopulationProvider(IAccountQueryService? accounts = null, IPositionSnapshotStore? positionSnapshots = null, ILogger<RetainedInternalReconciliationPopulationProvider>? logger = null, IInternalLedgerTransactionSource? ledgerTransactionSource = null, Func<IAccountQueryService?>? accountQueryResolver = null, ILedgerJournalStore? ledgerStore = null, IFundProfileTenancyRegistry? tenancy = null) : IInternalReconciliationPopulationProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;InternalReconciliationPopulations&gt; GetPopulationsAsync(InternalReconciliationPopulationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs:66](../../../../src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs#L66) |  |
+
+## BackfillExecutionHistory
+
+Qualified name: <code>Meridian.Application.Scheduling.BackfillExecutionHistory</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:290](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L290).
+
+Manager for querying and analyzing execution history.
+
+```csharp
+public sealed class BackfillExecutionHistory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BackfillExecutionHistory();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:303](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L303) | Creates an in-memory history. Retained for focused tests and callers that do not opt into restart durability. |
+| <code>public BackfillExecutionHistory(string persistencePath);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:310](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L310) | Creates a bounded history backed by an atomically replaced JSON snapshot. |
+| <code>public void AddExecution(BackfillExecutionLog execution);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:322](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L322) | Add an execution to the history. |
+| <code>public void UpdateExecution(BackfillExecutionLog execution);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:336](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L336) | Replaces and persists a previously added execution after mutable terminal fields change. |
+| <code>public BackfillExecutionLog? GetExecution(string executionId);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:350](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L350) | Get an execution by ID. |
+| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetExecutionsForSchedule(string scheduleId, int limit = 50);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:358](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L358) | Get all executions for a schedule. |
+| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetRecentExecutions(int limit = 50, string? workstationTenant = null);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:370](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L370) | Get recent executions across all schedules. |
+| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetFailedExecutions(int limit = 50);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:405](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L405) | Get failed executions. |
+| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetExecutionsInRange(DateTimeOffset from, DateTimeOffset to, int limit = 100);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:417](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L417) | Get executions within a time range. |
+| <code>public ScheduleExecutionSummary GetScheduleSummary(string scheduleId, int recentCount = 30);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:432](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L432) | Get aggregate statistics for a schedule. |
+| <code>public SystemExecutionSummary GetSystemSummary(TimeSpan? period = null);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:459](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L459) | Get overall system statistics. |
+
+## BackfillExecutionLog
+
+Qualified name: <code>Meridian.Application.Scheduling.BackfillExecutionLog</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:16](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L16).
+
+Records the execution history of scheduled backfill jobs. Provides visibility into past runs, successes, failures, and performance metrics.
+
+```csharp
+public sealed record BackfillExecutionLog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkstationBackfillSubmission? WorkstationSubmission { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:20](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L20) |  |
+| <code>public BackfillQuotaReceipt? QuotaReceipt { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:21](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L21) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BackfillBatchReceiptSummary&gt;? BatchReceipts { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:24](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L24) |  |
+| <code>[JsonIgnore] public DateTimeOffset ThrottledUntil =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:27](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L27) |  |
+| <code>public string ExecutionId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:44](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L44) | Unique identifier for this execution. |
+| <code>public string ScheduleId { get; init; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:49](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L49) | ID of the schedule that triggered this execution. |
+| <code>public string ScheduleName { get; init; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:54](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L54) | Name of the schedule for display purposes. |
+| <code>public string? JobId { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:59](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L59) | ID of the backfill job created for this execution. |
+| <code>public ExecutionTrigger Trigger { get; init; } = ExecutionTrigger.Scheduled;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:64](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L64) | How this execution was triggered. |
+| <code>public ExecutionStatus Status { get; set; } = ExecutionStatus.Pending;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:69](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L69) | Current status of the execution. |
+| <code>public DateTimeOffset ScheduledAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:74](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L74) | When the execution was scheduled to run. |
+| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:79](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L79) | When the execution actually started. |
+| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:84](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L84) | When the execution completed. |
+| <code>[JsonIgnore] public TimeSpan? Duration =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:90](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L90) | Duration of the execution. |
+| <code>public DateOnly FromDate { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:97](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L97) | Date range that was backfilled. |
+| <code>public DateOnly ToDate { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:102](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L102) | End date of the backfill range. |
+| <code>public List&lt;string&gt; Symbols { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:107](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L107) | Symbols that were processed. |
+| <code>public ExecutionStatistics Statistics { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:112](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L112) | Detailed statistics from the execution. |
+| <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:117](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L117) | Error message if the execution failed. |
+| <code>public string? ErrorStackTrace { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:122](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L122) | Stack trace for debugging (only for failures). |
+| <code>public List&lt;string&gt; Warnings { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:127](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L127) | Warnings generated during execution. |
+| <code>public Dictionary&lt;string, ProviderUsageStats&gt; ProviderStats { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:132](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L132) | Provider usage breakdown. |
+| <code>public ConcurrentDictionary&lt;string, SymbolExecutionResult&gt; SymbolResults { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:137](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L137) | Per-symbol results. |
+| <code>public string? AutoRemediationTriggerReason { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:142](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L142) | Auto-remediation trigger reason when execution was system-triggered. |
+| <code>public int AutoRemediationAttemptCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:147](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L147) | Attempt count for the same auto-remediation idempotency key. |
+| <code>public string? AutoRemediationLastOutcome { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:152](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L152) | Last known remediation outcome used by observability surfaces. |
+| <code>public string? AutoRemediationIdempotencyKey { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:157](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L157) | Idempotency key (symbol+range+provider) used to suppress duplicates. |
+| <code>public BackfillRemediationSlaMetadata? AutoRemediationSla { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:164](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L164) | Typed SLA metadata when this execution was created by auto gap remediation. Null for non-remediation executions; legacy remediation entries carry the same data as key=value strings in Warnings instead. |
+
+## BackfillSchedule
+
+Qualified name: <code>Meridian.Application.Scheduling.BackfillSchedule</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillSchedule.cs:11](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L11).
+
+Represents a scheduled backfill configuration with cron-like scheduling. Supports daily, weekly, and custom cron expressions for automatic gap-fill.
+
+```csharp
+public sealed class BackfillSchedule
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ScheduleId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:16](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L16) | Unique identifier for this schedule. |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:21](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L21) | Human-readable name for the schedule. |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:26](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L26) | Description of what this schedule does. |
+| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:31](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L31) | Whether this schedule is active. |
+| <code>public string CronExpression { get; set; } = &quot;0 2 * * *&quot;;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:39](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L39) | Cron expression for scheduling (five-field cron plus Meridian&#x27;s explicit d#n ordinal-day extension). Examples: &quot;0 2 * * *&quot; (daily at 2am), &quot;0 3 * * 0&quot; (weekly on Sunday at 3am), and &quot;0 1 * * 0#1&quot; (first Sunday of the month at 1am). |
+| <code>public string TimeZoneId { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:44](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L44) | Timezone for cron expression evaluation. |
+| <code>public ScheduledBackfillType BackfillType { get; set; } = ScheduledBackfillType.GapFill;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:49](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L49) | Type of backfill operation. |
+| <code>public List&lt;string&gt; Symbols { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:54](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L54) | Symbols to include in backfill. Empty = use all configured symbols. |
+| <code>public int LookbackDays { get; set; } = 30;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:59](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L59) | Lookback period for gap detection (e.g., 30 days). |
+| <code>public DataGranularity Granularity { get; set; } = DataGranularity.Daily;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:64](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L64) | Data granularity for backfill. |
+| <code>public List&lt;string&gt; PreferredProviders { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:69](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L69) | Preferred providers in priority order. Empty = use default priority. |
+| <code>public BackfillPriority Priority { get; set; } = BackfillPriority.Normal;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:74](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L74) | Priority level for jobs created by this schedule. |
+| <code>public int MaxRetries { get; set; } = 3;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:79](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L79) | Maximum retries for failed requests. |
+| <code>public int MaxConcurrentRequests { get; set; } = 3;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:84](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L84) | Maximum concurrent requests for jobs from this schedule. |
+| <code>public bool SkipExistingData { get; set; } = true;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:89](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L89) | Whether to skip dates that already have data. |
+| <code>public bool AutoPauseOnRateLimit { get; set; } = true;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:94](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L94) | Auto-pause when rate limited. |
+| <code>public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:99](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L99) | When the schedule was created. |
+| <code>public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:104](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L104) | When the schedule was last modified. |
+| <code>public DateTimeOffset? LastExecutedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:109](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L109) | When the schedule last executed. |
+| <code>public DateTimeOffset? NextExecutionAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:114](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L114) | When the schedule is next scheduled to execute. |
+| <code>public string? LastJobId { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:119](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L119) | ID of the last job created by this schedule. |
+| <code>public int ExecutionCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:124](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L124) | Total number of times this schedule has executed. |
+| <code>public int SuccessfulExecutions { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:129](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L129) | Number of successful executions. |
+| <code>public int FailedExecutions { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:134](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L134) | Number of failed executions. |
+| <code>public List&lt;string&gt; Tags { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:139](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L139) | Tags for categorization and filtering. |
+| <code>public string? LastRepairReason { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:144](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L144) | Reason the schedule was last repaired automatically while loading retained state. |
+| <code>public DateTimeOffset? LastRepairedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:149](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L149) | UTC timestamp of the last automatic retained-state repair. |
+| <code>[JsonIgnore] public TimeZoneInfo TimeZone =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:155](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L155) | Gets the timezone info for cron evaluation. |
+| <code>public DateTimeOffset? CalculateNextExecution(DateTimeOffset? from = null);</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:160](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L160) | Calculate the next execution time based on the cron expression. |
+| <code>public BackfillJob CreateJob(DateOnly? fromDate = null, DateOnly? toDate = null);</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:169](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L169) | Create a BackfillJob from this schedule. |
+
 ## BackfillScheduleManager
 
 Qualified name: <code>Meridian.Application.Scheduling.BackfillScheduleManager</code>. Kind: `class`.
@@ -70,7 +208,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Scheduling.ExecutionStatistics</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:197](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L197).
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:225](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L225).
 
 Statistics from a scheduled execution.
 
@@ -82,28 +220,28 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int TotalSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:199](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L199) |  |
-| <code>public int SuccessfulSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:200](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L200) |  |
-| <code>public int FailedSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:201](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L201) |  |
-| <code>public int SkippedSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:202](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L202) |  |
-| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:204](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L204) |  |
-| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:205](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L205) |  |
-| <code>public int GapsRemaining =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:206](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L206) |  |
-| <code>public long TotalBarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:208](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L208) |  |
-| <code>public long TotalBytesDownloaded { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:209](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L209) |  |
-| <code>public int TotalRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:211](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L211) |  |
-| <code>public int SuccessfulRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:212](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L212) |  |
-| <code>public int FailedRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:213](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L213) |  |
-| <code>public int RateLimitedRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:214](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L214) |  |
-| <code>public double AverageRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:216](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L216) |  |
-| <code>public double MaxRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:217](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L217) |  |
-| <code>public double SuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:222](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L222) | Success rate (0.0 - 1.0). |
+| <code>public int TotalSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:227](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L227) |  |
+| <code>public int SuccessfulSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:228](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L228) |  |
+| <code>public int FailedSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:229](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L229) |  |
+| <code>public int SkippedSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:230](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L230) |  |
+| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:232](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L232) |  |
+| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:233](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L233) |  |
+| <code>public int GapsRemaining =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:234](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L234) |  |
+| <code>public long TotalBarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:236](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L236) |  |
+| <code>public long TotalBytesDownloaded { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:237](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L237) |  |
+| <code>public int TotalRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:239](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L239) |  |
+| <code>public int SuccessfulRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:240](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L240) |  |
+| <code>public int FailedRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:241](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L241) |  |
+| <code>public int RateLimitedRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:242](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L242) |  |
+| <code>public double AverageRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:244](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L244) |  |
+| <code>public double MaxRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:245](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L245) |  |
+| <code>public double SuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:250](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L250) | Success rate (0.0 - 1.0). |
 
 ## ExecutionStatus
 
 Qualified name: <code>Meridian.Application.Scheduling.ExecutionStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:170](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L170).
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:198](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L198).
 
 Status of a scheduled execution.
 
@@ -115,19 +253,19 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:173](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L173) | Execution is queued. |
-| <code>Running</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:176](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L176) | Execution is running. |
-| <code>Completed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:179](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L179) | Execution completed successfully. |
-| <code>PartialSuccess</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:182](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L182) | Execution completed with some failures. |
-| <code>Failed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:185](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L185) | Execution failed. |
-| <code>Cancelled</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:188](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L188) | Execution was cancelled. |
-| <code>Skipped</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:191](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L191) | Execution was skipped (e.g., already running). |
+| <code>Pending</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:201](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L201) | Execution is queued. |
+| <code>Running</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:204](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L204) | Execution is running. |
+| <code>Completed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:207](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L207) | Execution completed successfully. |
+| <code>PartialSuccess</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:210](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L210) | Execution completed with some failures. |
+| <code>Failed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:213](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L213) | Execution failed. |
+| <code>Cancelled</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:216](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L216) | Execution was cancelled. |
+| <code>Skipped</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:219](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L219) | Execution was skipped (e.g., already running). |
 
 ## ExecutionTrigger
 
 Qualified name: <code>Meridian.Application.Scheduling.ExecutionTrigger</code>. Kind: `enum`.
 
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:146](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L146).
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:174](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L174).
 
 How a scheduled execution was triggered.
 
@@ -139,18 +277,18 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Scheduled</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:149](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L149) | Triggered by cron schedule. |
-| <code>Manual</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:152](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L152) | Manually triggered by user. |
-| <code>Api</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:155](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L155) | Triggered by API call. |
-| <code>Retry</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:158](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L158) | Retry of a failed execution. |
-| <code>CatchUp</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:161](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L161) | System startup catch-up. |
-| <code>AutoRemediation</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:164](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L164) | Triggered automatically by quality/gap remediation policy. |
+| <code>Scheduled</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:177](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L177) | Triggered by cron schedule. |
+| <code>Manual</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:180](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L180) | Manually triggered by user. |
+| <code>Api</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:183](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L183) | Triggered by API call. |
+| <code>Retry</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:186](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L186) | Retry of a failed execution. |
+| <code>CatchUp</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:189](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L189) | System startup catch-up. |
+| <code>AutoRemediation</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:192](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L192) | Triggered automatically by quality/gap remediation policy. |
 
 ## ProviderUsageStats
 
 Qualified name: <code>Meridian.Application.Scheduling.ProviderUsageStats</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:230](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L230).
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:258](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L258).
 
 Provider usage statistics for an execution.
 
@@ -162,15 +300,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ProviderName { get; set; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:232](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L232) |  |
-| <code>public int RequestCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:233](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L233) |  |
-| <code>public int SuccessCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:234](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L234) |  |
-| <code>public int FailureCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:235](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L235) |  |
-| <code>public int RateLimitHits { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:236](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L236) |  |
-| <code>public long BarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:237](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L237) |  |
-| <code>public long BytesDownloaded { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:238](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L238) |  |
-| <code>public double AverageLatencyMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:239](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L239) |  |
-| <code>public bool WasPrimary { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:240](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L240) |  |
+| <code>public string ProviderName { get; set; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:260](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L260) |  |
+| <code>public int RequestCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:261](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L261) |  |
+| <code>public int SuccessCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:262](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L262) |  |
+| <code>public int FailureCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:263](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L263) |  |
+| <code>public int RateLimitHits { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:264](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L264) |  |
+| <code>public long BarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:265](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L265) |  |
+| <code>public long BytesDownloaded { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:266](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L266) |  |
+| <code>public double AverageLatencyMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:267](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L267) |  |
+| <code>public bool WasPrimary { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:268](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L268) |  |
 
 ## ScheduledBackfillOptions
 
@@ -249,7 +387,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Application.Scheduling.ScheduleExecutionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:523](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L523).
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:577](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L577).
 
 Summary statistics for a single schedule.
 
@@ -261,17 +399,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ScheduleId { get; init; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:525](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L525) |  |
-| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:526](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L526) |  |
-| <code>public int SuccessfulExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:527](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L527) |  |
-| <code>public int FailedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:528](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L528) |  |
-| <code>public int PartialSuccessExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:529](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L529) |  |
-| <code>public double AverageDurationMinutes { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:530](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L530) |  |
-| <code>public long TotalBarsRetrieved { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:531](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L531) |  |
-| <code>public int TotalGapsFilled { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:532](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L532) |  |
-| <code>public DateTimeOffset? LastExecution { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:533](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L533) |  |
-| <code>public DateTimeOffset? LastSuccessfulExecution { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:534](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L534) |  |
-| <code>public double SuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:535](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L535) |  |
+| <code>public string ScheduleId { get; init; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:579](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L579) |  |
+| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:580](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L580) |  |
+| <code>public int SuccessfulExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:581](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L581) |  |
+| <code>public int FailedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:582](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L582) |  |
+| <code>public int PartialSuccessExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:583](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L583) |  |
+| <code>public double AverageDurationMinutes { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:584](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L584) |  |
+| <code>public long TotalBarsRetrieved { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:585](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L585) |  |
+| <code>public int TotalGapsFilled { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:586](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L586) |  |
+| <code>public DateTimeOffset? LastExecution { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:587](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L587) |  |
+| <code>public DateTimeOffset? LastSuccessfulExecution { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:588](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L588) |  |
+| <code>public double SuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:589](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L589) |  |
 
 ## ScheduleStatusSummary
 
@@ -303,7 +441,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Scheduling.SymbolExecutionResult</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:246](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L246).
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:274](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L274).
 
 Execution result for a single symbol.
 
@@ -315,21 +453,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:248](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L248) |  |
-| <code>public ExecutionStatus Status { get; set; } = ExecutionStatus.Pending;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:249](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L249) |  |
-| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:250](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L250) |  |
-| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:251](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L251) |  |
-| <code>public long BarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:252](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L252) |  |
-| <code>public string? Provider { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:253](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L253) |  |
-| <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:254](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L254) |  |
-| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:255](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L255) |  |
-| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:256](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L256) |  |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:276](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L276) |  |
+| <code>public ExecutionStatus Status { get; set; } = ExecutionStatus.Pending;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:277](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L277) |  |
+| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:278](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L278) |  |
+| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:279](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L279) |  |
+| <code>public long BarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:280](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L280) |  |
+| <code>public string? Provider { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:281](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L281) |  |
+| <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:282](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L282) |  |
+| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:283](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L283) |  |
+| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:284](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L284) |  |
 
 ## SystemExecutionSummary
 
 Qualified name: <code>Meridian.Application.Scheduling.SystemExecutionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:543](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L543).
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:597](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L597).
 
 System-wide execution summary.
 
@@ -341,15 +479,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TimeSpan Period { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:545](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L545) |  |
-| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:546](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L546) |  |
-| <code>public int CompletedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:547](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L547) |  |
-| <code>public int FailedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:548](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L548) |  |
-| <code>public double SuccessRate { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:549](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L549) |  |
-| <code>public long TotalBarsRetrieved { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:550](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L550) |  |
-| <code>public int TotalGapsFilled { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:551](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L551) |  |
-| <code>public double AverageDurationMinutes { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:552](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L552) |  |
-| <code>public Dictionary&lt;string, int&gt; ProviderUsage { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:553](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L553) |  |
+| <code>public TimeSpan Period { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:599](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L599) |  |
+| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:600](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L600) |  |
+| <code>public int CompletedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:601](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L601) |  |
+| <code>public int FailedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:602](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L602) |  |
+| <code>public double SuccessRate { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:603](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L603) |  |
+| <code>public long TotalBarsRetrieved { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:604](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L604) |  |
+| <code>public int TotalGapsFilled { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:605](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L605) |  |
+| <code>public double AverageDurationMinutes { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:606](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L606) |  |
+| <code>public Dictionary&lt;string, int&gt; ProviderUsage { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:607](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L607) |  |
+
+## WorkstationBackfillSubmission
+
+Qualified name: <code>Meridian.Application.Scheduling.WorkstationBackfillSubmission</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:167](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L167).
+
+```csharp
+public sealed record WorkstationBackfillSubmission(string TenantId, BackfillRequest Request, DateTimeOffset SubmittedAt, DateTimeOffset? RunAt, string? AlternativeFor, BackfillQuotaEstimate Estimate);
+```
 
 ## AlternativeAssetLotExtensions
 
@@ -972,87 +1120,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;CorporateActionAppendResult&gt; AppendAsync(Guid securityId, CorporateActionDto action, string? actor, string source, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs:12](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCommandService.cs#L12) |  |
-
-## ICorporateActionRestatementTrigger
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.ICorporateActionRestatementTrigger</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:16](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L16).
-
-Maps an accepted superseding corporate action (amendment or cancellation) to the period-aware restatement decision. Pure routing — it never posts; it only proposes, following the same contract as the revision-publish path. Returns null when no restatement machinery is available or no ledger book is exposed. Implementations used by a durable acceptance boundary should return an explicit negative decision when the lookup is authoritative and no book is exposed; null means no authoritative decision was possible.
-
-```csharp
-public interface ICorporateActionRestatementTrigger
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterRestatementDecision?&gt; OnSupersededAsync(CorporateActionDto superseding, CorporateActionDto superseded, string? fundProfileId, string actor, string? correlationId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:18](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L18) |  |
-
-## ICorporateActionScopeFanOutGate
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.ICorporateActionScopeFanOutGate</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:68](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L68).
-
-Decides whether a corporate-action source decision may be applied, by asking the authoritative scope fan-out service which accounting scopes the fact reaches.
-
-```csharp
-public interface ICorporateActionScopeFanOutGate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;CorporateActionScopeFanOutDecision&gt; ResolveDecisionScopeAsync(Guid securityId, DateOnly effectiveDate, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:74](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L74) | Resolves the exact scope a decision on securityId may be applied to for the deciding tenant/company, or refuses with stated reasons. |
-
-## LivePositionCorporateActionAdjusterAdapter
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.LivePositionCorporateActionAdjusterAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:8](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L8).
-
-```csharp
-public sealed class LivePositionCorporateActionAdjusterAdapter : ILivePositionCorporateActionAdjuster
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LivePositionCorporateActionAdjusterAdapter(CanonicalAdjuster adjuster);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:12](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L12) |  |
-| <code>public async Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:17](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L17) |  |
-| <code>public async Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs:23](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/LivePositionCorporateActionAdjusterAdapter.cs#L23) |  |
-
-## NullCorporateActionRestatementTrigger
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.NullCorporateActionRestatementTrigger</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:31](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L31).
-
-Default trigger for hosts without the workstation restatement stack; a superseding append succeeds with no restatement proposal.
-
-```csharp
-public sealed class NullCorporateActionRestatementTrigger : ICorporateActionRestatementTrigger
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityMasterRestatementDecision?&gt; OnSupersededAsync(CorporateActionDto superseding, CorporateActionDto superseded, string? fundProfileId, string actor, string? correlationId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs:33](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionRestatementTrigger.cs#L33) |  |
-
-## RecordTickerChangeRequest
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.RecordTickerChangeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:10](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L10).
-
-Request to record a ticker change (e.g. FB→META) as a first-class security-master event.
-
-```csharp
-public sealed record RecordTickerChangeRequest(Guid SecurityId, string OldTicker, string NewTicker, DateTimeOffset EffectiveAtUtc, string UpdatedBy, string? Reason, string SourceSystem = "security-master-symbology");
-```

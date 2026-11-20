@@ -194,9 +194,9 @@ public sealed partial class ProviderFactory
     internal IOptionsChainProvider CreateAlpacaOptionsProvider()
     {
         var options = ResolveAlpacaOptions(out var context);
-        return new AlpacaOptionsChainProvider(Services.GetRequiredService<IHttpClientFactory>(),
+        return ProviderRuntimeProvenance.Attach(new AlpacaOptionsChainProvider(Services.GetRequiredService<IHttpClientFactory>(),
             options.KeyId, options.SecretKey, log: _log,
-            useSandbox: SelectedAlpacaReferenceEnvironment(context));
+            useSandbox: SelectedAlpacaReferenceEnvironment(context)), context);
     }
 
     /// <summary>
@@ -227,13 +227,17 @@ public sealed partial class ProviderFactory
     {
         var credentials = CreateCredentialContext<PolygonMarketDataClient>(
             ("POLYGON_API_KEY", FirstNonBlank(_config.Polygon?.ApiKey, _config.Backfill?.Providers?.Polygon?.ApiKey)));
-        return new PolygonOptionsChainProvider(Services.GetRequiredService<IHttpClientFactory>(),
-            credentials.Get("POLYGON_API_KEY") ?? string.Empty, log: _log);
+        return ProviderRuntimeProvenance.Attach(new PolygonOptionsChainProvider(Services.GetRequiredService<IHttpClientFactory>(),
+            credentials.Get("POLYGON_API_KEY") ?? string.Empty, log: _log), credentials);
     }
 
-    internal IOptionsChainProvider CreateRobinhoodOptionsProvider() => new RobinhoodOptionsChainProvider(
-        Services.GetRequiredService<IHttpClientFactory>(),
-        Services.GetRequiredService<ILogger<RobinhoodOptionsChainProvider>>(), GetRobinhoodAccessToken());
+    internal IOptionsChainProvider CreateRobinhoodOptionsProvider()
+    {
+        var credentials = CreateCredentialContext<RobinhoodHistoricalDataProvider>();
+        return ProviderRuntimeProvenance.Attach(new RobinhoodOptionsChainProvider(
+            Services.GetRequiredService<IHttpClientFactory>(),
+            Services.GetRequiredService<ILogger<RobinhoodOptionsChainProvider>>(), credentials.Get("ROBINHOOD_ACCESS_TOKEN") ?? string.Empty), credentials);
+    }
 
     internal IBrokerageGateway CreateIbBrokerageGateway() => new IBBrokerageGateway(
         _config.IB ?? new IBOptions(), Services.GetRequiredService<ILogger<IBBrokerageGateway>>());

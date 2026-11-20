@@ -13,6 +13,8 @@ import { CloseChecklistProgressChart, ReconciliationAgingChart } from "@/compone
 import { CloseChecklistHistoryChart } from "@/components/meridian/close-checklist-history-chart";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { instrumentRecordIdentity } from "@/lib/instrument-record-identity";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PrepareNextPeriodPanel } from "@/screens/accounting-screen.prepare-next-period";
@@ -56,8 +58,10 @@ import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.paymen
 import { AuditChainIntegrityPanel } from "@/screens/accounting-screen.audit-integrity";
 import { BondCutoverConsolePanel } from "@/screens/accounting-screen.bond-cutover";
 import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
+import { ExternalGlPostingPanel } from "@/screens/accounting-screen.external-gl-posting";
 import { AccountingOnboardingPanel } from "@/screens/accounting-screen.onboarding-panel";
 import { ReconciliationWorkbench, ReconciliationStatementRuns, ThreeWayReconciliationWorkbench } from "./accounting-screen.reconciliation-workbench";
+import { IncomeReceiptQueuePanel } from "./income-receipt-queue-panel";
 import { useReconciliationViewState } from "./reconciliation-view-state";
 import { AccountOversightPanel } from "@/screens/accounting-screen.account-oversight";
 import { buildAccountingSectionVisibility, buildAccountingTaskMode, resolveAccountingWorkstream } from "@/screens/accounting-screen.task-mode-view-model";
@@ -77,6 +81,7 @@ import { AccountingConfigurationPanel } from "@/screens/accounting-screen.config
 import { ManualJournalEntryWorkbenchPanel } from "@/screens/accounting-screen.manual-journal-panel";
 import { AccountingApprovalsWorkstream } from "@/screens/accounting-screen.approvals-workstream";
 import { AccountingValue } from "@/screens/accounting-screen.accounting-value";
+import { AccountingLoadingPanel } from "./accounting-screen.loading-panel";
 import { statusTextClass } from "@/design-system/status-styles";
 
 interface AccountingScreenProps {
@@ -292,6 +297,9 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   const identityPrimaryFields = identity?.summaryFields.filter((field) => field.label === "Asset class" || field.label === "Effective") ?? [];
   const identityTechnicalFields = identity?.summaryFields.filter((field) => !identityPrimaryFields.includes(field)) ?? [];
   const selectedSecurityEntry = securityMaster.selectedEntry;
+  const registryDetail = securityMaster.identity?.securityId === securityMaster.selectedSecurityId ? securityMaster.identity : null;
+  const registryRecord = instrumentRecordIdentity(selectedSecurityEntry, registryDetail);
+  const registryRecordContext = useRecordWorkspaceContext(registryRecord, { securityId: securityMaster.selectedSecurityId }, "#security-detail-page-title");
   const securityMasterActiveTab = resolveSecurityMasterDrillInTab(search);
   const bondAction = new URLSearchParams(search).get("bondAction");
   const focusedBondAction = useRef<string | null>(null);
@@ -716,59 +724,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   );
 
   if (!data) {
-    const loading = buildAccountingLoadingViewState(pathname);
-    return (
-      <Card
-        className="panel-surface-strong"
-        role={loading.role}
-        aria-busy={loading.ariaBusy}
-        aria-live={loading.ariaLive}
-        aria-labelledby={loading.titleId}
-        aria-describedby={loading.detailId}
-      >
-        <CardHeader>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0">
-              <div className={eyebrowClassName(loading.eyebrow)}>{loading.eyebrow}</div>
-              <CardTitle id={loading.titleId} className="mt-2 text-base">{loading.title}</CardTitle>
-              <CardDescription id={loading.detailId} className="mt-2">{loading.detail}</CardDescription>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <AccountingChip label="Route" value={loading.routeLabel} />
-              <AccountingChip label="Task mode" value={loading.workstreamLabel} />
-            </div>
-          </div>
-          <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.38fr)]">
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(loading.statusItemsLabel) && "uppercase")}>{loading.statusItemsLabel}</div>
-              <div role="list" className="mt-3 grid gap-2 md:grid-cols-3">
-                {loading.statusItems.map((item) => (
-                  <div key={item.id} role="listitem" className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
-                    <div className="text-sm font-semibold text-foreground">{item.label}</div>
-                    <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(loading.actionsLabel) && "uppercase")}>{loading.actionsLabel}</div>
-              <div className="mt-3 grid gap-2">
-                {loading.actions.map((action) => (
-                  <Button key={action.id} asChild size="sm" variant="outline" className="h-auto justify-start py-2 text-left">
-                    <Link to={action.href} aria-label={action.ariaLabel}>
-                      <span className="min-w-0">
-                        <span className="block font-semibold">{action.label}</span>
-                        <span className="mt-1 block text-xs font-normal leading-5 text-muted-foreground">{action.detail}</span>
-                      </span>
-                    </Link>
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-    );
+    return <AccountingLoadingPanel loading={buildAccountingLoadingViewState(pathname)} />;
   }
 
   const focus = taskMode;
@@ -793,9 +749,10 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
 
       {workstream === "reconciliation" ? (
         <ThreeWayReconciliationWorkbench>
-          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice}
+          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice} operatorId={operatorIdentity}
             runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />}
           />
+          <IncomeReceiptQueuePanel operatorIdentity={operatorIdentity} />
           <section aria-label="Break aging" className="space-y-2"><h3 className="text-sm font-semibold">Break aging</h3><ReconciliationAgingChart breaks={reconciliation.sourceRows} /></section>
           <TechnicalDetails label="Account oversight"><AccountOversightPanel /></TechnicalDetails>
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} /></TechnicalDetails>
@@ -933,6 +890,8 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           </CardContent>
         </Card>
       ) : null}
+
+      {sectionVisibility.showExternalGl ? <ExternalGlPostingPanel /> : null}
 
       {sectionVisibility.showExternalGl ? (
       <AccountingSystemReconciliationPanel
@@ -1850,6 +1809,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                   {securityMaster.pageView.detailStatusLabel}
                 </Badge>
               </div>
+              {registryRecord ? <RecordIdentitySpine record={registryRecord} context={registryRecordContext} /> : null}
               <ToolbarStrip
                 ariaLabel={securityMaster.pageView.detailToolbarAriaLabel}
                 items={securityMaster.pageView.detailSections}
@@ -2088,7 +2048,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
 
       {sectionVisibility.showReconciliationActions && workstream !== "reconciliation" ? (
         <>
-          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice} runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />} />
+          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice} operatorId={operatorIdentity} runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />} />
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} compact={workstream === "exceptions"} /></TechnicalDetails>
         </>
       ) : null}
