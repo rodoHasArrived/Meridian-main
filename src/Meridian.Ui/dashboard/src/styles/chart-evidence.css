@@ -1,0 +1,41 @@
+.decision-chart-mark {
+  cursor: crosshair;
+}
+
+.decision-chart-hit {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 2;
+}
+
+.decision-chart-mark[aria-current] > .decision-chart-hit {
+  stroke: var(--chart-crosshair);
+}
+
+.decision-chart-mark:focus-visible > .decision-chart-hit {
+  stroke: hsl(var(--ring));
+  stroke-width: 3;
+}
+
+.decision-chart-range {
+  inline-size: 6rem;
+  accent-color: hsl(var(--primary));
+}
+
+.decision-chart-range:focus-visible,
+.decision-chart-link:focus-visible,
+.decision-chart-bar:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  .decision-chart-hit {
+    forced-color-adjust: none;
+  }
+
+  .decision-chart-mark[aria-current] > .decision-chart-hit,
+  .decision-chart-mark:focus-visible > .decision-chart-hit {
+    stroke: Highlight;
+  }
+}

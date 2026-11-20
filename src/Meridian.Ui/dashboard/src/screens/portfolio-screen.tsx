@@ -33,15 +33,10 @@ import type { KpiId } from "@/lib/kpi-registry";
 import { formatDateTime } from "@/screens/portfolio-screen.presentation";
 import { EmptyState } from "@/components/data/concrete";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
-import {
-  EquityCurve,
-  Histogram,
-  ChartCard,
-  ChartSyncProvider,
-  useChartSync,
-  useChartCrosshairSync,
-  nearestTimestampIndex
-} from "@/components/charts";
+import { ChartCard, EquityCurve, Histogram } from "@/components/charts";
+import { ChartEvidenceView, type ChartEvidence } from "@/components/charts/chart-evidence";
+import { buildHistogramBins } from "@/components/charts/Histogram";
+import { workstationRunEquityCurveEndpoint } from "@/lib/workstation-endpoints";
 import {
   getFinancialRecordExplorer,
   getRunAttribution,
@@ -1562,32 +1557,23 @@ function PortfolioChip({ label, value }: { label: string; value: string }) {
 const formatRunAmount = (value: number) => formatNumber(value, { maximumFractionDigits: 0 });
 const drillInSignedPercent = (value: number) => `${value >= 0 ? "+" : ""}${formatPercent(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-/** Concrete equity + underwater drawdown view for a loaded run drill-in profile. Additive
- * evidence only — rendered when the selected run has a fetched equity/drawdown series. The
- * chart is scoped in its own ChartSyncProvider so crosshair and point activation stay local to
- * this drill-in (never global) and can drive a per-point evidence readout. */
-function PortfolioDrillInChart(props: { profile: EquityCurveSummary; runTitle: string }) {
-  return (
-    <ChartSyncProvider>
-      <PortfolioDrillInChartInner {...props} />
-    </ChartSyncProvider>
-  );
-}
-
-function PortfolioDrillInChartInner({
-  profile,
-  runTitle
-}: {
-  profile: EquityCurveSummary;
-  runTitle: string;
-}) {
-  const points = profile.points;
+function PortfolioDrillInChart({ profile, runTitle }: { profile: EquityCurveSummary; runTitle: string }) {
+  const { points, runId } = profile;
   const equity = points.map((point) => point.totalEquity);
   const drawdown = points.map((point) => -Math.abs(point.drawdownFromPeakPercent * 100));
   const labels = points.map((point) => point.date);
-  const timestamps = useMemo(() => points.map((point) => Date.parse(point.date)), [points]);
-  const sync = useChartCrosshairSync(timestamps);
-  // Stable reference: the chart re-renders on every crosshair move, the table should not.
+  const proof = { href: workstationRunEquityCurveEndpoint(runId), label: "Open retained run equity series" };
+  const evidence: ChartEvidence[] = points.map((point, index) => ({
+    id: `${runId}:${point.date}:${index}`,
+    label: runTitle,
+    asOf: point.date,
+    values: [
+      { series: "Total equity", value: point.totalEquity, unit: "Run currency units (currency unreported)", basis: "Total equity from the retained run snapshot." },
+      { series: "Drawdown", value: drawdown[index], unit: "%", basis: "Equity less the running peak, divided by that peak × 100. The service uses zero when the peak is nonpositive." }
+    ],
+    proof
+  }));
+
   const accessibleData = useMemo(
     () => ({
       caption: `Equity and drawdown by date for ${runTitle}`,
@@ -1612,142 +1598,108 @@ function PortfolioDrillInChartInner({
 
   return (
     <div className="space-y-3">
-      <ChartCard
-        title="Run equity and drawdown"
-        subtitle={`Retained equity curve and drawdown for ${runTitle}. Run denomination is unavailable; amounts are not assigned a currency.`}
-        readout={[
-          { label: "Final equity", value: formatRunAmount(profile.finalEquity) },
-          {
-            label: "Max drawdown",
-            value: maxDrawdownLabel,
-            color: "var(--chart-drawdown, #B54B42)"
-          },
-          { label: "Sharpe", value: formatNumber(profile.sharpeRatio, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
-        ]}
-        height={280}
-        style={{ flexShrink: 0 }}
-      >
-        <EquityCurve
-          ariaLabel={`Equity and drawdown curve for ${runTitle}`}
-          ariaDescription={
-            points.length > 0
-              ? `${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final equity ${formatRunAmount(
-                  profile.finalEquity
-                )}, maximum drawdown ${maxDrawdownLabel}.`
-              : undefined
-          }
-          accessibleData={accessibleData}
-          series={[{ label: "Equity", color: "var(--chart-equity, #2E7655)", points: equity }]}
-          drawdown={drawdown}
-          labels={labels}
-          valueFmt={formatRunAmount}
-          crosshairIndex={sync.crosshairIndex}
-          onCrosshairChange={sync.onCrosshairChange}
-          onPointActivate={sync.onPointActivate}
-        />
-        <PortfolioDrillInPointEvidence profile={profile} timestamps={timestamps} />
-      </ChartCard>
+      <ChartEvidenceView label="Run equity and drawdown" evidence={evidence} initialIndex={points.length - 1}>
+        {(inspection) => (
+          <ChartCard
+            title="Run equity and drawdown"
+            subtitle={`Retained equity curve and drawdown for ${runTitle}. Run denomination is unavailable; amounts are not assigned a currency.`}
+            readout={[
+              { label: "Final equity", value: formatRunAmount(profile.finalEquity) },
+              {
+                label: "Max drawdown",
+                value: maxDrawdownLabel,
+                color: "var(--chart-drawdown, #B54B42)"
+              },
+              { label: "Sharpe", value: formatNumber(profile.sharpeRatio, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
+            ]}
+            height={280}
+            style={{ flexShrink: 0 }}
+          >
+            <EquityCurve
+              ariaLabel={`Equity and drawdown curve for ${runTitle}`}
+              ariaDescription={
+                points.length > 0
+                  ? `${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final equity ${formatRunAmount(
+                      profile.finalEquity
+                    )}, maximum drawdown ${maxDrawdownLabel}.`
+                  : undefined
+              }
+              accessibleData={accessibleData}
+              series={[{ label: "Equity", color: "var(--chart-equity, #2E7655)", points: equity }]}
+              drawdown={drawdown}
+              labels={labels}
+              valueFmt={formatRunAmount}
+              crosshairIndex={inspection.activeIndex}
+              inspection={inspection}
+            />
+          </ChartCard>
+        )}
+      </ChartEvidenceView>
       <PortfolioDrillInReturnDistribution profile={profile} runTitle={runTitle} />
     </div>
   );
 }
 
-/** Daily-return distribution for a loaded run drill-in profile. Reuses the already-fetched
- * equity-curve points (no extra request) so the same drill-in that draws the equity/drawdown
- * curve also shows the shape of its returns — a signed histogram with a mean rule. Rendered only
- * when at least two return observations exist so a single-day profile stays a curve-only view. */
-function PortfolioDrillInReturnDistribution({
-  profile,
-  runTitle
-}: {
-  profile: EquityCurveSummary;
-  runTitle: string;
-}) {
-  // Memoize the returns series and its summary stats on the fetched points so they are not
-  // recomputed on every crosshair move — the parent re-renders on each hover, but these O(n)
-  // reductions only depend on profile.points.
-  const stats = useMemo(() => {
-    const returns = profile.points.map((point) => point.dailyReturn * 100);
-    if (returns.length < 2) {
-      return null;
-    }
-    const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
-    const best = Math.max(...returns);
-    const worst = Math.min(...returns);
-    const positiveShare = (returns.filter((value) => value > 0).length / returns.length) * 100;
-    return { returns, mean, best, worst, positiveShare };
-  }, [profile.points]);
+function PortfolioDrillInReturnDistribution({ profile, runTitle }: { profile: EquityCurveSummary; runTitle: string }) {
+  const { points, runId } = profile;
+  if (points.length < 2) return null;
+  const returns = points.map((point) => point.dailyReturn * 100);
+  const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
+  const best = Math.max(...returns);
+  const worst = Math.min(...returns);
+  const positiveShare = (returns.filter((value) => value > 0).length / returns.length) * 100;
+  const bins = buildHistogramBins(returns);
+  const asOf = `${points[0].date} to ${points[points.length - 1].date}`;
+  const proof = { href: workstationRunEquityCurveEndpoint(runId), label: "Open retained daily returns" };
+  const evidence: ChartEvidence[] = bins.map((bin, index) => ({
+    id: `${runId}:return-bin-${index}`,
+    label: `Daily return bucket ${index + 1}`,
+    asOf,
+    values: [{ series: "Daily return frequency", value: bin.count, unit: "Days", basis: `Count of daily returns from ${bin.x0}% to ${bin.x1}%. The ${index === bins.length - 1 ? "last bucket includes both edges" : "lower edge is included and the upper edge is excluded"}.` }],
+    proof
+  }));
+  evidence.push({
+    id: `${runId}:mean-return`, label: "Mean daily return marker", asOf,
+    values: [{ series: "Mean daily return", value: mean, unit: "%", basis: "Arithmetic mean of daily returns from the retained run snapshots." }],
+    proof
+  });
 
-  if (!stats) {
-    return null;
-  }
-
-  const { returns, mean, best, worst, positiveShare } = stats;
   const positiveShareLabel = formatPercent(positiveShare, { maximumFractionDigits: 0 });
 
   return (
-    <ChartCard
-      title="Daily return distribution"
-      subtitle={`Shape of the ${runTitle} daily returns behind the equity curve above.`}
-      readout={[
-        {
-          label: "Mean / day",
-          value: drillInSignedPercent(mean),
-          color: mean >= 0 ? "var(--chart-equity, #2E7655)" : "var(--chart-drawdown, #B54B42)"
-        },
-        { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #2E7655)" },
-        { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #B54B42)" },
-        { label: "Positive days", value: positiveShareLabel }
-      ]}
-      height={220}
-      style={{ flexShrink: 0 }}
-    >
-      <Histogram
-        ariaLabel={`Daily return distribution for ${runTitle}`}
-        ariaDescription={`${returns.length} daily returns. Mean ${drillInSignedPercent(mean)}, best ${drillInSignedPercent(
-          best
-        )}, worst ${drillInSignedPercent(worst)}, ${positiveShareLabel} positive days.`}
-        values={returns}
-        signed
-        showMean
-        valueFmt={(value) => formatPercent(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-      />
-    </ChartCard>
-  );
-}
-
-/** Evidence drill: when a chart point is activated, surface that point's source-backed
- * detail. Reads the selected timestamp from the shared chart-sync context so it stays in
- * step with the equity curve (and any future linked chart in the same provider). */
-function PortfolioDrillInPointEvidence({
-  profile,
-  timestamps
-}: {
-  profile: EquityCurveSummary;
-  timestamps: number[];
-}) {
-  const { selectedTimestamp } = useChartSync();
-  const selectedIndex = nearestTimestampIndex(timestamps, selectedTimestamp);
-  if (selectedIndex == null) {
-    return null;
-  }
-  const point = profile.points[selectedIndex];
-  if (!point) {
-    return null;
-  }
-
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="mt-2 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-xs"
-    >
-      <span className="font-semibold text-foreground">Selected point — {point.date}</span>
-      <span className="ml-2 text-muted-foreground">
-        Equity {formatRunAmount(point.totalEquity)} · drawdown{" "}
-        {formatRatioAsPercent(-Math.abs(point.drawdownFromPeakPercent), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-      </span>
-    </div>
+    <ChartEvidenceView label="Daily return distribution" evidence={evidence} initialIndex={bins.length}>
+      {(inspection) => (
+        <ChartCard
+          title="Daily return distribution"
+          subtitle={`Shape of the ${runTitle} daily returns behind the equity curve above.`}
+          readout={[
+            {
+              label: "Mean / day",
+              value: drillInSignedPercent(mean),
+              color: mean >= 0 ? "var(--chart-equity, #2E7655)" : "var(--chart-drawdown, #B54B42)"
+            },
+            { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #2E7655)" },
+            { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #B54B42)" },
+            { label: "Positive days", value: positiveShareLabel }
+          ]}
+          height={220}
+          style={{ flexShrink: 0 }}
+        >
+          <Histogram
+            ariaLabel={`Daily return distribution for ${runTitle}`}
+            ariaDescription={`${returns.length} daily returns. Mean ${drillInSignedPercent(mean)}, best ${drillInSignedPercent(
+              best
+            )}, worst ${drillInSignedPercent(worst)}, ${positiveShareLabel} positive days.`}
+            bins={bins}
+            mean={mean}
+            inspection={inspection}
+            signed
+            showMean
+            valueFmt={(value) => formatPercent(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+          />
+        </ChartCard>
+      )}
+    </ChartEvidenceView>
   );
 }
 

@@ -60,7 +60,8 @@ export function buildInitialCells(): NotebookCell[] {
 
 export function applyCellExecuteResult(
   cells: NotebookCell[],
-  result: CellExecuteResult
+  result: CellExecuteResult,
+  submittedSource?: string
 ): NotebookCell[] {
   return cells.map((cell) => {
     if (cell.id !== result.cellId) {
@@ -73,7 +74,8 @@ export function applyCellExecuteResult(
       statusText: result.success
         ? `Done in ${result.elapsedMs}ms`
         : (result.errorMessage ?? "Execution error"),
-      output: result.output
+      output: result.output,
+      outputSource: result.output.some((line) => line.kind === "plot") ? submittedSource : undefined
     };
   });
 }
@@ -339,7 +341,7 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
 
       try {
         const result = await api.executeCell({ cellId: id, source: cell.source, context });
-        setCells((prev) => applyCellExecuteResult(prev, result));
+        setCells((prev) => applyCellExecuteResult(prev, result, cell.source));
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Execution failed";
         setCells((prev) =>
@@ -381,7 +383,7 @@ export function useQuantNotebookViewModel(): QuantNotebookViewModel {
 
         try {
           const result = await api.executeCell({ cellId: cell.id, source: cell.source, context });
-          setCells((prev) => applyCellExecuteResult(prev, result));
+          setCells((prev) => applyCellExecuteResult(prev, result, cell.source));
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : "Execution failed";
           setCells((prev) =>
