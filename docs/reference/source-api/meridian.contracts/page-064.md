@@ -636,7 +636,7 @@ public sealed record LedgerImpactPreviewDto(int DraftEntryCount, decimal NetDebi
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerJournalLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:650](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L650).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:655](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L655).
 
 Shared journal row for workstation audit surfaces.
 

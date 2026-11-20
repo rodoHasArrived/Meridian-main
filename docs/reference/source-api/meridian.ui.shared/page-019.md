@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunParityReport
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunParityReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:9](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L9).
+
+```csharp
+public sealed record StrategyRunParityReport(string RunId, string? BaselineRunId, string Status, string InputMode, decimal? BaselineNetPnl, decimal? ObservedNetPnl, int? BaselineFills, int? ObservedFills, IReadOnlyList<OrderCheck> Checks, string JournalRoute);
+```
+
+## StrategyRunParityService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunParityService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:14](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L14).
+
+Compares retained operands/results; agreement never grants promotion or live authority.
+
+```csharp
+public sealed class StrategyRunParityService(IStrategyRepository repository)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;StrategyRunParityReport?&gt; GetAsync(Guid account, string runId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:16](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L16) |  |
+
 ## StrategyRunReviewPacketService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunReviewPacketService</code>. Kind: `class`.
@@ -319,7 +347,7 @@ Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Brokera
 public sealed partial class TradingOperatorReadinessService
 ```
 
-Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:19](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L19).
+Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L22).
 
 Builds the shared operator-readiness model consumed by the Trading cockpit.
 
@@ -331,10 +359,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TradingOperatorReadinessDto? Observe(Guid accountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L22) |  |
-| <code>public TradingOperatorReadinessService(IServiceProvider services, ILogger&lt;TradingOperatorReadinessService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:51](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L51) |  |
-| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:59](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L59) |  |
-| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId, StrategyRunReadScope scope, CancellationToken ct = default, Guid? authorizedPaperAccountId = null);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:64](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L64) |  |
+| <code>public TradingOperatorReadinessDto? Observe(Guid accountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:25](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L25) |  |
+| <code>public TradingOperatorReadinessService(IServiceProvider services, ILogger&lt;TradingOperatorReadinessService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:54](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L54) |  |
+| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:62](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L62) |  |
+| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId, StrategyRunReadScope scope, CancellationToken ct = default, Guid? authorizedPaperAccountId = null);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:67](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L67) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs:8](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs#L8).
 
@@ -472,7 +500,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:91](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L91) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1632](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1632) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1643](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1643) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -889,40 +917,3 @@ Declared public members:
 | <code>WorkflowActionDto? ResolveOperatorWorkItem(OperatorWorkItemDto? workItem);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:16](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L16) |  |
 | <code>WorkflowActionDto? ResolveRoute(string? targetRoute);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:18](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L18) |  |
 | <code>string ResolveTargetPageTag(string? actionId, string fallbackPageTag);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:20](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L20) |  |
-
-## IWorkflowDefinitionProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowDefinitionProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs#L8).
-
-Supplies reusable workstation workflow definitions.
-
-```csharp
-public interface IWorkflowDefinitionProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs#L10) |  |
-
-## IWorkflowPresetStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowPresetStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L8).
-
-Durable store for operator-saved workflow presets.
-
-```csharp
-public interface IWorkflowPresetStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L10) |  |
-| <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L12) |  |
