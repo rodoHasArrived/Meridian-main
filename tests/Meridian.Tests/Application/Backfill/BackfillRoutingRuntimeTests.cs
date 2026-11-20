@@ -14,6 +14,7 @@ using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.DependencyInjection;
+using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 
 namespace Meridian.Tests.Application.Backfill;
 
