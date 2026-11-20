@@ -6761,6 +6761,7 @@ Meridian-main
 │   │   │   ├── OrderExecutionAudit.cs
 │   │   │   ├── OrderFillContext.cs
 │   │   │   ├── OrderFillProcessor.cs
+│   │   │   ├── OrderIntentJournal.cs
 │   │   │   ├── OrderManagementLifecycleCoordinator.cs
 │   │   │   ├── OrderRiskSizingPolicy.cs
 │   │   │   ├── OrderStateTable.cs
@@ -6793,6 +6794,7 @@ Meridian-main
 │   │   │   ├── OrderManagementHostedService.cs
 │   │   │   ├── OrderPreviewService.cs
 │   │   │   ├── PaperLedgerIntegrityBreak.cs
+│   │   │   ├── PaperOrderEvidenceReader.cs
 │   │   │   ├── PaperPosition.cs
 │   │   │   ├── PaperSessionDtos.cs
 │   │   │   ├── PaperSessionJournalBatch.cs
@@ -6837,6 +6839,7 @@ Meridian-main
 │   │   ├── OrderManagementSystem.KillSwitch.cs
 │   │   ├── OrderManagementSystem.Lifecycle.cs
 │   │   ├── OrderManagementSystem.Modifications.cs
+│   │   ├── OrderManagementSystem.OrderIntents.cs
 │   │   ├── OrderManagementSystem.PendingAmendments.cs
 │   │   ├── OrderManagementSystem.Recovery.cs
 │   │   ├── OrderManagementSystem.Retention.cs
@@ -6888,6 +6891,7 @@ Meridian-main
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
 │   │   ├── OrderCommandAuthority.cs
+│   │   ├── OrderIntent.cs
 │   │   ├── OrderSizingMetadata.cs
 │   │   ├── OrderSubmissionRefusal.cs
 │   │   ├── PositionExtensions.cs
@@ -8825,8 +8829,10 @@ Meridian-main
 │   │   │   │   ├── DesignerDocumentStrategy.cs
 │   │   │   │   ├── DesignerExpression.cs
 │   │   │   │   ├── DesignerLiveFields.cs
+│   │   │   │   ├── DesignerPaperExecution.cs
 │   │   │   │   ├── DesignerSessionClock.cs
-│   │   │   │   └── DesignerStrategyPlan.cs
+│   │   │   │   ├── DesignerStrategyPlan.cs
+│   │   │   │   └── DesignerStrategyVersion.cs
 │   │   │   ├── Strategies
 │   │   │   │   ├── BuyAndHoldLiveStrategy.cs
 │   │   │   │   └── MovingAverageCrossoverLiveStrategy.cs
@@ -8908,6 +8914,7 @@ Meridian-main
 │   │   │   ├── JsonlPromotionRecordStore.cs
 │   │   │   ├── JsonlStrategyDesignRepository.cs
 │   │   │   ├── JsonlStrategyRunLedgerArchive.cs
+│   │   │   ├── ScopedStrategyDesignStore.cs
 │   │   │   └── StrategyRunStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Strategies.csproj
@@ -9094,6 +9101,7 @@ Meridian-main
 │   │   │   │   │   │   ├── CandleChart.tsx
 │   │   │   │   │   │   ├── CategoryBars.tsx
 │   │   │   │   │   │   ├── chart-a11y.tsx
+│   │   │   │   │   │   ├── chart-evidence.tsx
 │   │   │   │   │   │   ├── chart-interaction.test.ts
 │   │   │   │   │   │   ├── chart-interaction.tsx
 │   │   │   │   │   │   ├── chart-sync.test.tsx
@@ -10220,6 +10228,7 @@ Meridian-main
 │   │   │   │   │   ├── corporate-action-calendar.view-state.ts
 │   │   │   │   │   ├── corporate-action-deadline-panel.tsx
 │   │   │   │   │   ├── covered-call-screen.formatters.ts
+│   │   │   │   │   ├── covered-call-screen.payoff-chart.ts
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
@@ -10331,6 +10340,7 @@ Meridian-main
 │   │   │   │   │   ├── journal-entry-tax-results.tsx
 │   │   │   │   │   ├── live-quotes-screen.quick-trade.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
+│   │   │   │   │   ├── live-quotes-screen.trade-evidence.ts
 │   │   │   │   │   ├── live-quotes-screen.tsx
 │   │   │   │   │   ├── live-quotes-screen.view-model.test.ts
 │   │   │   │   │   ├── live-quotes-screen.view-model.ts
@@ -10527,6 +10537,7 @@ Meridian-main
 │   │   │   │   │   ├── statement-import-screen.tsx
 │   │   │   │   │   ├── strategy-designer-backtest.test.ts
 │   │   │   │   │   ├── strategy-designer-backtest.ts
+│   │   │   │   │   ├── strategy-designer-hosted.ts
 │   │   │   │   │   ├── strategy-designer-screen.copy.ts
 │   │   │   │   │   ├── strategy-designer-screen.test.tsx
 │   │   │   │   │   ├── strategy-designer-screen.tsx
@@ -10592,6 +10603,7 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.order-ticket-state.ts
 │   │   │   │   │   ├── trading-screen.order-ticket-text.ts
 │   │   │   │   │   ├── trading-screen.paper-reconciliation.tsx
+│   │   │   │   │   ├── trading-screen.pending-paper-intent.ts
 │   │   │   │   │   ├── trading-screen.promotion-evidence.ts
 │   │   │   │   │   ├── trading-screen.readiness-summary.ts
 │   │   │   │   │   ├── trading-screen.server-preview.test.tsx
@@ -10618,6 +10630,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.css
 │   │   │   │   │   ├── app-shell.css
 │   │   │   │   │   ├── breakpoints.test.ts
+│   │   │   │   │   ├── chart-evidence.css
 │   │   │   │   │   ├── command-palette.css
 │   │   │   │   │   ├── companion-pane.css
 │   │   │   │   │   ├── dense-row-detail-accessibility.css
@@ -11010,6 +11023,7 @@ Meridian-main
 │   │   │   ├── ExecutionEndpoints.Audit.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.Metadata.cs
+│   │   │   ├── ExecutionEndpoints.PaperIntents.cs
 │   │   │   ├── ExecutionEndpoints.PaperSessionReconciliation.cs
 │   │   │   ├── ExecutionEndpoints.Positions.cs
 │   │   │   ├── ExecutionEndpoints.Sessions.cs
@@ -11347,6 +11361,7 @@ Meridian-main
 │   │   │   ├── DemoTenantBlueprint.cs
 │   │   │   ├── DemoTenantProvisioner.cs
 │   │   │   ├── DemoWorkspaceSeeder.cs
+│   │   │   ├── DesignerBacktestService.cs
 │   │   │   ├── DesktopLaunchTicketService.cs
 │   │   │   ├── DesktopWorkstationLaunchService.cs
 │   │   │   ├── DirectLendingOperationsReadService.cs
@@ -13516,6 +13531,7 @@ Meridian-main
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
 │   │   │   ├── BrokerageOrderRecoveryJournalTests.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.cs
+│   │   │   ├── BrokerageOrderRecoveryTests.FaultReplay.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.Retention.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── BrokerOrderSweepTests.cs
@@ -15105,6 +15121,7 @@ Meridian-main
 │   │   │   ├── DataOperationsAssuranceServiceTests.cs
 │   │   │   ├── DegradedModeEvaluationTests.cs
 │   │   │   ├── DemoTenantProvisionerTests.cs
+│   │   │   ├── DesignerPaperRehearsalTests.cs
 │   │   │   ├── DesktopLaunchTicketServiceTests.cs
 │   │   │   ├── DiagnosticsEndpointsTests.cs
 │   │   │   ├── DirectLendingEndpointsTests.cs

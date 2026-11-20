@@ -51,6 +51,25 @@ Declared public members:
 | <code>public decimal FeeBasisPoints { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:47](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L47) | Fee in basis points of fill notional. Default: 0. |
 | <code>public decimal SlippageBasisPoints { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:54](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L54) | Slippage in basis points of fill notional, charged as an explicit cash cost on every fill. The fill price itself stays inside the observed market-data envelope; slippage models execution friction beyond the observed spread. Default: 0. |
 
+## PaperOrderIntentScope
+
+Qualified name: <code>Meridian.Execution.PaperOrderIntentScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/OrderManagementSystemOptions.cs:80](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L80).
+
+```csharp
+public sealed record PaperOrderIntentScope
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TenantId { get; init; } = &quot;&quot;;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:82](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L82) |  |
+| <code>public string CompanyId { get; init; } = &quot;&quot;;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:83](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L83) |  |
+| <code>public Guid FundAccountId { get; init; }</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:84](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L84) |  |
+| <code>public bool CanAccess(string? tenantId, string? companyId, Guid accountId) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:86](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L86) |  |
+
 ## PaperTradingGateway
 
 Qualified name: <code>Meridian.Execution.PaperTradingGateway</code>. Kind: `class`.
@@ -863,20 +882,3 @@ Declared public members:
 | <code>public bool SupportsJournalBatches =&gt; …;</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs:10](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs#L10) |  |
 | <code>public async Task&lt;PaperSessionJournalReceipt&gt; AppendJournalBatchAsync(PaperSessionJournalBatch batch, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs:12](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs#L12) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;PaperSessionJournalReceipt&gt;&gt; LoadJournalBatchesAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs:37](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs#L37) |  |
-
-## LiveOrderReadinessDecision
-
-Qualified name: <code>Meridian.Execution.Services.LiveOrderReadinessDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:34](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L34).
-
-```csharp
-public sealed record LiveOrderReadinessDecision(bool IsApproved, string? Reason = null, string? EvidenceReference = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LiveOrderReadinessDecision Approved(string evidenceReference) =&gt; …;</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:39](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L39) |  |
-| <code>public static LiveOrderReadinessDecision Rejected(string reason) =&gt; …;</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:42](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L42) |  |

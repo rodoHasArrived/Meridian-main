@@ -462,6 +462,7 @@ export interface NotebookCell {
   statusText: string;
   collapsed: boolean;
   output: CellOutput[];
+  outputSource?: string;
 }
 
 export interface CellSnippet {

@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FirstRunExperienceService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FirstRunExperienceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:11](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L11).
+
+Owns durable first-run, starter-workspace, sample-pack, and activation evidence. UI clients consume this governed state instead of defining onboarding policy locally.
+
+```csharp
+public sealed class FirstRunExperienceService(ConfigStore configStore, DemoTenantProvisioner? demoTenantProvisioner = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SamplePackVersion = &quot;2026.1&quot;;</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:15](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L15) |  |
+| <code>public async Task&lt;FirstRunStatusDto&gt; GetAsync(string username, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:37](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L37) |  |
+| <code>public async Task&lt;FirstRunStatusDto&gt; CompleteAsync(string username, CompleteFirstRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:43](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L43) |  |
+| <code>public async Task&lt;FirstRunStatusDto&gt; CompleteOutcomeAsync(string username, string key, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:90](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L90) |  |
+
+## FiscalYearClosePlanBuilder
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FiscalYearClosePlanBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:9](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L9).
+
+Compatibility entry point for fiscal close projection from supplied retained snapshots.
+
+```csharp
+public static class FiscalYearClosePlanBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FiscalYearClosePlanDto Build(Guid ledgerBookId, int fiscalYear, IReadOnlyList&lt;LedgerAccountingPeriod&gt; bookPeriods, IReadOnlyDictionary&lt;Guid, FiscalYearCloseSnapshotRead&gt; snapshots) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:11](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L11) |  |
+
 ## FiscalYearClosePlanService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FiscalYearClosePlanService</code>. Kind: `class`.
@@ -1005,41 +1044,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:73](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L73) |  |
 | <code>public Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:103](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L103) |  |
-
-## InMemoryAccountingConfigurationStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingConfigurationStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:19](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L19).
-
-Stores accounting configuration workspaces in process memory.
-
-```csharp
-public sealed class InMemoryAccountingConfigurationStore : IAccountingConfigurationStore, Meridian.Application.Composition.INonProductionOnlyService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;AccountingConfigurationWorkspaceDto?&gt; GetAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:25](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L25) |  |
-| <code>public Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:40](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L40) |  |
-
-## InMemoryAccountingMigrationRunArtifactStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingMigrationRunArtifactStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs:31](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs#L31).
-
-Stores accounting migration-run artifacts in process memory.
-
-```csharp
-public sealed class InMemoryAccountingMigrationRunArtifactStore : IAccountingMigrationRunArtifactStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;AccountingMigrationRunArtifactDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs:35](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs#L35) |  |
-| <code>public Task&lt;AccountingMigrationRunArtifactDto&gt; UpsertAsync(AccountingMigrationRunArtifactUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs:54](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs#L54) |  |

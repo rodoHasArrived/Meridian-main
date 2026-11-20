@@ -1,3 +1,4 @@
+import { ChartEvidenceMark, ChartEvidenceView, type ChartEvidence, type ChartInspection, type ChartMarkGeometry } from "@/components/charts/chart-evidence";
 import { ArrowRightLeft, CircleDot, Database, Eye, FlaskConical, GitBranch, Layers, Network, PlayCircle, Save, Search, ShieldCheck, Sparkles, Workflow } from "lucide-react";
 import { StatusBadge } from "@/design-system/status";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -654,6 +655,8 @@ function TransitionMap({ transitions }: { transitions: StrategyBuilderTransition
   );
 }
 
+const payoffInputsId = "strategy-payoff-leg-inputs";
+
 function OptionsPayoffPanel({ vm }: { vm: StrategyDesignerViewModel }) {
   return (
     <Card data-testid="strategy-designer-options-payoff-panel">
@@ -714,7 +717,7 @@ function OptionsPayoffPanel({ vm }: { vm: StrategyDesignerViewModel }) {
           </div>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
-          <PayoffCard payoff={vm.payoff} legCount={vm.legs.length} />
+          <PayoffCard payoff={vm.payoff} legCount={vm.legs.length} spotInputId={vm.spotPriceField.id} />
           <ParticipationCard participation={vm.participation} />
         </div>
       </CardContent>
@@ -722,7 +725,38 @@ function OptionsPayoffPanel({ vm }: { vm: StrategyDesignerViewModel }) {
   );
 }
 
-function PayoffCard({ payoff, legCount }: { payoff: PayoffChartViewModel; legCount: number }) {
+function PayoffCard({ payoff, legCount, spotInputId }: { payoff: PayoffChartViewModel; legCount: number; spotInputId: string }) {
+  const proof = { href: `#${payoffInputsId}`, label: "Open payoff leg inputs" };
+  const observations: ChartEvidence[] = payoff.points.map(({ price, pnl }, index) => ({
+    id: `payoff-${index}`, label: `Expiration scenario ${index + 1}`,
+    asOf: "Hypothetical expiration · date unspecified",
+    values: [
+      { series: "Underlying price", value: price, unit: "Model currency per unit", basis: "Sampled underlying price at expiration." },
+      { series: "Portfolio payoff", value: pnl, unit: "Model currency units", basis: "Sum of signed leg payoffs. Options use intrinsic value less premium, multiplied by quantity. Stock uses price less entry, multiplied by quantity." }
+    ],
+    proof
+  }));
+  const references: { geometry: ChartMarkGeometry; evidence: ChartEvidence }[] = [];
+  if (payoff.spotLineX !== null) {
+    references.push({
+      geometry: { x: payoff.spotLineX - 4, y: payoff.paddingTop, width: 8, height: payoff.height - payoff.paddingTop - payoff.paddingBottom },
+      evidence: {
+        id: "spot-marker", label: "Spot input marker", asOf: "Current draft",
+        values: [{ series: "Reference spot", value: payoff.spotPrice, unit: "Model currency per unit", basis: "Operator-entered spot used to frame the scenario range." }],
+        proof: { href: `#${spotInputId}`, label: "Open spot input" }
+      }
+    });
+  }
+  if (payoff.zeroLineY !== null) {
+    references.push({
+      geometry: { x: payoff.paddingLeft, y: payoff.zeroLineY - 4, width: payoff.width - payoff.paddingLeft - payoff.paddingRight, height: 8 },
+      evidence: {
+        id: "zero-marker", label: "Zero payoff reference", asOf: "Fixed reference",
+        values: [{ series: "Portfolio payoff", value: 0, unit: "Model currency units", basis: "Zero net P&L reference." }],
+        proof
+      }
+    });
+  }
   return (
     <div data-testid="strategy-designer-payoff">
       {payoff.isEmpty ? (
@@ -730,48 +764,58 @@ function PayoffCard({ payoff, legCount }: { payoff: PayoffChartViewModel; legCou
           Add a leg to render the payoff curve.
         </div>
       ) : (
-        <svg viewBox={`0 0 ${payoff.width} ${payoff.height}`} role="img" aria-label={payoff.ariaLabel} className="w-full max-w-full">
-          <rect
-            x={payoff.paddingLeft}
-            y={payoff.paddingTop}
-            width={payoff.width - payoff.paddingLeft - payoff.paddingRight}
-            height={payoff.height - payoff.paddingTop - payoff.paddingBottom}
-            fill="transparent"
-            stroke="hsl(var(--border))"
-            strokeOpacity={0.4}
-          />
-          {payoff.zeroLineY !== null && (
-            <line
-              x1={payoff.paddingLeft}
-              x2={payoff.width - payoff.paddingRight}
-              y1={payoff.zeroLineY}
-              y2={payoff.zeroLineY}
-              stroke="hsl(var(--muted-foreground))"
-              strokeDasharray="4 4"
-              strokeOpacity={0.6}
-            />
+        <ChartEvidenceView label="Strategy payoff" evidence={[...observations, ...references.map(({ evidence }) => evidence)]}>
+          {(inspection) => (
+            <svg viewBox={`0 0 ${payoff.width} ${payoff.height}`} role="group" aria-label={payoff.ariaLabel} aria-describedby={inspection.hintId} className="w-full max-w-full">
+              <rect
+                x={payoff.paddingLeft}
+                y={payoff.paddingTop}
+                width={payoff.width - payoff.paddingLeft - payoff.paddingRight}
+                height={payoff.height - payoff.paddingTop - payoff.paddingBottom}
+                fill="transparent"
+                stroke="hsl(var(--border))"
+                strokeOpacity={0.4}
+              />
+              {payoff.zeroLineY !== null && (
+                <line
+                  x1={payoff.paddingLeft}
+                  x2={payoff.width - payoff.paddingRight}
+                  y1={payoff.zeroLineY}
+                  y2={payoff.zeroLineY}
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeDasharray="4 4"
+                  strokeOpacity={0.6}
+                />
+              )}
+              {payoff.spotLineX !== null && (
+                <line
+                  x1={payoff.spotLineX}
+                  x2={payoff.spotLineX}
+                  y1={payoff.paddingTop}
+                  y2={payoff.height - payoff.paddingBottom}
+                  stroke="hsl(var(--primary))"
+                  strokeDasharray="2 4"
+                  strokeOpacity={0.6}
+                />
+              )}
+              <polyline
+                points={payoff.points.map((p) => `${p.x},${p.y}`).join(" ")}
+                fill="none"
+                stroke="hsl(var(--primary))"
+                strokeWidth={1.75}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                data-testid="strategy-designer-payoff-polyline"
+              />
+              {references.map(({ geometry, evidence }, index) => (
+                <ChartEvidenceMark key={evidence.id} inspection={inspection} index={payoff.points.length + index} geometry={geometry} />
+              ))}
+              {payoff.points.map((point, index) => (
+                <ChartEvidenceMark key={observations[index].id} inspection={inspection} index={index} geometry={point} />
+              ))}
+            </svg>
           )}
-          {payoff.spotLineX !== null && (
-            <line
-              x1={payoff.spotLineX}
-              x2={payoff.spotLineX}
-              y1={payoff.paddingTop}
-              y2={payoff.height - payoff.paddingBottom}
-              stroke="hsl(var(--primary))"
-              strokeDasharray="2 4"
-              strokeOpacity={0.6}
-            />
-          )}
-          <polyline
-            points={payoff.points.map((p) => `${p.x},${p.y}`).join(" ")}
-            fill="none"
-            stroke="hsl(var(--primary))"
-            strokeWidth={1.75}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            data-testid="strategy-designer-payoff-polyline"
-          />
-        </svg>
+        </ChartEvidenceView>
       )}
       <p className="mt-2 text-xs text-muted-foreground" data-testid="strategy-designer-payoff-legcount">
         Sampled across {legCount} leg{legCount === 1 ? "" : "s"}.
@@ -788,17 +832,28 @@ function ParticipationCard({ participation }: { participation: ParticipationView
           Awaiting first leg.
         </div>
       ) : (
-        <ul className="space-y-2" data-testid="strategy-designer-participation-list">
-          {participation.slices.map((slice) => (
-            <ParticipationRow key={slice.legId} slice={slice} />
-          ))}
-        </ul>
+        <ChartEvidenceView label="Strategy leg participation" evidence={participation.slices.map((slice) => ({
+          id: slice.legId, label: slice.label, asOf: "Current draft",
+          values: [{
+            series: "Share of gross notional", value: slice.share * 100, unit: "%",
+            basis: `Absolute leg quantity × ${slice.instrument === "Stock" ? "draft spot" : "strike"}, divided by total gross notional × 100.`
+          }],
+          proof: { href: `#${payoffInputsId}-${slice.legId}`, label: "Open leg inputs" }
+        }))}>
+          {(inspection) => (
+            <ul id={payoffInputsId} tabIndex={-1} aria-label="Payoff leg inputs" aria-describedby={inspection.hintId} className="space-y-2" data-testid="strategy-designer-participation-list">
+              {participation.slices.map((slice, index) => (
+                <ParticipationRow key={slice.legId} slice={slice} markProps={inspection.markProps(index)} />
+              ))}
+            </ul>
+          )}
+        </ChartEvidenceView>
       )}
     </div>
   );
 }
 
-function ParticipationRow({ slice }: { slice: ParticipationSliceViewModel }) {
+function ParticipationRow({ slice, markProps }: { slice: ParticipationSliceViewModel; markProps: ReturnType<ChartInspection["markProps"]> }) {
   return (
     <li className="space-y-1">
       <div className="flex items-center justify-between gap-2 text-sm">
@@ -810,14 +865,14 @@ function ParticipationRow({ slice }: { slice: ParticipationSliceViewModel }) {
         </div>
         <span className="font-mono text-xs text-muted-foreground">{slice.sharePercent}</span>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/40" role="presentation">
-        <div
-          className={cn("h-full rounded-full", slice.tone === "long" ? "bg-success" : "bg-warning")}
+      <button type="button" className="decision-chart-bar block h-3 w-full overflow-hidden rounded-full bg-secondary/40 aria-current:ring-1 aria-current:ring-primary" {...markProps}>
+        <span
+          className={cn("block h-full rounded-full", slice.tone === "long" ? "bg-success" : "bg-warning")}
           style={{ width: slice.barWidth }}
           data-testid={`participation-bar-${slice.legId}`}
         />
-      </div>
-      <div className="text-xs text-muted-foreground">{slice.detail}</div>
+      </button>
+      <div id={`${payoffInputsId}-${slice.legId}`} tabIndex={-1} className="text-xs text-muted-foreground">{slice.detail}</div>
     </li>
   );
 }

@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperFuturesSettlementServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:199](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L199).
+
+Registers the paper futures end-of-day settlement job.
+
+```csharp
+public static class PaperFuturesSettlementServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddPaperFuturesSettlement(this IServiceCollection services, IConfiguration configuration);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:206](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L206) | Binds PaperFuturesSettlementOptions from PaperFuturesSettlementOptions.SectionKey and registers the job as a singleton and hosted service. It stays idle unless enabled and a mark price source is registered. |
+
+## PaperSessionAccountingBinding
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperSessionAccountingBinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:259](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L259).
+
+A server-resolved source-to-book binding, never a caller&#x27;s assertion of account ownership.
+
+```csharp
+public sealed record PaperSessionAccountingBinding(string SessionId, Guid AggregateId, Guid LedgerBookId, Guid PeriodId, string FinancialAccountId);
+```
+
 ## PaperSessionAccountingSourceReader
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PaperSessionAccountingSourceReader</code>. Kind: `class`.
@@ -848,33 +878,4 @@ Stable source identity for an operator-visible provider datum.
 
 ```csharp
 public sealed record ProviderProjectionProvenance(string Key, string ProviderFamily, int RequestId, string Capability, DateTimeOffset ObservedAt, ProviderDataProvenance? Source);
-```
-
-## ProviderReadinessService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L16).
-
-Aggregates provider configuration, connection, and account evidence into readiness summaries.
-
-```csharp
-public sealed class ProviderReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderReadinessService(IServiceProvider services, ConfigStore configStore);</code> | [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L22) |  |
-| <code>public async Task&lt;ProviderReadinessSummaryDto&gt; GetReadinessAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L28) |  |
-
-## ProviderScannerReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderScannerReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:23](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L23).
-
-```csharp
-public sealed record ProviderScannerReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderScannerResult Item);
 ```

@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingReconciliationEvidenceMigrationRequiredException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMigrationRequiredException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:639](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L639).
+
+Raised only when a legacy reconciliation snapshot passed its v1 integrity checks but cannot satisfy the current per-break evidence requirements without an operator-led recovery.
+
+```csharp
+public sealed class ReportingReconciliationEvidenceMigrationRequiredException : ReportingReconciliationEvidenceRecoveryRequiredException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingReconciliationEvidenceMigrationRequiredException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:642](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L642) |  |
+
+## ReportingReconciliationEvidenceMissingException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMissingException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L36).
+
+Indicates that required retained reconciliation evidence is missing.
+
+```csharp
+public sealed class ReportingReconciliationEvidenceMissingException : ReportingReconciliationReadinessException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingReconciliationEvidenceMissingException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L39) |  |
+
 ## ReportingReconciliationEvidenceRetentionService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceRetentionService</code>. Kind: `class`.
@@ -936,31 +972,3 @@ Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:78](../../../
 ```csharp
 public sealed record RiskRuleConfigDto(string RuleName, decimal? DefaultMaxPositionSize, IReadOnlyDictionary<string, decimal>? SymbolPositionLimits, decimal? MaxDrawdownPercent, int? MaxOrdersPerMinute, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
 ```
-
-## RiskRuleConfigUpdateRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleConfigUpdateRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:92](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L92).
-
-```csharp
-public sealed record RiskRuleConfigUpdateRequest(decimal? DefaultMaxPositionSize = null, IReadOnlyDictionary<string, decimal?>? SymbolPositionLimits = null, decimal? MaxDrawdownPercent = null, int? MaxOrdersPerMinute = null, string? Reason = null, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
-```
-
-## RiskRuleFirstRunDefaults
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleFirstRunDefaults</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:38](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L38).
-
-Armed ceilings for the portfolio-aware rails on a host that has never persisted an operator snapshot. Without these, a fresh install starts with every portfolio-aware rule unconfigured — six of eight rules approve without measuring, so any quantity at any price routes. These are conservative starting guardrails for the composition root to opt into, not tuning advice: operators raise, lower, or clear them through the risk config endpoints, and the resulting snapshot (including an explicit clear) always wins over these on the next start.
-
-```csharp
-public sealed record RiskRuleFirstRunDefaults(decimal MaxGrossExposure, decimal MaxSymbolConcentrationPercent, decimal MaxOrderNotional, decimal EscalateOrderNotional, decimal MaxOrderQuantity, decimal MaxPriceDeviationPercent, decimal PriceCollarPercent)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RiskRuleFirstRunDefaults Conservative { get; } = new (MaxGrossExposure : 1_000_000m, MaxSymbolConcentrationPercent : 25m, MaxOrderNotional : 100_000m, EscalateOrderNotional : 25_000m, MaxOrderQuantity : 10_000m, MaxPriceDeviationPercent : 10m, PriceCollarPercent : 5m);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:54](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L54) | The workstation&#x27;s first-run posture: sized against the default $100k paper book so the rails constrain without strangling a fresh install — a $100k per-order reject ceiling with governed escalation from $25k, a 10,000-unit fat-finger quantity ceiling, a 10% aggressive price band with the 5% collar parked inside it (a collar at or above the band could never fire), 25% single-symbol concentration, and a $1m gross-exposure ceiling. |

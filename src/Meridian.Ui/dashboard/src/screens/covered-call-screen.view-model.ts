@@ -14,7 +14,7 @@ import type {
   CoveredCallScoringMode,
   CoveredCallTrade
 } from "@/lib/covered-call";
-import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
+import { shortCallBreakEven } from "@/lib/covered-call/payoff";
 import { formatFixed, formatPrefixedCurrency } from "@/lib/format";
 import {
   formatCount,
@@ -24,6 +24,9 @@ import {
   formatPrice,
   formatCoveredCallDateTime
 } from "@/screens/covered-call-screen.formatters";
+import { buildCoveredCallPayoffChart, type CoveredCallPayoffChartViewModel } from "./covered-call-screen.payoff-chart";
+
+export type { CoveredCallPayoffChartLineViewModel, CoveredCallPayoffChartViewModel } from "./covered-call-screen.payoff-chart";
 
 export type CoveredCallStage = "configure" | "run" | "results";
 
@@ -277,21 +280,6 @@ export interface CoveredCallPayoffPositionOptionViewModel {
   selected: boolean;
   buttonVariant: "secondary" | "outline";
   ariaLabel: string;
-}
-
-export interface CoveredCallPayoffChartLineViewModel {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-}
-
-export interface CoveredCallPayoffChartViewModel {
-  viewBox: string;
-  ariaLabel: string;
-  zeroLine: CoveredCallPayoffChartLineViewModel;
-  strikeLine: CoveredCallPayoffChartLineViewModel;
-  path: string;
 }
 
 export interface CoveredCallPayoffPanelViewModel {
@@ -1138,7 +1126,7 @@ export function buildCoveredCallPayoffPanel(
     positionOptions: result.openPositionsAtEnd.map((position, index) =>
       buildCoveredCallPayoffPositionOption(result.underlyingSymbol, position, index, selectedPositionIndex)
     ),
-    chart: buildCoveredCallPayoffChart(selectedPosition, result.underlyingSymbol)
+    chart: buildCoveredCallPayoffChart(selectedPosition, result)
   };
 }
 
@@ -1159,47 +1147,6 @@ function buildCoveredCallPayoffPositionOption(
     selected,
     buttonVariant: selected ? "secondary" : "outline",
     ariaLabel: `${selected ? "Selected" : "Select"} ${underlyingSymbol} ${strikeLabel} call expiring ${position.expiration} payoff diagram`
-  };
-}
-
-function buildCoveredCallPayoffChart(
-  position: CoveredCallOpenPosition,
-  underlyingSymbol: string
-): CoveredCallPayoffChartViewModel {
-  const width = 320;
-  const height = 180;
-  const spotMin = position.strike * 0.75;
-  const spotMax = position.strike * 1.25;
-  const samples = buildShortCallPayoffCurve({
-    strike: position.strike,
-    entryCredit: position.entryCredit,
-    contracts: position.contracts,
-    multiplier: position.multiplier
-  }, spotMin, spotMax, 80);
-  const allPayoffs = samples.map((sample) => sample.payoff);
-  const yMin = Math.min(...allPayoffs);
-  const yMax = Math.max(...allPayoffs);
-  const xScale = (spot: number) => ((spot - spotMin) / Math.max(spotMax - spotMin, 1e-6)) * width;
-  const yScale = (value: number) => height - ((value - yMin) / Math.max(yMax - yMin, 1e-6)) * height;
-  if (samples.length === 0 || !Number.isFinite(yMin) || !Number.isFinite(yMax)) {
-    return {
-      viewBox: `0 0 ${width} ${height}`,
-      ariaLabel: `${underlyingSymbol} ${formatPrice(position.strike)} short-call payoff diagram unavailable`,
-      zeroLine: { x1: 0, y1: height / 2, x2: width, y2: height / 2 },
-      strikeLine: { x1: width / 2, y1: 0, x2: width / 2, y2: height },
-      path: `M0,${height / 2} L${width},${height / 2}`
-    };
-  }
-  const path = samples
-    .map((sample, index) => `${index === 0 ? "M" : "L"}${formatFixed(xScale(sample.spot), 1)},${formatFixed(yScale(sample.payoff), 1)}`)
-    .join(" ");
-
-  return {
-    viewBox: `0 0 ${width} ${height}`,
-    ariaLabel: `${underlyingSymbol} ${formatPrice(position.strike)} short-call payoff diagram`,
-    zeroLine: { x1: 0, y1: yScale(0), x2: width, y2: yScale(0) },
-    strikeLine: { x1: xScale(position.strike), y1: 0, x2: xScale(position.strike), y2: height },
-    path
   };
 }
 

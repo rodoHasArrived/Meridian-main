@@ -710,6 +710,34 @@ Outcome of seeding the demo workspace.
 public sealed record DemoWorkspaceSeedReport(string DemoRoot, string Provenance, DemoTenantProvisioningReport Provisioning, int MarketHistoryTradePrintsSeeded = 0);
 ```
 
+## DesignerBacktestBlockedException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DesignerBacktestBlockedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:260](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L260).
+
+```csharp
+public sealed class DesignerBacktestBlockedException(string message, Exception? cause = null) : Exception(message, cause);
+```
+
+## DesignerBacktestService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DesignerBacktestService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:24](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L24).
+
+Runs the hosted Designer&#x27;s bounded daily-equity replay against retained, exact inputs.
+
+```csharp
+public sealed class DesignerBacktestService(string dataRoot, Func<BacktestRequest, BacktestEngine> engineFactory, IStrategyRepository runs, IEvidenceArtifactStore evidence, StrategyDesignService designs, IOperationalTradingCalendar calendar, ISecurityIdentityQueryService? securities, ISecurityCorporateActionsQueryService? corporateActions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;StrategyRunEntry&gt; RunAsync(StrategyDesignDocument document, StrategyRunRepositoryScope scope, string actor, Guid accountId, DateOnly from, DateOnly to, StrategyRunEvidenceLoop evidenceLoop, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:38](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L38) |  |
+
 ## DesktopLaunchTicketService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DesktopLaunchTicketService</code>. Kind: `class`.
@@ -902,41 +930,3 @@ Declared public members:
 | <code>public DocumentsReportingPrimaryDocumentRenderer() : this(new LedgerClientReportExportService(new FinancialReportDocumentRenderer()));</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L156) | Convenience construction for dependency-light callers and focused tests. Production composition supplies the shared export service explicitly. |
 | <code>public DocumentsReportingPrimaryDocumentRenderer(LedgerClientReportExportService clientReportExportService);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:161](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L161) |  |
 | <code>public LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L168) |  |
-
-## DrawdownGuardrailRule
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DrawdownGuardrailRule</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:13](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L13).
-
-Meridian.Risk rule adapter for the operator-tuned drawdown circuit breaker. Evaluates the live portfolio drawdown against the threshold managed (and dashboard-reported) by RiskRuleRuntimeService, so the enforced CompositeRiskValidator and the risk dashboard can never disagree about the guardrail.
-
-```csharp
-public sealed class DrawdownGuardrailRule : IRiskRule
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DrawdownGuardrailRule(RiskRuleRuntimeService runtime);</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:17](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L17) |  |
-| <code>public string RuleName =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:23](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L23) |  |
-| <code>public RiskRuleSeverity Severity =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:26](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L26) |  |
-| <code>public RiskValidationResult? TryEvaluate(OrderRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:29](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L29) |  |
-| <code>public Task&lt;RiskValidationResult&gt; EvaluateAsync(OrderRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:32](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L32) |  |
-
-## EntityTimelineService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.EntityTimelineService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/EntityTimelineService.cs:10](../../../../src/Meridian.Ui.Shared/Services/EntityTimelineService.cs#L10).
-
-```csharp
-public sealed class EntityTimelineService(IFundStructureService structures, IEntityLifecycleStore lifecycle, IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAgreementService agreements, IEntityTimelineAccessAuthority access)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;EntityTimelineDto&gt; GetAsync(string tenant, Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default, string actor = &quot;entity-timeline&quot;);</code> | [src/Meridian.Ui.Shared/Services/EntityTimelineService.cs:13](../../../../src/Meridian.Ui.Shared/Services/EntityTimelineService.cs#L13) |  |

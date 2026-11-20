@@ -1927,21 +1927,12 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 : CreatePortfolioSnapshot(session.Portfolio);
             var orderHistory = session.OrderHistory.Select(CloneOrderState).ToArray();
             var fillHistory = session.FillHistory.Select(CloneExecutionReport).ToArray();
-            var ledger = session.IsActive
+            var ledger = session.DurableLedger ?? (session.IsActive
                 ? session.Portfolio?.Ledger ?? session.ReconstructedLedger
-                : session.ReconstructedLedger ?? session.Portfolio?.Ledger;
+                : session.ReconstructedLedger ?? session.Portfolio?.Ledger);
 
             return new PaperSessionDetailDto(
-                Summary: new PaperSessionSummaryDto(
-                    session.SessionId,
-                    session.StrategyId,
-                    session.StrategyName,
-                    session.InitialCash,
-                    session.CreatedAt,
-                    session.ClosedAt,
-                    session.IsActive,
-                    session.MatchingModelVersion,
-                    session.CostModelVersion),
+                Summary: ToSummarySnapshot(session),
                 Symbols: session.Symbols.ToArray(),
                 Portfolio: portfolioSnapshot,
                 OrderHistory: orderHistory,

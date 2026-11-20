@@ -119,7 +119,10 @@ public sealed class DesignerPaperRehearsalTests
             tradeEventPublisher: canonicalPublisher, orderIntentHistory: history, options: new OrderManagementSystemOptions
             {
                 PaperIntentScope = new PaperOrderIntentScope { TenantId = Tenant, CompanyId = Company, FundAccountId = AccountId }
-            }) { BindNativePaperSessions = true };
+            })
+        {
+            BindNativePaperSessions = true
+        };
         await oms.StartAsync();
 
         var builder = WebApplication.CreateBuilder();

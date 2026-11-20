@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderReadinessService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L16).
+
+Aggregates provider configuration, connection, and account evidence into readiness summaries.
+
+```csharp
+public sealed class ProviderReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderReadinessService(IServiceProvider services, ConfigStore configStore);</code> | [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L22) |  |
+| <code>public async Task&lt;ProviderReadinessSummaryDto&gt; GetReadinessAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L28) |  |
+
+## ProviderScannerReadModel
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderScannerReadModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:23](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L23).
+
+```csharp
+public sealed record ProviderScannerReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderScannerResult Item);
+```
+
 ## ReconciliationApiService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReconciliationApiService</code>. Kind: `class`.
@@ -798,39 +827,3 @@ Declared public members:
 | <code>public ReportingReconciliationEvidenceInvalidException(string message, int blockingCount = 1, IReadOnlyList&lt;string&gt;? evidenceReferences = null) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L50) |  |
 | <code>public int BlockingCount { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:59](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L59) |  |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L61) |  |
-
-## ReportingReconciliationEvidenceMigrationRequiredException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMigrationRequiredException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:639](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L639).
-
-Raised only when a legacy reconciliation snapshot passed its v1 integrity checks but cannot satisfy the current per-break evidence requirements without an operator-led recovery.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceMigrationRequiredException : ReportingReconciliationEvidenceRecoveryRequiredException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceMigrationRequiredException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:642](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L642) |  |
-
-## ReportingReconciliationEvidenceMissingException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMissingException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L36).
-
-Indicates that required retained reconciliation evidence is missing.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceMissingException : ReportingReconciliationReadinessException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceMissingException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L39) |  |
