@@ -22,6 +22,13 @@ namespace Meridian.Storage.Ledger;
 /// </summary>
 internal static class LedgerRetainedValueComparison
 {
+    // The historical standard account identity can recover the corresponding first-edition chart
+    // reference without changing the retained row. Configured charts require retained evidence.
+    public static bool ChartReferencesMatch(LedgerEntry retained, LedgerEntry candidate)
+        => retained.ChartAccount == candidate.ChartAccount ||
+           (retained.ChartAccount is null && candidate.ChartAccount is not null &&
+            StandardChartOfAccounts.Instance.GetPostingReference(retained.Account) == candidate.ChartAccount);
+
     /// <summary>Decimal scale of the ledger's durable numeric columns.</summary>
     private const int StoredDecimalScale = 10;
 

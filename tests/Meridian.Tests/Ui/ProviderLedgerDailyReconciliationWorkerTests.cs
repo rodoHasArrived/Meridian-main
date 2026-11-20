@@ -67,6 +67,30 @@ public sealed class ProviderLedgerDailyReconciliationWorkerTests
     }
 
     [Fact]
+    public async Task NoProviderTargets_PaperWaitsForMarketCloseAndConfirmsOnce()
+    {
+        var attempts = new List<DateTimeOffset>();
+        var beforeClose = new DateTimeOffset(2026, 11, 12, 20, 55, 0, TimeSpan.Zero);
+        var worker = new ProviderLedgerDailyReconciliationWorker(
+            new() { UtcHour = 20, RetryMinutes = 15 },
+            TimeProvider.System,
+            NullLogger<ProviderLedgerDailyReconciliationWorker>.Instance,
+            (_, _, _) => throw new InvalidOperationException("Paper comparisons require no provider services."),
+            (now, _) =>
+            {
+                attempts.Add(now);
+                return Task.FromResult(attempts.Count == 1 ? OperationTerminalState.Unknown : OperationTerminalState.Succeeded);
+            });
+
+        await worker.RunDueAsync(beforeClose);
+        await worker.RunDueAsync(beforeClose.AddMinutes(10));
+        await worker.RunDueAsync(beforeClose.AddMinutes(15));
+        await worker.RunDueAsync(beforeClose.AddMinutes(30));
+
+        attempts.Should().Equal(beforeClose, beforeClose.AddMinutes(15));
+    }
+
+    [Fact]
     public async Task MissingRetainedOwnership_RefusesBeforeEnteringTenantAuthorityOrReadingAccounts()
     {
         var registry = Substitute.For<IFundProfileTenancyRegistry>();

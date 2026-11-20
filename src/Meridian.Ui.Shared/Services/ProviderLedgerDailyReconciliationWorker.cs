@@ -29,6 +29,7 @@ public sealed class ProviderLedgerDailyReconciliationWorker : BackgroundService
     private readonly TimeProvider _clock;
     private readonly ILogger<ProviderLedgerDailyReconciliationWorker> _logger;
     private readonly Func<ProviderLedgerDailyReconciliationTarget, string, CancellationToken, Task<OperationTerminalState>> _run;
+    private readonly Func<DateTimeOffset, CancellationToken, Task<OperationTerminalState>>? _runPaper;
     private readonly Dictionary<string, (DateTimeOffset NextAttempt, bool Completed)> _attempts = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _gate = new(1, 1);
 
@@ -39,12 +40,17 @@ public sealed class ProviderLedgerDailyReconciliationWorker : BackgroundService
         {
             using var scope = scopes.CreateScope();
             return await RunTargetAsync(scope.ServiceProvider, target, operationId, ct);
+        }, async (now, ct) =>
+        {
+            using var scope = scopes.CreateScope();
+            return await PaperSessionDailyReconciliation.RunAsync(scope.ServiceProvider, now, logger, ct);
         })
     { }
 
     internal ProviderLedgerDailyReconciliationWorker(ProviderLedgerDailyReconciliationOptions options,
         TimeProvider clock, ILogger<ProviderLedgerDailyReconciliationWorker> logger,
-        Func<ProviderLedgerDailyReconciliationTarget, string, CancellationToken, Task<OperationTerminalState>> run)
+        Func<ProviderLedgerDailyReconciliationTarget, string, CancellationToken, Task<OperationTerminalState>> run,
+        Func<DateTimeOffset, CancellationToken, Task<OperationTerminalState>>? runPaper = null)
     {
         if (options.UtcHour is < 0 or > 23 || options.RetryMinutes is < 1 or > 1440 || options.Targets is null)
             throw new ArgumentException("Daily reconciliation requires a UTC hour from 0 through 23 and a retry interval from 1 through 1440 minutes.");
@@ -61,6 +67,7 @@ public sealed class ProviderLedgerDailyReconciliationWorker : BackgroundService
         _clock = clock;
         _logger = logger;
         _run = run;
+        _runPaper = runPaper;
     }
 
     internal static async Task<OperationTerminalState> RunTargetAsync(IServiceProvider services,
@@ -83,7 +90,7 @@ public sealed class ProviderLedgerDailyReconciliationWorker : BackgroundService
     internal async Task RunDueAsync(DateTimeOffset now, CancellationToken ct = default)
     {
         now = now.ToUniversalTime();
-        if (now.Hour < _options.UtcHour || _options.Targets.Count == 0)
+        if (now.Hour < _options.UtcHour || (_options.Targets.Count == 0 && _runPaper is null))
             return;
         await _gate.WaitAsync(ct);
         try
@@ -94,25 +101,38 @@ public sealed class ProviderLedgerDailyReconciliationWorker : BackgroundService
             foreach (var target in _options.Targets)
             {
                 var id = OperationId(target, day);
-                if (_attempts.TryGetValue(id, out var prior) && (prior.Completed || prior.NextAttempt > now))
-                    continue;
-                try
-                {
-                    var state = await _run(target, id, ct);
-                    _attempts[id] = (now.AddMinutes(_options.RetryMinutes),
-                        state is OperationTerminalState.Succeeded or OperationTerminalState.CompletedWithWarnings or OperationTerminalState.Blocked);
-                    if (state is OperationTerminalState.Failed or OperationTerminalState.Unknown)
-                        _logger.LogWarning("Daily provider-ledger comparison {OperationId} did not complete; retry follows the configured interval", id);
-                }
-                catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
-                catch (Exception ex)
-                {
-                    _attempts[id] = (now.AddMinutes(_options.RetryMinutes), false);
-                    _logger.LogError(ex, "Daily provider-ledger comparison {OperationId} failed; retry follows the configured interval", id);
-                }
+                await RunAttemptAsync(id, now, () => _run(target, id, ct), ct);
+            }
+
+            if (_runPaper is not null)
+            {
+                var id = $"daily-paper-ledger:{day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)}";
+                await RunAttemptAsync(id, now, () => _runPaper(now, ct), ct);
             }
         }
         finally { _gate.Release(); }
+    }
+
+    private async Task RunAttemptAsync(string id, DateTimeOffset now, Func<Task<OperationTerminalState>> run, CancellationToken ct)
+    {
+        if (_attempts.TryGetValue(id, out var prior) && (prior.Completed || prior.NextAttempt > now))
+            return;
+
+        var nextAttempt = now.AddMinutes(_options.RetryMinutes);
+        try
+        {
+            var state = await run();
+            _attempts[id] = (nextAttempt,
+                state is OperationTerminalState.Succeeded or OperationTerminalState.CompletedWithWarnings or OperationTerminalState.Blocked);
+            if (state is OperationTerminalState.Failed or OperationTerminalState.Unknown)
+                _logger.LogWarning("Daily reconciliation {OperationId} did not complete; retry follows the configured interval", id);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        catch (Exception ex)
+        {
+            _attempts[id] = (nextAttempt, false);
+            _logger.LogError(ex, "Daily reconciliation {OperationId} failed; retry follows the configured interval", id);
+        }
     }
 
     internal static string OperationId(ProviderLedgerDailyReconciliationTarget target, DateOnly date)

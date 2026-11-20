@@ -24,10 +24,16 @@ public static partial class ExecutionEndpoints
                 != OperationsActionOriginDto.HumanOperator)
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
             var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
-            if (persistence is null || context.RequestServices.GetService<PaperFinancingPostingService>() is null)
+            if (persistence is null)
                 return Results.Problem("Durable financing posting is not configured.", statusCode: 503);
             try
             {
+                await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
+                if (await RequirePaperSessionAccessAsync(persistence, sessionId, UserPermission.ManageOrders, context, jsonOptions)
+                    .ConfigureAwait(false) is { } scopeFailure)
+                    return scopeFailure;
+                if (!persistence.CanRecordFinancing(sessionId))
+                    return Results.Problem("Durable financing posting is not configured for this session.", statusCode: 503);
                 var request = await JsonSerializer.DeserializeAsync(context.Request.Body,
                     PaperFinancingApiJsonContext.Default.PaperFinancingRequest, context.RequestAborted).ConfigureAwait(false);
                 if (request is null)
@@ -59,7 +65,13 @@ public static partial class ExecutionEndpoints
                 return Results.Json(Array.Empty<PaperSessionSummaryDto>(), jsonOptions);
 
             await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
-            var sessions = persistence.GetSessions();
+            var sessions = new List<PaperSessionSummaryDto>();
+            foreach (var session in persistence.GetSessions())
+            {
+                if (await RequirePaperSessionAccessAsync(persistence, session.SessionId, UserPermission.ViewTrades, context, jsonOptions)
+                    .ConfigureAwait(false) is null)
+                    sessions.Add(session);
+            }
             return Results.Json(sessions, jsonOptions);
         })
         .WithName("GetExecutionSessions").RequirePermission(UserPermission.ViewTrades)
@@ -72,6 +84,9 @@ public static partial class ExecutionEndpoints
                 return Results.NotFound();
 
             await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
+            if (await RequirePaperSessionAccessAsync(persistence, sessionId, UserPermission.ViewTrades, context, jsonOptions)
+                .ConfigureAwait(false) is { } scopeFailure)
+                return scopeFailure;
             var session = persistence.GetSession(sessionId);
             return session is null ? Results.NotFound() : Results.Json(session, jsonOptions);
         })
@@ -86,6 +101,9 @@ public static partial class ExecutionEndpoints
                 return Results.NotFound();
 
             await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
+            if (await RequirePaperSessionAccessAsync(persistence, sessionId, UserPermission.ViewTrades, context, jsonOptions)
+                .ConfigureAwait(false) is { } scopeFailure)
+                return scopeFailure;
             var session = persistence.GetSession(sessionId);
             if (session is null)
                 return Results.NotFound();
@@ -112,6 +130,10 @@ public static partial class ExecutionEndpoints
             {
                 return Results.Unauthorized();
             }
+            if (request.FundAccountId is { } fundAccountId
+                && await RequireExecutionFundAccountAccessAsync(fundAccountId, UserPermission.ExecuteTrades, context, jsonOptions)
+                    .ConfigureAwait(false) is { } scopeFailure)
+                return scopeFailure;
 
             var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
             if (persistence is null)
@@ -122,7 +144,10 @@ public static partial class ExecutionEndpoints
                 request.StrategyId,
                 request.StrategyName,
                 request.InitialCash,
-                request.Symbols);
+                request.Symbols)
+            {
+                FinancialAccountId = request.FundAccountId?.ToString("D")
+            };
             PaperSessionSummaryDto session;
             try
             {
@@ -187,9 +212,14 @@ public static partial class ExecutionEndpoints
                 return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
             await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
+            if (await RequirePaperSessionAccessAsync(persistence, sessionId, UserPermission.ManageOrders, context, jsonOptions)
+                .ConfigureAwait(false) is { } scopeFailure)
+                return scopeFailure;
             var actionId = GenerateActionId();
             var existingSession = persistence.GetSession(sessionId);
-            var closed = await persistence.CloseSessionAsync(sessionId, context.RequestAborted).ConfigureAwait(false);
+            bool closed;
+            try { closed = await persistence.CloseSessionAsync(sessionId, context.RequestAborted).ConfigureAwait(false); }
+            catch (InvalidOperationException ex) { return Results.Problem(ex.Message, statusCode: 409); }
 
             var auditEntry = await RecordOperatorAuditAsync(
                 context,
@@ -223,6 +253,7 @@ public static partial class ExecutionEndpoints
         .WithName("CloseExecutionSession").RequirePermission(UserPermission.ManageOrders)
         .Produces<TradingActionResult>(200)
         .Produces(404)
+        .Produces(409)
         .Produces(503);
 
         group.MapGet("/sessions/{sessionId}/replay", async (string sessionId, HttpContext context) =>
@@ -242,6 +273,9 @@ public static partial class ExecutionEndpoints
                 return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
 
             await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
+            if (await RequirePaperSessionAccessAsync(persistence, sessionId, UserPermission.ManageOrders, context, jsonOptions)
+                .ConfigureAwait(false) is { } scopeFailure)
+                return scopeFailure;
             var actionId = GenerateActionId();
             var verification = await persistence.VerifyReplayAsync(sessionId, context.RequestAborted).ConfigureAwait(false);
             if (verification is null)
@@ -295,5 +329,16 @@ public static partial class ExecutionEndpoints
         .Produces<PaperSessionReplayVerificationDto>(200)
         .Produces(404)
         .Produces(503);
+    }
+
+    private static Task<IResult?> RequirePaperSessionAccessAsync(PaperSessionPersistenceService persistence,
+        string sessionId, UserPermission permission, HttpContext context, JsonSerializerOptions jsonOptions)
+    {
+        var accountId = persistence.GetSessionAccountId(sessionId);
+        if (accountId is null || accountId == PaperTradingPortfolio.DefaultAccountId)
+            return Task.FromResult<IResult?>(null);
+        return Guid.TryParseExact(accountId, "D", out var account)
+            ? RequireExecutionFundAccountAccessAsync(account, permission, context, jsonOptions)
+            : Task.FromResult<IResult?>(ExecutionFundAccountForbidden(jsonOptions));
     }
 }

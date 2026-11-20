@@ -73,6 +73,8 @@ function makeChartEditor(overrides: Partial<AccountingChartAccountEditorViewMode
     pathValue: "1000.Assets",
     accountNameValue: "",
     accountTypeValue: "",
+    accountCodeValue: "",
+    accountCodeReadOnly: false,
     parentPathValue: "",
     financialAccountIdValue: "",
     evidenceValue: "",

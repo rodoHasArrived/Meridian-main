@@ -122,7 +122,25 @@ recovery and may exceed the display-cache limit. The permanent minimal identity 
 
 ## Purpose
 
-Paper financing assessments use `PaperFinancingPostingService`, composed alongside
+Hosted native paper orders bind to a durable simulation session before dispatch. The server checks
+the session's account against the order's grant. A ticket can select an existing session with the
+`paperSessionId` query parameter on `POST /api/execution/orders/submit`. When no session is selected,
+the host reuses the active default session for that account. Account-bound simulation requires a
+verified USD base currency. The session opens with simulated capital and has its own journal.
+
+The session store retains one append-only journal batch for each opening, fill, settlement, or
+assessed financing charge. Batch identity binds the session, account, source, and posting purpose.
+The fill claim survives interruption, and the store acknowledges it only after the journal
+receipt is durable. Restart verifies retained batch content and recovers an unacknowledged
+source. Exact retries reuse the stored receipt and conflicting content is refused. Historical
+snapshot sessions remain readable. The cutoff proof compares verified journal cash and an
+independent portfolio replay, including its lot and carrying-value checks.
+
+The daily reconciliation worker retains exchange-close comparisons. Trading operators can review
+the latest comparison for an authorized session in either workstation. A later change to that
+cutoff's journal evidence raises a coverage blocker and preserves the original receipt.
+
+Paper sessions that post to the configured accounting book use `PaperFinancingPostingService`, composed alongside
 `Execution:TradeFillLedgerPosting`. An authenticated administrator can record a dated,
 cash-paid margin charge through `POST /api/execution/sessions/{sessionId}/financing` with
 `accrualDate`, `amount`, `sourceReference`, and `rationale`. The authenticated actor is retained

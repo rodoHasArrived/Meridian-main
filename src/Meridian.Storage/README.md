@@ -251,6 +251,12 @@ from upgrade attestations. See the [migration procedure](../../docs/operators/se
 
 `BackfillStatusStore` keeps a verified coverage sidecar (`_status/backfill-symbol-coverage.json`, atomic write): per symbol, granularity, provider and feed, the session ranges whose bars were written. Backfill resume reads only this sidecar; the date-only checkpoint and bar-count sidecars remain for status surfaces and are not evidence for skipping. An unreadable or newer-format coverage file is treated as no coverage. `BackfillCoverageMath` owns the range merge and missing-range arithmetic.
 
+Each durable historical response has a content-addressed batch receipt. It records the request,
+actual provider, row count, hash, and observed sessions. An identified exchange calendar supplies
+expected sessions. Incomplete intervals can resume around already verified sessions, including
+interior holes. Backtests retain the consumed revision links and expose incomplete or unknown
+coverage in the run disclosure.
+
 `JsonlBackfillBarWriter` gives every granularity its own file prefix (`bar_4hour`, `bar_weekly`, `bar_monthly` alongside the existing ones) and throws for an unknown granularity instead of writing it as `bar_daily`.
 
 `SharedStorageCoordinationStore` accepts an optional `TimeProvider` for lease expiry and takeover decisions (system clock by default).

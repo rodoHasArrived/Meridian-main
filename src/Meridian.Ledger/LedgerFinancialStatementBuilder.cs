@@ -56,25 +56,46 @@ public static partial class LedgerFinancialStatementBuilder
         ChartOfAccounts? chart = null,
         string? financialAccountId = null,
         LedgerLineDimensionSet? lineDimensions = null)
+        => BuildForPeriod(ledger, periodStart, asOf, chart, financialAccountId, lineDimensions, control: null);
+
+    internal static LedgerFinancialStatements BuildForPeriod(
+        IReadOnlyLedger ledger,
+        DateTimeOffset periodStart,
+        DateTimeOffset asOf,
+        ChartOfAccounts? chart,
+        string? financialAccountId,
+        LedgerLineDimensionSet? lineDimensions,
+        LedgerStatementControlDefinition? control)
     {
         ArgumentNullException.ThrowIfNull(ledger);
         if (asOf < periodStart)
             throw new ArgumentException("As-of timestamp cannot precede the period start.", nameof(asOf));
 
         var statements = BuildAsOf(ledger, asOf, chart, financialAccountId, lineDimensions);
-        var cashFlow = BuildCashFlowStatement(ledger, periodStart, asOf, financialAccountId, lineDimensions);
+        var opening = OpeningCutoff(periodStart, control);
+        var cashFlow = BuildCashFlowStatement(ledger, opening, asOf, financialAccountId, lineDimensions, control);
         var partnersCapital = BuildPartnersCapitalStatement(
-            ledger, periodStart, asOf, financialAccountId, lineDimensions, statements.NetIncome);
+            ledger, opening, asOf, financialAccountId, lineDimensions, statements.NetIncome);
 
-        return statements with { CashFlow = cashFlow, PartnersCapital = partnersCapital };
+        return statements with
+        {
+            CashFlow = cashFlow with { PeriodStart = periodStart },
+            PartnersCapital = partnersCapital with { PeriodStart = periodStart },
+            PeriodIncome = control is null ? null : BuildIncomeStatementForPeriod(
+                ledger, opening, asOf, chart, financialAccountId, lineDimensions) with { PeriodStart = periodStart }
+        };
     }
+
+    internal static DateTimeOffset OpeningCutoff(DateTimeOffset periodStart, LedgerStatementControlDefinition? control) =>
+        control is null || periodStart == DateTimeOffset.MinValue ? periodStart : periodStart.AddTicks(-1);
 
     private static LedgerCashFlowStatement BuildCashFlowStatement(
         IReadOnlyLedger ledger,
         DateTimeOffset periodStart,
         DateTimeOffset asOf,
         string? financialAccountId,
-        LedgerLineDimensionSet? lineDimensions)
+        LedgerLineDimensionSet? lineDimensions,
+        LedgerStatementControlDefinition? control)
     {
         var beginningCash = SumCashBalances(ledger.TrialBalanceAsOf(periodStart, financialAccountId, lineDimensions));
         var endingCash = SumCashBalances(ledger.TrialBalanceAsOf(asOf, financialAccountId, lineDimensions));
@@ -82,10 +103,27 @@ public static partial class LedgerFinancialStatementBuilder
         var operating = 0m;
         var investing = 0m;
         var financing = 0m;
+        var exchangeRateEffects = 0m;
+        var fxJournals = control?.CashFxRevaluationJournalIds.ToHashSet();
         var lineTotals = new Dictionary<(LedgerCashFlowCategory Category, string Description, LedgerAccountType CounterpartyType), decimal>();
 
         foreach (var entry in PeriodEntries(ledger, periodStart, asOf))
         {
+            if (fxJournals?.Contains(entry.JournalEntryId) == true)
+            {
+                var scopedLines = entry.Lines.Where(line => MatchesScope(line, financialAccountId, lineDimensions)).ToArray();
+                if (scopedLines.Any(line => IsCashAccount(line.Account)))
+                {
+                    if (scopedLines.Sum(static line => line.Debit - line.Credit) != 0m
+                        || scopedLines.Any(line => IsCashAccount(line.Account)
+                            && line.Currency is { IsFunctionalCurrency: false }))
+                        throw new LedgerValidationException($"FX revaluation '{entry.JournalEntryId:D}' requires complete scope and no foreign cash movement.");
+
+                    exchangeRateEffects += scopedLines.Where(line => IsCashAccount(line.Account))
+                        .Sum(static line => line.Debit - line.Credit);
+                    continue;
+                }
+            }
             var counterpartLines = LedgerCashFlowAttribution.CashCounterparts(entry,
                     line => MatchesScope(line, financialAccountId, lineDimensions))
                 .Where(static line => line.Amount != 0m);
@@ -133,7 +171,7 @@ public static partial class LedgerFinancialStatementBuilder
             operating,
             investing,
             financing,
-            lines);
+            lines) { ExchangeRateEffects = exchangeRateEffects };
     }
 
     private static LedgerPartnersCapitalStatement BuildPartnersCapitalStatement(

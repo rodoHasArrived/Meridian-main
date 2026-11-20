@@ -8,6 +8,7 @@ public interface IConfiguredLedgerAccountResolver
 
 public sealed record ConfiguredLedgerAccountRequestDto(
     string TenantId, string? CompanyId, string? FundProfileId, Guid LedgerBookId,
+    // Accepts the configured path used by existing callers, or an explicitly registered account code.
     string AccountPath, string ExpectedAccountType, string? ConfigurationVersion = null,
     string? Symbol = null, string? FinancialAccountId = null);
 

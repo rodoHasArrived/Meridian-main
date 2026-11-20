@@ -25,7 +25,10 @@ public sealed class BackfillStatusStore
         _symbolCheckpointsPath = Path.Combine(statusDir, "backfill-symbol-checkpoints.json");
         _symbolBarCountsPath = Path.Combine(statusDir, "backfill-symbol-barcounts.json");
         _symbolCoveragePath = Path.Combine(statusDir, "backfill-symbol-coverage.json");
+        Batches = new BackfillBatchStore(Path.Combine(statusDir, "backfill-batches"));
     }
+
+    public BackfillBatchStore Batches { get; }
 
     public static BackfillStatusStore FromConfig(AppConfig cfg) => new(cfg.DataRoot);
 

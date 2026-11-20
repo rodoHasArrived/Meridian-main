@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
@@ -23,6 +24,9 @@ public sealed record ReportingLedgerPopulationSnapshot(
 
     /// <summary>Corporate-action lot evidence captured with the journals; empty for legacy populations.</summary>
     public ImmutableArray<CanonicalCorporateActionLotReport> CorporateActionLotReports { get; init; } = [];
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerPeriodCloseSnapshot? ComparativeClose { get; init; }
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -107,6 +111,51 @@ public sealed record ReportingLedgerPopulationSnapshot(
         foreach (var record in Journals.OrderBy(static record => record.GlobalSequence))
             ledger.Post(record.Entry);
         return LedgerReportPackBuilder.Build(ledger, Request, taxLotReliefProjections: TaxLotReliefProjections,
-            corporateActionLotReports: CorporateActionLotReports);
+            corporateActionLotReports: CorporateActionLotReports, priorStatementControl: ReplayComparativeClose());
+    }
+
+    private LedgerStatementControlPack? ReplayComparativeClose()
+    {
+        if (Request.StatementControl?.Comparison is not { } comparison)
+        {
+            if (ComparativeClose is not null)
+                throw new LedgerValidationException("A retained comparative close requires an exact statement definition.");
+            return null;
+        }
+
+        if (ComparativeClose is not { } snapshot || Request.LockedPeriod is null
+            || snapshot.LedgerBookId != Scope.LedgerBookId || snapshot.PeriodId != comparison.PeriodId
+            || snapshot.PeriodVersion != comparison.CloseSnapshotVersion
+            || !Sha256Digest.FixedEquals(snapshot.ContentHashSha256, comparison.CloseSnapshotHashSha256))
+            throw new LedgerValidationException("The comparative period lacks its exact retained close snapshot.");
+
+        LedgerPeriodCloseSnapshotPayload prior;
+        try { prior = snapshot.VerifyIntegrity(); }
+        catch (Exception exception) when (exception is InvalidDataException or JsonException)
+        {
+            throw new LedgerValidationException("The comparative close snapshot failed integrity verification.", exception);
+        }
+        var start = new DateTimeOffset(prior.Period.StartDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var end = new DateTimeOffset(prior.Period.EndDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        if (prior.Period.StartDate != comparison.StartDate || prior.Period.EndDate != comparison.EndDate
+            || end >= Request.PeriodStart || prior.Entries.Any(item => item.AccountingBasis != Request.StatementControl.AccountingBasis)
+            || !Sha256Digest.FixedEquals(snapshot.ContentHashSha256,
+                LedgerPeriodCloseSnapshot.Capture(prior.Period, prior.CloseEvent,
+                    Journals.Where(item => item.Entry.Timestamp <= end).ToArray()).ContentHashSha256))
+            throw new LedgerValidationException("The comparative hard-close population differs from the corresponding current retained history.");
+
+        var definition = new LedgerStatementControlDefinition(Request.StatementControl.Version, Request.StatementControl.AccountingBasis)
+        {
+            CloseSnapshotVersion = comparison.CloseSnapshotVersion,
+            CloseSnapshotHashSha256 = comparison.CloseSnapshotHashSha256,
+            CashFxRevaluationJournalIds = comparison.CashFxRevaluationJournalIds
+        };
+        var request = new LedgerReportPackRequest($"{Request.ReportId}-comparative-{snapshot.PeriodId:N}", Request.FundId,
+            snapshot.PeriodId.ToString("D"), start, end, end, Request.BaseCurrency, Request.GeneratedBy, snapshot.ClosedAt,
+            lineDimensions: Request.LineDimensions) { StatementControl = definition };
+        var ledger = new Meridian.Ledger.Ledger();
+        foreach (var record in prior.Entries.OrderBy(static item => item.GlobalSequence))
+            ledger.Post(record.Entry);
+        return LedgerReportPackBuilder.Build(ledger, request).StatementControl;
     }
 }
