@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorSurfaceVisitRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorSurfaceVisitRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:121](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L121).
+
+```csharp
+public sealed record OperatorSurfaceVisitRecord(string OperatorKey, string Surface, DateTimeOffset VisitedAt);
+```
+
 ## OperatorSurfaceVisitSnapshot
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorSurfaceVisitSnapshot</code>. Kind: `record`.

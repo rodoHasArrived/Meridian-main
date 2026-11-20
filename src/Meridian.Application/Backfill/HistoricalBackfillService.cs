@@ -15,6 +15,7 @@ using Meridian.Platform.Tracing;
 using Serilog;
 using Meridian.Contracts.Monitoring;
 using Meridian.Contracts.Backfill;
+using Meridian.Contracts.Pipeline;
 using Meridian.Storage.Backfill;
 
 namespace Meridian.Application.Backfill;
@@ -57,6 +58,9 @@ public sealed class HistoricalBackfillService
     }
 
     public IReadOnlyCollection<IHistoricalDataProvider> Providers => _providers.Values.ToList();
+
+    /// <summary>Calendar evidence for instruments whose listing is known to the host.</summary>
+    public Func<string, DateOnly, DateOnly, CancellationToken, Task<HistoricalSessionSchedule?>>? ResolveSessionsAsync { get; init; }
 
     private static string SanitizeLogText(string? value) =>
         (value ?? string.Empty).Replace('\r', '_').Replace('\n', '_');
@@ -103,20 +107,23 @@ public sealed class HistoricalBackfillService
         ValidateRequest(request);
         var provider = _providers[request.Provider.ToLowerInvariant()];
         var aggregateProvider = provider as IHistoricalAggregateBarProvider;
+        await using var receiptLease = _checkpointStore is not null
+            ? await _checkpointStore.Batches.AcquireRunLeaseAsync(ct).ConfigureAwait(false)
+            : null;
+        var pipelineAtStart = pipeline.GetStatistics();
 
         // Resume skips only dates recorded as durably written by this provider and feed. A
         // date-only checkpoint (symbol + granularity) cannot say which provider wrote it or where
         // its range started, so it is never used to skip or advance.
         var coverageFeed = provider.CoverageFeed;
-        IReadOnlyDictionary<string, IReadOnlyList<BackfillCoverageRange>>? symbolCoverage = null;
+        var retainedCoverage = _checkpointStore?.TryReadSymbolCoverage(request.Granularity, provider.Name, coverageFeed);
         if (request.ResumeFromCheckpoint && _checkpointStore is not null)
         {
-            symbolCoverage = _checkpointStore.TryReadSymbolCoverage(request.Granularity, provider.Name, coverageFeed);
-            if (symbolCoverage is { Count: > 0 })
+            if (retainedCoverage is { Count: > 0 })
             {
                 _log.Information(
                     "Resume mode: verified coverage loaded for {Count} symbols ({Granularity}, {Provider}, feed {Feed})",
-                    symbolCoverage.Count,
+                    retainedCoverage.Count,
                     request.Granularity.ToDisplayName(),
                     provider.Name,
                     coverageFeed);
@@ -131,10 +138,9 @@ public sealed class HistoricalBackfillService
                     coverageFeed);
             }
         }
-        else if (!request.ResumeFromCheckpoint && _checkpointStore is not null)
+        else if (_checkpointStore is not null)
         {
-            // Fresh runs clear only the matching granularity lane so other resume paths survive.
-            await _checkpointStore.ClearSymbolCheckpointsAsync(request.Granularity, ct).ConfigureAwait(false);
+            await _checkpointStore.ResetSymbolCheckpointStatusAsync(request.Granularity, ct).ConfigureAwait(false);
         }
 
         // Determine concurrency: per-request override → config default (floor: 1)
@@ -160,12 +166,11 @@ public sealed class HistoricalBackfillService
         var failedSymbols = new ConcurrentBag<string>();
         var errorMessages = new ConcurrentBag<string>();
         var skippedSymbols = new ConcurrentBag<string>();
-        var perSymbolBars = new System.Collections.Concurrent.ConcurrentDictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         var validationSignals = new ConcurrentBag<SymbolValidationSignal>();
-        // Resume checkpoints are only durable evidence once the bars behind them are on disk, so
-        // they are collected here and written after the final pipeline flush succeeds.
-        var pendingCheckpoints = new ConcurrentBag<(string Symbol, DateOnly LastBarDate, long Bars)>();
-        var pendingCoverage = new ConcurrentBag<BackfillCoverageUpdate>();
+        var retainedBatches = new ConcurrentBag<BackfillBatchReceipt>();
+        // Fetches remain concurrent. Keep a receipt's admission and flush together so a later
+        // interrupted fetch cannot erase an earlier durable batch or share its pipeline counters.
+        using var batchCommit = new SemaphoreSlim(1);
 
         // Adaptive concurrency gate: starts at maxConcurrent, decrements by 1 on RateLimitException
         int currentConcurrency = maxConcurrent;
@@ -191,17 +196,17 @@ public sealed class HistoricalBackfillService
             try
             {
                 ct.ThrowIfCancellationRequested();
+                var schedule = ResolveSessionsAsync is { } resolve && request.From is { } start && request.To is { } end
+                    ? await resolve(symbol, start, end, ct).ConfigureAwait(false)
+                    : null;
 
                 // Fetch only the parts of the requested range that verified coverage does not
                 // contain: dates before it, gaps inside it, and dates after it.
+                var coveredRanges = retainedCoverage?.GetValueOrDefault(symbol) ?? [];
                 IReadOnlyList<(DateOnly? From, DateOnly? To)> fetchRanges = [(request.From, request.To)];
-                IReadOnlyList<BackfillCoverageRange> knownCoverage = [];
                 DateOnly? newestCoveredDate = null;
-                if (symbolCoverage is not null &&
-                    symbolCoverage.TryGetValue(symbol, out var coveredRanges) &&
-                    coveredRanges.Count > 0)
+                if (request.ResumeFromCheckpoint && coveredRanges.Count > 0)
                 {
-                    knownCoverage = coveredRanges;
                     fetchRanges = BackfillCoverageMath.Missing(request.From, request.To, coveredRanges);
                     var coveredInRequest = coveredRanges
                         .Where(range => (!request.To.HasValue || range.From <= request.To.Value) &&
@@ -248,17 +253,13 @@ public sealed class HistoricalBackfillService
                 DateOnly? lastBarDate = null;
                 long symbolBars = 0;
                 // Per-range trackers: each fetched range records its own written session range.
-                DateOnly? rangeFirstBarDate = null;
-                DateOnly? rangeLastBarDate = null;
-                long rangeBars = 0;
+                var rangeSessions = new Dictionary<DateOnly, long>();
                 var writtenRanges = new List<BackfillCoverageRange>();
                 var servedBy = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var (rangeFrom, rangeTo) in fetchRanges)
                 {
-                    rangeFirstBarDate = null;
-                    rangeLastBarDate = null;
-                    rangeBars = 0;
+                    rangeSessions.Clear();
                     var executionPartitions = BuildExecutionPartitions(provider, request.Granularity, rangeFrom, rangeTo);
                     if (request.Granularity.IsIntraday())
                     {
@@ -279,13 +280,13 @@ public sealed class HistoricalBackfillService
                                     BackfillPartitionPlanner.ToInclusiveEnd(partition),
                                     ct).ConfigureAwait(false);
 
-                                await PublishAggregateBarsAsync(bars).ConfigureAwait(false);
+                                await PublishAggregateBarsAsync(bars, partition.From, BackfillPartitionPlanner.ToInclusiveEnd(partition)).ConfigureAwait(false);
                             }
                         }
                         else
                         {
                             var bars = await aggregateProvider.GetAggregateBarsAsync(symbol, request.Granularity, rangeFrom, rangeTo, ct).ConfigureAwait(false);
-                            await PublishAggregateBarsAsync(bars).ConfigureAwait(false);
+                            await PublishAggregateBarsAsync(bars, rangeFrom, rangeTo).ConfigureAwait(false);
                         }
                     }
                     else
@@ -303,7 +304,8 @@ public sealed class HistoricalBackfillService
                                     BackfillPartitionPlanner.ToInclusiveEnd(partition),
                                     ct).ConfigureAwait(false);
 
-                                await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol)).ConfigureAwait(false);
+                                await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol),
+                                    partition.From, BackfillPartitionPlanner.ToInclusiveEnd(partition)).ConfigureAwait(false);
                             }
                         }
                         else
@@ -312,29 +314,13 @@ public sealed class HistoricalBackfillService
                                 ? await ResolveEraSymbolAsync(symbol, rangeFrom.Value, ct).ConfigureAwait(false)
                                 : symbol;
                             var bars = await provider.GetDailyBarsAsync(eraSymbol, rangeFrom, rangeTo, ct).ConfigureAwait(false);
-                            await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol)).ConfigureAwait(false);
+                            await PublishHistoricalBarsAsync(RetagBars(bars, symbol, eraSymbol), rangeFrom, rangeTo).ConfigureAwait(false);
                         }
                     }
 
-                    // Record what this range proved; see BackfillCoverageMath.WrittenRange.
-                    var followedByCoverage = rangeTo is { } fetchedTo && fetchedTo < DateOnly.MaxValue &&
-                        BackfillCoverageMath.Covers(knownCoverage, fetchedTo.AddDays(1));
-                    if (BackfillCoverageMath.WrittenRange(rangeFrom, rangeTo, rangeFirstBarDate, rangeLastBarDate, rangeBars, followedByCoverage) is { } written)
-                        writtenRanges.Add(written);
+                    writtenRanges.AddRange(BackfillCoverageMath.ObservedRanges(rangeFrom, rangeTo, rangeSessions,
+                        ExpectedSessions(schedule, rangeFrom, rangeTo)));
                 }
-
-                perSymbolBars[symbol] = symbolBars;
-
-                // Queue the per-symbol coverage and checkpoint; they are persisted only after the
-                // pipeline flush confirms these bars reached storage (evidence written while bars
-                // are still queued lets a crash or flush failure skip dates that were never written).
-                if (_checkpointStore is not null && lastBarDate.HasValue)
-                {
-                    pendingCheckpoints.Add((symbol, lastBarDate.Value, symbolBars));
-                }
-
-                if (_checkpointStore is not null && writtenRanges.Count > 0)
-                    pendingCoverage.Add(new BackfillCoverageUpdate(symbol, writtenRanges, servedBy.ToArray()));
 
                 // Emit validation signal. Recency comes first: a provider whose dataset is
                 // frozen (e.g. Nasdaq WIKI ended March 2018) can return plenty of bars that
@@ -356,11 +342,11 @@ public sealed class HistoricalBackfillService
                 var isStale = requestExpectsFreshData && symbolBars > 0 && lastBarDate.HasValue &&
                     staleDays > toleranceDays;
 
-                var coversRequestedRange =
-                    symbolBars > 0 &&
-                    firstBarDate.HasValue &&
-                    (effectiveFrom is null || firstBarDate.Value <= effectiveFrom.Value) &&
-                    (!effectiveTo.HasValue || (lastBarDate.HasValue && lastBarDate.Value >= effectiveTo.Value));
+                var coversRequestedRange = schedule is not null
+                    ? fetchRanges.All(range => ExpectedSessions(schedule, range.From, range.To)!.All(date => BackfillCoverageMath.Covers(writtenRanges, date)))
+                    : symbolBars > 0 && firstBarDate.HasValue &&
+                      (effectiveFrom is null || firstBarDate.Value <= effectiveFrom.Value) &&
+                      (!effectiveTo.HasValue || (lastBarDate.HasValue && lastBarDate.Value >= effectiveTo.Value));
 
                 if (isStale)
                 {
@@ -380,10 +366,11 @@ public sealed class HistoricalBackfillService
                 else
                     validationSignals.Add(SymbolValidationSignal.Warn(symbol, effectiveFrom, effectiveTo, "Provider returned zero bars for the requested date range"));
 
-                async Task PublishAggregateBarsAsync(IReadOnlyList<AggregateBar> bars)
+                async Task PublishAggregateBarsAsync(IReadOnlyList<AggregateBar> bars, DateOnly? from, DateOnly? to)
                 {
                     var futureCutoff = DateTimeOffset.UtcNow.AddDays(1);
                     var futureDropped = 0;
+                    var events = new List<(MarketEvent Event, DateOnly Date)>(bars.Count);
                     foreach (var bar in bars)
                     {
                         // A bar ending in the future is provider garbage, not history.
@@ -399,14 +386,11 @@ public sealed class HistoricalBackfillService
                         // would erase the winning vendor from the envelope and disk layout.
                         var eventSource = ResolveEventSource(bar.Source, provider.Name);
                         var evt = MarketEvent.AggregateBar(bar.EndTime, bar.Symbol, bar, eventSource, bar.SequenceNumber);
-                        await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
-                        _metrics.IncHistoricalBars();
-                        Interlocked.Increment(ref barsWritten);
                         // Coverage belongs to the session containing the start of the bar.
                         // The exclusive end may already be in the following UTC day.
                         var sessionDate = DateOnly.FromDateTime(
                             TimeZoneInfo.ConvertTime(bar.StartTime, _intradaySessionTimeZone).DateTime);
-                        TrackPublishedBar(sessionDate, eventSource);
+                        events.Add((evt, sessionDate));
                     }
 
                     if (futureDropped > 0)
@@ -415,9 +399,11 @@ public sealed class HistoricalBackfillService
                             "Dropped {FutureDropped} future-dated aggregate bars for {Symbol} from {Provider}",
                             futureDropped, symbol, provider.Name);
                     }
+
+                    await PublishBatchAsync(events, from, to).ConfigureAwait(false);
                 }
 
-                async Task PublishHistoricalBarsAsync(IReadOnlyList<HistoricalBar> bars)
+                async Task PublishHistoricalBarsAsync(IReadOnlyList<HistoricalBar> bars, DateOnly? from, DateOnly? to)
                 {
                     bars = BackfillBarValidation.RemoveFutureDatedBars(bars, out var futureDropped);
                     if (futureDropped > 0)
@@ -427,32 +413,105 @@ public sealed class HistoricalBackfillService
                             futureDropped, symbol, provider.Name);
                     }
 
+                    var events = new List<(MarketEvent Event, DateOnly Date)>(bars.Count);
                     foreach (var bar in bars)
                     {
                         // Attribute the event to the inner provider that actually served the
                         // bar; "composite" must never appear as a durable Source value.
                         var eventSource = ResolveEventSource(bar.Source, provider.Name);
                         var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, eventSource, bar.SequenceNumber);
-                        await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
-                        _metrics.IncHistoricalBars();
-                        Interlocked.Increment(ref barsWritten);
-                        TrackPublishedBar(bar.SessionDate, eventSource);
+                        events.Add((evt, bar.SessionDate));
+                    }
+
+                    await PublishBatchAsync(events, from, to).ConfigureAwait(false);
+                }
+
+                async Task PublishBatchAsync(IReadOnlyList<(MarketEvent Event, DateOnly Date)> events, DateOnly? from, DateOnly? to)
+                {
+                    var groups = events.Where(row => (from is null || row.Date >= from) && (to is null || row.Date <= to))
+                        .GroupBy(static row => (string?)row.Event.Source, StringComparer.OrdinalIgnoreCase)
+                        .Select(group => (Provider: group.Key, Rows: group.AsEnumerable())).ToList();
+                    if (groups.Count == 0)
+                        groups.Add((null, []));
+
+                    await batchCommit.WaitAsync(ct).ConfigureAwait(false);
+                    try
+                    {
+                        foreach (var (servingProvider, rows) in groups)
+                        {
+                            var batchRows = rows.ToArray();
+                            var expected = ExpectedSessions(schedule, from, to);
+                            var observed = batchRows.GroupBy(static row => row.Date)
+                                .ToDictionary(static group => group.Key, static group => group.LongCount());
+                            BackfillBatchRevision? batch = null;
+                            BackfillBatchReceipt? receipt = null;
+                            if (_checkpointStore is not null)
+                            {
+                                batch = BackfillBatchRevision.Create(provider.Name, servingProvider, coverageFeed, symbol,
+                                    request.Granularity.ToUiValue(), from, to, schedule?.Calendar, expected,
+                                    observed.Keys, batchRows.Select(static row => BackfillBatchRevision.HashRow(row.Event)));
+                                receipt = (await _checkpointStore.Batches.ReadAsync(batch.Receipt.RevisionId, ct).ConfigureAwait(false))?.Receipt;
+                            }
+
+                            if (receipt is null)
+                            {
+                                var before = pipeline.GetStatistics();
+                                foreach (var (item, _) in batchRows)
+                                {
+                                    var versionedRow = item with { BackfillRevisionId = batch?.Receipt.RevisionId };
+                                    if (batch is not null && await pipeline.HasDurableBackfillRowAsync(versionedRow, ct).ConfigureAwait(false))
+                                        continue;
+                                    await pipeline.PublishAsync(versionedRow, ct).ConfigureAwait(false);
+                                    _metrics.IncHistoricalBars();
+                                    Interlocked.Increment(ref barsWritten);
+                                }
+
+                                if (batch is not null)
+                                {
+                                    await pipeline.FlushAsync(ct).ConfigureAwait(false);
+                                    if (!PipelineConfirmed(before))
+                                        throw new IOException("The pipeline did not confirm all backfill rows in storage.");
+                                    receipt = await _checkpointStore!.Batches.PublishAsync(batch, ct).ConfigureAwait(false);
+                                }
+                            }
+
+                            foreach (var (item, date) in batchRows)
+                                TrackRetainedBar(date, item.Source);
+
+                            if (receipt is not null)
+                            {
+                                retainedBatches.Add(receipt);
+                                // An explicit refresh may replace prices for previously covered
+                                // dates. Retain its revision but count those dates only once.
+                                var coverage = BackfillCoverageMath.Missing(from, to, coveredRanges)
+                                    .SelectMany(range => BackfillCoverageMath.ObservedRanges(range.From, range.To, observed,
+                                        ExpectedSessions(schedule, range.From, range.To)))
+                                    .ToArray();
+                                await _checkpointStore!.WriteSymbolCoverageAsync(request.Granularity, provider.Name, coverageFeed,
+                                    [new BackfillCoverageUpdate(symbol, coverage, servingProvider is null ? [] : [servingProvider])], ct)
+                                    .ConfigureAwait(false);
+                                coveredRanges = BackfillCoverageMath.Merge(coveredRanges.Concat(coverage));
+                                if (lastBarDate.HasValue)
+                                    await _checkpointStore.WriteSymbolCheckpointAsync(symbol, request.Granularity, lastBarDate.Value, symbolBars, ct)
+                                        .ConfigureAwait(false);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        batchCommit.Release();
                     }
                 }
 
-                void TrackPublishedBar(DateOnly barDate, string eventSource)
+                void TrackRetainedBar(DateOnly barDate, string eventSource)
                 {
                     symbolBars++;
-                    rangeBars++;
+                    rangeSessions[barDate] = rangeSessions.GetValueOrDefault(barDate) + 1;
                     servedBy.Add(eventSource);
                     if (firstBarDate is null || barDate < firstBarDate.Value)
                         firstBarDate = barDate;
                     if (lastBarDate is null || barDate > lastBarDate.Value)
                         lastBarDate = barDate;
-                    if (rangeFirstBarDate is null || barDate < rangeFirstBarDate.Value)
-                        rangeFirstBarDate = barDate;
-                    if (rangeLastBarDate is null || barDate > rangeLastBarDate.Value)
-                        rangeLastBarDate = barDate;
                 }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
@@ -495,6 +554,8 @@ public sealed class HistoricalBackfillService
         try
         {
             await pipeline.FlushAsync(ct).ConfigureAwait(false);
+            if (!PipelineConfirmed(pipelineAtStart))
+                flushError = "The pipeline did not confirm all backfill rows in storage.";
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -502,28 +563,9 @@ public sealed class HistoricalBackfillService
             flushError = $"Pipeline flush failed: {ex.Message}";
         }
 
-        if (flushError is null && _checkpointStore is not null)
-        {
-            // Coverage first: it is what a resumed run trusts. The date-only checkpoints remain
-            // for status surfaces that list the last completed date per symbol.
-            await _checkpointStore.WriteSymbolCoverageAsync(
-                request.Granularity,
-                provider.Name,
-                coverageFeed,
-                pendingCoverage.ToArray(),
-                ct).ConfigureAwait(false);
-
-            foreach (var (cpSymbol, cpLastBarDate, cpBars) in pendingCheckpoints)
-            {
-                await _checkpointStore.WriteSymbolCheckpointAsync(
-                    cpSymbol,
-                    request.Granularity,
-                    cpLastBarDate,
-                    cpBars,
-                    ct).ConfigureAwait(false);
-            }
-        }
-
+        var batchReceipts = retainedBatches.DistinctBy(static receipt => receipt.RevisionId)
+            .OrderBy(static receipt => receipt.Instrument, StringComparer.Ordinal)
+            .ThenBy(static receipt => receipt.From).ThenBy(static receipt => receipt.RevisionId, StringComparer.Ordinal).ToArray();
         var completed = DateTimeOffset.UtcNow;
         var failedList = failedSymbols.ToArray();
         var allSucceeded = failedList.Length == 0 && flushError is null;
@@ -541,8 +583,24 @@ public sealed class HistoricalBackfillService
             allSucceeded, provider.Name, symbols, request.From, request.To, barsWritten, started, completed,
             Error: errorSummary,
             SkippedSymbols: skippedSymbols.ToArray(),
-            SymbolValidationSignals: validationSignals.ToArray());
+            SymbolValidationSignals: validationSignals.ToArray())
+        {
+            BatchReceipts = batchReceipts.Length > 0 ? batchReceipts : null
+        };
+
+        bool PipelineConfirmed(PipelineStatistics before)
+        {
+            var after = pipeline.GetStatistics();
+            return after.DroppedCount == before.DroppedCount && after.RejectedCount == before.RejectedCount
+                && after.DeduplicatedCount == before.DeduplicatedCount
+                && after.FaultedConsumers == before.FaultedConsumers
+                && after.ConsumerIterationFailures == before.ConsumerIterationFailures
+                && after.ConsumedCount >= after.PublishedCount;
+        }
     }
+
+    private static IReadOnlyList<DateOnly>? ExpectedSessions(HistoricalSessionSchedule? schedule, DateOnly? from, DateOnly? to)
+        => schedule?.Sessions.Where(date => (from is null || date >= from) && (to is null || date <= to)).ToArray();
 
     /// <summary>
     /// Resolves the era-correct ticker for a chunk starting at <paramref name="chunkStart"/>.

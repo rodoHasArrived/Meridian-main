@@ -27,6 +27,32 @@ public sealed partial class AccountingConfigurationServiceTests
     private static readonly Guid DailyValuationMsftSecurityId = Guid.Parse("B2222222-2222-4222-8222-222222222222");
 
     [Fact]
+    public async Task Chart_account_codes_are_scoped_and_survive_an_update_from_a_legacy_client()
+    {
+        var store = new InMemoryAccountingConfigurationStore();
+        var service = new AccountingConfigurationService(store, new InMemoryAccountingActionAuditStore());
+        var node = new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset") { AccountCode = " 1000 " };
+        var request = new UpsertChartOfAccountsNodeRequest("fund-alpha", node, "controller", TenantId: "tenant-alpha", CompanyId: "company-alpha");
+        var stale = await service.GetWorkspaceAsync("fund-alpha", tenantId: "tenant-alpha", companyId: "company-alpha");
+        await service.UpsertChartNodeAsync(request);
+
+        var updated = await service.UpsertChartNodeAsync(request with { Node = node with { AccountCode = null, AccountName = "Operating Cash" } });
+        updated.ChartOfAccounts.Should().ContainSingle().Which.AccountCode.Should().Be("1000");
+        await FluentActions.Awaiting(() => store.SaveAsync(stale))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*Reload the chart*");
+        await FluentActions.Awaiting(() => service.UpsertChartNodeAsync(request with { Node = node with { AccountCode = "2000" } }))
+            .Should().ThrowAsync<ArgumentException>().WithMessage("*immutable*");
+        await FluentActions.Awaiting(() => service.UpsertChartNodeAsync(request with { Node = node with { NodeId = "other", Path = "Assets:Other" } }))
+            .Should().ThrowAsync<ArgumentException>().WithMessage("*already assigned*");
+        await FluentActions.Awaiting(() => service.UpsertChartNodeAsync(request with
+        {
+            Node = node with { NodeId = "other", Path = "1000", AccountCode = null }
+        })).Should().ThrowAsync<ArgumentException>().WithMessage("*overlap*account path*");
+        (await service.UpsertChartNodeAsync(request with { CompanyId = "company-beta" }))
+            .ChartOfAccounts.Should().ContainSingle().Which.AccountCode.Should().Be("1000");
+    }
+
+    [Fact]
     public async Task AccountingConfigurationService_IsolatesWorkspacesByTenantAndCompanyScope()
     {
         var store = new InMemoryAccountingConfigurationStore();

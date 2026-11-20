@@ -37,6 +37,10 @@ public sealed record MarketEvent(
     string? ParentSpanId = null
 )
 {
+    /// <summary>Content address of the retained backfill response that supplied this bar.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? BackfillRevisionId { get; init; }
+
     public static MarketEvent Trade(DateTimeOffset ts, string symbol, Trade trade, string source, long seq = 0)
         => new(ts, symbol, MarketEventType.Trade, trade, seq == 0 ? trade.SequenceNumber : seq, source);
 

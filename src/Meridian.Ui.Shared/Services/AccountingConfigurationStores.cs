@@ -30,15 +30,24 @@ public sealed class InMemoryAccountingConfigurationStore :
         string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
-        _workspaces.TryGetValue(Key(fundProfileId, ledgerBookId, tenantId, companyId), out var workspace);
-        return Task.FromResult(workspace);
+        lock (_workspaces)
+        {
+            _workspaces.TryGetValue(Key(fundProfileId, ledgerBookId, tenantId, companyId), out var workspace);
+            return Task.FromResult(workspace);
+        }
     }
 
     public Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(workspace);
-        _workspaces[Key(workspace.FundProfileId, workspace.LedgerBookId, workspace.TenantId, workspace.CompanyId)] = workspace;
+        var key = Key(workspace.FundProfileId, workspace.LedgerBookId, workspace.TenantId, workspace.CompanyId);
+        lock (_workspaces)
+        {
+            if (_workspaces.TryGetValue(key, out var retained))
+                LedgerChartCodeAssignments.RequireUnchanged(retained.ChartOfAccounts, workspace.ChartOfAccounts);
+            _workspaces[key] = workspace;
+        }
         return Task.CompletedTask;
     }
 
@@ -225,12 +234,16 @@ public sealed class FileAccountingConfigurationStore :
         await UpdateSnapshotAsync(
             snapshot =>
             {
+                bool MatchesScope(AccountingConfigurationWorkspaceDto item) =>
+                    string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase)
+                    && item.LedgerBookId == workspace.LedgerBookId
+                    && string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase);
+                if (snapshot.Workspaces.FirstOrDefault(MatchesScope) is { } retained)
+                    LedgerChartCodeAssignments.RequireUnchanged(retained.ChartOfAccounts, workspace.ChartOfAccounts);
+
                 var workspaces = snapshot.Workspaces
-                    .Where(item =>
-                        !string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase) ||
-                        item.LedgerBookId != workspace.LedgerBookId ||
-                        !string.Equals(NormalizeOptional(item.TenantId), normalizedTenantId, StringComparison.OrdinalIgnoreCase) ||
-                        !string.Equals(NormalizeOptional(item.CompanyId), normalizedCompanyId, StringComparison.OrdinalIgnoreCase))
+                    .Where(item => !MatchesScope(item))
                     .Append(workspace with
                     {
                         FundProfileId = normalizedFundProfileId,

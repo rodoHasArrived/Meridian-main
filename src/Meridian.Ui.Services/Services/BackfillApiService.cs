@@ -44,21 +44,32 @@ public sealed class BackfillApiService
     /// <summary>
     /// Runs a backfill operation for the specified symbols.
     /// </summary>
-    public async Task<BackfillResultDto?> RunBackfillAsync(
+    public Task<BackfillResultDto?> RunBackfillAsync(
         string provider,
         string[] symbols,
         string? from,
         string? to,
         string granularity = "Daily",
+        CancellationToken ct = default) =>
+        RunBackfillAsync(provider, symbols, from, to, granularity, resumeFromCheckpoint: false, ct);
+
+    public async Task<BackfillResultDto?> RunBackfillAsync(
+        string provider,
+        string[] symbols,
+        string? from,
+        string? to,
+        string granularity,
+        bool resumeFromCheckpoint,
         CancellationToken ct = default)
     {
-        var request = new BackfillRequest
+        var request = new Meridian.Contracts.Api.BackfillRequest
         {
             Provider = provider,
             Symbols = symbols,
             From = from,
             To = to,
-            Granularity = granularity
+            Granularity = granularity,
+            ResumeFromCheckpoint = resumeFromCheckpoint
         };
 
         var backfillClient = _apiClient.GetBackfillClient();

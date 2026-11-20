@@ -1,7 +1,6 @@
 using Meridian.Contracts.Ledger;
-using Meridian.Ledger;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.Ledger;
 
 /// <summary>
 /// Field-for-field conversion between the core <see cref="LedgerLineDimensionSet"/> and the
@@ -9,7 +8,7 @@ namespace Meridian.Ui.Shared.Services;
 /// this keeps the mapping in one place so automated journal drafts can carry per-line
 /// dimensional scope across the core/contract boundary without drift.
 /// </summary>
-internal static class LedgerDimensionMapper
+public static class LedgerDimensionMapper
 {
     public static LedgerDimensionSetDto? ToDto(LedgerLineDimensionSet? dimensions)
     {

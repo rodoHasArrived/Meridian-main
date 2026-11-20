@@ -26,6 +26,8 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(PaperSessionFillRecord))]
 [JsonSerializable(typeof(PaperSessionFillAppliedRecord))]
 [JsonSerializable(typeof(PaperSessionSettlementRecord))]
+[JsonSerializable(typeof(PaperSessionJournalBatch))]
+[JsonSerializable(typeof(PaperSessionJournalReceipt))]
 [JsonSerializable(typeof(OrderState))]
 [JsonSerializable(typeof(BrokerageOrderRecoverySnapshot))]
 [JsonSerializable(typeof(List<string>))]

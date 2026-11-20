@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { formatCount as formatCountValue, formatDecimal, formatFixed, formatNumber, formatRelativeTime, formatTimestamp, pluralizeCount } from "@/lib/format";
+import type { ChartEvidence } from "@/components/charts/chart-evidence";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
@@ -87,7 +88,7 @@ export interface IntradayMetrics {
   changePct: number | null;
   windowStart: string | null;
   windowEnd: string | null;
-  series: { ts: number; price: number }[];
+  series: { ts: number; price: number; trade: TradeDataResponse }[];
 }
 
 export interface LiveQuotesMetricRowViewModel {
@@ -239,6 +240,8 @@ export interface LiveQuotesSparklineViewModel {
   lowLabel: string;
   strokeToken: string;
   ariaLabel: string;
+  observations: (LiveQuotesSparklinePointViewModel & ChartEvidence)[];
+  latestIndex: number;
 }
 
 export interface LiveQuotesMarketDataViewModel {
@@ -1038,10 +1041,10 @@ export function buildLiveQuotesMarketViewModel({
   const tradeRows = tradeHistory.slice(0, tradeTableLimit);
   const tradeDetailPanelId = "live-quotes-trade-detail";
   const baseTradeRows = tradeRows.map((trade) => buildTradeRow(trade, tradeDetailPanelId));
-  const stableSelectedTradeId = baseTradeRows.some((row) => row.id === selectedTradeId)
+  const stableSelectedTradeId = tradeHistory.some((trade) => liveQuoteTradeId(trade) === selectedTradeId)
     ? selectedTradeId
     : baseTradeRows[0]?.id ?? null;
-  const selectedTrade = tradeRows.find((trade) => liveQuoteTradeId(trade) === stableSelectedTradeId) ?? null;
+  const selectedTrade = tradeHistory.find((trade) => liveQuoteTradeId(trade) === stableSelectedTradeId) ?? null;
   const tradeDisplayRows = baseTradeRows.map((row) => ({
     ...row,
     expanded: row.id === stableSelectedTradeId
@@ -1094,7 +1097,7 @@ export function buildLiveQuotesMarketViewModel({
       tableLabel: `${symbol} order book depth ladder`,
       caption: `Select a bid or ask level for ${symbol} to seed the ticket and inspect venue, sequence, and depth evidence.`
     },
-    priceChart: buildPriceChartViewModel(symbol, intraday, refreshing, trades.error),
+    priceChart: buildPriceChartViewModel(symbol, intraday, refreshing, trades.error, selectTrade, tradeDetailPanelId),
     sessionStats: buildLiveQuotesSessionStatsViewModel(symbol, quoteRow?.session ?? null),
     tradesTableLabel: `Recent ${symbol} trade prints`,
     tradesTableCaption: `Select a trade print for ${symbol} to inspect sequence, stream, and venue evidence.`,
@@ -1517,7 +1520,7 @@ export function computeIntradayMetrics(trades: readonly TradeDataResponse[]): In
   }
 
   const chronological = [...trades].reverse();
-  const series: { ts: number; price: number }[] = [];
+  const series: IntradayMetrics["series"] = [];
   let high = -Infinity;
   let low = Infinity;
   let volume = 0;
@@ -1528,7 +1531,7 @@ export function computeIntradayMetrics(trades: readonly TradeDataResponse[]): In
     if (!Number.isFinite(price) || price <= 0) continue;
     const ts = new Date(trade.timestamp).getTime();
     if (Number.isFinite(ts)) {
-      series.push({ ts, price });
+      series.push({ ts, price, trade });
     }
     if (price > high) high = price;
     if (price < low) low = price;
@@ -1814,7 +1817,9 @@ function buildPriceChartViewModel(
   symbol: string,
   metrics: IntradayMetrics,
   loading: boolean,
-  error: string | null
+  error: string | null,
+  selectTrade: (id: string) => void,
+  tradeDetailPanelId: string
 ): LiveQuotesPriceChartViewModel {
   const changeTone: LiveQuotesPriceChartViewModel["changeTone"] = metrics.change === null
     ? "default"
@@ -1851,14 +1856,16 @@ function buildPriceChartViewModel(
       { id: "volume", label: "Volume", value: formatVolume(metrics.volume) }
     ],
     ariaLabel,
-    sparkline: buildPriceSparklineViewModel(metrics, strokeToken, ariaLabel)
+    sparkline: buildPriceSparklineViewModel(metrics, strokeToken, ariaLabel, selectTrade, tradeDetailPanelId)
   };
 }
 
 export function buildPriceSparklineViewModel(
   metrics: IntradayMetrics,
   strokeToken: string,
-  ariaLabel: string
+  ariaLabel: string,
+  selectTrade?: (id: string) => void,
+  tradeDetailPanelId?: string
 ): LiveQuotesSparklineViewModel | null {
   const width = 800;
   const height = 180;
@@ -1881,6 +1888,10 @@ export function buildPriceSparklineViewModel(
     y: formatFixed(yFor(point.price), 2)
   });
   const points = series.map(pointFor);
+  const observations = series.map(({ trade, price }, index) => ({
+    ...points[index]!,
+    ...liveTradeChartEvidence(trade, price, selectTrade, tradeDetailPanelId)
+  }));
   const lastPoint = points[points.length - 1]!;
   const baseY = formatFixed(height - padY, 2);
   const areaSegments = [`M ${points[0]!.x} ${baseY}`];
@@ -1905,7 +1916,35 @@ export function buildPriceSparklineViewModel(
     highLabel: formatMarketPrice(high),
     lowLabel: formatMarketPrice(low),
     strokeToken,
-    ariaLabel
+    ariaLabel,
+    observations: [
+      ...observations,
+      ...(["high", "low"] as const).map((key) => {
+        const value = key === "high" ? high : low;
+        const source = observations.find((point) => point.values[0]?.value === value);
+        return {
+          ...source,
+          id: `trade-${key}:${series[0]!.trade.symbol}`,
+          label: `Recent trade ${key}`,
+          x: (width - padX).toFixed(2),
+          y: yFor(value).toFixed(2),
+          values: [{ series: `Trade ${key}`, value, unit: "Price per unit (currency unreported)", basis: `Window ${key} across buffered trade prices.` }]
+        };
+      })
+    ],
+    latestIndex: observations.length - 1
+  };
+}
+
+function liveTradeChartEvidence(trade: TradeDataResponse, price: number, selectTrade?: (id: string) => void, panelId?: string): ChartEvidence {
+  const tradeId = liveQuoteTradeId(trade);
+  return {
+    id: `${trade.symbol}:${tradeId}`,
+    label: `${trade.symbol} print ${trade.sequenceNumber}`,
+    asOf: trade.timestamp,
+    values: [{ series: `${trade.symbol} trade price`, value: price, unit: "Price per unit (currency unreported)", basis: "Price of the individual print received by the live pipeline." }],
+    proof: selectTrade && panelId ? { href: `#${panelId}`, label: `Open trade print ${trade.sequenceNumber}`, onOpen: () => selectTrade(tradeId) } : null,
+    sourceDetail: `Venue ${trade.venue ?? "unreported"} · stream ${trade.streamId ?? "unreported"}`
   };
 }
 

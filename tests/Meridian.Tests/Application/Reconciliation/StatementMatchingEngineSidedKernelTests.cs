@@ -211,11 +211,10 @@ public sealed class StatementMatchingEngineSidedKernelTests
         var reversed = new StatementMatchingEngine().Run(Request(statements, internals.Reverse().ToArray()));
 
         Project(forward).Should().Equal(Project(reversed));
-        // Equal scores tie-break on ordinal member ids, so the lexicographically first pairs win.
-        forward.Results.Should().Contain(match =>
-            match.BrokerEvidenceReference == "broker:tx:a" && match.InternalEvidenceReference == "internal:tx:a");
-        forward.Results.Should().Contain(match =>
-            match.BrokerEvidenceReference == "broker:tx:b" && match.InternalEvidenceReference == "internal:tx:b");
+        var ambiguity = forward.Results.Should().ContainSingle(match => match.BreakCode == "TRANSACTION_AMBIGUOUS").Subject;
+        ambiguity.AllBrokerEvidenceReferences.Should().Equal("broker:tx:a", "broker:tx:b");
+        ambiguity.AllInternalEvidenceReferences.Should().Equal("internal:tx:a", "internal:tx:b");
+        forward.Results.Should().NotContain(match => match.MatchTier == StatementMatchTier.Exact || match.MatchTier == StatementMatchTier.Tolerance);
 
         static StatementMatchingRequest Request(
             NormalizedStatementTransaction[] statements,
@@ -225,6 +224,22 @@ public sealed class StatementMatchingEngineSidedKernelTests
         static IEnumerable<string> Project(StatementMatchingResult result)
             => result.Results.Select(match =>
                 $"{match.Kind}|{match.MatchTier}|{string.Join(',', match.RuleIds)}|{match.BrokerEvidenceReference}|{match.InternalEvidenceReference}");
+    }
+
+    [Fact]
+    public void Run_EquivalentSettlementSplitsRetainTheAmbiguousCandidates()
+    {
+        var result = new StatementMatchingEngine().Run(new StatementMatchingRequest(
+            [], [], [StatementTransaction("whole", "broker:whole", 10m, -100m)], [], [],
+            [
+                InternalTransaction("six", "internal:six", 6m, -60m),
+                InternalTransaction("four-a", "internal:four-a", 4m, -40m),
+                InternalTransaction("four-b", "internal:four-b", 4m, -40m)
+            ], Tolerances()));
+
+        var ambiguity = result.Results.Should().ContainSingle().Subject;
+        ambiguity.BreakCode.Should().Be("TRANSACTION_AMBIGUOUS");
+        ambiguity.AllInternalEvidenceReferences.Should().Equal("internal:four-a", "internal:four-b", "internal:six");
     }
 
     private static NormalizedStatementTransaction StatementTransaction(

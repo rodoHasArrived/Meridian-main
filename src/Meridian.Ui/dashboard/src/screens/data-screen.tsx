@@ -70,6 +70,7 @@ import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-s
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
 import { FailoverRegion } from "@/screens/data-screen.failover";
 import { BackfillProviderEditorRegion } from "@/screens/data-screen.backfill-provider-editor";
+import { BackfillBatchReceipts } from "@/screens/data-screen.backfill-batch-receipts";
 import { DataRoutingPreviewPanel } from "@/screens/data-screen.routing-preview";
 import { ProviderValidationPanel } from "@/screens/data-screen.provider-validation";
 import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history";
@@ -1875,6 +1876,8 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
               />
             </label>
           </div>
+          <Checkbox label="Resume using retained coverage" checked={vm.form.resumeFromCheckpoint ?? false}
+            disabled={vm.busy} onCheckedChange={checked => vm.updateBackfillForm("resumeFromCheckpoint", checked)} />
         </div>
 
         <StatusBanner
@@ -1907,6 +1910,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
         {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
         {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
         {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
+        {vm.result?.batchReceipts?.length ? <BackfillBatchReceipts receipts={vm.result.batchReceipts} /> : null}
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button

@@ -123,7 +123,8 @@ public static class SharedStartupHelpers
                     $"Unsupported backfill granularity '{cliArgs.BackfillGranularity}'. " +
                     "Use one of: Daily, Hourly, 1Min, 5Min, 15Min, 30Min, 4Hour.");
 
-        return new BackfillRequest(provider, symbols.ToArray(), from, to, granularity);
+        return new BackfillRequest(provider, symbols.ToArray(), from, to, granularity,
+            ResumeFromCheckpoint: cliArgs.Resume);
     }
 
     private static DateOnly? ParseDate(string? value)
