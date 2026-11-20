@@ -56,6 +56,10 @@ interval and source enable/disable live, and reports settings the runtime does n
 running `CrossProviderComparisonService`. The collector also publishes its coordinator to
 `StreamingFailoverRegistry.Process` and honours `Sources[*].Enabled = false` at startup.
 `SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
+Feature-capability override saves record their setting changes after the document is durably saved.
+The effective configuration projection reads declared fields and reports activation impact and
+source. It summarizes dictionaries, leaves additional sections out of the response, and masks
+credentials and free-form text.
 
 Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
 and scored selection. Catalog metadata placeholders yield to the first concrete capability factory.

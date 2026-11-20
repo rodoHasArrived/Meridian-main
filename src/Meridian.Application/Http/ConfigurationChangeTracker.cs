@@ -10,6 +10,7 @@ namespace Meridian.Application.UI;
 /// <summary>Host-lifetime pending state shared by stores for the same file. Retains hashes, never values.</summary>
 internal sealed class ConfigurationChangeTracker
 {
+    private const string CapabilityOverridesPath = "featureCapabilities.overrides";
     private static readonly ConcurrentDictionary<string, ConfigurationChangeTracker> Trackers =
         new(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
     private readonly object _gate = new();
@@ -95,7 +96,10 @@ internal sealed class ConfigurationChangeTracker
     private static Dictionary<string, string> Fingerprints(AppConfig config)
     {
         var fields = new Dictionary<string, string>(StringComparer.Ordinal);
-        Flatten(JsonSerializer.SerializeToNode(config, AppConfigJsonOptions.Write), "", fields);
+        var document = (JsonObject)JsonSerializer.SerializeToNode(config, AppConfigJsonOptions.Write)!;
+        document.Remove("featureCapabilities");
+        Flatten(document, "", fields);
+        fields[CapabilityOverridesPath] = HashCapabilityOverrides(config.FeatureCapabilities);
         return fields;
     }
 
@@ -114,4 +118,24 @@ internal sealed class ConfigurationChangeTracker
         else
             fields[path] = Sha256Digest.ComputeUtf8(node?.ToJsonString() ?? "null");
     }
+
+    internal void RecordFeatureCapabilities(AppConfig previous, AppConfig next)
+    {
+        var before = HashCapabilityOverrides(previous.FeatureCapabilities);
+        var after = HashCapabilityOverrides(next.FeatureCapabilities);
+        var change = new ConfigurationFieldChange(CapabilityOverridesPath, ConfigurationChangeImpact.RestartHost);
+        var changes = before == after ? Array.Empty<ConfigurationFieldChange>() : [change];
+        lock (_gate)
+        {
+            _baseline ??= Fingerprints(previous);
+            var pending = _status.PendingChanges.Where(entry => entry.Path != CapabilityOverridesPath).ToList();
+            if (_baseline[CapabilityOverridesPath] != after)
+                pending.Add(change);
+            _status = new(changes.Length == 0 ? ConfigurationChangeImpact.Live : change.Impact,
+                changes, pending, DateTimeOffset.UtcNow);
+        }
+    }
+
+    private static string HashCapabilityOverrides(FeatureCapabilityOptions? options)
+        => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(options, AppConfigJsonOptions.Write));
 }

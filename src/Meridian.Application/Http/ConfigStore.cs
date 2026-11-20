@@ -304,10 +304,11 @@ public sealed class ConfigStore
             }
 
             JsonObject root;
+            string? previousJson = null;
             if (File.Exists(ConfigPath))
             {
-                var json = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
-                root = ParseConfigRoot(json);
+                previousJson = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
+                root = ParseConfigRoot(previousJson);
             }
             else
             {
@@ -329,6 +330,7 @@ public sealed class ConfigStore
             using var candidate = JsonDocument.Parse(output);
             ProviderConfigurationCredentialGuard.Validate(candidate.RootElement, _ownershipPolicy);
             await AtomicFileWriter.WriteAsync(ConfigPath, output, ct).ConfigureAwait(false);
+            RecordFeatureCapabilityChange(previousJson, output);
         }
         catch (ProviderConfigurationCredentialException)
         {
@@ -342,6 +344,29 @@ public sealed class ConfigStore
         {
             throw new InvalidOperationException($"Failed to save feature capability overrides: {ex.Message}", ex);
         }
+    }
+
+    private void RecordFeatureCapabilityChange(string? previousJson, string nextJson)
+    {
+        try
+        {
+            var previous = string.IsNullOrWhiteSpace(previousJson)
+                ? CreateDefaultConfig(ConfigPath)
+                : ProjectDocument(previousJson);
+            ConfigurationChangeTracker.ForPath(ConfigPath).RecordFeatureCapabilities(previous, ProjectDocument(nextJson));
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidDataException or NotSupportedException)
+        {
+            // A projection error cannot undo the durable save, and may include a literal config value.
+            Log.Warning("Saved configuration {ConfigPath} could not be tracked ({FailureType})", ConfigPath, ex.GetType().Name);
+        }
+
+        AppConfig ProjectDocument(string json)
+            => NormalizeLoadedConfig(
+                ConfigPath,
+                json,
+                JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read)
+                    ?? throw new InvalidDataException("Configuration document is JSON null."));
     }
 
     public string? TryLoadStatusJson()
