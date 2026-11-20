@@ -11,6 +11,16 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui.Shared
 
+Receipt-backed Long bond acquisitions built through the asset-accounting candidate endpoint now
+enter the immutable journal review queue. Intake requires face-value per-100 terms, an explicit
+amortization method, matching acquisition/functional currency and reconciled settlement; the
+spine verifies retained analytics and authoritative book/position scope before queueing. Missing
+review services refuse before candidate drafting. Retries reuse the same source draft; submitting,
+independent approval and typed atomic posting remain separate actions. Generic manual saves and
+posting cannot replace that authority. This does not convert paper fills into canonical lots or
+enable the unsupported canonical paper-bond path. See the
+[synthetic LOT evidence packet](../../docs/testing/evidence/next-work-20261029/bond-lot-golden-case.md).
+
 Provider quota responses preserve the runtime's explicit credits/request unit and daily usage,
 cap and reset-policy evidence. They do not infer fundamentals entitlement from available credits.
 
