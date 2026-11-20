@@ -31,6 +31,8 @@ export type {
 import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
 import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
+import { useLinkedRecordSelection } from "@/hooks/use-linked-record-selection";
+import { findUniqueRecord, positionRecordIdentity, positionReference, type RecordIdentity } from "@/lib/record-workspace-context";
 import * as workstationApi from "@/lib/api";
 import {
   clearPendingPaperIntent,
@@ -504,6 +506,8 @@ export interface TradingBlotterViewModel {
   orderRows: TradingOrderRow[];
   fillRows: TradingFillRow[];
   selectedPosition: TradingBlotterDetail | null;
+  selectedPositionRecord: RecordIdentity | null;
+  selectedPositionReference: string | null;
   selectedOrder: TradingBlotterDetail | null;
   selectedFill: TradingBlotterDetail | null;
   /**
@@ -653,8 +657,8 @@ const tradingExecutionDetailId = "trading-execution-detail";
 const tradingOrderDetailId = tradingExecutionDetailId;
 const tradingFillDetailId = tradingExecutionDetailId;
 
-export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null): TradingBlotterViewModel {
-  const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
+export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null, requestedPositionRef: string | null = null): TradingBlotterViewModel {
+  const [selectedPositionId, setSelectedPositionId] = useLinkedRecordSelection(requestedPositionRef);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedFillId, setSelectedFillId] = useState<string | null>(null);
   const [lastExecutionKind, setLastExecutionKind] = useState<TradingExecutionDetailKind | null>(null);
@@ -671,6 +675,7 @@ export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null
     () => buildTradingBlotterViewModel({
       data,
       selectedPositionId,
+      requestedPositionRef,
       selectedOrderId,
       selectedFillId,
       lastExecutionKind,
@@ -678,13 +683,14 @@ export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null
       selectOrder,
       selectFill
     }),
-    [data, lastExecutionKind, selectFill, selectOrder, selectedFillId, selectedOrderId, selectedPositionId]
+    [data, lastExecutionKind, requestedPositionRef, selectFill, selectOrder, selectedFillId, selectedOrderId, selectedPositionId, setSelectedPositionId]
   );
 }
 
 export function buildTradingBlotterViewModel({
   data,
   selectedPositionId = null,
+  requestedPositionRef = null,
   selectedOrderId = null,
   selectedFillId = null,
   lastExecutionKind = null,
@@ -694,6 +700,7 @@ export function buildTradingBlotterViewModel({
 }: {
   data: TradingWorkspaceResponse | null;
   selectedPositionId?: string | null;
+  requestedPositionRef?: string | null;
   selectedOrderId?: string | null;
   selectedFillId?: string | null;
   /** The execution table selected last; defaults to orders when there are any, else fills. */
@@ -705,7 +712,11 @@ export function buildTradingBlotterViewModel({
   const positions = data?.positions ?? [];
   const orders = data?.openOrders ?? [];
   const fills = data?.fills ?? [];
-  const effectivePositionId = resolveSelectedId(positions, selectedPositionId, positionRowId);
+  const positionKeys = positions.map((position, index) => ({ position, id: positionRowId(position, index), ref: positionReference(position) }));
+  const selectedPositionKey = positionKeys.find((entry) => entry.id === selectedPositionId) ?? (requestedPositionRef
+    ? findUniqueRecord(positionKeys, (entry) => entry.ref === requestedPositionRef)
+    : positionKeys[0]);
+  const effectivePositionId = selectedPositionKey?.id ?? null;
   const effectiveOrderId = resolveSelectedId(orders, selectedOrderId, orderRowId);
   const effectiveFillId = resolveSelectedId(fills, selectedFillId, fillRowId);
 
@@ -735,6 +746,9 @@ export function buildTradingBlotterViewModel({
     orderRows,
     fillRows,
     selectedPosition: selectedPositionRow ? buildPositionDetail(selectedPositionRow, data?.risk ?? null) : null,
+    selectedPositionRecord: selectedPositionRow && selectedPositionKey
+      ? positionRecordIdentity(selectedPositionKey.position, selectedPositionRow.markFreshness) : null,
+    selectedPositionReference: selectedPositionKey?.ref ?? null,
     selectedOrder,
     selectedFill,
     selectedExecution: selectedExecutionKind === "fill" ? selectedFill : selectedOrder,
@@ -757,7 +771,9 @@ export function buildTradingBlotterViewModel({
     positionDetailId: tradingPositionDetailId,
     orderDetailId: tradingOrderDetailId,
     fillDetailId: tradingFillDetailId,
-    positionEmptyText: data ? "No live positions in the active paper session." : "Trading workspace data unavailable.",
+    positionEmptyText: data
+      ? requestedPositionRef && !selectedPositionKey ? "The linked position is unavailable in the current trading scope." : "No live positions in the active paper session."
+      : "Trading workspace data unavailable.",
     orderEmptyText,
     fillEmptyText,
     cancelAllDisabled: orderRows.length === 0,

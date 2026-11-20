@@ -49,6 +49,20 @@ shell renders the `<main>` landmark — don't add a second one.
 
 ---
 
+### Record identity across workspaces
+
+Use the browser `RecordIdentitySpine` at the top of an instrument, account, fund, or position
+detail. Give the operator a compact definition list with identifiers, asset class, entity or book,
+status, as-of date, and trust. Use source evidence for each fact and show when the source has no
+value. Use the keyboard-operable `Related work` disclosure for links to existing tasks.
+
+On a related route, use the shared `Originating record` header to keep the source record visible.
+Show its status and trust as captured at the origin, keep the retained filters in `Origin scope`,
+and offer an exact return link. Apply a scope as a destination filter only when the target owns
+that selector. For example, a quote desk accepts the instrument's ticker while a report library
+retains the source book and period for reference. Keep permissions and action availability tied
+to the destination's live read model.
+
 ## 2 · Validated form
 
 **Goal:** an operator form that blocks submit until valid and states errors inline — new
