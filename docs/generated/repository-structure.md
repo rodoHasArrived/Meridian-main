@@ -9094,6 +9094,7 @@ Meridian-main
 │   │   │   │   │   │   ├── CandleChart.tsx
 │   │   │   │   │   │   ├── CategoryBars.tsx
 │   │   │   │   │   │   ├── chart-a11y.tsx
+│   │   │   │   │   │   ├── chart-evidence.tsx
 │   │   │   │   │   │   ├── chart-interaction.test.ts
 │   │   │   │   │   │   ├── chart-interaction.tsx
 │   │   │   │   │   │   ├── chart-sync.test.tsx
@@ -10618,6 +10619,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.css
 │   │   │   │   │   ├── app-shell.css
 │   │   │   │   │   ├── breakpoints.test.ts
+│   │   │   │   │   ├── chart-evidence.css
 │   │   │   │   │   ├── command-palette.css
 │   │   │   │   │   ├── companion-pane.css
 │   │   │   │   │   ├── dense-row-detail-accessibility.css
