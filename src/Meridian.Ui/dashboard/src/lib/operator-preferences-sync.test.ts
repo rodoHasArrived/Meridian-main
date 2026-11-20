@@ -4,7 +4,7 @@ import { applySessionDensity, clearSessionDensity, readStoredDensity, writeStore
 import { getDisplayTimeZone, reloadDisplayTimeZone, setDisplayTimeZone } from "@/lib/display-time-zone";
 import { getGlobalKeyBinding, reloadKeyBindingOverrides, setKeyBindingOverride } from "@/lib/keymap";
 import { DEFAULT_NOTIFICATION_PREFERENCES, getNotificationPreferences, reloadNotificationPreferences, setNotificationPreferences } from "@/lib/notification-preferences";
-import { onOperatorPreferencesApplied } from "@/lib/operator-preference-events";
+import { getOperatorPreferenceSyncStatus, onOperatorPreferencesApplied, retryOperatorPreferenceSync } from "@/lib/operator-preference-events";
 import { readStoredAppearance, writeStoredAppearance } from "@/lib/theme";
 import type { OperatorPreferences, OperatorPreferenceValues } from "@/types/operator-preferences";
 import { readLocalOperatorPreferences, startOperatorPreferenceSync } from "./operator-preferences-sync";
@@ -303,6 +303,104 @@ describe("startOperatorPreferenceSync", () => {
     await settle();
 
     expect(save).not.toHaveBeenCalled();
+  });
+});
+
+describe("operator preference sync status", () => {
+  const HELD = { appearance: "system", density: "default", displayTimeZone: "UTC", pageDescriptionsHidden: false, keyBindings: null } as const;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    resetBrowserPreferences();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    resetBrowserPreferences();
+  });
+
+  it("reports synced with the host's timestamp when the host already holds this browser's set", async () => {
+    const save = vi.fn();
+    const stop = startOperatorPreferenceSync({ operatorKey: OPERATOR, load: async () => hostWith({ ...HELD }), save });
+    expect(getOperatorPreferenceSyncStatus()).toEqual({ state: "loading" });
+    await settle();
+
+    expect(save).not.toHaveBeenCalled();
+    expect(getOperatorPreferenceSyncStatus()).toEqual({ state: "synced", lastSavedAt: "2026-11-17T09:00:00Z" });
+    stop();
+  });
+
+  it("moves from saving to synced with the saved timestamp after a change", async () => {
+    let resolveSave: ((value: OperatorPreferences) => void) | null = null;
+    const save = vi.fn(
+      (preferences: OperatorPreferenceValues) =>
+        new Promise<OperatorPreferences>((resolve) => {
+          resolveSave = () => resolve(hostWith(preferences, "2026-11-19T15:30:00Z"));
+        })
+    );
+    const stop = startOperatorPreferenceSync({ operatorKey: OPERATOR, load: async () => hostWith({ ...HELD }), save, debounceMs: 100 });
+    await settle();
+
+    writeStoredAppearance("dark");
+    await vi.advanceTimersByTimeAsync(100);
+    await settle();
+    expect(getOperatorPreferenceSyncStatus()).toEqual({ state: "saving", lastSavedAt: "2026-11-17T09:00:00Z" });
+
+    resolveSave!(hostWith({}));
+    await settle();
+    expect(getOperatorPreferenceSyncStatus()).toEqual({ state: "synced", lastSavedAt: "2026-11-19T15:30:00Z" });
+    stop();
+  });
+
+  it("reports a failed save and retries the current set at once on request", async () => {
+    const save = vi
+      .fn<(preferences: OperatorPreferenceValues, signal: AbortSignal) => Promise<OperatorPreferences>>()
+      .mockRejectedValueOnce(new Error("500"))
+      .mockImplementation(async (preferences) => hostWith(preferences, "2026-11-19T16:00:00Z"));
+    const stop = startOperatorPreferenceSync({ operatorKey: OPERATOR, load: async () => hostWith({ ...HELD }), save, debounceMs: 100 });
+    await settle();
+
+    writeStoredAppearance("dark");
+    await vi.advanceTimersByTimeAsync(100);
+    await settle();
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(getOperatorPreferenceSyncStatus()).toEqual({ state: "failed", lastSavedAt: "2026-11-17T09:00:00Z", reason: "save" });
+    expect(readStoredAppearance()).toBe("dark");
+
+    expect(retryOperatorPreferenceSync()).toBe(true);
+    await settle();
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(save.mock.calls[1]![0]).toMatchObject({ appearance: "dark" });
+    expect(getOperatorPreferenceSyncStatus()).toEqual({ state: "synced", lastSavedAt: "2026-11-19T16:00:00Z" });
+    stop();
+  });
+
+  it("reports a failed read and applies the host's set when a retry succeeds", async () => {
+    const load = vi
+      .fn<(signal: AbortSignal) => Promise<OperatorPreferences>>()
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValue(hostWith({ ...HELD, appearance: "dark" }));
+    const save = vi.fn();
+    const stop = startOperatorPreferenceSync({ operatorKey: OPERATOR, load, save });
+    await settle();
+    expect(getOperatorPreferenceSyncStatus()).toEqual({ state: "failed", lastSavedAt: null, reason: "load" });
+
+    retryOperatorPreferenceSync();
+    await settle();
+    expect(load).toHaveBeenCalledTimes(2);
+    expect(readStoredAppearance()).toBe("dark");
+    expect(save).not.toHaveBeenCalled();
+    expect(getOperatorPreferenceSyncStatus()).toEqual({ state: "synced", lastSavedAt: "2026-11-17T09:00:00Z" });
+    stop();
+  });
+
+  it("returns to browser-only when stopped and has nothing to retry", async () => {
+    const stop = startOperatorPreferenceSync({ operatorKey: OPERATOR, load: async () => hostWith({ ...HELD }), save: vi.fn() });
+    await settle();
+    stop();
+
+    expect(getOperatorPreferenceSyncStatus()).toEqual({ state: "local", reason: "no-sync" });
+    expect(retryOperatorPreferenceSync()).toBe(false);
   });
 });
 
