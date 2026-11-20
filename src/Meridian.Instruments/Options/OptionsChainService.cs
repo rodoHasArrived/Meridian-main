@@ -111,22 +111,28 @@ public sealed class OptionsChainService
             Message: message);
     }
 
-    /// <summary>
-    /// Gets available expiration dates for an underlying symbol.
-    /// </summary>
+    /// <summary>Starts a run-local receipt for a covered call chain acquisition.</summary>
+    public OptionsChainProvenance BeginProvenance(string? tenantId, int strikeRange) => new(_providers, tenantId, strikeRange);
+
+    public Task<IReadOnlyList<DateOnly>> GetExpirationsAsync(string underlyingSymbol, CancellationToken ct = default)
+        => GetExpirationsAsync(underlyingSymbol, null, ct);
+
     public async Task<IReadOnlyList<DateOnly>> GetExpirationsAsync(
         string underlyingSymbol,
-        CancellationToken ct = default)
-        => (await DiscoverExpirationsAsync(underlyingSymbol, ct).ConfigureAwait(false)).Expirations;
+        OptionsChainProvenance? provenance, CancellationToken ct)
+        => (await DiscoverExpirationsAsync(underlyingSymbol, provenance, ct).ConfigureAwait(false)).Expirations;
 
     /// <summary>
     /// Preserves whether provider failover supplied expiration coverage before a caller applies
     /// its date filters. Empty provider payloads do not establish coverage: existing adapters also
     /// return empty payloads for unavailable credentials and remote failures.
     /// </summary>
-    public async Task<OptionsExpirationDiscoveryResult> DiscoverExpirationsAsync(
+    public Task<OptionsExpirationDiscoveryResult> DiscoverExpirationsAsync(
         string underlyingSymbol,
-        CancellationToken ct = default)
+        CancellationToken ct = default) => DiscoverExpirationsAsync(underlyingSymbol, null, ct);
+
+    private async Task<OptionsExpirationDiscoveryResult> DiscoverExpirationsAsync(
+        string underlyingSymbol, OptionsChainProvenance? provenance, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(underlyingSymbol);
 
@@ -134,7 +140,7 @@ public sealed class OptionsChainService
             provider => provider.GetExpirationsAsync(underlyingSymbol, ct),
             static result => result.Count > 0,
             ReadOperation.Expirations,
-            ct).ConfigureAwait(false);
+            ct, provenance).ConfigureAwait(false);
 
         if (expirations is null)
         {
@@ -174,11 +180,14 @@ public sealed class OptionsChainService
     /// Fetches a chain snapshot from the provider, routes it through the collector,
     /// and returns the snapshot.
     /// </summary>
-    public async Task<OptionChainSnapshot?> FetchChainSnapshotAsync(
+    public Task<OptionChainSnapshot?> FetchChainSnapshotAsync(
         string underlyingSymbol,
         DateOnly expiration,
         int? strikeRange = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default) => FetchChainSnapshotAsync(underlyingSymbol, expiration, strikeRange, null, ct);
+
+    public async Task<OptionChainSnapshot?> FetchChainSnapshotAsync(string underlyingSymbol, DateOnly expiration,
+        int? strikeRange, OptionsChainProvenance? provenance, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(underlyingSymbol);
 
@@ -186,7 +195,7 @@ public sealed class OptionsChainService
             provider => provider.GetChainSnapshotAsync(underlyingSymbol, expiration, strikeRange, ct),
             static result => result is not null,
             ReadOperation.ChainSnapshot,
-            ct).ConfigureAwait(false);
+            ct, provenance).ConfigureAwait(false);
 
         if (chain is null)
         {
@@ -339,13 +348,17 @@ public sealed class OptionsChainService
         Func<IOptionsChainProvider, Task<T>> query,
         Func<T, bool> hasResult,
         ReadOperation operation,
-        CancellationToken ct)
+        CancellationToken ct,
+        OptionsChainProvenance? provenance = null)
     {
         var failureCount = 0;
 
-        foreach (var provider in _providers)
+        for (var index = 0; index < _providers.Count; index++)
         {
             ct.ThrowIfCancellationRequested();
+            if (provenance?.CanQuery(index) == false)
+                continue;
+            var provider = _providers[index];
             var providerId = NormalizeProviderId(provider.ProviderId);
             // Preserve canonical provider labels while bounding and neutralizing their
             // control characters. Caller symbols and exception payloads stay out of telemetry.
@@ -354,6 +367,7 @@ public sealed class OptionsChainService
             var health = await _healthSource.GetHealthAsync(providerId, providerId, ct).ConfigureAwait(false);
             if (!health.IsHealthy)
             {
+                provenance?.Record(index, requested: false, hasData: null);
                 failureCount++;
                 _logger.LogWarning("Skipping unhealthy options provider {ProviderId} for {Operation}.", telemetryProviderId, operation);
                 continue;
@@ -367,7 +381,9 @@ public sealed class OptionsChainService
                 ProviderLatencyMs.Record(sw.Elapsed.TotalMilliseconds,
                     new KeyValuePair<string, object?>("provider", telemetryProviderId),
                     new KeyValuePair<string, object?>("operation", operation.ToString()));
-                if (hasResult(result))
+                var hasData = hasResult(result);
+                provenance?.Record(index, requested: true, hasData);
+                if (hasData)
                 {
                     if (failureCount > 0)
                     {
@@ -396,6 +412,7 @@ public sealed class OptionsChainService
             }
             catch (Exception ex)
             {
+                provenance?.Record(index, requested: true, hasData: null);
                 var retriable = ex is TimeoutException || ex is HttpRequestException || ex is TaskCanceledException;
                 failureCount++;
                 _logger.LogWarning(

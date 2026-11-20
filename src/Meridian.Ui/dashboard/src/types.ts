@@ -32,6 +32,7 @@ export * from "./types/corporate-action-inbox";
 export * from "./types/provider-accounting";
 export * from "./types/provider-integration-provenance";
 export * from "./types/provider-integration-identity";
+export * from "./types/provider-provenance";
 export * from "./types/report-amount-proof";
 export * from "./types/reporting-governance";
 export * from "./types/reporting-income-comparison";

@@ -6,85 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## CorporateActionCashDividendAttestationDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L86).
-
-Retained preparer decision and durable cap reservation, separate from approval.
-
-```csharp
-public sealed record CorporateActionCashDividendAttestationDto(Guid AttestationId, Guid CaseId, Guid ProjectionId, long BoundCaseVersion, Guid DeclarationId, long DeclarationRevision, string PolicyVersion, string PolicyHash, Guid BudgetReservationId, string RelatedEventKey, DateOnly ExDate, string ProviderId, string SourceEventId, string SourceEventVersion, string SourceEvidenceHash, string EntitlementSnapshotHash, string EntitlementSnapshotJson, decimal GrossImpactUsd, decimal WholeEventGrossUsd, DateOnly BudgetMonth, string AttestedBy, DateTimeOffset AttestedAtUtc, string Reason, string EvidenceReference, string EvidenceHash, string Confirmation, string Disclosure, DateTimeOffset? VoidedAtUtc = null, string? VoidedBy = null, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] CashDividendAccountRoleBindingDto? AccountRoleBinding = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:119](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L119) |  |
-| <code>public string DecisionKind =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:120](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L120) |  |
-
-## CorporateActionCashDividendAttestationPolicy
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L8).
-
-The owner&#x27;s bounded W14 treatment. It never grants ordinary independent review.
-
-```csharp
-public static class CorporateActionCashDividendAttestationPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Version = &quot;single-principal-cash-dividend-v1&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L10) |  |
-| <code>public const string DecisionKind = &quot;PreparerAttestation&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L11) |  |
-| <code>public const string CaseState = &quot;PreparerAttested&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L12) |  |
-| <code>public const string Currency = &quot;USD&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L13) |  |
-| <code>public const decimal RelatedEventGrossLimitUsd = 10_000m;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L14) |  |
-| <code>public const decimal BookCalendarMonthGrossLimitUsd = 100_000m;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L15) |  |
-| <code>public const decimal EventGrossLimitUsd = RelatedEventGrossLimitUsd;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L16) |  |
-| <code>public const decimal MonthlyGrossLimitUsd = BookCalendarMonthGrossLimitUsd;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L17) |  |
-| <code>public const string Disclosure = SinglePrincipalAttestationPolicy.Disclosure;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L18) |  |
-| <code>public const string Confirmation = &quot;I inspected this exact regular mandatory cash-dividend projection and the complete related-event entitlement. I attest as its preparer, not as an independent reviewer. Existing posting controls remain required.&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L19) |  |
-| <code>public static string PolicyHash { get; } = Sha256Digest.ComputeUtf8(Version + &quot;\nregular-mandatory-cash-dividend-declaration\nUSD\n10000\n100000\nsource-ex-date-calendar-month;recognition=source-ex-date\n&quot; + &quot;debit=governed-dividend-receivable-role;credit=governed-dividend-income-role;&quot; + &quot;gross-no-netting;complete-book-entitlement;source-alias-stable;no-corrections;no-elections;no-lot-mutation;&quot; + &quot;no-estimates;no-FX;no-tax-special-treatment;no-independent-review-credit\n&quot; + Confirmation);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L20) |  |
-
-## CorporateActionCashDividendAttestationResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L141).
-
-```csharp
-public sealed record CorporateActionCashDividendAttestationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCashDividendAttestationDto Attestation, CorporateActionCaseTransitionDto Transition, bool Replayed);
-```
-
-## CorporateActionCashDividendAttestationValidation
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationValidation</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L7).
-
-Write-boundary predicates shared by preflight and native cash-dividend persistence.
-
-```csharp
-public static class CorporateActionCashDividendAttestationValidation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ExcludedProblemCode = &quot;cash_dividend_attestation_excluded&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L9) |  |
-| <code>public static string RelatedEventKey(Guid securityId, DateOnly exDate) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L11) |  |
-| <code>public static void EnsureEligibility(CorporateActionProcessingCaseDto processingCase, CorporateActionCaseAccountingProjectionDto projection, CorporateActionCashDividendEligibilityDto eligibility);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L14) |  |
-| <code>public static void EnsureAccountRoleBinding(CashDividendAccountRoleBindingDto? binding, CorporateActionCaseAccountingProjectionDto projection);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L70) |  |
-| <code>public static void EnsureSameAccountRoleBinding(CashDividendAccountRoleBindingDto? declarationBinding, CashDividendAccountRoleBindingDto? retainedBinding);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationValidation.cs#L85) |  |
-
 ## CorporateActionCashDividendCaseFactsDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendCaseFactsDto</code>. Kind: `record`.
@@ -783,3 +704,107 @@ Declared public members:
 | <code>public CorporateActionNotFoundException(string resourceType, Guid resourceId) : base(CorporateActionProblemCodes.NotFound, $&quot;{resourceType} &#x27;{resourceId:D}&#x27; was not found.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:842](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L842) |  |
 | <code>public string ResourceType { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:849](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L849) |  |
 | <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:850](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L850) |  |
+
+## CorporateActionOperationException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionOperationException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:826](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L826).
+
+Represents a corporate action operation failure with a stable machine-readable problem code.
+
+```csharp
+public class CorporateActionOperationException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionOperationException(string code, string message) : base(message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:828](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L828) |  |
+| <code>public string Code { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:834](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L834) |  |
+
+## CorporateActionPayloadFieldDescriptor
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionPayloadFieldDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:245](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L245).
+
+```csharp
+public sealed record CorporateActionPayloadFieldDescriptor(string Key, CorporateActionPayloadValueType ValueType, bool RequiredForAcceptance);
+```
+
+## CorporateActionPayloads
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionPayloads</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L15).
+
+Well-known keys and typed readers for the generic corporate-action payload envelope (CorporateActionDto.Payload). The wide corporate_actions table declared eight typed columns for eighteen event types, so six declared types (and every future one) had no columns for their own economics; the JSONB payload is the envelope that generalizes the shape. Keys here are conventions, not a closed schema: an event type may carry additional keys, and readers must tolerate absence — the payload is evidence-bearing detail, and the lifecycle columns (event type, dates, supersede chain) remain the authoritative spine.
+
+```csharp
+public static class CorporateActionPayloads
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L18) | Schema-version marker for the current corporate-action payload contracts. |
+| <code>public const string OfferPricePerShare = &quot;offerPricePerShare&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L21) | TenderOffer: offered price per share/unit in the event&#x27;s currency. |
+| <code>public const string OfferExpiryDate = &quot;offerExpiryDate&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L24) | TenderOffer: date the offer expires. |
+| <code>public const string IsPartialTender = &quot;isPartialTender&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L27) | TenderOffer: true for a partial (pro-rated) tender. |
+| <code>public const string CapitalReturnPerShare = &quot;capitalReturnPerShare&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L30) | ReturnOfCapital: capital returned per share/unit (reduces cost basis, not income). |
+| <code>public const string PrincipalAmount = &quot;principalAmount&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L33) | PrincipalPaydown: principal amount repaid per unit of original face. |
+| <code>public const string PostPaydownFactor = &quot;postPaydownFactor&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L36) | PrincipalPaydown: the pool factor effective after the paydown. |
+| <code>public const string ForkNewAssetSymbol = &quot;forkNewAssetSymbol&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L39) | CryptoFork: symbol of the new asset minted by the fork. |
+| <code>public const string ForkRatio = &quot;forkRatio&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L42) | CryptoFork: units of the new asset received per unit held. |
+| <code>public const string AdjustedMultiplier = &quot;adjustedMultiplier&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L45) | OptionContractAdjustment: contract multiplier after the adjustment. |
+| <code>public const string AdjustedStrike = &quot;adjustedStrike&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L48) | OptionContractAdjustment: strike price after the adjustment. |
+| <code>public const string AdjustedDeliverable = &quot;adjustedDeliverable&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L51) | OptionContractAdjustment: human-readable deliverable description after adjustment. |
+| <code>public const string FinalTradingDate = &quot;finalTradingDate&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L54) | Delisting: the final trading date on the delisting venue. |
+| <code>public const string DelistingReason = &quot;delistingReason&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L57) | Delisting: reason category (e.g. &quot;Acquired&quot;, &quot;Bankruptcy&quot;, &quot;Exchange&quot;). |
+| <code>public const string CashAmount = &quot;cashAmount&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L60) | Common: cash consideration paid by the issuer, offeror, or custodian. |
+| <code>public const string FractionalUnits = &quot;fractionalUnits&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:63](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L63) | Common: units of a fractional position disposed for cash in lieu. |
+| <code>public const string SuccessorSecurityId = &quot;successorSecurityId&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L66) | Common: successor Security Master identifier named in source terms. |
+| <code>public const string RefundedSecurityId = &quot;refundedSecurityId&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L69) | AdvanceRefunding: Security Master identifier for the pre-refunded child. |
+| <code>public const string UnrefundedSecurityId = &quot;unrefundedSecurityId&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L72) | AdvanceRefunding: Security Master identifier for the unrefunded child. |
+| <code>public const string RefundedAllocationRatio = &quot;refundedAllocationRatio&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:75](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L75) | AdvanceRefunding: parent basis allocated to the pre-refunded child. |
+| <code>public const string BankruptcyProcessingMethod = &quot;bankruptcyProcessingMethod&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L78) | BankruptcyDistribution: reviewed operational disposition method. |
+| <code>public const string EscrowSecurityId = &quot;escrowSecurityId&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L81) | BankruptcyDistribution: escrow security used for future distributions. |
+| <code>public const string ConsentPaymentPerUnit = &quot;consentPaymentPerUnit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:84](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L84) | ConsentSolicitation: payment per consenting unit. |
+| <code>public const string PikRate = &quot;pikRate&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L87) | PaymentInKind: rate applied to produce the in-kind distribution. |
+| <code>public const string PikIssuePrice = &quot;pikIssuePrice&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L90) | PaymentInKind: issue price per new unit, commonly par for debt. |
+| <code>public const string RightsSecurityId = &quot;rightsSecurityId&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L93) | RightsDistribution/RightsExercise: Security Master identifier of the right or warrant. |
+| <code>public const string RightsPerHeldUnit = &quot;rightsPerHeldUnit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L96) | RightsDistribution: rights received per parent unit. |
+| <code>public const string UnitsPerRight = &quot;unitsPerRight&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L99) | RightsExercise: underlying units received per right exercised. |
+| <code>public const string ExercisePricePerUnit = &quot;exercisePricePerUnit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:102](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L102) | RightsExercise: exercise price paid per underlying unit. |
+| <code>public const string IsPartialRedemption = &quot;isPartialRedemption&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:105](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L105) | Call redemption: true when less than the entire issue is redeemed. |
+| <code>public const string IsMakeWhole = &quot;isMakeWhole&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:108](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L108) | Call redemption: true when consideration contains a make-whole premium. |
+| <code>public const string CashConsiderationPerUnit = &quot;cashConsiderationPerUnit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:111](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L111) | Exchange/merger events: cash consideration paid alongside successor units. |
+| <code>public const string IsVoluntary = &quot;isVoluntary&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:114](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L114) | Exchange events: source assertion describing whether the offer is voluntary. |
+| <code>public const string DistributionComponent = &quot;distributionComponent&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L121) | Dividend on a fund class: which tax component of the distribution this event pays (SecurityIncomeComponent names, e.g. &quot;Income&quot;, &quot;LongTermCapitalGain&quot;). A distribution with several components is recorded as one event per component. |
+| <code>public static decimal? ReadDecimal(JsonElement? payload, string key);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L124) | Reads a decimal payload value; null when the payload or key is absent or mistyped. |
+| <code>public static DateOnly? ReadDate(JsonElement? payload, string key) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:144](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L144) | Reads a date payload value; null when the payload or key is absent or unparseable. |
+| <code>public static string? ReadString(JsonElement? payload, string key) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:152](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L152) | Reads a string payload value; null when the payload or key is absent or blank. |
+| <code>public static bool? ReadBoolean(JsonElement? payload, string key) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs:160](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloads.cs#L160) | Reads a boolean payload value; null when the payload or key is absent or mistyped. |
+
+## CorporateActionPayloadSchemaCatalog
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionPayloadSchemaCatalog</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L11).
+
+Versioned schemas for the JSON payload carried by CorporateActionDto. Unknown properties remain allowed so a provider can retain evidence ahead of a Meridian release, while known properties are type-checked and acceptance-required properties fail closed.
+
+```csharp
+public static class CorporateActionPayloadSchemaCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;CorporateActionPayloadSchemaDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L123) | Returns a v1 schema for every canonical event type, including an empty schema. |
+| <code>public static CorporateActionPayloadSchemaDescriptor Get(string eventType);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:128](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L128) |  |
+| <code>public static string? Validate(CorporateActionDto action, bool forAcceptance);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:145](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L145) | Validates schema version, payload object shape, known field types, and optionally fields required before an observation can be accepted as a canonical source event. |

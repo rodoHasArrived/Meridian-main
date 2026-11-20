@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenancePriority
+
+Qualified name: <code>Meridian.Storage.Maintenance.MaintenancePriority</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:265](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L265).
+
+Priority level for maintenance tasks.
+
+```csharp
+public enum MaintenancePriority : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Critical = 0</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:268](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L268) | Critical - execute immediately, skip queue. |
+| <code>High = 10</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:271](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L271) | High - process before normal tasks. |
+| <code>Normal = 50</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:274](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L274) | Normal - default priority. |
+| <code>Low = 100</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:277](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L277) | Low - process when system is less busy. |
+| <code>Background = 200</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:280](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L280) | Background - only run when completely idle. |
+
 ## MaintenanceResult
 
 Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceResult</code>. Kind: `class`.
@@ -1201,13 +1223,3 @@ Declared public members:
 | <code>public long? RetainedRowCount { get; init; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:345](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L345) |  |
 | <code>public DateTimeOffset? ExecutionExpiresAt { get; init; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:346](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L346) |  |
 | <code>public static DataQueryResult Failed(string error) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:347](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L347) |  |
-
-## DataQueryRetentionReceipt
-
-Qualified name: <code>Meridian.Storage.Query.DataQueryRetentionReceipt</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:12](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L12).
-
-```csharp
-public sealed record DataQueryRetentionReceipt(string ExecutionId, long RowCount, DateTimeOffset ExpiresAt);
-```

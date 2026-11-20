@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountCashForecastJsonContext
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastJsonContext.cs:14](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastJsonContext.cs#L14).
+
+Provides source-generated JSON metadata for account cash forecast requests, scopes, and snapshots.
+
+```csharp
+public partial class AccountCashForecastJsonContext : JsonSerializerContext;
+```
+
+## AccountCashForecastRequestDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:58](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L58).
+
+Complete retained inputs for an inclusive cash period, suitable for deterministic replay.
+
+```csharp
+public sealed record AccountCashForecastRequestDto(string RunId, AccountCashForecastScopeDto Scope, DateOnly PeriodStart, DateOnly PeriodEnd, AccountSettledCashObservationDto? OpeningCash, AccountSettledCashObservationDto? ClosingCash, IReadOnlyList<AccountCashFlowDto> Flows, IReadOnlyList<AccountCashFxConversionDto> FxConversions, DateTimeOffset RecordedAtUtc, string? PreviousSnapshotId = null, string? CorrectionRationale = null, decimal MinimumCashThreshold = 0m, int BucketDays = 1)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CalculationVersion { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:74](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L74) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountSettledCashObservationDto&gt;? NativeOpeningBalances { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:76](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L76) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountSettledCashObservationDto&gt;? NativeClosingBalances { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:78](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L78) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountCashPaymentAllocationDto&gt;? PaymentAllocations { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:80](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L80) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountCashReceiptRevisionDto&gt;? ReceiptRevisions { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:82](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L82) |  |
+
 ## AccountCashForecastScopeDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto</code>. Kind: `record`.
@@ -794,34 +828,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:89](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L89) |  |
 | <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:91](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L91) |  |
-
-## BookPositionSides
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookPositionSides</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:42](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L42).
-
-Defines the position side labels accepted by book position contracts.
-
-```csharp
-public static class BookPositionSides
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Long = &quot;Long&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:44](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L44) |  |
-| <code>public const string Short = &quot;Short&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:45](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L45) |  |
-| <code>public const string Asset = &quot;Asset&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:46](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L46) |  |
-| <code>public const string Liability = &quot;Liability&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:47](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L47) |  |
-
-## BookReceiptAllocationDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptAllocationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:30](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L30).
-
-```csharp
-public sealed record BookReceiptAllocationDto(string ObligationKey, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Amount);
-```

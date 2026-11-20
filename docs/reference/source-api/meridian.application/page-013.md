@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DetectProvidersStep
+
+Qualified name: <code>Meridian.Application.Wizard.Steps.DetectProvidersStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L11).
+
+Step 1: Scans environment variables and returns the list of detected providers. Writes WizardContext.DetectedProviders.
+
+```csharp
+public sealed class DetectProvidersStep : IWizardStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L16) |  |
+| <code>public DetectProvidersStep(AutoConfigurationService autoConfig, TextWriter output);</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L18) |  |
+| <code>public Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L24) |  |
+
 ## ReviewConfigurationStep
 
 Qualified name: <code>Meridian.Application.Wizard.Steps.ReviewConfigurationStep</code>. Kind: `class`.

@@ -634,7 +634,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             // Build chain provider (eager materialisation).
             var maxDteForWindow = request.MaxDte ?? 365;
             var chainProvider = await _chainFactory
-                .CreateAsync(request.UnderlyingSymbol, request.From, request.To, maxDteForWindow, state.Cts.Token)
+                .CreateAsync(request.UnderlyingSymbol, request.From, request.To, maxDteForWindow, state.Scope.TenantId, state.Cts.Token)
                 .ConfigureAwait(false);
 
             // Build strategy. The strategy assumes the underlying is pre-held in ctx.Positions, so
@@ -679,7 +679,32 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
             // Project results.
             var equityCurve = innerStrategy.Metrics?.EquityCurve ?? [];
-            var result = CoveredCallRunProjection.ToResult(runId, request, innerStrategy, equityCurve);
+            var receipt = backtestResult.ProviderProvenance ?? ResearchProviderProvenance.Create(
+                backtestRequest, state.StartedAt ?? _timeProvider.GetUtcNow(), _timeProvider.GetUtcNow());
+            receipt = receipt with
+            {
+                StartedUtc = state.StartedAt ?? receipt.StartedUtc,
+                DataSemantics = "Simulated research using a current options snapshot across historical dates",
+                ReproductionUnavailableReason = "The exact replay dataset and options snapshots were not retained for reproduction."
+            };
+            if (chainProvider is CoveredCallChainProviderAdapter { Provenance: { } optionsProvenance })
+            {
+                var optionSources = optionsProvenance.Sources;
+                receipt = receipt with
+                {
+                    Capability = "HistoricalMarketDataReplay, OptionsChain",
+                    RoutingDecision = "Local replay and options chain failover",
+                    Providers = receipt.Providers.AddRange(optionSources),
+                    FallbackChain = [.. optionSources.Select(source => source.ProviderId)],
+                    FallbackOccurred = optionsProvenance.FallbackOccurred,
+                    ValidationProfile = receipt.ValidationProfile with
+                    {
+                        Version = "covered-call-replay/v1", OptionsStrikeRange = optionsProvenance.StrikeRange
+                    }
+                };
+            }
+            backtestResult = backtestResult with { ProviderProvenance = receipt };
+            var result = CoveredCallRunProjection.ToResult(runId, request, innerStrategy, equityCurve) with { ProviderProvenance = receipt };
 
             // Retain terminal outputs separately from the immutable input parameter set so the
             // repository can verify the original request hash across the whole lifecycle.

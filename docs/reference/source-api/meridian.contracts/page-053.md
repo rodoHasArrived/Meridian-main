@@ -6,86 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SecurityCurveKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L11).
-
-What a stored curve&#x27;s values are: discount factors, projected index fixings or index levels.
-
-```csharp
-public enum SecurityCurveKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Discount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L14) | Positive discount factors; legacy policy additionally requires (0, 1&#93; and nonincreasing pillars. At as-of the factor is 1. |
-| <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L17) | Projected annual fixings stored as fractions (0.04, never 4); signed values require an explicit SignedRates definition. |
-| <code>Inflation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L20) | Projected levels of one inflation index; always positive. |
-
-## SecurityCurvePointDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurvePointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L46).
-
-One dated pillar. Value is a discount factor (Discount), an annual rate as a FRACTION (Forward: 0.04, never 4) or an index level (Inflation). Tenor is a label such as 3M; the date is authoritative.
-
-```csharp
-public sealed record SecurityCurvePointDto(DateOnly Date, decimal Value, string? Tenor = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityRatePointEvidenceDto? RateEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L49) |  |
-
-## SecurityCurveRatePolicy
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveRatePolicy</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39).
-
-Write-once admission policy. Legacy definitions retain nonnegative-rate restrictions.
-
-```csharp
-public enum SecurityCurveRatePolicy
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LegacyNonNegative</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39) |  |
-| <code>SignedRates</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39) |  |
-
-## SecurityCurveRules
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:150](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L150).
-
-The rules every stored curve satisfies and the pure arithmetic a valuation reads it with, kept in Contracts so they are testable without a database and identical in every store and model. Each Normalize returns the normalized request or throws ArgumentException naming the rule.
-
-```csharp
-public static class SecurityCurveRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DefineSecurityCurveRequest Normalize(DefineSecurityCurveRequest request);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:154](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L154) |  |
-| <code>public static PublishSecurityCurveVersionRequest Normalize(PublishSecurityCurveVersionRequest request, SecurityCurveDefinitionDto definition);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:188](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L188) |  |
-| <code>public static string ContentSha256(DateOnly asOf, IReadOnlyList&lt;SecurityCurvePointDto&gt; points);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:248](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L248) | The canonical SHA-256 over asOf&#124;date=value&#91;@tenor&#93;&#124;… of the points sorted by date, so the same content in any input order gives the same hash. |
-| <code>public static decimal? ValueAt(SecurityCurveVersionDto version, SecurityCurveKind kind, DateOnly date);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:277](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L277) | The curve&#x27;s value on date: linear in day number between pillars; before the first pillar flat for Forward and Inflation curves, while a Discount curve is 1 on or before the version&#x27;s as-of date and linear from (as-of, 1) to the first pillar (a discount factor is 1 at its own as-of, so it is never held at the first pillar&#x27;s value back to that date); after the last pillar flat for Forward and Inflation curves and null for a Discount curve (a discount factor is never extrapolated). Null for a version with no points. |
-| <code>public static decimal? DiscountFactorAt(SecurityCurveVersionDto discount, DateOnly valuationDate, DateOnly paymentDate);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:323](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L323) | The factor that discounts a payment on paymentDate to valuationDate from a Discount curve: 1 for a payment on or before the valuation date, otherwise the curve&#x27;s ValueAt at the payment date rebased by its ValueAt at the valuation date (1 on or before the version&#x27;s as-of, so a curve whose as-of precedes the valuation date still discounts to the valuation date). Null when the payment lies beyond the last pillar. |
-| <code>public static SecurityForwardCurve ToForwardCurve(SecurityCurveVersionDto version, SecurityCurveDefinitionDto definition);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:345](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L345) | Adapts a Forward version to the projection seam. The SecurityForwardCurve.Source carries the curve key, version and hash prefix, so SecurityForwardCurve.Describe and every leg&#x27;s RateSource name exactly which stored content projected the leg. |
-
 ## SecurityCurvesJsonContext
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurvesJsonContext</code>. Kind: `class`.
@@ -919,3 +839,47 @@ Declared public members:
 | <code>public static bool IsTermsConflict(SecurityMasterConflict conflict, string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L89) | Whether the conflict is about the record&#x27;s terms: a declared term-mismatch kind, a path under a terms container, a classification or currency name, or a term key the record&#x27;s asset class owns. |
 | <code>public static bool HasSegment(string? fieldPath, string? name) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:110](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L110) | Whether any whole segment of fieldPath equals name. |
 | <code>public static bool EndsWithValue(string? fieldPath, string? value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L117) | Whether fieldPath is, or ends with, the whole value value (which may itself contain dots, as a provider symbol such as AAPL.O does). |
+
+## SecurityMasterCorporateActionAppendRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L21).
+
+FundProfileId optionally scopes downstream restatement-impact resolution when the append supersedes a prior event; a null scope yields an unscoped impact and no restatement proposal, mirroring the revision-publish path&#x27;s deliberate scoping rule.
+
+```csharp
+public sealed record SecurityMasterCorporateActionAppendRequestDto(Guid SecurityId, CorporateActionDto CorporateAction, string SourceSystem, string Actor, string? SourceRecordId = null, string? Reason = null, string? CorrelationId = null, string? FundProfileId = null);
+```
+
+## SecurityMasterCorporateActionAppendResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L31).
+
+```csharp
+public sealed record SecurityMasterCorporateActionAppendResultDto(CorporateActionDto CorporateAction, SecurityMasterCorporateActionAuditDto Audit, SecurityMasterCorporateActionRestatementDto? Restatement = null);
+```
+
+## SecurityMasterCorporateActionAuditDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAuditDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L56).
+
+```csharp
+public sealed record SecurityMasterCorporateActionAuditDto(string AuditId, Guid SecurityId, Guid CorporateActionId, string EventType, string SourceSystem, string Actor, DateTimeOffset RecordedAtUtc, string? SourceRecordId, string? Reason, string? CorrelationId);
+```
+
+## SecurityMasterCorporateActionRestatementDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionRestatementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L42).
+
+Period-aware restatement outcome for a superseding corporate action (amendment or cancellation) whose economics land in a closed ledger period: whether a governed restatement proposal is required, and the report packs proposed for it. The operator approves each candidate via the existing governed report-pack restatement path.
+
+```csharp
+public sealed record SecurityMasterCorporateActionRestatementDto(bool RestatementRequired, IReadOnlyList<RestatementCandidateDto> Candidates, string EvaluationStatus = CorporateActionRestatementEvaluationStates.Evaluated);
+```

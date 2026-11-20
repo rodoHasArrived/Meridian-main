@@ -49,6 +49,7 @@ function routeFocusSearch(pathname: string, search: string): string {
   const isMarketData = normalizedPath === WORKSTATION_ROUTE_CATALOG.dataQuotes;
   const isIncomeComparison = normalizedPath === WORKSTATION_ROUTE_CATALOG.reportingRunStatus
     || normalizedPath === WORKSTATION_ROUTE_CATALOG.reportingRunDetail;
+  const isLedger = normalizedPath === WORKSTATION_ROUTE_CATALOG.accountingLedger;
   const isReconciliation = normalizedPath === WORKSTATION_ROUTE_CATALOG.accountingReconciliation
     || normalizedPath === WORKSTATION_ROUTE_CATALOG.accountingExceptions;
   const taskKeys = normalizedPath === WORKSTATION_ROUTE_CATALOG.strategy
@@ -57,7 +58,7 @@ function routeFocusSearch(pathname: string, search: string): string {
       ? ["dataJob", "dataTask"]
       : normalizedPath === WORKSTATION_ROUTE_CATALOG.settings
         ? ["settingsTask"] : [];
-  if (!isReporting && !isPortfolio && !isFamilyOffice && !isMarketData && !isReconciliation && !isIncomeComparison && taskKeys.length === 0) return search;
+  if (!isReporting && !isPortfolio && !isFamilyOffice && !isMarketData && !isReconciliation && !isIncomeComparison && !isLedger && taskKeys.length === 0) return search;
 
   // Queue selection, search, and table controls stay in their current workbench.
   // Treating screen-local URL state as navigation would steal the control/row focus.
@@ -80,6 +81,10 @@ function routeFocusSearch(pathname: string, search: string): string {
     }
   } else if (isFamilyOffice) {
     params.delete("ownershipNode");
+  } else if (isLedger) {
+    for (const key of ["accountRow", "accountBasis", "accountBook", "accountPeriod"]) {
+      params.delete(key);
+    }
   } else {
     params.delete(isReporting ? REPORTING_WORK_SELECTION_PARAM : VIEW_STATE_QUERY_KEY);
   }

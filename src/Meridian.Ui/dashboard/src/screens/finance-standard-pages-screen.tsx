@@ -27,6 +27,8 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { ledgerAccountIdentity, LedgerFundIdentity } from "@/screens/ledger-record-identity";
 import { getOperationsCloseCalendar, getReconciliationBreakQueue, getRunTrialBalance } from "@/lib/api";
 import { narrowRowsWithFundScopeContext, useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 import {
@@ -305,6 +307,10 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
   const [searchParams] = useSearchParams();
   const accountId = searchParams.get("accountId") ?? "";
   const requestedRunId = searchParams.get("runId") ?? data?.reconciliationQueue?.[0]?.runId ?? "";
+  return <AccountDetailPanel key={requestedRunId} accountId={accountId} requestedRunId={requestedRunId} />;
+}
+
+function AccountDetailPanel({ accountId, requestedRunId }: { accountId: string; requestedRunId: string }) {
   const [trialRows, setTrialRows] = useState<LedgerTrialBalanceLine[]>([]);
   const [loading, setLoading] = useState(Boolean(requestedRunId));
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -352,6 +358,11 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
   ].some((value) => value?.toLowerCase() === normalizedAccountId)) ?? (!accountId ? trialRows[0] ?? null : null);
   const accountName = account?.accountName ?? (accountId ? "Account not found" : "No account selected");
   const hasAccountingBasis = Boolean(account?.accountingBasis?.trim());
+  const accountRecord = account ? ledgerAccountIdentity(account, { runId: requestedRunId }) : null;
+  const recordContext = useRecordWorkspaceContext(accountRecord, {
+    accountId: accountId || accountRecord?.id,
+    runId: requestedRunId
+  });
 
   return (
     <div className="space-y-3">
@@ -399,6 +410,7 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
           ) : null}
           {account ? (
             <>
+              {accountRecord ? <RecordIdentitySpine record={accountRecord} context={recordContext} /> : null}
               <div className="grid gap-3 md:grid-cols-3">
                 <FinanceFact label="Account" value={account.accountName} />
                 <FinanceFact label="Account type" value={account.accountType} />
@@ -636,6 +648,13 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
 
   return (
     <div className="space-y-3">
+      {postedLedger.selectedBook ? (
+        <LedgerFundIdentity
+          book={postedLedger.selectedBook}
+          period={postedLedger.selectedPeriod}
+          periodError={Boolean(postedLedger.view.periodSelector.errorText)}
+        />
+      ) : null}
       <Card className="panel-surface">
         <CardHeader className="sr-only">
           <CardTitle>Ledger Explorer</CardTitle>

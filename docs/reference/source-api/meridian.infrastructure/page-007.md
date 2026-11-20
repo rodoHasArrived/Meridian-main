@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataSourceBase
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:16](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L16).
+
+Base class providing common functionality for data source implementations. Handles health tracking, rate limiting, retry logic, and lifecycle management.
+
+```csharp
+public abstract class DataSourceBase : IDataSource, IProviderRateLimitDiagnosticsSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public abstract string Id { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:36](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L36) |  |
+| <code>public abstract string DisplayName { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:39](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L39) |  |
+| <code>public abstract string Description { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:42](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L42) |  |
+| <code>public abstract DataSourceType Type { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:47](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L47) |  |
+| <code>public abstract DataSourceCategory Category { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:50](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L50) |  |
+| <code>public virtual int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:55](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L55) | Default priority, can be overridden by derived classes. |
+| <code>public abstract DataSourceCapabilities Capabilities { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:60](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L60) |  |
+| <code>public virtual DataSourceCapabilityInfo CapabilityInfo =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:63](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L63) |  |
+| <code>public abstract IReadOnlySet&lt;string&gt; SupportedMarkets { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:66](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L66) |  |
+| <code>public abstract IReadOnlySet&lt;AssetClass&gt; SupportedAssetClasses { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:69](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L69) |  |
+| <code>public DataSourceHealth Health =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:74](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L74) |  |
+| <code>public DataSourceStatus Status { get; protected set; } = DataSourceStatus.Uninitialized;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:77](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L77) |  |
+| <code>public RateLimitState RateLimitState =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:80](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L80) |  |
+| <code>public IObservable&lt;DataSourceHealthChanged&gt; HealthChanges =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:83](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L83) |  |
+| <code>public virtual async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:109](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L109) |  |
+| <code>public abstract Task&lt;bool&gt; ValidateCredentialsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:148](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L148) |  |
+| <code>public abstract Task&lt;bool&gt; TestConnectivityAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:151](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L151) |  |
+| <code>public virtual async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:154](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L154) |  |
+| <code>public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:387](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L387) |  |
+
 ## DataSourceConfigurationExtensions
 
 Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions</code>. Kind: `class`.
@@ -1099,15 +1135,3 @@ Declared public members:
 | <code>void Clear();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:97](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L97) | Clears all state. |
 | <code>void ForEach(Action&lt;string, T&gt; action);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:103](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L103) | Applies an action to all states. |
 | <code>int RemoveStale(Func&lt;string, T, bool&gt; isStale);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:110](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L110) | Removes stale entries based on a predicate. |
-
-## Subscription
-
-Qualified name: <code>Meridian.Infrastructure.Shared.Subscription</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:18](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L18).
-
-Represents a subscription to market data.
-
-```csharp
-public sealed record Subscription(int Id, string Symbol, string Kind, DateTimeOffset CreatedAt, SubscriptionStatus Status = SubscriptionStatus.Active, DateTimeOffset? LastMessageAt = null, string? LastError = null, int RecoveryAttempts = 0, string? SourceOfRequest = null);
-```

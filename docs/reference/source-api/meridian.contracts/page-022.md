@@ -6,148 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ExtensibilityLayerContractDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.ExtensibilityLayerContractDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:101](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L101).
-
-```csharp
-public sealed record ExtensibilityLayerContractDto(ExtensibilityConfigurationAreaDto Area, string DisplayName, string Description, IReadOnlyList<string> Examples, IReadOnlyList<ExtensibilityScopeKindDto> AllowedScopes, IReadOnlyList<string> Guardrails);
-```
-
-## ExtensibilityRegistrationDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.ExtensibilityRegistrationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:189](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L189).
-
-```csharp
-public sealed record ExtensibilityRegistrationDto(string RegistrationId, ExtensibilityConfigurationAreaDto Area, ExtensibilityConfigurationStatusDto Status, string DisplayName, string Summary, string OwningContext, ExtensibilityScopeDto Scope, IReadOnlyList<CoreFinancialObjectKindDto> TargetCoreObjects, IReadOnlyList<GovernedFoundationKindDto> GovernedFoundations, IReadOnlyList<string> TemplateIds, IReadOnlyList<string> EvidenceTags, IReadOnlyList<string> Guardrails);
-```
-
-## ExtensibilityScopeDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.ExtensibilityScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:115](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L115).
-
-```csharp
-public sealed record ExtensibilityScopeDto(ExtensibilityScopeKindDto ScopeKind, string? ScopeId, string? DisplayName);
-```
-
-## ExtensibilityScopeKindDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.ExtensibilityScopeKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:62](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L62).
-
-```csharp
-public enum ExtensibilityScopeKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Global = 0</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:64](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L64) |  |
-| <code>Tenant = 1</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:65](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L65) |  |
-| <code>EntityGroup = 2</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:66](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L66) |  |
-| <code>Entity = 3</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:67](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L67) |  |
-| <code>Account = 4</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:68](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L68) |  |
-| <code>WorkflowInstance = 5</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:69](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L69) |  |
-| <code>User = 6</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:70](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L70) |  |
-
-## ExtensibilityValidationIssueDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.ExtensibilityValidationIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:120](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L120).
-
-```csharp
-public sealed record ExtensibilityValidationIssueDto(string Code, ExtensibilityValidationSeverityDto Severity, string Message, GovernedFoundationKindDto? BlockedFoundation = null, string? EvidenceRoute = null);
-```
-
-## ExtensibilityValidationSeverityDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.ExtensibilityValidationSeverityDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:86](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L86).
-
-```csharp
-public enum ExtensibilityValidationSeverityDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info = 0</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:88](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L88) |  |
-| <code>Warning = 1</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:89](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L89) |  |
-| <code>Critical = 2</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:90](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L90) |  |
-
-## GovernedFoundationContractDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.GovernedFoundationContractDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:109](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L109).
-
-```csharp
-public sealed record GovernedFoundationContractDto(GovernedFoundationKindDto Kind, string DisplayName, string Description, IReadOnlyList<string> Guardrails);
-```
-
-## GovernedFoundationKindDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.GovernedFoundationKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:74](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L74).
-
-```csharp
-public enum GovernedFoundationKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>AuditTrail = 0</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:76](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L76) |  |
-| <code>SecurityModelFoundation = 1</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:77](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L77) |  |
-| <code>CoreObjectIdentity = 2</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:78](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L78) |  |
-| <code>FinancialCalculationIntegrity = 3</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:79](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L79) |  |
-| <code>DataLineageModel = 4</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:80](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L80) |  |
-| <code>ApprovalEvidenceModel = 5</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:81](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L81) |  |
-| <code>ImmutableRecordPreservation = 6</code> | [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:82](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L82) |  |
-
-## StableCoreObjectContractDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.StableCoreObjectContractDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:93](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L93).
-
-```csharp
-public sealed record StableCoreObjectContractDto(CoreFinancialObjectKindDto Kind, string DisplayName, string Description, string OwnerContext, string IdentityRule, bool AllowsTenantCustomFields);
-```
-
-## TenantTemplateActivationRequestDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.TenantTemplateActivationRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:174](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L174).
-
-```csharp
-public sealed record TenantTemplateActivationRequestDto(string ChangeReason, string? LinkedAuditEventId = null);
-```
-
-## TenantTemplateActivationResultDto
-
-Qualified name: <code>Meridian.Contracts.Extensibility.TenantTemplateActivationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs:178](../../../../src/Meridian.Contracts/Extensibility/CoreExtensibilityContracts.cs#L178).
-
-```csharp
-public sealed record TenantTemplateActivationResultDto(string TenantTemplateId, bool IsActivated, ExtensibilityConfigurationStatusDto ResultingStatus, DateTimeOffset EvaluatedAt, string EvaluatedBy, string ChangeReason, string? LinkedAuditEventId, ExtensibilityActivationReadinessDto Readiness, TenantTemplateConfigurationBundleDto? TenantTemplate);
-```
-
 ## TenantTemplateConfigurationBundleDto
 
 Qualified name: <code>Meridian.Contracts.Extensibility.TenantTemplateConfigurationBundleDto</code>. Kind: `record`.
@@ -721,4 +579,169 @@ Query one typed input population. EconomicDate selects the exact date; no previo
 
 ```csharp
 public sealed record BondMarketDataQuery(BondMarketObservationKind? Kind = null, string? SeriesKey = null, Guid? SecurityId = null, DateOnly? EconomicDate = null, DateOnly? FromDate = null, DateOnly? ThroughDate = null, DateTimeOffset? KnownAtUtc = null, string? ProviderId = null, bool IncludeSuperseded = false);
+```
+
+## BondMarketDataRules
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMarketDataRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:115](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L115).
+
+Shared validation and canonical identities for adapters, durable stores and imports.
+
+```csharp
+public static class BondMarketDataRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static BondMarketObservationInput Normalize(BondMarketObservationInput input);</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:117](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L117) |  |
+| <code>public static string SourceRevisionKey(BondMarketObservationInput input) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:171](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L171) |  |
+| <code>public static string SourceKey(BondMarketObservationInput input) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:174](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L174) |  |
+| <code>public static string ContentHash(BondMarketObservationInput input) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:177](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L177) |  |
+| <code>public static void ValidateRetained(BondMarketObservationDto observation);</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:180](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L180) |  |
+| <code>public static decimal AnnualFraction(BondMarketObservationDto observation) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:192](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L192) |  |
+
+## BondMarketImportRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMarketImportRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:66](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L66).
+
+```csharp
+public sealed record BondMarketImportRequest(IReadOnlyList<BondMarketObservationInput> Observations);
+```
+
+## BondMarketImportResult
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMarketImportResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:67](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L67).
+
+```csharp
+public sealed record BondMarketImportResult(IReadOnlyList<BondMarketObservationDto> Observations, int AppendedCount);
+```
+
+## BondMarketObservationDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMarketObservationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:59](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L59).
+
+Append-only knowledge-time envelope; its content identity excludes no economic facts.
+
+```csharp
+public sealed record BondMarketObservationDto(Guid ObservationId, BondMarketObservationInput Input, DateTimeOffset RecordedAtUtc, string RecordedBy, string ContentSha256);
+```
+
+## BondMarketObservationInput
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMarketObservationInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:38](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L38).
+
+One explicitly typed source revision. ObservationKey is the stable provider record key across corrections. Rate values preserve their declared units; series names never imply a unit.
+
+```csharp
+public sealed record BondMarketObservationInput(string ObservationKey, long Revision, [property : JsonRequired] BondMarketObservationKind Kind, string ProviderId, string SeriesKey, DateOnly EconomicDate, [property : JsonRequired] BondMarketValueUnit Unit, decimal? Value, string SourceName, string SourceEvidenceSha256, string EvidenceReference, DateTimeOffset? PublishedAtUtc = null, Guid? SecurityId = null, string? Currency = null, string? Rating = null, string? RatingAgency = null, BondMarketQuoteDetails? Quote = null, DateOnly? SourceVintageDate = null);
+```
+
+## BondMarketObservationKind
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMarketObservationKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:8](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L8).
+
+```csharp
+public enum BondMarketObservationKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Fixing</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:8](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L8) |  |
+| <code>InflationIndex</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:8](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L8) |  |
+| <code>PrincipalFactor</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:8](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L8) |  |
+| <code>CreditRating</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:8](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L8) |  |
+| <code>Quote</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:8](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L8) |  |
+
+## BondMarketQuoteDetails
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMarketQuoteDetails</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:19](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L19).
+
+A quote&#x27;s economic meaning. A price selection receipt remains the pricing authority.
+
+```csharp
+public sealed record BondMarketQuoteDetails([property : JsonRequired] BondQuoteCategory Category, [property : JsonRequired] BondQuotePriceBasis PriceBasis, DateOnly SettlementDate, decimal? AvailableFace = null, decimal? ProviderYield = null, string? ProviderYieldConvention = null, DateTimeOffset? ExpiresAtUtc = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? PricingSourceId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:28](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L28) |  |
+| <code>public DateTimeOffset? ObservedAtUtc { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:29](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L29) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SettlementBasis { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:31](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L31) |  |
+
+## BondMarketValueUnit
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMarketValueUnit</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10).
+
+```csharp
+public enum BondMarketValueUnit
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AnnualFraction</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>Percent</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>IndexLevel</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>PrincipalFactor</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>PercentOfPar</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>CurrencyPerUnit</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+| <code>Rating</code> | [src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondMarketDataContracts.cs#L10) |  |
+
+## BondMigrationBatchPreviewRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationBatchPreviewRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationApiRequests.cs:11](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationApiRequests.cs#L11).
+
+Bounded bulk preview; each row retains its own expected security version.
+
+```csharp
+public sealed record BondMigrationBatchPreviewRequest(IReadOnlyList<BondMigrationPreviewRequest> Bonds);
+```
+
+## BondMigrationBlockDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationBlockDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:34](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L34).
+
+An explicitly reviewed operational block bound to exactly one retained terms version.
+
+```csharp
+public sealed record BondMigrationBlockDto(Guid SecurityId, long Version, string SecurityContentSha256, string Reason);
+```
+
+## BondMigrationCashDifference
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationCashDifference</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:15](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L15).
+
+One economic payment before and after migration, compared by actual payment date.
+
+```csharp
+public sealed record BondMigrationCashDifference(DateOnly PaymentDate, decimal PreviousPrincipal, decimal CandidatePrincipal, decimal PreviousInterest, decimal CandidateInterest);
 ```

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import type { ReactNode } from "react";
 import { DenseDataTableColumn, EntitySummary } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,10 +52,12 @@ export const trialBalanceColumns: DenseDataTableColumn<AccountingTrialBalanceRow
 
 export function AccountingTrialBalanceSelectedDetailPanel({
   panelId,
-  detail
+  detail,
+  identity
 }: {
   panelId: string;
   detail: AccountingTrialBalanceDetailViewState;
+  identity?: ReactNode;
 }) {
   const technicalFields = detail.fields.filter((field) => TRIAL_BALANCE_TECHNICAL_FIELD_LABELS.has(field.label));
   const operationalFields = detail.fields.filter((field) => !TRIAL_BALANCE_TECHNICAL_FIELD_LABELS.has(field.label));
@@ -70,6 +73,7 @@ export function AccountingTrialBalanceSelectedDetailPanel({
         fields={operationalFields}
         ariaLabel={detail.ariaLabel}
       />
+      {identity}
       {technicalFields.length > 0 ? (
         <TechnicalDetails label="Record identifiers" className="mt-3">
           <dl className="grid gap-2 text-xs sm:grid-cols-2">

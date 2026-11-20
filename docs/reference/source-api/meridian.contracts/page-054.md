@@ -6,50 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SecurityMasterCorporateActionAppendRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L21).
-
-FundProfileId optionally scopes downstream restatement-impact resolution when the append supersedes a prior event; a null scope yields an unscoped impact and no restatement proposal, mirroring the revision-publish path&#x27;s deliberate scoping rule.
-
-```csharp
-public sealed record SecurityMasterCorporateActionAppendRequestDto(Guid SecurityId, CorporateActionDto CorporateAction, string SourceSystem, string Actor, string? SourceRecordId = null, string? Reason = null, string? CorrelationId = null, string? FundProfileId = null);
-```
-
-## SecurityMasterCorporateActionAppendResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L31).
-
-```csharp
-public sealed record SecurityMasterCorporateActionAppendResultDto(CorporateActionDto CorporateAction, SecurityMasterCorporateActionAuditDto Audit, SecurityMasterCorporateActionRestatementDto? Restatement = null);
-```
-
-## SecurityMasterCorporateActionAuditDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAuditDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L56).
-
-```csharp
-public sealed record SecurityMasterCorporateActionAuditDto(string AuditId, Guid SecurityId, Guid CorporateActionId, string EventType, string SourceSystem, string Actor, DateTimeOffset RecordedAtUtc, string? SourceRecordId, string? Reason, string? CorrelationId);
-```
-
-## SecurityMasterCorporateActionRestatementDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionRestatementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L42).
-
-Period-aware restatement outcome for a superseding corporate action (amendment or cancellation) whose economics land in a closed ledger period: whether a governed restatement proposal is required, and the report packs proposed for it. The operator approves each candidate via the existing governed report-pack restatement path.
-
-```csharp
-public sealed record SecurityMasterCorporateActionRestatementDto(bool RestatementRequired, IReadOnlyList<RestatementCandidateDto> Candidates, string EvaluationStatus = CorporateActionRestatementEvaluationStates.Evaluated);
-```
-
 ## SecurityMasterEnumReads
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEnumReads</code>. Kind: `class`.
@@ -841,3 +797,73 @@ Declared public members:
 | <code>public bool IsValid =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L33) |  |
 | <code>public bool IsPresent =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L34) |  |
 | <code>public IReadOnlyList&lt;T&gt; SourceEntries { get; init; } = Entries;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L41) | Valid typed rows in their original order, before principal aggregation. Codecs use this view to retain historical row structure; calculations use Entries. Invalid input exposes neither view. |
+
+## SecuritySchedulePresence
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySchedulePresence</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L4).
+
+The ownership of a schedule after selecting its authoritative source.
+
+```csharp
+public enum SecuritySchedulePresence
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Absent</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L6) |  |
+| <code>Empty</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L7) |  |
+| <code>Populated</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L8) |  |
+| <code>Invalid</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L9) |  |
+
+## SecurityScheduleValidationException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityScheduleValidationException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L70).
+
+An invalid retained or submitted economic schedule. Readers must surface the diagnostic rather than substitute an empty schedule, a lower-priority source or a stale relational projection.
+
+```csharp
+public sealed class SecurityScheduleValidationException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityScheduleValidationException(IReadOnlyList&lt;SecurityScheduleDiagnostic&gt; diagnostics) : base(&quot;Invalid economic schedule: &quot; + string.Join(&quot;; &quot;, diagnostics.Select(static diagnostic =&gt; $&quot;{diagnostic.Path}: {diagnostic.Message} ({diagnostic.Code})&quot;)));</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L72) |  |
+| <code>public IReadOnlyList&lt;SecurityScheduleDiagnostic&gt; Diagnostics { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEconomicScheduleValidation.cs#L79) |  |
+
+## SecuritySearchRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySearchRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L10).
+
+```csharp
+public sealed record SecuritySearchRequest(string Query, int Take = 50, int Skip = 0, bool ActiveOnly = false, string? CustomProfileId = null, int? ProfileVersion = null, string? ProfileFieldKey = null, string? ProfileFieldValue = null);
+```
+
+## SecuritySettlementMethod
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySettlementMethod</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L11).
+
+How a derivative settles at expiry or exercise.
+
+```csharp
+public enum SecuritySettlementMethod
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Cash</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L14) | Settled by a cash payment of the intrinsic value or final variation. |
+| <code>Physical</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L17) | Settled by delivery of the underlying. |
+| <code>Elective</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L20) | The holder elects cash or physical settlement. |
