@@ -19,6 +19,7 @@ public sealed partial class ProviderConnectionLifecycleService
 {
     private const string AlpacaPaperTradingApiEndpoint = "https://paper-api.alpaca.markets/v2";
     private const string AlpacaLiveTradingApiEndpoint = "https://api.alpaca.markets/v2";
+    private const string ScopedVerificationUnavailable = "Connection-scoped live verification is not available for this provider.";
 
     private readonly IProviderCredentialStore _credentialStore;
     private readonly IProviderCredentialStore _rootCredentialStore;
@@ -30,6 +31,7 @@ public sealed partial class ProviderConnectionLifecycleService
     private readonly ProviderCredentialScope? _ownershipScope;
     private readonly Meridian.Application.ProviderRouting.ProviderCredentialOwnershipPolicy _ownershipPolicy;
     private readonly Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard _mutationGuard;
+    private readonly (Guid SetupId, string Actor)? _templateSetup;
     private readonly ConcurrentDictionary<(string ProviderId, ProviderCredentialScope Scope), IAccountingSystemConnectionVerifier> _boundAccountingVerifiers = new();
 
     public ProviderConnectionLifecycleService(
@@ -59,13 +61,15 @@ public sealed partial class ProviderConnectionLifecycleService
         _setupRegistry = setupRegistry ?? new ProviderSetupRegistry(DefaultProviderSetupHandlers.Create());
     }
 
-    private ProviderConnectionLifecycleService(ProviderConnectionLifecycleService owner, ProviderCredentialScope scope)
+    private ProviderConnectionLifecycleService(ProviderConnectionLifecycleService owner, ProviderCredentialScope scope,
+        (Guid SetupId, string Actor)? templateSetup = null)
         : this(owner._rootCredentialStore, owner._configStore, owner._logger, owner._httpClientFactory,
             owner._accountingSystemProviders, owner._setupRegistry, scope, owner._ownershipPolicy, owner._mutationGuard)
     {
         // ForConnection creates a lifecycle per request. Retain adapter instances across those
         // requests so each connection's refresh-token gate continues to serialize exchanges.
         _boundAccountingVerifiers = owner._boundAccountingVerifiers;
+        _templateSetup = templateSetup;
     }
 
     /// <summary>Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant.</summary>
@@ -279,7 +283,7 @@ public sealed partial class ProviderConnectionLifecycleService
             if (accountingVerification is null)
                 return new ProviderCredentialVerificationResultDto(descriptor.ProviderId, false,
                     ProviderVerificationStateDto.NotVerified, ProviderContinuityHealthDto.Blocked, null,
-                    "Connection-scoped live verification is not available for this provider.", null,
+                    ScopedVerificationUnavailable, null,
                     ["Use a verifier bound to this retained connection before relying on these credentials."]);
         }
         else

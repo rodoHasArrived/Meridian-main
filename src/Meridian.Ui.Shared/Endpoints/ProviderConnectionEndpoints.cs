@@ -83,7 +83,7 @@ public static class ProviderConnectionEndpoints
 
             try
             {
-                var selectedService = ResolveConnectionService(context, providerId, service);
+                var selectedService = ResolveConnectionService(context, providerId, service, actor);
                 var result = await selectedService.SaveCredentialsAsync(providerId, request with { RequestedBy = actor }, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -180,9 +180,18 @@ public static class ProviderConnectionEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
-    private static ProviderConnectionLifecycleService ResolveConnectionService(HttpContext context, string providerId, ProviderConnectionLifecycleService service)
+    private static ProviderConnectionLifecycleService ResolveConnectionService(HttpContext context, string providerId,
+        ProviderConnectionLifecycleService service, string? templateActor = null)
     {
         var connectionId = ReadConnectionId(context);
+        if (context.Request.Query.TryGetValue("templateSetupId", out var setupIds))
+        {
+            var owner = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (templateActor is null || connectionId is not null || !owner.HasTenantScope || setupIds.Count != 1 ||
+                !Guid.TryParse(setupIds[0], out var setupId) || !EndpointAuthorization.HasPermission(context, ProviderConnectionTemplateEndpoints.Permissions))
+                throw new UnauthorizedAccessException("The provider setup draft is unavailable.");
+            return service.ForTemplateSetup(setupId, owner.TenantId!, templateActor, providerId);
+        }
         if (connectionId is null)
             return service;
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);

@@ -65,7 +65,7 @@ public partial class AddProviderWizardPage : Page
         => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => PageLoadedCoreAsync(sender, e), nameof(OnPageLoaded)).ConfigureAwait(true);
 
     private async System.Threading.Tasks.Task PageLoadedCoreAsync(object sender, RoutedEventArgs e)
-        => await LoadProviderCatalogAsync();
+        => await Task.WhenAll(LoadProviderCatalogAsync(), ReloadTemplatesAsync());
 
     internal async Task LoadProviderCatalogAsync()
     {
@@ -77,11 +77,18 @@ public partial class AddProviderWizardPage : Page
         _credentialStatuses = [];
         _catalogCredentialStatuses = catalogStatuses;
         _viewModel.LoadProviderCatalog(providers, catalogStatuses);
-        _viewModel.CurrentStep = 1;
+        SourceTemplateConnection.ItemsSource = _ownedConnections;
+        if (_reviewedTemplate is null)
+            _viewModel.CurrentStep = 1;
     }
 
-    private void BackButton_Click(object sender, RoutedEventArgs e)
+    private async void BackButton_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(GoBackAsync, nameof(BackButton_Click)).ConfigureAwait(true);
+
+    private async Task GoBackAsync()
     {
+        if (_templateBusy) return;
+        if (_reviewedTemplate is not null && !await DiscardTemplateAsync()) return;
         _navigationService.NavigateTo("Settings");
     }
 
@@ -142,8 +149,12 @@ public partial class AddProviderWizardPage : Page
         }
 
         _viewModel.ApplyCredentialsInfo(_selectedProvider.DisplayName, _serviceFields.Count > 0);
+        RenderCredentialEditors(_serviceFields);
+    }
 
-        foreach (var field in _serviceFields)
+    private void RenderCredentialEditors(IReadOnlyList<ProviderCredentialFieldMetadataDto> fields)
+    {
+        foreach (var field in fields)
         {
             // Editors start blank: secrets are never read back from the vault or the process
             // environment, and a blank field keeps whatever value the vault already retains.
@@ -295,7 +306,11 @@ public partial class AddProviderWizardPage : Page
 
         await _settingsConfigService.SaveProviderCredentialsAsync(provider.Id, fields, connectionId, ct);
         if (!IsCurrentCredentialScope(generation)) return;
+        ClearPersistedCredentialFields(fields);
+    }
 
+    private void ClearPersistedCredentialFields(Dictionary<string, string?> fields)
+    {
         // Release persisted secrets rather than retaining a second plaintext copy to remember
         // which values were tested. Do not erase an edit made while the save awaited the service.
         _clearingPersistedFields = true;
@@ -325,7 +340,15 @@ public partial class AddProviderWizardPage : Page
     private void CredentialEditorChanged(object? sender, EventArgs e)
     {
         if (!_clearingPersistedFields)
+        {
             _viewModel.ResetConnectionTest("Credentials changed. Test connection to verify the current edits.");
+            if (_templateDraft is not null)
+            {
+                _templateTestPassed = false;
+                TemplateVaultMessage.Text = "Credentials changed. Test the connection again.";
+                UpdateTemplateControls();
+            }
+        }
     }
 
     private Dictionary<string, string?> CollectEnteredCredentialFields()

@@ -322,15 +322,19 @@ command availability and retain the current editor values for an explicit retry.
 fields the operator filled in, because the vault treats a blank value as a deletion; rotating one secret
 keeps the other retained fields.
 
-The add-provider wizard requires explicit selection of an existing owned connection for managed
-credentials. It loads that connection's retained schema and uses its `connectionId` for status,
+The Add Provider wizard starts with the shared connection template catalog. An authorized operator can
+review reusable settings and the verification checklist, open the credential vault, test, and save a
+new connection. **Manage connection templates** saves an owned connection's portable settings and imports
+or exports versioned JSON. See [provider connection templates](../Meridian.Ui.Shared/README.md#provider-connection-templates).
+
+The existing connection path requires explicit selection of an owned connection for managed credentials.
+It loads that connection's retained schema and uses its `connectionId` for status,
 save, verification and confirmed removal. Ownership is rechecked before mutations; missing, changed,
 foreign or unavailable selections cannot fall back to provider-wide credentials. An empty owned
-connection list gives an onboarding/unavailable state without creating ownership. Connection changes
+connection list gives an onboarding/unavailable state. Connection changes
 clear secret editors, verification and save state, cancel old requests and ignore delayed responses.
 Only unchanged submitted secrets are cleared after a confirmed save, so newer edits survive and
-require another test. The credential editor does not create connections or activate subscriptions or
-runtime routing; those remain separate workflows. Credential-free providers show that no managed
+require another test. Subscriptions and runtime routing have separate activation workflows. Credential-free providers show that no managed
 credentials are required. The wizard and credential management use the service's vault field schema,
 not local catalog field names, and never read secrets back into editors or write environment variables.
 

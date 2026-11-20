@@ -130,6 +130,19 @@ public sealed class ConfigStore
     internal Task<T> UpdateRequiredAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
         => UpdateCoreAsync(LoadRequired, update, ct);
 
+    // Vault checks and template publication share the same ownership lease as credential writes.
+    internal async Task<T> UpdateRequiredWithLeaseAsync<T>(
+        Func<AppConfig, CancellationToken, Task<(AppConfig Config, T Result)>> update, CancellationToken ct)
+    {
+        using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
+        var current = LoadRequired();
+        var (next, result) = await update(current, ct).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+        if (!ReferenceEquals(current, next))
+            await SaveCoreAsync(next, ct).ConfigureAwait(false);
+        return result;
+    }
+
     /// <summary>
     /// Read-modify-write of the configuration document under the cross-process configuration lock
     /// (PRD-002: concurrent configuration writes). The current document is loaded <em>inside</em> the

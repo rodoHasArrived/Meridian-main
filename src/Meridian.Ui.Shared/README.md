@@ -1147,6 +1147,24 @@ import, and `sample`/`skip` lead with the starter kit's desk. Activation outcome
 reports the completed work to `POST /api/workstation/first-run/outcomes/complete`, so the
 checklist reflects finished work rather than page visits.
 
+## Provider connection templates
+
+The browser Data workspace and WPF Add Provider wizard use the same tenant-owned template library.
+The built-ins cover paper brokerage, historical equities, options chains, reference data, and research-only backfill.
+The review shows the new connection settings, required capabilities, data semantics, recommended binding priority, and verification checklist.
+
+Template JSON uses schema version 1 with separate provider and capability contract versions.
+Import validates the full document before updating the library and reports fields with unsupported versions.
+The portable format uses catalog values for scope, environment, data semantics, and checklist items.
+Saving an owned connection as a template copies those settings and its binding recommendation. It requires a new template name and a portable scope.
+
+Credential entry uses the existing scoped vault. The draft stays outside the connection inventory until the operator tests and saves it.
+Alpaca verifies the account. Tiingo, Polygon, and OpenFIGI request a sample with the draft's credentials.
+Credential-free providers and adapters without scoped verification show the coverage of their setup check.
+The checklist describes the remaining data and entitlement checks. Activation and routing bindings are separate operator actions.
+
+Abandoned drafts expire after 24 hours. The operator's next setup clears their expired drafts and the corresponding vault records.
+
 ## Shared close and lot convergence
 
 `LedgerReportingAuthoritativeSource` reconciles corporate-action successor journals against the

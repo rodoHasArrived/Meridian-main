@@ -98,6 +98,7 @@ import type {
   ProviderSetupNextActionState
 } from "@/screens/data-screen.view-model";
 import type { DataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
+import { ProviderConnectionTemplatesDialog } from "@/components/data/provider-connection-templates-dialog";
 import type {
   ProviderConnectionRow,
   ProviderReadinessSummary,
@@ -530,7 +531,8 @@ function DataScreenContent({
         ) : null}
       </section>
 
-      <ProviderSetupDialog vm={vm} />
+      {vm.providerSetupOpen ? <ProviderSetupEntry vm={vm}
+        connections={providerRoutingConnections ?? []} onSaved={onProviderSetupConfigured} /> : null}
       <BackfillTriggerDialog vm={vm} />
     </div>
   );
@@ -1163,6 +1165,16 @@ function dataStatusToneToBannerTone(tone: "default" | "warning" | "danger" | "su
     default:
       return "info";
   }
+}
+
+function ProviderSetupEntry({ vm, connections, onSaved }: {
+  vm: DataOperationsVm;
+  connections: readonly ProviderRoutingConnection[];
+  onSaved?: (() => Promise<void> | void) | undefined;
+}) {
+  const [manual, setManual] = useState(false);
+  return manual ? <ProviderSetupDialog vm={vm} /> : <ProviderConnectionTemplatesDialog
+    connections={connections} onClose={vm.closeProviderSetup} onManual={() => setManual(true)} onSaved={onSaved} />;
 }
 
 function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
