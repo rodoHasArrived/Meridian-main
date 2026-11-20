@@ -13,7 +13,7 @@ import {
   type DenseDataTableSortState
 } from "@/components/meridian/ui-kit-primitives";
 import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { formatCurrency, formatMoney, formatUtcDate, formatUtcMonthYear } from "@/lib/format";
 import { formatNumber, pluralizeCount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +27,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
-import { getOperationsCloseCalendar, getRunTrialBalance } from "@/lib/api";
+import { getOperationsCloseCalendar, getReconciliationBreakQueue, getRunTrialBalance } from "@/lib/api";
 import { narrowRowsWithFundScopeContext, useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 import {
   normalizeReportingWorkspace,
@@ -56,7 +56,8 @@ import type {
   AccountingWorkspaceResponse,
   LedgerTrialBalanceLine,
   OperationsCloseCalendar,
-  OperationsCloseCalendarItem
+  OperationsCloseCalendarItem,
+  ReconciliationBreakQueueItem
 } from "@/types";
 
 interface FinanceStandardScreenProps {
@@ -838,22 +839,85 @@ export function ConsolidationWorkflowScreen() {
 }
 
 export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScreenProps) {
-  const breaks = data?.breakQueue ?? [];
-  const selectedBreak = breaks[0] ?? null;
+  const [searchParams] = useSearchParams();
+  const { key: navigationKey } = useLocation();
+  const fundScope = useFundScopeNarrowingContext();
+  const fundAccountId = searchParams.get("fundAccountId")?.trim() || searchParams.get("accountId")?.trim() || undefined;
+  const caseId = searchParams.get("caseId")?.trim().toLowerCase();
+  const runId = searchParams.get("runId")?.trim().toLowerCase();
+  const breakId = searchParams.get("breakId")?.trim().toLowerCase()
+    || (caseId?.startsWith("case:") ? caseId.slice("case:".length).trim() : null);
+  const hasCaseAddress = searchParams.has("caseId") || searchParams.has("breakId");
+  const hasAddress = hasCaseAddress || searchParams.has("runId");
+  const canResolveAddress = (!hasCaseAddress || Boolean(breakId)) && (!searchParams.has("runId") || Boolean(runId));
+  const scopeBreaks = (rows: ReconciliationBreakQueueItem[]) => {
+    const accountRows = fundAccountId
+      ? rows.filter((row) => row.fundAccountId?.toLowerCase() === fundAccountId.toLowerCase())
+      : rows;
+    return narrowRowsWithFundScopeContext(fundScope, accountRows, (row) => row.fundAccountId, "breaks").rows;
+  };
+  const selectBreak = (rows: ReconciliationBreakQueueItem[]) => {
+    if (!canResolveAddress) return null;
+    const matchesRun = (row: ReconciliationBreakQueueItem) => !runId
+      || row.runId.toLowerCase() === runId
+      || row.sourceImportId?.toLowerCase() === runId;
+    if (!breakId) return rows.find(matchesRun) ?? null;
+    // Import links identify source records, and the governed queue gives those records its own IDs.
+    return rows.find((row) => row.breakId.toLowerCase() === breakId && matchesRun(row))
+      ?? rows.find((row) => row.sourceBreakId?.toLowerCase() === breakId && matchesRun(row))
+      ?? null;
+  };
+  const workspaceBreaks = scopeBreaks(data?.breakQueue ?? []);
+  const workspaceSelection = selectBreak(workspaceBreaks);
+  // An import can publish cases after the shell's Accounting snapshot was loaded.
+  const needsQueueRead = hasAddress && canResolveAddress && workspaceSelection === null;
+  const [queueRead, setQueueRead] = useState<{
+    navigationKey: string;
+    rows: ReconciliationBreakQueueItem[] | null;
+  } | null>(null);
+  useEffect(() => {
+    if (!needsQueueRead) return;
+    const controller = new AbortController();
+    void getReconciliationBreakQueue(undefined, fundAccountId, { signal: controller.signal, allowDevelopmentFallback: false })
+      .then((rows) => {
+        if (!controller.signal.aborted) setQueueRead({ navigationKey, rows });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setQueueRead({ navigationKey, rows: null });
+      });
+    return () => controller.abort();
+  }, [needsQueueRead, fundAccountId, navigationKey]);
+
+  const currentRead = needsQueueRead && queueRead?.navigationKey === navigationKey ? queueRead : null;
+  const breaks = currentRead?.rows ? scopeBreaks(currentRead.rows) : workspaceBreaks;
+  const selectedBreak = currentRead?.rows ? selectBreak(breaks) : workspaceSelection;
   const breakLabel = selectedBreak ? financeBreakLabel(selectedBreak.category) : "No open break selected";
   const freshness = buildFinanceFreshness(selectedBreak?.lastUpdatedAt);
+  const caseworkPath = workstationRouteWithQuery("accountingReconciliation", {
+    reconciliationBreak: hasAddress ? selectedBreak?.breakId : undefined,
+    entityId: searchParams.get("entityId"),
+    fundId: searchParams.get("fundId"),
+    fundAccountId
+  });
+  const emptyState = needsQueueRead && !currentRead
+    ? { title: "Loading reconciliation breaks" }
+    : currentRead?.rows === null
+      ? { title: "Reconciliation breaks could not be loaded", detail: "Reload the page to try again or open reconciliation casework." }
+      : hasAddress
+        ? { title: "Requested reconciliation break unavailable", detail: "Check the link or open reconciliation casework to see breaks in the current scope." }
+        : { title: "No reconciliation case selected", detail: "Open a break from Accounting Reconciliation to retain its case scope here." };
 
   return (
     <div className="space-y-3">
       <OperationalTrustSummary
-        source={{ value: "Reconciliation queue", tone: data ? "ready" : "unknown" }}
+        source={{ value: "Reconciliation queue", tone: data || currentRead?.rows ? "ready" : "unknown" }}
         scope={{ value: selectedBreak ? "Selected case" : "No case selected", detail: selectedBreak?.strategyName, tone: selectedBreak ? "ready" : "unknown" }}
         freshness={freshness}
         completeness={{ value: selectedBreak ? "Case loaded" : "No case data", tone: selectedBreak ? "review" : "unknown" }}
         blocker={selectedBreak ? { value: "Open cash variance", detail: selectedBreak.reason, tone: "review" } : undefined}
       />
       <div className="flex flex-wrap gap-2">
-        <Button asChild size="sm"><Link to={WORKSTATION_ROUTE_CATALOG.accountingReconciliation}>Open reconciliation casework</Link></Button>
+        <Button asChild size="sm"><Link to={caseworkPath}>Open reconciliation casework</Link></Button>
         {selectedBreak ? (
           <Button asChild size="sm" variant="outline"><Link to={evidenceWorkbenchPath("reconciliation-break", selectedBreak.breakId)}>Review retained evidence</Link></Button>
         ) : null}
@@ -886,7 +950,7 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
           </dl>
         </TechnicalDetails>
       ) : (
-        <StatusBanner role="status" tone="info" title="No reconciliation case selected" detail="Open a break from Accounting Reconciliation to retain its case scope here." />
+        <StatusBanner role="status" tone="info" title={emptyState.title} detail={emptyState.detail} />
       )}
 
     </div>

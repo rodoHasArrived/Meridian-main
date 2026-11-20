@@ -3570,6 +3570,13 @@ oversight, calibration/history, readiness, source comparison and run evidence re
 labelled disclosures. Statement import IDs and strategy reconciliation run IDs remain distinct;
 the UI does not infer a mapping between them.
 
+The cash comparison shows “Can't assess” when cash-flow coverage or a required amount is unavailable.
+Measured zero variance can still show “Balanced.”
+
+Statement import links open Match using the source import and break IDs retained on the queue row.
+Match checks the current queue when the shell snapshot lacks the requested break. Its casework and
+evidence links use the governed queue row's ID. An unavailable target gets an explicit notice.
+
 `reconciliation-view-state.ts` stores `reconciliationRun`, `reconciliationBreak`,
 `reconciliationSearch`, `reconciliationStatus` and `reconciliationSort` in the URL, preserving
 shared operating scope, unrelated query parameters and the hash. Search replaces the current

@@ -107,7 +107,9 @@ function appendOptionalStatementFormField(formData: FormData, name: string, valu
   }
 }
 
-export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) { return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId })); }
+export function getReconciliationBreakQueue(status?: string, fundAccountId?: string, options: ApiRequestOptions = {}) {
+  return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId }), options);
+}
 
 export function getReconciliationBreakDetail(breakId: string) { return getJson<ReconciliationBreakQueueItem>(reconciliationBreakEndpoint(breakId)); }
 

@@ -147,10 +147,14 @@ describe("Accounting reconciliation tie-out proof", () => {
     expect(proof).toHaveTextContent("Cannot tie out. Internal ledger has no value.");
   });
 
-  it("renders no tie-out and no actions without a loaded external GL reconciliation", () => {
+  it("shows a neutral, unavailable comparison without external GL or cash-flow evidence", () => {
     renderMount(null);
 
-    expect(screen.getByRole("region", { name: comparisonName })).toBeInTheDocument();
+    const comparison = screen.getByRole("region", { name: comparisonName });
+    expect(within(comparison).getAllByText("Not loaded")).toHaveLength(2);
+    const varianceBadge = within(comparison).getByText("Can't assess");
+    expect(varianceBadge).not.toHaveClass("is-balanced");
+    expect(varianceBadge).not.toHaveClass("is-out");
     expect(screen.queryByRole("region", { name: "Tie-out proof" })).not.toBeInTheDocument();
   });
 
