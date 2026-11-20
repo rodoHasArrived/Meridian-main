@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageQuota
+
+Qualified name: <code>Meridian.Storage.StorageQuota</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:405](../../../../src/Meridian.Storage/StorageOptions.cs#L405).
+
+Storage quota specification.
+
+```csharp
+public sealed class StorageQuota
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long MaxBytes { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:408](../../../../src/Meridian.Storage/StorageOptions.cs#L408) | Maximum bytes for this quota. |
+| <code>public long? MaxFiles { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:411](../../../../src/Meridian.Storage/StorageOptions.cs#L411) | Maximum number of files. |
+| <code>public long? MaxEventsPerDay { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:414](../../../../src/Meridian.Storage/StorageOptions.cs#L414) | Maximum events per day. |
+| <code>public QuotaEnforcementPolicy Enforcement { get; init; } = QuotaEnforcementPolicy.SoftLimit;</code> | [src/Meridian.Storage/StorageOptions.cs:417](../../../../src/Meridian.Storage/StorageOptions.cs#L417) | Enforcement policy when quota is exceeded. |
+
 ## StorageSinkAttribute
 
 Qualified name: <code>Meridian.Storage.StorageSinkAttribute</code>. Kind: `class`.
