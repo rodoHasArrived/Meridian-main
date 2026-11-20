@@ -26,7 +26,7 @@ Declared public members:
 | <code>public async Task&lt;StatementAccountingScope&gt; ResolveAccountingScopeAsync(StatementReconciliationIntakeScopeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:112](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L112) |  |
 | <code>public async Task&lt;StatementReconciliationIntakeReceipt&gt; PublishAsync(string statementWorkflowId, StatementImportCommitResultDto import, StatementAccountingScope accountingScope, string tenantId, string companyId, string actor, string sourceInstitution, IReadOnlyList&lt;string&gt; evidenceReferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:231](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L231) |  |
 
-Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.Lineage.cs:10](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.Lineage.cs#L10).
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.Lineage.cs:11](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.Lineage.cs#L11).
 
 ```csharp
 public sealed partial class StatementReconciliationIntakeAuthority
