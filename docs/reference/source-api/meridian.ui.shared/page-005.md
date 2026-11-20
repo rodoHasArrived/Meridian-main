@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MessagingEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MessagingEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs#L17).
+
+Extension methods for registering messaging and notification API endpoints. Wired to the actual DailySummaryWebhook and ConnectionStatusWebhook services.
+
+```csharp
+public static class MessagingEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapMessagingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs#L19) |  |
+
+## MoneyMarketFundEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MoneyMarketFundEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs#L15).
+
+Minimal API endpoint group for money market fund reference data, liquidity projections, sweep profiles, fund-family views, and rebuild orchestration.
+
+```csharp
+public static class MoneyMarketFundEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapMoneyMarketFundEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs#L19) |  |
+
+## MoneyMarketFundReferenceEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MoneyMarketFundReferenceEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs#L15).
+
+Maps money-market fund reference queries to HTTP endpoints.
+
+```csharp
+public static class MoneyMarketFundReferenceEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapMoneyMarketFundReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs#L17) |  |
+
+## MonitoringEndpointExemptions
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.MonitoringEndpointExemptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs#L7).
+
+Canonical unauthenticated lifecycle and scrape surface. Matching is exact (apart from a trailing slash) so comprehensive or nested health routes remain governed.
+
+```csharp
+public static class MonitoringEndpointExemptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsExempt(string path) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs#L15) |  |
+
 ## MutationAuthorizationGuardMiddleware
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.MutationAuthorizationGuardMiddleware</code>. Kind: `class`.
@@ -729,49 +801,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapRiskEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:78](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L78) |  |
-
-## RiskEscalationApprovalResponse
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEscalationApprovalResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:70](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L70).
-
-Approve response: the resolved escalation plus the release order result when resubmitted.
-
-```csharp
-public sealed record RiskEscalationApprovalResponse(RiskEscalationDto Escalation, OrderResult? ReleaseResult);
-```
-
-## RiskEscalationDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEscalationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L16).
-
-Flat projection of a parked risk escalation for API and workstation consumption.
-
-```csharp
-public sealed record RiskEscalationDto(string EscalationId, string Symbol, string Side, string Type, decimal Quantity, decimal? LimitPrice, string Reason, string? RuleName, string Status, DateTimeOffset ParkedAt, string? ResolvedBy, string? ResolutionReason, DateTimeOffset? ResolvedAt, decimal? StopPrice = null, decimal? TrailPrice = null, decimal? TrailPercent = null, string? TimeInForce = null, decimal? RoutedNotional = null, Guid? FundAccountId = null, string? StrategyId = null, string? PositionIntent = null, OptionContractIdentity? OptionContract = null, IReadOnlyList<OrderLeg>? Legs = null);
-```
-
-## RiskEscalationResolutionRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEscalationResolutionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:47](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L47).
-
-Operator resolution request for a parked escalation.
-
-```csharp
-public sealed record RiskEscalationResolutionRequest(string? Reason = null, bool Release = true);
-```
-
-## RunAccrualScheduleInput
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RunAccrualScheduleInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs#L23).
-
-```csharp
-public sealed record RunAccrualScheduleInput(string FundProfileId, Guid LedgerBookId, string EntityId, int ExpectedVersion);
-```

@@ -931,6 +931,28 @@ Declared public members:
 | <code>AccountingSystemProviderCapabilities Capabilities { get; }</code> | [src/Meridian.ProviderSdk/AccountingSystem/IAccountingSystemProvider.cs:14](../../../../src/Meridian.ProviderSdk/AccountingSystem/IAccountingSystemProvider.cs#L14) |  |
 | <code>Task&lt;AccountingSystemImportDetailDto&gt; ImportAsync(AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IAccountingSystemProvider.cs:16](../../../../src/Meridian.ProviderSdk/AccountingSystem/IAccountingSystemProvider.cs#L16) |  |
 
+## IExternalGlPostingProvider
+
+Qualified name: <code>Meridian.ProviderSdk.AccountingSystem.IExternalGlPostingProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:6](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L6).
+
+Posts immutable, balanced Meridian documents and resolves their outcome by deterministic key.
+
+```csharp
+public interface IExternalGlPostingProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string ProviderId { get; }</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:8](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L8) |  |
+| <code>Task&lt;ExternalGlDestination&gt; ResolveDestinationAsync(string tenantId, string connectionId, CancellationToken ct);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:11](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L11) | Resolves a verified, explicitly owned connection without falling back to provider-wide credentials. |
+| <code>void ValidateDocument(ExternalGlPostingDocument document);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:14](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L14) | Checks that a document can be represented losslessly before operator review. |
+| <code>Task&lt;ExternalGlProviderReceipt&gt; PostAsync(string tenantId, ExternalGlDestination destination, ExternalGlPostingDocument document, CancellationToken ct);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:17](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L17) | Creates a document using its retained idempotency key on every attempt. |
+| <code>Task&lt;ExternalGlProviderReceipt&gt; FindAsync(string tenantId, ExternalGlDestination destination, ExternalGlPostingDocument document, CancellationToken ct);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs:25](../../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs#L25) | Queries by the Meridian idempotency key or by its deterministic searchable provider reference. Return NotFound only after a successful, conclusive lookup. Replays after an ambiguous create use the exact same document and key, which the provider must deduplicate. |
+
 ## IBDataLineage
 
 Qualified name: <code>Meridian.ProviderSdk.IBDataLineage</code>. Kind: `record`.
@@ -941,16 +963,4 @@ Complete, entitlement-aware lineage for an Interactive Brokers request or subscr
 
 ```csharp
 public sealed record IBDataLineage(int RequestId, string Service, string Symbol, string? Exchange, string? MarketRuleIds, string? MinimumIncrements, string? Subscription, IBMarketDataAvailability Availability, bool IsDelayed, string Status, DateTimeOffset ObservedAt);
-```
-
-## IBDataResult
-
-Qualified name: <code>Meridian.ProviderSdk.IBDataResult</code>. Kind: `record`.
-
-Source: [src/Meridian.ProviderSdk/IProviderDataReadService.cs:169](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L169).
-
-Storage-facing, normalized provider result. Snapshot identities are stable across retries and restarts; NormalizedPayload is the portable serialized read model and lineage is retained separately so consumers need not recover it from an opaque payload.
-
-```csharp
-public sealed record IBDataResult(string TenantId, string CompanyId, string ResultIdentity, string ProviderFamily, string Capability, string RequestIdentity, string? SubscriptionIdentity, string? Symbol, string? AccountId, DateTimeOffset CapturedAt, ProviderDataRequestStatus LifecycleStatus, string NormalizedPayload, IBDataLineage Lineage);
 ```

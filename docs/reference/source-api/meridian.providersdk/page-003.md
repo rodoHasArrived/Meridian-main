@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBDataResult
+
+Qualified name: <code>Meridian.ProviderSdk.IBDataResult</code>. Kind: `record`.
+
+Source: [src/Meridian.ProviderSdk/IProviderDataReadService.cs:169](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L169).
+
+Storage-facing, normalized provider result. Snapshot identities are stable across retries and restarts; NormalizedPayload is the portable serialized read model and lineage is retained separately so consumers need not recover it from an opaque payload.
+
+```csharp
+public sealed record IBDataResult(string TenantId, string CompanyId, string ResultIdentity, string ProviderFamily, string Capability, string RequestIdentity, string? SubscriptionIdentity, string? Symbol, string? AccountId, DateTimeOffset CapturedAt, ProviderDataRequestStatus LifecycleStatus, string NormalizedPayload, IBDataLineage Lineage);
+```
+
 ## IBDataResultQuery
 
 Qualified name: <code>Meridian.ProviderSdk.IBDataResultQuery</code>. Kind: `record`.
@@ -872,21 +884,3 @@ Provider-neutral request for discoverable instruments and contracts.
 ```csharp
 public sealed record ProviderInstrumentDiscoveryRequest(string Query, string? AssetClass = null, string? Market = null, int? Limit = null);
 ```
-
-## ProviderInstrumentDiscoveryResult
-
-Qualified name: <code>Meridian.ProviderSdk.ProviderInstrumentDiscoveryResult</code>. Kind: `record`.
-
-Source: [src/Meridian.ProviderSdk/IProviderDataReadService.cs:253](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L253).
-
-Presentation-safe instrument discovery result supplied by providers that support search.
-
-```csharp
-public sealed record ProviderInstrumentDiscoveryResult(string InstrumentId, string Symbol, string DisplayName, string? Exchange, string? AssetClass, ProviderDataProvenance Provenance)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderInstrumentDiscoveryResult(string instrumentId, string symbol, string displayName, string? exchange = null, string? assetClass = null) : this(instrumentId, symbol, displayName, exchange, assetClass, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));</code> | [src/Meridian.ProviderSdk/IProviderDataReadService.cs:261](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L261) |  |

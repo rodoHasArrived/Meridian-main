@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Text.Json;
+using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Services;
@@ -240,6 +241,18 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
             && exception is LedgerValidationException or ArgumentException or InvalidOperationException or JsonException)
         {
             throw Unavailable($"The authoritative ledger reporting snapshot is unavailable: {exception.Message}");
+        }
+
+        if (parameters.Finality == ReportingFinalityDto.Final && _journalStore is IExternalGlConfirmationGate confirmation)
+        {
+            try
+            {
+                await confirmation.RequireConfirmationAsync(book.LedgerBookId, period.PeriodId, cancellationToken).ConfigureAwait(false);
+            }
+            catch (LedgerPeriodTransitionException exception)
+            {
+                throw Unavailable(exception.Message);
+            }
         }
 
         var orderedHistory = records

@@ -157,6 +157,7 @@ public static class UiApiRoutes
     public const string AccountingSystemImportLatest = "/api/accounting-system/import/latest";
     public const string AccountingSystemReconciliationLatest = "/api/accounting-system/reconciliation/latest";
     public const string AccountingSystemMappingProfiles = "/api/accounting-system/mapping-profiles";
+    public const string ExternalGlPosting = "/api/accounting-system/posting/{fundProfileId}/{ledgerBookId:guid}";
     public const string AccountingSystemExportPackages = "/api/accounting-system/export-packages";
     public const string AccountingSystemExportPackageManifest = "/api/accounting-system/export-packages/{exportPackageId}/manifest";
     public const string AccountingSystemExportPackageCertification = "/api/accounting-system/export-packages/certification";

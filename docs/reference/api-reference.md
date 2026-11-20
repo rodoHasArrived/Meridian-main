@@ -953,7 +953,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**482 declarations** from **59 source files**.
+**490 declarations** from **60 source files**.
 
 
 ### HostAdapters
@@ -1242,6 +1242,21 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs](../..
 | `/api/execution/notifications/stream` | GET | `async (Guid accountId, HttpContext context) => …` | — | — | [L84](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs#L84) |
 | `/api/execution/alert-settings` | GET | `async (Guid accountId, HttpContext context) => …` | `Results.Json` | — | [L116](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs#L116) |
 | `/api/execution/alert-settings` | POST | `async (ExecutionAlertSettings settings, HttpContext context) => …` | `Results.StatusCode`; `Results.BadRequest`; `Results.NoContent` | — | [L126](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs#L126) |
+
+### ExternalGlPostingEndpoints
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId}/policy` | GET | `(string fundProfileId, Guid ledgerBookId, HttpContext ctx) => …` | `Results.Json` | — | [L21](../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L21) |
+| `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId}/policy` | POST | `(string fundProfileId, Guid ledgerBookId, ExternalGlPolicyRequest request, HttpContext ctx) => …` | `Results.Json` | — | [L33](../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L33) |
+| `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId}/mapping-profiles` | GET | `(string fundProfileId, Guid ledgerBookId, HttpContext ctx) => …` | `Results.Json` | — | [L41](../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L41) |
+| `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId}/{periodId}/packages` | GET | `(string fundProfileId, Guid ledgerBookId, Guid periodId, HttpContext ctx) => …` | `Results.Json` | — | [L47](../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L47) |
+| `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId}/{periodId}/packages` | POST | `(string fundProfileId, Guid ledgerBookId, Guid periodId, ExternalGlPrepareRequest request, HttpContext ctx) => …` | `Results.Json` | — | [L53](../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L53) |
+| `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId}/{periodId}/packages/{packageId}` | GET | `(string fundProfileId, Guid ledgerBookId, Guid periodId, string packageId, HttpContext ctx) => …` | `Results.NotFound`; `Results.Json` | — | [L67](../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L67) |
+| `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId}/{periodId}/packages/{packageId}/decision` | POST | `(string fundProfileId, Guid ledgerBookId, Guid periodId, string packageId, ExternalGlDecisionRequest request, HttpContext ctx) => …` | `Results.NotFound`; `Results.Json` | — | [L75](../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L75) |
+| `/api/accounting-system/posting/{fundProfileId}/{ledgerBookId}/{periodId}/packages/{packageId}/audit` | GET | `(string fundProfileId, Guid ledgerBookId, Guid periodId, string packageId, HttpContext ctx) => …` | `Results.NotFound`; `Results.File` | — | [L86](../../src/Meridian.Ui.Shared/Endpoints/ExternalGlPostingEndpoints.cs#L86) |
 
 ### FirstRunEndpoints
 

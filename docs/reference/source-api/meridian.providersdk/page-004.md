@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderInstrumentDiscoveryResult
+
+Qualified name: <code>Meridian.ProviderSdk.ProviderInstrumentDiscoveryResult</code>. Kind: `record`.
+
+Source: [src/Meridian.ProviderSdk/IProviderDataReadService.cs:253](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L253).
+
+Presentation-safe instrument discovery result supplied by providers that support search.
+
+```csharp
+public sealed record ProviderInstrumentDiscoveryResult(string InstrumentId, string Symbol, string DisplayName, string? Exchange, string? AssetClass, ProviderDataProvenance Provenance)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderInstrumentDiscoveryResult(string instrumentId, string symbol, string displayName, string? exchange = null, string? assetClass = null) : this(instrumentId, symbol, displayName, exchange, assetClass, ProviderDataProvenance.Unattributed(DateTimeOffset.UtcNow));</code> | [src/Meridian.ProviderSdk/IProviderDataReadService.cs:261](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L261) |  |
+
 ## ProviderMarketRule
 
 Qualified name: <code>Meridian.ProviderSdk.ProviderMarketRule</code>. Kind: `record`.

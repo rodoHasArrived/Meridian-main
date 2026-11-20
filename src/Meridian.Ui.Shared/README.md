@@ -822,6 +822,10 @@ file implies gives the import its own batch identity, so a corrected header can 
 with the same bytes. Provider shadow cash comparisons use the same statement authority as
 account reconciliation instead of choosing a balance from arrival order.
 
+The external GL posting endpoints and hosted dispatcher use the PostgreSQL ledger. The routes
+derive tenant, company and operator identity from the workstation session. Final ledger report
+certification and release check receipts when the book requires external GL confirmation.
+
 `ProviderConnectionLifecycleService` verifies retained Xero, NetSuite and QuickBooks
 connections through credential-bound adapters. Each adapter reads and rotates only the
 selected connection's secrets; provider-wide credentials never supply scoped verification.

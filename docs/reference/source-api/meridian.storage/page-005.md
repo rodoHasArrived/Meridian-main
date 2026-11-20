@@ -410,6 +410,16 @@ Declared public members:
 | <code>public static EmptyLedgerAuthorityLease Instance { get; } = new ();</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:62](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L62) |  |
 | <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:64](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L64) |  |
 
+## ExternalGlOutboxClaim
+
+Qualified name: <code>Meridian.Storage.Ledger.ExternalGlOutboxClaim</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ExternalGlOutbox.cs:195](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ExternalGlOutbox.cs#L195).
+
+```csharp
+public sealed record ExternalGlOutboxClaim(Guid LeaseToken, ExternalGlPostingScope Scope, ExternalGlDestination Destination, ExternalGlPostingDocument Document, int PostAttempts, bool ProviderAcknowledged, ExternalGlPostingStatus Status);
+```
+
 ## FileBondIncomePreparationEvidenceStore
 
 Qualified name: <code>Meridian.Storage.Ledger.FileBondIncomePreparationEvidenceStore</code>. Kind: `class`.
@@ -918,21 +928,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task ValidateIntercompanyAgreementReferencesAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:23](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L23) |  |
-
-## IIntercompanyAgreementPostingAuthority
-
-Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementPostingAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:6](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L6).
-
-Checks approved agreement authority and retains exclusion against amendments through ledger commit.
-
-```csharp
-public interface IIntercompanyAgreementPostingAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:8](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L8) |  |

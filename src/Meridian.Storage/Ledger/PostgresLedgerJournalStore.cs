@@ -653,12 +653,21 @@ public sealed partial class PostgresLedgerJournalStore :
         // Hard-close relies on the shared period-row lock for exclusion. ReadCommitted gives the
         // balance recheck a fresh snapshot after any earlier append that held the row lock commits;
         // using one transaction-wide snapshot here could otherwise hide that just-completed append.
-        var isolationLevel = requireClosedTemporaryAccounts
+        var finalizing = string.Equals(period.Status, "HardClosed", StringComparison.Ordinal);
+        var isolationLevel = finalizing
             ? IsolationLevel.ReadCommitted
             : IsolationLevel.Serializable;
         await using var transaction = await connection.BeginTransactionAsync(isolationLevel, ct).ConfigureAwait(false);
 
         await EnsureBookWriteAuthorityAsync(connection, transaction, period.LedgerBookId, ct).ConfigureAwait(false);
+        if (finalizing && period.LedgerBookId is { } bookId)
+        {
+            // The book lock also serializes required-policy changes when no policy row exists yet.
+            await using var lockBook = new NpgsqlCommand(
+                $"select 1 from {Qualified("ledger_books")} where ledger_book_id = @book for share", connection, transaction);
+            lockBook.Parameters.AddWithValue("book", bookId);
+            await lockBook.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        }
         await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", period.PeriodId, true, ct).ConfigureAwait(false);
         var current = await LoadPeriodAsync(
                 connection,
@@ -722,6 +731,14 @@ public sealed partial class PostgresLedgerJournalStore :
 
             await RejectPopulatedPeriodBookMoveAsync(connection, transaction, current, period, ct)
                 .ConfigureAwait(false);
+
+            // A permitted period move has an empty journal population under the period lock.
+            if (finalizing && current.LedgerBookId is { } confirmationBook
+                && confirmationBook == period.LedgerBookId)
+            {
+                await RequireExternalGlConfirmationAsync(connection, transaction, confirmationBook, current.PeriodId, ct)
+                    .ConfigureAwait(false);
+            }
 
             if (requireClosedTemporaryAccounts)
             {

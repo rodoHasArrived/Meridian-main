@@ -152,6 +152,10 @@ after rollback. Their import requests do not yet select a tenant-authorized conn
 selected-connection verification remains available, but successful verification does not enable these
 default import adapters. Tenant-aware accounting import selection and its independent review remain
 rollout prerequisites. Separate OAuth-token runtime cutover also requires provider-specific evidence.
+QuickBooks journal posting uses the scoped vault connection pinned in its
+[book policy](external-gl-providers.md#set-the-book-policy). Posting rechecks the retained realm
+and environment and rotates credentials in that exact connection.
+
 The default Plaid workstation runtime is also legacy-only: owned families refuse link, item and transfer
 credential access before provider calls or fallback to configured options. A tenant-authorized Plaid
 item/connection runtime is required before that family can resume activity under owned credentials.
