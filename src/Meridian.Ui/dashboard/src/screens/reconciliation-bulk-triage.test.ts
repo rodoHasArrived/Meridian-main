@@ -28,10 +28,10 @@ function result(entries: Array<{ breakId: string; succeeded: boolean; wouldSucce
 describe("bulk break triage requests (C2)", () => {
   it("asks the server to name the operator for assign to me, and keeps dry-run and execute keys apart", () => {
     const dryRun = buildBulkCaseworkRequest(emptyBulkTriageDraft("assign"), ["a", "b"], { ...options, dryRun: true });
-    const execute = buildBulkCaseworkRequest(emptyBulkTriageDraft("assign"), ["a"], { ...options, dryRun: false });
+    const execute = buildBulkCaseworkRequest(emptyBulkTriageDraft("assign"), ["a"], { ...options, dryRun: false, previewBulkActionId: dryRun.commandId });
     expect(dryRun).toMatchObject({ action: "Assign", breakIds: ["a", "b"], assignToCurrentOperator: true, dryRun: true, allowPartialSuccess: true, maxCaseCount: BULK_TRIAGE_MAX_BREAKS });
     expect(dryRun.assignee).toBeUndefined();
-    expect(execute).toMatchObject({ dryRun: false, allowPartialSuccess: false, correlationId: "bulk-1" });
+    expect(execute).toMatchObject({ dryRun: false, allowPartialSuccess: false, correlationId: "bulk-1", previewBulkActionId: "bulk-1:dry-run" });
     expect(dryRun.idempotencyKey).toBe("bulk-1:dry-run");
     expect(execute.idempotencyKey).toBe("bulk-1:execute");
     expect(execute.commandId).toBe(execute.idempotencyKey);

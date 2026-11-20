@@ -6,6 +6,63 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WebhookType
+
+Qualified name: <code>Meridian.Application.Services.WebhookType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:701](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L701).
+
+Supported webhook types.
+
+```csharp
+public enum WebhookType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Generic</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:704](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L704) | Generic JSON webhook. |
+| <code>Slack</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:707](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L707) | Slack incoming webhook. |
+| <code>Discord</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:710](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L710) | Discord webhook. |
+| <code>Teams</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:713](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L713) | Microsoft Teams webhook connector. |
+
+## WizardResult
+
+Qualified name: <code>Meridian.Application.Services.WizardResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:331](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L331).
+
+Result of running the configuration wizard.
+
+```csharp
+public sealed record WizardResult(bool Success, AppConfig? Config, string? ConfigPath);
+```
+
+## ApplyTemplateResult
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ApplyTemplateResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:311](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L311).
+
+Result of applying a template.
+
+```csharp
+public sealed record ApplyTemplateResult(bool Success, int SymbolsAdded, int SymbolsSkipped, string? Message = null);
+```
+
+## ArchivedSymbolInfo
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:731](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L731).
+
+Information about archived data for a symbol.
+
+```csharp
+public sealed record ArchivedSymbolInfo(string Symbol, int FileCount, long TotalSizeBytes, DateOnly? OldestData, DateOnly? NewestData, string[] DataTypes, string[] Sources);
+```
+
 ## ArchivedSymbolsOptions
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions</code>. Kind: `record`.
@@ -1004,82 +1061,3 @@ Immutable descriptor for a single data provider. Centralises signup URLs, enviro
 ```csharp
 public sealed record ProviderDescriptor(string Name, string DisplayName, string[] RequiredEnvVars, string[] AlternativeEnvVars, string[] Capabilities, int Priority, string SignupUrl = "", string DocsUrl = "", string FreeTierDescription = "");
 ```
-
-## ProviderRegistry
-
-Qualified name: <code>Meridian.Application.Wizard.Metadata.ProviderRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs:8](../../../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs#L8).
-
-Central registry of all supported data providers with their metadata. Replaces the duplicated dictionaries in ConfigurationWizard and AutoConfigurationService.
-
-```csharp
-public static class ProviderRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;ProviderDescriptor&gt; All { get; } = BuildRegistry();</code> | [src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs:11](../../../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs#L11) | All provider descriptors, ordered by ascending priority. |
-| <code>public static ProviderDescriptor? Get(string name) =&gt; …;</code> | [src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs:14](../../../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs#L14) | Returns the descriptor for the given provider name, or null. |
-
-## ConfigureBackfillStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureBackfillStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L11).
-
-Step 8: Configures historical data backfill settings. Writes WizardContext.Backfill (may remain null if skipped).
-
-```csharp
-public sealed class ConfigureBackfillStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L16) |  |
-| <code>public ConfigureBackfillStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L18) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L24) |  |
-
-## ConfigureDataSourceStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureDataSourceStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L12).
-
-Step 4: Selects the primary real-time data source and configures provider options. Writes WizardContext.DataSource.
-
-```csharp
-public sealed class ConfigureDataSourceStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L17) |  |
-| <code>public ConfigureDataSourceStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L19) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L25) |  |
-
-## ConfigureStorageStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureStorageStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L12).
-
-Step 7: Lets the user pick a storage profile or configure advanced settings. Writes WizardContext.Storage.
-
-```csharp
-public sealed class ConfigureStorageStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L17) |  |
-| <code>public ConfigureStorageStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L19) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L25) |  |

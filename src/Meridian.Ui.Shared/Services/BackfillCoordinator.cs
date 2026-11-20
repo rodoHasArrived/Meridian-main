@@ -49,6 +49,8 @@ public sealed class BackfillCoordinator : IDisposable
     /// </summary>
     public IEnumerable<object> DescribeProviders() => _core.DescribeProviders();
 
+    public IEnumerable<object> DescribeProviders(string? tenantId) => _core.DescribeProviders(tenantId);
+
     /// <summary>
     /// Tries to read the last backfill result.
     /// </summary>
@@ -108,6 +110,9 @@ public sealed class BackfillCoordinator : IDisposable
     /// </summary>
     public Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, CancellationToken ct = default)
         => _core.PreviewAsync(request, ct);
+
+    public Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, string? tenantId, CancellationToken ct)
+        => _core.PreviewAsync(request, tenantId, ct);
 
     public void Dispose()
     {

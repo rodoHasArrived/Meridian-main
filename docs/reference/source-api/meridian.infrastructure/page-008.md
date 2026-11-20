@@ -6,6 +6,69 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExpiringSymbolStateStore (generic arity 1)
+
+Qualified name: <code>Meridian.Infrastructure.Shared.ExpiringSymbolStateStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:286](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L286).
+
+Symbol state store with automatic expiration based on last access time.
+
+```csharp
+public sealed class ExpiringSymbolStateStore<T>: ISymbolStateStore<T> where T : class
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ExpiringSymbolStateStore(TimeSpan expirationTime, TimeSpan? cleanupInterval = null, bool ignoreCase = true);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:299](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L299) | Creates a new expiring symbol state store. |
+| <code>public int Count =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:318](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L318) |  |
+| <code>public T GetOrAdd(string symbol, Func&lt;string, T&gt; factory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:321](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L321) |  |
+| <code>public bool TryGet(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:329](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L329) |  |
+| <code>public void Set(string symbol, T state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:347](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L347) |  |
+| <code>public T AddOrUpdate(string symbol, Func&lt;string, T&gt; addFactory, Func&lt;string, T, T&gt; updateFactory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:353](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L353) |  |
+| <code>public bool Remove(string symbol) =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:367](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L367) |  |
+| <code>public bool TryRemove(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:370](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L370) |  |
+| <code>public bool Contains(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:382](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L382) |  |
+| <code>public IReadOnlyList&lt;string&gt; GetSymbols() =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:392](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L392) |  |
+| <code>public IReadOnlyDictionary&lt;string, T&gt; GetSnapshot();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:395](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L395) |  |
+| <code>public void Clear() =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:403](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L403) |  |
+| <code>public void ForEach(Action&lt;string, T&gt; action);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:406](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L406) |  |
+| <code>public int RemoveStale(Func&lt;string, T, bool&gt; isStale);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:418](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L418) |  |
+| <code>public int RemoveExpired();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:428](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L428) | Removes all expired entries. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:438](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L438) |  |
+
+## ISymbolStateStore (generic arity 1)
+
+Qualified name: <code>Meridian.Infrastructure.Shared.ISymbolStateStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:21](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L21).
+
+Generic interface for thread-safe symbol-keyed state storage. Abstracts the 35+ ConcurrentDictionary usages across the codebase into a reusable pattern with consistent semantics.
+
+```csharp
+public interface ISymbolStateStore<T>: IDisposable where T : class
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>int Count { get; }</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:26](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L26) | Gets the number of symbols with state. |
+| <code>T GetOrAdd(string symbol, Func&lt;string, T&gt; factory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:34](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L34) | Gets or creates state for a symbol. |
+| <code>bool TryGet(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:42](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L42) | Gets state for a symbol if it exists. |
+| <code>void Set(string symbol, T state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:49](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L49) | Updates state for a symbol. |
+| <code>T AddOrUpdate(string symbol, Func&lt;string, T&gt; addFactory, Func&lt;string, T, T&gt; updateFactory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:58](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L58) | Updates state with a transformation function. |
+| <code>bool Remove(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:65](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L65) | Removes state for a symbol. |
+| <code>bool TryRemove(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:73](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L73) | Removes state for a symbol and returns it. |
+| <code>bool Contains(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:80](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L80) | Checks if state exists for a symbol. |
+| <code>IReadOnlyList&lt;string&gt; GetSymbols();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:86](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L86) | Gets all symbols with state. |
+| <code>IReadOnlyDictionary&lt;string, T&gt; GetSnapshot();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:92](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L92) | Gets a snapshot of all state (thread-safe copy). |
+| <code>void Clear();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:97](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L97) | Clears all state. |
+| <code>void ForEach(Action&lt;string, T&gt; action);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:103](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L103) | Applies an action to all states. |
+| <code>int RemoveStale(Func&lt;string, T, bool&gt; isStale);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:110](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L110) | Removes stale entries based on a predicate. |
+
 ## Subscription
 
 Qualified name: <code>Meridian.Infrastructure.Shared.Subscription</code>. Kind: `record`.
