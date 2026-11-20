@@ -249,7 +249,8 @@ public sealed class BackfillCoordinator : IDisposable
                 publishCheckpointStatus: !queued);
             var requestedProvider = FindProvider(request.Provider, service.Providers);
             ValidateAlternative(request, alternativeFor, cfg.Backfill, serviceProviders);
-            var estimate = submissionEstimate ?? BackfillQuotaPlanner.Estimate(request, requestedProvider, cfg.Backfill, DateTimeOffset.UtcNow);
+            var estimate = submissionEstimate ?? BackfillQuotaPlanner.Estimate(request, requestedProvider,
+                cfg.Backfill, statusStore, DateTimeOffset.UtcNow);
             var policyProviders = requestedProvider is CompositeHistoricalDataProvider
                 ? serviceProviders.Where(provider => provider is not CompositeHistoricalDataProvider)
                 : [requestedProvider];
@@ -329,22 +330,24 @@ public sealed class BackfillCoordinator : IDisposable
     {
         ct.ThrowIfCancellationRequested();
         var cfg = LoadOperationConfig();
+        var dataRoot = _store.GetDataRoot(cfg);
         var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
-        var plan = PlanSubmission(request, null, cfg.Backfill, providers, DateTimeOffset.UtcNow);
+        var plan = PlanSubmission(request, null, cfg.Backfill, providers, new BackfillStatusStore(dataRoot), DateTimeOffset.UtcNow);
         var provider = plan.Provider;
         var alternatives = BackfillQuotaPlanner.GetApprovedAlternatives(cfg.Backfill, provider.Name, request.Granularity, providers)
             .Select(candidate => new BackfillProviderAlternative(candidate.Name, candidate.DisplayName)).ToArray();
-        return BackfillPreviewPlanner.BuildPreview(plan.Request, provider, _store.GetDataRoot(cfg),
+        return BackfillPreviewPlanner.BuildPreview(plan.Request, provider, dataRoot,
             _providerCatalog, plan.Quota, alternatives);
     }
 
     internal async Task<(BackfillRequest Request, BackfillQuotaEstimate Quota, DateTimeOffset PlannedAt)> PlanSubmissionAsync(
         BackfillRequest request, string? alternativeFor, TimeProvider clock, CancellationToken ct)
     {
-        var config = LoadOperationConfig().Backfill;
+        var cfg = LoadOperationConfig();
         var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
         var now = clock.GetUtcNow();
-        var plan = PlanSubmission(request, alternativeFor, config, providers, now);
+        var plan = PlanSubmission(request, alternativeFor, cfg.Backfill, providers,
+            new BackfillStatusStore(_store.GetDataRoot(cfg)), now);
         return (plan.Request, plan.Quota, now);
     }
 
@@ -366,14 +369,14 @@ public sealed class BackfillCoordinator : IDisposable
 
     private (BackfillRequest Request, BackfillQuotaEstimate Quota, IHistoricalDataProvider Provider) PlanSubmission(
         BackfillRequest request, string? alternativeFor, BackfillConfig? config,
-        List<IHistoricalDataProvider> providers, DateTimeOffset now)
+        List<IHistoricalDataProvider> providers, BackfillStatusStore statusStore, DateTimeOffset now)
     {
         request = BackfillQuotaPlanner.ResolveDates(request, now);
         ValidateAlternative(request, alternativeFor, config, providers);
         using var service = CreateService(request.Provider, providers: providers, backfillCfg: config);
         service.ValidateRequest(request);
         var provider = FindProvider(request.Provider, service.Providers);
-        return (request with { Provider = provider.Name }, BackfillQuotaPlanner.Estimate(request, provider, config, now), provider);
+        return (request with { Provider = provider.Name }, BackfillQuotaPlanner.Estimate(request, provider, config, statusStore, now), provider);
     }
 
     private static void ValidateAlternative(BackfillRequest request, string? alternativeFor, BackfillConfig? config,

@@ -2,6 +2,7 @@ using Meridian.Contracts.Backfill;
 using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.ProviderSdk;
+using Meridian.Storage.Backfill;
 
 namespace Meridian.Application.Backfill;
 
@@ -51,7 +52,8 @@ internal static class BackfillQuotaPlanner
     }
 
     public static BackfillQuotaEstimate Estimate(
-        BackfillRequest request, IHistoricalDataProvider provider, BackfillConfig? config, DateTimeOffset now)
+        BackfillRequest request, IHistoricalDataProvider provider, BackfillConfig? config,
+        BackfillStatusStore statusStore, DateTimeOffset now)
     {
         var policy = GetPolicy(config, provider.Name);
         var limit = ReadLimit(provider);
@@ -62,9 +64,7 @@ internal static class BackfillQuotaPlanner
                 "The historical adapter has no usable provider quota for this selection.");
         }
 
-        var range = ResolveDates(request, now);
-        var calls = BackfillPartitionPlanner.Build(provider, range.Granularity, range.From!.Value,
-            range.To!.Value.AddDays(1), range.Symbols.Count).Sum(partition => partition.EstimatedApiCalls);
+        var calls = CountRequests(ResolveDates(request, now), provider, statusStore);
         var (maximum, window, sample) = limit.Value;
         var budget = ApplyHeadroom(maximum, policy.ReserveHeadroomPercent);
         var dailyLimit = sample.DailyMaximum is > 0 and < int.MaxValue ? sample.DailyMaximum : null;
@@ -89,7 +89,7 @@ internal static class BackfillQuotaPlanner
             observed?.ResetAt, budget, usable.HasValue ? available : null, policy.ReserveHeadroomPercent, policy.MaxConcurrentRequests,
             duration, calls > available,
             "One request per symbol and date window before pagination or retries. Timing assumes about one second per request and excludes queue time. " +
-            (request.ResumeFromCheckpoint ? "The estimate covers the full range. Retained coverage may reduce requests and duration. " : "") +
+            (request.ResumeFromCheckpoint ? "Retained coverage is considered and may change before execution. " : "") +
             (sample.QuotaUnit == "credits" ? "The historical adapter uses one credit per request. " : "") +
             (observed is null ? "Current usage is unavailable." : "The remaining budget reflects the host's observations. Other clients may use the same quota."))
         {
@@ -99,6 +99,32 @@ internal static class BackfillQuotaPlanner
             ObservedDailyRemaining = dailyRemaining,
             DailyResetAt = observed?.DailyResetsAt
         };
+    }
+
+    private static long CountRequests(BackfillRequest request, IHistoricalDataProvider provider, BackfillStatusStore statusStore)
+    {
+        var from = request.From!.Value;
+        var to = request.To!.Value;
+        var coverage = request.ResumeFromCheckpoint
+            ? statusStore.TryReadSymbolCoverage(request.Granularity, provider.Name, provider.CoverageFeed)
+            : null;
+        if (coverage is not { Count: > 0 })
+        {
+            return BackfillPartitionPlanner.Build(provider, request.Granularity, from, to.AddDays(1), request.Symbols.Count)
+                .Sum(partition => partition.EstimatedApiCalls);
+        }
+
+        long calls = 0;
+        foreach (var symbol in request.Symbols)
+        {
+            var missing = BackfillCoverageMath.Missing(from, to, coverage.GetValueOrDefault(symbol) ?? []);
+            foreach (var (missingFrom, missingTo) in missing)
+            {
+                calls += BackfillPartitionPlanner.Build(provider, request.Granularity, missingFrom!.Value,
+                    missingTo!.Value.AddDays(1), 1).Count;
+            }
+        }
+        return calls;
     }
 
     private static double EstimateWait(long calls, int budget, int? usable, TimeSpan window, DateTimeOffset? reset, DateTimeOffset now)

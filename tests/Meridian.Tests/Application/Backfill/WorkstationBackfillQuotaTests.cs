@@ -71,13 +71,21 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
             while (history.GetExecution(submitted.ExecutionId)?.CompletedAt is null)
                 await Task.Delay(20, deadline.Token);
 
+            var splitGap = resumedPlan with { Symbols = ["SPY"], From = Day.AddDays(-1), To = Day.AddDays(1) };
+            var refreshPreview = await coordinator.PreviewAsync(splitGap with { ResumeFromCheckpoint = false });
+            refreshPreview.Quota.ExpectedRequests.Should().Be(1);
+            var splitPreview = await coordinator.PreviewAsync(splitGap);
+            splitPreview.Quota.ExpectedRequests.Should().Be(2);
+            splitPreview.Quota.ExceedsBudget.Should().BeTrue();
+
             var resumed = await queue.SubmitAsync(Guid.NewGuid(), Tenant, resumedPlan, null, null, deadline.Token);
-            resumed.Quota.Uncertainty.Should().Contain("Retained coverage may reduce requests and duration");
+            resumed.Quota.ExpectedRequests.Should().Be(0);
             while (history.GetExecution(resumed.ExecutionId)?.CompletedAt is null)
                 await Task.Delay(20, deadline.Token);
             var resumedResult = history.GetExecution(resumed.ExecutionId)!;
             resumedResult.Status.Should().Be(ExecutionStatus.Completed);
             resumedResult.QuotaReceipt!.ActualRequests.Should().Be(0);
+            resumedResult.QuotaReceipt.RequestVariance.Should().Be(0);
             resumedResult.Statistics.TotalBarsRetrieved.Should().Be(0);
         }
         finally
@@ -90,7 +98,8 @@ public sealed class WorkstationBackfillQuotaTests : IDisposable
             .Should().ContainSingle(execution => execution.ExecutionId == submitted.ExecutionId).Which;
         completed.Status.Should().Be(ExecutionStatus.Completed);
         completed.Statistics.TotalBarsRetrieved.Should().Be(2);
-        completed.BatchReceipts.Should().HaveCount(2).And.OnlyContain(batch => batch.ServingProvider == "quota-test");
+        completed.BatchReceipts.Should().HaveCount(2).And
+            .OnlyContain(batch => batch.ServingProvider == "quota-test" && batch.ReceivedSessionCount == 1);
         completed.QuotaReceipt.Should().NotBeNull();
         var receipt = completed.QuotaReceipt!;
         receipt.ObservedProviders.Should().Equal("quota-test");

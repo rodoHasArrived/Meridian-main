@@ -1210,7 +1210,7 @@ export interface BackfillSubmissionReceipt {
   quota: BackfillQuotaEstimate;
 }
 
-export interface BackfillBatchReceipt {
+export interface BackfillBatchReceiptSummary {
   revisionId: string;
   requestedProvider: string;
   servingProvider: string | null;
@@ -1223,6 +1223,11 @@ export interface BackfillBatchReceipt {
   rowCount: number;
   contentHash: string;
   calendar: string | null;
+  expectedSessionCount: number | null;
+  receivedSessionCount: number;
+}
+
+export interface BackfillBatchReceipt extends Omit<BackfillBatchReceiptSummary, "expectedSessionCount" | "receivedSessionCount"> {
   expectedSessions: string[] | null;
   receivedSessions: string[];
 }
@@ -1352,7 +1357,7 @@ export interface BackfillExecutionHistoryRow {
   throttledUntil?: string | null;
   submissionEstimate?: BackfillQuotaEstimate | null;
   quotaReceipt?: BackfillQuotaReceipt | null;
-  batchReceipts?: BackfillBatchReceipt[] | null;
+  batchReceipts?: BackfillBatchReceiptSummary[] | null;
 }
 
 export interface BackfillExecutionHistoryResponse {

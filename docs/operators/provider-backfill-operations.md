@@ -49,6 +49,8 @@ and distinguishes provider credits from HTTP requests. Local observations
 can miss usage from other clients sharing the same account. Pagination, retries, and provider
 latency can change usage and timing. The duration excludes time spent waiting in the job queue
 or waiting for a scheduled start. Providers without usable quota diagnostics show **Limit unavailable**.
+When resuming from retained coverage, the estimate counts requests for each uncovered date range.
+Coverage can change before a queued job starts.
 
 For an over-budget plan, narrow the dates or symbols and preview again, schedule the job, choose
 an administrator-approved equivalent and preview it, or **Queue with throttling**. Enter the
@@ -56,6 +58,8 @@ earliest eligible start in UTC. Queued and scheduled jobs both follow the provid
 The workstation keeps an execution receipt with the submission estimate, observed providers,
 throttling events, and request and duration variance where measured. Expand the job under
 **Workstation backfill receipts**. Live waits appear as **Throttled**.
+Completed jobs also show retained batch revisions with provider and session counts. Each revision
+identifies the full evidence retained under the host's data root.
 
 The workstation queue is retained on the single host that owns the data root. Pending jobs survive
 a restart. Jobs interrupted during execution are marked failed so operators can inspect partial
