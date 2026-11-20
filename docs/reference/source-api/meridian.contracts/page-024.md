@@ -6,6 +6,171 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondOperationCapability
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondOperationCapability</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:86](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L86).
+
+```csharp
+public sealed record BondOperationCapability(string Operation, bool Supported, string? Reason = null);
+```
+
+## BondPerformanceAccountingBridgeDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceAccountingBridgeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L24).
+
+```csharp
+public sealed record BondPerformanceAccountingBridgeDto(Guid SecurityId, IReadOnlyList<Guid> TaxLotRecordIds, decimal OpeningCarryingBasis, decimal ClosingCarryingBasis, decimal CouponIncome, decimal PremiumDiscountIncome, decimal IndexationIncome, decimal ExpensedFees, decimal CashGrossCoupons, decimal AccrualVersusCashDifference, string Currency, IReadOnlyList<string> InstructionFingerprints)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal AccountingIncome =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:30](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L30) |  |
+
+## BondPerformanceAttributionDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceAttributionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L14).
+
+Order-dependent model explanation. Accounting amortization is never a market-return component.
+
+```csharp
+public sealed record BondPerformanceAttributionDto(decimal? CarryAndRoll, decimal? RateEffect, decimal? SpreadEffect, decimal? InflationEffect, decimal? CollectionAndCosts, decimal? FxEffect, decimal? Residual, string Currency);
+```
+
+## BondPerformanceJsonContext
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:86](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L86).
+
+```csharp
+public partial class BondPerformanceJsonContext : JsonSerializerContext;
+```
+
+## BondPerformanceRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:7](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L7).
+
+Identifiers and cutoffs only; marks, cash, rates and accounting amounts are resolved from retained authorities.
+
+```csharp
+public sealed record BondPerformanceRequest(AccountCashForecastScopeDto Scope, DateOnly PeriodStart, DateOnly PeriodEnd, DateTimeOffset KnownAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;Guid&gt; TaxLotRecordIds { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:10](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L10) |  |
+
+## BondPerformanceResult
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:45](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L45).
+
+```csharp
+public sealed record BondPerformanceResult(AccountCashForecastScopeDto Scope, DateOnly PeriodStart, DateOnly PeriodEnd, DateTimeOffset KnownAt, string ModelVersion, Guid? OpeningHoldingsBatchId, Guid? ClosingHoldingsBatchId, IReadOnlyList<BondPerformanceSecurityDto> Securities, IReadOnlyList<BondPerformanceAccountingBridgeDto> AccountingIncome, decimal? BaseObservedMarkAndCashChange, bool CompleteCoverage, IReadOnlyList<string> CoverageGaps);
+```
+
+## BondPerformanceSecurityDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceSecurityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:33](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L33).
+
+```csharp
+public sealed record BondPerformanceSecurityDto(Guid SecurityId, string Currency, decimal? OpeningDirtyValue, decimal? ClosingDirtyValue, decimal ActualNetCash, decimal CashGrossCoupons, decimal PrincipalReturned, decimal WithholdingTax, decimal Fees, decimal? ObservedMarkAndCashChange, decimal? EconomicReturn, BondPerformanceAttributionDto Attribution, BondPerformanceAttributionDto? BaseCurrencyAttribution, decimal? BaseObservedMarkAndCashChange, IReadOnlyList<BondCalculationInput> Inputs, IReadOnlyList<string> CoverageGaps)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal TradeSettlementCash { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:42](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L42) | Observed buy/sell settlement cash, separate from coupon/principal collections. |
+
+## BondPerformanceSourceTrade
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceSourceTrade</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:21](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L21).
+
+```csharp
+public sealed record BondPerformanceSourceTrade(string TransactionId, Guid SecurityId, DateOnly CashDate, [property : JsonRequired] decimal Amount, string Currency)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonRequired] public string Kind { get; init; } = null !;</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L24) |  |
+| <code>[JsonRequired] public decimal OriginalFaceDelta { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:25](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L25) |  |
+| <code>public string? PaymentVersionId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:26](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L26) |  |
+
+## BondPerformanceTradeCashDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceTradeCashDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:52](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L52).
+
+Retained, complete transaction populations, not caller attestations or inferred zero trades.
+
+```csharp
+public sealed record BondPerformanceTradeCashDto(Guid SecurityId, DateOnly CashDate, decimal Amount, string Currency, BondCalculationInput Evidence)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal? OriginalFaceDelta { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:55](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L55) |  |
+
+## BondPerformanceTransactionEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceTransactionEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:58](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L58).
+
+```csharp
+public sealed record BondPerformanceTransactionEvidenceDto(bool Complete, IReadOnlyList<BondPerformanceTradeCashDto> TradeCash, IReadOnlyList<BondCalculationInput> Inputs, IReadOnlyList<string> CoverageGaps)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool CashPopulationComplete { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:61](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L61) |  |
+| <code>public IReadOnlyList&lt;string&gt; PaymentVersionIds { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:62](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L62) |  |
+
+## BondPerformanceTransactionImportRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceTransactionImportRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:33](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L33).
+
+```csharp
+public sealed record BondPerformanceTransactionImportRequest(string EvidenceUri, string DocumentId);
+```
+
+## BondPerformanceTransactionPopulationDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceTransactionPopulationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs:29](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceTransactions.cs#L29).
+
+```csharp
+public sealed record BondPerformanceTransactionPopulationDto(string PopulationId, AccountCashForecastScopeDto Scope, BondPerformanceTransactionsDocument Document, RetainedEvidenceIdentityDto Evidence, DateTimeOffset RecordedAtUtc, string RecordedBy);
+```
+
 ## BondPerformanceTransactionRules
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceTransactionRules</code>. Kind: `class`.
@@ -530,165 +695,4 @@ A signed future payment and its positive, settlement-rebased discount factor.
 
 ```csharp
 public sealed record BondWorkflowDiscountedFlow(decimal Amount, decimal TimeInYears, decimal DiscountFactor);
-```
-
-## BondWorkflowExerciseResult
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowExerciseResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L24).
-
-```csharp
-public sealed record BondWorkflowExerciseResult(string Kind, DateOnly ExerciseDate, decimal RedemptionPrice, decimal? Yield, string? Issue, DateOnly? LatestNoticeDate);
-```
-
-## BondWorkflowFixing
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowFixing</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:11](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L11).
-
-```csharp
-public sealed record BondWorkflowFixing(decimal Value, bool IsObserved, string Source);
-```
-
-## BondWorkflowInflationConvention
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowInflationConvention</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:9](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L9).
-
-```csharp
-public sealed record BondWorkflowInflationConvention(string IndexName, decimal BaseIndex, int LagMonths, bool InterpolateMonthly, decimal? CouponFloorRatio = null, decimal? RedemptionFloorRatio = null);
-```
-
-## BondWorkflowIssue
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowIssue</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L27).
-
-```csharp
-public sealed record BondWorkflowIssue(string Operation, string Code, string Reason, bool BlocksCalculation = false);
-```
-
-## BondWorkflowMetric
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowMetric</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:28](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L28).
-
-```csharp
-public sealed record BondWorkflowMetric(string Name, bool Available, string? Reason = null);
-```
-
-## BondWorkflowModelVersions
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowModelVersions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:100](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L100).
-
-```csharp
-public static class BondWorkflowModelVersions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Legacy = &quot;bond-workflow-v1&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:102](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L102) |  |
-| <code>public const string Previous = &quot;bond-workflow-v2&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:103](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L103) |  |
-| <code>public const string Current = &quot;bond-workflow-v3&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:104](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L104) |  |
-
-## BondWorkflowObservation
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowObservation</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:31](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L31).
-
-Frozen daily/simple fixing evidence; annual rates are fractions and cash is signed.
-
-```csharp
-public sealed record BondWorkflowObservation(DateOnly AccrualDate, DateOnly ObservationDate, int Days, decimal Rate, bool IsObserved, string Source);
-```
-
-## BondWorkflowOvernightConvention
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowOvernightConvention</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:7](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L7).
-
-```csharp
-public sealed record BondWorkflowOvernightConvention(IBusinessDayCalendar Calendar, int LookbackBusinessDays, bool ObservationShift, bool InterestPeriodWeighting, int LockoutBusinessDays);
-```
-
-## BondWorkflowPriceBasis
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowPriceBasis</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:6](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L6).
-
-```csharp
-public enum BondWorkflowPriceBasis
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NominalClean</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:6](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L6) |  |
-| <code>RealClean</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:6](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L6) |  |
-
-## BondWorkflowPricing
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowPricing</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs#L14).
-
-Signed-payment pricing for the bond workflow. This arithmetic deliberately leaves retained bond-pricing-math-v1 untouched. Negative coupon obligations and discount factors above one are admitted; no coupon, value or sensitivity is implicitly floored.
-
-```csharp
-public static class BondWorkflowPricing
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ModelVersion = &quot;bond-workflow-signed-pricing-v1&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs:16](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs#L16) |  |
-| <code>public static decimal PresentValue(IReadOnlyList&lt;BondWorkflowDiscountedFlow&gt; flows, decimal continuousSpread = 0m);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs:20](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs#L20) |  |
-| <code>public static BondWorkflowRisk Risk(IReadOnlyList&lt;BondWorkflowDiscountedFlow&gt; flows, decimal continuousSpread = 0m);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs:33](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs#L33) |  |
-| <code>public static bool TrySolveSpread(IReadOnlyList&lt;BondWorkflowDiscountedFlow&gt; flows, decimal dirtyCash, out decimal spread, out string? issue);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs:63](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowPricing.cs#L63) | Solves sum(cash * discount * exp(-spread * years)) = dirtyCash. Exactly one sign change in the time-ordered coefficients, including initial -dirtyCash, certifies a globally unique finite root when one can be bracketed. Other patterns are not assigned an arbitrary root, even when a local numerical solver could find one. |
-
-## BondWorkflowProjection
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowProjection</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:18](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L18).
-
-New signed-cash kernel. No clock, persistence, ledger or legacy-arithmetic dependency.
-
-```csharp
-public static class BondWorkflowProjection
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string LegacyModelVersion = &quot;bond-workflow-cash-v1&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:20](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L20) |  |
-| <code>public const string ModelVersion = &quot;bond-workflow-cash-v2&quot;;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:21](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L21) |  |
-| <code>public static IReadOnlyList&lt;BondWorkflowCashFlow&gt; Project(ScheduleGenerationResult schedule, BondWorkflowProjectionTerms terms, DateOnly from, Func&lt;DateOnly, BondWorkflowFixing&gt;? fixing = null, Func&lt;DateOnly, BondWorkflowFixing&gt;? inflation = null);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:23](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L23) |  |
-| <code>public static decimal Accrued(ScheduleGenerationResult schedule, BondWorkflowProjectionTerms terms, DateOnly settlement, Func&lt;DateOnly, BondWorkflowFixing&gt;? fixing = null, Func&lt;DateOnly, BondWorkflowFixing&gt;? inflation = null) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:97](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L97) |  |
-| <code>public static decimal LegacyAccrued(ScheduleGenerationResult schedule, BondWorkflowProjectionTerms terms, DateOnly settlement, Func&lt;DateOnly, BondWorkflowFixing&gt;? fixing = null, Func&lt;DateOnly, BondWorkflowFixing&gt;? inflation = null) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:101](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L101) |  |
-| <code>public static BondWorkflowFixing IndexRatio(DateOnly date, BondWorkflowInflationConvention terms, Func&lt;DateOnly, BondWorkflowFixing&gt; observation);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:133](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L133) |  |
-
-## BondWorkflowProjectionTerms
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowProjectionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:12](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L12).
-
-```csharp
-public sealed record BondWorkflowProjectionTerms(string CouponKind, decimal CouponRate, decimal Spread, decimal? Cap, decimal? Floor, DayCountConvention DayCount, string CouponCashBasis, decimal OriginalFace, decimal OpeningFactor, IReadOnlyList<StructuredPrincipalScheduleEntry> Principal, BondWorkflowOvernightConvention? Overnight = null, BondWorkflowInflationConvention? Inflation = null);
 ```

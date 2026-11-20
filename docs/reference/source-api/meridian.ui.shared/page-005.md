@@ -364,6 +364,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapProviderConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L18) |  |
 
+## ProviderConnectionTemplateEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderConnectionTemplateEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs#L12).
+
+```csharp
+public static class ProviderConnectionTemplateEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderConnectionTemplateEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs#L16) |  |
+
 ## ProviderCredentialEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderCredentialEndpoints</code>. Kind: `class`.
@@ -784,21 +800,3 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:1
 ```csharp
 public sealed record RestoreRecurringJournalDefinitionsRequest(string ScheduleId, int ScheduleVersion, int TemplateVersion, string Reason);
 ```
-
-## RiskEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:76](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L76).
-
-Exposes runtime risk rule status, operator-managed rule configuration, and the governed-approval queue for escalated orders.
-
-```csharp
-public static class RiskEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapRiskEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:78](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L78) |  |

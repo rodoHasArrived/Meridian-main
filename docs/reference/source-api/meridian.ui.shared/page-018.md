@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterGridArtifactContent
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactContent</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L10).
+
+```csharp
+public sealed record ReportWriterGridArtifactContent(string FileName, string ContentType, byte[] Content);
+```
+
 ## ReportWriterGridArtifactService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactService</code>. Kind: `class`.
@@ -847,21 +857,3 @@ Source: [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:9](../../..
 ```csharp
 public sealed record StrategyRunParityReport(string RunId, string? BaselineRunId, string Status, string InputMode, decimal? BaselineNetPnl, decimal? ObservedNetPnl, int? BaselineFills, int? ObservedFills, IReadOnlyList<OrderCheck> Checks, string JournalRoute);
 ```
-
-## StrategyRunParityService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunParityService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:14](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L14).
-
-Compares retained operands/results; agreement never grants promotion or live authority.
-
-```csharp
-public sealed class StrategyRunParityService(IStrategyRepository repository)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;StrategyRunParityReport?&gt; GetAsync(Guid account, string runId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:16](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L16) |  |
