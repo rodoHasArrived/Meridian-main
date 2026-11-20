@@ -183,6 +183,22 @@ public sealed partial class AccountingConfigurationService
                 "Keep one active chart node per account path before posting, previewing, or exporting ledger activity."));
         }
 
+        var nodesBySelectorPath = workspace.ChartOfAccounts.ToLookup(node => node.Path.Trim(), StringComparer.OrdinalIgnoreCase);
+        foreach (var code in workspace.ChartOfAccounts
+                     .Where(static node => !string.IsNullOrWhiteSpace(node.AccountCode))
+                     .GroupBy(static node => node.AccountCode!.Trim(), StringComparer.OrdinalIgnoreCase))
+        {
+            if (code.Count() == 1 && nodesBySelectorPath[code.Key].All(node =>
+                    string.Equals(node.NodeId, code.First().NodeId, StringComparison.OrdinalIgnoreCase)))
+                continue;
+            issues.Add(Issue(
+                "chart.code-ambiguous",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Chart of accounts code '{code.Key}' identifies more than one account.",
+                code.Key,
+                "Keep each code distinct from other nodes' codes and paths before activating this chart."));
+        }
+
         if (workspace.JournalTemplates.Count == 0)
         {
             issues.Add(Issue("templates.empty", AccountingConfigurationValidationSeverityDto.Critical, "No journal entry templates are configured.", null, "Create at least one balanced journal template."));
@@ -1023,7 +1039,7 @@ public sealed partial class AccountingConfigurationService
     ///
     /// <para><b>Optional text is reduced the way a store reduces it.</b>
     /// <c>PostgresAccountingConfigurationStore.ReplaceChartAsync</c> writes <c>ParentPath</c>,
-    /// <c>Symbol</c> and <c>FinancialAccountId</c> through <c>AddTextOrNull</c>, which trims and
+    /// <c>Symbol</c>, <c>FinancialAccountId</c> and <c>AccountCode</c> through <c>AddTextOrNull</c>, which trims and
     /// nulls blank text, so a padded or blank value reloads as something the digest never covered
     /// (Codex review finding on PR #2871). This is the rule <c>NormalizeForPersistence</c> already
     /// applies to the audit event itself, applied to the workspace for the same reason: what is
@@ -1053,6 +1069,7 @@ public sealed partial class AccountingConfigurationService
                         ParentPath = NormalizeOptional(n.ParentPath),
                         Symbol = NormalizeOptional(n.Symbol),
                         FinancialAccountId = NormalizeOptional(n.FinancialAccountId),
+                        AccountCode = NormalizeOptional(n.AccountCode),
                     })
                     .OrderBy(static n => n.Path, StringComparer.Ordinal)
                     .ThenBy(static n => n.NodeId, StringComparer.Ordinal)

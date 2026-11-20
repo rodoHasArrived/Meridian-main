@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MicReference
+
+Qualified name: <code>Meridian.Contracts.Domain.MicReference</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/Mic.cs:80](../../../../src/Meridian.Contracts/Domain/Mic.cs#L80).
+
+A small bundled subset of the ISO 10383 registry: the markets Meridian&#x27;s providers and seed data reference, with the common exchange names that map onto each one.
+
+```csharp
+public static class MicReference
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyCollection&lt;string&gt; Codes =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:146](../../../../src/Meridian.Contracts/Domain/Mic.cs#L146) | The bundled MIC codes. |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; ExchangeNames =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:149](../../../../src/Meridian.Contracts/Domain/Mic.cs#L149) | The exchange names and legacy codes TryResolve maps, keyed case-insensitively. |
+| <code>public static bool TryGetName(string? mic, out string name);</code> | [src/Meridian.Contracts/Domain/Mic.cs:152](../../../../src/Meridian.Contracts/Domain/Mic.cs#L152) | Looks up the market name for a bundled MIC. |
+| <code>public static bool TryResolve(string? exchange, out Mic mic);</code> | [src/Meridian.Contracts/Domain/Mic.cs:169](../../../../src/Meridian.Contracts/Domain/Mic.cs#L169) | Resolves an exchange label to a MIC: a bundled MIC is returned as-is, and a known exchange name or legacy code (for example &quot;NYSE&quot;, &quot;Nasdaq&quot;) is mapped. Anything else, including an unbundled four-character code, returns false so callers keep the raw label. |
+
+## AdjustedHistoricalBar
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.AdjustedHistoricalBar</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs:8](../../../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs#L8).
+
+Extended historical bar with adjustment factors and corporate action data.
+
+```csharp
+public sealed record AdjustedHistoricalBar(string Symbol, DateOnly SessionDate, decimal Open, decimal High, decimal Low, decimal Close, long Volume, string Source = "unknown", long SequenceNumber = 0, decimal? AdjustedOpen = null, decimal? AdjustedHigh = null, decimal? AdjustedLow = null, decimal? AdjustedClose = null, long? AdjustedVolume = null, decimal? SplitFactor = null, decimal? DividendAmount = null) : MarketEventPayload
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HistoricalBar ToHistoricalBar(bool preferAdjusted = true);</code> | [src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs:32](../../../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs#L32) | Convert to standard HistoricalBar (uses adjusted values if available). When using adjusted values, ensures OHLC relationships are maintained by clamping values to valid ranges. This handles rounding errors in split/dividend adjustments. |
+
+## AggregateBarPayload
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.AggregateBarPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs:10](../../../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs#L10).
+
+Represents a real-time OHLCV aggregate bar from streaming data providers. Unlike HistoricalBar which uses DateOnly for daily bars, this model uses DateTimeOffset to support intraday timeframes (second, minute, etc.).
+
+```csharp
+public sealed record AggregateBarPayload(string Symbol, DateTimeOffset StartTime, DateTimeOffset EndTime, decimal Open, decimal High, decimal Low, decimal Close, long Volume, decimal Vwap, int TradeCount, AggregateTimeframe Timeframe, string Source, long SequenceNumber) : MarketEventPayload;
+```
+
 ## AggregateTimeframe
 
 Qualified name: <code>Meridian.Contracts.Domain.Models.AggregateTimeframe</code>. Kind: `enum`.
@@ -1057,33 +1108,3 @@ Enum declarations:
 | <code>FamilyOffice</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:26](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L26) |  |
 | <code>FundPlatform</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:27](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L27) |  |
 | <code>Custom</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:28](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L28) |  |
-
-## EnvironmentLaneDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:75](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L75).
-
-```csharp
-public sealed record EnvironmentLaneDefinitionDto(string LaneId, string Name, EnvironmentLaneArchetype Archetype, string DefaultWorkspaceId, string DefaultLandingPageTag, string RootNodeDefinitionId, string DefaultContextNodeDefinitionId, IReadOnlyList<EnvironmentManagedScopeKind> AllowedManagedScopeKinds, string? Description = null, IReadOnlyDictionary<string, string>? LabelOverrides = null, bool ShowInNavigation = true, bool UseForEmptyStates = true);
-```
-
-## EnvironmentLaneRuntimeDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:159](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L159).
-
-```csharp
-public sealed record EnvironmentLaneRuntimeDto(string LaneId, string Name, EnvironmentLaneArchetype Archetype, string RootNodeDefinitionId, string DefaultWorkspaceId, string DefaultLandingPageTag, string DefaultContextNodeDefinitionId, IReadOnlyList<EnvironmentManagedScopeKind> AllowedManagedScopeKinds, IReadOnlyDictionary<string, string>? LabelOverrides = null, bool ShowInNavigation = true, bool UseForEmptyStates = true);
-```
-
-## EnvironmentLedgerGroupRuntimeDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLedgerGroupRuntimeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:188](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L188).
-
-```csharp
-public sealed record EnvironmentLedgerGroupRuntimeDto(Guid LedgerGroupId, string NodeDefinitionId, string DisplayName, string BaseCurrency, Guid? OrganizationId, Guid? BusinessId, Guid? ClientId, Guid? FundId, Guid? SleeveId, Guid? VehicleId, IReadOnlyList<Guid> AccountIds, IReadOnlyList<Guid> InvestmentPortfolioIds);
-```

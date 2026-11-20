@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyRateFixingJsonContext
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyRateFixingJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:55](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L55).
+
+```csharp
+public sealed partial class IntercompanyRateFixingJsonContext : JsonSerializerContext;
+```
+
+## IntercompanyRateFixingValueDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyRateFixingValueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:9](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L9).
+
+One proposed or approved fixing value. Its digest binds rate, source and justification together.
+
+```csharp
+public sealed record IntercompanyRateFixingValueDto([property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal RateFraction, string SourceReference, string Justification, string ProposedBy, DateTimeOffset ProposedAt, string ValueDigest);
+```
+
+## IntercompanyScheduleDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyScheduleDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:22](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L22).
+
+```csharp
+public sealed record IntercompanyScheduleDto(DateOnly StartDate, DateOnly EndDate, IntercompanyFrequencyDto Frequency, string CalendarId, BusinessDayConvention BusinessDayConvention, int SettlementBusinessDays = 0);
+```
+
 ## IntercompanyStructuredTermsDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsDto</code>. Kind: `record`.
@@ -680,37 +712,3 @@ Enum declarations:
 | <code>AmountMismatch = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:462](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L462) |  |
 | <code>DateMismatch = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:463](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L463) |  |
 | <code>ManualReview = 5</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:464](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L464) |  |
-
-## UpdateBankAccountDetailsRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:543](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L543).
-
-Request to update bank account details.
-
-```csharp
-public sealed record UpdateBankAccountDetailsRequest(BankAccountDetailsDto Details, string UpdatedBy);
-```
-
-## UpdateCustodianAccountDetailsRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.UpdateCustodianAccountDetailsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:538](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L538).
-
-Request to update custodian account details.
-
-```csharp
-public sealed record UpdateCustodianAccountDetailsRequest(CustodianAccountDetailsDto Details, string UpdatedBy);
-```
-
-## UpdateLegalEntityProfileRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.UpdateLegalEntityProfileRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:81](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L81).
-
-```csharp
-public sealed record UpdateLegalEntityProfileRequest(Guid EntityId, string UpdatedBy, LegalEntityTypeDto? EntityType = null, LegalEntityFormDto? LegalForm = null, string? Code = null, string? Name = null, string? Jurisdiction = null, string? BaseCurrency = null, DateTimeOffset? EffectiveFrom = null, DateTimeOffset? EffectiveTo = null, bool? IsActive = null, string? Description = null, string? RegistrationNumber = null, LegalEntityLifecycleStatusDto? LifecycleStatus = null, IReadOnlyList<BeneficialOwnerSummaryDto>? BeneficialOwners = null, LegalEntityLifecycleEventDto? LifecycleEvent = null);
-```

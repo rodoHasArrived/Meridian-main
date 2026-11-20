@@ -352,7 +352,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.SymbolGapAnalysisDto</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/BackfillApiService.cs:176](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L176).
+Source: [src/Meridian.Ui.Services/Services/BackfillApiService.cs:187](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L187).
 
 Minimal DTO for deserializing the /api/quality/gaps/{symbol} response. Only the fields used by the gap analysis UI are mapped here.
 
@@ -364,9 +364,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Symbol { get; set; } = &quot;&quot;;</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:178](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L178) |  |
-| <code>public int TotalGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:179](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L179) |  |
-| <code>public double DataAvailabilityPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:181](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L181) | 0–100 percentage of trading time with data present. |
+| <code>public string Symbol { get; set; } = &quot;&quot;;</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:189](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L189) |  |
+| <code>public int TotalGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:190](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L190) |  |
+| <code>public double DataAvailabilityPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:192](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L192) | 0–100 percentage of trading time with data present. |
 
 ## SymbolGapSummary
 

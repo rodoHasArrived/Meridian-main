@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduledRateResetPreviewDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ScheduledRateResetPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:147](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L147).
+
+One upcoming reset date and the fixing it needs.
+
+```csharp
+public sealed record ScheduledRateResetPreviewDto(DateOnly ResetDate, DateOnly FixingObservationDate, string IndexName, bool FixingAvailable, decimal? FixingRate, bool Applied);
+```
+
+## ServicerPositionReportLineDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ServicerPositionReportLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:415](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L415).
+
+```csharp
+public sealed record ServicerPositionReportLineDto(Guid ServicerReportLineId, Guid ServicerReportBatchId, Guid LoanId, DateOnly ReportAsOfDate, decimal? PrincipalOutstanding, decimal? InterestAccruedUnpaid, decimal? FeesAccruedUnpaid, decimal? PenaltyAccruedUnpaid, decimal? CommitmentAvailable, DateOnly? NextDueDate, decimal? NextDueAmount, string? DelinquencyStatus, string RawPayloadJson);
+```
+
+## ServicerPositionReportLineImportDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ServicerPositionReportLineImportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:403](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L403).
+
+```csharp
+public sealed record ServicerPositionReportLineImportDto(Guid LoanId, decimal? PrincipalOutstanding, decimal? InterestAccruedUnpaid, decimal? FeesAccruedUnpaid, decimal? PenaltyAccruedUnpaid, decimal? CommitmentAvailable, DateOnly? NextDueDate, decimal? NextDueAmount, string? DelinquencyStatus, string RawPayloadJson);
+```
+
 ## ServicerReportBatchDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ServicerReportBatchDto</code>. Kind: `record`.
@@ -910,54 +942,3 @@ Declared public members:
 | <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:67](../../../../src/Meridian.Contracts/Domain/Mic.cs#L67) |  |
 | <code>public static bool operator == (Mic left, Mic right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:70](../../../../src/Meridian.Contracts/Domain/Mic.cs#L70) |  |
 | <code>public static bool operator != (Mic left, Mic right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:73](../../../../src/Meridian.Contracts/Domain/Mic.cs#L73) |  |
-
-## MicReference
-
-Qualified name: <code>Meridian.Contracts.Domain.MicReference</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Domain/Mic.cs:80](../../../../src/Meridian.Contracts/Domain/Mic.cs#L80).
-
-A small bundled subset of the ISO 10383 registry: the markets Meridian&#x27;s providers and seed data reference, with the common exchange names that map onto each one.
-
-```csharp
-public static class MicReference
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyCollection&lt;string&gt; Codes =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:146](../../../../src/Meridian.Contracts/Domain/Mic.cs#L146) | The bundled MIC codes. |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt; ExchangeNames =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:149](../../../../src/Meridian.Contracts/Domain/Mic.cs#L149) | The exchange names and legacy codes TryResolve maps, keyed case-insensitively. |
-| <code>public static bool TryGetName(string? mic, out string name);</code> | [src/Meridian.Contracts/Domain/Mic.cs:152](../../../../src/Meridian.Contracts/Domain/Mic.cs#L152) | Looks up the market name for a bundled MIC. |
-| <code>public static bool TryResolve(string? exchange, out Mic mic);</code> | [src/Meridian.Contracts/Domain/Mic.cs:169](../../../../src/Meridian.Contracts/Domain/Mic.cs#L169) | Resolves an exchange label to a MIC: a bundled MIC is returned as-is, and a known exchange name or legacy code (for example &quot;NYSE&quot;, &quot;Nasdaq&quot;) is mapped. Anything else, including an unbundled four-character code, returns false so callers keep the raw label. |
-
-## AdjustedHistoricalBar
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.AdjustedHistoricalBar</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs:8](../../../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs#L8).
-
-Extended historical bar with adjustment factors and corporate action data.
-
-```csharp
-public sealed record AdjustedHistoricalBar(string Symbol, DateOnly SessionDate, decimal Open, decimal High, decimal Low, decimal Close, long Volume, string Source = "unknown", long SequenceNumber = 0, decimal? AdjustedOpen = null, decimal? AdjustedHigh = null, decimal? AdjustedLow = null, decimal? AdjustedClose = null, long? AdjustedVolume = null, decimal? SplitFactor = null, decimal? DividendAmount = null) : MarketEventPayload
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HistoricalBar ToHistoricalBar(bool preferAdjusted = true);</code> | [src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs:32](../../../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs#L32) | Convert to standard HistoricalBar (uses adjusted values if available). When using adjusted values, ensures OHLC relationships are maintained by clamping values to valid ranges. This handles rounding errors in split/dividend adjustments. |
-
-## AggregateBarPayload
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.AggregateBarPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs:10](../../../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs#L10).
-
-Represents a real-time OHLCV aggregate bar from streaming data providers. Unlike HistoricalBar which uses DateOnly for daily bars, this model uses DateTimeOffset to support intraday timeframes (second, minute, etc.).
-
-```csharp
-public sealed record AggregateBarPayload(string Symbol, DateTimeOffset StartTime, DateTimeOffset EndTime, decimal Open, decimal High, decimal Low, decimal Close, long Volume, decimal Vwap, int TradeCount, AggregateTimeframe Timeframe, string Source, long SequenceNumber) : MarketEventPayload;
-```

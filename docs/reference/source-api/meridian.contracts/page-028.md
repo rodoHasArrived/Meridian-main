@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAccrualSliceDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualSliceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:60](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L60).
+
+One homogeneous slice: one legal revision, one profile revision, one schedule period, one principal.
+
+```csharp
+public sealed record IntercompanyAccrualSliceDto(int Sequence, DateOnly From, DateOnly To, Guid AccountingArrangementRevisionId, int AgreementVersion, string AgreementPayloadHash, int SchedulePeriodSequence, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Principal, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal AnnualRate, string DayCount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal YearFraction, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal UnroundedAmount, string PrincipalEvidenceReference)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)][JsonNumberHandling(JsonNumberHandling.AllowReadingFromString &#124; JsonNumberHandling.WriteAsString)] public decimal? CompoundedInterest { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:75](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L75) | Compounding slices only (rule v3): the posted accrued interest added to principal at the period start. The slice earns (Principal + CompoundedInterest) x AnnualRate x YearFraction. Absent on simple slices. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyAccrualFixingPinDto? Fixing { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:78](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L78) | Floating slices only (rule v2). Absent on fixed slices, so v1 evidence keeps its exact text. |
+
+## IntercompanyAccrualWindowDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:51](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L51).
+
+One posted accrual&#x27;s half-open window.
+
+```csharp
+public sealed record IntercompanyAccrualWindowDto(DateOnly From, DateOnly To);
+```
+
+## IntercompanyAgreementActionDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:8](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L8).
+
+```csharp
+public enum IntercompanyAgreementActionDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Activate</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:8](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L8) |  |
+| <code>Amend</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:8](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L8) |  |
+| <code>Terminate</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:8](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L8) |  |
+
 ## IntercompanyAgreementAuditDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementAuditDto</code>. Kind: `record`.
@@ -667,36 +716,4 @@ Source: [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:13](
 
 ```csharp
 public sealed record IntercompanyRateFixingEventDto(Guid EventId, Guid RequestId, IntercompanyRateFixingActionDto Action, string Actor, DateTimeOffset RecordedAt, string ValueDigest, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Reason = null);
-```
-
-## IntercompanyRateFixingJsonContext
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyRateFixingJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:55](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L55).
-
-```csharp
-public sealed partial class IntercompanyRateFixingJsonContext : JsonSerializerContext;
-```
-
-## IntercompanyRateFixingValueDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyRateFixingValueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:9](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L9).
-
-One proposed or approved fixing value. Its digest binds rate, source and justification together.
-
-```csharp
-public sealed record IntercompanyRateFixingValueDto([property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal RateFraction, string SourceReference, string Justification, string ProposedBy, DateTimeOffset ProposedAt, string ValueDigest);
-```
-
-## IntercompanyScheduleDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyScheduleDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:22](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L22).
-
-```csharp
-public sealed record IntercompanyScheduleDto(DateOnly StartDate, DateOnly EndDate, IntercompanyFrequencyDto Frequency, string CalendarId, BusinessDayConvention BusinessDayConvention, int SettlementBusinessDays = 0);
 ```

@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureSetupInvestmentPortfolioDraftDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupInvestmentPortfolioDraftDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:66](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L66).
+
+```csharp
+public sealed record FundStructureSetupInvestmentPortfolioDraftDto(Guid? InvestmentPortfolioId, string Code, string Name, string BaseCurrency, string? Description = null);
+```
+
+## FundStructureSetupLegalEntityDraftDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupLegalEntityDraftDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:43](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L43).
+
+```csharp
+public sealed record FundStructureSetupLegalEntityDraftDto(Guid? EntityId, LegalEntityTypeDto EntityType, string Code, string Name, string Jurisdiction, string BaseCurrency, string? Description = null, LegalEntityFormDto LegalForm = LegalEntityFormDto.Unspecified, LegalEntityLifecycleStatusDto LifecycleStatus = LegalEntityLifecycleStatusDto.Active, string? RegistrationNumber = null, IReadOnlyList<BeneficialOwnerSummaryDto>? BeneficialOwners = null, LegalEntityLifecycleEventKindDto InitialLifecycleEventKind = LegalEntityLifecycleEventKindDto.Formation, string? InitialLifecycleEventSummary = null, string? InitialLifecycleEvidenceReference = null);
+```
+
+## FundStructureSetupNodeAlias
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupNodeAlias</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:92](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L92).
+
+```csharp
+public enum FundStructureSetupNodeAlias
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Organization</code> | [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:94](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L94) |  |
+| <code>BusinessLane</code> | [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:95](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L95) |  |
+| <code>ClientOrFund</code> | [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:96](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L96) |  |
+| <code>LegalEntity</code> | [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:97](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L97) |  |
+| <code>Vehicle</code> | [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:98](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L98) |  |
+| <code>InvestmentPortfolio</code> | [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:99](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L99) |  |
+
 ## FundStructureSetupOrganizationDraftDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupOrganizationDraftDto</code>. Kind: `record`.
@@ -661,52 +702,3 @@ Declared public members:
 | <code>public const string StatusReady = &quot;Ready&quot;;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:20](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L20) |  |
 | <code>public const string StatusUnavailable = &quot;Unavailable&quot;;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:21](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L21) |  |
 | <code>public const int MaximumWindowDays = 366;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:23](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L23) | A single request never spans more than one year of daily authority resolution. |
-
-## IntercompanyAccrualSliceDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualSliceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:60](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L60).
-
-One homogeneous slice: one legal revision, one profile revision, one schedule period, one principal.
-
-```csharp
-public sealed record IntercompanyAccrualSliceDto(int Sequence, DateOnly From, DateOnly To, Guid AccountingArrangementRevisionId, int AgreementVersion, string AgreementPayloadHash, int SchedulePeriodSequence, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Principal, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal AnnualRate, string DayCount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal YearFraction, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal UnroundedAmount, string PrincipalEvidenceReference)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)][JsonNumberHandling(JsonNumberHandling.AllowReadingFromString &#124; JsonNumberHandling.WriteAsString)] public decimal? CompoundedInterest { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:75](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L75) | Compounding slices only (rule v3): the posted accrued interest added to principal at the period start. The slice earns (Principal + CompoundedInterest) x AnnualRate x YearFraction. Absent on simple slices. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyAccrualFixingPinDto? Fixing { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:78](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L78) | Floating slices only (rule v2). Absent on fixed slices, so v1 evidence keeps its exact text. |
-
-## IntercompanyAccrualWindowDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:51](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L51).
-
-One posted accrual&#x27;s half-open window.
-
-```csharp
-public sealed record IntercompanyAccrualWindowDto(DateOnly From, DateOnly To);
-```
-
-## IntercompanyAgreementActionDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:8](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L8).
-
-```csharp
-public enum IntercompanyAgreementActionDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Activate</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:8](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L8) |  |
-| <code>Amend</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:8](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L8) |  |
-| <code>Terminate</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:8](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L8) |  |

@@ -164,7 +164,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CheckpointEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs#L16).
+Source: [src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs#L17).
 
 Extension methods for registering backfill checkpoint/resume API endpoints. Exposes checkpoint semantics to users for job resumability and crash recovery (P0).
 
@@ -176,7 +176,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapCheckpointEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs#L21) | Maps all checkpoint and ingestion job API endpoints. |
+| <code>public static void MapCheckpointEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs#L22) | Maps all checkpoint and ingestion job API endpoints. |
 
 ## CleanupHistoryRequest
 
@@ -192,7 +192,7 @@ public record CleanupHistoryRequest(int? MaxAgeDays = null);
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ClearExecutionManualOverrideRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:125](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L125).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:128](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L128).
 
 Request to clear an existing execution manual override.
 
@@ -204,7 +204,7 @@ public sealed record ClearExecutionManualOverrideRequest(string? Reason = null, 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:140](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L140).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:143](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L143).
 
 Legacy request alias preserved for older callers.
 
@@ -354,7 +354,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CreateExecutionManualOverrideRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:115](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L115).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:118](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L118).
 
 Request to create an execution manual override.
 
@@ -376,7 +376,7 @@ public record CreateMaintenanceScheduleRequest(string Name, string? Description 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:130](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L130).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:133](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L133).
 
 Legacy request alias preserved for older callers.
 
@@ -393,8 +393,14 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:36](../../../
 Request to create a new paper trading session.
 
 ```csharp
-public sealed record CreatePaperSessionRequest(string StrategyId, string? StrategyName, decimal InitialCash = 100_000m, IReadOnlyList<string>? Symbols = null);
+public sealed record CreatePaperSessionRequest(string StrategyId, string? StrategyName, decimal InitialCash = 100_000m, IReadOnlyList<string>? Symbols = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:42](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L42) |  |
 
 ## CredentialEndpoints
 
