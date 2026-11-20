@@ -77,7 +77,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.CredentialFieldOutput</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:415](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L415).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:419](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L419).
 
 Credential field output for UI form generation.
 
@@ -89,12 +89,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:418](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L418) |  |
-| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:421](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L421) |  |
-| <code>[JsonPropertyName(&quot;environmentVariable&quot;)] public string? EnvironmentVariable { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:424](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L424) |  |
-| <code>[JsonPropertyName(&quot;required&quot;)] public bool Required { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:427](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L427) |  |
-| <code>[JsonPropertyName(&quot;defaultValue&quot;)] public string? DefaultValue { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:430](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L430) |  |
-| <code>[JsonPropertyName(&quot;hasValue&quot;)] public bool HasValue { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:433](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L433) |  |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:422](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L422) |  |
+| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:425](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L425) |  |
+| <code>[JsonPropertyName(&quot;environmentVariable&quot;)] public string? EnvironmentVariable { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:428](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L428) |  |
+| <code>[JsonPropertyName(&quot;required&quot;)] public bool Required { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:431](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L431) |  |
+| <code>[JsonPropertyName(&quot;defaultValue&quot;)] public string? DefaultValue { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:434](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L434) |  |
+| <code>[JsonPropertyName(&quot;hasValue&quot;)] public bool HasValue { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:437](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L437) |  |
 
 ## DataSourceConfigRequest
 
@@ -199,7 +199,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.DryRunPlanRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:76](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L76).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:80](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L80).
 
 Request to generate a dry-run backfill plan.
 
@@ -363,7 +363,7 @@ public record FailoverConfigRequest(bool EnableFailover, int HealthCheckInterval
 
 Qualified name: <code>Meridian.Contracts.Api.FailoverConfigResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:154](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L154).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:158](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L158).
 
 Response containing failover configuration.
 
@@ -399,7 +399,7 @@ public record FailoverRuleRequest(string? Id, string PrimaryProviderId, string[]
 
 Qualified name: <code>Meridian.Contracts.Api.FailoverRuleResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:163](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L163).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:167](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L167).
 
 Response containing a failover rule.
 
@@ -447,7 +447,7 @@ public record ForceFailoverRequest(string TargetProviderId);
 
 Qualified name: <code>Meridian.Contracts.Api.FreshnessStates</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/StatusModels.cs:367](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L367).
+Source: [src/Meridian.Contracts/Api/StatusModels.cs:375](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L375).
 
 Freshness state constants for metric staleness indicators.
 
@@ -459,10 +459,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string Fresh = &quot;Fresh&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:370](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L370) | Data is fresh and within acceptable thresholds. |
-| <code>public const string Warning = &quot;Warning&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:373](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L373) | Data is approaching staleness (&gt;70% of threshold). |
-| <code>public const string Stale = &quot;Stale&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:376](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L376) | Data has exceeded the staleness threshold. |
-| <code>public const string NoData = &quot;NoData&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:379](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L379) | No data has been received yet. |
+| <code>public const string Fresh = &quot;Fresh&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:378](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L378) | Data is fresh and within acceptable thresholds. |
+| <code>public const string Warning = &quot;Warning&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:381](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L381) | Data is approaching staleness (&gt;70% of threshold). |
+| <code>public const string Stale = &quot;Stale&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:384](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L384) | Data has exceeded the staleness threshold. |
+| <code>public const string NoData = &quot;NoData&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:387](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L387) | No data has been received yet. |
 
 ## GapFillRequest
 
@@ -541,7 +541,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.HealthIssueResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:206](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L206).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:210](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L210).
 
 Response containing a health issue.
 
@@ -636,7 +636,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.KernelPromotionRecommendationResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:194](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L194).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:198](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L198).
 
 ```csharp
 public record KernelPromotionRecommendationResponse(bool Approved, bool CalibrationPass, bool FreshnessPass, string[] BlockingReasons);
@@ -876,7 +876,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.MetricsFreshness</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/StatusModels.cs:319](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L319).
+Source: [src/Meridian.Contracts/Api/StatusModels.cs:327](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L327).
 
 Tracks freshness and provenance of metrics for a specific symbol or subsystem. Used to show staleness indicators and provider source badges in the UI.
 
@@ -888,10 +888,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;key&quot;)] public string Key { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:325](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L325) | The symbol or subsystem this freshness record applies to. |
-| <code>[JsonPropertyName(&quot;lastDataPointUtc&quot;)] public DateTimeOffset? LastDataPointUtc { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:331](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L331) | UTC timestamp of the last received data point. |
-| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:337](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L337) | The provider that supplied the last data point. |
-| <code>[JsonPropertyName(&quot;isStale&quot;)] public bool IsStale { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:343](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L343) | Whether the data is considered stale (exceeded freshness threshold). |
-| <code>[JsonPropertyName(&quot;freshnessState&quot;)] public string FreshnessState { get; set; } = &quot;NoData&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:349](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L349) | Freshness state: Fresh, Warning, Stale, or NoData. |
-| <code>[JsonPropertyName(&quot;ageSeconds&quot;)] public float AgeSeconds { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:355](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L355) | Age of the data in seconds since last update. |
-| <code>[JsonPropertyName(&quot;thresholdSeconds&quot;)] public int ThresholdSeconds { get; set; } = 60;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:361](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L361) | The configured freshness threshold in seconds. |
+| <code>[JsonPropertyName(&quot;key&quot;)] public string Key { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:333](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L333) | The symbol or subsystem this freshness record applies to. |
+| <code>[JsonPropertyName(&quot;lastDataPointUtc&quot;)] public DateTimeOffset? LastDataPointUtc { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:339](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L339) | UTC timestamp of the last received data point. |
+| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:345](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L345) | The provider that supplied the last data point. |
+| <code>[JsonPropertyName(&quot;isStale&quot;)] public bool IsStale { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:351](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L351) | Whether the data is considered stale (exceeded freshness threshold). |
+| <code>[JsonPropertyName(&quot;freshnessState&quot;)] public string FreshnessState { get; set; } = &quot;NoData&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:357](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L357) | Freshness state: Fresh, Warning, Stale, or NoData. |
+| <code>[JsonPropertyName(&quot;ageSeconds&quot;)] public float AgeSeconds { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:363](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L363) | Age of the data in seconds since last update. |
+| <code>[JsonPropertyName(&quot;thresholdSeconds&quot;)] public int ThresholdSeconds { get; set; } = 60;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:369](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L369) | The configured freshness threshold in seconds. |

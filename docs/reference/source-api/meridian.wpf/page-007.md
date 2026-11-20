@@ -1116,6 +1116,8 @@ Declared public members:
 | <code>Task&lt;ApiResponse&lt;LedgerAccountRunningBalanceDto&gt;&gt; GetAccountRunningBalanceAsync(Guid periodId, string accountName, string? symbol, string? financialAccountId, LedgerDimensionSetDto? dimensions, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:44](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L44) | Posting history and running balance for one account of a ledger period. |
 | <code>Task&lt;ApiResponse&lt;EvidencePacketDto&gt;&gt; GetAmountProofAsync(string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:49](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L49) |  |
 | <code>Task&lt;ApiResponse&lt;JsonDocument&gt;&gt; GetRetainedManifestAsync(string route, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:53](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L53) |  |
+| <code>Task&lt;ApiResponse&lt;BookFxSettlementSetDto&gt;&gt; GetBookFxSettlementSetAsync(Guid setId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:56](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L56) |  |
+| <code>Task&lt;ApiResponse&lt;PrivateCapitalUnitRegisterPreviewDto&gt;&gt; PreviewUnitRegisterAsync(Guid bookId, PreviewPrivateCapitalUnitRegisterRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:59](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L59) |  |
 
 ## ILifecycleControlClient
 

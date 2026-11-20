@@ -593,7 +593,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingCertifiedLedgerPresentationSource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:94](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L94).
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:98](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L98).
 
 Resolves the canonical ledger report pack whose accounting presentation was certified for an exact reporting checkpoint. Returning null means that no authoritative presentation is available and callers that require it must fail closed.
 
@@ -605,7 +605,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ValueTask&lt;ReportingCertifiedLedgerPresentationInput?&gt; ResolveExactAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:96](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L96) |  |
+| <code>ValueTask&lt;ReportingCertifiedLedgerPresentationInput?&gt; ResolveExactAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L100) |  |
 
 ## IReportingDeliveryGrantCredentialDeriver
 
@@ -679,7 +679,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1661](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1661).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1663](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1663).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -691,13 +691,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1663](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1663) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1665](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1665) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingPrimaryDocumentRenderer</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:108](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L108).
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:112](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L112).
 
 Renders the primary PDF/XLSX artifact of a governed reporting run. This is the seam that lets the certified artifact producer stay the single orchestrator (declarations, hashing, retained manifest, provenance) while the client-grade document bytes are produced by Meridian.Documents. Implementations must be deterministic: identical manifests must yield identical bytes, because artifacts are hash-verified on read-back.
 
@@ -709,14 +709,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>byte[] RenderPdf(ReportingOutputManifest manifest);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:110](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L110) |  |
-| <code>byte[] RenderWorkbook(ReportingOutputManifest manifest);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:112](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L112) |  |
+| <code>byte[] RenderPdf(ReportingOutputManifest manifest);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:114](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L114) |  |
+| <code>byte[] RenderWorkbook(ReportingOutputManifest manifest);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:116](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L116) |  |
 
 ## IReportingPrimaryDocumentRendererWithLedgerReportPack
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingPrimaryDocumentRendererWithLedgerReportPack</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:120](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L120).
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:124](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L124).
 
 Extended primary-document contract for renderers that can consume the exact checkpoint-bound ledger report pack supplied by the certified artifact producer. The complete PDF/XLSX pair is returned from one call so callers cannot produce format-dependent accounting presentations.
 
@@ -728,7 +728,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:123](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L123) |  |
+| <code>LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:127](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L127) |  |
 
 ## IReportingProviderReceiptAuthenticator
 
