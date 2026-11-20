@@ -953,7 +953,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**482 declarations** from **59 source files**.
+**483 declarations** from **60 source files**.
 
 
 ### HostAdapters
@@ -1048,7 +1048,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs](../../src/Meridian
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/config/changes` | GET | `(ConfigStore store) => …` | `Produces<ConfigurationChangeStatus>(200)`; `Results.Json` | `WithName("GetConfigurationChangeStatus")`; `WithDescription("Saved setting impacts and changes awaiting provider reconnect or host restart; no setting values are returned.")` | [L45](../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L45) |
+| `/api/config/changes` | GET | `(ConfigStore store) => …` | `Produces<ConfigurationChangeStatus>(200)`; `Results.Json` | `WithName("GetConfigurationChangeStatus")`; `WithDescription("Saved setting impacts and changes awaiting provider reconnect or host restart; no setting values are returned.")` | [L46](../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L46) |
 
 ### DirectLendingEndpoints
 
@@ -1730,8 +1730,16 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs](../../src/Meridi
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/config/data-sources` | GET | `(ConfigStore store) => …` | `Produces(200)`; `Results.Json` | `WithName("GetDataSourcesAlias")`; `WithDescription("Alias for /api/config/datasources for backward compatibility.")` | [L689](../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L689) |
-| `/api/config/data-sources` | POST | `async (HttpContext context, ConfigStore store, DataSourceConfigRequest req) => …` | `Produces(200)`; `Produces(400)`; `Produces(StatusCodes.Status401Unauthorized)`; `Produces(StatusCodes.Status403Forbidden)`; `Results.BadRequest`; `Results.Ok` | `WithName("UpsertDataSourceAlias")`; `WithDescription("Alias for /api/config/datasources POST for backward compatibility.")` | [L707](../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L707) |
+| `/api/config/data-sources` | GET | `(ConfigStore store) => …` | `Produces(200)`; `Results.Json` | `WithName("GetDataSourcesAlias")`; `WithDescription("Alias for /api/config/datasources for backward compatibility.")` | [L694](../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L694) |
+| `/api/config/data-sources` | POST | `async (HttpContext context, ConfigStore store, DataSourceConfigRequest req) => …` | `Produces(200)`; `Produces(400)`; `Produces(StatusCodes.Status401Unauthorized)`; `Produces(StatusCodes.Status403Forbidden)`; `Results.BadRequest`; `Results.Ok` | `WithName("UpsertDataSourceAlias")`; `WithDescription("Alias for /api/config/datasources POST for backward compatibility.")` | [L712](../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L712) |
+
+### ProviderModuleEndpoints
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/providers/activation` | GET | `(HttpContext context, CoreConfigStore store, [FromServices]BackfillRoutingRuntime? backfill, [FromServices]ProviderRegistry? registry, [FromServices]IRuntimeLifecycleControlPlane? lifecycle, [FromServices]RuntimeSupervisorConnection? supervisor) => …` | `Produces<ProviderActivationResponse>(200)`; `Results.Json` | `WithName("GetProviderActivation")` | [L28](../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L28) |
 
 ### ProviderValidationEndpoints
 
@@ -1846,9 +1854,9 @@ Source: [src/Meridian/UiServer.cs](../../src/Meridian/UiServer.cs)
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/system/lifecycle` | GET | `(HttpContext context) => …` | `Results.Ok` | — | [L688](../../src/Meridian/UiServer.cs#L688) |
-| `/api/system/shutdown` | POST | `async (HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Results.Json` | — | [L722](../../src/Meridian/UiServer.cs#L722) |
-| `/api/system/shutdown/{operationId}` | GET | `(string operationId, HttpContext context) => …` | `Results.Ok` | — | [L776](../../src/Meridian/UiServer.cs#L776) |
-| `/api/system/shutdown/receipts/latest` | GET | `async (HttpContext context) => …` | `Results.Ok` | — | [L797](../../src/Meridian/UiServer.cs#L797) |
+| `/api/system/lifecycle` | GET | `(HttpContext context) => …` | `Results.Ok` | — | [L689](../../src/Meridian/UiServer.cs#L689) |
+| `/api/system/shutdown` | POST | `async (HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Results.Json` | — | [L723](../../src/Meridian/UiServer.cs#L723) |
+| `/api/system/shutdown/{operationId}` | GET | `(string operationId, HttpContext context) => …` | `Results.Ok` | — | [L777](../../src/Meridian/UiServer.cs#L777) |
+| `/api/system/shutdown/receipts/latest` | GET | `async (HttpContext context) => …` | `Results.Ok` | — | [L798](../../src/Meridian/UiServer.cs#L798) |
 
 <!-- END GENERATED HTTP DECLARATION REFERENCE -->

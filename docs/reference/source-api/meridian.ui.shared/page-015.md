@@ -521,6 +521,18 @@ public sealed record ProviderCalendarReadModel(ProviderProjectionProvenance Prov
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProviderConnectionLifecycleService</code>. Kind: `class`.
 
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs#L8).
+
+```csharp
+public sealed partial class ProviderConnectionLifecycleService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ConfigurationChangeStatus&gt; SetAlpacaFeedAsync(AlpacaFeedUpdateDto update, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs:11](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs#L11) | Updates host-wide Alpaca market data settings with verified account access for SIP. |
+
 Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L18).
 
 Manages tenant-visible provider connections, credential mutations, and live verification requests.
@@ -542,6 +554,18 @@ Declared public members:
 | <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; SaveCredentialsAsync(string providerId, ProviderCredentialUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:210](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L210) |  |
 | <code>public async Task&lt;ProviderCredentialVerificationResultDto&gt; VerifyAsync(string providerId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:231](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L231) |  |
 | <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; DeleteCredentialsAsync(string providerId, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:339](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L339) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs:6](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs#L6).
+
+```csharp
+public sealed partial class ProviderConnectionLifecycleService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ProviderCredentialDraftVerificationResultDto&gt; VerifyDraftAsync(string providerId, ProviderCredentialDraftRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs:9](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs#L9) | Checks draft credentials without saving them or recording a saved verification. |
 
 Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L7).
 
@@ -731,7 +755,7 @@ public sealed record ProviderMarketRuleReadModel(ProviderProjectionProvenance Pr
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleCatalogueEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:28](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L28).
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:30](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L30).
 
 A discoverable provider module type — returned by the catalogue endpoint.
 
@@ -743,7 +767,7 @@ public sealed record ProviderModuleCatalogueEntry(string ModuleId, string Displa
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleSetupResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:48](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L48).
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:50](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L50).
 
 Result from a create/update/remove operation.
 
@@ -755,8 +779,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ProviderModuleSetupResult Ok() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:50](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L50) |  |
-| <code>public static ProviderModuleSetupResult Fail(string error) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:51](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L51) |  |
+| <code>public ConfigurationChangeStatus? ChangeStatus { get; init; }</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:52](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L52) |  |
+| <code>public static ProviderModuleSetupResult Ok() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:54](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L54) |  |
+| <code>public static ProviderModuleSetupResult Fail(string error) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:55](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L55) |  |
 
 ## ProviderModuleSetupService
 
@@ -779,14 +804,14 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ProviderModuleCatalogueEntry&gt; GetDiscoveredModuleCatalogue();</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:98](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L98) |  |
 | <code>public async Task&lt;ProviderModuleSetupResult&gt; UpsertModuleAsync(UpsertProviderModuleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:122](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L122) |  |
 | <code>public async Task&lt;ProviderModuleSetupResult&gt; SetEnabledAsync(string moduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:190](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L190) |  |
-| <code>public async Task&lt;ProviderModuleSetupResult&gt; RemoveModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:225](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L225) |  |
-| <code>public async Task&lt;ProviderModuleTestResult&gt; TestModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:265](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L265) |  |
+| <code>public async Task&lt;ProviderModuleSetupResult&gt; RemoveModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:215](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L215) |  |
+| <code>public async Task&lt;ProviderModuleTestResult&gt; TestModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:255](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L255) |  |
 
 ## ProviderModuleStatusDto
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleStatusDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L7).
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:9](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L9).
 
 Status of a configured provider module — returned by the module setup API. Credential values are NEVER included; only key names + hasValue flag.
 
@@ -798,7 +823,7 @@ public sealed record ProviderModuleStatusDto(string ModuleId, string DisplayName
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleTestResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:55](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L55).
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:59](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L59).
 
 Result from the test-module endpoint.
 

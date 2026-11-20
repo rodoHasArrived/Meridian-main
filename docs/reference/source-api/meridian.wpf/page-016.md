@@ -6,6 +6,140 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondCutoverRowViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.Settings.BondCutoverRowViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:14](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L14).
+
+One active bond in the cutover inventory with the operator&#x27;s reviewed block reason.
+
+```csharp
+public sealed class BondCutoverRowViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BondCutoverRowViewModel(BondMigrationInventoryRowDto row, Action onReasonChanged);</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L18) |  |
+| <code>public BondMigrationInventoryRowDto Row { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:24](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L24) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:26](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L26) |  |
+| <code>public long Version =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L27) |  |
+| <code>public string ContentHash =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:28](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L28) |  |
+| <code>public bool IsUndeclared =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:29](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L29) |  |
+| <code>public string DeclarationText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L30) |  |
+| <code>public string BlockPrompt =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:31](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L31) |  |
+| <code>public string BlockReason { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:33](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L33) |  |
+| <code>public bool HasBlock =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:39](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L39) |  |
+| <code>public BondMigrationBlockDto ToBlock() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:41](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L41) |  |
+
+## ProviderOwnershipAdministrationViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.Settings.ProviderOwnershipAdministrationViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:20](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L20).
+
+Desktop parity for the browser ownership administration panel: create an owned connection, preview a provider-wide record&#x27;s non-secret vault status, migrate it to the selected owned connection, roll that exact migration back, and bind the host runtime credential. Tenant and actor are server-resolved and no secret is read or sent. A migration keeps its client-generated identity so retry and rollback address the same immutable receipt.
+
+```csharp
+public sealed class ProviderOwnershipAdministrationViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderOwnershipAdministrationViewModel(IWorkstationProviderOwnershipApiClient client);</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:38](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L38) |  |
+| <code>public ObservableCollection&lt;ProviderConnectionDto&gt; OwnedConnections { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:52](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L52) |  |
+| <code>public IAsyncRelayCommand LoadConnectionsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L53) |  |
+| <code>public IAsyncRelayCommand CreateConnectionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:54](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L54) |  |
+| <code>public IAsyncRelayCommand PreviewMigrationCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L55) |  |
+| <code>public IAsyncRelayCommand MigrateCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:56](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L56) |  |
+| <code>public IAsyncRelayCommand RollbackCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:57](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L57) |  |
+| <code>public IAsyncRelayCommand BindCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L58) |  |
+| <code>public IAsyncRelayCommand FinalizeCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:59](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L59) |  |
+| <code>public IAsyncRelayCommand CheckRuntimeCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L60) |  |
+| <code>public IAsyncRelayCommand ApplyRuntimeCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:61](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L61) |  |
+| <code>public string ProviderId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L63) |  |
+| <code>public ProviderConnectionDto? SelectedConnection { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L76) |  |
+| <code>public string NewConnectionId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L82) |  |
+| <code>public string NewDisplayName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L83) |  |
+| <code>public string NewExternalAccountId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:84](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L84) |  |
+| <code>public string NewEnvironment { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:85](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L85) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L87) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:88](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L88) |  |
+| <code>public string? ExpectedGeneration =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L91) | The previewed credential generation a migrate command must echo; null when the preview carries none. |
+| <code>public ProviderCredentialMigrationReceipt? Receipt =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:96](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L96) |  |
+| <code>public ProviderRuntimeCredentialApplicationStatus? RuntimeApplication =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L97) |  |
+| <code>public string RuntimeApplicationText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L98) |  |
+| <code>public string PreviewText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L106) |  |
+| <code>public string ReceiptText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs#L110) |  |
+
+## SettingsAssetProfileFieldInput
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SettingsAssetProfileFieldInput</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:929](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L929).
+
+Exposes asset-profile field metadata, allowed values, and editable input state.
+
+```csharp
+public sealed class SettingsAssetProfileFieldInput : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SettingsAssetProfileFieldInput(SecurityAssetProfileFieldDefinitionDto definition, Action changed);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:934](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L934) |  |
+| <code>public SecurityAssetProfileFieldDefinitionDto Definition { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:940](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L940) |  |
+| <code>public string Key =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:941](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L941) |  |
+| <code>public string Label =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:942](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L942) |  |
+| <code>public SecurityAssetProfileFieldTypeDto FieldType =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:943](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L943) |  |
+| <code>public bool IsRequired =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:944](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L944) |  |
+| <code>public string Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:945](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L945) |  |
+| <code>public IReadOnlyList&lt;string&gt; AllowedValues =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:946](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L946) |  |
+| <code>public string AllowedValuesLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:947](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L947) |  |
+| <code>public bool IsBooleanField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:951](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L951) |  |
+| <code>public bool IsEnumField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:952](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L952) |  |
+| <code>public bool IsDateField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:954](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L954) |  |
+| <code>public bool IsTextEntryField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:955](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L955) |  |
+| <code>public string InputHint =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:957](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L957) |  |
+| <code>public string Value { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:968](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L968) |  |
+| <code>public bool BoolValue { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:983](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L983) | Typed checkbox surface over Value for Boolean profile fields. |
+| <code>public DateTime? DateValue { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:992](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L992) | Typed date-picker surface over Value for Date profile fields. |
+
+## SettingsAssetProfileRow
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SettingsAssetProfileRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:886](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L886).
+
+Presents an asset profile&#x27;s identity, version, status, category, and field count.
+
+```csharp
+public sealed class SettingsAssetProfileRow
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SettingsAssetProfileRow(SecurityAssetProfileDefinitionDto profile);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:888](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L888) |  |
+| <code>public SecurityAssetProfileDefinitionDto Profile { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:893](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L893) |  |
+| <code>public string ProfileId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:894](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L894) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:895](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L895) |  |
+| <code>public string VersionLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:896](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L896) |  |
+| <code>public string StatusLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:897](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L897) |  |
+| <code>public string CategoryLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:898](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L898) |  |
+| <code>public string FieldCountLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:901](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L901) |  |
+| <code>public int ProjectedFieldCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:902](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L902) |  |
+| <code>public string ProjectedFieldCountLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:904](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L904) |  |
+| <code>public string RequiredIdentifierKindsLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:905](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L905) |  |
+| <code>public string AccountingHintsLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:917](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L917) |  |
+| <code>public string EffectiveLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:921](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L921) |  |
+
 ## SettingsOperationsApprovalPolicyRow
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SettingsOperationsApprovalPolicyRow</code>. Kind: `class`.
@@ -584,39 +718,40 @@ Declared public members:
 | <code>public StrategyRunSummary? SelectedRun { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:52](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L52) |  |
 | <code>public StrategyRunSummary? ComparisonRun { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L73) | The second run selected for cross-mode comparison. When both SelectedRun and this are set, CompareRunsCommand is enabled. |
 | <code>public IReadOnlyList&lt;RunComparisonDto&gt;? ComparisonResult { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:90](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L90) | Populated after CompareRunsCommand completes. |
-| <code>public bool IsComparisonVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L106) | true when a comparison result is available to display. |
-| <code>public IReadOnlyList&lt;ComparisonRow&gt; ComparisonRows { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L109) | Flat metric rows suitable for binding in the comparison diff panel. |
-| <code>public string SearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L153) |  |
-| <code>public string SelectedModeFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L167) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:181](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L181) |  |
-| <code>public bool HasActiveFilters =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L187) |  |
-| <code>public bool IsEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:191](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L191) |  |
-| <code>public bool HasFilterRecoveryAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L193) |  |
-| <code>public string RunScopeText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:198](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L198) |  |
-| <code>public string EmptyStateTitle { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:212](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L212) |  |
-| <code>public string EmptyStateDetail { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:226](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L226) |  |
-| <code>public bool CanOpenSelectedRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:244](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L244) |  |
-| <code>public bool CanCompareRuns =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:247](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L247) | true when two distinct runs are selected and ready to compare. |
-| <code>public bool CanChooseComparisonRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:252](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L252) |  |
-| <code>public string ComparisonGuidanceText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:256](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L256) |  |
-| <code>public string SelectionText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L283) |  |
-| <code>public string SelectionDetail { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:302](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L302) |  |
-| <code>public string SelectionContextText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:315](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L315) |  |
-| <code>public string SelectedRunPerformanceText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:335](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L335) |  |
-| <code>public string SelectedRunEvidenceText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:340](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L340) |  |
-| <code>public string ComparisonHeaderAText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:377](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L377) |  |
-| <code>public string ComparisonHeaderBText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:382](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L382) |  |
-| <code>public string ComparisonPanelDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:387](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L387) |  |
-| <code>public string ComparisonPlaceholderText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L394) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:397](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L397) |  |
-| <code>public IRelayCommand OpenDetailCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:398](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L398) |  |
-| <code>public IRelayCommand OpenPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:399](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L399) |  |
-| <code>public IRelayCommand OpenLedgerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:400](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L400) |  |
-| <code>public IAsyncRelayCommand CompareRunsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:401](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L401) |  |
-| <code>public IRelayCommand ClearComparisonCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:402](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L402) |  |
-| <code>public IRelayCommand ClearRunFiltersCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L403) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:424](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L424) |  |
-| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:432](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L432) |  |
+| <code>public bool IsComparisonVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:107](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L107) | true when a comparison result is available to display. |
+| <code>public IReadOnlyList&lt;string&gt; ReplayComparisonWarnings =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L109) |  |
+| <code>public IReadOnlyList&lt;ComparisonRow&gt; ComparisonRows { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L115) | Flat metric rows suitable for binding in the comparison diff panel. |
+| <code>public string SearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:159](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L159) |  |
+| <code>public string SelectedModeFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:173](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L173) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L187) |  |
+| <code>public bool HasActiveFilters =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L193) |  |
+| <code>public bool IsEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:197](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L197) |  |
+| <code>public bool HasFilterRecoveryAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L199) |  |
+| <code>public string RunScopeText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:204](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L204) |  |
+| <code>public string EmptyStateTitle { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L218) |  |
+| <code>public string EmptyStateDetail { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:232](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L232) |  |
+| <code>public bool CanOpenSelectedRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:250](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L250) |  |
+| <code>public bool CanCompareRuns =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:253](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L253) | true when two distinct runs are selected and ready to compare. |
+| <code>public bool CanChooseComparisonRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:258](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L258) |  |
+| <code>public string ComparisonGuidanceText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:262](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L262) |  |
+| <code>public string SelectionText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:289](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L289) |  |
+| <code>public string SelectionDetail { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:308](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L308) |  |
+| <code>public string SelectionContextText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:321](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L321) |  |
+| <code>public string SelectedRunPerformanceText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:341](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L341) |  |
+| <code>public string SelectedRunEvidenceText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:346](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L346) |  |
+| <code>public string ComparisonHeaderAText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:383](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L383) |  |
+| <code>public string ComparisonHeaderBText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:388](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L388) |  |
+| <code>public string ComparisonPanelDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:393](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L393) |  |
+| <code>public string ComparisonPlaceholderText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:400](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L400) |  |
+| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L403) |  |
+| <code>public IRelayCommand OpenDetailCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:404](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L404) |  |
+| <code>public IRelayCommand OpenPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:405](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L405) |  |
+| <code>public IRelayCommand OpenLedgerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:406](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L406) |  |
+| <code>public IAsyncRelayCommand CompareRunsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:407](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L407) |  |
+| <code>public IRelayCommand ClearComparisonCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:408](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L408) |  |
+| <code>public IRelayCommand ClearRunFiltersCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:409](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L409) |  |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:430](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L430) |  |
+| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:438](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L438) |  |
 
 ## StrategyRunDetailViewModel
 
@@ -634,35 +769,41 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L27) |  |
-| <code>public ObservableCollection&lt;ParameterItemViewModel&gt; Parameters { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:39](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L39) |  |
-| <code>public WorkstationTableModel&lt;ParameterItemViewModel&gt; ParametersTable { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:41](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L41) |  |
-| <code>public ParameterItemViewModel? SelectedParameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:43](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L43) |  |
-| <code>public InspectorPanelModel RunSummaryInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L58) |  |
-| <code>public InspectorPanelModel SelectedParameterInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L64) |  |
-| <code>public bool HasSelectedParameter =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L70) |  |
-| <code>public string Title { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L73) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L80) |  |
-| <code>public string ModeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L87) |  |
-| <code>public string EngineText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L94) |  |
-| <code>public string StartedAtText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L101) |  |
-| <code>public string CompletedAtText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L108) |  |
-| <code>public string NetPnlText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L115) |  |
-| <code>public string ReturnText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L122) |  |
-| <code>public string EquityText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L129) |  |
-| <code>public string FillCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L136) |  |
-| <code>public string PortfolioReferenceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L143) |  |
-| <code>public string LedgerReferenceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:150](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L150) |  |
-| <code>public bool CanOpenRunDrillIns =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:156](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L156) |  |
-| <code>public string RunDrillInTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:158](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L158) |  |
-| <code>public string RunActionStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:162](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L162) |  |
-| <code>public string RunActionStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:168](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L168) |  |
-| <code>public IRelayCommand OpenBrowserCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:174](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L174) |  |
-| <code>public IRelayCommand OpenPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:175](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L175) |  |
-| <code>public IRelayCommand OpenLedgerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:176](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L176) |  |
-| <code>public IRelayCommand OpenCashFlowCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:177](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L177) |  |
-| <code>public IRelayCommand OpenRiskCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:178](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L178) |  |
-| <code>public Task LoadRunAsync(string? runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:203](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L203) |  |
+| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:29](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L29) |  |
+| <code>public ObservableCollection&lt;ParameterItemViewModel&gt; Parameters { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:41](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L41) |  |
+| <code>public WorkstationTableModel&lt;ParameterItemViewModel&gt; ParametersTable { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:43](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L43) |  |
+| <code>public ParameterItemViewModel? SelectedParameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:45](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L45) |  |
+| <code>public InspectorPanelModel RunSummaryInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L60) |  |
+| <code>public InspectorPanelModel SelectedParameterInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:66](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L66) |  |
+| <code>public bool HasSelectedParameter =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L72) |  |
+| <code>public StrategyRunReplayProvenanceDto? ReplayProvenance { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L74) |  |
+| <code>public bool ShowReplayEvidence { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:89](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L89) |  |
+| <code>public bool HasReplayFingerprint =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:95](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L95) |  |
+| <code>public bool HasReplayRevisions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L97) |  |
+| <code>public WorkstationTableModel&lt;StrategyRunReplaySourceCountDto&gt; ReplaySourceTable =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L99) |  |
+| <code>public WorkstationTableModel&lt;StrategyRunReplayRevisionDto&gt; ReplayRevisionTable =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L110) |  |
+| <code>public string Title { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L122) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L129) |  |
+| <code>public string ModeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L136) |  |
+| <code>public string EngineText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L143) |  |
+| <code>public string StartedAtText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:150](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L150) |  |
+| <code>public string CompletedAtText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L157) |  |
+| <code>public string NetPnlText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:164](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L164) |  |
+| <code>public string ReturnText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:171](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L171) |  |
+| <code>public string EquityText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:178](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L178) |  |
+| <code>public string FillCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L185) |  |
+| <code>public string PortfolioReferenceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:192](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L192) |  |
+| <code>public string LedgerReferenceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L199) |  |
+| <code>public bool CanOpenRunDrillIns =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L205) |  |
+| <code>public string RunDrillInTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:207](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L207) |  |
+| <code>public string RunActionStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L211) |  |
+| <code>public string RunActionStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:217](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L217) |  |
+| <code>public IRelayCommand OpenBrowserCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:223](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L223) |  |
+| <code>public IRelayCommand OpenPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:224](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L224) |  |
+| <code>public IRelayCommand OpenLedgerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:225](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L225) |  |
+| <code>public IRelayCommand OpenCashFlowCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:226](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L226) |  |
+| <code>public IRelayCommand OpenRiskCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:227](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L227) |  |
+| <code>public Task LoadRunAsync(string? runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:252](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L252) |  |
 
 ## StrategyRunLedgerViewModel
 
@@ -881,7 +1022,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolMappingItem</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:569](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L569).
+Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:525](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L525).
 
 ```csharp
 public sealed record SymbolMappingItem(string CanonicalSymbol, string ProviderMappingsText, string UpdatedText);
@@ -891,7 +1032,7 @@ public sealed record SymbolMappingItem(string CanonicalSymbol, string ProviderMa
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolMappingProviderInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:560](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L560).
+Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:516](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L516).
 
 ```csharp
 public sealed record SymbolMappingProviderInfo(string Id, string DisplayName, string Description);
@@ -901,45 +1042,17 @@ public sealed record SymbolMappingProviderInfo(string Id, string DisplayName, st
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolMappingProviderOption</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:565](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L565).
+Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:521](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L521).
 
 ```csharp
 public sealed record SymbolMappingProviderOption(string Id, string Label);
 ```
 
-## SymbolMappingServiceClient
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SymbolMappingServiceClient</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L35).
-
-Adapts the symbol-mapping service for desktop editing, provider lookup, testing, and CSV exchange.
-
-```csharp
-public sealed class SymbolMappingServiceClient : ISymbolMappingClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolMappingServiceClient() : this(SymbolMappingService.Instance);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:39](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L39) |  |
-| <code>public SymbolMappingServiceClient(SymbolMappingService service);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:44](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L44) |  |
-| <code>public IReadOnlyList&lt;MappingProviderInfo&gt; Providers =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:49](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L49) |  |
-| <code>public Task LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:51](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L51) |  |
-| <code>public IReadOnlyList&lt;SymbolMapping&gt; GetMappings() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L53) |  |
-| <code>public SymbolMapping? GetMapping(string canonicalSymbol) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L55) |  |
-| <code>public Dictionary&lt;string, string&gt; TestMapping(string canonicalSymbol) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:57](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L57) |  |
-| <code>public Task AddOrUpdateMappingAsync(SymbolMapping mapping, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:59](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L59) |  |
-| <code>public Task RemoveMappingAsync(string canonicalSymbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L62) |  |
-| <code>public Task&lt;int&gt; ImportFromCsvAsync(string csvContent, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:65](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L65) |  |
-| <code>public string ExportToCsv() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:68](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L68) |  |
-
 ## SymbolMappingTestResultItem
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolMappingTestResultItem</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:574](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L574).
+Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:530](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L530).
 
 ```csharp
 public sealed record SymbolMappingTestResultItem(string ProviderName, string MappedSymbol);
@@ -949,7 +1062,7 @@ public sealed record SymbolMappingTestResultItem(string ProviderName, string Map
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SymbolMappingViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L74).
+Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:11](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L11).
 
 Coordinates provider symbol mapping edits, tests, removals, and CSV exchange.
 
@@ -961,42 +1074,45 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SymbolMappingViewModel() : this(new SymbolMappingServiceClient());</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:93](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L93) |  |
-| <code>public SymbolMappingViewModel(ISymbolMappingClient mappingClient);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L98) |  |
-| <code>public ObservableCollection&lt;SymbolMappingProviderInfo&gt; Providers { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L108) |  |
-| <code>public ObservableCollection&lt;SymbolMappingProviderOption&gt; ProviderOptions { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L110) |  |
-| <code>public ObservableCollection&lt;SymbolMappingItem&gt; Mappings { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:112](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L112) |  |
-| <code>public ObservableCollection&lt;SymbolMappingTestResultItem&gt; TestResults { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:114](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L114) |  |
-| <code>public RelayCommand TestMappingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:116](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L116) |  |
-| <code>public IAsyncRelayCommand AddMappingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:118](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L118) |  |
-| <code>public RelayCommand&lt;string&gt; RequestRemoveMappingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:120](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L120) |  |
-| <code>public IAsyncRelayCommand ConfirmRemoveMappingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L122) |  |
-| <code>public RelayCommand CancelRemoveMappingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L124) |  |
-| <code>public string TestSymbol { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:126](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L126) |  |
-| <code>public string NewCanonicalSymbol { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L139) |  |
-| <code>public string SelectedProviderId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L151) |  |
-| <code>public string NewProviderSymbol { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L163) |  |
-| <code>public string StatusMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:175](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L175) |  |
-| <code>public string TestScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:181](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L181) |  |
-| <code>public string MappingReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L187) |  |
-| <code>public string MappingReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L193) |  |
-| <code>public string MappingCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L199) |  |
-| <code>public string PendingRemoveCanonicalSymbol { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L205) |  |
-| <code>public Visibility MappingsVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L218) |  |
-| <code>public Visibility EmptyMappingsVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:224](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L224) |  |
-| <code>public Visibility TestResultsVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:230](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L230) |  |
-| <code>public Visibility RemoveConfirmationVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:236](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L236) |  |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:242](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L242) |  |
-| <code>public bool CanTestMapping() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:255](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L255) |  |
-| <code>public bool CanAddMapping() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:257](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L257) |  |
-| <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L263) |  |
-| <code>public void TestMapping();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:285](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L285) |  |
-| <code>public async Task AddMappingAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:312](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L312) |  |
-| <code>public void RequestRemoveMapping(string? canonicalSymbol);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:353](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L353) |  |
-| <code>public async Task ConfirmRemoveMappingAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:365](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L365) |  |
-| <code>public void CancelRemoveMapping();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L394) |  |
-| <code>public async Task&lt;int&gt; ImportCsvContentAsync(string csvContent, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:401](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L401) |  |
-| <code>public string ExportCsv();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:426](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L426) |  |
+| <code>public SymbolMappingViewModel() : this(new SymbolMappingApiClient(ApiClientService.Instance));</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L30) |  |
+| <code>public SymbolMappingViewModel(ISymbolMappingClient mappingClient);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L35) |  |
+| <code>public ObservableCollection&lt;SymbolMappingProviderInfo&gt; Providers { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:46](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L46) |  |
+| <code>public ObservableCollection&lt;SymbolMappingProviderOption&gt; ProviderOptions { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:48](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L48) |  |
+| <code>public ObservableCollection&lt;SymbolMappingItem&gt; Mappings { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:50](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L50) |  |
+| <code>public ObservableCollection&lt;SymbolMappingTestResultItem&gt; TestResults { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:52](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L52) |  |
+| <code>public RelayCommand TestMappingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:54](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L54) |  |
+| <code>public IAsyncRelayCommand RefreshMappingsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:56](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L56) |  |
+| <code>public IAsyncRelayCommand AddMappingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L58) |  |
+| <code>public RelayCommand&lt;string&gt; RequestRemoveMappingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L60) |  |
+| <code>public IAsyncRelayCommand ConfirmRemoveMappingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L62) |  |
+| <code>public RelayCommand CancelRemoveMappingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L64) |  |
+| <code>public string TestSymbol { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:66](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L66) |  |
+| <code>public string NewCanonicalSymbol { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:79](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L79) |  |
+| <code>public string SelectedProviderId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L91) |  |
+| <code>public string NewProviderSymbol { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L103) |  |
+| <code>public string StatusMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L115) |  |
+| <code>public string TestScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L121) |  |
+| <code>public string MappingReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L127) |  |
+| <code>public string MappingReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L133) |  |
+| <code>public string MappingCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L139) |  |
+| <code>public string PendingRemoveCanonicalSymbol { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L145) |  |
+| <code>public Visibility MappingsVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:158](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L158) |  |
+| <code>public Visibility EmptyMappingsVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:164](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L164) |  |
+| <code>public Visibility TestResultsVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:170](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L170) |  |
+| <code>public Visibility RemoveConfirmationVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:176](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L176) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:182](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L182) |  |
+| <code>public bool CanExchangeCsv =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:196](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L196) |  |
+| <code>public bool CanTestMapping() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:198](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L198) |  |
+| <code>public bool CanAddMapping() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:200](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L200) |  |
+| <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:206](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L206) |  |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:230](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L230) |  |
+| <code>public void TestMapping();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:237](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L237) |  |
+| <code>public async Task AddMappingAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:264](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L264) |  |
+| <code>public void RequestRemoveMapping(string? canonicalSymbol);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:300](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L300) |  |
+| <code>public async Task ConfirmRemoveMappingAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:312](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L312) |  |
+| <code>public void CancelRemoveMapping();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:341](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L341) |  |
+| <code>public async Task&lt;int&gt; ImportCsvContentAsync(string csvContent, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:348](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L348) |  |
+| <code>public async Task&lt;string&gt; ExportCsvAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:373](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L373) |  |
 
 ## SymbolQualityDisplayItem
 
@@ -1656,88 +1772,3 @@ Declared public members:
 | <code>public bool HasData { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:28](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L28) |  |
 | <code>public bool IsTrendPositive { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:29](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L29) |  |
 | <code>public double ScoreChange { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L30) |  |
-
-## WatchlistPosture
-
-Qualified name: <code>Meridian.Wpf.ViewModels.WatchlistPosture</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L18).
-
-```csharp
-public readonly record struct WatchlistPosture(string Title, string Detail, string ActionText, string TotalWatchlistsText, string PinnedWatchlistsText, string SymbolCoverageText, string VisibleScopeText, string EmptyStateTitle, string EmptyStateDescription);
-```
-
-## WatchlistViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.WatchlistViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:34](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L34).
-
-ViewModel for the Watchlist page. Holds all state, business logic, and commands so the code-behind can be thinned to lifecycle wiring only.
-
-```csharp
-public sealed class WatchlistViewModel : BindableBase, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WatchlistViewModel(WpfServices.WatchlistService watchlistService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, WpfServices.NavigationService navigationService);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L60) |  |
-| <code>public ObservableCollection&lt;WatchlistDisplayModel&gt; FilteredWatchlists { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:104](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L104) |  |
-| <code>public WorkstationTableModel&lt;WatchlistDisplayModel&gt; WatchlistTable { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L106) |  |
-| <code>public string SearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L110) |  |
-| <code>public bool HasActiveSearch { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L125) |  |
-| <code>public Visibility EmptyStateVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L131) |  |
-| <code>public Visibility ListVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L137) |  |
-| <code>public string PostureTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L143) |  |
-| <code>public string PostureDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L149) |  |
-| <code>public string PostureActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L155) |  |
-| <code>public string TotalWatchlistsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:161](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L161) |  |
-| <code>public string PinnedWatchlistsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L167) |  |
-| <code>public string SymbolCoverageText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:173](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L173) |  |
-| <code>public string VisibleScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:179](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L179) |  |
-| <code>public string EmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L185) |  |
-| <code>public string EmptyStateDescription { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:191](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L191) |  |
-| <code>public WatchlistDisplayModel? SelectedWatchlist { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:197](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L197) |  |
-| <code>public InspectorPanelModel SelectedWatchlistInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:212](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L212) |  |
-| <code>public bool HasSelectedWatchlist =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L218) |  |
-| <code>public string SelectedPinActionLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:220](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L220) |  |
-| <code>public string LoadSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:222](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L222) |  |
-| <code>public string EditSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:226](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L226) |  |
-| <code>public string PinSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:230](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L230) |  |
-| <code>public string ExportSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:234](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L234) |  |
-| <code>public string DuplicateSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:238](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L238) |  |
-| <code>public string DeleteSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:242](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L242) |  |
-| <code>public IAsyncRelayCommand CreateWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:248](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L248) |  |
-| <code>public IAsyncRelayCommand ImportWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L249) |  |
-| <code>public IRelayCommand ClearSearchCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:250](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L250) |  |
-| <code>public IAsyncRelayCommand&lt;string&gt; LoadWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:251](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L251) |  |
-| <code>public IAsyncRelayCommand&lt;string&gt; EditWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:252](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L252) |  |
-| <code>public IAsyncRelayCommand&lt;string&gt; PinWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:253](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L253) |  |
-| <code>public IAsyncRelayCommand LoadSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:254](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L254) |  |
-| <code>public IAsyncRelayCommand EditSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:255](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L255) |  |
-| <code>public IAsyncRelayCommand PinSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:256](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L256) |  |
-| <code>public IAsyncRelayCommand ExportSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:257](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L257) |  |
-| <code>public IAsyncRelayCommand DuplicateSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:258](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L258) |  |
-| <code>public IAsyncRelayCommand DeleteSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:259](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L259) |  |
-| <code>public IAsyncRelayCommand&lt;string&gt; ExportWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:260](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L260) |  |
-| <code>public IAsyncRelayCommand&lt;string&gt; DuplicateWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:261](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L261) |  |
-| <code>public IAsyncRelayCommand&lt;string&gt; DeleteWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:262](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L262) |  |
-| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:266](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L266) |  |
-| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:272](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L272) |  |
-| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:280](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L280) |  |
-| <code>public static WatchlistPosture BuildWatchlistPosture(IReadOnlyCollection&lt;WatchlistDisplayModel&gt; allWatchlists, IReadOnlyCollection&lt;WatchlistDisplayModel&gt; visibleWatchlists, string? searchText);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:369](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L369) |  |
-| <code>public async Task LoadWatchlistAsync(string? watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:609](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L609) |  |
-| <code>public async Task EditWatchlistAsync(string? watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:632](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L632) |  |
-| <code>public async Task PinWatchlistAsync(string? watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:692](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L692) |  |
-
-## WelcomeNextAction
-
-Qualified name: <code>Meridian.Wpf.ViewModels.WelcomeNextAction</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:579](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L579).
-
-```csharp
-public sealed record WelcomeNextAction(string ToneLabel, string Title, string Summary, string PrimaryActionLabel, string PrimaryActionPageTag, string SecondaryActionLabel, string SecondaryActionPageTag, Brush AccentBrush, Brush AccentBackgroundBrush);
-```

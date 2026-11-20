@@ -6,6 +6,103 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IIBBrokerageClient
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBBrokerageClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:10](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L10).
+
+Compile-neutral brokerage-facing contract that abstracts the native IB socket client. The real implementation is provided by EnhancedIBConnectionManager in IBAPI builds, while tests can inject a fake implementation without referencing the vendor SDK.
+
+```csharp
+public interface IIBBrokerageClient : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string Host { get; }</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:12](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L12) |  |
+| <code>int Port { get; }</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:13](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L13) |  |
+| <code>int ClientId { get; }</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:14](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L14) |  |
+| <code>bool IsConnected { get; }</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:15](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L15) |  |
+| <code>event EventHandler&lt;int&gt;? NextValidIdReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:17](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L17) |  |
+| <code>event EventHandler&lt;IBOrderStatusUpdate&gt;? OrderStatusReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:18](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L18) |  |
+| <code>event EventHandler&lt;IBOpenOrderUpdate&gt;? OpenOrderReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:19](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L19) |  |
+| <code>event EventHandler? OpenOrdersCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:20](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L20) |  |
+| <code>event EventHandler&lt;IBExecutionUpdate&gt;? ExecutionDetailsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:21](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L21) |  |
+| <code>event EventHandler&lt;IBPositionUpdate&gt;? PositionReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:22](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L22) |  |
+| <code>event EventHandler? PositionsCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:23](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L23) |  |
+| <code>event EventHandler&lt;IBAccountSummaryUpdate&gt;? AccountSummaryReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:24](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L24) |  |
+| <code>event EventHandler&lt;int&gt;? AccountSummaryCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:25](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L25) |  |
+| <code>event EventHandler&lt;IBApiError&gt;? ErrorOccurred;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:26](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L26) |  |
+| <code>event EventHandler&lt;IReadOnlyList&lt;string&gt;&gt;? ManagedAccountsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:28](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L28) | Accounts IB reports for the connected login. |
+| <code>event EventHandler? ConnectionLost;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:30](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L30) | The transport dropped; raised before any automatic reconnect. |
+| <code>event EventHandler? ConnectionRestored;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:32](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L32) | The client re-established the transport on its own. |
+| <code>Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:34](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L34) |  |
+| <code>Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:35](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L35) |  |
+| <code>void RequestNextValidId();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:36](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L36) |  |
+| <code>Task PlaceOrderAsync(int orderId, OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:37](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L37) |  |
+| <code>Task CancelOrderAsync(int orderId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:38](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L38) |  |
+| <code>int ReserveAccountSummaryRequestId();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:39](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L39) |  |
+| <code>void RequestAccountSummary(int requestId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:40](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L40) |  |
+| <code>void CancelAccountSummary(int requestId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:41](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L41) |  |
+| <code>void RequestPositions();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:42](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L42) |  |
+| <code>void CancelPositions();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:43](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L43) |  |
+| <code>void RequestOpenOrders();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:44](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L44) |  |
+
+## IIBDataCallbackSource
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBDataCallbackSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:58](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L58).
+
+Callback bridge used to correlate vendor callbacks without exposing IB API types above Infrastructure.
+
+```csharp
+public interface IIBDataCallbackSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>event EventHandler&lt;(int RequestId, ProviderContractDetails Details)&gt;? ContractDetailsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:60](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L60) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderOptionChainDefinition Definition)&gt;? OptionChainDefinitionReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:61](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L61) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderNewsHeadline Headline)&gt;? HistoricalNewsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:62](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L62) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderNewsArticlePayload Article)&gt;? NewsArticleReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:63](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L63) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderFundamentalReport Report)&gt;? FundamentalReportReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:64](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L64) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderTickByTickObservation Observation)&gt;? TickByTickReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:65](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L65) |  |
+| <code>event EventHandler&lt;(int RequestId, IReadOnlyList&lt;ProviderDepthExchangeDescription&gt; Exchanges)&gt;? DepthExchangesReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:66](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L66) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderDividendEarnings Payload)&gt;? DividendEarningsReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:67](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L67) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderOptionContract Contract)&gt;? OptionContractReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:68](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L68) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderScannerResult Result)&gt;? ScannerResultReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:69](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L69) |  |
+| <code>event EventHandler&lt;int&gt;? ScannerBatchCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:75](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L75) | Non-terminal batch delimiter for a live scanner subscription (IB&#x27;s scannerDataEnd): the vendor re-sends the full current ranked list each refresh cycle, so the rows after this delimiter REPLACE the request&#x27;s accumulated results rather than extending them. |
+| <code>event EventHandler&lt;(int RequestId, ProviderRealTimeBar Bar)&gt;? RealTimeBarReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:76](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L76) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderHistoricalTick Tick, bool Completed)&gt;? HistoricalTickReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:77](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L77) |  |
+| <code>event EventHandler&lt;(int RequestId, ProviderAccountPnl Pnl)&gt;? PnlReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:78](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L78) |  |
+| <code>event EventHandler&lt;(int RequestId, IReadOnlyList&lt;ProviderMarketRuleIncrement&gt; Increments)&gt;? MarketRuleReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:79](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L79) |  |
+| <code>event EventHandler&lt;int&gt;? RequestCompleted;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:80](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L80) |  |
+| <code>event EventHandler&lt;(int RequestId, string Code, string Message)&gt;? RequestRejected;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:81](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L81) |  |
+
+## IIBDataLineageSource
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBDataLineageSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:46](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L46).
+
+Optional runtime callback source for automatically captured IB entitlement evidence.
+
+```csharp
+public interface IIBDataLineageSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>event EventHandler&lt;IBMarketDataTypeUpdate&gt;? MarketDataTypeReceived;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:48](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L48) |  |
+
 ## IIBDataServiceTransport
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBDataServiceTransport</code>. Kind: `interface`.
@@ -1200,73 +1297,3 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;decimal&gt;&gt; GetStrikesAsync(string underlyingSymbol, DateOnly expiration, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:80](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L80) |  |
 | <code>public Task&lt;OptionChainSnapshot?&gt; GetChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:92](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L92) |  |
 | <code>public Task&lt;OptionQuote?&gt; GetOptionQuoteAsync(OptionContractSpec contract, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:131](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L131) |  |
-
-## BrokerAdapterTemplate
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.BrokerAdapterTemplate</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L15).
-
-Broker adapter template showing strict boundary separation: - Broker-specific DTOs and enums stay inside this file/namespace. - Canonical Meridian contracts are exposed via execution SDK models.
-
-```csharp
-public static class BrokerAdapterTemplate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void Register(IServiceCollection services);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:17](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L17) |  |
-
-## ITemplateBrokerStreamingClient
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.ITemplateBrokerStreamingClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L65).
-
-Defines asynchronous streaming and disposal for the template broker adapter.
-
-```csharp
-public interface ITemplateBrokerStreamingClient : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IAsyncEnumerable&lt;TemplateBrokerStreamMessage&gt; StreamAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L67) |  |
-
-## TemplateBrokerageGateway
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:38](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L38).
-
-Template brokerage gateway scaffold. Copy this file and fill in the TODOs to implement a new brokerage provider. Steps to implement a new brokerage: 1. Copy this file to a new folder under Adapters/{BrokerName}/ 2. Rename the class to {BrokerName}BrokerageGateway 3. Replace the template &#91;DataSource&#93; and &#91;ImplementsAdr&#93; metadata with broker-specific values 4. Replace scaffold methods with broker-specific API calls 5. Add JSON DTOs and a JsonSerializerContext for ADR-014 compliance 6. Register in DI: services.AddBrokerageGateway&lt;{BrokerName}BrokerageGateway&gt;() 7. Add configuration options record if needed 8. Add tests under tests/Meridian.Tests/Brokerage/
-
-```csharp
-public sealed class TemplateBrokerageGateway : IBrokerageGateway
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TemplateBrokerageGateway(ILogger&lt;TemplateBrokerageGateway&gt; logger) : this(logger, new TemplateBrokerageGatewayOptions());</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L50) |  |
-| <code>public TemplateBrokerageGateway(ILogger&lt;TemplateBrokerageGateway&gt; logger, TemplateBrokerageGatewayOptions options);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L55) |  |
-| <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L67) |  |
-| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L69) |  |
-| <code>public string BrokerDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L71) |  |
-| <code>public BrokerageCapabilities BrokerageCapabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:73](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L73) |  |
-| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L75) |  |
-| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L88) |  |
-| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:97](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L97) |  |
-| <code>public async Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:127](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L127) |  |
-| <code>public async Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:153](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L153) |  |
-| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:183](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L183) |  |
-| <code>public Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:192](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L192) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:207](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L207) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:214](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L214) |  |
-| <code>public async Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:225](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L225) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:240](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L240) |  |

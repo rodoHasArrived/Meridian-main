@@ -103,7 +103,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.DefaultScheduleConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:122](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L122).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:123](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L123).
 
 Configuration for a default schedule to create on startup.
 
@@ -272,7 +272,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.FinnhubConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:285](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L285).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:291](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L291).
 
 Finnhub provider configuration. Generous free tier with company fundamentals, earnings, and news. Free tier: 60 API calls/minute.
 
@@ -284,7 +284,7 @@ public sealed record FinnhubConfig(bool Enabled = true, string? ApiKey = null, i
 
 Qualified name: <code>Meridian.Core.Config.FredConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:301](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L301).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:307](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L307).
 
 FRED (Federal Reserve Economic Data) provider configuration. Maps economic time-series observations into synthetic daily bars for Meridian backfill workflows.
 
@@ -445,7 +445,7 @@ public sealed record IndexOptionsConfig(bool Enabled = false, string[]? Indices 
 
 Qualified name: <code>Meridian.Core.Config.NasdaqDataLinkConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:170](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L170).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:171](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L171).
 
 Nasdaq Data Link (Quandl) provider configuration.
 
@@ -457,7 +457,7 @@ public sealed record NasdaqDataLinkConfig(bool Enabled = true, string? ApiKey = 
 
 Qualified name: <code>Meridian.Core.Config.OpenFigiConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:195](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L195).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:196](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L196).
 
 OpenFIGI symbol resolver configuration.
 
@@ -481,7 +481,7 @@ public sealed record PipelineRuntimeConfig(int? FinalFlushTimeoutSeconds = null,
 
 Qualified name: <code>Meridian.Core.Config.PolygonConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:250](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L250).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:251](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L251).
 
 Polygon.io provider configuration. High-quality OHLCV aggregates with reference data. Free tier: 5 API calls/minute, 2 years history.
 
@@ -623,6 +623,29 @@ Reusable provider operations preset.
 public sealed record ProviderPresetConfig(string PresetId, string Name, string Description, ProviderPolicyConfig[]? Policies = null, string[]? Highlights = null, bool IsBuiltIn = false, bool IsEnabled = false);
 ```
 
+## ProviderQuotaCatalog
+
+Qualified name: <code>Meridian.Core.Config.ProviderQuotaCatalog</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Config/ProviderQuotaCatalog.cs:6](../../../../src/Meridian.Core/Config/ProviderQuotaCatalog.cs#L6).
+
+Shared presets and validation for vendor account quotas and physical request pacing.
+
+```csharp
+public static class ProviderQuotaCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string TwelveData = &quot;twelvedata&quot;;</code> | [src/Meridian.Core/Config/ProviderQuotaCatalog.cs:8](../../../../src/Meridian.Core/Config/ProviderQuotaCatalog.cs#L8) |  |
+| <code>public const string AlphaVantage = &quot;alphavantage&quot;;</code> | [src/Meridian.Core/Config/ProviderQuotaCatalog.cs:9](../../../../src/Meridian.Core/Config/ProviderQuotaCatalog.cs#L9) |  |
+| <code>public static bool IsEditable(string providerId) =&gt; …;</code> | [src/Meridian.Core/Config/ProviderQuotaCatalog.cs:11](../../../../src/Meridian.Core/Config/ProviderQuotaCatalog.cs#L11) |  |
+| <code>public static IReadOnlyList&lt;ProviderQuotaTierDto&gt; GetTiers(string providerId) =&gt; …;</code> | [src/Meridian.Core/Config/ProviderQuotaCatalog.cs:13](../../../../src/Meridian.Core/Config/ProviderQuotaCatalog.cs#L13) |  |
+| <code>public static ProviderQuotaSettingsDto Read(AppConfig config, string providerId);</code> | [src/Meridian.Core/Config/ProviderQuotaCatalog.cs:18](../../../../src/Meridian.Core/Config/ProviderQuotaCatalog.cs#L18) |  |
+| <code>public static AppConfig Apply(AppConfig config, string providerId, ProviderQuotaEditDto edit);</code> | [src/Meridian.Core/Config/ProviderQuotaCatalog.cs:37](../../../../src/Meridian.Core/Config/ProviderQuotaCatalog.cs#L37) |  |
+
 ## ProviderQuotasConfig
 
 Qualified name: <code>Meridian.Core.Config.ProviderQuotasConfig</code>. Kind: `record`.
@@ -696,7 +719,7 @@ public sealed record ProviderValidationProfileAudit(Guid Id, string Provider, Da
 
 Qualified name: <code>Meridian.Core.Config.RobinhoodConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:316](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L316).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:322](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L322).
 
 Robinhood historical data provider configuration. Uses the unofficial Robinhood API; requires a personal access token. No official public API exists — set ROBINHOOD_ACCESS_TOKEN via environment variable.
 
@@ -708,7 +731,7 @@ public sealed record RobinhoodConfig(bool Enabled = false, int Priority = 35, in
 
 Qualified name: <code>Meridian.Core.Config.ScheduledBackfillConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:102](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L102).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:103](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L103).
 
 Configuration for scheduled backfill operations.
 
@@ -733,22 +756,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;ConfigValidationResult&gt; Validate(AppConfig config);</code> | [src/Meridian.Core/Config/IConfigValidator.cs:142](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L142) |  |
-
-## SensitiveKeyRegistry
-
-Qualified name: <code>Meridian.Core.Config.SensitiveKeyRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:10](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L10).
-
-Single registry of sensitive key/property-name fragments shared by every masking and redaction surface (SensitiveValueMasker, Meridian.Core.Diagnostics.RuntimeDiagnosticRedactor). The surfaces previously carried overlapping-but-different lists, so a value could be masked in one output and leak in another. Add new fragments here, never to a per-surface list.
-
-```csharp
-public static class SensitiveKeyRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly IReadOnlyList&lt;string&gt; Fragments = [&quot;password&quot;, &quot;pwd&quot;, &quot;secret&quot;, &quot;key&quot;, &quot;token&quot;, &quot;credential&quot;, &quot;connectionstring&quot;, &quot;connection_string&quot;, &quot;auth&quot;, &quot;authorization&quot;, &quot;session&quot;, &quot;refresh&quot;, &quot;bearer&quot;, &quot;certificate&quot;, &quot;otlpheaders&quot;];</code> | [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:17](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L17) | Case-insensitive fragments; a key containing any fragment is considered sensitive. The union of the historical masker and redactor taxonomies — removing an entry narrows redaction somewhere, so entries may only be added. |
-| <code>public static bool IsSensitive(string? key);</code> | [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:28](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L28) | Returns true when the key/property/env-var name contains any sensitive fragment. |

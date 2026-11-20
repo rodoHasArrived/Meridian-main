@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IShellPageRegistry
+
+Qualified name: <code>Meridian.Wpf.Shell.Services.IShellPageRegistry</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:8](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L8).
+
+Exposes the registered desktop pages, workspace capabilities, and shell definitions.
+
+```csharp
+public interface IShellPageRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ShellPageDescriptor&gt; Pages { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:10](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L10) |  |
+| <code>IReadOnlyList&lt;WorkspaceCapabilityDescriptor&gt; WorkspaceCapabilities { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:12](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L12) |  |
+| <code>IReadOnlyList&lt;WorkspaceShellDefinition&gt; WorkspaceShells { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:14](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L14) |  |
+
 ## IShellRouteRegistry
 
 Qualified name: <code>Meridian.Wpf.Shell.Services.IShellRouteRegistry</code>. Kind: `interface`.
@@ -1485,7 +1505,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.AddProviderWizardViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:12](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L12).
+Source: [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:13](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L13).
 
 ViewModel for the Add Provider Wizard page. Holds all display state for the provider-detail panel, credential guidance, connection-test feedback, save feedback, and step-progress indicators. The code-behind sets properties here instead of mutating UI elements directly.
 
@@ -1497,61 +1517,65 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AddProviderWizardViewModel();</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:68](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L68) |  |
-| <code>public ObservableCollection&lt;ProviderCatalogViewModel&gt; ProviderCatalog { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:75](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L75) |  |
-| <code>public IRelayCommand&lt;string&gt; SelectProviderFilterCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:77](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L77) |  |
-| <code>public string ActiveProviderFilter { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:79](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L79) |  |
-| <code>public bool IsAllProviderFilterActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L91) |  |
-| <code>public bool IsFreeProviderFilterActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:93](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L93) |  |
-| <code>public bool IsStreamingProviderFilterActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:95](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L95) |  |
-| <code>public bool IsHistoricalProviderFilterActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L97) |  |
-| <code>public Visibility ProviderCatalogVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L99) |  |
-| <code>public Visibility ProviderCatalogEmptyVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L101) |  |
-| <code>public Visibility ProviderCatalogRecoveryVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L103) |  |
-| <code>public string ProviderCatalogScopeText { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L108) |  |
-| <code>public string ProviderCatalogEmptyTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L128) |  |
-| <code>public string ProviderCatalogEmptyDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L133) |  |
-| <code>public string SelectedProviderName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L140) |  |
-| <code>public string SelectedProviderDescription { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:146](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L146) |  |
-| <code>public Visibility DetailsVisibility { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:152](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L152) |  |
-| <code>public string DetailStreamingText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:158](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L158) |  |
-| <code>public string DetailHistoricalText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:164](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L164) |  |
-| <code>public string DetailSearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:170](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L170) |  |
-| <code>public string DetailRateLimitText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:176](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L176) |  |
-| <code>public string DetailCredentialsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:182](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L182) |  |
-| <code>public string CredentialsInfoText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:190](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L190) |  |
-| <code>public Visibility NoCredentialsVisibility { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:196](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L196) |  |
-| <code>public Brush ConnectionTestDotBrush { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:204](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L204) |  |
-| <code>public string ConnectionTestStatusText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:210](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L210) |  |
-| <code>public string SaveStatusText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L218) |  |
-| <code>public Brush SaveStatusBrush { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:224](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L224) |  |
-| <code>public string SummaryConnectionTypeText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:232](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L232) |  |
-| <code>public string SummaryOperatingModeText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:238](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L238) |  |
-| <code>public string SummaryScopeText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:244](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L244) |  |
-| <code>public string SummaryCapabilitiesText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:250](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L250) |  |
-| <code>public string SummaryCredentialText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:256](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L256) |  |
-| <code>public string SummaryPresetText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:262](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L262) |  |
-| <code>public string SummaryCertificationText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:268](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L268) |  |
-| <code>public string CertificationStatusText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:274](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L274) |  |
-| <code>public int CurrentStep { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:282](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L282) |  |
-| <code>public Brush Step1Fill =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:298](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L298) | Step 1 dot fill — green once step 1 is reached. |
-| <code>public Brush Step2Fill =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:301](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L301) | Step 2 dot fill — blue while active, green when passed. |
-| <code>public Brush Step3Fill =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:304](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L304) | Step 3 dot fill — blue while active, green when passed. |
-| <code>public Brush Step4Fill =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L307) | Step 4 dot fill — green when reached. |
-| <code>public void LoadProviderCatalog(IEnumerable&lt;ProviderCatalogEntry&gt; providers, IEnumerable&lt;ProviderCredentialStatus&gt; credentialStatuses);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:314](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L314) | Loads provider catalog data and projects the active filter into display card view models. |
-| <code>public ProviderCatalogEntry? FindProvider(string providerId);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:324](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L324) | Gets the backing provider entry for a selected catalog card. |
-| <code>public void ApplySelectedProvider(ProviderCatalogEntry provider);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:331](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L331) | Populates the right-panel detail properties from the selected provider entry. |
-| <code>public void ApplyRelationshipSummary(string providerName, string providerDescription, string connectionType, string operatingMode, string scopeSummary, string capabilitiesSummary, string credentialSummary, string presetSummary, string certificationSummary);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:350](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L350) | Populates the operator-facing relationship summary shown in the wizard side rail. |
-| <code>public void ApplyCredentialsInfo(string providerName, bool hasFields);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:374](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L374) | Sets credential-step display state based on whether the provider needs credentials. |
-| <code>public void ApplyUnmanagedCredentialsInfo(string providerName, bool requiresCredentials);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L394) | Transitions the connection-test dot to the &quot;testing&quot; (warning) state. |
-| <code>public void SetConnectionTestTesting(string providerName);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:402](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L402) |  |
-| <code>public void ResetConnectionTest(string message = &quot;Not tested yet&quot;);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:409](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L409) | Clears readiness when the provider or the credential editors change. |
-| <code>public void SetConnectionTestSuccess();</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:416](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L416) | Marks the connection test as successful: verified by the service, or no credentials needed. |
-| <code>public void SetConnectionTestUnverified();</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:423](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L423) | Marks credentials as saved but not verified by the authenticated service. |
-| <code>public void SetConnectionTestError(string? message = null);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:430](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L430) | Marks the connection test as failed because the service did not confirm the save. |
-| <code>public void SetSaveSuccess(string providerName);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:438](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L438) | Sets a success message on the save-status line. |
-| <code>public void SetSaveError(string message);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:445](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L445) | Sets an error message on the save-status line. |
-| <code>public void SetCertificationStatus(string message, bool success);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:454](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L454) | Updates the certification callout and the compact summary badge copy. |
+| <code>public AddProviderWizardViewModel();</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:69](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L69) |  |
+| <code>public ObservableCollection&lt;ProviderCatalogViewModel&gt; ProviderCatalog { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L76) |  |
+| <code>public IRelayCommand&lt;string&gt; SelectProviderFilterCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:78](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L78) |  |
+| <code>public string ActiveProviderFilter { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L80) |  |
+| <code>public bool IsAllProviderFilterActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:92](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L92) |  |
+| <code>public bool IsFreeProviderFilterActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L94) |  |
+| <code>public bool IsStreamingProviderFilterActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:96](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L96) |  |
+| <code>public bool IsHistoricalProviderFilterActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L98) |  |
+| <code>public Visibility ProviderCatalogVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:100](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L100) |  |
+| <code>public Visibility ProviderCatalogEmptyVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L102) |  |
+| <code>public Visibility ProviderCatalogRecoveryVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:104](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L104) |  |
+| <code>public string ProviderCatalogScopeText { get; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L109) |  |
+| <code>public string ProviderCatalogEmptyTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L129) |  |
+| <code>public string ProviderCatalogEmptyDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:134](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L134) |  |
+| <code>public string SelectedProviderName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L141) |  |
+| <code>public string SelectedProviderDescription { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L147) |  |
+| <code>public Visibility DetailsVisibility { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L153) |  |
+| <code>public string DetailStreamingText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:159](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L159) |  |
+| <code>public string DetailHistoricalText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:165](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L165) |  |
+| <code>public string DetailSearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:171](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L171) |  |
+| <code>public string DetailRateLimitText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:177](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L177) |  |
+| <code>public string DetailCredentialsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:183](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L183) |  |
+| <code>public string CredentialsInfoText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:191](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L191) |  |
+| <code>public Visibility NoCredentialsVisibility { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:197](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L197) |  |
+| <code>public string? CredentialRotationText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:206](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L206) |  |
+| <code>public string SaveCredentialActionLabel { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:213](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L213) |  |
+| <code>public Brush ConnectionTestDotBrush { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:219](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L219) |  |
+| <code>public string ConnectionTestStatusText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:225](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L225) |  |
+| <code>public string SaveStatusText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:233](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L233) |  |
+| <code>public Brush SaveStatusBrush { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:239](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L239) |  |
+| <code>public string SummaryConnectionTypeText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:247](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L247) |  |
+| <code>public string SummaryOperatingModeText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:253](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L253) |  |
+| <code>public string SummaryScopeText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:259](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L259) |  |
+| <code>public string SummaryCapabilitiesText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L265) |  |
+| <code>public string SummaryCredentialText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L271) |  |
+| <code>public string SummaryPresetText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L277) |  |
+| <code>public string SummaryCertificationText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L283) |  |
+| <code>public string CertificationStatusText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:289](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L289) |  |
+| <code>public int CurrentStep { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:297](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L297) |  |
+| <code>public Brush Step1Fill =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:313](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L313) | Step 1 dot fill — green once step 1 is reached. |
+| <code>public Brush Step2Fill =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:316](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L316) | Step 2 dot fill — blue while active, green when passed. |
+| <code>public Brush Step3Fill =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:319](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L319) | Step 3 dot fill — blue while active, green when passed. |
+| <code>public Brush Step4Fill =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:322](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L322) | Step 4 dot fill — green when reached. |
+| <code>public void LoadProviderCatalog(IEnumerable&lt;ProviderCatalogEntry&gt; providers, IEnumerable&lt;ProviderCredentialStatus&gt; credentialStatuses);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:329](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L329) | Loads provider catalog data and projects the active filter into display card view models. |
+| <code>public ProviderCatalogEntry? FindProvider(string providerId);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:339](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L339) | Gets the backing provider entry for a selected catalog card. |
+| <code>public void ApplySelectedProvider(ProviderCatalogEntry provider);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:346](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L346) | Populates the right-panel detail properties from the selected provider entry. |
+| <code>public void ApplyRelationshipSummary(string providerName, string providerDescription, string connectionType, string operatingMode, string scopeSummary, string capabilitiesSummary, string credentialSummary, string presetSummary, string certificationSummary);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:365](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L365) | Populates the operator-facing relationship summary shown in the wizard side rail. |
+| <code>public void ApplyCredentialsInfo(string providerName, bool hasFields);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:389](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L389) | Sets credential-step display state based on whether the provider needs credentials. |
+| <code>public void ApplyUnmanagedCredentialsInfo(string providerName, bool requiresCredentials);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:409](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L409) | Transitions the connection-test dot to the &quot;testing&quot; (warning) state. |
+| <code>public void SetConnectionTestTesting(string providerName);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:417](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L417) |  |
+| <code>public void ResetConnectionTest(string message = &quot;Not tested yet&quot;);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:424](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L424) | Clears readiness when the provider or the credential editors change. |
+| <code>public void SetDraftTestResult(ProviderCredentialDraftStatusDto status, string message);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:431](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L431) |  |
+| <code>public void SetCredentialRotation(DateTimeOffset? dueAt);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:445](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L445) |  |
+| <code>public void SetConnectionTestSuccess();</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:453](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L453) | Marks the connection test as successful: verified by the service, or no credentials needed. |
+| <code>public void SetConnectionTestUnverified();</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:460](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L460) | Marks credentials as saved but not verified by the authenticated service. |
+| <code>public void SetConnectionTestError(string? message = null);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:467](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L467) | Marks the connection test as failed because the service did not confirm the save. |
+| <code>public void SetSaveSuccess(string providerName);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:475](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L475) | Sets a success message on the save-status line. |
+| <code>public void SetSaveError(string message);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:482](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L482) | Sets an error message on the save-status line. |
+| <code>public void SetCertificationStatus(string message, bool success);</code> | [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs:491](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.cs#L491) | Updates the certification callout and the compact summary badge copy. |
 
 Source: [src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.OwnedConnections.cs:5](../../../../src/Meridian.Wpf/ViewModels/AddProviderWizardViewModel.OwnedConnections.cs#L5).
 
@@ -1929,24 +1953,3 @@ Declared public members:
 | <code>public void GoBack();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:324](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L324) |  |
 | <code>public void GoNext();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:333](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L333) |  |
 | <code>public void CancelWizard();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:362](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L362) |  |
-
-## AuditLogViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.AuditLogViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:129](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L129).
-
-View model for audit trail log items.
-
-```csharp
-public sealed class AuditLogViewModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Timestamp { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:131](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L131) |  |
-| <code>public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:132](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L132) |  |
-| <code>public string Action { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:133](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L133) |  |
-| <code>public string Summary { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:134](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L134) |  |

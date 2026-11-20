@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SensitiveKeyRegistry
+
+Qualified name: <code>Meridian.Core.Config.SensitiveKeyRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:10](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L10).
+
+Single registry of sensitive key/property-name fragments shared by every masking and redaction surface (SensitiveValueMasker, Meridian.Core.Diagnostics.RuntimeDiagnosticRedactor). The surfaces previously carried overlapping-but-different lists, so a value could be masked in one output and leak in another. Add new fragments here, never to a per-surface list.
+
+```csharp
+public static class SensitiveKeyRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly IReadOnlyList&lt;string&gt; Fragments = [&quot;password&quot;, &quot;pwd&quot;, &quot;secret&quot;, &quot;key&quot;, &quot;token&quot;, &quot;credential&quot;, &quot;connectionstring&quot;, &quot;connection_string&quot;, &quot;auth&quot;, &quot;authorization&quot;, &quot;session&quot;, &quot;refresh&quot;, &quot;bearer&quot;, &quot;certificate&quot;, &quot;otlpheaders&quot;];</code> | [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:17](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L17) | Case-insensitive fragments; a key containing any fragment is considered sensitive. The union of the historical masker and redactor taxonomies — removing an entry narrows redaction somewhere, so entries may only be added. |
+| <code>public static bool IsSensitive(string? key);</code> | [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:28](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L28) | Returns true when the key/property/env-var name contains any sensitive fragment. |
+
 ## SensitiveValueMasker
 
 Qualified name: <code>Meridian.Core.Config.SensitiveValueMasker</code>. Kind: `class`.
@@ -53,7 +72,7 @@ public sealed record SourceRegistryConfig(string? PersistencePath = null);
 
 Qualified name: <code>Meridian.Core.Config.StooqConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:183](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L183).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:184](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L184).
 
 Stooq provider configuration.
 
@@ -159,7 +178,7 @@ public sealed record SyntheticScenarioConfig(bool Enabled = false, int ThrottleE
 
 Qualified name: <code>Meridian.Core.Config.TiingoConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:233](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L233).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:234](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L234).
 
 Tiingo provider configuration. Best for: High-quality dividend-adjusted OHLCV with corporate actions. Free tier: 1,000 requests/day, 50 requests/hour.
 
@@ -198,7 +217,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.TwelveDataConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:323](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L323).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:329](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L329).
 
 Twelve Data options; credentials are resolved separately from the provider settings UI.
 
@@ -215,7 +234,7 @@ Source: [src/Meridian.Core/Config/ProviderQuotasConfig.cs:13](../../../../src/Me
 Twelve Data Basic defaults. Daily credits reset at midnight UTC. A paid account must explicitly declare its limits and fundamentals entitlement; numeric capacity alone grants none. NoDailyLimit explicitly declares an account without a daily credit cap.
 
 ```csharp
-public sealed record TwelveDataQuotaConfig(int CreditsPerMinute = 8, int DailyCredits = 800, bool FundamentalsEntitled = false, bool NoDailyLimit = false);
+public sealed record TwelveDataQuotaConfig(int CreditsPerMinute = BackfillProviderCatalog.TwelveDataPerMinute, int DailyCredits = BackfillProviderCatalog.TwelveDataBasicDailyCredits, bool FundamentalsEntitled = false, bool NoDailyLimit = false);
 ```
 
 ## ValidatedConfig
@@ -265,7 +284,7 @@ public sealed record ValidationPipelineConfig(bool Enabled = false, bool UseReal
 
 Qualified name: <code>Meridian.Core.Config.YahooFinanceConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:156](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L156).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:157](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L157).
 
 Yahoo Finance provider configuration.
 
@@ -929,24 +948,3 @@ Declared public members:
 | <code>IDisposable Subscribe(Func&lt;MonitoringAlert, Task&gt; handler, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:193](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L193) | Subscribes to alerts with an async handler. |
 | <code>IReadOnlyList&lt;MonitoringAlert&gt; GetRecentAlerts(int count = 100, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:201](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L201) | Gets recent alerts matching the filter. |
 | <code>AlertStatistics GetStatistics();</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:207](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L207) | Gets alert statistics. |
-
-## IHealthCheckAggregator
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.IHealthCheckAggregator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:139](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L139).
-
-Aggregates health checks from multiple providers into a unified report.
-
-```csharp
-public interface IHealthCheckAggregator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void Register(IHealthCheckProvider provider);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:145](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L145) | Registers a health check provider. |
-| <code>void Unregister(string componentName);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:151](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L151) | Unregisters a health check provider. |
-| <code>Task&lt;AggregatedHealthReport&gt; CheckAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:158](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L158) | Runs all registered health checks and returns an aggregated report. |
-| <code>Task&lt;HealthCheckResult?&gt; CheckAsync(string componentName, CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:166](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L166) | Runs a specific health check by component name. |

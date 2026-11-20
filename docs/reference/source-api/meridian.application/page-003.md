@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HostModeOrchestrator
+
+Qualified name: <code>Meridian.Application.Composition.Startup.HostModeOrchestrator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs:17](../../../../src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs#L17).
+
+Shared startup orchestrator that dispatches commands and runs the appropriate host mode using HostStartupFactory.
+
+```csharp
+public sealed class HostModeOrchestrator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HostModeOrchestrator(ILogger log, DashboardServerFactory dashboardServerFactory);</code> | [src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs:22](../../../../src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs#L22) |  |
+| <code>public async Task&lt;int&gt; RunAsync(CliArguments cliArgs, AppConfig cfg, string cfgPath, ConfigurationService configService, DeploymentContext deployment, CancellationToken ct = default, IApplicationLifecycleCoordinator? lifecycle = null);</code> | [src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs:28](../../../../src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs#L28) |  |
+
 ## IApplicationLifecycleCoordinator
 
 Qualified name: <code>Meridian.Application.Composition.Startup.IApplicationLifecycleCoordinator</code>. Kind: `interface`.
@@ -191,8 +210,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const string PipeEnvironmentVariable = &quot;MDC_LIFECYCLE_PIPE&quot;;</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:15](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L15) |  |
-| <code>public LifecycleSupervisorBridgeHostedService(IRuntimeLifecycleControlPlane lifecycle, ILogger&lt;LifecycleSupervisorBridgeHostedService&gt; log);</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:22](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L22) |  |
-| <code>public override void Dispose();</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:56](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L56) |  |
+| <code>public LifecycleSupervisorBridgeHostedService(IRuntimeLifecycleControlPlane lifecycle, RuntimeSupervisorConnection connection, ILogger&lt;LifecycleSupervisorBridgeHostedService&gt; log);</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:23](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L23) |  |
+| <code>public override void Dispose();</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:59](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L59) |  |
 
 ## BackfillModeRunner
 
@@ -376,6 +395,24 @@ Declared public members:
 | <code>public RuntimeShutdownSequence(IRuntimeLifecycleControlPlane lifecycle, ILifecycleReceiptStore receiptStore, IEnumerable&lt;IRuntimeShutdownParticipant&gt; participants, RuntimeShutdownOptions options, ILogger&lt;RuntimeShutdownSequence&gt; logger);</code> | [src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:45](../../../../src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs#L45) |  |
 | <code>public async ValueTask&lt;LifecycleShutdownReceiptDto&gt; ExecuteAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:63](../../../../src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs#L63) |  |
 
+## RuntimeSupervisorConnection
+
+Qualified name: <code>Meridian.Application.Composition.Startup.RuntimeSupervisorConnection</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:191](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L191).
+
+Evidence of a live, acknowledged registration with the owning supervisor.
+
+```csharp
+public sealed class RuntimeSupervisorConnection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsConfirmed =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:195](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L195) |  |
+
 ## SharedStartupBootstrapper
 
 Qualified name: <code>Meridian.Application.Composition.Startup.SharedStartupBootstrapper</code>. Kind: `class`.
@@ -535,6 +572,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>public StartupOrchestrator(ILogger log, DashboardServerFactory dashboardServerFactory);</code> | [src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs:32](../../../../src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs#L32) |  |
 | <code>public async Task&lt;int&gt; RunAsync(StartupContext ctx);</code> | [src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs:42](../../../../src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs#L42) | Runs the full startup sequence using the supplied ctx. |
+
+## StreamingProviderActivation
+
+Qualified name: <code>Meridian.Application.Composition.Startup.StreamingProviderActivation</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs:10](../../../../src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs#L10).
+
+Collector-owned streaming evidence shared with the dashboard&#x27;s separate container.
+
+```csharp
+public sealed class StreamingProviderActivation : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;ProviderActivationEntry&gt; Read(string configPath) =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs:39](../../../../src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs#L39) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs:61](../../../../src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs#L61) |  |
 
 ## StartupRefusedException
 
@@ -943,65 +999,3 @@ Server-owned remediation target resolved from an opaque composite gap identifier
 ```csharp
 public sealed record CompositeDataQualityGap(string GapId, string DashboardVersion, StreamingDataGap Gap, string? Provider);
 ```
-
-## CompositeDataQualityReadService
-
-Qualified name: <code>Meridian.Application.DataQuality.CompositeDataQualityReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:39](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L39).
-
-Unifies streaming freshness, stored-file completeness, and adapter gap integrity into one per-symbol 0-100 projection. Expensive storage and adapter reads are cached independently so live streaming state can still refresh on every dashboard request.
-
-```csharp
-public sealed class CompositeDataQualityReadService : ICompositeDataQualityReadService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CompositeDataQualityReadService(DataQualityMonitoringService streaming, IDataQualityScoringService? stored = null, DataQualityMonitor? adapter = null, ISymbolRegistryService? symbols = null, ILogger&lt;CompositeDataQualityReadService&gt;? logger = null);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:59](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L59) |  |
-| <code>public async Task&lt;QualityCompositeDashboardResponse&gt; GetDashboardAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:73](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L73) |  |
-| <code>public bool TryResolveGap(string symbol, string gapId, out CompositeDataQualityGap target);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:157](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L157) |  |
-
-## ICompositeDataQualityReadService
-
-Qualified name: <code>Meridian.Application.DataQuality.ICompositeDataQualityReadService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:18](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L18).
-
-Shared read boundary for the browser and WPF data-quality workstations.
-
-```csharp
-public interface ICompositeDataQualityReadService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;QualityCompositeDashboardResponse&gt; GetDashboardAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:20](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L20) |  |
-| <code>bool TryResolveGap(string symbol, string gapId, out CompositeDataQualityGap target);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:22](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L22) |  |
-
-## QualityMonitoringPublisher
-
-Qualified name: <code>Meridian.Application.DataQuality.QualityMonitoringPublisher</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:27](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L27).
-
-IMarketEventPublisher decorator that feeds live MarketEventType.Trade and MarketEventType.BboQuote ingress into the DataQualityMonitoringService (completeness, gap analysis, sequence tracking, anomaly detection, latency histograms, and cross-provider comparison).
-
-```csharp
-public sealed class QualityMonitoringPublisher : IMarketEventPublisher, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QualityMonitoringPublisher(IMarketEventPublisher inner, DataQualityMonitoringService quality, ILogger&lt;QualityMonitoringPublisher&gt;? logger = null, int sampleCapacity = DefaultSampleCapacity, DataFreshnessSlaMonitor? freshness = null);</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:45](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L45) |  |
-| <code>public long TradesObserved =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:71](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L71) | Gets the number of trade events recorded into the quality monitors. |
-| <code>public long QuotesObserved =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:74](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L74) | Gets the number of quote events recorded into the quality monitors. |
-| <code>public long SamplesDropped =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:77](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L77) | Gets the number of quality samples dropped because the sample buffer was full. |
-| <code>public bool TryPublish(in MarketEvent evt);</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:80](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L80) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:172](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L172) |  |

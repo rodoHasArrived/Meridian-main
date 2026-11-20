@@ -439,6 +439,12 @@ Declared public members:
 | <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupValidation&gt; ValidateLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupManifest manifest, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:26](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L26) |  |
 | <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupReceipt&gt; ApplyLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupValidation validation, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:51](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L51) |  |
 
+Source: [src/Meridian.Storage/Services/SymbolRegistryService.OperatorMappings.cs:7](../../../../src/Meridian.Storage/Services/SymbolRegistryService.OperatorMappings.cs#L7).
+
+```csharp
+public sealed partial class SymbolRegistryService
+```
+
 Source: [src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs:7](../../../../src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs#L7).
 
 ```csharp

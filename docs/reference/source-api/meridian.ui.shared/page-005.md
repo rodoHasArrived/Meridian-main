@@ -364,13 +364,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:78](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L78) | Maps all provider and data source API endpoints. |
+| <code>public static void MapProviderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:83](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L83) | Maps all provider and data source API endpoints. |
 
 ## ProviderExtendedEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderExtendedEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L22).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L26).
 
 Extension methods for registering extended provider API endpoints (failover, rate limits, capabilities, switching).
 
@@ -382,13 +382,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L24) |  |
+| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L28) |  |
 
 ## ProviderModuleEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderModuleEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L16).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L21).
 
 API endpoints for provider module setup: discovery, configuration, enable/disable, remove, test, and restart. All endpoints live under /api/providers/modules and require the workstation tenant scope.
 
@@ -400,7 +400,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderModuleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L18) |  |
+| <code>public static void MapProviderModuleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L23) |  |
 
 ## ProviderRoutingEndpoints
 

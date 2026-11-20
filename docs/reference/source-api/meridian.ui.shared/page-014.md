@@ -942,7 +942,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:683](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L683).
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:688](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L688).
 
 Identity of a retained connection one tenant owns; carries no credential material.
 

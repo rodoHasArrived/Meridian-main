@@ -6,6 +6,76 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderDataQualityValidator
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderDataQualityValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:11](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L11).
+
+Shared provider-boundary validation for normalized market-data updates before they enter collectors and downstream pipelines.
+
+```csharp
+public static class ProviderDataQualityValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateTrade(string providerName, MarketTradeUpdate update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L15) |  |
+| <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateQuote(string providerName, MarketQuoteUpdate update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L50) |  |
+| <code>public static IReadOnlyList&lt;ProviderDataQualityIssue&gt; ValidateAggregate(string providerName, AggregateBar update, DateTimeOffset? now = null, TimeSpan? staleThreshold = null, ProviderValidationProfile? profile = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:115](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L115) |  |
+
+## ProviderFactory
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderFactory</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:40](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L40).
+
+Configured construction context for the streaming, historical, search, corporate-action, options, and brokerage factories declared by ProviderCapabilityDescriptorCatalog.
+
+```csharp
+public sealed partial class ProviderFactory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderFactory(AppConfig config, IProviderCredentialResolver credentialResolver, ILogger? log = null, ISymbolResolver? symbolResolver = null, IServiceProvider? services = null, IReadOnlyDictionary&lt;string, ProviderModuleContext&gt;? moduleContexts = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:48](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L48) |  |
+| <code>public Task&lt;ProviderCreationResult&gt; CreateAndRegisterAllAsync(ProviderRegistry registry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:72](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L72) | Creates backfill and symbol search providers and registers them with the provided registry. Streaming providers are registered separately via ProviderRegistry factory functions. |
+| <code>public ValueTask&lt;IPreparedProviderCredentials&gt; PrepareCredentialsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:136](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L136) | Asynchronously reads the credentials provider construction will need. Await it at an asynchronous entry point and construct inside IPreparedProviderCredentials.Activate. |
+| <code>public IReadOnlyList&lt;IHistoricalDataProvider&gt; CreateBackfillProviders() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:142](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L142) | Creates all configured backfill providers. |
+| <code>public IReadOnlyList&lt;IHistoricalDataProvider&gt; CreateStandbyBackfillProviders();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:149](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L149) | Builds standby historical adapters inside the host&#x27;s startup credential scope. Runtime enablement can then select existing adapters without incorporating pending secrets or pacing. |
+| <code>public async Task&lt;IReadOnlyList&lt;IHistoricalDataProvider&gt;&gt; CreateBackfillProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:181](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L181) | Creates all configured backfill providers, reading their credentials without blocking. |
+| <code>public IReadOnlyList&lt;ISymbolSearchProvider&gt; CreateSymbolSearchProviders() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:194](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L194) | Creates all configured symbol search providers. Symbol search uses the same credentials as backfill providers. |
+| <code>public async Task&lt;IReadOnlyList&lt;ISymbolSearchProvider&gt;&gt; CreateSymbolSearchProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:200](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L200) | Creates all configured symbol search providers, reading their credentials without blocking. |
+| <code>public CompositeHistoricalDataProvider CreateCompositeBackfillProvider(IReadOnlyList&lt;IHistoricalDataProvider&gt; providers);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:456](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L456) | Creates a composite backfill provider with automatic failover. |
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs#L23).
+
+```csharp
+public sealed partial class ProviderFactory
+```
+
+## ProviderHealthStatus
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderHealthStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:344](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L344).
+
+Result of a provider health check.
+
+```csharp
+public sealed record ProviderHealthStatus(string ProviderName, bool IsAvailable, string? Message = null, DateTimeOffset? CheckedAt = null, TimeSpan? ResponseTime = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderHealthStatus() : this(&quot;unknown&quot;, false);</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:352](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L352) |  |
+
 ## ProviderInfo
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderInfo</code>. Kind: `record`.
@@ -41,9 +111,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderRateLimitHistory</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:6](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L6).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L8).
 
-Bounded process-lifetime quota evidence, excluding symbols, credentials and request payloads.
+Recent quota events and durable UTC daily totals, without request payloads or credentials.
 
 ```csharp
 public sealed class ProviderRateLimitHistory
@@ -53,10 +123,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ProviderRateLimitHistory Shared { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L8) |  |
-| <code>public ProviderRateLimitHistory(int capacity = 1024);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:13](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L13) |  |
-| <code>public void Record(string provider, RateLimitStatus? status, string? nextProvider = null, int? httpStatus = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:20](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L20) |  |
-| <code>public IReadOnlyList&lt;ProviderRateLimitEventDto&gt; Read(string provider, int hours, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L34) |  |
+| <code>public static ProviderRateLimitHistory Shared { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:12](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L12) |  |
+| <code>public ProviderRateLimitHistory(int capacity = 1024) : this(capacity, TimeProvider.System);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L19) |  |
+| <code>public ProviderRateLimitHistory(string dataRoot, IAtomicFileWriter writer, TimeProvider? timeProvider = null, int capacity = 1024) : this(capacity, timeProvider?? TimeProvider.System);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:24](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L24) |  |
+| <code>public static ProviderRateLimitHistory ForDataRoot(string dataRoot, IAtomicFileWriter writer);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:39](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L39) | Shares recent observations between host surfaces using the same data root. |
+| <code>public void Record(string provider, RateLimitStatus? status, string? nextProvider = null, int? httpStatus = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:45](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L45) |  |
+| <code>public IReadOnlyList&lt;ProviderRateLimitEventDto&gt; Read(string provider, int hours, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:60](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L60) |  |
+| <code>public bool TryReadDailyRollups(string provider, out IReadOnlyList&lt;ProviderRateLimitDailyRollupDto&gt; rollups);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:68](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L68) |  |
 
 ## ProviderRateLimitProfile
 
@@ -422,7 +495,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.QueueStateChangedEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:797](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L797).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:813](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L813).
 
 Event args for queue state changes.
 
@@ -434,15 +507,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int PendingCount { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:799](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L799) |  |
-| <code>public int InFlightCount { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:800](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L800) |  |
-| <code>public DateTimeOffset Timestamp { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:801](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L801) |  |
+| <code>public int PendingCount { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:815](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L815) |  |
+| <code>public int InFlightCount { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:816](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L816) |  |
+| <code>public DateTimeOffset Timestamp { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:817](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L817) |  |
 
 ## QueueStatistics
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.QueueStatistics</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:786](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L786).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:802](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L802).
 
 Queue statistics.
 
@@ -454,10 +527,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int PendingRequests { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:788](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L788) |  |
-| <code>public int InFlightRequests { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:789](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L789) |  |
-| <code>public Dictionary&lt;string, int&gt; ActiveByProvider { get; init; } = [];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:790](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L790) |  |
-| <code>public Dictionary&lt;string, TimeSpan&gt; CooldownsByProvider { get; init; } = [];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:791](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L791) |  |
+| <code>public int PendingRequests { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:804](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L804) |  |
+| <code>public int InFlightRequests { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:805](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L805) |  |
+| <code>public Dictionary&lt;string, int&gt; ActiveByProvider { get; init; } = [];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:806](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L806) |  |
+| <code>public Dictionary&lt;string, TimeSpan&gt; CooldownsByProvider { get; init; } = [];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:807](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L807) |  |
 
 ## RateLimiter
 
@@ -1011,94 +1084,3 @@ Declared public members:
 | <code>public static StreamingFailoverRegistry Process { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L19) | Process-wide instance. Desktop mode runs the UI server and the collector in separate DI containers; both register this instance so the UI reads the collector&#x27;s live coordinator. |
 | <code>public StreamingFailoverService? Service { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:24](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L24) | The runtime failover service, or null if failover is disabled. |
 | <code>public bool IsAvailable =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverRegistry.cs#L31) | Whether a runtime failover service is available. |
-
-## StreamingFailoverService
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L23).
-
-Orchestrates automatic failover between streaming market data providers. Monitors provider health via IConnectionHealthMonitor, evaluates configured FailoverRuleConfig rules, and triggers switchover when consecutive failures exceed the threshold.
-
-```csharp
-public sealed class StreamingFailoverService : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event Action&lt;FailoverTriggeredEvent&gt;? OnFailoverTriggered;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L44) | Raised when a failover is triggered, providing the rule ID, the failed provider, and the new active provider. |
-| <code>public event Action&lt;FailoverRecoveredEvent&gt;? OnFailoverRecovered;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L49) | Raised when a provider recovers and becomes the active provider again. |
-| <code>public StreamingFailoverService(IConnectionHealthMonitor healthMonitor);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L51) |  |
-| <code>public void Start(DataSourcesConfig config, IReadOnlyDictionary&lt;string, string&gt;? initialActiveProviderIds = null);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:63](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L63) | Starts periodic health evaluation based on the configured interval. |
-| <code>public void RegisterProvider(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:133](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L133) | Registers a provider for health tracking. |
-| <code>public IDisposable RegisterTransitionHandler(string ruleId, Action&lt;FailoverTransitionRequest&gt; handler);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:145](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L145) | Registers the runtime that can execute provider switches for a rule. Rule state is committed only after that runtime confirms the connection and subscription hand-off completed. |
-| <code>public bool HasLiveTransitionHandler(string ruleId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:169](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L169) | Returns whether a live runtime is registered to execute transitions for the rule. |
-| <code>public void RecordHeartbeat(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:205](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L205) | Records transport-level liveness for a provider&#x27;s current connection. This keeps the connection&#x27;s inactivity window open without counting as a successful operation, so a quiet but connected feed stays healthy and recovery evidence is not inflated by heartbeats. |
-| <code>public void RecordSuccess(string providerId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:224](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L224) | Records a successful operation for a provider (resets failure counter, increments success counter). |
-| <code>public void RecordFailure(string providerId, string reason);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:239](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L239) | Records a failure for a provider. |
-| <code>public void RecordLatency(string providerId, double latencyMs);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:256](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L256) | Records latency for a provider. If latency exceeds the configured threshold for any rule, it counts as a failure for that rule. |
-| <code>public bool ForceFailover(string ruleId, string targetProviderId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:274](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L274) | Forces failover for a specific rule to a target provider. |
-| <code>public async Task&lt;bool&gt; ForceFailoverAsync(string ruleId, string targetProviderId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:325](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L325) | Forces a failover and waits until the registered runtime either commits or rejects the provider hand-off. A false result never changes the active provider. |
-| <code>public async Task&lt;bool&gt; FailoverAfterConnectionFailureAsync(string ruleId, string failedProviderId, string reason, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:384](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L384) | Records an active-provider connection failure and performs an immediate, coordinator-owned hand-off to the next configured healthy provider. Each candidate transition remains two-phase: the coordinator commits its active provider only after the runtime confirms the connection and subscription hand-off. |
-| <code>public IReadOnlyList&lt;FailoverRuleApplyOutcome&gt; ApplyConfiguration(DataSourcesConfig config);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:478](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L478) | Applies a saved failover configuration to the running coordinator without a restart. |
-| <code>public int EvaluationIntervalSeconds { get; }</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:565](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L565) | Current health-evaluation interval in seconds (0 before Start). |
-| <code>public bool SetProviderEnabled(string providerId, bool enabled);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:576](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L576) | Excludes a provider from (or re-includes it in) failover candidate selection and automatic recovery. Excluding the active provider does not switch away from it; call MoveOffDisabledProviderAsync for that. |
-| <code>public bool IsProviderEnabled(string providerId) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:593](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L593) | Whether a provider is currently eligible for failover selection. |
-| <code>public async Task&lt;bool?&gt; MoveOffDisabledProviderAsync(string ruleId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:604](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L604) | When a rule&#x27;s active provider has been disabled, hands the rule off to the next enabled, healthy provider through the normal two-phase transition so subscriptions move with it. |
-| <code>public string? GetActiveProviderId(string ruleId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:627](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L627) | Gets the current active provider ID for a given rule. |
-| <code>public IReadOnlyList&lt;FailoverRuleSnapshot&gt; GetRuleSnapshots();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:636](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L636) | Gets the current failover state for all rules. |
-| <code>public IReadOnlyList&lt;ProviderHealthSnapshot&gt; GetProviderHealthSnapshots();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:645](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L645) | Gets the health state for all registered providers. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1065](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1065) |  |
-
-## FinnhubCompanyProfile
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:480](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L480).
-
-Finnhub company profile data.
-
-```csharp
-public sealed record FinnhubCompanyProfile
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;country&quot;)] public string? Country { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:483](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L483) |  |
-| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:486](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L486) |  |
-| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:489](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L489) |  |
-| <code>[JsonPropertyName(&quot;finnhubIndustry&quot;)] public string? Industry { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:492](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L492) |  |
-| <code>[JsonPropertyName(&quot;ipo&quot;)] public string? IpoDate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:495](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L495) |  |
-| <code>[JsonPropertyName(&quot;logo&quot;)] public string? LogoUrl { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:498](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L498) |  |
-| <code>[JsonPropertyName(&quot;marketCapitalization&quot;)] public decimal? MarketCap { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:501](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L501) |  |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string? Name { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:504](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L504) |  |
-| <code>[JsonPropertyName(&quot;phone&quot;)] public string? Phone { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:507](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L507) |  |
-| <code>[JsonPropertyName(&quot;shareOutstanding&quot;)] public decimal? SharesOutstanding { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:510](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L510) |  |
-| <code>[JsonPropertyName(&quot;ticker&quot;)] public string? Ticker { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:513](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L513) |  |
-| <code>[JsonPropertyName(&quot;weburl&quot;)] public string? WebUrl { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:516](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L516) |  |
-
-## FinnhubCorporateActionProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubCorporateActionProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L35).
-
-Fetches dividend and split history from Finnhub corporate-action endpoints.
-
-```csharp
-public sealed partial class FinnhubCorporateActionProvider : ICorporateActionProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FinnhubCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;FinnhubCorporateActionProvider&gt; logger, ICredentialContext? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L44) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L56) |  |
-| <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L58) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:62](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L62) |  |
-| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L69) |  |

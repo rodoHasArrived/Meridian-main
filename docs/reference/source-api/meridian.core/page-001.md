@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Core.Config.AlpacaBackfillConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:213](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L213).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:214](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L214).
 
 Alpaca Markets historical data provider configuration.
 
@@ -102,13 +102,19 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.AlphaVantageConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:268](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L268).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:269](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L269).
 
 Alpha Vantage provider configuration. Unique capability: Intraday historical data (1, 5, 15, 30, 60 min intervals). Free tier: 25 requests/day (severely limited), 5 calls/minute.
 
 ```csharp
-public sealed record AlphaVantageConfig(bool Enabled = true, string? ApiKey = null, int Priority = BackfillProviderCatalog.AlphaVantagePriority, int RateLimitPerMinute = BackfillProviderCatalog.AlphaVantagePerMinute, int RateLimitPerDay = 25);
+public sealed record AlphaVantageConfig(bool Enabled = true, string? ApiKey = null, int Priority = BackfillProviderCatalog.AlphaVantagePriority, int RateLimitPerMinute = BackfillProviderCatalog.AlphaVantagePerMinute, int RateLimitPerDay = BackfillProviderCatalog.AlphaVantageFreeDailyRequests)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? TierId { get; init; }</code> | [src/Meridian.Core/Config/BackfillConfig.cs:279](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L279) | Declared vendor tier used to validate physical request pacing. |
 
 ## AlphaVantageQuotaConfig
 
@@ -119,7 +125,7 @@ Source: [src/Meridian.Core/Config/ProviderQuotasConfig.cs:23](../../../../src/Me
 Alpha Vantage conservative free-account limits. The daily cap uses a rolling 24-hour window because the vendor publishes no reset boundary. NoDailyLimit declares an uncapped account.
 
 ```csharp
-public sealed record AlphaVantageQuotaConfig(int RequestsPerMinute = 5, int DailyRequests = 25, bool NoDailyLimit = false);
+public sealed record AlphaVantageQuotaConfig(int RequestsPerMinute = BackfillProviderCatalog.AlphaVantagePerMinute, int DailyRequests = BackfillProviderCatalog.AlphaVantageFreeDailyRequests, bool NoDailyLimit = false);
 ```
 
 ## AppConfig
@@ -183,7 +189,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.AutoGapRemediationConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:52](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L52).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:53](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L53).
 
 Host configuration for automatic, quality-triggered backfill remediation. Primitive time units keep JSON and environment configuration portable; Application composition maps this value into the typed remediation policy exposed through the Options pattern.
 
@@ -195,7 +201,7 @@ public sealed record AutoGapRemediationConfig(int MinimumGapDurationSeconds = 12
 
 Qualified name: <code>Meridian.Core.Config.BackfillConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:24](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L24).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:25](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L25).
 
 Configuration for historical backfill operations.
 
@@ -207,7 +213,7 @@ public sealed record BackfillConfig(bool Enabled = false, string Provider = "com
 
 Qualified name: <code>Meridian.Core.Config.BackfillJobsConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:76](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L76).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:77](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L77).
 
 Configuration for backfill job management.
 
@@ -219,7 +225,7 @@ public sealed record BackfillJobsConfig(bool PersistJobs = true, string JobsDire
 
 Qualified name: <code>Meridian.Core.Config.BackfillProviderCatalog</code>. Kind: `class`.
 
-Source: [src/Meridian.Core/Config/BackfillProviderCatalog.cs:17](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L17).
+Source: [src/Meridian.Core/Config/BackfillProviderCatalog.cs:21](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L21).
 
 One source of UI presets and constructor defaults. Paid plans retain conservative finite application caps.
 
@@ -231,28 +237,30 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int AlpacaPriority = 5, AlpacaPerMinute = 200;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:19](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L19) |  |
-| <code>public const int PolygonPriority = 12, PolygonPerMinute = 5, PolygonStarterPerMinute = 100;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:20](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L20) |  |
-| <code>public const int TiingoPriority = 15, TiingoPerHour = 50;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:21](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L21) |  |
-| <code>public const int FinnhubPriority = 18, FinnhubPerMinute = 60;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:22](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L22) |  |
-| <code>public const int StooqPriority = 20;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:23](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L23) |  |
-| <code>public const int YahooPriority = 10, YahooPerHour = 2000;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:24](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L24) |  |
-| <code>public const int AlphaVantagePriority = 25, AlphaVantagePerMinute = 5;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:25](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L25) |  |
-| <code>public const int NasdaqPriority = 30;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:26](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L26) |  |
-| <code>public const int TwelveDataPriority = 22, TwelveDataPerMinute = 8;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:27](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L27) |  |
-| <code>public const int OpenFigiPriority = 100, OpenFigiPerMinute = 25, OpenFigiAuthenticatedPerMinute = 250;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:28](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L28) |  |
-| <code>public static IReadOnlyList&lt;BackfillVendorDescriptor&gt; Providers { get; } = Array.AsReadOnly(new BackfillVendorDescriptor[] { new (&quot;alpaca&quot;, &quot;Alpaca&quot;, AlpacaPriority, true, [new (&quot;free&quot;, &quot;IEX&quot;, AlpacaPerMinute)]), new (&quot;polygon&quot;, &quot;Polygon&quot;, PolygonPriority, true, [new (&quot;free&quot;, &quot;Basic&quot;, PolygonPerMinute), new (&quot;starter&quot;, &quot;Starter (100/min application cap)&quot;, PolygonStarterPerMinute)]), new (&quot;tiingo&quot;, &quot;Tiingo&quot;, TiingoPriority, true, [new (&quot;free&quot;, &quot;Free&quot;, RateLimitPerHour : TiingoPerHour)]), new (&quot;finnhub&quot;, &quot;Finnhub&quot;, FinnhubPriority, true, [new (&quot;free&quot;, &quot;Free&quot;, FinnhubPerMinute)]), new (&quot;stooq&quot;, &quot;Stooq&quot;, StooqPriority, false, [new (&quot;free&quot;, &quot;Public&quot;)]), new (&quot;yahoo&quot;, &quot;Yahoo Finance&quot;, YahooPriority, false, [new (&quot;free&quot;, &quot;Public (unofficial)&quot;, RateLimitPerHour : YahooPerHour)]), new (&quot;alphavantage&quot;, &quot;Alpha Vantage&quot;, AlphaVantagePriority, true, [new (&quot;free&quot;, &quot;Free (25/day retained)&quot;, AlphaVantagePerMinute)]), new (&quot;nasdaqdatalink&quot;, &quot;Nasdaq Data Link&quot;, NasdaqPriority, false, [new (&quot;free&quot;, &quot;Public datasets&quot;)]), new (&quot;twelvedata&quot;, &quot;Twelve Data&quot;, TwelveDataPriority, true, [new (&quot;free&quot;, &quot;Basic&quot;, TwelveDataPerMinute)]), new (&quot;openfigi&quot;, &quot;OpenFIGI (symbol resolution)&quot;, OpenFigiPriority, false, [new (&quot;free&quot;, &quot;Unauthenticated&quot;, OpenFigiPerMinute), new (&quot;authenticated&quot;, &quot;Authenticated&quot;, OpenFigiAuthenticatedPerMinute)]) });</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:30](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L30) |  |
-| <code>public static Meridian.Contracts.Configuration.BackfillProviderMetadataDto[] Describe() =&gt; …;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:44](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L44) |  |
-| <code>public static BackfillVendorDescriptor Get(string id) =&gt; …;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:84](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L84) |  |
-| <code>public static BackfillVendorTier GetTier(string id, string tierId) =&gt; …;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:87](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L87) |  |
-| <code>public static BackfillProviderEdit Read(BackfillProvidersConfig config, string id);</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:90](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L90) |  |
-| <code>public static BackfillProvidersConfig Apply(BackfillProvidersConfig config, string id, BackfillProviderEdit edit);</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:109](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L109) |  |
+| <code>public const int AlpacaPriority = 5, AlpacaPerMinute = 200;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:23](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L23) |  |
+| <code>public const int PolygonPriority = 12, PolygonPerMinute = 5, PolygonStarterPerMinute = 100;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:24](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L24) |  |
+| <code>public const int TiingoPriority = 15, TiingoPerHour = 50;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:25](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L25) |  |
+| <code>public const int FinnhubPriority = 18, FinnhubPerMinute = 60;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:26](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L26) |  |
+| <code>public const int StooqPriority = 20;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:27](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L27) |  |
+| <code>public const int YahooPriority = 10, YahooPerHour = 2000;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:28](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L28) |  |
+| <code>public const int AlphaVantagePriority = 25, AlphaVantagePerMinute = 5;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:29](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L29) |  |
+| <code>public const int AlphaVantageFreeDailyRequests = 25, AlphaVantagePremium75PerMinute = 75;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:30](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L30) |  |
+| <code>public const int NasdaqPriority = 30;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:31](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L31) |  |
+| <code>public const int TwelveDataPriority = 22, TwelveDataPerMinute = 8;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:32](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L32) |  |
+| <code>public const int TwelveDataBasicDailyCredits = 800, TwelveDataGrowPerMinute = 55;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:33](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L33) |  |
+| <code>public const int OpenFigiPriority = 100, OpenFigiPerMinute = 25, OpenFigiAuthenticatedPerMinute = 250;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:34](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L34) |  |
+| <code>public static IReadOnlyList&lt;BackfillVendorDescriptor&gt; Providers { get; } = Array.AsReadOnly(new BackfillVendorDescriptor[] { new (&quot;alpaca&quot;, &quot;Alpaca&quot;, AlpacaPriority, true, [new (&quot;free&quot;, &quot;IEX&quot;, AlpacaPerMinute)]), new (&quot;polygon&quot;, &quot;Polygon&quot;, PolygonPriority, true, [new (&quot;free&quot;, &quot;Basic&quot;, PolygonPerMinute), new (&quot;starter&quot;, &quot;Starter (100/min application cap)&quot;, PolygonStarterPerMinute)]), new (&quot;tiingo&quot;, &quot;Tiingo&quot;, TiingoPriority, true, [new (&quot;free&quot;, &quot;Free&quot;, RateLimitPerHour : TiingoPerHour)]), new (&quot;finnhub&quot;, &quot;Finnhub&quot;, FinnhubPriority, true, [new (&quot;free&quot;, &quot;Free&quot;, FinnhubPerMinute)]), new (&quot;stooq&quot;, &quot;Stooq&quot;, StooqPriority, false, [new (&quot;free&quot;, &quot;Public&quot;)]), new (&quot;yahoo&quot;, &quot;Yahoo Finance&quot;, YahooPriority, false, [new (&quot;free&quot;, &quot;Public (unofficial)&quot;, RateLimitPerHour : YahooPerHour)]), new (&quot;alphavantage&quot;, &quot;Alpha Vantage&quot;, AlphaVantagePriority, true, [new (&quot;free&quot;, &quot;Free&quot;, AlphaVantagePerMinute) { DailyQuotaLimit = AlphaVantageFreeDailyRequests }, new (&quot;premium-75&quot;, &quot;Premium 75&quot;, AlphaVantagePremium75PerMinute)]), new (&quot;nasdaqdatalink&quot;, &quot;Nasdaq Data Link&quot;, NasdaqPriority, false, [new (&quot;free&quot;, &quot;Public datasets&quot;)]), new (&quot;twelvedata&quot;, &quot;Twelve Data&quot;, TwelveDataPriority, true, [new (&quot;free&quot;, &quot;Basic&quot;, TwelveDataPerMinute) { DailyQuotaLimit = TwelveDataBasicDailyCredits }, new (&quot;grow&quot;, &quot;Grow&quot;, TwelveDataGrowPerMinute)]), new (&quot;openfigi&quot;, &quot;OpenFIGI (symbol resolution)&quot;, OpenFigiPriority, false, [new (&quot;free&quot;, &quot;Unauthenticated&quot;, OpenFigiPerMinute), new (&quot;authenticated&quot;, &quot;Authenticated&quot;, OpenFigiAuthenticatedPerMinute)]) });</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:36](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L36) |  |
+| <code>public static Meridian.Contracts.Configuration.BackfillProviderMetadataDto[] Describe() =&gt; …;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:52](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L52) |  |
+| <code>public static BackfillVendorDescriptor Get(string id) =&gt; …;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:92](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L92) |  |
+| <code>public static BackfillVendorTier GetTier(string id, string tierId) =&gt; …;</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:95](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L95) |  |
+| <code>public static BackfillProviderEdit Read(BackfillProvidersConfig config, string id);</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:98](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L98) |  |
+| <code>public static BackfillProvidersConfig Apply(BackfillProvidersConfig config, string id, BackfillProviderEdit edit);</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:117](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L117) |  |
 
 ## BackfillProviderEdit
 
 Qualified name: <code>Meridian.Core.Config.BackfillProviderEdit</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillProviderCatalog.cs:13](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L13).
+Source: [src/Meridian.Core/Config/BackfillProviderCatalog.cs:17](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L17).
 
 Secret-free, bounded fields accepted by the provider editor.
 
@@ -264,7 +272,7 @@ public sealed record BackfillProviderEdit(bool Enabled, int Priority, string Tie
 
 Qualified name: <code>Meridian.Core.Config.BackfillProvidersConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:134](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L134).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:135](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L135).
 
 Configuration for individual backfill data providers.
 
@@ -276,7 +284,7 @@ public sealed record BackfillProvidersConfig(AlpacaBackfillConfig? Alpaca = null
 
 Qualified name: <code>Meridian.Core.Config.BackfillVendorDescriptor</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillProviderCatalog.cs:8](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L8).
+Source: [src/Meridian.Core/Config/BackfillProviderCatalog.cs:12](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L12).
 
 ```csharp
 public sealed record BackfillVendorDescriptor(string Id, string DisplayName, int DefaultPriority, bool RequiresApiKey, IReadOnlyList<BackfillVendorTier> Tiers);
@@ -291,8 +299,14 @@ Source: [src/Meridian.Core/Config/BackfillProviderCatalog.cs:6](../../../../src/
 Conservative application caps for a declared vendor plan; never a credential or entitlement.
 
 ```csharp
-public sealed record BackfillVendorTier(string Id, string Label, int? RateLimitPerMinute = null, int? RateLimitPerHour = null);
+public sealed record BackfillVendorTier(string Id, string Label, int? RateLimitPerMinute = null, int? RateLimitPerHour = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int? DailyQuotaLimit { get; init; }</code> | [src/Meridian.Core/Config/BackfillProviderCatalog.cs:9](../../../../src/Meridian.Core/Config/BackfillProviderCatalog.cs#L9) | Published vendor daily allowance for a preset with a daily vendor cap. |
 
 ## CanonicalizationConfig
 

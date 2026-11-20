@@ -356,7 +356,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CredentialKeyStatusDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:23](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L23).
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:25](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L25).
 
 Indicates whether a specific credential key has a stored value. The actual value is NEVER returned to the browser.
 
