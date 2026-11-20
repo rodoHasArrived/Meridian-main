@@ -95,7 +95,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
-import { formatCount, formatDecimal, formatNumber, formatTimestamp } from "@/lib/format";
+import { formatCount, formatDecimal, formatTimestamp } from "@/lib/format";
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,

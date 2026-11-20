@@ -322,7 +322,10 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
 
   function openInspector() {
     setInspectorOpen(true);
-    requestAnimationFrame(() => document.getElementById(reconciliation.detailPanelId)?.focus());
+    const inspector = document.getElementById(reconciliation.detailPanelId);
+    requestAnimationFrame(() => {
+      if (inspector?.isConnected) inspector.focus();
+    });
   }
 
   function focusQueueRow(breakId: string) {

@@ -1,8 +1,16 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { TimeText } from "@/components/ui/time-text";
 import { formatCount, formatNumber, pluralizeCount } from "@/lib/format";
 import type { ReactNode } from "react";
-import type { BackfillExecutionHistoryRow, BackfillPreviewResult, BackfillProviderAlternative, BackfillQuotaEstimate, BackfillQuotaReceipt } from "@/types";
+import type {
+  BackfillExecutionHistoryRow,
+  BackfillPreviewResult,
+  BackfillProviderAlternative,
+  BackfillQuotaEstimate,
+  BackfillQuotaReceipt,
+  BackfillSubmissionReceipt
+} from "@/types";
 import { BackfillBatchReceipts } from "@/screens/data-screen.backfill-batch-receipts";
 
 function duration(seconds: number) {
@@ -124,6 +132,50 @@ export function BackfillReceiptEvidence({ receipt }: { receipt: BackfillQuotaRec
         </ul>
       )}
     </div>
+  );
+}
+
+export function BackfillScheduleFields({ enabled, start, busy, onEnabledChange, onStartChange }: {
+  enabled: boolean;
+  start: string;
+  busy: boolean;
+  onEnabledChange: (enabled: boolean) => void;
+  onStartChange: (start: string) => void;
+}) {
+  return (
+    <div className="mt-3 space-y-2 text-sm">
+      <label className="flex w-fit items-center gap-2">
+        <input type="checkbox" checked={enabled} disabled={busy}
+          onChange={(event) => onEnabledChange(event.target.checked)} />
+        Schedule for later
+      </label>
+      {enabled && (
+        <label className="grid max-w-xs gap-1">
+          Earliest start (UTC)
+          <Input type="datetime-local" value={start} disabled={busy}
+            onChange={(event) => onStartChange(event.target.value)} />
+        </label>
+      )}
+    </div>
+  );
+}
+
+export function BackfillSubmissionEvidence({ submission, latest }: {
+  submission: BackfillSubmissionReceipt;
+  latest?: BackfillExecutionHistoryRow;
+}) {
+  const status = latest?.status ?? submission.status;
+  return (
+    <>
+      <div className="mt-4 space-y-2 rounded-md border border-border/70 p-3" role="status">
+        <p className="text-sm font-medium">{status} · {submission.provider}</p>
+        <p className="break-all font-mono text-xs text-muted-foreground">Job {submission.executionId}</p>
+        {status === "Scheduled" && <p className="text-xs">Eligible from <TimeText value={submission.scheduledAt} />.</p>}
+        {submission.quota.exceedsBudget && <p className="text-xs">Requests are paced to the shared provider budget.</p>}
+        {latest?.quotaReceipt && <BackfillReceiptEvidence receipt={latest.quotaReceipt} />}
+      </div>
+      {latest?.batchReceipts?.length ? <BackfillBatchReceipts receipts={latest.batchReceipts} /> : null}
+    </>
   );
 }
 
