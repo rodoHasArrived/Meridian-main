@@ -1,3 +1,4 @@
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -177,6 +178,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// <param name="log">Optional logger.</param>
     /// <param name="enableResilience">Whether to enable HTTP resilience (retry, circuit breaker). Default: true.</param>
     /// <param name="timeProvider">Clock used for rate-limit snapshots and expiry.</param>
+    /// <param name="runtimeOptions">Configured provider runtime settings, when available.</param>
     protected BaseHistoricalDataProvider(
         HttpClient? httpClient = null,
         ILogger? log = null,
@@ -369,15 +371,44 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
                 async sendToken => await Http.SendAsync(request, sendToken).ConfigureAwait(false),
                 token).ConfigureAwait(false);
             var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response, _timeProvider);
-            if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ||
+            if (response.StatusCode == HttpStatusCode.TooManyRequests ||
                 (!response.IsSuccessStatusCode && retryAfter.HasValue))
             {
-                RecordRateLimitHit(retryAfter ?? TimeSpan.FromSeconds(60));
-                _responsesWithCooldown.Add(response, new object());
-                RaiseRateLimitHit(GetRateLimitInfo());
+                ObserveThrottleResponse(response, retryAfter ?? TimeSpan.FromSeconds(60));
             }
             return response;
         }, cancellation.Token).ConfigureAwait(false);
+    }
+
+    private void ObserveThrottleResponse(HttpResponseMessage response, TimeSpan? retryAfter)
+    {
+        RateLimitInfo quota;
+        lock (_rateLimitSync)
+        {
+            if (_responsesWithCooldown.TryGetValue(response, out _))
+                return;
+
+            RecordRateLimitHit(retryAfter);
+            quota = GetRateLimitInfo();
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                ProviderRateLimitHistory.Shared.RecordHttpThrottle(response, Name, quota);
+            _responsesWithCooldown.Add(response, new object());
+        }
+
+        RaiseRateLimitHit(quota);
+    }
+
+    // The composite can encounter the same provider failure later in the call chain. Preserve
+    // the response observation when translating it, or record a vendor's body-level quota error.
+    protected RateLimitException CreateRateLimitException(
+        string message, string symbol, TimeSpan? retryAfter = null, HttpResponseMessage? response = null)
+    {
+        var exception = new RateLimitException(message, provider: Name, symbol: symbol, retryAfter: retryAfter);
+        if (response is not null)
+            ProviderRateLimitHistory.LinkHttpThrottle(response, exception);
+        else
+            ProviderRateLimitHistory.Shared.RecordProviderThrottle(exception, GetRateLimitInfo());
+        return exception;
     }
 
     private static string RedactSensitiveQueryParameters(string url)
@@ -449,11 +480,11 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
                     provider: Name);
 
             if (result.IsRateLimited)
-                throw new RateLimitException(
+                throw CreateRateLimitException(
                     $"{Name} API rate limit exceeded for {symbol}",
-                    provider: Name,
-                    symbol: symbol,
-                    retryAfter: result.RetryAfter ?? TimeSpan.FromSeconds(60));
+                    symbol,
+                    result.RetryAfter ?? TimeSpan.FromSeconds(60),
+                    response);
 
             throw new DataProviderException(
                 $"{Name} API error for {symbol}: {result.ErrorMessage}",
@@ -485,14 +516,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             response,
             symbol,
             dataType,
-            info =>
-            {
-                if (!_responsesWithCooldown.TryGetValue(response, out _))
-                {
-                    RecordRateLimitHit(info.RetryAfter);
-                    RaiseRateLimitHit(GetRateLimitInfo());
-                }
-            },
+            info => ObserveThrottleResponse(response, info.RetryAfter),
             ct).ConfigureAwait(false);
 
         return result;
@@ -520,11 +544,11 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
                 provider: Name);
 
         if (result.IsRateLimited)
-            throw new RateLimitException(
+            throw CreateRateLimitException(
                 $"{Name} API rate limit exceeded for {symbol}",
-                provider: Name,
-                symbol: symbol,
-                retryAfter: result.RetryAfter ?? TimeSpan.FromSeconds(60));
+                symbol,
+                result.RetryAfter ?? TimeSpan.FromSeconds(60),
+                response);
 
         throw new DataProviderException(
             $"{Name} API error for {symbol}: {result.ErrorMessage}",

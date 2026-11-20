@@ -39,6 +39,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ContractSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -1430,28 +1431,35 @@ public static partial class WorkstationEndpoints
     /// of its listed and readiness status; listing with the same rule here keeps the cross-screen
     /// "Providers healthy" count equal to what that page shows.
     /// </summary>
-    private static async Task<IReadOnlyList<ProviderReadinessRowDto>> LoadDataProviderReadinessRowsAsync(HttpContext context)
+    private static async Task<IReadOnlyList<ProviderReadinessRowDto>?> LoadDataProviderReadinessRowsAsync(HttpContext context)
     {
         if (!DataProviderReadinessPermissions.Any(permission => HasPermission(context, permission)))
         {
             return [];
         }
 
-        // The readiness service is built from the shared configuration store; a host that has not
-        // registered that store has no readiness to report, and resolving the service would throw.
-        if (context.RequestServices.GetService<Meridian.Ui.Shared.Services.ConfigStore>() is null)
+        try
         {
-            return [];
-        }
+            // Hosts without the shared configuration store do not offer readiness enrichment.
+            if (context.RequestServices.GetService<Meridian.Ui.Shared.Services.ConfigStore>() is null)
+                return [];
 
-        var readinessService = context.RequestServices.GetService<ProviderReadinessService>();
-        if (readinessService is null)
+            var readinessService = context.RequestServices.GetService<ProviderReadinessService>();
+            if (readinessService is null)
+                return [];
+
+            var readiness = await readinessService.GetReadinessAsync(context.RequestAborted).ConfigureAwait(false);
+            return readiness.Providers;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException and not AccessViolationException)
         {
-            return [];
+            context.RequestAborted.ThrowIfCancellationRequested();
+            // Repository failures can contain connection details. Log the type without the payload.
+            context.RequestServices.GetService<ILoggerFactory>()
+                ?.CreateLogger("Meridian.Ui.Shared.Endpoints.WorkstationEndpoints")
+                .LogWarning("Provider readiness enrichment is unavailable ({FailureType}).", ex.GetType().Name);
+            return null;
         }
-
-        var readiness = await readinessService.GetReadinessAsync(context.RequestAborted).ConfigureAwait(false);
-        return readiness.Providers;
     }
 
     // Returns null when neither the strategy run read service nor the configuration store is

@@ -370,7 +370,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderExtendedEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L22).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L24).
 
 Extension methods for registering extended provider API endpoints (failover, rate limits, capabilities, switching).
 
@@ -382,7 +382,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L24) |  |
+| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L26) |  |
 
 ## ProviderModuleEndpoints
 

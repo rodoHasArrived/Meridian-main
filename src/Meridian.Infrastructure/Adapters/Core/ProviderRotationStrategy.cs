@@ -96,10 +96,10 @@ internal sealed class ProviderRotationStrategy
 
     public void RecordRequest(string providerName) => _rateLimitTracker.RecordRequest(providerName);
 
-    public void RecordRateLimitHit(string providerName, TimeSpan? retryAfter, int? httpStatus = null)
+    public void RecordRateLimitHit(string providerName, TimeSpan? retryAfter, Exception exception, int? httpStatus)
     {
         _rateLimitTracker.RecordRateLimitHit(providerName, retryAfter);
-        _history.Record(providerName, _rateLimitTracker.GetStatus(providerName), httpStatus: httpStatus);
+        _history.RecordCompositeThrottle(providerName, exception, _rateLimitTracker.GetStatus(providerName), httpStatus);
     }
 
     public void RecordRotation(string providerName, string nextProvider)

@@ -41,7 +41,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderRateLimitHistory</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:6](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L6).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L8).
 
 Bounded process-lifetime quota evidence, excluding symbols, credentials and request payloads.
 
@@ -53,10 +53,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ProviderRateLimitHistory Shared { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L8) |  |
-| <code>public ProviderRateLimitHistory(int capacity = 1024);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:13](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L13) |  |
-| <code>public void Record(string provider, RateLimitStatus? status, string? nextProvider = null, int? httpStatus = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:20](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L20) |  |
-| <code>public IReadOnlyList&lt;ProviderRateLimitEventDto&gt; Read(string provider, int hours, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L34) |  |
+| <code>public static ProviderRateLimitHistory Shared { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L10) |  |
+| <code>public ProviderRateLimitHistory(int capacity = 1024);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:18](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L18) |  |
+| <code>public void Record(string provider, RateLimitStatus? status, string? nextProvider = null, int? httpStatus = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:25](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L25) |  |
+| <code>public IReadOnlyList&lt;ProviderRateLimitEventDto&gt; Read(string provider, int hours, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:99](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L99) |  |
 
 ## ProviderRateLimitProfile
 

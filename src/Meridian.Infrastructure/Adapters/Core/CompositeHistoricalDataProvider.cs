@@ -400,7 +400,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     if (IsRateLimitException(ex))
                     {
                         var retryAfter = ExtractRetryAfter(ex);
-                        _rotation.RecordRateLimitHit(provider.Name, retryAfter,
+                        _rotation.RecordRateLimitHit(provider.Name, retryAfter, ex,
                             HasHttpTooManyRequestsStatus(ex) ? 429 : null);
                         throttledProvider = provider.Name;
                         rateLimitedCandidates.Add(provider);

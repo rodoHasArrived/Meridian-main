@@ -1,8 +1,13 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Api;
+using Meridian.Contracts.Plaid;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -52,6 +57,54 @@ public sealed partial class WorkstationEndpointsTests
             .First(static metric => metric.GetProperty("id").GetString() == "providers-healthy");
         card.GetProperty("value").GetString().Should().Be("1");
         listedHealthy.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ReadinessRepositoryUnavailable_PreservesDataAndSharedProviderCounts()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-readiness-failure", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "_status"));
+        try
+        {
+            var configPath = Path.Combine(root, "appsettings.json");
+            await File.WriteAllTextAsync(configPath, """{"DataRoot":"."}""");
+            var metrics = new ProviderMetricsStatus(DateTimeOffset.UtcNow,
+                [CrossScreenProviderMetrics("yahoo", isConnected: true, quality: 0.96, successRate: 1)],
+                TotalProviders: 1, HealthyProviders: 1);
+            await File.WriteAllTextAsync(Path.Combine(root, "_status", "providers.json"),
+                JsonSerializer.Serialize(metrics, ServerJsonOptions));
+
+            var plaid = Substitute.For<IPlaidConnectionRepository>();
+            plaid.ListItemsAsync(Arg.Any<CancellationToken>()).Returns(_ =>
+                Task.FromException<IReadOnlyList<PlaidItemDto>>(new IOException("Synthetic storage failure.")));
+            await using var app = await CreateAppAsync(services =>
+            {
+                RegisterConfigStores(services, configPath);
+                services.AddSingleton(plaid);
+                services.AddSingleton<ProviderReadinessService>();
+            }, currentUserPermissions: UserPermission.ViewDiagnostics | UserPermission.ViewHistoricalData);
+            using var client = app.GetTestClient();
+
+            foreach (var route in new[] { UiApiRoutes.WorkstationData, UiApiRoutes.WorkstationDataOperations })
+            {
+                using var data = await ReadJsonAsync(client, route);
+                var provider = data.RootElement.GetProperty("providers").EnumerateArray().Should().ContainSingle().Subject;
+                provider.GetProperty("providerId").GetString().Should().Be("yahoo");
+                provider.GetProperty("status").GetString().Should().Be("Healthy");
+                provider.GetProperty("latency").GetString().Should().Be("40 ms average");
+                provider.GetProperty("diagnostics").EnumerateArray().Should().Contain(diagnostic =>
+                    diagnostic.GetProperty("id").GetString() == "provider-readiness" &&
+                    diagnostic.GetProperty("statusLabel").GetString() == "Unavailable");
+            }
+
+            using var counts = await ReadJsonAsync(client, UiApiRoutes.WorkstationCrossScreenCounts);
+            counts.RootElement.GetProperty("providers").GetProperty("healthy").GetInt32().Should().Be(1);
+            await plaid.Received(3).ListItemsAsync(Arg.Any<CancellationToken>());
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     private static ProviderMetrics CrossScreenProviderMetrics(string providerId, bool isConnected, double quality, double successRate) =>
