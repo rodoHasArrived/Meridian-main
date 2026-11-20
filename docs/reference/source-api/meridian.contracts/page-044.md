@@ -191,6 +191,18 @@ Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:9](..
 public sealed record PrivateCapitalVehicle(string Name, string Strategy, int? VintageYear, long Version);
 ```
 
+## ExecutedStatementTolerancePolicy
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.ExecutedStatementTolerancePolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs:4](../../../../src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs#L4).
+
+The exact tolerance policy used by the run, effective for the recorded statement date.
+
+```csharp
+public sealed record ExecutedStatementTolerancePolicy(string ProfileId, int Version, DateOnly EffectiveDate, string ComparisonPolicyFingerprint);
+```
+
 ## IReconciliationApiService
 
 Qualified name: <code>Meridian.Contracts.Reconciliation.IReconciliationApiService</code>. Kind: `interface`.
@@ -252,6 +264,30 @@ Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:38](.
 public sealed record ReconciliationQueueAccountStatusDto(Guid AccountId, string AccountCode, string QueueState, int UnresolvedBreakCount, bool SignOffReady, string NextBestAction, string BlockerReason, IReadOnlyList<string> EvidenceLinks);
 ```
 
+## RetainedStatementCaseEvidence
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.RetainedStatementCaseEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs:41](../../../../src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs#L41).
+
+Case evidence from the immutable match artifact of the originating run.
+
+```csharp
+public sealed record RetainedStatementCaseEvidence(string RunId, string MatchArtifactSha256, ExecutedStatementTolerancePolicy TolerancePolicy, RetainedStatementMatchEvidence Match);
+```
+
+## RetainedStatementMatchEvidence
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.RetainedStatementMatchEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs:30](../../../../src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs#L30).
+
+A single result from the matcher, with its rule basis and the records it actually evaluated.
+
+```csharp
+public sealed record RetainedStatementMatchEvidence(string Tier, string Explanation, string? Confidence, string? AmountMeasure, IReadOnlyList<string> RuleIds, IReadOnlyList<StatementMatchAllocation> SourceAllocations, IReadOnlyList<StatementMatchAllocation> LedgerAllocations, IReadOnlyList<StatementMatchResidual> Residuals);
+```
+
 ## StatementImportSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Reconciliation.StatementImportSummaryDto</code>. Kind: `record`.
@@ -260,6 +296,30 @@ Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:3](..
 
 ```csharp
 public sealed record StatementImportSummaryDto(string ImportId, string Broker, string StatementDate, string ImportedAtUtc, int RawRowCount, int NormalizedRowCount);
+```
+
+## StatementMatchAllocation
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.StatementMatchAllocation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs:7](../../../../src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs#L7).
+
+One source or ledger record&#x27;s signed contribution in the units supplied to the matcher.
+
+```csharp
+public sealed record StatementMatchAllocation(string RecordId, string EvidenceReference, string? Instrument, DateOnly? RecordDate, DateOnly? SettlementDate, string? Quantity, string? Amount, string? Currency, string? UnitPrice = null, string? TransactionType = null, string? ExternalTransactionId = null);
+```
+
+## StatementMatchResidual
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.StatementMatchResidual</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs:21](../../../../src/Meridian.Contracts/Reconciliation/RetainedStatementMatchEvidence.cs#L21).
+
+Exact comparison in one unit. Numeric values are invariant decimal text throughout the read contract.
+
+```csharp
+public sealed record StatementMatchResidual(string Measure, string Unit, string SourceTotal, string LedgerTotal, string Residual, string? Tolerance);
 ```
 
 ## StatementReconciliationRunAuthorization
@@ -513,72 +573,3 @@ Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:202](../
 ```csharp
 public sealed record ReportingGovernanceSeriesHistoryDto(string SeriesId, IReadOnlyList<GovernedReportingRunDto> Runs, IReadOnlyList<ReportingGovernanceRestatementDto> RestatementRequests);
 ```
-
-## ReportingGovernanceVersionRequestDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceVersionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:10](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L10).
-
-Optimistic concurrency token for a governed reporting transition. Actor, tenant, company, permissions, command origin, readiness, artifact hashes, and evidence are intentionally absent; the server resolves those values from the authenticated request and retained state.
-
-```csharp
-public sealed record ReportingGovernanceVersionRequestDto(long ExpectedVersion);
-```
-
-## DecisionInput
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:6](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L6).
-
-Identifies a kernel input subject and supporting context.
-
-```csharp
-public sealed record DecisionInput(string SubjectId, string? SubjectType = null, string? Context = null, IReadOnlyDictionary<string, string?>? Attributes = null);
-```
-
-## DecisionReason
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionReason</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:26](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L26).
-
-Explains a single weighted rule contribution to a kernel decision.
-
-```csharp
-public sealed record DecisionReason(string RuleId, double Weight, string ReasonCode, string HumanExplanation, DecisionSeverity Severity = DecisionSeverity.Info, IReadOnlyList<string>? EvidenceRefs = null);
-```
-
-## DecisionResult (generic arity 1)
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:47](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L47).
-
-Standardized output envelope for all rule-evaluation kernels.
-
-```csharp
-public sealed record DecisionResult<TScore>(TScore Score, IReadOnlyList<DecisionReason> Reasons, DecisionTrace Trace);
-```
-
-## DecisionSeverity
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:15](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L15).
-
-Indicates how severe a specific rule reason is for downstream automation and UI.
-
-```csharp
-public enum DecisionSeverity
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info = 0</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:17](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L17) |  |
-| <code>Warning = 1</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:18](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L18) |  |
-| <code>Error = 2</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:19](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L19) |  |
-| <code>Critical = 3</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:20](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L20) |  |

@@ -7,7 +7,7 @@ import type { ReconciliationBreakQueueItem, ReconciliationCaseLifecycleState } f
  * `FileReconciliationBreakQueueRepository.Casework.cs`) so a button can say why it is disabled.
  * The server stays authoritative: it re-checks role, approval, evidence, taxonomy and version.
  */
-export type BreakLifecycleActionId = "waive" | "signOff" | "reopen";
+export type BreakLifecycleActionId = "waive" | "supersede" | "signOff" | "reopen";
 
 export interface BreakLifecycleAction {
   id: BreakLifecycleActionId;
@@ -30,7 +30,7 @@ export interface BreakLifecycleModel {
 }
 
 const TERMINAL_STATES: readonly ReconciliationCaseLifecycleState[] = ["Resolved", "SignedOff", "Superseded"];
-const WAIVABLE_STATES: readonly ReconciliationCaseLifecycleState[] = ["Open", "InReview", "Investigating", "AwaitingEvidence", "Reopened"];
+const DISPOSITION_STATES: readonly ReconciliationCaseLifecycleState[] = ["Open", "InReview", "Investigating", "AwaitingEvidence", "Reopened"];
 
 const LIFECYCLE_LABELS: Record<ReconciliationCaseLifecycleState, string> = {
   Open: "Open",
@@ -84,10 +84,17 @@ export function buildBreakLifecycleModel(
       action(
         "waive",
         "Waive",
-        WAIVABLE_STATES.includes(state),
+        DISPOSITION_STATES.includes(state),
         `Only an open or active break can be waived. This break is ${label.toLowerCase()}.`,
         "Resolved",
         " (waived)"
+      ),
+      action(
+        "supersede",
+        "Supersede",
+        DISPOSITION_STATES.includes(state),
+        `Only an open or active break can be superseded. This break is ${label.toLowerCase()}.`,
+        "Superseded"
       ),
       action(
         "signOff",

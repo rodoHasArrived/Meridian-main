@@ -301,6 +301,11 @@ public sealed partial class StatementReconciliationIntakeAuthority : IStatementR
                 accountingScope,
                 statementRun.Import.FundAccountId,
                 queueScope);
+            if (sourceBreak.BreakId is { } sourceBreakId
+                && statementRun.ExecutedTolerancePolicy is { } policy
+                && statementRun.MatchArtifactSha256 is { } artifactHash
+                && statementRun.CaseMatchEvidence?.GetValueOrDefault(sourceBreakId) is { } match)
+                item = item with { StatementEvidence = new(statementRun.Import.ImportId, artifactHash, policy, match) };
             await _breakQueue!
                 .CreateIfMissingAsync(queueScope, item, ct)
                 .ConfigureAwait(false);

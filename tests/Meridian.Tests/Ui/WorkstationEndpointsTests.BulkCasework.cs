@@ -38,9 +38,10 @@ public sealed partial class WorkstationEndpointsTests
         dryRun.Results.Should().OnlyContain(result => result.WouldSucceed && !result.Succeeded);
         (await repository.GetByIdAsync(TestReconciliationQueueScope, "break-bulk-a"))!.AssignedTo.Should().BeNull("a dry run changes nothing");
 
-        var executeRequest = BulkRequest("bulk-assign:execute", ReconciliationCaseworkAction.Assign, ["break-bulk-a", "break-bulk-b"], dryRun: false) with
+        dryRun.ReviewProtocol.Should().Be(1);
+        var executeRequest = ReviewedExecute(dryRunRequest, "bulk-assign:execute") with
         {
-            AssignToCurrentOperator = true
+            Assignee = null
         };
         var executeResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationBreakBulkExecute, executeRequest, ServerJsonOptions);
         executeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -68,12 +69,15 @@ public sealed partial class WorkstationEndpointsTests
         await repository.CreateIfMissingAsync(TestReconciliationQueueScope, BuildBreakQueueItem("break-route-a", null));
         var client = app.GetTestClient();
 
-        var routeRequest = BulkRequest("bulk-route:execute", ReconciliationCaseworkAction.Assign, ["break-route-a"], dryRun: false) with
+        var routeRequest = BulkRequest("bulk-route:dry-run", ReconciliationCaseworkAction.Assign, ["break-route-a"], dryRun: true) with
         {
             Assignee = "custody-desk",
             Note = "Custodian owns the position lag."
         };
-        var routeResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationBreakBulkExecute, routeRequest, ServerJsonOptions);
+        var previewResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationBreakBulkDryRun, routeRequest, ServerJsonOptions);
+        previewResponse.EnsureSuccessStatusCode();
+        var routeResponse = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationBreakBulkExecute,
+            ReviewedExecute(routeRequest, "bulk-route:execute"), ServerJsonOptions);
         var routed = await routeResponse.Content.ReadFromJsonAsync<ReconciliationBulkCaseworkResult>(ServerJsonOptions);
         routed!.Results.Should().ContainSingle(result => result.Succeeded && result.Item!.AssignedTo == "custody-desk");
 
@@ -91,6 +95,60 @@ public sealed partial class WorkstationEndpointsTests
         resolvePreview!.Results.Should().ContainSingle(result => !result.WouldSucceed && result.Error!.Contains("Cannot resolve case from Open"));
         (await repository.GetByIdAsync(TestReconciliationQueueScope, "break-route-a"))!.Status.Should().Be(ReconciliationBreakQueueStatus.Open);
     }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BulkExecute_RequiresAnExactPreviewAndRejectsAChangedCaseAtomically()
+    {
+        await using var app = await CreateAppAsync(RegisterBulkCaseworkHandoff);
+        var repository = app.Services.GetRequiredService<IReconciliationBreakQueueRepository>();
+        await repository.CreateIfMissingAsync(TestReconciliationQueueScope, BuildBreakQueueItem("stable-case", null));
+        await repository.CreateIfMissingAsync(TestReconciliationQueueScope, BuildBreakQueueItem("changed-case", null));
+        var client = app.GetTestClient();
+        var request = BulkRequest("stale:preview", ReconciliationCaseworkAction.Assign, ["stable-case", "changed-case"], dryRun: true)
+            with
+        { Assignee = "reviewer" };
+        var execute = ReviewedExecute(request, "stale:execute");
+
+        var unreviewed = await PostAsync(UiApiRoutes.ReconciliationBreakBulkExecute, execute with { PreviewBulkActionId = null });
+        unreviewed.SucceededCount.Should().Be(0);
+        unreviewed.Results.Should().OnlyContain(item => item.Error!.Contains("fresh bulk preview"));
+        var retired = await client.PostAsJsonAsync(UiApiRoutes.ReconciliationBreakQueue + "/bulk",
+            new { breakIds = new[] { "stable-case" }, action = "assign", assignee = "reviewer" }, ServerJsonOptions);
+        retired.IsSuccessStatusCode.Should().BeFalse();
+
+        var preview = await PostAsync(UiApiRoutes.ReconciliationBreakBulkDryRun, request);
+        preview.Results.Should().OnlyContain(result => result.WouldSucceed && result.Item!.Version > 0);
+        var changed = preview.Results.Single(result => result.BreakId == "changed-case").Item!;
+        await repository.ApplyCaseworkCommandAsync(TestReconciliationQueueScope, new ReconciliationCaseworkCommand(
+            changed.BreakId, ReconciliationCaseworkAction.Assign, "another-reviewer", "change", "stale:change", "test",
+            changed.Version, Assignee: "another-reviewer"));
+
+        var blocked = await PostAsync(UiApiRoutes.ReconciliationBreakBulkExecute, execute);
+        blocked.SucceededCount.Should().Be(0);
+        blocked.Results.Should().Contain(result => result.BreakId == "changed-case" && result.Error!.Contains("version", StringComparison.OrdinalIgnoreCase));
+        (await repository.GetByIdAsync(TestReconciliationQueueScope, "stable-case"))!.AssignedTo.Should().BeNull();
+        (await repository.GetByIdAsync(TestReconciliationQueueScope, "changed-case"))!.AssignedTo.Should().Be("another-reviewer");
+        var retained = await client.GetFromJsonAsync<ReconciliationBulkCaseworkResult>(
+            UiApiRoutes.ReconciliationBreakBulkResult.Replace("{bulkActionId}", Uri.EscapeDataString(execute.CommandId)), ServerJsonOptions);
+        retained.Should().BeEquivalentTo(blocked);
+
+        async Task<ReconciliationBulkCaseworkResult> PostAsync(string route, ReconciliationBulkCaseworkRequest input)
+        {
+            var response = await client.PostAsJsonAsync(route, input, ServerJsonOptions);
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<ReconciliationBulkCaseworkResult>(ServerJsonOptions))!;
+        }
+    }
+
+    private static ReconciliationBulkCaseworkRequest ReviewedExecute(ReconciliationBulkCaseworkRequest dryRun, string commandId)
+        => dryRun with
+        {
+            CommandId = commandId,
+            IdempotencyKey = commandId,
+            PreviewBulkActionId = dryRun.CommandId,
+            DryRun = false,
+            AllowPartialSuccess = false
+        };
 
     private static void RegisterBulkCaseworkHandoff(IServiceCollection services)
         => services.AddSingleton<IStatementReconciliationCaseworkHandoffService>(sp =>
