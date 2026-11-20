@@ -1,4 +1,6 @@
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Accounting.Lots;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
@@ -20,6 +22,11 @@ public sealed partial class ManualJournalEntryWorkbenchService
         if (journalId == Guid.Empty || !IsSupportedAssetIntake(retained.Spine.DraftedLotMutation) ||
             retained.Spine.PostedJournalImpact is not null || !string.Equals(source.Actor, actor, StringComparison.Ordinal))
             throw new InvalidOperationException("Asset draft intake requires an unposted supported asset candidate owned by the preparer.");
+        if (retained.Spine.DraftedLotMutation?.Acquisition?.SettlementConsideration is { } settlement &&
+            (retained.Spine.EventKind != AssetAccountingEventKindDto.Acquisition ||
+             settlement.SecurityId != scope.SecurityId || settlement.Currency != retained.Spine.Currency ||
+             !settlement.Inputs.Any(input => input.Kind == "SecurityTerms" && input.Version == scope.ExpectedSecurityVersion)))
+            throw new InvalidOperationException("Bond acquisition review requires the verified settlement security, version and currency of its retained source.");
         var existing = await _draftStore.GetAsync(scope.FundProfileId, journalId, ct, scope.TenantId, scope.CompanyId).ConfigureAwait(false);
         if (existing is not null)
         {
@@ -46,7 +53,17 @@ public sealed partial class ManualJournalEntryWorkbenchService
 
     private static bool IsSupportedAssetIntake(AssetLotMutationInstructionDto? mutation)
         => mutation is { Intent: AssetLotMutationIntentDto.FactorPaydown, FactorPaydown: not null }
-            or { Intent: AssetLotMutationIntentDto.Amortize, Amortization: not null };
+            or { Intent: AssetLotMutationIntentDto.Amortize, Amortization: not null }
+            || IsSupportedBondAcquisitionIntake(mutation);
+
+    // Only a server-verified held-bond settlement may extend the review queue's acquisition lane.
+    // Analytics verification and authoritative book/position checks remain owned by the spine.
+    internal static bool IsSupportedBondAcquisitionIntake(AssetLotMutationInstructionDto? mutation)
+        => mutation is { Intent: AssetLotMutationIntentDto.Acquire, Direction: OpenLotDirection.Long,
+                Acquisition: { HasFaceValueTerms: true, ParBasis: 100m, AmortizationMethod: { } method,
+                    SettlementConsideration: { IsForeignCurrency: false } } acquisition }
+            && Enum.IsDefined(method)
+            && BondSettlementConsideration.ValidateAcquisition(acquisition).Count == 0;
 
     private static bool SameAssetCandidate(AssetAccountingPostingCandidateDto left, AssetAccountingPostingCandidateDto right)
         => string.Equals(AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(left),

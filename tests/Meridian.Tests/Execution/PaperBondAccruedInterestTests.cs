@@ -18,7 +18,7 @@ namespace Meridian.Tests.Execution;
 /// consideration into Accrued Interest Receivable, and the seller receives it back, relieving
 /// the purchased receivable and booking the remainder as coupon income earned while held.
 /// </summary>
-public sealed class PaperBondAccruedInterestTests
+public sealed partial class PaperBondAccruedInterestTests
 {
     private const string Bond = "ACME5.25-2031";
 
@@ -177,7 +177,10 @@ public sealed class PaperBondAccruedInterestTests
         LimitPrice = 101.25m
     };
 
-    private static Meridian.Execution.PaperTradingGateway BondGateway(Guid securityId, IBondAnalyticsService analytics)
+    private static Meridian.Execution.PaperTradingGateway BondGateway(Guid securityId, IBondAnalyticsService? analytics,
+        Meridian.Execution.Adapters.PaperTradingGatewayOptions? options = null,
+        Meridian.Execution.Adapters.LiveMarketDataCache? feed = null,
+        Meridian.Execution.PaperMatching.PaperTradingCostOptions? costOptions = null)
     {
         var identity = Substitute.For<ISecurityIdentityQueryService>();
         var detail = new SecurityDetailDto(securityId, "Bond", SecurityStatusDto.Active,
@@ -185,13 +188,13 @@ public sealed class PaperBondAccruedInterestTests
             JsonSerializer.SerializeToElement(new { couponType = "Fixed" }), [], [], 1, DateTimeOffset.UtcNow.AddYears(-1), null);
         identity.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, Bond, null,
             Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>()).Returns(detail);
-        var feed = new Meridian.Execution.Adapters.LiveMarketDataCache();
+        feed ??= new Meridian.Execution.Adapters.LiveMarketDataCache();
         feed.RecordTrade(Bond, new Meridian.Contracts.Domain.Models.Trade(DateTimeOffset.UtcNow, Bond, 101.25m, 100,
             Meridian.Contracts.Domain.Enums.AggressorSide.Buy, 1));
         return new Meridian.Execution.PaperTradingGateway(
             NullLogger<Meridian.Execution.PaperTradingGateway>.Instance,
             securityMaster: (ISecurityTradingParametersQueryService?)null, liveFeed: feed,
-            securityIdentity: identity, bondAnalytics: analytics);
+            securityIdentity: identity, bondAnalytics: analytics, options: options, costOptions: costOptions);
     }
 
     private static BondAnalyticsResult Analytics(BondAnalyticsRequest request, decimal? accruedPer100,
