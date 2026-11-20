@@ -294,6 +294,11 @@ schedule when effective interest is negative, after contractual caps and floors.
 an entire signed-interest schedule before any period posts. Calculation-only signed-interest
 previews keep their existing signed model; explicit v1/v2 receipt replay retains its original arithmetic.
 
+Hand-written asset-class validators (`AssetClassValidatorRegistry`) must agree with the declared
+sign and fraction range of each rate field in `SecurityRateFieldUnits`;
+`SecurityRateFieldUnitsValidatorParityTests` enforces this and lists the disagreements still waiting
+on an owner ruling. A negative Bond `spreadBps` therefore validates, as the unit table declares.
+
 ## Configured direct-lending accounting
 
 Loan journal lines retain their transaction and functional currency through symbol and dimension
