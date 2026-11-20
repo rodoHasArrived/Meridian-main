@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterImportResult
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterImportResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L12).
+
+Defines the import result for bulk Security Master imports.
+
+```csharp
+public sealed record SecurityMasterImportResult(int Imported, int Skipped, int Failed, int ConflictsDetected, IReadOnlyList<string> Errors);
+```
+
+## SecurityMasterImportService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:62](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L62).
+
+Implementation of bulk security import service.
+
+```csharp
+public sealed class SecurityMasterImportService : ISecurityMasterImportService, ISecurityMasterIngestStatusService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterImportService(ISecurityMasterService securityMasterService, SecurityMasterCsvParser csvParser, ILogger&lt;SecurityMasterImportService&gt; logger, ISecurityMasterConflictService? conflictService = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:78](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L78) |  |
+| <code>public SecurityMasterIngestStatusSnapshot GetSnapshot();</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:90](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L90) |  |
+| <code>public async Task&lt;SecurityMasterImportResult&gt; ImportAsync(string fileContent, string fileExtension, string actor, IProgress&lt;SecurityMasterImportProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:98](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L98) |  |
+
 ## SecurityMasterIngestStatusSnapshot
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot</code>. Kind: `record`.
@@ -1034,37 +1066,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityValuationService(ISecurityMasterQueryService queryService, IEnumerable&lt;ISecurityValuationModel&gt; models, ILogger&lt;SecurityValuationService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs:20](../../../../src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs#L20) |  |
 | <code>public async Task&lt;SecurityValuationResult?&gt; ValueAsync(SecurityValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs:42](../../../../src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs#L42) |  |
-
-## AutoConfigurationService
-
-Qualified name: <code>Meridian.Application.Services.AutoConfigurationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:15](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L15).
-
-Service for automatic configuration based on available credentials and environment. Implements user-friendly auto-detection and configuration of data providers.
-
-```csharp
-public sealed class AutoConfigurationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;DetectedProvider&gt; DetectAvailableProviders();</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:48](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L48) | Detects all available providers based on environment variables. Uses ProviderRegistry as the single source of provider metadata. |
-| <code>public AutoConfigResult AutoConfigure(AppConfig? existingConfig = null);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:75](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L75) | Auto-configures the application based on detected providers and environment. |
-| <code>public AppConfig GenerateFirstTimeConfig(FirstTimeConfigOptions options);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:142](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L142) | Generates configuration for first-time users with interactive defaults. |
-| <code>public AppConfig ApplyPreset(ConfigPreset preset, AppConfig? existingConfig = null);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:734](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L734) | Applies a role-based configuration preset, setting ~15 config values at once. Presets: Researcher, DayTrader, OptionsTrader, Crypto. |
-| <code>public static IReadOnlyList&lt;ConfigPresetInfo&gt; GetPresetDescriptions() =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:752](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L752) | Lists available presets with descriptions. |
-
-## AutoConfigResult
-
-Qualified name: <code>Meridian.Application.Services.AutoConfigurationService.AutoConfigResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:35](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L35).
-
-Result of auto-configuration analysis.
-
-```csharp
-public sealed record AutoConfigResult(bool Success, AppConfig Config, IReadOnlyList<DetectedProvider> DetectedProviders, IReadOnlyList<string> AppliedFixes, IReadOnlyList<string> Recommendations, IReadOnlyList<string> Warnings);
-```

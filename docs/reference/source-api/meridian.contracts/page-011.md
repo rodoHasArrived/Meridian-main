@@ -483,6 +483,26 @@ The reference view of a StructuredCredit tranche, read from its relational terms
 public sealed record StructuredCreditReferenceDto(Guid SecurityId, string DisplayName, string Currency, string Tranche, string? PoolId, string CollateralType, decimal OriginalFace, decimal? CurrentFactor, string CouponOrIndex, string? FactorScheduleReference, DateOnly? Maturity, string PrimaryIdentifier, long Version, string? StructuredCreditKind = null, string? Seniority = null, decimal? AttachmentPoint = null, decimal? DetachmentPoint = null, decimal? WeightedAverageCoupon = null, int? WeightedAverageMaturityMonths = null, int? WeightedAverageLoanAgeMonths = null, DateOnly? ReinvestmentPeriodEnd = null, DateOnly? NonCallPeriodEnd = null);
 ```
 
+## BackfillEquivalentProvider
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillEquivalentProvider</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:25](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L25).
+
+```csharp
+public sealed record BackfillEquivalentProvider(string Provider, string DisplayName);
+```
+
+## BackfillJobReceipt
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillJobReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:47](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L47).
+
+```csharp
+public sealed record BackfillJobReceipt(string ExecutionId, string Status, string Provider, string[] Symbols, DateOnly? From, DateOnly? To, DateTimeOffset SubmittedAt, DateTimeOffset? NotBeforeUtc, DateTimeOffset? StartedAt, DateTimeOffset? CompletedAt, long? BarsWritten, string? Error, BackfillQuotaEstimate Estimate, BackfillQuotaReceipt? Actual);
+```
+
 ## BackfillJobStatus
 
 Qualified name: <code>Meridian.Contracts.Backfill.BackfillJobStatus</code>. Kind: `class`.
@@ -581,6 +601,40 @@ Current provider-attempt posture for a single symbol in an active or recently co
 public sealed record BackfillProviderSymbolProgressDto(string Symbol, DateOnly? RangeStart, DateOnly? RangeEnd, int TotalDays, int CompletedDays, double PercentComplete, bool IsCompleted, bool IsFailed, bool IsSkipped, string? CurrentProvider, string? CurrentStatus, int ProviderAttempt, int RetryRound, string? Operation, DateTimeOffset? AttemptStartedAt, DateTimeOffset? LastUpdatedAt, string? Error);
 ```
 
+## BackfillProviderUsage
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderUsage</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:27](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L27).
+
+```csharp
+public sealed record BackfillProviderUsage(string Provider, long FetchAttempts, long? ObservedRequests);
+```
+
+## BackfillQuotaEstimate
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillQuotaEstimate</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:4](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L4).
+
+Historical provider quota and the shared policy observed when a plan was estimated.
+
+```csharp
+public sealed record BackfillQuotaEstimate(long? ExpectedRequests, int? ProviderLimit, double? WindowSeconds, int? ObservedRemainingRequests, int? BackfillRequestsPerWindow, int? AvailableBackfillRequests, int ReserveHeadroomPercent, int? MaxConcurrentRequests, double? EstimatedDurationSeconds, bool ExceedsBudget, DateTimeOffset? ObservedAt, DateTimeOffset? RetryAt, string? LimitSource, string Uncertainty, string QuotaUnit = "requests", int? DailyProviderLimit = null, int? DailyRemaining = null, int? DailyBackfillLimit = null, DateTimeOffset? DailyResetAt = null);
+```
+
+## BackfillQuotaReceipt
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillQuotaReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:35](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L35).
+
+Evidence from one run. Null counts indicate incomplete request instrumentation.
+
+```csharp
+public sealed record BackfillQuotaReceipt(BackfillQuotaEstimate? Estimate, IReadOnlyList<string> ObservedProviders, IReadOnlyList<BackfillProviderUsage> ProviderUsage, IReadOnlyList<BackfillThrottleEvent> ThrottlingEvents, long? ActualRequests, double ActualDurationSeconds, long? RequestVariance, double? DurationVarianceSeconds);
+```
+
 ## BackfillResult
 
 Qualified name: <code>Meridian.Contracts.Backfill.BackfillResult</code>. Kind: `record`.
@@ -599,7 +653,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string[] SkippedSymbols { get; init; } = SkippedSymbols??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:26](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L26) | Symbols skipped because their checkpoint already covered the requested date range. Only populated when resume-from-checkpoint mode is enabled on the backfill request. |
 | <code>public SymbolValidationSignal[] SymbolValidationSignals { get; init; } = SymbolValidationSignals??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:32](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L32) | Per-symbol completeness signals (pass / warn / fail) produced at the end of the run. Provides operator-visible trust data for each symbol in Symbols. |
-| <code>public static BackfillResult Failed(string provider, IReadOnlyList&lt;string&gt; symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:34](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L34) |  |
+| <code>public BackfillQuotaReceipt? QuotaReceipt { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:34](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L34) |  |
+| <code>public static BackfillResult Failed(string provider, IReadOnlyList&lt;string&gt; symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:36](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L36) |  |
 
 ## BackfillRunProgressResponse
 
@@ -611,6 +666,26 @@ Response from /api/backfill/progress. Legacy last-run fields remain available wh
 
 ```csharp
 public sealed record BackfillRunProgressResponse(BackfillResult? LastRun, bool IsActive, BackfillProviderProgressSnapshotDto ProviderProgress, DateTimeOffset Timestamp);
+```
+
+## BackfillThrottleEvent
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillThrottleEvent</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:32](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L32).
+
+```csharp
+public sealed record BackfillThrottleEvent(string Provider, string Reason, int Count, double WaitSeconds);
+```
+
+## QueueBackfillRequest
+
+Qualified name: <code>Meridian.Contracts.Backfill.QueueBackfillRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:45](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L45).
+
+```csharp
+public sealed record QueueBackfillRequest(Guid PreviewId, bool AcceptThrottle = false, DateTimeOffset? NotBeforeUtc = null);
 ```
 
 ## SymbolBackfillProgress
@@ -716,89 +791,3 @@ Enum declarations:
 | <code>Passed = 0</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:28](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L28) |  |
 | <code>Warning = 1</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:29](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L29) |  |
 | <code>Failed = 2</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:30](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L30) |  |
-
-## BacktestPreflightReportV2Dto
-
-Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightReportV2Dto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:11](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L11).
-
-```csharp
-public sealed record BacktestPreflightReportV2Dto(bool IsReadyToRun, bool HasWarnings, IReadOnlyList<BacktestPreflightCheckResultDto> Checks, long TotalDurationMs, DateTimeOffset CheckedAt, string? SummaryMessage = null);
-```
-
-## BacktestPreflightRequestDto
-
-Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:3](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L3).
-
-```csharp
-public sealed record BacktestPreflightRequestDto(DateOnly From, DateOnly To, string DataRoot, IReadOnlyList<string>? Symbols = null, string? RequiredExecutionModel = null, IReadOnlyList<string>? RequiredReplayDataTypes = null);
-```
-
-## ApprovePaymentRequest
-
-Qualified name: <code>Meridian.Contracts.Banking.ApprovePaymentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:68](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L68).
-
-Approve a pending payment request.
-
-```csharp
-public sealed record ApprovePaymentRequest(string? ReviewNotes, string? ReviewedBy, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## BankTransactionDto
-
-Qualified name: <code>Meridian.Contracts.Banking.BankTransactionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:104](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L104).
-
-A single bank-side transaction record. This is distinct from a loan-level CashTransactionDto in the DirectLending module; the two may be reconciled but are not the same object.
-
-```csharp
-public sealed record BankTransactionDto(Guid BankTransactionId, Guid EntityId, string TransactionType, DateOnly EffectiveDate, DateOnly TransactionDate, DateOnly SettlementDate, decimal Amount, string Currency, string? ExternalRef, DateTimeOffset RecordedAt, bool IsVoided, string? RecordedBy = null, Guid? PendingPaymentId = null, string? EvidenceId = null, string? CanonicalInputHash = null);
-```
-
-## BankTransactionSeedRequest
-
-Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:133](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L133).
-
-Request to seed representative bank transactions for one or more entities. When EntityIds is null or empty, all known entities are seeded.
-
-```csharp
-public sealed record BankTransactionSeedRequest(IReadOnlyList<Guid>? EntityIds, int CountPerEntity, DateOnly? FromDate, DateOnly? ToDate);
-```
-
-## BankTransactionSeedResultDto
-
-Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:140](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L140).
-
-Result returned after seeding bank transactions.
-
-```csharp
-public sealed record BankTransactionSeedResultDto(int EntitiesProcessed, int TransactionsSeeded, IReadOnlyList<Guid> ProcessedEntityIds);
-```
-
-## IBankTransactionSource
-
-Qualified name: <code>Meridian.Contracts.Banking.IBankTransactionSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:154](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L154).
-
-Read-only banking data source for cross-domain integrations such as reconciliation. Services outside the Banking module can depend on this narrow interface instead of the full IBankingService.
-
-```csharp
-public interface IBankTransactionSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;BankTransactionDto&gt;&gt; GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:160](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L160) | Return bank transactions. When entityId is provided the result is scoped to that entity; otherwise all transactions are returned. |

@@ -205,11 +205,12 @@ Declared public members:
 | <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:65](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L65) | Returns the per-symbol bar-count sidecar, or null when no bar-count data exists. |
 | <code>public Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:70](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L70) | Runs a backfill operation for the specified request. |
 | <code>public void ValidateRequest(BackfillRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:73](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L73) |  |
-| <code>public Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckProviderHealthAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:78](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L78) | Gets health status of all providers. |
-| <code>public Task&lt;Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution?&gt; ResolveSymbolAsync(string symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:84](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L84) | Resolve a symbol using OpenFIGI. |
-| <code>public object? GetProgress() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:90](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L90) | Gets backfill progress snapshot from the core coordinator, if available. |
-| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:96](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L96) | Previews a backfill operation without actually fetching data. Returns information about what would be backfilled. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:99](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L99) |  |
+| <code>public bool HasHistoricalProvider(string provider) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:74](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L74) |  |
+| <code>public Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckProviderHealthAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:79](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L79) | Gets health status of all providers. |
+| <code>public Task&lt;Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution?&gt; ResolveSymbolAsync(string symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:85](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L85) | Resolve a symbol using OpenFIGI. |
+| <code>public object? GetProgress() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:91](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L91) | Gets backfill progress snapshot from the core coordinator, if available. |
+| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:97](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L97) | Previews a backfill operation without actually fetching data. Returns information about what would be backfilled. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:100](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L100) |  |
 
 ## BackfillExecutionContractProjection
 
@@ -227,7 +228,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static BackfillExecutionHistoryResponse Build(IReadOnlyList&lt;BackfillExecutionLog&gt; executions, string? defaultProvider, DateTimeOffset? nowUtc = null, TimeSpan? dueSoonWindow = null);</code> | [src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs:18](../../../../src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs#L18) |  |
+| <code>public static BackfillExecutionHistoryResponse Build(IReadOnlyList&lt;BackfillExecutionLog&gt; executions, string? defaultProvider, DateTimeOffset? nowUtc = null, TimeSpan? dueSoonWindow = null, BackfillJobQueue? jobs = null);</code> | [src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs:18](../../../../src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs#L18) |  |
 
 ## BacktestLedgerExportMapper
 

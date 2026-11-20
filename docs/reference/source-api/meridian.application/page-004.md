@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ICompositeDataQualityReadService
+
+Qualified name: <code>Meridian.Application.DataQuality.ICompositeDataQualityReadService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:18](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L18).
+
+Shared read boundary for the browser and WPF data-quality workstations.
+
+```csharp
+public interface ICompositeDataQualityReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;QualityCompositeDashboardResponse&gt; GetDashboardAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:20](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L20) |  |
+| <code>bool TryResolveGap(string symbol, string gapId, out CompositeDataQualityGap target);</code> | [src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs:22](../../../../src/Meridian.Application/DataQuality/CompositeDataQualityReadService.cs#L22) |  |
+
+## QualityMonitoringPublisher
+
+Qualified name: <code>Meridian.Application.DataQuality.QualityMonitoringPublisher</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:27](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L27).
+
+IMarketEventPublisher decorator that feeds live MarketEventType.Trade and MarketEventType.BboQuote ingress into the DataQualityMonitoringService (completeness, gap analysis, sequence tracking, anomaly detection, latency histograms, and cross-provider comparison).
+
+```csharp
+public sealed class QualityMonitoringPublisher : IMarketEventPublisher, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public QualityMonitoringPublisher(IMarketEventPublisher inner, DataQualityMonitoringService quality, ILogger&lt;QualityMonitoringPublisher&gt;? logger = null, int sampleCapacity = DefaultSampleCapacity, DataFreshnessSlaMonitor? freshness = null);</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:45](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L45) |  |
+| <code>public long TradesObserved =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:71](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L71) | Gets the number of trade events recorded into the quality monitors. |
+| <code>public long QuotesObserved =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:74](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L74) | Gets the number of quote events recorded into the quality monitors. |
+| <code>public long SamplesDropped =&gt; …;</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:77](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L77) | Gets the number of quality samples dropped because the sample buffer was full. |
+| <code>public bool TryPublish(in MarketEvent evt);</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:80](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L80) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs:172](../../../../src/Meridian.Application/DataQuality/QualityMonitoringPublisher.cs#L172) |  |
+
 ## AccrualLedgerService
 
 Qualified name: <code>Meridian.Application.DirectLending.AccrualLedgerService</code>. Kind: `class`.
@@ -1323,40 +1365,3 @@ The tenant half of PostgresFundStructureService: what a caller may see, what the
 ```csharp
 public sealed partial class PostgresFundStructureService
 ```
-
-## PostgresIntercompanyAgreementPostingAuthority
-
-Qualified name: <code>Meridian.Application.FundStructure.PostgresIntercompanyAgreementPostingAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:9](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L9).
-
-Validates exact approved provenance while retaining structure locks through ledger commit.
-
-```csharp
-public sealed class PostgresIntercompanyAgreementPostingAuthority(IIntercompanyAgreementStore store) : IIntercompanyAgreementBatchPostingAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:12](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L12) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireValidatedBatchLeaseAsync(IReadOnlyList&lt;IntercompanyAgreementPostingRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L16) |  |
-
-## BondHoldingImportService
-
-Qualified name: <code>Meridian.Application.Integrations.BondHoldingImportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Integrations/BondHoldingImportService.cs:12](../../../../src/Meridian.Application/Integrations/BondHoldingImportService.cs#L12).
-
-Reviewed staging to observed account statements; never creates lots or journals.
-
-```csharp
-public sealed class BondHoldingImportService(IProviderIntegrationManifestStore manifests, IAccountManagementService management, IAccountQueryService accounts)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;CustodianStatementBatchDto&gt; AcceptAsync(string tenantId, string actor, BondHoldingImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/BondHoldingImportService.cs:17](../../../../src/Meridian.Application/Integrations/BondHoldingImportService.cs#L17) |  |

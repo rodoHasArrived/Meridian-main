@@ -386,6 +386,31 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool HasMore =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:418](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L418) |  |
 
+## HistoricalBackfillQuotaSession
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.HistoricalBackfillQuotaSession</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:12](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L12).
+
+Job-scoped policy and evidence shared by direct and composite historical calls.
+
+```csharp
+public sealed class HistoricalBackfillQuotaSession(IReadOnlyDictionary<string, BackfillQuotaPolicy>? policies, bool retryRateLimits) : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsThrottled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:21](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L21) |  |
+| <code>public IDisposable Enter();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L23) |  |
+| <code>public static async Task&lt;T&gt; FetchAsync&lt;T&gt;(IHistoricalDataProvider provider, Func&lt;Task&lt;T&gt;&gt; fetch, CancellationToken ct, bool allowRateLimitRetry = true);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L30) |  |
+| <code>public static async Task WaitForRequestAsync(IHistoricalDataProvider provider, RateLimiter limiter, CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:77](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L77) |  |
+| <code>public static IDisposable? WaitForProviderReset(string provider) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:94](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L94) |  |
+| <code>public static void RecordProviderRateLimit(string provider);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:96](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L96) |  |
+| <code>public BackfillQuotaReceipt BuildReceipt(BackfillQuotaEstimate? estimate, TimeSpan duration, IEnumerable&lt;string&gt; sources);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:106](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L106) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs:148](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/HistoricalBackfillQuotaSession.cs#L148) |  |
+
 ## HistoricalQuotesResult
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.HistoricalQuotesResult</code>. Kind: `record`.
@@ -1028,21 +1053,3 @@ Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs:23
 ```csharp
 public sealed partial class ProviderFactory
 ```
-
-## ProviderHealthStatus
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderHealthStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:344](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L344).
-
-Result of a provider health check.
-
-```csharp
-public sealed record ProviderHealthStatus(string ProviderName, bool IsAvailable, string? Message = null, DateTimeOffset? CheckedAt = null, TimeSpan? ResponseTime = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderHealthStatus() : this(&quot;unknown&quot;, false);</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:352](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L352) |  |

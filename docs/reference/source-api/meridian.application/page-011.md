@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutoConfigurationService
+
+Qualified name: <code>Meridian.Application.Services.AutoConfigurationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:15](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L15).
+
+Service for automatic configuration based on available credentials and environment. Implements user-friendly auto-detection and configuration of data providers.
+
+```csharp
+public sealed class AutoConfigurationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;DetectedProvider&gt; DetectAvailableProviders();</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:48](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L48) | Detects all available providers based on environment variables. Uses ProviderRegistry as the single source of provider metadata. |
+| <code>public AutoConfigResult AutoConfigure(AppConfig? existingConfig = null);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:75](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L75) | Auto-configures the application based on detected providers and environment. |
+| <code>public AppConfig GenerateFirstTimeConfig(FirstTimeConfigOptions options);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:142](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L142) | Generates configuration for first-time users with interactive defaults. |
+| <code>public AppConfig ApplyPreset(ConfigPreset preset, AppConfig? existingConfig = null);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:734](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L734) | Applies a role-based configuration preset, setting ~15 config values at once. Presets: Researcher, DayTrader, OptionsTrader, Crypto. |
+| <code>public static IReadOnlyList&lt;ConfigPresetInfo&gt; GetPresetDescriptions() =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:752](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L752) | Lists available presets with descriptions. |
+
+## AutoConfigResult
+
+Qualified name: <code>Meridian.Application.Services.AutoConfigurationService.AutoConfigResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:35](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L35).
+
+Result of auto-configuration analysis.
+
+```csharp
+public sealed record AutoConfigResult(bool Success, AppConfig Config, IReadOnlyList<DetectedProvider> DetectedProviders, IReadOnlyList<string> AppliedFixes, IReadOnlyList<string> Recommendations, IReadOnlyList<string> Warnings);
+```
+
 ## DetectedProvider
 
 Qualified name: <code>Meridian.Application.Services.AutoConfigurationService.DetectedProvider</code>. Kind: `record`.
@@ -944,28 +978,4 @@ Result of applying a template.
 
 ```csharp
 public sealed record ApplyTemplateResult(bool Success, int SymbolsAdded, int SymbolsSkipped, string? Message = null);
-```
-
-## ArchivedSymbolInfo
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:731](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L731).
-
-Information about archived data for a symbol.
-
-```csharp
-public sealed record ArchivedSymbolInfo(string Symbol, int FileCount, long TotalSizeBytes, DateOnly? OldestData, DateOnly? NewestData, string[] DataTypes, string[] Sources);
-```
-
-## ArchivedSymbolsOptions
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:756](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L756).
-
-Options for scanning archived symbols.
-
-```csharp
-public sealed record ArchivedSymbolsOptions(string[]? FilterSymbols = null, bool IncludeCompressed = true);
 ```

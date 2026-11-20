@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IHealthCheckAggregator
+
+Qualified name: <code>Meridian.Core.Monitoring.Core.IHealthCheckAggregator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:139](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L139).
+
+Aggregates health checks from multiple providers into a unified report.
+
+```csharp
+public interface IHealthCheckAggregator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void Register(IHealthCheckProvider provider);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:145](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L145) | Registers a health check provider. |
+| <code>void Unregister(string componentName);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:151](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L151) | Unregisters a health check provider. |
+| <code>Task&lt;AggregatedHealthReport&gt; CheckAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:158](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L158) | Runs all registered health checks and returns an aggregated report. |
+| <code>Task&lt;HealthCheckResult?&gt; CheckAsync(string componentName, CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:166](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L166) | Runs a specific health check by component name. |
+
 ## IHealthCheckProvider
 
 Qualified name: <code>Meridian.Core.Monitoring.Core.IHealthCheckProvider</code>. Kind: `interface`.
@@ -971,16 +992,4 @@ Request to perform batch operations with a filter.
 
 ```csharp
 public sealed record BatchFilteredOperationRequest(BatchFilter Filter, string Operation, Dictionary<string, object?>? Parameters = null);
-```
-
-## BatchMoveToWatchlistRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchMoveToWatchlistRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:104](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L104).
-
-Request to move symbols between watchlists.
-
-```csharp
-public sealed record BatchMoveToWatchlistRequest(string[] Symbols, string TargetWatchlistId, string? SourceWatchlistId = null, bool RemoveFromSource = false);
 ```
