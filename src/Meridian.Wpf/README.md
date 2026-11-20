@@ -19,6 +19,21 @@ development keeps its existing invalid-configuration recovery behavior. Owned pr
 remain in the protected vault. Windows persistence, refusal and purge/retry fixtures live in
 `DesktopConfigurationRecoveryServiceTests`.
 
+Desktop OAuth refresh initializes retained credential metadata at startup. It holds a per-provider
+file lease through the exchange and publishes the access token, refresh token, and expiry in one
+atomic DPAPI-encrypted vault generation. Legacy token pairs and sidecar metadata remain readable.
+A response can change credentials only if the vault still contains the pair and endpoint settings
+used for that request. Cancellation applies through response parsing. A validated rotation can finish
+its local commit during shutdown because the provider may already have revoked the former token.
+If the connection is interrupted before a rotating provider's reply arrives, the operator may need to
+reauthorize.
+
+The desktop permits refresh at the exact HTTPS TradeStation token endpoint for the public-client
+PKCE grant. Requests have a 10-second deadline, a 64 KiB response limit, and redirects disabled.
+Other destinations are refused before sending the credential. The Windows `CredentialServiceTests`
+use synthetic exchanges. Live TradeStation compatibility remains unverified.
+[TradeStation refresh token documentation](https://api.tradestation.com/docs/fundamentals/authentication/refresh-tokens/).
+
 The existing agreement and entity controls expose native structured terms, date previews,
 external-review attestations, advisory obligations and reviewed legacy coverage successors.
 They consume shared APIs and preserve drafts on failed commands. WPF runtime verification requires
