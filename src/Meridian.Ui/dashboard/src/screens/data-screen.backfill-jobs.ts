@@ -39,7 +39,7 @@ export function useBackfillJobHistory(
     } catch (failure: unknown) {
       if (!signal?.aborted && remediationHistoryRevisionRef.current === revision) {
         setRemediationHistoryError(
-          describeApiError(failure, "Backfill execution history is unavailable.").summary
+          describeApiError(failure, "Backfill remediation history is unavailable.").summary
         );
       }
     } finally {
