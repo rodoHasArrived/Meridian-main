@@ -321,7 +321,8 @@ public sealed partial class AddProviderWizardPageTests
                 .Where(provider => fixture.Records.ContainsKey(ProviderIdentity.NormalizeId(provider.Id)))
                 .Select(provider => provider with { SupportsHistorical = false }), []);
             fixture.Page.SelectProvider(selectedProvider);
-            if (selectOwned) await fixture.Page.SelectOwnedConnectionAsync(ConnectionId(selectedProvider));
+            if (selectOwned)
+                await fixture.Page.SelectOwnedConnectionAsync(ConnectionId(selectedProvider));
             return fixture;
         }
 
@@ -343,25 +344,27 @@ public sealed partial class AddProviderWizardPageTests
                 StatusQueries.Add(request.RequestUri!.Query);
                 if (RefuseStatus)
                     return Json(new { }, HttpStatusCode.Forbidden);
-                if (connectionId.Length > 0 && owned is null) return Json(new { }, HttpStatusCode.NotFound);
+                if (connectionId.Length > 0 && owned is null)
+                    return Json(new { }, HttpStatusCode.NotFound);
                 return Json(Records.Where(pair => connectionId.Length == 0 || pair.Key == (connectionId == ConnectionId(owned!.ProviderFamilyId)
                     ? ProviderIdentity.NormalizeId(owned.ProviderFamilyId) : connectionId)).Select(pair => new
-                {
-                    providerId = connectionId.Length > 0 ? owned!.ProviderFamilyId : pair.Key,
-                    displayName = pair.Key,
-                    credentialState = pair.Value.Configured ? ProviderCredentialStateDto.Configured : ProviderCredentialStateDto.Missing,
-                    verificationState = pair.Value.Verified ? ProviderVerificationStateDto.Verified : ProviderVerificationStateDto.NotVerified,
-                    lastVerifiedAt = pair.Value.LastVerifiedAt,
-                    credentialFields = new[]
+                    {
+                        providerId = connectionId.Length > 0 ? owned!.ProviderFamilyId : pair.Key,
+                        displayName = pair.Key,
+                        credentialState = pair.Value.Configured ? ProviderCredentialStateDto.Configured : ProviderCredentialStateDto.Missing,
+                        verificationState = pair.Value.Verified ? ProviderVerificationStateDto.Verified : ProviderVerificationStateDto.NotVerified,
+                        lastVerifiedAt = pair.Value.LastVerifiedAt,
+                        credentialFields = new[]
                     {
                         new ProviderCredentialFieldMetadataDto("KeyId", "Key ID", true, ProviderCredentialInputKindDto.Text),
                         new ProviderCredentialFieldMetadataDto("SecretKey", "Secret key", true, ProviderCredentialInputKindDto.Password)
                     }
-                }));
+                    }));
             }
 
             var providerId = request.RequestUri!.Segments[^2].Trim('/');
-            if (owned is null || !ProviderIdentity.EqualsId(owned.ProviderFamilyId, providerId)) return Json(new { }, HttpStatusCode.Forbidden);
+            if (owned is null || !ProviderIdentity.EqualsId(owned.ProviderFamilyId, providerId))
+                return Json(new { }, HttpStatusCode.Forbidden);
             var recordKey = connectionId == ConnectionId(providerId) ? providerId : connectionId;
             if (request.Method == HttpMethod.Delete)
             {

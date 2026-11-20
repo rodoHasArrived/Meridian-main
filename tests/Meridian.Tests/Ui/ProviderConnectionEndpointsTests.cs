@@ -1095,20 +1095,26 @@ public sealed class ProviderConnectionEndpointsTests
         await core.UpdateAsync(config => config with
         {
             Alpaca = new(Feed: removeOverride ? "sip" : "iex"),
-            ProviderModules = new(new() { ["alpaca-api"] = new(Settings: new()
+            ProviderModules = new(new()
             {
-                ["feed"] = "iex",
-                ["FeEd"] = "iex"
-            }) })
+                ["alpaca-api"] = new(Settings: new()
+                {
+                    ["feed"] = "iex",
+                    ["FeEd"] = "iex"
+                })
+            })
         });
 
         var update = async () => await store.UpdateAsync(config => config with
         {
-            ProviderModules = removeOverride ? null : new(new() { ["alpaca-api"] = new(Settings: new()
+            ProviderModules = removeOverride ? null : new(new()
             {
-                ["feed"] = "iex",
-                ["FeEd"] = "sip"
-            }) })
+                ["alpaca-api"] = new(Settings: new()
+                {
+                    ["feed"] = "iex",
+                    ["FeEd"] = "sip"
+                })
+            })
         });
 
         var failure = await update.Should().ThrowAsync<UiConfigurationValidationException>();

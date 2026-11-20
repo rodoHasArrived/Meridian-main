@@ -107,7 +107,8 @@ public sealed class ProviderQuotaEditorViewModel : BindableBase
         get => _isBusy;
         private set
         {
-            if (!SetProperty(ref _isBusy, value)) return;
+            if (!SetProperty(ref _isBusy, value))
+                return;
             OnPropertyChanged(nameof(CanSelectProvider));
             OnPropertyChanged(nameof(CanEdit));
             LoadCommand.NotifyCanExecuteChanged();
@@ -151,7 +152,8 @@ public sealed class ProviderQuotaEditorViewModel : BindableBase
 
     private async Task LoadAsync(CancellationToken ct)
     {
-        if (IsBusy) return;
+        if (IsBusy)
+            return;
         IsBusy = true;
         Error = null;
         Notice = "Loading provider limits.";
@@ -182,13 +184,15 @@ public sealed class ProviderQuotaEditorViewModel : BindableBase
 
     private async Task<ProviderRateLimitHistoryResponse?> LoadHistoryAsync(string providerId, CancellationToken ct)
     {
-        try { return await _client.ReadHistoryAsync(providerId, ct); }
+        try
+        { return await _client.ReadHistoryAsync(providerId, ct); }
         catch (InvalidOperationException) { return null; }
     }
 
     private async Task SaveAsync(CancellationToken ct)
     {
-        if (!CanEdit || BuildEdit() is not { } edit) return;
+        if (!CanEdit || BuildEdit() is not { } edit)
+            return;
         IsBusy = true;
         Error = null;
         Notice = "Saving provider limits.";

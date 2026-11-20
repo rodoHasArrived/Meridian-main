@@ -306,7 +306,8 @@ public sealed class SettingsConfigurationService
             _ => "Credential status is unavailable from the service."
         };
         return new ProviderCredentialStatus(providerId, displayName, state, message, [], row.CredentialFields,
-            row.VerificationState, row.LastVerifiedAt) { RotationDueAt = row.RotationDueAt };
+            row.VerificationState, row.LastVerifiedAt)
+        { RotationDueAt = row.RotationDueAt };
     }
 
     /// <summary>

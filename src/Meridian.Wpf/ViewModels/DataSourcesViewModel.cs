@@ -642,9 +642,18 @@ public sealed class DataSourcesViewModel : BindableBase
                 _draftSourceId = sourceId;
                 _editingSource = new DataSourceConfigDto
                 {
-                    Id = sourceId, Name = source.Name, Provider = source.Provider, Enabled = source.Enabled,
-                    Type = source.Type, Priority = source.Priority, Description = source.Description, Tags = source.Tags,
-                    Symbols = source.Symbols, IB = source.IB, Polygon = source.Polygon, Alpaca = source.Alpaca
+                    Id = sourceId,
+                    Name = source.Name,
+                    Provider = source.Provider,
+                    Enabled = source.Enabled,
+                    Type = source.Type,
+                    Priority = source.Priority,
+                    Description = source.Description,
+                    Tags = source.Tags,
+                    Symbols = source.Symbols,
+                    IB = source.IB,
+                    Polygon = source.Polygon,
+                    Alpaca = source.Alpaca
                 };
             }
 
@@ -816,7 +825,9 @@ public sealed class DataSourcesViewModel : BindableBase
         => new(source.Id, source.Name, source.Provider, source.Enabled, source.Type, source.Priority,
             source.Alpaca is { } alpaca ? new AlpacaOptionsDto
             {
-                Feed = alpaca.Feed, UseSandbox = alpaca.UseSandbox, SubscribeQuotes = alpaca.SubscribeQuotes,
+                Feed = alpaca.Feed,
+                UseSandbox = alpaca.UseSandbox,
+                SubscribeQuotes = alpaca.SubscribeQuotes,
                 AdditionalProperties = alpaca.AdditionalProperties
             } : null, source.Polygon, source.IB, source.Symbols, source.Description, source.Tags);
 

@@ -80,7 +80,8 @@ internal sealed class BackfillQuotaActivity(
 
     private void RecordBarsPublished(string provider)
     {
-        if (provider.Equals("composite", StringComparison.OrdinalIgnoreCase)) return;
+        if (provider.Equals("composite", StringComparison.OrdinalIgnoreCase))
+            return;
         lock (_sync)
             _providersThatReturnedBars.Add(provider);
     }

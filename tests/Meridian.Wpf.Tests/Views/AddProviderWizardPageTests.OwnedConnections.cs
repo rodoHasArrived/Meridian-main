@@ -102,8 +102,10 @@ public sealed partial class AddProviderWizardPageTests
             using var fixture = await Fixture.CreateAsync();
             fixture.EnterCredentials();
             var pending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            if (testConnection) fixture.PendingVerification = pending;
-            else fixture.PendingWrite = pending;
+            if (testConnection)
+                fixture.PendingVerification = pending;
+            else
+                fixture.PendingWrite = pending;
             var operation = testConnection ? fixture.Page.TestProviderConnectionAsync() : fixture.Page.SaveProviderAsync();
             await (testConnection ? fixture.VerificationStarted.Task : fixture.WriteStarted.Task);
             fixture.Key.Text = "newer-fixture-key";

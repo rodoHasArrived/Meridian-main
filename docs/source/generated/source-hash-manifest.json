@@ -10,7 +10,7 @@
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
       "readme_hash": "28a820175b283b0f7c129aaf52a38340bb8aed42bf829ae03ffb1a35707cd055",
-      "source_hash": "0466c2940237a20149582e81077495865edf0b6d1b1415fcbe9ab534872b227a"
+      "source_hash": "9cc12539c559b514987c31367b89c96307be6596c2804f7cfc0ed724372c3e8d"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -38,7 +38,7 @@
       "path": "src/Meridian.Core",
       "readme": "src/Meridian.Core/README.md",
       "readme_hash": "3d67cf160eef23cc9fcf68af1c9fe3398ace21ba913f46ef8202e9f433c59724",
-      "source_hash": "050164940fde3a02e4c6da46070a18823da19eafb1470221813df1bd19edb1b7"
+      "source_hash": "dc053063e84fd83706d11a7114d46b73ad1e155612b0298bfd4cb1f4d455458b"
     },
     {
       "id": "SRC-DESIGN-AUDIT",
@@ -192,7 +192,7 @@
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
       "readme_hash": "f0865dd5f832bc3e3d91084b910b2208b2ac56a9ac44876fea65331a37ae56cf",
-      "source_hash": "09e0413959ad842c91894b3632d7ef41ee0c3e5423652b3e32d3ecb4692a6073"
+      "source_hash": "1246d84befa4fca9dbf7dca63eafce1f87f1abf992131139f8761bfddd4d534b"
     },
     {
       "id": "SRC-LAUNCHER",
@@ -290,7 +290,7 @@
       "path": "src/Meridian.Ui.Services",
       "readme": "src/Meridian.Ui.Services/README.md",
       "readme_hash": "3b3bfd7f546706edcec2b1c0e9f58bffbdad2a535a179495a7bca70e2295e37e",
-      "source_hash": "0fb1bb1ab5d9b8e1bc6ad3487e093fdd723f79a04a400c6780bc5d37f77f0f16"
+      "source_hash": "220431b72d968d9d5688d0bb51ace5d295dcb1b699500af0d43b72cb9052f824"
     },
     {
       "id": "SRC-UI-SHARED",
@@ -304,7 +304,7 @@
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
       "readme_hash": "83e6a736028ccf50d8d329b7ead02317d728cafe551292762dafa8846986ab9e",
-      "source_hash": "7f9485283311bdfad09b7de7269f4c5584ea9dfd06e5ced32b5946478934d974"
+      "source_hash": "1ac56b00cba4182cfe79f5961bf018c7a6b0b9230e5fbd64e798e241d707c30e"
     }
   ],
   "schema": {

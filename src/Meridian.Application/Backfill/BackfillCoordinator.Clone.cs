@@ -103,8 +103,12 @@ public sealed partial class BackfillCoordinator
         var route = service.DescribeRoute(request);
         var historicalProviders = receipt.Providers.Select(p => p with
         {
-            Requests = 0, ResponsesWithData = 0, Unavailable = 0, EmptyResponses = 0,
-            StaleResponses = 0, StaleResponsesAccepted = 0
+            Requests = 0,
+            ResponsesWithData = 0,
+            Unavailable = 0,
+            EmptyResponses = 0,
+            StaleResponses = 0,
+            StaleResponsesAccepted = 0
         });
         if (route.RoutingDecision != receipt.RoutingDecision || route.Validation != receipt.ValidationProfile ||
             !route.Sources.SequenceEqual(historicalProviders))

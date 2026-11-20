@@ -59,7 +59,8 @@ public sealed class ProviderQuotaEditorViewModelTests
                 ? Task.FromException<ProviderQuotaResponse>(new InvalidOperationException("Server validation rejected the edit."))
                 : Task.FromResult(Basic with
                 {
-                    Saved = new(edit.TierId, edit.UnitsPerMinute, edit.DailyLimit, edit.RequestsPerMinute), PendingRestart = true
+                    Saved = new(edit.TierId, edit.UnitsPerMinute, edit.DailyLimit, edit.RequestsPerMinute),
+                    PendingRestart = true
                 });
         }
 

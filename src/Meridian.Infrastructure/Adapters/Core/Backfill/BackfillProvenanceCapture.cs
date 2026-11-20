@@ -115,12 +115,24 @@ public sealed class BackfillProvenanceCapture
             _fallbackOccurred |= _isComposite && !_candidates.IsDefaultOrEmpty && !ReferenceEquals(_candidates[0], provider);
             switch (observation)
             {
-                case BackfillProviderObservation.Requested: counts.Requests++; break;
-                case BackfillProviderObservation.Data: counts.ResponsesWithData++; break;
-                case BackfillProviderObservation.Unavailable: counts.Unavailable++; break;
-                case BackfillProviderObservation.Empty: counts.EmptyResponses++; break;
-                case BackfillProviderObservation.Stale: counts.StaleResponses++; break;
-                case BackfillProviderObservation.StaleAccepted: counts.StaleResponsesAccepted++; break;
+                case BackfillProviderObservation.Requested:
+                    counts.Requests++;
+                    break;
+                case BackfillProviderObservation.Data:
+                    counts.ResponsesWithData++;
+                    break;
+                case BackfillProviderObservation.Unavailable:
+                    counts.Unavailable++;
+                    break;
+                case BackfillProviderObservation.Empty:
+                    counts.EmptyResponses++;
+                    break;
+                case BackfillProviderObservation.Stale:
+                    counts.StaleResponses++;
+                    break;
+                case BackfillProviderObservation.StaleAccepted:
+                    counts.StaleResponsesAccepted++;
+                    break;
             }
         }
     }

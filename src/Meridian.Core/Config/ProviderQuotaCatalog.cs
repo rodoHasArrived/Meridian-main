@@ -60,7 +60,9 @@ public static class ProviderQuotaCatalog
             {
                 TwelveData = (quotas.TwelveData ?? new()) with
                 {
-                    CreditsPerMinute = edit.UnitsPerMinute, DailyCredits = dailyLimit.Value, NoDailyLimit = false
+                    CreditsPerMinute = edit.UnitsPerMinute,
+                    DailyCredits = dailyLimit.Value,
+                    NoDailyLimit = false
                 }
             }
             : quotas with { AlphaVantage = new(edit.UnitsPerMinute, dailyLimit.Value) };
