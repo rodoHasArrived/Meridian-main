@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorPreferenceRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:350](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L350).
+
+```csharp
+public sealed record OperatorPreferenceRecord(string OperatorKey, OperatorPreferenceValuesDto Preferences, DateTimeOffset UpdatedAt);
+```
+
+## OperatorPreferenceSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:352](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L352).
+
+```csharp
+public sealed record OperatorPreferenceSnapshot(int Version, IReadOnlyList<OperatorPreferenceRecord> Operators);
+```
+
 ## OperatorScopePreferenceRecord
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorScopePreferenceRecord</code>. Kind: `record`.

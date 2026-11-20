@@ -1,3 +1,4 @@
+using Meridian.Contracts.AccountingSystem;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -45,7 +46,7 @@ public interface IAccountingReportPackageService
 /// <summary>
 /// Builds and retains accounting report packages and their certification state.
 /// </summary>
-public sealed class AccountingReportPackageService : IAccountingReportPackageService
+public sealed partial class AccountingReportPackageService : IAccountingReportPackageService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -54,6 +55,7 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
     };
 
     private readonly IAccountingCloseManagementService? _closeManagementService;
+    private readonly IExternalGlConfirmationGate? _externalGl;
     private readonly object _readGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
     private readonly string? _persistencePath;
@@ -66,10 +68,12 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
 
     public AccountingReportPackageService(
         IAccountingCloseManagementService? closeManagementService,
-        StorageOptions storageOptions)
+        StorageOptions storageOptions,
+        IExternalGlConfirmationGate? externalGl = null)
         : this(closeManagementService)
     {
         ArgumentNullException.ThrowIfNull(storageOptions);
+        _externalGl = externalGl;
         _persistencePath = Path.Combine(storageOptions.RootPath, "accounting", "accounting-report-packages.json");
     }
 
@@ -520,75 +524,6 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
                 $"Material late adjustment '{adjustment.RequestId}' is not approved.",
                 adjustment.RequestId,
                 "Approve or reject material late adjustments before report certification."));
-        }
-
-        return issues;
-    }
-
-    private async Task<IReadOnlyList<AccountingConfigurationValidationIssueDto>> BuildCurrentCloseCertificationIssuesAsync(
-        AccountingReportPackageBundleDto package,
-        CancellationToken ct)
-    {
-        if (!package.CloseWorkflowId.HasValue)
-        {
-            return
-            [
-                new AccountingConfigurationValidationIssueDto(
-                    "CloseWorkflowRequired",
-                    AccountingConfigurationValidationSeverityDto.Critical,
-                    $"Accounting report package '{package.FinancialStatements.PackageId}' is not linked to a retained close workflow.",
-                    package.FinancialStatements.PackageId,
-                    "Build the report package from a close workflow with ledger-book scope, period lock, sign-offs, reconciliation, and report evidence before certification.")
-            ];
-        }
-
-        if (_closeManagementService is null)
-        {
-            return
-            [
-                new AccountingConfigurationValidationIssueDto(
-                    "ClosePlanServiceMissing",
-                    AccountingConfigurationValidationSeverityDto.Critical,
-                    $"Close-backed report package '{package.FinancialStatements.PackageId}' cannot refresh close-plan state because close management is not registered.",
-                    package.FinancialStatements.PackageId,
-                    "Register close management before certifying close-backed report packages.")
-            ];
-        }
-
-        var closePlan = await _closeManagementService.GetPeriodPlanAsync(package.CloseWorkflowId.Value, ct).ConfigureAwait(false);
-        if (closePlan is null)
-        {
-            return
-            [
-                new AccountingConfigurationValidationIssueDto(
-                    "ClosePlanMissing",
-                    AccountingConfigurationValidationSeverityDto.Critical,
-                    $"Close workflow '{package.CloseWorkflowId.Value:D}' was not found.",
-                    package.CloseWorkflowId.Value.ToString("D"),
-                    "Create or select a close workflow before certifying the accounting report package.")
-            ];
-        }
-
-        var issues = new List<AccountingConfigurationValidationIssueDto>();
-        issues.AddRange(BuildCloseLedgerBookConsistencyIssues(
-            closePlan,
-            package.FinancialStatements.LedgerBookId,
-            $"retained report package '{package.FinancialStatements.PackageId}'"));
-        issues.AddRange(BuildCloseBackedReportEvidenceScopeIssues(
-            closePlan,
-            package.FinancialStatements.PeriodId,
-            package.FinancialStatements.LedgerBookId,
-            package.FinancialStatements.EvidenceLinks));
-        issues.AddRange(closePlan.ValidationIssues);
-        issues.AddRange(BuildCloseCertificationIssues(closePlan));
-        if (!closePlan.IsPeriodLocked)
-        {
-            issues.Add(new AccountingConfigurationValidationIssueDto(
-                "PeriodNotLocked",
-                AccountingConfigurationValidationSeverityDto.Critical,
-                "The close period is not locked; close-backed report package certification is blocked.",
-                closePlan.ClosePlanId,
-                "Lock the period after close approvals before final report certification."));
         }
 
         return issues;

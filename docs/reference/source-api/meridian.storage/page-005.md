@@ -422,6 +422,16 @@ Declared public members:
 | <code>public static EmptyLedgerAuthorityLease Instance { get; } = new ();</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:62](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L62) |  |
 | <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:64](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L64) |  |
 
+## ExternalGlOutboxClaim
+
+Qualified name: <code>Meridian.Storage.Ledger.ExternalGlOutboxClaim</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ExternalGlOutbox.cs:195](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ExternalGlOutbox.cs#L195).
+
+```csharp
+public sealed record ExternalGlOutboxClaim(Guid LeaseToken, ExternalGlPostingScope Scope, ExternalGlDestination Destination, ExternalGlPostingDocument Document, int PostAttempts, bool ProviderAcknowledged, ExternalGlPostingStatus Status);
+```
+
 ## FileBondIncomePreparationEvidenceStore
 
 Qualified name: <code>Meridian.Storage.Ledger.FileBondIncomePreparationEvidenceStore</code>. Kind: `class`.
@@ -912,21 +922,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IAsyncDisposable&gt; AcquireValidatedBatchLeaseAsync(IReadOnlyList&lt;IntercompanyAgreementPostingRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:16](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L16) |  |
-
-## IIntercompanyAgreementJournalValidation
-
-Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementJournalValidation</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:21](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L21).
-
-Read-only preparation/review validation using the same authority as durable append.
-
-```csharp
-public interface IIntercompanyAgreementJournalValidation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task ValidateIntercompanyAgreementReferencesAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:23](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L23) |  |

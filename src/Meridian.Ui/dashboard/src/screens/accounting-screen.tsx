@@ -58,6 +58,7 @@ import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.paymen
 import { AuditChainIntegrityPanel } from "@/screens/accounting-screen.audit-integrity";
 import { BondCutoverConsolePanel } from "@/screens/accounting-screen.bond-cutover";
 import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
+import { ExternalGlPostingPanel } from "@/screens/accounting-screen.external-gl-posting";
 import { AccountingOnboardingPanel } from "@/screens/accounting-screen.onboarding-panel";
 import { ReconciliationWorkbench, ReconciliationStatementRuns, ThreeWayReconciliationWorkbench } from "./accounting-screen.reconciliation-workbench";
 import { useReconciliationViewState } from "./reconciliation-view-state";
@@ -938,6 +939,8 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           </CardContent>
         </Card>
       ) : null}
+
+      {sectionVisibility.showExternalGl ? <ExternalGlPostingPanel /> : null}
 
       {sectionVisibility.showExternalGl ? (
       <AccountingSystemReconciliationPanel

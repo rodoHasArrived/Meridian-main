@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AlpacaStatementSnapshot
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca.AlpacaStatementSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaStatementSnapshot.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Alpaca/AlpacaStatementSnapshot.cs#L13).
+
+The retained document produced by an Alpaca statement fetch: account activity (orders/fills/cash) plus an optional portfolio snapshot (positions + balance), so a single fetch covers transactional and position data. Serialized as the connector&#x27;s source document, giving remote fetches the same raw-evidence trail as file uploads.
+
+```csharp
+public sealed record AlpacaStatementSnapshot(string ProviderId, string AccountId, DateTimeOffset RetrievedAt, BrokerageActivitySnapshotDto? Activity, BrokeragePortfolioSnapshotDto? Portfolio);
+```
+
+## Bai2StatementConnector
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Bai2.Bai2StatementConnector</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:22](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L22).
+
+BAI2 (Cash Management Balance Reporting) connector. Reads the group as-of date and currency, each account&#x27;s closing ledger balance (status code 015), and every transaction-detail (16) record, signing amounts by BAI type-code class (100–399 credit, 400–799 debit). Amounts are expressed in the currency&#x27;s minor units (cents) per the BAI2 convention and scaled to major units. This lets institutional bank cash statements reconcile without hand-conversion to CSV.
+
+```csharp
+public sealed class Bai2StatementConnector : IStatementConnector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConnectorId = &quot;bai2&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L24) |  |
+| <code>public Bai2StatementConnector() : this(StatementIngressLimits.Default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L33) |  |
+| <code>public Bai2StatementConnector(StatementIngressLimits limits) : this(limits, StatementBalanceRole.Closing);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:38](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L38) |  |
+| <code>public Bai2StatementConnector(StatementIngressLimits limits, StatementBalanceRole balanceRole);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L48) | Creates a connector that emits the closing ledger balance (015, falling back to 045; the default used by every reconciliation run) or, only when explicitly requested, the opening ledger balance (010). Opening available cash (040) cannot establish the opening booked balance. |
+| <code>public StatementConnectorDescriptor Descriptor { get; } = new (ConnectorId, &quot;BAI2 cash management statement&quot;, [&quot;.bai&quot;, &quot;.bai2&quot;], SupportsFileImport : true, SupportsRemoteFetch : false, RequiresMappingProfile : false, DefaultProfileId : null);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L60) |  |
+| <code>public bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:69](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L69) |  |
+| <code>public Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Bai2/Bai2StatementConnector.cs#L77) |  |
+
 ## Camt053StatementConnector
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Camt.Camt053StatementConnector</code>. Kind: `class`.
@@ -888,23 +924,3 @@ Declared public members:
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ExecutedMappingFingerprint { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:143](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L143) |  |
 | <code>public bool HasErrors =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:145](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L145) |  |
 | <code>public int TotalRetainedRows =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:160](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L160) | Every row this parse retains, canonical and evidence-only alike. The record cap was applied to Records alone, which five sibling collections bypass entirely - a connector can return one canonical row and hundreds of thousands of tax lots, borrow positions, account snapshots, activity events or cursors, stay under the cap, and still have every one of them serialized into the retained canonical-evidence artifact. Bounding this total at the service is what makes the cap a property of the seam rather than of whichever loops a connector author remembered to guard. Per-connector guards still matter, because they refuse before the allocation happens rather than after; this is the backstop none of them can leave open, including connectors written later. |
-
-## StatementProfileActivityCode
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementProfileActivityCode</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:43](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L43).
-
-```csharp
-public sealed record StatementProfileActivityCode(string SourceCode, string CanonicalActivityType);
-```
-
-## StatementProfileCsvOptions
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementProfileCsvOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L28).
-
-```csharp
-public sealed record StatementProfileCsvOptions(string Delimiter = ",", string Quote = "\"", bool HasHeader = true);
-```
