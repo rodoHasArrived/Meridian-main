@@ -111,6 +111,10 @@ public static class RetainedPostingEquivalence
             }
             if (!string.Equals(retainedLine.Description, candidateLine.Description, StringComparison.Ordinal))
                 return Differs($"line {index} description", out difference);
+            if (!string.Equals(retainedLine.Memo, candidateLine.Memo, StringComparison.Ordinal))
+                return Differs($"line {index} memo", out difference);
+            if (!ChartReferencesMatch(retainedLine, candidateLine))
+                return Differs($"line {index} chart account", out difference);
             if (!DimensionsMatch(retainedLine.Dimensions, candidateLine.Dimensions))
                 return Differs($"line {index} dimensions", out difference);
             // Transaction currency, functional currency, both transaction-side amounts, and the

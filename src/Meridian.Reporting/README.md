@@ -22,6 +22,15 @@ catalogs, deterministic artifact declarations, immutable lifecycle/restatement c
 distribution contracts, Security Master-enriched report generation, NAV attribution, no-code
 report-writer grid rendering, and reporting ownership conformance.
 
+The Financial Statement Control Pack ties rows to the retained book population, including
+realized and unrealized P&L and instrument detail. Final packs bind the selected hard-close
+snapshot. An annual run can bind a fiscal close receipt using `fiscalYearCloseReceiptId`.
+Use `comparisonPeriodId` on a final period run to include an earlier hard close from the same
+book. Certification requires that the comparative journal population match the current opening
+history. The pack retains the comparative snapshot and identifies its period in both exports.
+When a run declares `bookFxSettlementSetId`, all required retained journal legs must verify
+before certification. The XLSX and Parquet artifacts carry the same statement rows and controls.
+
 Authoritative source checkpoints optionally retain a content-addressed complete ledger population.
 New ledger captures use that population for period datasets and complete-history calculations,
 including retained generated trial-balance amount bindings. Rendering and amount proof replay the

@@ -37,7 +37,10 @@ public sealed record CreatePaperSessionRequest(
     string StrategyId,
     string? StrategyName,
     decimal InitialCash = 100_000m,
-    IReadOnlyList<string>? Symbols = null);
+    IReadOnlyList<string>? Symbols = null)
+{
+    public Guid? FundAccountId { get; init; }
+}
 
 /// <summary>
 /// Structured result returned by every Trading write action (cancel, close, pause, etc.).

@@ -72,6 +72,10 @@ public sealed record TradeExecutedEvent(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<TradeExecutionFee>? Fees { get; init; }
 
+    /// <summary>Exact broker statement activity identity when the source supplied one.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? BrokerActivityId { get; init; }
+
     internal TradeExecutedEvent FreezeFees() => this with
     {
         Fees = Fees is { Count: > 0 }
@@ -79,7 +83,9 @@ public sealed record TradeExecutedEvent(
     };
 
     internal bool HasSameEconomics(TradeExecutedEvent other)
-        => this with { Fees = null } == other with { Fees = null }
+        => this with { Fees = null, BrokerActivityId = null } == other with { Fees = null, BrokerActivityId = null }
+            && (BrokerActivityId is null || other.BrokerActivityId is null
+                || string.Equals(BrokerActivityId, other.BrokerActivityId, StringComparison.Ordinal))
             && (Fees ?? []).OrderBy(fee => fee.FeeId, StringComparer.Ordinal)
                 .SequenceEqual((other.Fees ?? []).OrderBy(fee => fee.FeeId, StringComparer.Ordinal));
 

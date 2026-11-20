@@ -78,7 +78,8 @@ public static partial class ExecutionEndpoints
                     Limit: limit ?? 100,
                     OrderId: orderId),
                 (workflow, token) => AuditTrailHttpAuthority.CanReadWorkflowAsync(context, workflow, token),
-                context.RequestAborted).ConfigureAwait(false);
+                context.RequestAborted,
+                account => FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(account, context)).ConfigureAwait(false);
 
             return Results.Json(result, jsonOptions);
         })

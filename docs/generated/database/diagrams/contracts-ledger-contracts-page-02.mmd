@@ -533,6 +533,56 @@ classDiagram
         +string TenantId
         +long Version
     }
+    class Meridian_Contracts_Ledger_BookFxSettlementAmountsDto["BookFxSettlementAmountsDto"] {
+        +decimal CashMarketResult
+        +decimal FunctionalCash
+        +decimal GaapMarketResult
+        +decimal GaapOutstandingReceivable
+        +decimal GaapTradeReceivable
+        +decimal ReceivableRelieved
+        +decimal SettlementFxResult
+    }
+    class Meridian_Contracts_Ledger_BookFxSettlementJournalDto["BookFxSettlementJournalDto"] {
+        +string AccountingPolicyId
+        +string AccountingPolicyVersion
+        +Guid JournalEntryId
+        +Guid PeriodId
+        +long PeriodVersion
+    }
+    class Meridian_Contracts_Ledger_BookFxSettlementLegDto["BookFxSettlementLegDto"] {
+    }
+    class Meridian_Contracts_Ledger_BookFxSettlementLegReceiptDto["BookFxSettlementLegReceiptDto"] {
+        +DateTimeOffset CapturedAt
+        +string CapturedBy
+        +Guid CommandId
+        +Guid JournalEntryId
+        +long JournalSequence
+        +Guid LedgerBookId
+        +BookFxSettlementLegDto Leg
+        +Guid? LotMutationBatchId
+        +Guid PeriodId
+        +string PlanHashSha256
+    }
+    class Meridian_Contracts_Ledger_BookFxSettlementSetDto["BookFxSettlementSetDto"] {
+        +IReadOnlyList~BookFxSettlementLegDto~ InvalidatedLegs
+        +IReadOnlyList~BookFxSettlementLegDto~ MissingLegs
+        +BookFxSettlementSetPlanDto Plan
+        +IReadOnlyList~BookFxSettlementLegReceiptDto~ Receipts
+    }
+    class Meridian_Contracts_Ledger_BookFxSettlementSetPlanDto["BookFxSettlementSetPlanDto"] {
+        +BookFxSettlementAmountsDto Amounts
+        +DateTimeOffset ApprovedAt
+        +string ApprovedBy
+        +DateTimeOffset CashBookRevision
+        +string ControllerRole
+        +Guid EntityId
+        +string FunctionalCurrency
+        +string FundProfileId
+        +DateTimeOffset GaapBookRevision
+        +RetainBookFxSettlementSetRequestDto Input
+        +string PlanHashSha256
+        +string RateSetHashSha256
+    }
     class Meridian_Contracts_Ledger_CanonicalAmortizationOccurrenceDto["CanonicalAmortizationOccurrenceDto"] {
         +DateOnly Date
         +decimal FunctionalCostBasis
@@ -609,71 +659,6 @@ classDiagram
         +int EvidenceLinkCount
         +IReadOnlyList~string~ EvidenceLinks
     }
-    class Meridian_Contracts_Ledger_CapitalAccountWorkbenchRestatementChangedLineDto["CapitalAccountWorkbenchRestatementChangedLineDto"] {
-        +string CurrentValue
-        +int EvidenceLinkCount
-        +IReadOnlyList~string~ EvidenceLinks
-        +string LineKey
-        +string PreviousValue
-    }
-    class Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto["CapitalAccountWorkbenchStatementLineageDto"] {
-        +string CapitalAccountId
-        +string? CapitalAccountSubledgerRoute
-        +string DisplayName
-        +IReadOnlyList~string~ EvidenceLinks
-        +string? EvidenceRoute
-        +bool HasRestatementLineage
-        +string? InvestorId
-        +bool IsPublished
-        +bool IsReportReady
-        +string LineageId
-        +string? PublicationEvidenceHash
-        +string? PublicationManifestId
-    }
-    class Meridian_Contracts_Ledger_CaptureClosePlanTemplateRequestDto["CaptureClosePlanTemplateRequestDto"] {
-        +OperationsActionOriginDto ActionOrigin
-        +string? Actor
-        +ClosePreparationCalendarDto Calendar
-        +IReadOnlyList~CloseDeadlineRuleDto~ DeadlineRules
-        +string Name
-        +Guid SourceWorkflowId
-        +Guid? TemplateId
-    }
-    class Meridian_Contracts_Ledger_CertifyAccountingReportPackageRequestDto["CertifyAccountingReportPackageRequestDto"] {
-        +OperationsActionOriginDto ActionOrigin
-        +string Actor
-        +string? CompanyId
-        +string? CorrelationId
-        +IReadOnlyList~string~ EvidenceLinks
-        +string Notes
-        +string PackageId
-        +string? TenantId
-    }
-    class Meridian_Contracts_Ledger_ChartOfAccountsNodeDto["ChartOfAccountsNodeDto"] {
-        +string AccountName
-        +string AccountType
-        +string? FinancialAccountId
-        +IntercompanyAccountRoleDto? IntercompanyRole
-        +bool IsArchived
-        +string NodeId
-        +string? ParentPath
-        +string Path
-        +string? Symbol
-    }
-    class Meridian_Contracts_Ledger_CloseCalendarMilestoneDto["CloseCalendarMilestoneDto"] {
-        +int ApprovedSignOffCount
-        +string? BlockerReason
-        +int DependencyCount
-        +string DisplayName
-        +DateOnly DueDate
-        +IReadOnlyList~string~ EvidenceLinks
-        +bool IsBlocked
-        +bool IsPeriodLocked
-        +bool IsSatisfied
-        +string MilestoneId
-        +string Owner
-        +int RequiredSignOffCount
-    }
     Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetRequestDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto
@@ -687,7 +672,6 @@ classDiagram
     Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingRuleTestCaseDto
     Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_AccountingRulesStudioDto
-    Meridian_Contracts_Ledger_AccountingConfigurationWorkspaceDto --> Meridian_Contracts_Ledger_ChartOfAccountsNodeDto
     Meridian_Contracts_Ledger_AccountingJournalPreviewLineDto --> Meridian_Contracts_Ledger_AccountingTemplateLineSideDto
     Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_AccountingJournalTemplatePreviewDto --> Meridian_Contracts_Ledger_AccountingJournalPreviewLineDto
@@ -725,12 +709,15 @@ classDiagram
     Meridian_Contracts_Ledger_AutomatedJournalEvidenceAssessmentDto --> Meridian_Contracts_Ledger_AutomatedJournalEvidenceQualityDto
     Meridian_Contracts_Ledger_AutomatedPostingGrantDto --> Meridian_Contracts_Ledger_AccountingPolicyDto
     Meridian_Contracts_Ledger_AutomatedPostingGrantDto --> Meridian_Contracts_Ledger_AutomatedPostingGrantReferenceDto
+    Meridian_Contracts_Ledger_BookFxSettlementLegReceiptDto --> Meridian_Contracts_Ledger_BookFxSettlementLegDto
+    Meridian_Contracts_Ledger_BookFxSettlementSetDto --> Meridian_Contracts_Ledger_BookFxSettlementLegDto
+    Meridian_Contracts_Ledger_BookFxSettlementSetDto --> Meridian_Contracts_Ledger_BookFxSettlementLegReceiptDto
+    Meridian_Contracts_Ledger_BookFxSettlementSetDto --> Meridian_Contracts_Ledger_BookFxSettlementSetPlanDto
+    Meridian_Contracts_Ledger_BookFxSettlementSetPlanDto --> Meridian_Contracts_Ledger_BookFxSettlementAmountsDto
     Meridian_Contracts_Ledger_CanonicalAmortizationPreparationDto --> Meridian_Contracts_Ledger_CanonicalAmortizationOccurrenceDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationInputDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAuditDrillThroughDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchInvestorAccountDto
-    Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchInvestorAccountDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
-    Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchRestatementChangedLineDto

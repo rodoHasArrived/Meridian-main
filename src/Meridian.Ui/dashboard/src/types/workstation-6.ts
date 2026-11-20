@@ -1081,6 +1081,15 @@ export interface LedgerPostedJournalEntryLine {
   credit: number;
   description: string;
   dimensions?: LedgerDimensionSet | null;
+  memo?: string | null;
+  chartAccount?: { nodeId: string; revision: string; accountCode: string | null } | null;
+  currency?: {
+    transactionCurrency: string;
+    functionalCurrency: string;
+    transactionDebit: number;
+    transactionCredit: number;
+    fxRateToFunctional: number;
+  } | null;
 }
 
 export interface LedgerPostedJournalEntry {
