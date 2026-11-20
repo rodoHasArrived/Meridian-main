@@ -95,6 +95,16 @@ Comparisons require immutable evidence of available internal populations and ide
 Run receipts and observation metadata commit in the queue's integrity-checked atomic snapshot and
 survive restart. Failed, partial, older, ambiguous or differently scoped comparisons cannot clear
 prior observations. Source clearing leaves casework disposition, approval and close blockers intact.
+Split and merge classifications require a confirmed transaction group from the newer completed run
+and unique business subjects from the immediately preceding comparable run. A split links one
+statement subject to multiple ledger records. A merge links all proven prior subjects to the same
+ledger record. The audit retains the group, compared run, exact amounts, and affected case IDs.
+
+Reviewed bulk execution checks the durable dry-run receipt, authenticated scope and action,
+all eligible rows, and their exact versions under the queue mutation lease. Supersession also binds
+the successor's version. The lease admits one execution per preview and returns an exact prior
+execution receipt on replay. A stale row blocks the entire reviewed batch.
+
 Create, save, and legacy rekey intake enforce the same simulation-provenance gate. Saves cannot
 remove a retained non-real mark by changing source labels, and rekeys preserve the strongest
 explicit provenance from both records. Create retries compare normalized provenance with the

@@ -20,7 +20,7 @@ public sealed record ReconciliationCashMovementInput(string MovementId, decimal 
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScope</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:285](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L285).
+Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:292](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L292).
 
 ```csharp
 public sealed record ReconciliationCloseScope(string FundProfileId, Guid LedgerBookId, Guid AccountingPeriodId, DateOnly AsOfDate);
@@ -30,7 +30,7 @@ public sealed record ReconciliationCloseScope(string FundProfileId, Guid LedgerB
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScopeCheckpoint</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:291](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L291).
+Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:298](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L298).
 
 ```csharp
 public sealed record ReconciliationCloseScopeCheckpoint(ReconciliationCloseScope Scope, IReadOnlyList<ReconciliationBreakQueueItem> Items, string CheckpointHashSha256, long Generation = 1);
@@ -40,7 +40,7 @@ public sealed record ReconciliationCloseScopeCheckpoint(ReconciliationCloseScope
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScopeHistoryEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:322](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L322).
+Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:329](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L329).
 
 ```csharp
 public sealed record ReconciliationCloseScopeHistoryEntry(ReconciliationCloseScope Scope, long CheckpointGeneration, string CheckpointHashSha256, IReadOnlyList<ReconciliationBreakQueueItem> Items, DateTimeOffset SealedAtUtc, ReconciliationCloseScopeReopenReceipt ReopenReceipt);
@@ -50,7 +50,7 @@ public sealed record ReconciliationCloseScopeHistoryEntry(ReconciliationCloseSco
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScopeReopenCommand</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:297](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L297).
+Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:304](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L304).
 
 ```csharp
 public sealed record ReconciliationCloseScopeReopenCommand(string Actor, string Role, string Reason, string ApprovalReference, string CorrelationId, IReadOnlyList<string> EvidenceLinks, long ReopenedLedgerPeriodVersion, string CommandHashSha256);
@@ -60,7 +60,7 @@ public sealed record ReconciliationCloseScopeReopenCommand(string Actor, string 
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCloseScopeReopenReceipt</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:307](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L307).
+Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:314](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L314).
 
 ```csharp
 public sealed record ReconciliationCloseScopeReopenReceipt(ReconciliationCloseScope Scope, long CheckpointGeneration, string CheckpointHashSha256, long ReopenedLedgerPeriodVersion, string Actor, string Role, string Reason, string ApprovalReference, string CorrelationId, IReadOnlyList<string> EvidenceLinks, string CommandHashSha256, DateTimeOffset ReopenedAtUtc, bool WasAlreadyReopened = false);

@@ -3,6 +3,7 @@ import { AMOUNT_PASSPORT_FRAGMENT_PREFIX } from "@/lib/amount-passport-api";
 import { WORKSTATION_ROUTE_CATALOG, resolveWorkstationRouteBreadcrumbLabel } from "@/lib/workspace";
 import { VIEW_STATE_QUERY_KEY } from "@/lib/view-state-envelope";
 import { REPORTING_WORK_SELECTION_PARAM } from "@/components/meridian/reporting-hub.selection";
+import { RECONCILIATION_VIEW_QUERY_KEYS } from "@/screens/reconciliation-view-state";
 
 export interface AppShellRouteFocusState {
   routeKey: string;
@@ -78,7 +79,7 @@ function routeFocusSearch(pathname: string, search: string): string {
       params.delete(key);
     }
   } else if (isReconciliation) {
-    for (const key of ["reconciliationRun", "reconciliationBreak", "reconciliationSearch", "reconciliationStatus", "reconciliationSort"]) {
+    for (const key of RECONCILIATION_VIEW_QUERY_KEYS) {
       params.delete(key);
     }
   } else if (isFamilyOffice) {

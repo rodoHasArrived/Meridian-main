@@ -36,6 +36,10 @@ public sealed partial class StatementRunWorkflowServiceTests
         result.Breaks.Should().ContainSingle().Which.BreakCode.Should().Be("TRANSACTION_AMBIGUOUS");
         result.Cases.Should().ContainSingle().Which.EvidenceReferences.Should()
             .Contain(["internal-record:internal:a-far", "internal-record:internal:z-near"]);
+        var evidence = result.CaseMatchEvidence.Should().ContainSingle().Subject.Value;
+        evidence.Tier.Should().Be("Candidate");
+        evidence.LedgerAllocations.Should().HaveCount(2);
+        evidence.Residuals.Should().BeEmpty("there is no decided pair to sum or allocate");
     }
 
     [Fact]
@@ -44,11 +48,13 @@ public sealed partial class StatementRunWorkflowServiceTests
         var path = await WriteStatementAsync("fill-id-mismatch.csv",
             "EXT-1,SPY,10,10,100,trade,2026-05-28,2026-05-30,USD,,FILL-23");
         var artifacts = new InMemoryStatementRunMatchArtifactStore();
-        var workflow = CreatePolicyWorkflow(new([], [], [PolicyTransaction("fill-23", 10m, 90m) with
+        var populations = new InternalReconciliationPopulations([], [], [PolicyTransaction("fill-23", 10m, 90m) with
         {
             ExternalTransactionId = "FILL-23",
             Price = 9m
-        }]), StatementToleranceProfile.Default, artifacts);
+        }]);
+        var recovery = new InMemoryStatementRunRecoveryRepository();
+        var workflow = CreatePolicyWorkflow(populations, StatementToleranceProfile.Default, artifacts, recovery: recovery);
 
         var result = await workflow.CreateAsync(Request(path));
 
@@ -58,7 +64,23 @@ public sealed partial class StatementRunWorkflowServiceTests
         result.Cases.Should().ContainSingle().Which.EvidenceReferences.Should()
             .Contain($"statement-row:{difference.SourceReference}")
             .And.Contain("internal-record:internal:fill-23");
-        (await artifacts.GetAsync(result.Import.ImportId))!.MatchGroups.Should().BeEmpty();
+        var artifact = (await artifacts.GetAsync(result.Import.ImportId))!;
+        artifact.MatchGroups.Should().BeEmpty();
+        artifact.ExecutedTolerancePolicy!.EffectiveDate.Should().Be(new DateOnly(2026, 5, 31));
+        artifact.ExecutedTolerancePolicy.Version.Should().Be(StatementToleranceProfile.DefaultProfileVersion);
+        var candidate = artifact.CaseMatchEvidence![difference.BreakId];
+        candidate.Tier.Should().Be("Candidate");
+        candidate.RuleIds.Should().Contain("statement-transaction-external-id-v1");
+        candidate.LedgerAllocations.Should().ContainSingle(item => item.EvidenceReference == "internal:fill-23" && item.Amount == "90"
+            && item.UnitPrice == "9" && item.ExternalTransactionId == "FILL-23");
+        candidate.Residuals.Should().ContainSingle(measure => measure.Measure == "Net amount" && measure.Unit == "USD" && measure.Residual == "10");
+
+        var changedCatalog = CreatePolicyWorkflow(InternalReconciliationPopulations.Empty,
+            StatementToleranceProfile.Default with { Version = 100 }, artifacts, recovery: recovery);
+        var retained = await changedCatalog.GetAsync(result.Import.ImportId);
+        retained!.ExecutedTolerancePolicy.Should().Be(artifact.ExecutedTolerancePolicy);
+        retained.MatchArtifactSha256.Should().Be(StatementDurabilityHashing.Hash(artifact));
+        retained.CaseMatchEvidence.Should().BeEquivalentTo(artifact.CaseMatchEvidence);
     }
 
     [Fact]
@@ -334,7 +356,7 @@ public sealed partial class StatementRunWorkflowServiceTests
 
     private StatementRunWorkflowService CreatePolicyWorkflow(InternalReconciliationPopulations populations,
         StatementToleranceProfile profile, InMemoryStatementRunMatchArtifactStore artifacts,
-        IReconciliationFxRateProvider? fx = null)
+        IReconciliationFxRateProvider? fx = null, InMemoryStatementRunRecoveryRepository? recovery = null)
     {
         var imports = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         return new(imports,
@@ -343,7 +365,7 @@ public sealed partial class StatementRunWorkflowServiceTests
             new CsvBrokerStatementService(imports),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),
             Populations(populations), fx, new InMemoryStatementToleranceProfileProvider([profile]),
-            new InMemoryStatementRunRecoveryRepository(), artifacts,
+            recovery ?? new InMemoryStatementRunRecoveryRepository(), artifacts,
             caseworkCommitStore: EmptyEphemeralStatementCaseworkCommitStore.Instance);
     }
 }

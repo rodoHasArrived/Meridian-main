@@ -6157,6 +6157,7 @@ Meridian-main
 │   │   │   └── PrivateCapitalRecordDtos.cs
 │   │   ├── Reconciliation
 │   │   │   ├── IReconciliationApiService.cs
+│   │   │   ├── RetainedStatementMatchEvidence.cs
 │   │   │   └── StatementImportContracts.cs
 │   │   ├── Reporting
 │   │   │   └── ReportingGovernanceApiDtos.cs
@@ -7155,6 +7156,7 @@ Meridian-main
 │   │   │   ├── ReconciliationServiceRegistration.cs
 │   │   │   ├── StatementBreakClassifier.cs
 │   │   │   ├── StatementMappingProfiles.cs
+│   │   │   ├── StatementMatchEvidenceBuilder.cs
 │   │   │   ├── StatementMatchingEngine.ConfiguredRules.cs
 │   │   │   ├── StatementMatchingEngine.cs
 │   │   │   ├── StatementMatchingEngine.TransactionIdentity.cs
@@ -10458,6 +10460,8 @@ Meridian-main
 │   │   │   │   │   ├── reconciliation-bulk-triage-bar.tsx
 │   │   │   │   │   ├── reconciliation-bulk-triage.test.ts
 │   │   │   │   │   ├── reconciliation-bulk-triage.ts
+│   │   │   │   │   ├── reconciliation-case-evidence.test.tsx
+│   │   │   │   │   ├── reconciliation-case-evidence.tsx
 │   │   │   │   │   ├── reconciliation-casework-command.ts
 │   │   │   │   │   ├── reconciliation-casework-outcome.ts
 │   │   │   │   │   ├── reconciliation-run-picker.test.tsx
