@@ -60963,6 +60963,129 @@
       "target": "database:ledger.tax_lots_pkey"
     },
     {
+      "constraint": "book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey",
+      "kind": "foreign-key",
+      "label": "tenant_id, company_id, set_id",
+      "source": "database:ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_sets"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_content_hash_sha256_check on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_receipts.content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_leg_check on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_receipts.leg"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_payload_json_check on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_receipts.payload_json"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_sets.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_sets.set_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_sets.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts",
+      "target": "database:ledger.book_fx_settlement_sets_pkey"
+    },
+    {
+      "constraint": "book_fx_settlement_sets_cash_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "cash_book_id",
+      "source": "database:ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "book_fx_settlement_sets_gaap_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "gaap_book_id",
+      "source": "database:ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_cash_book_id_fkey on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_cash_book_id_fkey on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.cash_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.gaap_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.settlement_event_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.trade_event_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_gaap_book_id_fkey on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_gaap_book_id_fkey on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_payload_json_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.payload_json"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.book_fx_settlement_sets_plan_hash_sha256_check on ledger.book_fx_settlement_sets",
+      "target": "database:ledger.book_fx_settlement_sets.plan_hash_sha256"
+    },
+    {
       "kind": "normal",
       "label": "",
       "source": "database:ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
@@ -62150,6 +62273,98 @@
       "label": "",
       "source": "database:ledger.entity_controlled_close_authorization_ledger_book_id_fkey on ledger.entity_controlled_close_authorization",
       "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "constraint": "fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id, fiscal_year, supersedes_receipt_id",
+      "source": "database:ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts"
+    },
+    {
+      "constraint": "fiscal_year_close_receipts_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.supersedes_receipt_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_content_hash_sha256_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.content_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_fiscal_year_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.fiscal_year"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.fiscal_year"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.receipt_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fkey on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_payload_json_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.payload_json"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_plan_hash_sha256_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.plan_hash_sha256"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.fiscal_year_close_receipts_revision_check on ledger.fiscal_year_close_receipts",
+      "target": "database:ledger.fiscal_year_close_receipts.revision"
     },
     {
       "kind": "normal",
@@ -68563,6 +68778,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.book_fx_settlement_receipts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.book_fx_settlement_sets"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.consolidation_fx_book_configurations"
     },
     {
@@ -68588,6 +68815,12 @@
       "label": "",
       "source": "schema:ledger",
       "target": "database:ledger.entity_controlled_close_authorization"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.fiscal_year_close_receipts"
     },
     {
       "kind": "contains",
@@ -69915,7 +70148,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bcc604eb05f37ef3e18c34282c32707cee8568c261d7e09f8d261e8f0b3d5aba",
+  "fingerprint": "cd55b3d7a9ed1e60be524692ba72a2a84f9d748ca3b5ba836e7442fdf336cfd0",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -95385,6 +95618,128 @@
       "label": "ledger.bond_coupon_recognition_tax_lot_record_id_fkey on ledger.bond_coupon_recognition"
     },
     {
+      "id": "database:ledger.book_fx_settlement_receipts",
+      "kind": "database-table",
+      "label": "ledger.book_fx_settlement_receipts",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts.content_hash_sha256",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts.content_hash_sha256"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts.leg",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts.leg"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts.payload_json",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts.payload_json"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts_content_hash_sha256_check on ledger.book_fx_settlement_receipts",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts_content_hash_sha256_check on ledger.book_fx_settlement_receipts"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts_leg_check on ledger.book_fx_settlement_receipts",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts_leg_check on ledger.book_fx_settlement_receipts"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts_payload_json_check on ledger.book_fx_settlement_receipts",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts_payload_json_check on ledger.book_fx_settlement_receipts"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_receipts_tenant_id_company_id_set_id_fkey on ledger.book_fx_settlement_receipts"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets",
+      "kind": "database-table",
+      "label": "ledger.book_fx_settlement_sets",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.cash_book_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.cash_book_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.company_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.company_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.gaap_book_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.gaap_book_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.payload_json",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.payload_json"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.plan_hash_sha256",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.plan_hash_sha256"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.set_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.set_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.settlement_event_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.settlement_event_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.tenant_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets.trade_event_id",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets.trade_event_id"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_cash_book_id_fkey on ledger.book_fx_settlement_sets",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_cash_book_id_fkey on ledger.book_fx_settlement_sets"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_check on ledger.book_fx_settlement_sets"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_gaap_book_id_fkey on ledger.book_fx_settlement_sets",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_gaap_book_id_fkey on ledger.book_fx_settlement_sets"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_payload_json_check on ledger.book_fx_settlement_sets",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_payload_json_check on ledger.book_fx_settlement_sets"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_pkey",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_pkey"
+    },
+    {
+      "id": "database:ledger.book_fx_settlement_sets_plan_hash_sha256_check on ledger.book_fx_settlement_sets",
+      "kind": "database-object",
+      "label": "ledger.book_fx_settlement_sets_plan_hash_sha256_check on ledger.book_fx_settlement_sets"
+    },
+    {
       "id": "database:ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
       "kind": "database-object",
       "label": "ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head"
@@ -96113,6 +96468,97 @@
       "id": "database:ledger.entity_controlled_close_authorization_ledger_book_id_fkey on ledger.entity_controlled_close_authorization",
       "kind": "database-object",
       "label": "ledger.entity_controlled_close_authorization_ledger_book_id_fkey on ledger.entity_controlled_close_authorization"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts",
+      "kind": "database-table",
+      "label": "ledger.fiscal_year_close_receipts",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.content_hash_sha256",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.content_hash_sha256"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.fiscal_year",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.fiscal_year"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.ledger_book_id",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.ledger_book_id"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.payload_json",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.payload_json"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.plan_hash_sha256",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.plan_hash_sha256"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.receipt_id",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.receipt_id"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.revision",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.revision"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts.supersedes_receipt_id",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts.supersedes_receipt_id"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_check on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_content_hash_sha256_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_content_hash_sha256_check on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_fiscal_year_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_fiscal_year_check on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_ledger_book_id_fiscal_year_supe_fkey on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_ledger_book_id_fkey on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_ledger_book_id_fkey on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_payload_json_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_payload_json_check on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_pkey",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_pkey"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_plan_hash_sha256_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_plan_hash_sha256_check on ledger.fiscal_year_close_receipts"
+    },
+    {
+      "id": "database:ledger.fiscal_year_close_receipts_revision_check on ledger.fiscal_year_close_receipts",
+      "kind": "database-object",
+      "label": "ledger.fiscal_year_close_receipts_revision_check on ledger.fiscal_year_close_receipts"
     },
     {
       "id": "database:ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
@@ -102687,9 +103133,9 @@
   "summary": {
     "contract_references": 4292,
     "contract_set_memberships": 5653,
-    "edges": 11615,
-    "foreign_keys": 208,
+    "edges": 11653,
+    "foreign_keys": 213,
     "logical_references": 6,
-    "nodes": 5697
+    "nodes": 5739
   }
 }
