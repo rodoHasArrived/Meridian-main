@@ -360,6 +360,9 @@ public sealed record LedgerJournalEntryLineDto(
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public LedgerJournalLineCurrencyDto? Currency { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AmountPassportReferenceDto? AmountPassport { get; init; }
 }
 
 public sealed record LedgerJournalLineChartAccountDto(string NodeId, string Revision, string? AccountCode);

@@ -4281,6 +4281,21 @@ subject, so unrelated report, strategy, or reconciliation evidence cannot enter 
 The legacy report amount service accepts only explicit retained amount IDs and fully scoped pointers;
 label-only manifests fail closed. See [validation and slice boundaries](../../docs/testing/w10-amount-provenance.md).
 
+The Amount passport read uses `GET /api/workstation/evidence/subjects/{subjectKind}/{subjectId}/amount-passport`.
+The browser passes the server-issued address with its tenant, company, applicable fund, book,
+period, entity and account, basis, as-of timestamp and immutable revision. The endpoint checks the
+authenticated actor and the complete address before returning exact decimal text, source records,
+calculation and FX details, freshness, history and permission posture. A report amount uses the
+checkpoint certified on its governed run. Report contributors retain their original posting
+periods. Existing source-document links still revalidate the selected amount and artifact digest.
+
+The brokerage position address identifies the authorized account, retained snapshot, source row
+and field. A scoped sync writes a digest-bound raw snapshot. Later syncs preserve the original
+bytes and link a newer observation when the provider retains the same position identity. Broker
+snapshot age follows the sync freshness policy. Missing mark timestamps, pricing rules, incomplete
+provider inputs and absent position currency remain explicit gaps. Existing projections without a
+scoped snapshot surface the gap until the next successful scoped sync.
+
 Broker synchronization resolves option multipliers from the Security Master OCC identity retained
 as of each broker observation. Missing/ambiguous identities or missing/nonpositive multipliers block
 readiness; mini and adjusted options retain their contractual multiplier. Each captured status owns

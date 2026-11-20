@@ -325,20 +325,26 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PostedLedgerAmountProvenanceService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:13](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L13).
+Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L14).
 
 Resolves immutable posted-line identities without account-name, symbol, or case searches.
 
 ```csharp
-public sealed class PostedLedgerAmountProvenanceService(ILedgerJournalStore? journals, ILedgerBookService? books, IFundProfileTenancyRegistry? tenancy, IEvidenceArtifactStore? artifacts)
+public sealed partial class PostedLedgerAmountProvenanceService(ILedgerJournalStore? journals, ILedgerBookService? books, IFundProfileTenancyRegistry? tenancy, IEvidenceArtifactStore? artifacts)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static string BuildRetainedSubjectId(string subjectId, LedgerAmountScopeDto scope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:19](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L19) |  |
-| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:22](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L22) |  |
+| <code>public static string BuildRetainedSubjectId(string subjectId, LedgerAmountScopeDto scope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:20](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L20) |  |
+| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default, AmountPassportIdentityDto? passport = null);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:23](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L23) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.Passport.cs:11](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.Passport.cs#L11).
+
+```csharp
+public sealed partial class PostedLedgerAmountProvenanceService
+```
 
 ## PostedPeriodComparisonService
 
