@@ -1,4 +1,5 @@
 import { PageHeading } from "@/components/ui/page-heading";
+import type { LucideIcon } from "lucide-react";
 import type {
   AccountingTaskModeViewModel,
   AccountingWorkstream
@@ -41,5 +42,23 @@ export function AccountingChip({ label, value }: AccountingChipViewModel) {
       <span className="text-muted-foreground">{label}</span>
       <span className="font-mono capitalize text-foreground">{value}</span>
     </span>
+  );
+}
+
+export function AccountingHighlight({
+  icon: Icon,
+  title,
+  description
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="workspace-header-card">
+      <Icon className="mb-3 h-5 w-5 text-primary" />
+      <div className="font-semibold text-foreground">{title}</div>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+    </div>
   );
 }

@@ -6,6 +6,263 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IConsolidationDraftGuard
+
+Qualified name: <code>Meridian.Contracts.Ledger.IConsolidationDraftGuard</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:50](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L50).
+
+Checks that a consolidation draft&#x27;s source authority is still current before it proceeds.
+
+```csharp
+public interface IConsolidationDraftGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task ValidateCurrentAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:52](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L52) |  |
+
+## IIntercompanyAccountBindingStore
+
+Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyAccountBindingStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:54](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L54).
+
+Retained account authority shared by posting, consolidation and both workstations.
+
+```csharp
+public interface IIntercompanyAccountBindingStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;IntercompanyAccountBindingDto&gt;&gt; ListAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:56](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L56) |  |
+| <code>Task&lt;IReadOnlyList&lt;IntercompanyAccountBindingDto&gt;&gt; HistoryAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:58](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L58) |  |
+| <code>Task&lt;IntercompanyAccountBindingDto?&gt; GetRevisionAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:60](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L60) |  |
+| <code>Task&lt;IntercompanyAccountBindingDto&gt; AppendAsync(IntercompanyAccountBindingDto revision, Guid? expectedPreviousRevisionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:61](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L61) |  |
+| <code>Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:65](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L65) | Holds mapping mutations until the consumer&#x27;s financial transaction commits. |
+
+## IIntercompanyAccrualScheduleStore
+
+Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyAccrualScheduleStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:53](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L53).
+
+Append-only, tenant-scoped schedule versions.
+
+```csharp
+public interface IIntercompanyAccrualScheduleStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyAccrualScheduleDto?&gt; GetAsync(string tenantId, Guid scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:55](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L55) |  |
+| <code>Task&lt;IReadOnlyList&lt;IntercompanyAccrualScheduleDto&gt;&gt; ListAsync(string tenantId, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:56](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L56) |  |
+| <code>Task&lt;IReadOnlyList&lt;IntercompanyAccrualScheduleDto&gt;&gt; ListActiveAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:58](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L58) | Every tenant&#x27;s active schedules, for the background runner only. |
+| <code>Task&lt;IntercompanyAccrualScheduleDto&gt; AppendAsync(IntercompanyAccrualScheduleDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:59](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L59) |  |
+
+## IIntercompanyBalanceConfirmationStore
+
+Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:103](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L103).
+
+Durable, append-only confirmation history scoped to the caller&#x27;s tenant and company. Each append adds the next version of one confirmation; a stale expected version is refused rather than overwritten.
+
+```csharp
+public interface IIntercompanyBalanceConfirmationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(Guid confirmationId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:105](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L105) |  |
+| <code>Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:107](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L107) | The latest version of the confirmation for one accounting profile and as-of date, if any. |
+| <code>Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:112](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L112) | Appends next as version expectedVersion + 1. Version 1 creates the confirmation and is refused when one already exists for the same profile and date. |
+
+## IIntercompanyConfirmationClosePolicyStore
+
+Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyConfirmationClosePolicyStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:38](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L38).
+
+Append-only, tenant-scoped close-policy versions.
+
+```csharp
+public interface IIntercompanyConfirmationClosePolicyStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyConfirmationClosePolicyDto?&gt; GetAsync(string tenantId, Guid policyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:40](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L40) |  |
+| <code>Task&lt;IReadOnlyList&lt;IntercompanyConfirmationClosePolicyDto&gt;&gt; ListAsync(string tenantId, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:41](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L41) |  |
+| <code>Task&lt;IntercompanyConfirmationClosePolicyDto&gt; AppendAsync(IntercompanyConfirmationClosePolicyDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L42) |  |
+
+## IIntercompanyObligationMonitorService
+
+Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyObligationMonitorService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:30](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L30).
+
+```csharp
+public interface IIntercompanyObligationMonitorService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyObligationMonitorDto&gt; EvaluateAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:32](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L32) |  |
+
+## ILedgerBookService
+
+Qualified name: <code>Meridian.Contracts.Ledger.ILedgerBookService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:557](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L557).
+
+Creates and queries ledger books and manages their accounting periods and rollout assessments.
+
+```csharp
+public interface ILedgerBookService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LedgerBookDto&gt; CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:559](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L559) |  |
+| <code>Task&lt;LedgerBookDto?&gt; GetBookAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:561](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L561) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerBookDto&gt;&gt; ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:563](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L563) |  |
+| <code>Task&lt;LedgerBookRolloutAssessmentDto&gt; AssessRolloutAsync(LedgerBookRolloutAssessmentRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:565](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L565) |  |
+| <code>Task&lt;LedgerPeriodDto&gt; CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:571](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L571) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:573](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L573) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:575](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L575) |  |
+| <code>Task&lt;LedgerPeriodSummaryDto?&gt; GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:577](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L577) |  |
+| <code>Task&lt;LedgerPeriodCloseResultDto&gt; ClosePeriodAsync(Guid periodId, CloseLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:579](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L579) |  |
+| <code>Task&lt;LedgerPeriodReopenResultDto&gt; ReopenPeriodAsync(Guid periodId, ReopenLedgerPeriodRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:584](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L584) |  |
+
+## ILedgerEventAuditVerifier
+
+Qualified name: <code>Meridian.Contracts.Ledger.ILedgerEventAuditVerifier</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:28](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L28).
+
+A ledger journal store whose event audit chain can be verified on demand.
+
+```csharp
+public interface ILedgerEventAuditVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LedgerEventAuditVerification&gt; VerifyLedgerEventAuditAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:30](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L30) |  |
+
+## ILegacyIntercompanyAttributionStore
+
+Qualified name: <code>Meridian.Contracts.Ledger.ILegacyIntercompanyAttributionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:28](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L28).
+
+```csharp
+public interface ILegacyIntercompanyAttributionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;LegacyIntercompanyAttributionDto&gt;&gt; ListAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:30](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L30) |  |
+| <code>Task&lt;IReadOnlyList&lt;LegacyIntercompanyAttributionDto&gt;&gt; HistoryAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:31](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L31) |  |
+| <code>Task&lt;LegacyIntercompanyAttributionDto&gt; AppendAsync(LegacyIntercompanyAttributionDto attribution, Guid? expectedPreviousAttributionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:32](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L32) |  |
+| <code>Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:34](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L34) |  |
+
+## IManualJournalEntryDraftStore
+
+Qualified name: <code>Meridian.Contracts.Ledger.IManualJournalEntryDraftStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1145](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1145).
+
+Persists and retrieves manual journal entry drafts within their fund, tenant, and company scope.
+
+```csharp
+public interface IManualJournalEntryDraftStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;string&gt;&gt; ListFundProfileIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1147](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1147) |  |
+| <code>Task&lt;IReadOnlyList&lt;ManualJournalEntryDraftDto&gt;&gt; ListAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1149](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1149) |  |
+| <code>Task&lt;ManualJournalEntryDraftDto?&gt; GetAsync(string fundProfileId, Guid journalEntryId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1156](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1156) |  |
+| <code>Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1163](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1163) |  |
+| <code>Task SaveBatchAsync(IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; drafts, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1169](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1169) | Persists a related set of journal drafts as one workbench mutation. Implementations must make the complete set visible together or leave the retained set unchanged. |
+
+## IManualJournalEntryLifecycleService
+
+Qualified name: <code>Meridian.Contracts.Ledger.IManualJournalEntryLifecycleService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1066](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1066).
+
+Applies governed lifecycle actions to manual journal entry drafts.
+
+```csharp
+public interface IManualJournalEntryLifecycleService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;JournalEntryLifecycleActionResultDto&gt; ApplyLifecycleActionAsync(JournalEntryLifecycleActionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1068](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1068) |  |
+
+## IManualJournalEntryWorkbenchService
+
+Qualified name: <code>Meridian.Contracts.Ledger.IManualJournalEntryWorkbenchService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1076](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1076).
+
+Builds scoped manual journal entry workbenches and private capital activity projections.
+
+```csharp
+public interface IManualJournalEntryWorkbenchService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;string&gt;&gt; ListFundProfileIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1078](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1078) |  |
+| <code>Task&lt;ManualJournalEntryWorkbenchDto&gt; GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1080](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1080) |  |
+| <code>Task&lt;PrivateCapitalActivityProjectionDto&gt; GetPrivateCapitalActivityAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1087](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1087) |  |
+| <code>Task&lt;ManualJournalEntryDraftDto&gt; SaveDraftAsync(SaveManualJournalEntryDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1094](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1094) |  |
+| <code>Task&lt;ManualJournalEntryDraftDto&gt; ValidateDraftAsync(ValidateManualJournalEntryDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1098](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1098) |  |
+| <code>Task&lt;ManualJournalEntryDraftDto&gt; SubmitApprovalAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1102](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1102) |  |
+| <code>Task&lt;ManualJournalEntryDraftDto&gt; AttachEvidenceAsync(AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1106](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1106) |  |
+
+## ImportPrivateCapitalBankObservationRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/PrivateCapitalBankObservationDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalBankObservationDtos.cs#L19).
+
+Select retained source bytes; no caller-supplied amount or cash authority is accepted.
+
+```csharp
+public sealed record ImportPrivateCapitalBankObservationRequest(string EvidenceLink, string DocumentId);
+```
+
 ## IntercompanyAccountBindingDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccountBindingDto</code>. Kind: `record`.
@@ -557,173 +814,4 @@ An opt-in, reviewed close policy for one ledger book (ADR-032). While active, th
 
 ```csharp
 public sealed record IntercompanyConfirmationClosePolicyDto(Guid PolicyId, string TenantId, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? CompanyId, Guid LedgerBookId, IReadOnlyList<string> BlockingCodes, long Version, IntercompanyConfirmationClosePolicyStatusDto Status, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? ActiveFrom, IReadOnlyList<IntercompanyConfirmationClosePolicyEventDto> Events);
-```
-
-## IntercompanyConfirmationClosePolicyEventDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyConfirmationClosePolicyEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L11).
-
-```csharp
-public sealed record IntercompanyConfirmationClosePolicyEventDto(Guid EventId, Guid RequestId, IntercompanyConfirmationClosePolicyActionDto Action, string Actor, DateTimeOffset RecordedAt, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Reason = null);
-```
-
-## IntercompanyConfirmationClosePolicyJsonContext
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyConfirmationClosePolicyJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:51](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L51).
-
-```csharp
-public sealed partial class IntercompanyConfirmationClosePolicyJsonContext : JsonSerializerContext;
-```
-
-## IntercompanyConfirmationClosePolicyStatusDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyConfirmationClosePolicyStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L6).
-
-```csharp
-public enum IntercompanyConfirmationClosePolicyStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Proposed</code> | [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L6) |  |
-| <code>Active</code> | [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L6) |  |
-| <code>Rejected</code> | [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L6) |  |
-| <code>Disabled</code> | [src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyConfirmationClosePolicyDtos.cs#L6) |  |
-
-## IntercompanyCounterpartCandidateDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyCounterpartCandidateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:59](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L59).
-
-A posted journal in an approved destination book that currently reciprocates the proposal&#x27;s source.
-
-```csharp
-public sealed record IntercompanyCounterpartCandidateDto(Guid JournalEntryId, DateOnly EffectiveDate, string Description, decimal Amount, string Currency);
-```
-
-## IntercompanyCounterpartLinkDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyCounterpartLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:38](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L38).
-
-```csharp
-public sealed record IntercompanyCounterpartLinkDto(string TenantId, Guid RequestId, Guid ProposalId, Guid TargetBookId, Guid TargetJournalId, string Actor, string Reason, DateTimeOffset RecordedAt, Guid? RejectedDraftId = null, int? RejectedDraftVersion = null);
-```
-
-## IntercompanyFeeAccrualEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L19).
-
-Everything that determined one fee amount: the legal version and profile revision of every slice, the schedule periods and calendar, the direction the agreement&#x27;s declared roles give, and any governed FX conversion. Retained on the draft in the same accrual-evidence fields as interest, under rule intercompany-fee-v1.
-
-```csharp
-public sealed record IntercompanyFeeAccrualEvidenceDto(string RuleVersion, Guid DraftId, string TenantId, Guid SourceBookId, Guid SourceEntityId, Guid CounterpartyEntityId, Guid AccountingArrangementId, Guid PostingArrangementRevisionId, Guid AgreementId, int PostingAgreementVersion, string PostingAgreementPayloadHash, string TransactionId, DateOnly PostingDate, IntercompanyAccountRoleDto SourceRole, string MonetaryAccountNodeId, string OperatingAccountNodeId, string FunctionalCurrency, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal FunctionalAmount, IntercompanyFeeAccrualPreviewDto Computation, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ConsolidationFxAmountDto? Fx = null);
-```
-
-## IntercompanyFeeAccrualEvidenceGuard
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:40](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L40).
-
-Retained fee provenance stays bound to the financial lines through review and posting.
-
-```csharp
-public static class IntercompanyFeeAccrualEvidenceGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string TransactionPrefix = &quot;management-fee:&quot;;</code> | [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L42) |  |
-| <code>public static string TransactionId(DateOnly accrualFrom, DateOnly accrualTo, int generation = 0) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L44) |  |
-| <code>public static bool TryParseWindow(string? transactionId, out DateOnly accrualFrom, out DateOnly accrualTo);</code> | [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:49](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L49) | Recovers the half-open fee window a retained transaction identity declares. |
-| <code>public static bool IsFeeEvidence(string? evidenceJson);</code> | [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:62](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L62) | True when retained accrual evidence was produced by the fee rule rather than an interest rule. |
-| <code>public static IntercompanyFeeAccrualEvidenceDto? Deserialize(string evidenceJson) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:76](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L76) |  |
-| <code>public static string Serialize(IntercompanyFeeAccrualEvidenceDto evidence) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:78](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L78) |  |
-| <code>public static string? Validate(ManualJournalEntryDraftDto draft);</code> | [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:82](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L82) | Null when the draft still states exactly the retained fee computation; otherwise the refusal. |
-
-## IntercompanyFeeAccrualJsonContext
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyFeeAccrualJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:151](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L151).
-
-```csharp
-public partial class IntercompanyFeeAccrualJsonContext : JsonSerializerContext;
-```
-
-## IntercompanyFeeAccrualProposalDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyFeeAccrualProposalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:30](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L30).
-
-Preview and draft share one shape so the operator reviews exactly what would be retained.
-
-```csharp
-public sealed record IntercompanyFeeAccrualProposalDto(IntercompanyFeeAccrualPreviewDto Computation, IReadOnlyList<string> Diagnostics, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IntercompanyFeeAccrualEvidenceDto? Evidence = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? EvidenceDigest = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ManualJournalEntryDraftDto? Draft = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore] public bool IsReady =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:36](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L36) |  |
-
-## IntercompanyFeeAccrualRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyFeeAccrualRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L9).
-
-Operator selection only. The fee, basis, schedule and amount are always server-resolved.
-
-```csharp
-public sealed record IntercompanyFeeAccrualRequestDto(Guid SourceBookId, Guid FeeArrangementId, DateOnly AccrualFrom, DateOnly AccrualTo);
-```
-
-## IntercompanyObligationFindingDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationFindingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L12).
-
-```csharp
-public sealed record IntercompanyObligationFindingDto(string Code, string Severity, string Message, Guid? EntityId = null, Guid? AgreementId = null, int? AgreementVersion = null, Guid? LedgerBookId = null, Guid? JournalEntryId = null, string? DrillThrough = null);
-```
-
-## IntercompanyObligationMonitorDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L22).
-
-Advisory result only. IsComplete describes observation evidence and never changes close eligibility.
-
-```csharp
-public sealed record IntercompanyObligationMonitorDto(DateOnly AsOf, int ExpiryHorizonDays, DateTimeOffset EvaluatedAtUtc, string Status, bool IsComplete, string SourceFingerprint, IReadOnlyList<IntercompanyObligationSourceVersionDto> SourceVersions, IReadOnlyList<IntercompanyObligationFindingDto> Findings, IntercompanyBalanceScheduleDto? BalanceSchedule, IReadOnlyList<IntercompanyAgreementDetailDto> Guarantees);
-```
-
-## IntercompanyObligationMonitorJsonContext
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L42).
-
-```csharp
-public partial class IntercompanyObligationMonitorJsonContext : JsonSerializerContext;
 ```

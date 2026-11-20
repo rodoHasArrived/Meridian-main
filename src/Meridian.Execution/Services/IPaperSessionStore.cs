@@ -6,6 +6,7 @@ using Meridian.Contracts.Integrity;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
 using Meridian.Execution.Events;
+using Meridian.Ledger;
 
 namespace Meridian.Execution.Services;
 
@@ -28,7 +29,19 @@ public sealed record PersistedSessionRecord(
     string? MatchingModelVersion = null,
     string? CostModelVersion = null,
     TradeFillLedgerPostingContext? AccountingContext = null,
-    string? FinancialAccountId = null);
+    string? FinancialAccountId = null)
+{
+    /// <summary>Zero denotes a legacy session with a replaceable journal snapshot.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int JournalSchemaVersion { get; init; }
+
+    /// <summary>Currency of the simulated book, retained at creation.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? JournalCurrency { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool IsAccountDefault { get; init; }
+}
 
 /// <summary>
 /// Lightweight serialisation DTO for a <see cref="Meridian.Ledger.LedgerAccount"/>.
@@ -49,7 +62,20 @@ public sealed record PersistedLedgerLineDto(
     PersistedLedgerAccountDto Account,
     decimal Debit,
     decimal Credit,
-    string Description);
+    string Description)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerEntryCurrency? Currency { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerLineDimensionSet? Dimensions { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Memo { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerAccountChartReference? ChartAccount { get; init; }
+}
 
 /// <summary>
 /// Lightweight serialisation DTO for a complete journal entry plus its optional audit metadata.
@@ -103,9 +129,17 @@ public sealed record PaperSessionFillRecord(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? FinancialAccountId { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? StrategyId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? RunId { get; init; }
+
     internal bool HasSameAccountingProvenance(PaperSessionFillRecord other)
         => AccountingEvidenceVersion == other.AccountingEvidenceVersion
-           && string.Equals(FinancialAccountId, other.FinancialAccountId, StringComparison.OrdinalIgnoreCase);
+           && string.Equals(FinancialAccountId, other.FinancialAccountId, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(StrategyId, other.StrategyId, StringComparison.Ordinal)
+           && string.Equals(RunId, other.RunId, StringComparison.Ordinal);
 
     /// <summary>Creates a validated current-version envelope for <paramref name="fill"/>.</summary>
     public static PaperSessionFillRecord Create(
@@ -314,6 +348,19 @@ public enum PaperSessionSettlementAppendStatus
 /// </summary>
 public interface IPaperSessionStore
 {
+    /// <summary>Whether newly created sessions can use append-only effect journals.</summary>
+    bool SupportsJournalBatches => false;
+
+    /// <summary>Appends one immutable batch or recovers an identical receipt.</summary>
+    Task<PaperSessionJournalReceipt> AppendJournalBatchAsync(
+        PaperSessionJournalBatch batch, CancellationToken ct = default)
+        => throw new NotSupportedException("This paper-session store does not support durable journal batches.");
+
+    /// <summary>Loads all verified journal receipts for a session.</summary>
+    Task<IReadOnlyList<PaperSessionJournalReceipt>> LoadJournalBatchesAsync(
+        string sessionId, CancellationToken ct = default)
+        => throw new NotSupportedException("This paper-session store does not support durable journal batches.");
+
     /// <summary>Creates or replaces the session metadata record.</summary>
     Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default);
 

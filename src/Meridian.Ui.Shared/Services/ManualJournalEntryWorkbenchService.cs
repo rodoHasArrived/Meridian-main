@@ -1079,7 +1079,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                         ? new LedgerEntryCurrency(ledgerBook.BaseCurrency, ledgerBook.BaseCurrency,
                             line.Side == AccountingTemplateLineSideDto.Debit ? amount : 0m,
                             line.Side == AccountingTemplateLineSideDto.Credit ? amount : 0m, 1m)
-                        : null));
+                        : null)
+            {
+                Memo = NormalizeOptional(line.Description),
+                ChartAccount = account.AccountCode is { } code && configuration.Status == AccountingConfigurationStatusDto.Active
+                    ? new LedgerAccountChartReference(account.NodeId, configuration.ConfigurationVersion, code)
+                    : null
+            });
         }
 
         var postingLines = await MaterializeAgreementReversalCurrenciesAsync(draft, ledgerBook, lines, ct).ConfigureAwait(false);
