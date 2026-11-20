@@ -404,6 +404,18 @@ Inaccessible ownership returns `403`. A source returning no matching captured pe
 PostgreSQL validation of an absent or incompatible period, and other invalid or inconsistent
 captured financial evidence, returns `409`.
 
+### Fiscal-year close plan
+
+`GET /api/ledger/books/{ledgerBookId:guid}/fiscal-years/{fiscalYear:int}/close-plan` returns a
+read-only `FiscalYearClosePlanDto` (`W12-YEND-001` slice 1) built from the book's retained
+hard-close snapshots. Reading never posts, closes or reopens a period. When the year is not ready
+the response is still `200` with `IsReady=false` and every named blocker, and carries no balances
+or plan hash. Requires a ledger read permission (`ViewLedgerReports`, `ManageLedgerReports`,
+`ManageDirectLending` or `AdminMaintenance`) and access to the book. `fiscalYear` outside
+1900-9999 returns `400`; an inaccessible or unknown book returns `404`; a host without an
+atomic period-close store returns `503`. Readiness rules, plan sections and remaining scope are in
+[Fiscal-year close](../domain/fiscal-year-close.md).
+
 ### Ledger account oversight (`/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/*`)
 
 These bounded shared routes require an authenticated workstation session with tenant and company
