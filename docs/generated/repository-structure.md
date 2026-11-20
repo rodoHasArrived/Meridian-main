@@ -5416,8 +5416,6 @@ Meridian-main
 │   │   │   ├── ProviderBindingService.cs
 │   │   │   ├── ProviderConfigurationCredentialGuard.cs
 │   │   │   ├── ProviderConnectionService.cs
-│   │   │   ├── ProviderConnectionTemplateCatalog.cs
-│   │   │   ├── ProviderConnectionTemplateService.cs
 │   │   │   ├── ProviderCredentialOwnershipPolicy.cs
 │   │   │   ├── ProviderInstrumentCapabilityMatrixService.cs
 │   │   │   ├── ProviderOperationsSupportServices.cs
@@ -5817,7 +5815,6 @@ Meridian-main
 │   │   │   ├── OptionsModels.cs
 │   │   │   ├── PositionLotModels.cs
 │   │   │   ├── ProviderCatalog.cs
-│   │   │   ├── ProviderConnectionTemplateDtos.cs
 │   │   │   ├── ProviderCredentialOwnershipApiModels.cs
 │   │   │   ├── ProviderInstrumentCapabilityMatrix.cs
 │   │   │   ├── ProviderRateLimits.cs
@@ -6411,6 +6408,7 @@ Meridian-main
 │   │   │   ├── WorkflowLibraryDtos.cs
 │   │   │   ├── WorkflowSummaryDtos.cs
 │   │   │   ├── WorkstationBootstrapDtos.cs
+│   │   │   ├── WorkstationRecordSearchDtos.cs
 │   │   │   ├── WorkstationScopeOptionsDtos.cs
 │   │   │   ├── WorkstationTableViewDtos.cs
 │   │   │   └── WorkstationWorkspaceCatalog.cs
@@ -9154,7 +9152,6 @@ Meridian-main
 │   │   │   │   │   │   ├── pagination.concrete.test.tsx
 │   │   │   │   │   │   ├── pagination.tsx
 │   │   │   │   │   │   ├── provider-capability-badges.tsx
-│   │   │   │   │   │   ├── provider-connection-templates-dialog.tsx
 │   │   │   │   │   │   ├── provider-identity-evidence.test.tsx
 │   │   │   │   │   │   ├── provider-identity-evidence.tsx
 │   │   │   │   │   │   ├── provider-setup-panel.integration.test.tsx
@@ -9689,7 +9686,6 @@ Meridian-main
 │   │   │   │   │   │   ├── private-capital.api.test.ts
 │   │   │   │   │   │   ├── private-capital.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
-│   │   │   │   │   │   ├── provider-connection-templates.api.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.test.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.ts
 │   │   │   │   │   │   ├── provider-management.api.ts
@@ -10239,6 +10235,7 @@ Meridian-main
 │   │   │   │   │   ├── corporate-action-calendar.view-state.ts
 │   │   │   │   │   ├── corporate-action-deadline-panel.tsx
 │   │   │   │   │   ├── covered-call-screen.formatters.ts
+│   │   │   │   │   ├── covered-call-screen.payoff-chart.ts
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
 │   │   │   │   │   ├── covered-call-screen.view-model.test.ts
@@ -10351,6 +10348,7 @@ Meridian-main
 │   │   │   │   │   ├── ledger-record-identity.tsx
 │   │   │   │   │   ├── live-quotes-screen.quick-trade.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
+│   │   │   │   │   ├── live-quotes-screen.trade-evidence.ts
 │   │   │   │   │   ├── live-quotes-screen.tsx
 │   │   │   │   │   ├── live-quotes-screen.view-model.test.ts
 │   │   │   │   │   ├── live-quotes-screen.view-model.ts
@@ -10950,7 +10948,6 @@ Meridian-main
 │   │   │   ├── SchemaServiceBase.cs
 │   │   │   ├── SearchService.cs
 │   │   │   ├── SettingsConfigurationService.cs
-│   │   │   ├── SettingsConfigurationService.ProviderTemplates.cs
 │   │   │   ├── SetupWizardService.cs
 │   │   │   ├── SmartRecommendationsService.cs
 │   │   │   ├── StatusServiceBase.cs
@@ -11133,7 +11130,6 @@ Meridian-main
 │   │   │   ├── ProviderConfigurationCredentialFilter.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjection.cs
 │   │   │   ├── ProviderConnectionEndpoints.cs
-│   │   │   ├── ProviderConnectionTemplateEndpoints.cs
 │   │   │   ├── ProviderCredentialEndpoints.cs
 │   │   │   ├── ProviderCredentialOwnershipEndpoints.cs
 │   │   │   ├── ProviderDataProjectionEndpoints.cs
@@ -11213,6 +11209,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.ReconciliationCalibration.cs
 │   │   │   ├── WorkstationEndpoints.ReconciliationCasework.cs
 │   │   │   ├── WorkstationEndpoints.ReconciliationRegistration.cs
+│   │   │   ├── WorkstationEndpoints.RecordSearch.cs
 │   │   │   ├── WorkstationEndpoints.ReportingAuthority.cs
 │   │   │   ├── WorkstationEndpoints.Routing.cs
 │   │   │   ├── WorkstationEndpoints.ScopeOptions.cs
@@ -11515,7 +11512,6 @@ Meridian-main
 │   │   │   ├── PromotionTrustEvidenceServiceCollectionExtensions.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
 │   │   │   ├── ProviderConnectionLifecycleService.Ownership.cs
-│   │   │   ├── ProviderConnectionLifecycleService.TemplateProbes.cs
 │   │   │   ├── ProviderConnectionLifecycleService.VerificationHistory.cs
 │   │   │   ├── ProviderCredentialStore.cs
 │   │   │   ├── ProviderDataReadModelService.cs
@@ -12288,7 +12284,6 @@ Meridian-main
 │   │   │   ├── ActivityLogPage.xaml
 │   │   │   ├── ActivityLogPage.xaml.cs
 │   │   │   ├── AddProviderWizardPage.OwnedConnections.cs
-│   │   │   ├── AddProviderWizardPage.Templates.cs
 │   │   │   ├── AddProviderWizardPage.xaml
 │   │   │   ├── AddProviderWizardPage.xaml.cs
 │   │   │   ├── AdminMaintenancePage.xaml
@@ -15268,7 +15263,6 @@ Meridian-main
 │   │   │   ├── ProviderConfigurationCredentialGuardTests.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjectionTests.cs
 │   │   │   ├── ProviderConnectionEndpointsTests.cs
-│   │   │   ├── ProviderConnectionTemplateEndpointsTests.cs
 │   │   │   ├── ProviderCredentialOwnershipEndpointsTests.cs
 │   │   │   ├── ProviderCredentialOwnershipRaceTests.cs
 │   │   │   ├── ProviderDataProjectionEndpointsTests.cs
@@ -15448,6 +15442,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.ProviderIdentityDecisions.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpointsTests.ReconciliationAndContinuity.cs
+│   │   │   ├── WorkstationEndpointsTests.RecordSearch.cs
 │   │   │   ├── WorkstationEndpointsTests.RecurringJournals.cs
 │   │   │   ├── WorkstationEndpointsTests.ReportAuthority.cs
 │   │   │   ├── WorkstationEndpointsTests.RunComparison.cs
