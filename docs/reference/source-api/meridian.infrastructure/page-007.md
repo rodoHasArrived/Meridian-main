@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CredentialValidationResult
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.CredentialValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:729](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L729).
+
+Result of credential validation.
+
+```csharp
+public sealed record CredentialValidationResult(bool IsValid, IReadOnlyList<string> Errors)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static CredentialValidationResult Success { get; } = new (true, Array.Empty&lt;string&gt;());</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:734](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L734) | Creates a successful validation result. |
+
+## DataSourceBase
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:16](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L16).
+
+Base class providing common functionality for data source implementations. Handles health tracking, rate limiting, retry logic, and lifecycle management.
+
+```csharp
+public abstract class DataSourceBase : IDataSource, IProviderRateLimitDiagnosticsSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public abstract string Id { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:36](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L36) |  |
+| <code>public abstract string DisplayName { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:39](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L39) |  |
+| <code>public abstract string Description { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:42](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L42) |  |
+| <code>public abstract DataSourceType Type { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:47](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L47) |  |
+| <code>public abstract DataSourceCategory Category { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:50](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L50) |  |
+| <code>public virtual int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:55](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L55) | Default priority, can be overridden by derived classes. |
+| <code>public abstract DataSourceCapabilities Capabilities { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:60](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L60) |  |
+| <code>public virtual DataSourceCapabilityInfo CapabilityInfo =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:63](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L63) |  |
+| <code>public abstract IReadOnlySet&lt;string&gt; SupportedMarkets { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:66](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L66) |  |
+| <code>public abstract IReadOnlySet&lt;AssetClass&gt; SupportedAssetClasses { get; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:69](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L69) |  |
+| <code>public DataSourceHealth Health =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:74](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L74) |  |
+| <code>public DataSourceStatus Status { get; protected set; } = DataSourceStatus.Uninitialized;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:77](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L77) |  |
+| <code>public RateLimitState RateLimitState =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:80](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L80) |  |
+| <code>public IObservable&lt;DataSourceHealthChanged&gt; HealthChanges =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:83](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L83) |  |
+| <code>public virtual async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:109](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L109) |  |
+| <code>public abstract Task&lt;bool&gt; ValidateCredentialsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:148](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L148) |  |
+| <code>public abstract Task&lt;bool&gt; TestConnectivityAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:151](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L151) |  |
+| <code>public virtual async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:154](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L154) |  |
+| <code>public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:387](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L387) |  |
+
 ## DataSourceConfigurationExtensions
 
 Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions</code>. Kind: `class`.
@@ -1069,45 +1123,3 @@ Declared public members:
 | <code>public int RemoveStale(Func&lt;string, T, bool&gt; isStale);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:418](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L418) |  |
 | <code>public int RemoveExpired();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:428](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L428) | Removes all expired entries. |
 | <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:438](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L438) |  |
-
-## ISymbolStateStore (generic arity 1)
-
-Qualified name: <code>Meridian.Infrastructure.Shared.ISymbolStateStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:21](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L21).
-
-Generic interface for thread-safe symbol-keyed state storage. Abstracts the 35+ ConcurrentDictionary usages across the codebase into a reusable pattern with consistent semantics.
-
-```csharp
-public interface ISymbolStateStore<T>: IDisposable where T : class
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>int Count { get; }</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:26](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L26) | Gets the number of symbols with state. |
-| <code>T GetOrAdd(string symbol, Func&lt;string, T&gt; factory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:34](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L34) | Gets or creates state for a symbol. |
-| <code>bool TryGet(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:42](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L42) | Gets state for a symbol if it exists. |
-| <code>void Set(string symbol, T state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:49](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L49) | Updates state for a symbol. |
-| <code>T AddOrUpdate(string symbol, Func&lt;string, T&gt; addFactory, Func&lt;string, T, T&gt; updateFactory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:58](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L58) | Updates state with a transformation function. |
-| <code>bool Remove(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:65](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L65) | Removes state for a symbol. |
-| <code>bool TryRemove(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:73](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L73) | Removes state for a symbol and returns it. |
-| <code>bool Contains(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:80](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L80) | Checks if state exists for a symbol. |
-| <code>IReadOnlyList&lt;string&gt; GetSymbols();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:86](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L86) | Gets all symbols with state. |
-| <code>IReadOnlyDictionary&lt;string, T&gt; GetSnapshot();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:92](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L92) | Gets a snapshot of all state (thread-safe copy). |
-| <code>void Clear();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:97](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L97) | Clears all state. |
-| <code>void ForEach(Action&lt;string, T&gt; action);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:103](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L103) | Applies an action to all states. |
-| <code>int RemoveStale(Func&lt;string, T, bool&gt; isStale);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:110](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L110) | Removes stale entries based on a predicate. |
-
-## Subscription
-
-Qualified name: <code>Meridian.Infrastructure.Shared.Subscription</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:18](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L18).
-
-Represents a subscription to market data.
-
-```csharp
-public sealed record Subscription(int Id, string Symbol, string Kind, DateTimeOffset CreatedAt, SubscriptionStatus Status = SubscriptionStatus.Active, DateTimeOffset? LastMessageAt = null, string? LastError = null, int RecoveryAttempts = 0, string? SourceOfRequest = null);
-```

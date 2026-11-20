@@ -6,6 +6,96 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorPreferenceVocabulary
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferenceVocabulary</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L8).
+
+The shared value sets for OperatorPreferenceValuesDto, used by the host store and by both operator clients so the browser and WPF read one vocabulary. Clients map these to their own presentation types (the WPF shell has fewer density levels than the browser).
+
+```csharp
+public static class OperatorPreferenceVocabulary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string AppearanceSystem = &quot;system&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L10) |  |
+| <code>public const string AppearanceLight = &quot;light&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L11) |  |
+| <code>public const string AppearanceDark = &quot;dark&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L12) |  |
+| <code>public const string DensityCompact = &quot;compact&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L14) |  |
+| <code>public const string DensityDefault = &quot;default&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L15) |  |
+| <code>public const string DensitySpacious = &quot;spacious&quot;;</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L16) |  |
+| <code>public static IReadOnlyList&lt;string&gt; Appearances { get; } = [AppearanceSystem, AppearanceLight, AppearanceDark];</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L19) | Every appearance the host accepts. |
+| <code>public static IReadOnlyList&lt;string&gt; Densities { get; } = [DensityCompact, DensityDefault, DensitySpacious];</code> | [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L22) | Every density the host accepts, from tightest to loosest. |
+
+## OperatorScopePreferenceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorScopePreferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L25).
+
+The signed-in operator&#x27;s default operating scope (C1): applied when a session opens with no scope in its link or browser, so the operator does not set it up again on every machine.
+
+```csharp
+public sealed record OperatorScopePreferenceDto(OperatingScopeValuesDto? DefaultScope, DateTimeOffset? UpdatedAt);
+```
+
+## OperatorScopePreferenceSaveRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L30).
+
+Sets (or, with a null or empty scope, clears) the signed-in operator&#x27;s default scope.
+
+```csharp
+public sealed record OperatorScopePreferenceSaveRequest(OperatingScopeValuesDto? DefaultScope);
+```
+
+## OperatorSurfaceVisitDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorSurfaceVisitDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorSurfaceVisitDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/OperatorSurfaceVisitDtos.cs#L10).
+
+The signed-in operator&#x27;s visits to one workstation surface, such as the reconciliation break queue (C3). PreviousVisitAt is the baseline for &quot;since your last visit&quot; markers. Recording a visit returns the visit it replaced and the time it recorded. Reading returns the last recorded visit as PreviousVisitAt and leaves VisitedAt null, because a read records nothing.
+
+```csharp
+public sealed record OperatorSurfaceVisitDto(string Surface, DateTimeOffset? PreviousVisitAt, DateTimeOffset? VisitedAt);
+```
+
+## OperatorTriageAction
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageAction</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L6).
+
+```csharp
+public enum OperatorTriageAction
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Assign</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L6) |  |
+| <code>Acknowledge</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L6) |  |
+| <code>Snooze</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L6) |  |
+| <code>Unsnooze</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L6) |  |
+
+## OperatorTriageActivity
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageActivity</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L29).
+
+```csharp
+public sealed record OperatorTriageActivity(string CommandId, string ActorId, OperatorTriageAction Action, string Reason, DateTimeOffset OccurredAt, string? SubjectActorId = null, string? AssigneeId = null, DateTimeOffset? SnoozedUntil = null);
+```
+
 ## OperatorTriageBulkCommand
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkCommand</code>. Kind: `record`.
@@ -647,87 +737,3 @@ Enum declarations:
 | <code>SourceBacked = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:163](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L163) |  |
 | <code>Stale = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:164](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L164) |  |
 | <code>Blocked = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:165](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L165) |  |
-
-## PortfolioReportingPnlSliceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PortfolioReportingPnlSliceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:253](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L253).
-
-Period-scoped P&amp;L row derived from retained portfolio run timestamps.
-
-```csharp
-public sealed record PortfolioReportingPnlSliceDto(string SliceId, PortfolioReportingPnlSlicePeriodDto Period, string Label, string Currency, DateOnly StartDate, DateOnly EndDate, decimal RealizedPnl, decimal UnrealizedPnl, decimal TotalPnl, decimal PriorTotalPnl, decimal PnlChange, int SourceCount, DateTimeOffset AsOf, string Route, string ReadinessSummary, IReadOnlyList<string> Tags, string? VersionStamp = null);
-```
-
-## PortfolioReportingPnlSlicePeriodDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PortfolioReportingPnlSlicePeriodDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:242](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L242).
-
-```csharp
-public enum PortfolioReportingPnlSlicePeriodDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Daily = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:244](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L244) |  |
-| <code>Weekly = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:245](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L245) |  |
-| <code>Monthly = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:246](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L246) |  |
-| <code>Yearly = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:247](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L247) |  |
-
-## PortfolioSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.PortfolioSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:536](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L536).
-
-Shared portfolio rollup for workstation research and trading surfaces.
-
-```csharp
-public sealed record PortfolioSummary(string PortfolioId, string RunId, DateTimeOffset AsOf, decimal Cash, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal TotalEquity, decimal RealizedPnl, decimal UnrealizedPnl, decimal Commissions, decimal Financing, IReadOnlyList<PortfolioPositionSummary> Positions, int SecurityResolvedCount = 0, int SecurityMissingCount = 0, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, string? SourceEventId = null, Guid? SourceJournalEntryId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:569](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L569) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:571](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L571) |  |
-
-## PositionDiffEntry
-
-Qualified name: <code>Meridian.Contracts.Workstation.PositionDiffEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:858](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L858).
-
-A single position change between two runs.
-
-```csharp
-public sealed record PositionDiffEntry(string Symbol, long BaseQuantity, long TargetQuantity, decimal BasePnl, decimal TargetPnl, string ChangeType);
-```
-
-## PostLedgerEntries
-
-Qualified name: <code>Meridian.Contracts.Workstation.PostLedgerEntries</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:25](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L25).
-
-```csharp
-public sealed record PostLedgerEntries(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## PreparerAttestationEvidenceProjectionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/PreparerAttestationEvidenceDtos.cs:7](../../../../src/Meridian.Contracts/Workstation/PreparerAttestationEvidenceDtos.cs#L7).
-
-Classification of preparer evidence tasks attached to exact visible source documents. These counts are not financial assertion counts, independent review or Verified Coverage.
-
-```csharp
-public sealed record PreparerAttestationEvidenceProjectionDto(SinglePrincipalAttestationScopeDto Scope, int SchemaVersion, string Availability, DateTimeOffset AssessedAt, string Disclosure, string Boundary, int? RecordedReceiptCount, int? UnrevokedReceiptCount, int? RevokedReceiptCount, int? SyntheticReceiptCount, int? UnclassifiedReceiptCount, IReadOnlyList<PreparerEvidenceAcknowledgmentDto> Acknowledgments, IReadOnlyList<string> Warnings);
-```

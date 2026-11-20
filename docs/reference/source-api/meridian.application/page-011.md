@@ -6,6 +6,83 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuotedPriceValuationModel
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Valuation.QuotedPriceValuationModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:13](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L13).
+
+The quoted-price model: the golden-copy price selected through the pricing hierarchy in force at the as-of and knowledge cutoffs. The pricing lane&#x27;s staleness verdict is reported as a diagnostic, not re-decided, and the selection receipt is the result&#x27;s input. Every evaluation retains a selection receipt, exactly as the golden-copy read does. The market value follows the price&#x27;s quote unit: percent of par on the outstanding face after applicable factors and completed contractual principal payments, or currency per unit on units.
+
+```csharp
+public sealed class QuotedPriceValuationModel : ISecurityValuationModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Key = &quot;quoted-price&quot;;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:15](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L15) |  |
+| <code>public const string Version = &quot;v1&quot;;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:16](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L16) |  |
+| <code>public QuotedPriceValuationModel(ISecurityMasterPricingService pricing);</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:20](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L20) |  |
+| <code>public SecurityValuationModelKind Kind =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:25](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L25) |  |
+| <code>public string ModelKey =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:27](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L27) |  |
+| <code>public string ModelVersion =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:29](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L29) |  |
+| <code>public async Task&lt;SecurityValuationResult&gt; ValueAsync(SecurityValuationRequest request, SecurityDetailDto security, CancellationToken ct);</code> | [src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs:31](../../../../src/Meridian.Application/SecurityMaster/Valuation/QuotedPriceValuationModel.cs#L31) |  |
+
+## SecurityValuationService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Valuation.SecurityValuationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs:12](../../../../src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs#L12).
+
+Dispatches a valuation request to the registered ISecurityValuationModel whose kind the request names, or failing that the kind the asset class declares as its SecurityAssetClassDescriptor.DefaultValuationModel. The dispatch reads the catalog fact, never the class name.
+
+```csharp
+public sealed class SecurityValuationService : ISecurityValuationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityValuationService(ISecurityMasterQueryService queryService, IEnumerable&lt;ISecurityValuationModel&gt; models, ILogger&lt;SecurityValuationService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs:20](../../../../src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs#L20) |  |
+| <code>public async Task&lt;SecurityValuationResult?&gt; ValueAsync(SecurityValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs:42](../../../../src/Meridian.Application/SecurityMaster/Valuation/SecurityValuationService.cs#L42) |  |
+
+## AutoConfigurationService
+
+Qualified name: <code>Meridian.Application.Services.AutoConfigurationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:15](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L15).
+
+Service for automatic configuration based on available credentials and environment. Implements user-friendly auto-detection and configuration of data providers.
+
+```csharp
+public sealed class AutoConfigurationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;DetectedProvider&gt; DetectAvailableProviders();</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:48](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L48) | Detects all available providers based on environment variables. Uses ProviderRegistry as the single source of provider metadata. |
+| <code>public AutoConfigResult AutoConfigure(AppConfig? existingConfig = null);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:75](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L75) | Auto-configures the application based on detected providers and environment. |
+| <code>public AppConfig GenerateFirstTimeConfig(FirstTimeConfigOptions options);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:142](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L142) | Generates configuration for first-time users with interactive defaults. |
+| <code>public AppConfig ApplyPreset(ConfigPreset preset, AppConfig? existingConfig = null);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:734](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L734) | Applies a role-based configuration preset, setting ~15 config values at once. Presets: Researcher, DayTrader, OptionsTrader, Crypto. |
+| <code>public static IReadOnlyList&lt;ConfigPresetInfo&gt; GetPresetDescriptions() =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:752](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L752) | Lists available presets with descriptions. |
+
+## AutoConfigResult
+
+Qualified name: <code>Meridian.Application.Services.AutoConfigurationService.AutoConfigResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:35](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L35).
+
+Result of auto-configuration analysis.
+
+```csharp
+public sealed record AutoConfigResult(bool Success, AppConfig Config, IReadOnlyList<DetectedProvider> DetectedProviders, IReadOnlyList<string> AppliedFixes, IReadOnlyList<string> Recommendations, IReadOnlyList<string> Warnings);
+```
+
 ## DetectedProvider
 
 Qualified name: <code>Meridian.Application.Services.AutoConfigurationService.DetectedProvider</code>. Kind: `record`.
@@ -921,51 +998,3 @@ Enum declarations:
 | <code>Slack</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:707](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L707) | Slack incoming webhook. |
 | <code>Discord</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:710](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L710) | Discord webhook. |
 | <code>Teams</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:713](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L713) | Microsoft Teams webhook connector. |
-
-## WizardResult
-
-Qualified name: <code>Meridian.Application.Services.WizardResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:331](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L331).
-
-Result of running the configuration wizard.
-
-```csharp
-public sealed record WizardResult(bool Success, AppConfig? Config, string? ConfigPath);
-```
-
-## ApplyTemplateResult
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.ApplyTemplateResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:311](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L311).
-
-Result of applying a template.
-
-```csharp
-public sealed record ApplyTemplateResult(bool Success, int SymbolsAdded, int SymbolsSkipped, string? Message = null);
-```
-
-## ArchivedSymbolInfo
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:731](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L731).
-
-Information about archived data for a symbol.
-
-```csharp
-public sealed record ArchivedSymbolInfo(string Symbol, int FileCount, long TotalSizeBytes, DateOnly? OldestData, DateOnly? NewestData, string[] DataTypes, string[] Sources);
-```
-
-## ArchivedSymbolsOptions
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:756](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L756).
-
-Options for scanning archived symbols.
-
-```csharp
-public sealed record ArchivedSymbolsOptions(string[]? FilterSymbols = null, bool IncludeCompressed = true);
-```

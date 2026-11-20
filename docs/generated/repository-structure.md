@@ -5165,12 +5165,15 @@ Meridian-main
 │   │   │   ├── BackfillCostEstimator.cs
 │   │   │   ├── BackfillPartitionPlanner.cs
 │   │   │   ├── BackfillPreview.cs
+│   │   │   ├── BackfillQuotaActivity.cs
+│   │   │   ├── BackfillQuotaPlanner.cs
 │   │   │   ├── BackfillRequest.cs
 │   │   │   ├── BackfillSymbolNormalizer.cs
 │   │   │   ├── CrossSourceBackfillReconciliationService.cs
 │   │   │   ├── GapBackfillService.cs
 │   │   │   ├── HistoricalBackfillService.cs
-│   │   │   └── IBackfillExecutionGateway.cs
+│   │   │   ├── IBackfillExecutionGateway.cs
+│   │   │   └── WorkstationBackfillQueue.cs
 │   │   ├── Commands
 │   │   │   ├── CatalogCommand.cs
 │   │   │   ├── CliArguments.cs
@@ -5845,6 +5848,7 @@ Meridian-main
 │   │   ├── Backfill
 │   │   │   ├── BackfillBatchReceipt.cs
 │   │   │   ├── BackfillProgress.cs
+│   │   │   ├── BackfillQuota.cs
 │   │   │   ├── BackfillResult.cs
 │   │   │   └── SymbolValidationSignal.cs
 │   │   ├── Backtesting
@@ -7338,6 +7342,7 @@ Meridian-main
 │   │   │   │   ├── CompositeHistoricalDataProvider.cs
 │   │   │   │   ├── CorporateActionFetchResult.cs
 │   │   │   │   ├── CrossProviderValidator.cs
+│   │   │   │   ├── HistoricalBackfillRequestScope.cs
 │   │   │   │   ├── ICorporateActionProvider.cs
 │   │   │   │   ├── IHistoricalAggregateBarProvider.cs
 │   │   │   │   ├── IHistoricalDataProvider.cs
@@ -9094,6 +9099,7 @@ Meridian-main
 │   │   │   │   │   │   ├── CandleChart.tsx
 │   │   │   │   │   │   ├── CategoryBars.tsx
 │   │   │   │   │   │   ├── chart-a11y.tsx
+│   │   │   │   │   │   ├── chart-evidence.tsx
 │   │   │   │   │   │   ├── chart-interaction.test.ts
 │   │   │   │   │   │   ├── chart-interaction.tsx
 │   │   │   │   │   │   ├── chart-sync.test.tsx
@@ -10245,6 +10251,7 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.backfill-batch-receipts.tsx
 │   │   │   │   │   ├── data-screen.backfill-provider-editor.test.tsx
 │   │   │   │   │   ├── data-screen.backfill-provider-editor.tsx
+│   │   │   │   │   ├── data-screen.backfill-quota.tsx
 │   │   │   │   │   ├── data-screen.canonical-symbols.test.tsx
 │   │   │   │   │   ├── data-screen.canonical-symbols.tsx
 │   │   │   │   │   ├── data-screen.canonical-symbols.view-model.test.ts
@@ -10618,6 +10625,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.css
 │   │   │   │   │   ├── app-shell.css
 │   │   │   │   │   ├── breakpoints.test.ts
+│   │   │   │   │   ├── chart-evidence.css
 │   │   │   │   │   ├── command-palette.css
 │   │   │   │   │   ├── companion-pane.css
 │   │   │   │   │   ├── dense-row-detail-accessibility.css
@@ -12983,6 +12991,7 @@ Meridian-main
 │   │   │   │   ├── RateLimiterTests.cs
 │   │   │   │   ├── ScheduledBackfillTests.cs
 │   │   │   │   ├── TwelveDataNasdaqProviderContractTests.cs
+│   │   │   │   ├── WorkstationBackfillQuotaTests.cs
 │   │   │   │   └── YahooFinanceIntradayContractTests.cs
 │   │   │   ├── Backtesting
 │   │   │   │   └── BacktestStudioRunOrchestratorTests.cs

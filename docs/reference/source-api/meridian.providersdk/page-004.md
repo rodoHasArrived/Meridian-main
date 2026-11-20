@@ -160,12 +160,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string QuotaUnit { get; init; } = &quot;requests&quot;;</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:30](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L30) | Legacy request-named counters contain this unit (requests or weighted credits). |
-| <code>public int? DailyUnitsUsed { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:31](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L31) |  |
-| <code>public int? DailyMaximum { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:32](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L32) |  |
-| <code>public DateTimeOffset? DailyResetsAt { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:33](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L33) |  |
-| <code>public string? DailyResetPolicy { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:34](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L34) |  |
-| <code>public int RemainingRequests =&gt; …;</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:36](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L36) |  |
+| <code>public bool QuotaKnown { get; init; } = true;</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:30](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L30) | True when the window represents a usable provider quota. Local safeguards may have their own limits. |
+| <code>public string QuotaUnit { get; init; } = &quot;requests&quot;;</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:33](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L33) | Legacy request-named counters contain this unit (requests or weighted credits). |
+| <code>public int? DailyUnitsUsed { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:34](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L34) |  |
+| <code>public int? DailyMaximum { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:35](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L35) |  |
+| <code>public DateTimeOffset? DailyResetsAt { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:36](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L36) |  |
+| <code>public string? DailyResetPolicy { get; init; }</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:37](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L37) |  |
+| <code>public int RemainingRequests =&gt; …;</code> | [src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs:39](../../../../src/Meridian.ProviderSdk/IProviderRateLimitDiagnosticsSource.cs#L39) |  |
 
 ## ProviderRateLimitSurfaces
 

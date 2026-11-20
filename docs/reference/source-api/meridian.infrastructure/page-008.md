@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISymbolStateStore (generic arity 1)
+
+Qualified name: <code>Meridian.Infrastructure.Shared.ISymbolStateStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:21](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L21).
+
+Generic interface for thread-safe symbol-keyed state storage. Abstracts the 35+ ConcurrentDictionary usages across the codebase into a reusable pattern with consistent semantics.
+
+```csharp
+public interface ISymbolStateStore<T>: IDisposable where T : class
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>int Count { get; }</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:26](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L26) | Gets the number of symbols with state. |
+| <code>T GetOrAdd(string symbol, Func&lt;string, T&gt; factory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:34](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L34) | Gets or creates state for a symbol. |
+| <code>bool TryGet(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:42](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L42) | Gets state for a symbol if it exists. |
+| <code>void Set(string symbol, T state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:49](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L49) | Updates state for a symbol. |
+| <code>T AddOrUpdate(string symbol, Func&lt;string, T&gt; addFactory, Func&lt;string, T, T&gt; updateFactory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:58](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L58) | Updates state with a transformation function. |
+| <code>bool Remove(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:65](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L65) | Removes state for a symbol. |
+| <code>bool TryRemove(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:73](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L73) | Removes state for a symbol and returns it. |
+| <code>bool Contains(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:80](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L80) | Checks if state exists for a symbol. |
+| <code>IReadOnlyList&lt;string&gt; GetSymbols();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:86](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L86) | Gets all symbols with state. |
+| <code>IReadOnlyDictionary&lt;string, T&gt; GetSnapshot();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:92](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L92) | Gets a snapshot of all state (thread-safe copy). |
+| <code>void Clear();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:97](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L97) | Clears all state. |
+| <code>void ForEach(Action&lt;string, T&gt; action);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:103](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L103) | Applies an action to all states. |
+| <code>int RemoveStale(Func&lt;string, T, bool&gt; isStale);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:110](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L110) | Removes stale entries based on a predicate. |
+
+## Subscription
+
+Qualified name: <code>Meridian.Infrastructure.Shared.Subscription</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:18](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L18).
+
+Represents a subscription to market data.
+
+```csharp
+public sealed record Subscription(int Id, string Symbol, string Kind, DateTimeOffset CreatedAt, SubscriptionStatus Status = SubscriptionStatus.Active, DateTimeOffset? LastMessageAt = null, string? LastError = null, int RecoveryAttempts = 0, string? SourceOfRequest = null);
+```
+
 ## SubscriptionManager
 
 Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionManager</code>. Kind: `class`.

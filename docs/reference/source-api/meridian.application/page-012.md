@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WizardResult
+
+Qualified name: <code>Meridian.Application.Services.WizardResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:331](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L331).
+
+Result of running the configuration wizard.
+
+```csharp
+public sealed record WizardResult(bool Success, AppConfig? Config, string? ConfigPath);
+```
+
+## ApplyTemplateResult
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ApplyTemplateResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:311](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L311).
+
+Result of applying a template.
+
+```csharp
+public sealed record ApplyTemplateResult(bool Success, int SymbolsAdded, int SymbolsSkipped, string? Message = null);
+```
+
+## ArchivedSymbolInfo
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:731](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L731).
+
+Information about archived data for a symbol.
+
+```csharp
+public sealed record ArchivedSymbolInfo(string Symbol, int FileCount, long TotalSizeBytes, DateOnly? OldestData, DateOnly? NewestData, string[] DataTypes, string[] Sources);
+```
+
+## ArchivedSymbolsOptions
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:756](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L756).
+
+Options for scanning archived symbols.
+
+```csharp
+public sealed record ArchivedSymbolsOptions(string[]? FilterSymbols = null, bool IncludeCompressed = true);
+```
+
 ## ArchivedSymbolsResult
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult</code>. Kind: `record`.
@@ -1021,83 +1069,3 @@ Declared public members:
 | <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L17) |  |
 | <code>public ConfigureDataSourceStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L19) |  |
 | <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L25) |  |
-
-## ConfigureStorageStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureStorageStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L12).
-
-Step 7: Lets the user pick a storage profile or configure advanced settings. Writes WizardContext.Storage.
-
-```csharp
-public sealed class ConfigureStorageStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L17) |  |
-| <code>public ConfigureStorageStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L19) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L25) |  |
-
-## ConfigureSymbolsStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureSymbolsStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L11).
-
-Step 6: Lets the user pick a symbol preset or enter custom symbols. Writes WizardContext.Symbols.
-
-```csharp
-public sealed class ConfigureSymbolsStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L16) |  |
-| <code>public ConfigureSymbolsStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L18) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L24) |  |
-
-## CredentialGuidanceStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.CredentialGuidanceStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:10](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L10).
-
-Step 2: Shows credential setup guidance when no providers are configured. Skipped automatically when at least one provider has credentials.
-
-```csharp
-public sealed class CredentialGuidanceStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:15](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L15) |  |
-| <code>public CredentialGuidanceStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L17) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:23](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L23) |  |
-
-## DetectProvidersStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.DetectProvidersStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L11).
-
-Step 1: Scans environment variables and returns the list of detected providers. Writes WizardContext.DetectedProviders.
-
-```csharp
-public sealed class DetectProvidersStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L16) |  |
-| <code>public DetectProvidersStep(AutoConfigurationService autoConfig, TextWriter output);</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L18) |  |
-| <code>public Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L24) |  |

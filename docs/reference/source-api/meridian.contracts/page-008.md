@@ -312,7 +312,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.StorageProfileResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:293](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L293).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:298](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L298).
 
 Response for setting storage profiles.
 
@@ -393,7 +393,7 @@ public sealed record SymbolDataHealthDto(string Symbol, bool HasQuotes, bool Has
 
 Qualified name: <code>Meridian.Contracts.Api.SymbolMappingRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:83](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L83).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:88](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L88).
 
 Request to create or update a symbol mapping.
 
@@ -405,7 +405,7 @@ public record SymbolMappingRequest(string CanonicalSymbol, string? IbSymbol = nu
 
 Qualified name: <code>Meridian.Contracts.Api.SymbolMappingResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:216](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L216).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:221](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L221).
 
 Response containing a symbol mapping.
 
@@ -417,7 +417,7 @@ public record SymbolMappingResponse(string CanonicalSymbol, string? IbSymbol, st
 
 Qualified name: <code>Meridian.Contracts.Api.SymbolResolutionResponse</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:64](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L64).
+Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:65](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L65).
 
 Symbol resolution result for backfill operations.
 
@@ -429,12 +429,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:70](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L70) | Gets or sets the original symbol requested for resolution. |
-| <code>[JsonPropertyName(&quot;resolvedSymbol&quot;)] public string? ResolvedSymbol { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:76](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L76) | Gets or sets the resolved symbol returned by the provider. |
-| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:82](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L82) | Gets or sets the exchange associated with the resolved symbol. |
-| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:88](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L88) | Gets or sets the currency code associated with the resolved symbol. |
-| <code>[JsonPropertyName(&quot;securityType&quot;)] public string? SecurityType { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:94](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L94) | Gets or sets the security type for the resolved symbol. |
-| <code>[JsonPropertyName(&quot;providerMappings&quot;)] public Dictionary&lt;string, string&gt;? ProviderMappings { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:100](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L100) | Gets or sets provider-specific symbol mapping values. |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:71](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L71) | Gets or sets the original symbol requested for resolution. |
+| <code>[JsonPropertyName(&quot;resolvedSymbol&quot;)] public string? ResolvedSymbol { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:77](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L77) | Gets or sets the resolved symbol returned by the provider. |
+| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:83](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L83) | Gets or sets the exchange associated with the resolved symbol. |
+| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:89](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L89) | Gets or sets the currency code associated with the resolved symbol. |
+| <code>[JsonPropertyName(&quot;securityType&quot;)] public string? SecurityType { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:95](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L95) | Gets or sets the security type for the resolved symbol. |
+| <code>[JsonPropertyName(&quot;providerMappings&quot;)] public Dictionary&lt;string, string&gt;? ProviderMappings { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:101](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L101) | Gets or sets provider-specific symbol mapping values. |
 
 ## SymbolUniverseRequest
 

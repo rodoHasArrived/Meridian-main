@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EdgarFormerName
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFormerName</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L66).
+
+```csharp
+public sealed record EdgarFormerName(string Name, DateOnly? From, DateOnly? To);
+```
+
+## EdgarFundHolding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFundHolding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:142](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L142).
+
+```csharp
+public sealed record EdgarFundHolding(string Cik, string AccessionNumber, string Form, string SourceDocument, string? HoldingName, string? IssuerName, string? Title, string? Cusip, string? Isin, string? Ticker, string? Lei, string? AssetCategory, string? IssuerCategory, string? Country, string? Currency, decimal? Balance, string? Units, decimal? ValueUsd, decimal? PercentageOfNetAssets, decimal? CouponRate, DateOnly? MaturityDate, bool? Restricted, string? FairValueLevel);
+```
+
+## EdgarIngestRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarIngestRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L6).
+
+Request for EDGAR reference-data ingest.
+
+```csharp
+public sealed record EdgarIngestRequest(string Scope = "all-filers", bool IncludeXbrl = false, string? Cik = null, int? MaxFilers = null, bool DryRun = false, bool IncludeFilingDocuments = false);
+```
+
+## EdgarIngestResult
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarIngestResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L17).
+
+Summary returned after an EDGAR ingest run.
+
+```csharp
+public sealed record EdgarIngestResult(int FilersProcessed, int TickerAssociationsStored, int FactsStored, int SecurityDataStored, int SecuritiesCreated, int SecuritiesAmended, int SecuritiesSkipped, int ConflictsDetected, bool DryRun, IReadOnlyList<string> Errors);
+```
+
+## EdgarReferenceDataManifest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarReferenceDataManifest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L218).
+
+```csharp
+public sealed record EdgarReferenceDataManifest(DateTimeOffset UpdatedAtUtc, int TickerAssociationCount, int FilerPartitionCount, int FactPartitionCount, int SecurityDataPartitionCount);
+```
+
+## EdgarSecurityDataRecord
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarSecurityDataRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L103).
+
+Security-specific data parsed from EDGAR filing documents and retained outside Security Master.
+
+```csharp
+public sealed record EdgarSecurityDataRecord(string Cik, IReadOnlyList<EdgarDebtOfferingTerms> DebtOfferings, IReadOnlyList<EdgarFundHolding> FundHoldings, DateTimeOffset RetrievedAtUtc);
+```
+
 ## EdgarTickerAssociation
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarTickerAssociation</code>. Kind: `record`.
@@ -868,105 +934,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L8) |  |
-
-## ISecurityTradingParametersQueryService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityTradingParametersQueryService.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityTradingParametersQueryService.cs#L6).
-
-Reads the execution and simulation parameters for an already resolved security.
-
-```csharp
-public interface ISecurityTradingParametersQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;TradingParametersDto?&gt; GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityTradingParametersQueryService.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityTradingParametersQueryService.cs#L12) | Returns the trading parameters (lot size, tick size, etc.) for a security as of the specified point in time. Returns null when the security is not found. |
-
-## ISecurityUnderlyingGraphStore
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityUnderlyingGraphStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L100).
-
-The underlying graph store: declared links are written through it, derived links are written by the projection store on every security write, and both are read from it. Declared links are operator-entered state, so every declaration, amendment and removal is recorded in the Security Master governance event log with its actor, in the same transaction as the change.
-
-```csharp
-public interface ISecurityUnderlyingGraphStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt;&gt; GetUnderlyingsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L103) | The links from securityId to its underlyings, derived and declared. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt;&gt; GetDependentsAsync(Guid underlyingSecurityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L106) | The links from every instrument that names underlyingSecurityId as a target. |
-| <code>Task&lt;SecurityUnderlyingLinkDto&gt; DeclareAsync(DeclareSecurityUnderlyingLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:114](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L114) | Declares (or re-declares) a link; the returned link carries the stored id and timestamps. A new edge, or a change to an existing one&#x27;s weight, window or notes, is recorded as a governance event naming DeclareSecurityUnderlyingLinkRequest.CreatedBy with the state it replaced. Re-declaring an edge unchanged writes nothing and returns it as stored. |
-| <code>Task&lt;bool&gt; RemoveDeclaredAsync(Guid securityId, Guid linkId, string removedBy, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L121) | Removes a declared link and records the removal, with the removed link and removedBy, as a governance event. Derived links cannot be removed; they follow the terms. |
-
-## ISecurityValuationModel
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityValuationModel</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:122](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L122).
-
-One valuation model. The service dispatches to the registered model whose Kind the request or catalog names.
-
-```csharp
-public interface ISecurityValuationModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>SecurityValuationModelKind Kind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L124) |  |
-| <code>string ModelKey { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:127](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L127) | A stable key such as quoted-price or discounted-cash-flow. |
-| <code>string ModelVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L130) | The model&#x27;s version, such as v1; changes when the arithmetic changes. |
-| <code>Task&lt;SecurityValuationResult&gt; ValueAsync(SecurityValuationRequest request, SecurityDetailDto security, CancellationToken ct);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:132](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L132) |  |
-
-## ISecurityValuationService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityValuationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:136](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L136).
-
-Values a security with the model its request or asset class names.
-
-```csharp
-public interface ISecurityValuationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityValuationResult?&gt; ValueAsync(SecurityValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:139](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L139) | Null when the security is unknown; a blocked result otherwise, never an exception for missing inputs. |
-
-## IssueOtcMarginCallRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IssueOtcMarginCallRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:131](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L131).
-
-Issues the call for one movement of a snapshot.
-
-```csharp
-public sealed record IssueOtcMarginCallRequest(Guid SnapshotId, OtcMovementKind Kind, OtcMovementParty Mover, DateOnly IssuedOn, DateOnly? DueOn = null, string? Notes = null, string? UpdatedBy = null);
-```
-
-## IssuerFactSnapshot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IssuerFactSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:189](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L189).
-
-Common issuer-level facts selected from the full XBRL fact history for fast lookup.
-
-```csharp
-public sealed record IssuerFactSnapshot(string Cik, DateTimeOffset AsOfUtc, EdgarXbrlFact? TradingSymbol, EdgarXbrlFact? Security12bTitle, EdgarXbrlFact? SecurityExchangeName, EdgarXbrlFact? EntityFileNumber, EdgarXbrlFact? Assets, EdgarXbrlFact? Liabilities, EdgarXbrlFact? StockholdersEquity, EdgarXbrlFact? Revenue, EdgarXbrlFact? NetIncomeLoss, EdgarXbrlFact? EarningsPerShareDiluted, EdgarXbrlFact? OperatingCashFlow, EdgarXbrlFact? SharesOutstanding, EdgarXbrlFact? CommonStockSharesIssued, EdgarXbrlFact? WeightedAverageBasicSharesOutstanding, EdgarXbrlFact? WeightedAverageDilutedSharesOutstanding, EdgarXbrlFact? PublicFloat);
-```

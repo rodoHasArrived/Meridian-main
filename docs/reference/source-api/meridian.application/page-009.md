@@ -6,6 +6,91 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NullSecurityMasterCorporateActionCommandService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterCorporateActionCommandService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:160](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L160).
+
+Rejects Security Master corporate-action appends when command storage is unavailable.
+
+```csharp
+public sealed class NullSecurityMasterCorporateActionCommandService : ISecurityMasterCorporateActionCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityMasterCorporateActionAppendResultDto&gt; AppendAsync(SecurityMasterCorporateActionAppendRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:162](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L162) |  |
+
+## NullSecurityMasterDataQualityService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterDataQualityService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:115](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L115).
+
+Returns no retained quality report and rejects quality checks when Security Master is unavailable.
+
+```csharp
+public sealed class NullSecurityMasterDataQualityService : ISecurityMasterDataQualityService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityMasterQualityReportDto&gt; RunQualityChecksAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:117](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L117) |  |
+| <code>public Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:121](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L121) |  |
+
+## NullSecurityMasterImportService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:284](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L284).
+
+Reports an unavailable Security Master import service and refuses imports.
+
+```csharp
+public sealed class NullSecurityMasterImportService : ISecurityMasterImportService, ISecurityMasterIngestStatusService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterIngestStatusSnapshot GetSnapshot() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:286](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L286) |  |
+| <code>public Task&lt;SecurityMasterImportResult&gt; ImportAsync(string fileContent, string fileExtension, string actor, IProgress&lt;SecurityMasterImportProgress&gt;? progress = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:289](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L289) |  |
+
+## NullSecurityMasterPricingService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterPricingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:11](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L11).
+
+No-op implementations for the Security Master reference-data governance services, registered when MERIDIAN_SECURITY_MASTER_CONNECTION_STRING is not configured.
+
+```csharp
+public sealed class NullSecurityMasterPricingService : ISecurityMasterPricingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityPricingHierarchyDto?&gt; GetPricingHierarchyAsync(Guid securityId, string? accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:16](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L16) |  |
+| <code>public Task UpsertPricingHierarchyAsync(SecurityPricingHierarchyDto hierarchy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:20](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L20) |  |
+| <code>public Task RecordRawPriceAsync(RecordRawPriceRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:25](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L25) |  |
+| <code>public Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopyPriceAsync(Guid securityId, string? accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:29](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L29) |  |
+| <code>public Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopyPriceAsOfAsync(Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:33](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L33) |  |
+| <code>public Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopySelectionAsync(Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:37](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L37) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SecurityPriceGoldenCopyDto&gt;&gt; GetObservationSelectionsAsync(Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:41](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L41) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SecurityComparisonPriceDto&gt;&gt; GetComparisonPricesAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:45](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L45) |  |
+| <code>public Task&lt;SecurityClosePriceSetDto&gt; CreateClosePriceSetAsync(CreateSecurityClosePriceSetRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:49](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L49) |  |
+| <code>public Task&lt;SecurityClosePriceSetDto&gt; ApproveClosePriceSetAsync(ApproveSecurityClosePriceSetRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:52](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L52) |  |
+| <code>public Task&lt;SecurityClosePriceSetDto?&gt; GetClosePriceSetAsync(string accountId, string bookId, DateOnly valuationDate, Guid snapshotId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:55](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L55) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SecurityClosePriceSetDto&gt;&gt; GetClosePriceSetsAsync(string accountId, string bookId, DateOnly valuationDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:58](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L58) |  |
+
 ## NullSecurityMasterProfilePromotionService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterProfilePromotionService</code>. Kind: `class`.
@@ -952,66 +1037,3 @@ Declared public members:
 | <code>public bool RequireGovernedTermAmendments =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:73](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L73) | Effective SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments. |
 | <code>public bool RequireIndependentReviewer =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:76](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L76) | Effective SecurityMasterWorkbenchOptions.RequireIndependentReviewer. |
 | <code>public bool RequireIndependentProfileApprover =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:79](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L79) | Effective SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover. |
-
-## SecurityMasterHistoricalSymbolTimelineResolver
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterHistoricalSymbolTimelineResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs#L13).
-
-Security-master-backed IHistoricalSymbolTimelineResolver: resolves the requested symbol to a security (as-of the chunk date first, then as-of now, so both the current and the retired ticker of a renamed security land on the same record), then picks the ticker identifier whose validity interval covers the chunk date.
-
-```csharp
-public sealed class SecurityMasterHistoricalSymbolTimelineResolver : IHistoricalSymbolTimelineResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterHistoricalSymbolTimelineResolver(Meridian.Contracts.SecurityMaster.ISecurityResolver securityResolver, ISecurityMasterStore store, ILogger&lt;SecurityMasterHistoricalSymbolTimelineResolver&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs#L19) |  |
-| <code>public async Task&lt;string&gt; ResolveTickerForDateAsync(string symbol, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs:29](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterHistoricalSymbolTimelineResolver.cs#L29) |  |
-
-## SecurityMasterImportProgress
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterImportProgress</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L22).
-
-Progress update for ongoing Security Master imports.
-
-```csharp
-public sealed record SecurityMasterImportProgress(int Total, int Processed, int Imported, int Failed);
-```
-
-## SecurityMasterImportResult
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterImportResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L12).
-
-Defines the import result for bulk Security Master imports.
-
-```csharp
-public sealed record SecurityMasterImportResult(int Imported, int Skipped, int Failed, int ConflictsDetected, IReadOnlyList<string> Errors);
-```
-
-## SecurityMasterImportService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterImportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:62](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L62).
-
-Implementation of bulk security import service.
-
-```csharp
-public sealed class SecurityMasterImportService : ISecurityMasterImportService, ISecurityMasterIngestStatusService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterImportService(ISecurityMasterService securityMasterService, SecurityMasterCsvParser csvParser, ILogger&lt;SecurityMasterImportService&gt; logger, ISecurityMasterConflictService? conflictService = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:78](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L78) |  |
-| <code>public SecurityMasterIngestStatusSnapshot GetSnapshot();</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:90](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L90) |  |
-| <code>public async Task&lt;SecurityMasterImportResult&gt; ImportAsync(string fileContent, string fileExtension, string actor, IProgress&lt;SecurityMasterImportProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs:98](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterImportService.cs#L98) |  |

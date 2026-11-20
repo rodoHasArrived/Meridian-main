@@ -6,6 +6,134 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MarketDataSources
+
+Qualified name: <code>Meridian.Contracts.Domain.MarketDataSources</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/MarketDataSources.cs:11](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L11).
+
+Canonical market-data source identifiers stamped on MarketEvent.Source and on adapter ingress updates. Streaming adapters must stamp their real vendor identity at origin; collectors refuse to fabricate one. Spellings match the provider keys used by the canonicalization tables in config/condition-codes.json and config/venue-mics.json (lookups normalize case, storage partitions do not — keep these spellings stable).
+
+```csharp
+public static class MarketDataSources
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Unknown = &quot;UNKNOWN&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:17](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L17) | Honest sentinel for events whose provenance genuinely cannot be determined. Never use this to paper over a missing adapter stamp on a live ingress path. |
+| <code>public const string Ib = &quot;IB&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:20](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L20) | Interactive Brokers. |
+| <code>public const string Alpaca = &quot;ALPACA&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:23](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L23) | Alpaca Markets (equity, options, crypto, and news streams). |
+| <code>public const string Polygon = &quot;POLYGON&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:26](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L26) | Polygon.io. |
+| <code>public const string Nyse = &quot;NYSE&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:29](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L29) | NYSE direct feed. |
+| <code>public const string Robinhood = &quot;ROBINHOOD&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:32](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L32) | Robinhood quote polling. |
+| <code>public const string Sample = &quot;SAMPLE&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:35](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L35) | Repository sample-data generator and demo collector harness. |
+| <code>public static bool IsMissing(string? source) =&gt; …;</code> | [src/Meridian.Contracts/Domain/MarketDataSources.cs:40](../../../../src/Meridian.Contracts/Domain/MarketDataSources.cs#L40) | True when the value cannot serve as a source identity (null, empty, or whitespace). |
+
+## MarketStateValues
+
+Qualified name: <code>Meridian.Contracts.Domain.MarketStateValues</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:360](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L360).
+
+Market state enumeration values.
+
+```csharp
+public static class MarketStateValues
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Normal = &quot;Normal&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:365](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L365) | Indicates a normal trading state. |
+| <code>public const string PreMarket = &quot;PreMarket&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:369](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L369) | Indicates a pre-market trading state. |
+| <code>public const string AfterHours = &quot;AfterHours&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:373](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L373) | Indicates an after-hours trading state. |
+| <code>public const string Closed = &quot;Closed&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:377](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L377) | Indicates the market is closed. |
+| <code>public const string Halted = &quot;Halted&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:381](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L381) | Indicates trading is halted. |
+| <code>public const string Auction = &quot;Auction&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:385](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L385) | Indicates the market is in an auction state. |
+
+## Mic
+
+Qualified name: <code>Meridian.Contracts.Domain.Mic</code>. Kind: `struct`.
+
+Source: [src/Meridian.Contracts/Domain/Mic.cs:15](../../../../src/Meridian.Contracts/Domain/Mic.cs#L15).
+
+An ISO 10383 Market Identifier Code: four upper-case letters or digits identifying an operating or segment market (for example &quot;XNAS&quot;, &quot;XNYS&quot;, &quot;ARCX&quot;).
+
+```csharp
+public readonly struct Mic : IEquatable<Mic>, IComparable<Mic>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Value =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:22](../../../../src/Meridian.Contracts/Domain/Mic.cs#L22) | The upper-case four-character code. |
+| <code>public bool IsRegistered =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:25](../../../../src/Meridian.Contracts/Domain/Mic.cs#L25) | Whether the code appears in the bundled MicReference list. |
+| <code>public static bool TryParse(string? value, out Mic mic);</code> | [src/Meridian.Contracts/Domain/Mic.cs:31](../../../../src/Meridian.Contracts/Domain/Mic.cs#L31) | Parses value after trimming and upper-casing it; returns false unless the result is exactly four letters or digits. |
+| <code>public static Mic Parse(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:46](../../../../src/Meridian.Contracts/Domain/Mic.cs#L46) | Parses value or throws when it is not a well-formed MIC. |
+| <code>public static implicit operator string(Mic mic) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:52](../../../../src/Meridian.Contracts/Domain/Mic.cs#L52) | Implicitly converts a Mic to its code. |
+| <code>public bool Equals(Mic other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:55](../../../../src/Meridian.Contracts/Domain/Mic.cs#L55) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:58](../../../../src/Meridian.Contracts/Domain/Mic.cs#L58) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:61](../../../../src/Meridian.Contracts/Domain/Mic.cs#L61) |  |
+| <code>public int CompareTo(Mic other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:64](../../../../src/Meridian.Contracts/Domain/Mic.cs#L64) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:67](../../../../src/Meridian.Contracts/Domain/Mic.cs#L67) |  |
+| <code>public static bool operator == (Mic left, Mic right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:70](../../../../src/Meridian.Contracts/Domain/Mic.cs#L70) |  |
+| <code>public static bool operator != (Mic left, Mic right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:73](../../../../src/Meridian.Contracts/Domain/Mic.cs#L73) |  |
+
+## MicReference
+
+Qualified name: <code>Meridian.Contracts.Domain.MicReference</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/Mic.cs:80](../../../../src/Meridian.Contracts/Domain/Mic.cs#L80).
+
+A small bundled subset of the ISO 10383 registry: the markets Meridian&#x27;s providers and seed data reference, with the common exchange names that map onto each one.
+
+```csharp
+public static class MicReference
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyCollection&lt;string&gt; Codes =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:146](../../../../src/Meridian.Contracts/Domain/Mic.cs#L146) | The bundled MIC codes. |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; ExchangeNames =&gt; …;</code> | [src/Meridian.Contracts/Domain/Mic.cs:149](../../../../src/Meridian.Contracts/Domain/Mic.cs#L149) | The exchange names and legacy codes TryResolve maps, keyed case-insensitively. |
+| <code>public static bool TryGetName(string? mic, out string name);</code> | [src/Meridian.Contracts/Domain/Mic.cs:152](../../../../src/Meridian.Contracts/Domain/Mic.cs#L152) | Looks up the market name for a bundled MIC. |
+| <code>public static bool TryResolve(string? exchange, out Mic mic);</code> | [src/Meridian.Contracts/Domain/Mic.cs:169](../../../../src/Meridian.Contracts/Domain/Mic.cs#L169) | Resolves an exchange label to a MIC: a bundled MIC is returned as-is, and a known exchange name or legacy code (for example &quot;NYSE&quot;, &quot;Nasdaq&quot;) is mapped. Anything else, including an unbundled four-character code, returns false so callers keep the raw label. |
+
+## AdjustedHistoricalBar
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.AdjustedHistoricalBar</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs:8](../../../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs#L8).
+
+Extended historical bar with adjustment factors and corporate action data.
+
+```csharp
+public sealed record AdjustedHistoricalBar(string Symbol, DateOnly SessionDate, decimal Open, decimal High, decimal Low, decimal Close, long Volume, string Source = "unknown", long SequenceNumber = 0, decimal? AdjustedOpen = null, decimal? AdjustedHigh = null, decimal? AdjustedLow = null, decimal? AdjustedClose = null, long? AdjustedVolume = null, decimal? SplitFactor = null, decimal? DividendAmount = null) : MarketEventPayload
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HistoricalBar ToHistoricalBar(bool preferAdjusted = true);</code> | [src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs:32](../../../../src/Meridian.Contracts/Domain/Models/AdjustedHistoricalBar.cs#L32) | Convert to standard HistoricalBar (uses adjusted values if available). When using adjusted values, ensures OHLC relationships are maintained by clamping values to valid ranges. This handles rounding errors in split/dividend adjustments. |
+
+## AggregateBarPayload
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.AggregateBarPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs:10](../../../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs#L10).
+
+Represents a real-time OHLCV aggregate bar from streaming data providers. Unlike HistoricalBar which uses DateOnly for daily bars, this model uses DateTimeOffset to support intraday timeframes (second, minute, etc.).
+
+```csharp
+public sealed record AggregateBarPayload(string Symbol, DateTimeOffset StartTime, DateTimeOffset EndTime, decimal Open, decimal High, decimal Low, decimal Close, long Volume, decimal Vwap, int TradeCount, AggregateTimeframe Timeframe, string Source, long SequenceNumber) : MarketEventPayload;
+```
+
 ## AggregateTimeframe
 
 Qualified name: <code>Meridian.Contracts.Domain.Models.AggregateTimeframe</code>. Kind: `enum`.
@@ -1016,74 +1144,4 @@ Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:99](.
 
 ```csharp
 public sealed record CreateEnvironmentDraftRequest(Guid DraftId, string Name, string CreatedBy, OrganizationEnvironmentDefinitionDto Definition, string? Notes = null);
-```
-
-## EnvironmentContextMappingDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentContextMappingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:180](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L180).
-
-```csharp
-public sealed record EnvironmentContextMappingDto(string NodeDefinitionId, Guid RuntimeNodeId, string ContextKey, string LaneId, string LaneName, EnvironmentLaneArchetype Archetype);
-```
-
-## EnvironmentDraftDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:106](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L106).
-
-```csharp
-public sealed record EnvironmentDraftDto(Guid DraftId, string Name, OrganizationEnvironmentDefinitionDto Definition, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string CreatedBy, string UpdatedBy, Guid? BasedOnVersionId = null, string? Notes = null);
-```
-
-## EnvironmentLaneArchetype
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:22](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L22).
-
-```csharp
-public enum EnvironmentLaneArchetype
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IndividualInvestor</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:24](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L24) |  |
-| <code>AdvisoryPractice</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:25](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L25) |  |
-| <code>FamilyOffice</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:26](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L26) |  |
-| <code>FundPlatform</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:27](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L27) |  |
-| <code>Custom</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:28](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L28) |  |
-
-## EnvironmentLaneDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:75](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L75).
-
-```csharp
-public sealed record EnvironmentLaneDefinitionDto(string LaneId, string Name, EnvironmentLaneArchetype Archetype, string DefaultWorkspaceId, string DefaultLandingPageTag, string RootNodeDefinitionId, string DefaultContextNodeDefinitionId, IReadOnlyList<EnvironmentManagedScopeKind> AllowedManagedScopeKinds, string? Description = null, IReadOnlyDictionary<string, string>? LabelOverrides = null, bool ShowInNavigation = true, bool UseForEmptyStates = true);
-```
-
-## EnvironmentLaneRuntimeDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:159](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L159).
-
-```csharp
-public sealed record EnvironmentLaneRuntimeDto(string LaneId, string Name, EnvironmentLaneArchetype Archetype, string RootNodeDefinitionId, string DefaultWorkspaceId, string DefaultLandingPageTag, string DefaultContextNodeDefinitionId, IReadOnlyList<EnvironmentManagedScopeKind> AllowedManagedScopeKinds, IReadOnlyDictionary<string, string>? LabelOverrides = null, bool ShowInNavigation = true, bool UseForEmptyStates = true);
-```
-
-## EnvironmentLedgerGroupRuntimeDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLedgerGroupRuntimeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:188](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L188).
-
-```csharp
-public sealed record EnvironmentLedgerGroupRuntimeDto(Guid LedgerGroupId, string NodeDefinitionId, string DisplayName, string BaseCurrency, Guid? OrganizationId, Guid? BusinessId, Guid? ClientId, Guid? FundId, Guid? SleeveId, Guid? VehicleId, IReadOnlyList<Guid> AccountIds, IReadOnlyList<Guid> InvestmentPortfolioIds);
 ```
