@@ -568,6 +568,21 @@ describe("App", () => {
     window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
   });
 
+  it("keeps the operator's default scope out of a record search link", async () => {
+    window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
+    vi.mocked(getOperatorScopePreference).mockResolvedValue({
+      defaultScope: { symbol: "MSFT" },
+      updatedAt: "2026-11-06T09:00:00Z"
+    });
+
+    await act(async () => {
+      renderWithRouter(<App />, { initialEntries: ["/portfolio?recordScope=1"] });
+    });
+
+    expect(getOperatorScopePreference).toHaveBeenCalled();
+    expect(readStoredOperatingScope()).toEqual({});
+  });
+
   it("loads the signed-in operator's host preferences and applies them to this browser", async () => {
     window.localStorage.removeItem("meridian.workstation.display-time-zone.v1");
     reloadDisplayTimeZone();
