@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MetricsFreshness
+
+Qualified name: <code>Meridian.Contracts.Api.MetricsFreshness</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Api/StatusModels.cs:319](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L319).
+
+Tracks freshness and provenance of metrics for a specific symbol or subsystem. Used to show staleness indicators and provider source badges in the UI.
+
+```csharp
+public sealed class MetricsFreshness
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;key&quot;)] public string Key { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:325](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L325) | The symbol or subsystem this freshness record applies to. |
+| <code>[JsonPropertyName(&quot;lastDataPointUtc&quot;)] public DateTimeOffset? LastDataPointUtc { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:331](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L331) | UTC timestamp of the last received data point. |
+| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:337](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L337) | The provider that supplied the last data point. |
+| <code>[JsonPropertyName(&quot;isStale&quot;)] public bool IsStale { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:343](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L343) | Whether the data is considered stale (exceeded freshness threshold). |
+| <code>[JsonPropertyName(&quot;freshnessState&quot;)] public string FreshnessState { get; set; } = &quot;NoData&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:349](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L349) | Freshness state: Fresh, Warning, Stale, or NoData. |
+| <code>[JsonPropertyName(&quot;ageSeconds&quot;)] public float AgeSeconds { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:355](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L355) | Age of the data in seconds since last update. |
+| <code>[JsonPropertyName(&quot;thresholdSeconds&quot;)] public int ThresholdSeconds { get; set; } = 60;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:361](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L361) | The configured freshness threshold in seconds. |
+
 ## OpenInterestDto
 
 Qualified name: <code>Meridian.Contracts.Api.OpenInterestDto</code>. Kind: `record`.
@@ -428,6 +452,38 @@ Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:20](../../../../src/Me
 public sealed record ProviderConnectionHealthSnapshotDto([property : JsonPropertyName("providerId")] string ProviderId, [property : JsonPropertyName("displayName")] string DisplayName, [property : JsonPropertyName("isEnabled")] bool IsEnabled, [property : JsonPropertyName("isConnected")] bool? IsConnected, [property : JsonPropertyName("connectionState")] string ConnectionState, [property : JsonPropertyName("diagnosticsAvailable")] bool DiagnosticsAvailable, [property : JsonPropertyName("lastFailureKind")] string? LastFailureKind, [property : JsonPropertyName("reconnectAttempts")] int? ReconnectAttempts = null);
 ```
 
+## ProviderConnectionTemplateDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:8](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L8).
+
+The portable allowlist. Semantics and checklist entries are catalog codes.
+
+```csharp
+public sealed record ProviderConnectionTemplateDto(string Name, string ProviderKind, int ProviderVersion, string Environment, string ConnectionType, string ConnectionMode, string AllowedScope, ProviderTemplateCapabilityDto[] RequestedCapabilities, ProviderTemplateBindingDto SuggestedBinding, string ExpectedDataSemantics, string[] VerificationChecklist);
+```
+
+## ProviderConnectionTemplateFile
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateFile</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:28](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L28).
+
+```csharp
+public sealed record ProviderConnectionTemplateFile(int SchemaVersion, ProviderConnectionTemplateDto[] Templates);
+```
+
+## ProviderConnectionTemplateOption
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateOption</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:32](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L32).
+
+```csharp
+public sealed record ProviderConnectionTemplateOption(ProviderConnectionTemplateDto Template, string Revision, bool IsBuiltIn, bool RequiresExternalAccount, ProviderTemplateReviewRow[] ReviewRows, string[] VerificationChecks);
+```
+
 ## ProviderConnectionTest
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTest</code>. Kind: `record`.
@@ -649,52 +705,4 @@ Policy DTO exposed to clients.
 
 ```csharp
 public sealed record ProviderPolicyDto(string PolicyId, string Capability, string SafetyMode, bool RequireExplicitBinding, bool RequireProductionReady, string[] AllowedFailoverConnectionIds, string[] AllowedProviderFamilies, string? Description);
-```
-
-## ProviderPresetDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderPresetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:132](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L132).
-
-Preset DTO exposed to clients.
-
-```csharp
-public sealed record ProviderPresetDto(string PresetId, string Name, string Description, string[] Highlights, bool IsBuiltIn, bool IsEnabled);
-```
-
-## ProviderRateLimitCapabilitiesDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitCapabilitiesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:78](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L78).
-
-Historical-data capabilities preserved from the previous rate-limit endpoint shape.
-
-```csharp
-public sealed record ProviderRateLimitCapabilitiesDto([property : JsonPropertyName("adjustedPrices")] bool AdjustedPrices, [property : JsonPropertyName("intraday")] bool Intraday, [property : JsonPropertyName("dividends")] bool Dividends, [property : JsonPropertyName("splits")] bool Splits, [property : JsonPropertyName("quotes")] bool Quotes, [property : JsonPropertyName("trades")] bool Trades, [property : JsonPropertyName("auctions")] bool Auctions, [property : JsonPropertyName("supportedMarkets")] IReadOnlyList<string> SupportedMarkets);
-```
-
-## ProviderRateLimitEventDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:102](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L102).
-
-A rate-limit observation or subsequent provider rotation.
-
-```csharp
-public sealed record ProviderRateLimitEventDto([property : JsonPropertyName("timestamp")] DateTimeOffset Timestamp, [property : JsonPropertyName("requestsUsed")] int RequestsUsed, [property : JsonPropertyName("usageRatio")] double UsageRatio, [property : JsonPropertyName("wasRateLimited")] bool WasRateLimited, [property : JsonPropertyName("resetAt")] DateTimeOffset? ResetAt, [property : JsonPropertyName("eventType")] string EventType = "rate-limited", [property : JsonPropertyName("nextProvider")] string? NextProvider = null, [property : JsonPropertyName("httpStatus")] int? HttpStatus = null);
-```
-
-## ProviderRateLimitHistoryResponse
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitHistoryResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:91](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L91).
-
-Bounded process-lifetime rate-limit history; older events may have been evicted.
-
-```csharp
-public sealed record ProviderRateLimitHistoryResponse([property : JsonPropertyName("provider")] string Provider, [property : JsonPropertyName("periodHours")] int PeriodHours, [property : JsonPropertyName("history")] IReadOnlyList<ProviderRateLimitEventDto> History, [property : JsonPropertyName("timestamp")] DateTimeOffset Timestamp, [property : JsonPropertyName("isAvailable")] bool IsAvailable, [property : JsonPropertyName("message")] string Message);
 ```

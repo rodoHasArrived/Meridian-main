@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceContribution
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceContribution</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs:9](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs#L9).
+
+```csharp
+public sealed record EvidenceContribution(IReadOnlyList<EvidenceNodeDto> Nodes, IReadOnlyList<EvidenceEdgeDto> Edges, IReadOnlyList<WorkflowActionDto> Actions, IReadOnlyList<string> RequiredEvidenceIds, IReadOnlyList<string> Warnings);
+```
+
 ## EvidenceContributionContext
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceContributionContext</code>. Kind: `record`.
@@ -1046,26 +1056,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddExtensibilityCatalog(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityServiceCollectionExtensions.cs:11](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityServiceCollectionExtensions.cs#L11) |  |
-
-## FileExtensibilityConfigurationStore
-
-Qualified name: <code>Meridian.Ui.Shared.Extensibility.FileExtensibilityConfigurationStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:139](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L139).
-
-Persists extension configuration snapshots in file-backed storage.
-
-```csharp
-public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigurationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileExtensibilityConfigurationStore(string workstationDataRoot, ILogger&lt;FileExtensibilityConfigurationStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:147](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L147) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;TenantTemplateConfigurationBundleDto&gt;&gt; ListTenantTemplatesAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:159](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L159) |  |
-| <code>public async Task&lt;TenantTemplateConfigurationBundleDto?&gt; GetTenantTemplateAsync(string tenantId, string tenantTemplateId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:168](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L168) |  |
-| <code>public async Task SaveTenantTemplateAsync(string tenantId, TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:176](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L176) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;TenantTemplateActivationResultDto&gt;&gt; ListActivationHistoryAsync(string tenantId, string? tenantTemplateId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:199](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L199) |  |
-| <code>public async Task RecordActivationResultAsync(string tenantId, TenantTemplateActivationResultDto result, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:210](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L210) |  |

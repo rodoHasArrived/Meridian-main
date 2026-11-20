@@ -792,6 +792,18 @@ Response DTO for best bid/offer data.
 public sealed record BboResponse(string Symbol, DateTimeOffset Timestamp, decimal BidPrice, long BidSize, decimal AskPrice, long AskSize, decimal? MidPrice, decimal? Spread, long SequenceNumber, string? StreamId, string? Venue);
 ```
 
+## BeginProviderTemplateSetupRequest
+
+Qualified name: <code>Meridian.Contracts.Api.BeginProviderTemplateSetupRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:44](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L44).
+
+The account identity, when required, belongs to this instance alone.
+
+```csharp
+public sealed record BeginProviderTemplateSetupRequest(Guid SetupId, string TemplateName, string Revision, string? ExternalAccountId = null);
+```
+
 ## BindProviderRuntimeCredentialRequest
 
 Qualified name: <code>Meridian.Contracts.Api.BindProviderRuntimeCredentialRequest</code>. Kind: `record`.
@@ -919,28 +931,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;supportsBrokerage&quot;)] public bool SupportsBrokerage { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:848](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L848) | Gets a value indicating whether brokerage execution is supported. |
 | <code>[JsonPropertyName(&quot;supportsAuctions&quot;)] public bool SupportsAuctions { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:854](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L854) | Gets a value indicating whether auction data is supported. |
 | <code>public IReadOnlyDictionary&lt;string, object&gt; ToDictionary();</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:859](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L859) | Converts to dictionary for JSON serialization (only includes true values). |
-
-## ConnectionHealthDto
-
-Qualified name: <code>Meridian.Contracts.Api.ConnectionHealthDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/StatusEndpointModels.cs:140](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L140).
-
-Individual connection health information.
-
-```csharp
-public sealed record ConnectionHealthDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;connectionId&quot;)] public string ConnectionId { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:143](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L143) |  |
-| <code>[JsonPropertyName(&quot;providerName&quot;)] public string ProviderName { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:146](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L146) |  |
-| <code>[JsonPropertyName(&quot;isConnected&quot;)] public bool IsConnected { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:149](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L149) |  |
-| <code>[JsonPropertyName(&quot;isHealthy&quot;)] public bool IsHealthy { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:152](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L152) |  |
-| <code>[JsonPropertyName(&quot;lastHeartbeatTime&quot;)] public DateTimeOffset? LastHeartbeatTime { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:155](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L155) |  |
-| <code>[JsonPropertyName(&quot;missedHeartbeats&quot;)] public int MissedHeartbeats { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:158](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L158) |  |
-| <code>[JsonPropertyName(&quot;uptimeSeconds&quot;)] public float UptimeSeconds { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:161](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L161) |  |
-| <code>[JsonPropertyName(&quot;averageLatencyMs&quot;)] public float AverageLatencyMs { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:164](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L164) |  |

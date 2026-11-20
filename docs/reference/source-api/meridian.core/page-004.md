@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IAlertDispatcher
+
+Qualified name: <code>Meridian.Core.Monitoring.Core.IAlertDispatcher</code>. Kind: `interface`.
+
+Source: [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:164](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L164).
+
+Centralized alert dispatcher for publishing and subscribing to monitoring alerts.
+
+```csharp
+public interface IAlertDispatcher
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void Publish(MonitoringAlert alert);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:170](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L170) | Publishes an alert to all subscribers. |
+| <code>Task PublishAsync(MonitoringAlert alert, CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:177](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L177) | Publishes an alert asynchronously. |
+| <code>IDisposable Subscribe(Action&lt;MonitoringAlert&gt; handler, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:185](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L185) | Subscribes to alerts with the specified filter. |
+| <code>IDisposable Subscribe(Func&lt;MonitoringAlert, Task&gt; handler, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:193](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L193) | Subscribes to alerts with an async handler. |
+| <code>IReadOnlyList&lt;MonitoringAlert&gt; GetRecentAlerts(int count = 100, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:201](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L201) | Gets recent alerts matching the filter. |
+| <code>AlertStatistics GetStatistics();</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:207](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L207) | Gets alert statistics. |
+
+## IHealthCheckAggregator
+
+Qualified name: <code>Meridian.Core.Monitoring.Core.IHealthCheckAggregator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:139](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L139).
+
+Aggregates health checks from multiple providers into a unified report.
+
+```csharp
+public interface IHealthCheckAggregator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void Register(IHealthCheckProvider provider);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:145](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L145) | Registers a health check provider. |
+| <code>void Unregister(string componentName);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:151](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L151) | Unregisters a health check provider. |
+| <code>Task&lt;AggregatedHealthReport&gt; CheckAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:158](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L158) | Runs all registered health checks and returns an aggregated report. |
+| <code>Task&lt;HealthCheckResult?&gt; CheckAsync(string componentName, CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:166](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L166) | Runs a specific health check by component name. |
+
 ## IHealthCheckProvider
 
 Qualified name: <code>Meridian.Core.Monitoring.Core.IHealthCheckProvider</code>. Kind: `interface`.
@@ -959,28 +1003,4 @@ Filter criteria for batch operations.
 
 ```csharp
 public sealed record BatchFilter(string? SymbolPattern = null, bool? HasTradeSubscription = null, bool? HasDepthSubscription = null, string[]? InWatchlists = null, string? SecurityType = null, string? Exchange = null);
-```
-
-## BatchFilteredOperationRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchFilteredOperationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:145](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L145).
-
-Request to perform batch operations with a filter.
-
-```csharp
-public sealed record BatchFilteredOperationRequest(BatchFilter Filter, string Operation, Dictionary<string, object?>? Parameters = null);
-```
-
-## BatchMoveToWatchlistRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchMoveToWatchlistRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:104](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L104).
-
-Request to move symbols between watchlists.
-
-```csharp
-public sealed record BatchMoveToWatchlistRequest(string[] Symbols, string TargetWatchlistId, string? SourceWatchlistId = null, bool RemoveFromSource = false);
 ```

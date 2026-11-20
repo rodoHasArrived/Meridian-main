@@ -1460,7 +1460,7 @@ public sealed record PeriodComparisonView(bool IsReady, string Heading, string W
 
 Qualified name: <code>Meridian.Ui.Services.Services.ConfigProfile</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:726](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L726).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:730](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L730).
 
 Represents a configuration profile (built-in or custom).
 

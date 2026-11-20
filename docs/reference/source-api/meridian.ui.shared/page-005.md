@@ -292,6 +292,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapProviderConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L18) |  |
 
+## ProviderConnectionTemplateEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderConnectionTemplateEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs#L12).
+
+```csharp
+public static class ProviderConnectionTemplateEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderConnectionTemplateEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs#L16) |  |
+
 ## ProviderCredentialEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderCredentialEndpoints</code>. Kind: `class`.
@@ -764,14 +780,4 @@ Operator resolution request for a parked escalation.
 
 ```csharp
 public sealed record RiskEscalationResolutionRequest(string? Reason = null, bool Release = true);
-```
-
-## RunAccrualScheduleInput
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RunAccrualScheduleInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs#L23).
-
-```csharp
-public sealed record RunAccrualScheduleInput(string FundProfileId, Guid LedgerBookId, string EntityId, int ExpectedVersion);
 ```

@@ -6,6 +6,189 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityUnderlyingGraphDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L87).
+
+The graph around one security: what it depends on, what depends on it, and the references that name no Security Master record yet.
+
+```csharp
+public sealed record SecurityUnderlyingGraphDto(Guid SecurityId, DateTimeOffset AsOfUtc, IReadOnlyList<SecurityUnderlyingLinkDto> Underlyings, IReadOnlyList<SecurityUnderlyingLinkDto> Dependents, IReadOnlyList<string> Gaps);
+```
+
+## SecurityUnderlyingLinkDeriver
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDeriver</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:139](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L139).
+
+Derives the underlying links an instrument&#x27;s terms state, from the roles the term schema declares on its fields (SecurityAssetTermField.UnderlyingRole): every role-marked field of the record&#x27;s class, under its key or any alias, and every role-marked field of each element of an array or nested object the class declares (a swap&#x27;s legs, an equity&#x27;s conversion terms). Each field yields its own link, so a bond with a floating and an inflation index links both. The deriver keeps no key list of its own; a reference field links the moment its role is declared in the schema.
+
+```csharp
+public static class SecurityUnderlyingLinkDeriver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt; Derive(SecurityProjectionRecord record);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:158](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L158) | The links the record&#x27;s terms state, in a stable order. |
+| <code>public static IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt; Derive(SecurityDetailDto detail);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:165](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L165) | The links the detail&#x27;s terms state, in a stable order. |
+| <code>public static Guid LinkId(Guid securityId, SecurityUnderlyingRole role, Guid? target, string? reference, SecurityUnderlyingLinkSource source);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:332](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L332) | A deterministic link id from the edge&#x27;s identity (security, role, target or reference text, source), so re-deriving or re-declaring the same edge upserts rather than duplicates. |
+
+## SecurityUnderlyingLinkDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L49).
+
+One edge of the underlying graph: SecurityId depends on UnderlyingSecurityId in Role. A link whose target is not a Security Master record carries the Reference text the terms named (a CDS reference entity, an index name, a structured note&#x27;s free-text underlying) and a null target; the graph records the dependency and reports it as a gap until the reference is resolved.
+
+```csharp
+public sealed record SecurityUnderlyingLinkDto(Guid LinkId, Guid SecurityId, SecurityUnderlyingRole Role, Guid? UnderlyingSecurityId, string? Reference, decimal? Weight, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, SecurityUnderlyingLinkSource Source, string? Notes, string CreatedBy, DateTimeOffset CreatedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsResolved =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L64) | True when the link names a Security Master record as its target. |
+| <code>public bool IsActiveAt(DateTimeOffset asOfUtc) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L67) | True when the link is valid at asOfUtc. |
+
+## SecurityUnderlyingLinkSource
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L33).
+
+Where a link came from.
+
+```csharp
+public enum SecurityUnderlyingLinkSource
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Declared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L36) | Declared through the graph API by an operator or an ingest, with its own validity window. |
+| <code>Derived</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L39) | Derived from the instrument&#x27;s own terms on every projection write; replaced whenever the terms change. |
+
+## SecurityUnderlyingRole
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L10).
+
+What an underlying link says the target is to the instrument.
+
+```csharp
+public enum SecurityUnderlyingRole
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Underlying</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L13) | The instrument&#x27;s underlying: an option&#x27;s or warrant&#x27;s stock, a CFD&#x27;s or note&#x27;s reference asset. |
+| <code>ReferenceEntity</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L16) | The entity whose credit the instrument references (a CDS reference entity). |
+| <code>ReferenceObligation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L19) | The obligation delivered or valued on a credit event (a CDS reference obligation). |
+| <code>Index</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L22) | A rate, inflation or credit index the instrument&#x27;s payments read (a floating index, an inflation index, a CDS index). |
+| <code>BasketConstituent</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L25) | One member of a basket the instrument references, carrying its weight. |
+| <code>Collateral</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L28) | An asset pledged under the instrument (collateral). |
+
+## SecurityValidationGateResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationGateResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L69).
+
+```csharp
+public sealed record SecurityValidationGateResultDto(SecurityValidationWorkflowDto Workflow, string? Symbol, Guid? SecurityId, bool IsResolved, bool IsBlocked, SecurityValidationReportDto Report, SecurityValidationSnapshotDto? Snapshot);
+```
+
+## SecurityValidationIssueDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L20).
+
+```csharp
+public sealed record SecurityValidationIssueDto(SecurityValidationSeverityDto Severity, string Code, string Title, string Message, IReadOnlyList<string> AffectedFields, string SuggestedAction, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
+```
+
+## SecurityValidationReportDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationReportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L29).
+
+```csharp
+public sealed record SecurityValidationReportDto(Guid? SecurityId, string Scope, DateTimeOffset EvaluatedAtUtc, bool HasBlockingIssues, int CriticalIssueCount, int ErrorIssueCount, IReadOnlyList<SecurityValidationIssueDto> Issues);
+```
+
+## SecurityValidationSeverityDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSeverityDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L6).
+
+```csharp
+public enum SecurityValidationSeverityDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L8) |  |
+| <code>Warning = 1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L9) |  |
+| <code>Error = 2</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L10) |  |
+| <code>Critical = 3</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L11) |  |
+
+## SecurityValidationSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L56).
+
+```csharp
+public sealed record SecurityValidationSnapshotDto(Guid SnapshotId, Guid? SecurityId, string Scope, SecurityValidationWorkflowDto Workflow, string? WorkflowReference, string? Actor, string Reason, DateTimeOffset RecordedAtUtc, string ReportHashSha256, SecurityValidationReportDto Report, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
+```
+
+## SecurityValidationSnapshotRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSnapshotRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L49).
+
+```csharp
+public sealed record SecurityValidationSnapshotRequestDto(SecurityValidationWorkflowDto Workflow, string? WorkflowReference, string? Actor, string Reason, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
+```
+
+## SecurityValidationWorkflowDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationWorkflowDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L39).
+
+```csharp
+public enum SecurityValidationWorkflowDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L41) |  |
+| <code>StrategyRunPreflight = 1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L42) |  |
+| <code>LedgerPosting = 2</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L43) |  |
+| <code>ReconciliationBreakIntake = 3</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L44) |  |
+| <code>ReportPackEvidence = 4</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L45) |  |
+| <code>OverrideApproval = 5</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L46) |  |
+
 ## SecurityValuationAccountingTreatment
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
@@ -631,181 +814,3 @@ Request to assign or update the cash flow source for a security.
 ```csharp
 public sealed record UpsertCashFlowSourceRequest(Guid SecurityId, StructuredCashFlowSourceKind SourceKind, bool IsClientOverride, string? ClientConfirmedBy, string Actor, bool Force = false);
 ```
-
-## UpsertCorporateActionProcessingOptionRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertCorporateActionProcessingOptionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:670](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L670).
-
-```csharp
-public sealed record UpsertCorporateActionProcessingOptionRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string OptionCode, string Label, string Description, string State, string Actor, Guid? OptionId = null, string? SourceMethodology = null, IReadOnlyList<string>? Blockers = null, JsonElement? Parameters = null, string? CorrelationId = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
-```
-
-## UpsertDataVendorEntitlementRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertDataVendorEntitlementRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L57).
-
-```csharp
-public sealed record UpsertDataVendorEntitlementRequest(string VendorName, DataVendorDataType DataType, string? ContractReference, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, decimal? AumThresholdUsd, bool RequiresDirectClientContract, string? ContactEmail, int RenewalReminderDays, string Actor, Guid? EntitlementId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? ClientId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L71) |  |
-| <code>public string? AccountId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L72) |  |
-| <code>public string? FundProfileId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L73) |  |
-| <code>public Guid? SecurityId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L74) |  |
-| <code>public string? SourceCategory { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:75](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L75) |  |
-| <code>public string? ExpectedRefreshCadence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L76) |  |
-| <code>public int? DefaultMaxDaysStale { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L77) |  |
-| <code>public string? OperatorMetadata { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L78) |  |
-
-## UpsertOtcCollateralAgreementRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcCollateralAgreementRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:158](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L158).
-
-Creates (CollateralAgreementId null) or amends a collateral agreement under a master agreement.
-
-```csharp
-public sealed record UpsertOtcCollateralAgreementRequest(Guid? CollateralAgreementId, Guid MasterAgreementId, string Currency, decimal ThresholdOurs, decimal ThresholdTheirs, decimal MinimumTransferAmount, decimal? IndependentAmount, decimal? RoundingAmount, string ValuationFrequency, IReadOnlyList<OtcEligibleCollateralDto> EligibleCollateral, DateOnly EffectiveDate, DateOnly? TerminationDate = null, string? Notes = null, string? UpdatedBy = null);
-```
-
-## UpsertOtcCollateralBalanceRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcCollateralBalanceRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L90).
-
-Records (BalanceId null) or amends a collateral balance. The haircut and the valued amount are never supplied.
-
-```csharp
-public sealed record UpsertOtcCollateralBalanceRequest(Guid? BalanceId, Guid CollateralAgreementId, OtcCollateralDirection Direction, OtcCollateralKind Kind, string EligibleCollateralDescription, Guid? SecurityId, string Currency, decimal Quantity, decimal UnitValue, DateOnly ValuedAsOf, string? Reference = null, string? Notes = null, string? UpdatedBy = null);
-```
-
-## UpsertOtcContractRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcContractRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L184).
-
-Creates (ContractId null) or amends a bilateral contract.
-
-```csharp
-public sealed record UpsertOtcContractRequest(Guid? ContractId, Guid SecurityId, Guid NettingSetId, string? ExternalTradeId, OtcContractDirection Direction, decimal Notional, string NotionalCurrency, DateOnly TradeDate, DateOnly EffectiveDate, DateOnly? TerminationDate, OtcContractStatus Status, string? ConfirmationReference = null, string? Notes = null, string? UpdatedBy = null);
-```
-
-## UpsertOtcMasterAgreementRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcMasterAgreementRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:145](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L145).
-
-Creates (AgreementId null) or amends a master agreement.
-
-```csharp
-public sealed record UpsertOtcMasterAgreementRequest(Guid? AgreementId, string Counterparty, string? CounterpartyLei, string OurEntity, Guid? OurEntityId, OtcMasterAgreementType AgreementType, DateOnly AgreementDate, string? GoverningLaw = null, string? Notes = null, string? UpdatedBy = null);
-```
-
-## UpsertOtcNettingSetRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcNettingSetRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L175).
-
-Creates (NettingSetId null) or amends a netting set.
-
-```csharp
-public sealed record UpsertOtcNettingSetRequest(Guid? NettingSetId, Guid MasterAgreementId, Guid? CollateralAgreementId, string Name, string? Notes = null, string? UpdatedBy = null);
-```
-
-## UpsertSecurityAliasRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L59).
-
-```csharp
-public sealed record UpsertSecurityAliasRequest(Guid AliasId, Guid SecurityId, string AliasKind, string AliasValue, string? Provider, SecurityAliasScope Scope, string CreatedBy, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string? Reason);
-```
-
-## IBacktestPreflightService
-
-Qualified name: <code>Meridian.Contracts.Services.IBacktestPreflightService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IBacktestPreflightService.cs:8](../../../../src/Meridian.Contracts/Services/IBacktestPreflightService.cs#L8).
-
-Runs backtest-scoped trust-gate checks before replay begins.
-
-```csharp
-public interface IBacktestPreflightService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BacktestPreflightReportV2Dto&gt; RunAsync(BacktestPreflightRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IBacktestPreflightService.cs:13](../../../../src/Meridian.Contracts/Services/IBacktestPreflightService.cs#L13) | Executes backtest preflight checks and returns a structured report. |
-
-## IConnectivityProbeService
-
-Qualified name: <code>Meridian.Contracts.Services.IConnectivityProbeService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:8](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L8).
-
-Contract for probing internet connectivity and broadcasting state changes.
-
-```csharp
-public interface IConnectivityProbeService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool IsOnline { get; }</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:13](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L13) | Gets whether the system is currently online. |
-| <code>event EventHandler&lt;bool&gt;? ConnectivityChanged;</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:18](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L18) | Raised when connectivity state changes (true = online, false = offline). |
-
-## IEntityLifecycleProjectionSink
-
-Qualified name: <code>Meridian.Contracts.Services.IEntityLifecycleProjectionSink</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:15](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L15).
-
-Local compatibility projection; implementations must verify the retained revision.
-
-```csharp
-public interface IEntityLifecycleProjectionSink
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task ApplyLifecycleProjectionAsync(EntityLifecycleRevisionDto revision, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:17](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L17) |  |
-
-## IEntityLifecycleService
-
-Qualified name: <code>Meridian.Contracts.Services.IEntityLifecycleService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:6](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L6).
-
-Tenant-authorized immutable entity lifecycle history.
-
-```csharp
-public interface IEntityLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EntityLifecycleRevisionDto?&gt; GetAsync(Guid entityId, long? revision = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:8](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L8) |  |
-| <code>Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:9](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L9) |  |
-| <code>Task&lt;EntityLifecycleRevisionDto&gt; TransitionAsync(AppendEntityLifecycleRevisionRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:11](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L11) |  |

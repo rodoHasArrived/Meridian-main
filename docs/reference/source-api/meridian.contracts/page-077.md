@@ -6,6 +6,146 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingTrustGateContractReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingTrustGateContractReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:282](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L282).
+
+```csharp
+public sealed record TradingTrustGateContractReadinessDto(string ContractId, string DocumentPath, string Status, IReadOnlyList<string> RequiredPayloadFields, IReadOnlyList<string> RequiredReasonCodes, IReadOnlyList<string> RequiredMetrics, bool? FpFnReviewRequired, IReadOnlyList<string> MissingRequirements);
+```
+
+## TradingTrustGateEvidenceDocumentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingTrustGateEvidenceDocumentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:274](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L274).
+
+```csharp
+public sealed record TradingTrustGateEvidenceDocumentDto(string Name, string Gate, string Path, bool Exists, string Status, IReadOnlyList<string> MissingRequirements);
+```
+
+## TradingTrustGateReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingTrustGateReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:292](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L292).
+
+```csharp
+public sealed record TradingTrustGateReadinessDto(string GateId, string Status, bool ReadyForOperatorReview, bool OperatorSignoffRequired, string OperatorSignoffStatus, DateTimeOffset? GeneratedAt, string? PacketPath, string? SourceSummary, int RequiredSampleCount, int ReadySampleCount, int ValidatedEvidenceDocumentCount, IReadOnlyList<string> RequiredOwners, IReadOnlyList<string> Blockers, string Detail, TradingOperatorSignoffReadinessDto? OperatorSignoff = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;TradingTrustGateSampleReviewDto&gt; SampleReviews { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:309](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L309) |  |
+| <code>public IReadOnlyList&lt;TradingTrustGateEvidenceDocumentDto&gt; EvidenceDocuments { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:311](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L311) |  |
+| <code>public TradingTrustGateContractReadinessDto? TrustRationaleContract { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:313](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L313) |  |
+| <code>public TradingTrustGateContractReadinessDto? BaselineThresholdContract { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:315](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L315) |  |
+| <code>public string? CalibrationVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:317](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L317) |  |
+| <code>public DateTimeOffset? CalibrationValidatedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:319](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L319) |  |
+| <code>public string? PromotionPosture { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L321) |  |
+
+## TradingTrustGateSampleReviewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingTrustGateSampleReviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:263](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L263).
+
+```csharp
+public sealed record TradingTrustGateSampleReviewDto(string SampleId, string Provider, string RequiredStep, string StepStatus, string Status, bool Observed, IReadOnlyList<string> MissingRequirements, IReadOnlyList<string> EvidenceAnchors, string AcceptanceCheck);
+```
+
+## UpdateOnboardingCriteriaRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.UpdateOnboardingCriteriaRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L24).
+
+```csharp
+public sealed record UpdateOnboardingCriteriaRequestDto(int ExpectedVersion, OnboardingCriteriaDto Criteria);
+```
+
+## UpdateSecurityFieldRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.UpdateSecurityFieldRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L41).
+
+Operator-authored, effective-dated edit to a single passport field. A non-empty Justification is required for operator-origin edits — missing provider data stays review-required and is never fabricated as complete.
+
+```csharp
+public sealed record UpdateSecurityFieldRequest(Guid SecurityId, long ExpectedVersion, string FieldPath, string? NewValue, DateTimeOffset EffectiveFrom, string Actor, string Justification, string? SourceRecordId = null, string? FundProfileId = null, string? CorrelationId = null);
+```
+
+## ValidateLedgerDraft
+
+Qualified name: <code>Meridian.Contracts.Workstation.ValidateLedgerDraft</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:24](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L24).
+
+```csharp
+public sealed record ValidateLedgerDraft(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
+```
+
+## ValuationFreshnessPreviewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ValuationFreshnessPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs#L16).
+
+Read-only impact preview; no draft, approval, schedule, or journal is retained.
+
+```csharp
+public sealed record ValuationFreshnessPreviewDto(string PolicyVersion, int AssessedPositionCount, int BlockedPositionCount, int AffectedValuationCount, IReadOnlyList<MarkFreshnessAssessmentDto> Positions, DateTimeOffset EvaluatedAtUtc);
+```
+
+## VersionedReportTemplateIdDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.VersionedReportTemplateIdDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1428](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1428).
+
+```csharp
+public sealed record VersionedReportTemplateIdDto(string Name, int Version);
+```
+
+## WithdrawShadowBookRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L44).
+
+```csharp
+public sealed record WithdrawShadowBookRequestDto(int ExpectedVersion, string Reason);
+```
+
+## WorkflowActionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowActionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L29).
+
+Reusable action target that can be used by summaries, inbox routing, and workflow UI.
+
+```csharp
+public sealed record WorkflowActionDto(string ActionId, string Label, string Detail, string TargetPageTag, string Tone, OperatorWorkItemKindDto? WorkItemKind, IReadOnlyList<string> RoutePrefixes, IReadOnlyList<string> RouteContains, IReadOnlyList<string> Aliases);
+```
+
+## WorkflowBlockerSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowBlockerSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L42).
+
+Primary blocker that explains why the operator cannot progress smoothly.
+
+```csharp
+public sealed record WorkflowBlockerSummary(string Code, string Label, string Detail, string Tone, bool IsBlocking);
+```
+
 ## WorkflowDefinitionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkflowDefinitionDto</code>. Kind: `record`.
@@ -440,136 +580,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:610](../
 
 ```csharp
 public sealed record WorkstationGeneratedReportWriterGridPayload(string GridId, string Title, string Kind, string Artifact, int DimensionCount, int MetricCount, int FormulaCount, string? ValidationSummary = null, int? ValidationPassedCount = null, int? ValidationWarningCount = null, int? ValidationFailedCount = null);
-```
-
-## WorkstationKernelAlertThresholdsPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelAlertThresholdsPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:900](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L900).
-
-```csharp
-public sealed record WorkstationKernelAlertThresholdsPayload(int MinimumSampleCount, double MinimumShortRate, double ZeroBaselineShortRate, double RelativeMultiplier, double AbsoluteIncrease);
-```
-
-## WorkstationKernelCriticalSeverityRatePayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelCriticalSeverityRatePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:907](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L907).
-
-```csharp
-public sealed record WorkstationKernelCriticalSeverityRatePayload(double ShortWindow, double LongWindow, int ShortWindowSamples, int LongWindowSamples, bool JumpAlertActive, int JumpAlertCount, WorkstationKernelAlertThresholdsPayload AlertThresholds);
-```
-
-## WorkstationKernelDomainPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelDomainPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:916](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L916).
-
-```csharp
-public sealed record WorkstationKernelDomainPayload(string Domain, long Evaluations, double ThroughputPerMinute, WorkstationKernelLatencyPayload LatencyMs, double ReasonCoveragePercent, WorkstationKernelDriftPayload Drift, WorkstationKernelCriticalSeverityRatePayload CriticalSeverityRate, long DeterminismMismatches, DateTimeOffset LastUpdatedUtc);
-```
-
-## WorkstationKernelDriftPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelDriftPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:895](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L895).
-
-```csharp
-public sealed record WorkstationKernelDriftPayload(double Score, double Severity, string Methodology);
-```
-
-## WorkstationKernelLatencyPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelLatencyPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:890](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L890).
-
-```csharp
-public sealed record WorkstationKernelLatencyPayload(double P50, double P95, double P99);
-```
-
-## WorkstationKernelObservabilityPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelObservabilityPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:927](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L927).
-
-```csharp
-public sealed record WorkstationKernelObservabilityPayload(DateTimeOffset? UpdatedAtUtc, bool DeterminismChecksEnabled, int ActiveAlerts, int TotalAlerts, int Alerts, IReadOnlyList<WorkstationKernelDomainPayload> Domains);
-```
-
-## WorkstationKpiDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKpiDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs#L12).
-
-One headline figure&#x27;s identity. ComparisonBasis is null when the figure carries no change.
-
-```csharp
-public sealed record WorkstationKpiDefinitionDto(string Id, string Label, string Population, string? ComparisonBasis);
-```
-
-## WorkstationKpiDefinitionsDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKpiDefinitionsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/KpiDefinitionDtos.cs#L9).
-
-The fixed definition of every workstation headline figure: the label it is shown under, the population it counts and what a change in it is measured against. The browser workstation&#x27;s lib/kpi-registry.ts and the WPF desktop read the same catalog, so a figure with the same name always covers the same group on every screen.
-
-```csharp
-public sealed record WorkstationKpiDefinitionsDto(IReadOnlyList<WorkstationKpiDefinitionDto> Definitions);
-```
-
-## WorkstationManualOrderEntry
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationManualOrderEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:381](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L381).
-
-Whether the workstation may submit manual orders (tickets and position actions) on the active routing path, and if not, why. Live manual orders require a reviewed manual-intent authority contract, which does not exist yet, so the OMS refuses them; the order ticket shows this reason up front instead of after a refused submission.
-
-```csharp
-public sealed record WorkstationManualOrderEntry(bool Available, string? ReasonCode, string? Reason);
-```
-
-## WorkstationMetricCard
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationMetricCard</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L21).
-
-A single KPI card shown in a workstation dashboard header strip.
-
-```csharp
-public sealed record WorkstationMetricCard(string Id, string Label, string Value, string Delta = "", string Tone = "default", string? ComparisonPeriod = null, string? Basis = null, string? AsOf = null, string? Source = null, NumberPassportReferenceDto? NumberPassport = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<WorkstationMetricHistoryPointDto>? History = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? HistoryBasis = null);
-```
-
-## WorkstationMetricHistoryPointDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationMetricHistoryPointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L39).
-
-One point of a metric&#x27;s history, oldest first. Value is null when the retained source cannot establish the figure for that date; a consumer shows a gap, never an interpolated value.
-
-```csharp
-public sealed record WorkstationMetricHistoryPointDto(DateOnly Date, decimal? Value);
-```
-
-## WorkstationModeComparisonGroup
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationModeComparisonGroup</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:137](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L137).
-
-Per-strategy cross-mode comparison group used by strategy and trading surfaces.
-
-```csharp
-public sealed record WorkstationModeComparisonGroup(string StrategyName, IReadOnlyList<WorkstationModeComparisonRun> Modes);
 ```

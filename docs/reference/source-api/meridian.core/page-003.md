@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SemanticValidationStage
+
+Qualified name: <code>Meridian.Core.Config.SemanticValidationStage</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Config/IConfigValidator.cs:140](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L140).
+
+Semantic validation that checks cross-property constraints and configuration consistency. Duplicate-symbol and retention-days checks are now handled by AppConfigValidator in the field validation stage. This stage handles warning-level checks that should not affect FluentValidation.Results.ValidationResult.IsValid.
+
+```csharp
+public sealed class SemanticValidationStage : IConfigValidationStage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ConfigValidationResult&gt; Validate(AppConfig config);</code> | [src/Meridian.Core/Config/IConfigValidator.cs:142](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L142) |  |
+
+## SensitiveKeyRegistry
+
+Qualified name: <code>Meridian.Core.Config.SensitiveKeyRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:10](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L10).
+
+Single registry of sensitive key/property-name fragments shared by every masking and redaction surface (SensitiveValueMasker, Meridian.Core.Diagnostics.RuntimeDiagnosticRedactor). The surfaces previously carried overlapping-but-different lists, so a value could be masked in one output and leak in another. Add new fragments here, never to a per-surface list.
+
+```csharp
+public static class SensitiveKeyRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly IReadOnlyList&lt;string&gt; Fragments = [&quot;password&quot;, &quot;pwd&quot;, &quot;secret&quot;, &quot;key&quot;, &quot;token&quot;, &quot;credential&quot;, &quot;connectionstring&quot;, &quot;connection_string&quot;, &quot;auth&quot;, &quot;authorization&quot;, &quot;session&quot;, &quot;refresh&quot;, &quot;bearer&quot;, &quot;certificate&quot;, &quot;otlpheaders&quot;];</code> | [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:17](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L17) | Case-insensitive fragments; a key containing any fragment is considered sensitive. The union of the historical masker and redactor taxonomies — removing an entry narrows redaction somewhere, so entries may only be added. |
+| <code>public static bool IsSensitive(string? key);</code> | [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:28](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L28) | Returns true when the key/property/env-var name contains any sensitive fragment. |
+
 ## SensitiveValueMasker
 
 Qualified name: <code>Meridian.Core.Config.SensitiveValueMasker</code>. Kind: `class`.
@@ -906,47 +943,3 @@ Enum declarations:
 | <code>Degraded</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:14](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L14) | Component is operational but with minor issues. |
 | <code>Unhealthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:17](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L17) | Component has critical issues affecting functionality. |
 | <code>Unknown</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:20](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L20) | Component status is unknown or cannot be determined. |
-
-## IAlertDispatcher
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.IAlertDispatcher</code>. Kind: `interface`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:164](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L164).
-
-Centralized alert dispatcher for publishing and subscribing to monitoring alerts.
-
-```csharp
-public interface IAlertDispatcher
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void Publish(MonitoringAlert alert);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:170](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L170) | Publishes an alert to all subscribers. |
-| <code>Task PublishAsync(MonitoringAlert alert, CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:177](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L177) | Publishes an alert asynchronously. |
-| <code>IDisposable Subscribe(Action&lt;MonitoringAlert&gt; handler, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:185](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L185) | Subscribes to alerts with the specified filter. |
-| <code>IDisposable Subscribe(Func&lt;MonitoringAlert, Task&gt; handler, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:193](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L193) | Subscribes to alerts with an async handler. |
-| <code>IReadOnlyList&lt;MonitoringAlert&gt; GetRecentAlerts(int count = 100, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:201](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L201) | Gets recent alerts matching the filter. |
-| <code>AlertStatistics GetStatistics();</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:207](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L207) | Gets alert statistics. |
-
-## IHealthCheckAggregator
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.IHealthCheckAggregator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:139](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L139).
-
-Aggregates health checks from multiple providers into a unified report.
-
-```csharp
-public interface IHealthCheckAggregator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void Register(IHealthCheckProvider provider);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:145](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L145) | Registers a health check provider. |
-| <code>void Unregister(string componentName);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:151](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L151) | Unregisters a health check provider. |
-| <code>Task&lt;AggregatedHealthReport&gt; CheckAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:158](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L158) | Runs all registered health checks and returns an aggregated report. |
-| <code>Task&lt;HealthCheckResult?&gt; CheckAsync(string componentName, CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:166](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L166) | Runs a specific health check by component name. |

@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConnectionHealthDto
+
+Qualified name: <code>Meridian.Contracts.Api.ConnectionHealthDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/StatusEndpointModels.cs:140](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L140).
+
+Individual connection health information.
+
+```csharp
+public sealed record ConnectionHealthDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;connectionId&quot;)] public string ConnectionId { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:143](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L143) |  |
+| <code>[JsonPropertyName(&quot;providerName&quot;)] public string ProviderName { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:146](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L146) |  |
+| <code>[JsonPropertyName(&quot;isConnected&quot;)] public bool IsConnected { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:149](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L149) |  |
+| <code>[JsonPropertyName(&quot;isHealthy&quot;)] public bool IsHealthy { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:152](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L152) |  |
+| <code>[JsonPropertyName(&quot;lastHeartbeatTime&quot;)] public DateTimeOffset? LastHeartbeatTime { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:155](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L155) |  |
+| <code>[JsonPropertyName(&quot;missedHeartbeats&quot;)] public int MissedHeartbeats { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:158](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L158) |  |
+| <code>[JsonPropertyName(&quot;uptimeSeconds&quot;)] public float UptimeSeconds { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:161](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L161) |  |
+| <code>[JsonPropertyName(&quot;averageLatencyMs&quot;)] public float AverageLatencyMs { get; init; }</code> | [src/Meridian.Contracts/Api/StatusEndpointModels.cs:164](../../../../src/Meridian.Contracts/Api/StatusEndpointModels.cs#L164) |  |
+
 ## ConnectionHealthSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.Api.ConnectionHealthSnapshotDto</code>. Kind: `record`.
@@ -871,27 +896,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;sourceProvider&quot;)] public string? SourceProvider { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:99](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L99) | Name of the provider that sourced these metrics. |
 | <code>[JsonPropertyName(&quot;isStale&quot;)] public bool IsStale { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:105](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L105) | Whether the metrics are considered stale (no update in &gt;15 seconds). |
 | <code>[JsonPropertyName(&quot;ageSeconds&quot;)] public float AgeSeconds { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:111](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L111) | Age of these metrics in seconds since last update. |
-
-## MetricsFreshness
-
-Qualified name: <code>Meridian.Contracts.Api.MetricsFreshness</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/StatusModels.cs:319](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L319).
-
-Tracks freshness and provenance of metrics for a specific symbol or subsystem. Used to show staleness indicators and provider source badges in the UI.
-
-```csharp
-public sealed class MetricsFreshness
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;key&quot;)] public string Key { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:325](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L325) | The symbol or subsystem this freshness record applies to. |
-| <code>[JsonPropertyName(&quot;lastDataPointUtc&quot;)] public DateTimeOffset? LastDataPointUtc { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:331](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L331) | UTC timestamp of the last received data point. |
-| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:337](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L337) | The provider that supplied the last data point. |
-| <code>[JsonPropertyName(&quot;isStale&quot;)] public bool IsStale { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:343](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L343) | Whether the data is considered stale (exceeded freshness threshold). |
-| <code>[JsonPropertyName(&quot;freshnessState&quot;)] public string FreshnessState { get; set; } = &quot;NoData&quot;;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:349](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L349) | Freshness state: Fresh, Warning, Stale, or NoData. |
-| <code>[JsonPropertyName(&quot;ageSeconds&quot;)] public float AgeSeconds { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:355](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L355) | Age of the data in seconds since last update. |
-| <code>[JsonPropertyName(&quot;thresholdSeconds&quot;)] public int ThresholdSeconds { get; set; } = 60;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:361](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L361) | The configured freshness threshold in seconds. |

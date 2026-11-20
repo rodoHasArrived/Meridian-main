@@ -413,6 +413,12 @@ Source: [src/Meridian.Wpf/Views/AddProviderWizardPage.OwnedConnections.cs:10](..
 public partial class AddProviderWizardPage
 ```
 
+Source: [src/Meridian.Wpf/Views/AddProviderWizardPage.Templates.cs:13](../../../../src/Meridian.Wpf/Views/AddProviderWizardPage.Templates.cs#L13).
+
+```csharp
+public partial class AddProviderWizardPage
+```
+
 Source: [src/Meridian.Wpf/Views/AddProviderWizardPage.xaml.cs:23](../../../../src/Meridian.Wpf/Views/AddProviderWizardPage.xaml.cs#L23).
 
 Multi-step wizard for adding and configuring a new data provider. Guides the user through provider selection, credential entry, connection testing, and configuration. MVVM compliant: all display state lives in AddProviderWizardViewModel. Code-behind handles DI wiring, dynamic credential field generation, and minimal event delegation.

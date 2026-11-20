@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperSessionAccountingBinding
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperSessionAccountingBinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:259](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L259).
+
+A server-resolved source-to-book binding, never a caller&#x27;s assertion of account ownership.
+
+```csharp
+public sealed record PaperSessionAccountingBinding(string SessionId, Guid AggregateId, Guid LedgerBookId, Guid PeriodId, string FinancialAccountId);
+```
+
 ## PaperSessionAccountingSourceReader
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PaperSessionAccountingSourceReader</code>. Kind: `class`.
@@ -521,17 +533,30 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderConnectionLifecycleService(IProviderCredentialStore credentialStore, ConfigStore configStore, ILogger&lt;ProviderConnectionLifecycleService&gt; logger, IHttpClientFactory? httpClientFactory = null, IEnumerable&lt;IAccountingSystemProvider&gt;? accountingSystemProviders = null, IProviderSetupRegistry? setupRegistry = null, ProviderCredentialScope? ownershipScope = null, Meridian.Application.ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null, Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:35](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L35) |  |
-| <code>public ProviderConnectionLifecycleService ForConnection(string connectionId, string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:72](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L72) | Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant. |
-| <code>public async Task&lt;ProviderConnectionRowDto&gt; GetConnectionStatusForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:89](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L89) | Reads one authorized connection without borrowing provider-wide health or credentials. |
-| <code>public IReadOnlyList&lt;OwnedProviderConnection&gt; GetOwnedConnectionsForTenant(string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:108](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L108) | Lists the retained connections of one provider family that tenantId owns completely (unique id, external account and environment). Other tenants&#x27; connections, unassigned connections and ambiguous duplicate ids are never returned. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsForTenantAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:140](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L140) | Provider-level readiness for one tenant. Each provider starts from its provider-wide row; when that row is not ready, the best credential state among the tenant&#x27;s own retained connections for the same provider replaces it. Other tenants&#x27; connections and unassigned connections never contribute. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:194](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L194) |  |
-| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; SaveCredentialsAsync(string providerId, ProviderCredentialUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:210](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L210) |  |
-| <code>public async Task&lt;ProviderCredentialVerificationResultDto&gt; VerifyAsync(string providerId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:231](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L231) |  |
-| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; DeleteCredentialsAsync(string providerId, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:339](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L339) |  |
+| <code>public ProviderConnectionLifecycleService(IProviderCredentialStore credentialStore, ConfigStore configStore, ILogger&lt;ProviderConnectionLifecycleService&gt; logger, IHttpClientFactory? httpClientFactory = null, IEnumerable&lt;IAccountingSystemProvider&gt;? accountingSystemProviders = null, IProviderSetupRegistry? setupRegistry = null, ProviderCredentialScope? ownershipScope = null, Meridian.Application.ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null, Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L37) |  |
+| <code>public ProviderConnectionLifecycleService ForConnection(string connectionId, string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L76) | Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant. |
+| <code>public async Task&lt;ProviderConnectionRowDto&gt; GetConnectionStatusForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:93](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L93) | Reads one authorized connection without borrowing provider-wide health or credentials. |
+| <code>public IReadOnlyList&lt;OwnedProviderConnection&gt; GetOwnedConnectionsForTenant(string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:112](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L112) | Lists the retained connections of one provider family that tenantId owns completely (unique id, external account and environment). Other tenants&#x27; connections, unassigned connections and ambiguous duplicate ids are never returned. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsForTenantAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:144](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L144) | Provider-level readiness for one tenant. Each provider starts from its provider-wide row; when that row is not ready, the best credential state among the tenant&#x27;s own retained connections for the same provider replaces it. Other tenants&#x27; connections and unassigned connections never contribute. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:198](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L198) |  |
+| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; SaveCredentialsAsync(string providerId, ProviderCredentialUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:214](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L214) |  |
+| <code>public async Task&lt;ProviderCredentialVerificationResultDto&gt; VerifyAsync(string providerId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:235](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L235) |  |
+| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; DeleteCredentialsAsync(string providerId, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:343](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L343) |  |
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L7).
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L8).
+
+```csharp
+public sealed partial class ProviderConnectionLifecycleService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderConnectionLifecycleService ForTemplateSetup(Guid setupId, string tenantId, string actor, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:10](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L10) |  |
+| <code>public async Task&lt;ProviderTemplateSetupTestResult&gt; TestTemplateSetupAsync(string providerId, string actor, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:17](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L17) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.TemplateProbes.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.TemplateProbes.cs#L8).
 
 ```csharp
 public sealed partial class ProviderConnectionLifecycleService
@@ -866,35 +891,3 @@ Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:23](../
 ```csharp
 public sealed record ProviderScannerReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderScannerResult Item);
 ```
-
-## ReconciliationApiService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReconciliationApiService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L15).
-
-Serves authorized statement import, reconciliation-run, break, and casework operations.
-
-```csharp
-public class ReconciliationApiService : IReconciliationApiService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReconciliationApiService(IStatementRunWorkflowService statementRunWorkflowService, IAccountQueryService? accounts = null, IFundProfileTenancyRegistry? tenancy = null);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:21](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L21) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;StatementImportSummaryDto&gt;&gt; ListImportsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:32](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L32) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;StatementRunSummaryDto&gt;&gt; ListStatementRunsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:45](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L45) |  |
-| <code>public async Task&lt;StatementRunDto?&gt; CreateStatementRunAsync(StatementRunCreateDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:68](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L68) |  |
-| <code>public async Task&lt;bool&gt; OwnsStatementRunAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:99](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L99) |  |
-| <code>public async Task&lt;ReconciliationFundAccountAuthorization?&gt; GetAuthorizedFundAccountAsync(Guid fundAccountId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:105](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L105) |  |
-| <code>public async Task&lt;StatementReconciliationRunAuthorization?&gt; GetStatementRunAuthorizationAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:127](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L127) |  |
-| <code>public async Task&lt;StatementRunDto?&gt; GetStatementRunAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:173](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L173) |  |
-| <code>public async Task&lt;StatementRunValidationDto?&gt; GetStatementRunValidationAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:195](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L195) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;StatementRunBreakDto&gt;?&gt; ListStatementRunBreaksAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:209](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L209) |  |
-| <code>public async Task&lt;StatementRunDto?&gt; ReconcileStatementRunAsync(string runId, StatementRunReconcileRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:218](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L218) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;StatementRunExceptionDto&gt;&gt; ListOpenExceptionsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L239) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;StatementBreakDto&gt;&gt; ListOpenStatementBreaksAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:267](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L267) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationCaseSummaryDto&gt;&gt; ListOpenCasesAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:299](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L299) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationQueueAccountStatusDto&gt;&gt; ListQueueStatusAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:318](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L318) |  |
