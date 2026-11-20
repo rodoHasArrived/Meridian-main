@@ -1044,6 +1044,15 @@ paths and Retry; incomplete comparison series are withheld and named in an alert
 API retains recovered bars and `fileFailures` for investigation without presenting them as a
 complete series. Focused coverage lives in `historical-chart.test.tsx`.
 
+Decision chart inspectors share a selection with the plot. In Strategy, Live Quotes, historical
+prices, and Report Writer, keyboard focus and pointer inspection expose the same plotted values,
+units, as-of, calculation basis, and source links. Historical studies link the stored input bars.
+Live prints link to the selected tape record and depth points to the captured order-book levels. Report
+Writer keeps rendered grid-row order, including repeated category labels. Portfolio run charts
+link their retained equity and return series, and cash projections link to the contributing flows
+for the selected bucket. PlotTool's scatter and residual distribution are illustrative and disclose
+the lack of retained observations.
+
 Loan book accepts numeric and named host enums and preserves unknown values without inventing
 USD. Server `currencyTotals` retain their denomination and an explicit no-FX notice; scalar
 totals without a currency are withheld. Principal and undrawn amounts group by facility base
