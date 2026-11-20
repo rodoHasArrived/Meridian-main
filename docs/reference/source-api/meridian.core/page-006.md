@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TemplateCategory
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.TemplateCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:36](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L36).
+
+Categories for organizing subscription templates.
+
+```csharp
+public enum TemplateCategory : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Sector</code> | [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:38](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L38) |  |
+| <code>Index</code> | [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:40](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L40) |  |
+| <code>MarketCap</code> | [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:42](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L42) |  |
+| <code>Custom</code> | [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:44](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L44) |  |
+
 ## TemplateSubscriptionDefaults
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.TemplateSubscriptionDefaults</code>. Kind: `record`.

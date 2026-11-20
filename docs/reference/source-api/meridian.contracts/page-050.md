@@ -6,113 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## OperatorOverridesDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OperatorOverridesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L36).
-
-Operator-supplied per-security override values that supplement the authoritative Security Master record. Values are string key/value pairs staged by the operator workstation: paths outside the asset-terms namespace are free-form annotations (e.g. ratings, sector classification) that never amend the canonical security terms, while assetSpecificTerms.* paths are schema-validated corrections that — once approved and published through the governed revision lifecycle — are merged into the canonical terms as a complete economic-definition amendment by the publish fan-out&#x27;s canonical-merge handler. Until publish, staged values of either kind live only in this overlay.
-
-```csharp
-public sealed record OperatorOverridesDto(Guid SecurityId, IReadOnlyDictionary<string, string> Values, string UpdatedBy, DateTimeOffset UpdatedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityOverrideApprovalStatusDto ApprovalStatus { get; init; } = SecurityOverrideApprovalStatusDto.NotRequested;</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L42) |  |
-| <code>public string? ReasonCode { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L44) |  |
-| <code>public string? ReviewedBy { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L46) |  |
-| <code>public DateTimeOffset? ReviewedAt { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L48) |  |
-| <code>public IReadOnlyList&lt;SecurityOverrideAuditEntryDto&gt; AuditTrail { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L50) |  |
-
-## OperatorOverridesPatchRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L58).
-
-Partial update request for operator overrides. SetValues upserts the listed keys; RemoveKeys deletes the listed keys. Both collections are optional and may be empty (no-op patch).
-
-```csharp
-public sealed record OperatorOverridesPatchRequest(IReadOnlyDictionary<string, string>? SetValues, IReadOnlyList<string>? RemoveKeys)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? ReasonCode { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L62) |  |
-
-## OtcAuctionSettlementData
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcAuctionSettlementData</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L41).
-
-Full CDS auction settlement linked to its retained credit trigger. Amount is signed from the fund&#x27;s side.
-
-```csharp
-public sealed record OtcAuctionSettlementData([property : JsonRequired] Guid CreditEventId, [property : JsonRequired] DateOnly AuctionDate, [property : JsonRequired] decimal FinalPricePercent, [property : JsonRequired] decimal SettlementAmount, [property : JsonRequired] string Currency, [property : JsonRequired] int SettlementScale, [property : JsonRequired] string AuctionReference) : OtcContractLifecycleData;
-```
-
-## OtcCollateralAgreementDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L81).
-
-A credit support annex (or equivalent) under a master agreement: the thresholds, minimum transfer amount, independent amount, rounding, valuation cadence and eligible collateral that govern margin calls between the two parties.
-
-```csharp
-public sealed record OtcCollateralAgreementDto(Guid CollateralAgreementId, Guid MasterAgreementId, string Currency, decimal ThresholdOurs, decimal ThresholdTheirs, decimal MinimumTransferAmount, decimal? IndependentAmount, decimal? RoundingAmount, string ValuationFrequency, IReadOnlyList<OtcEligibleCollateralDto> EligibleCollateral, DateOnly EffectiveDate, DateOnly? TerminationDate, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
-```
-
-## OtcCollateralBalanceDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralBalanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L70).
-
-Collateral posted or received under a collateral agreement: one eligible-collateral line, its quantity and unit value, the valued amount they multiply to, the haircut copied from the agreement when the balance was written and the date the valuation is good for. A zero quantity is a fully returned line. A snapshot applies the line&#x27;s haircut as the agreement states it at computation time, so the copy here records what applied when the balance was written.
-
-```csharp
-public sealed record OtcCollateralBalanceDto(Guid BalanceId, Guid CollateralAgreementId, OtcCollateralDirection Direction, OtcCollateralKind Kind, string EligibleCollateralDescription, Guid? SecurityId, string Currency, decimal Quantity, decimal UnitValue, decimal ValuedAmount, decimal HaircutPercent, DateOnly ValuedAsOf, string? Reference, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
-```
-
-## OtcCollateralDirection
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralDirection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L9).
-
-Which way collateral moved: posted by the fund to the counterparty, or received by the fund from it.
-
-```csharp
-public enum OtcCollateralDirection
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Posted</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L12) | Posted by the fund; the counterparty holds it. |
-| <code>Received</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L15) | Received from the counterparty; the fund holds it. |
-
-## OtcCollateralHeldLineDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralHeldLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:140](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L140).
-
-One collateral balance as the snapshot saw it, with the haircut applied: the haircut of the agreement&#x27;s eligible-collateral line at computation time, not the one copied onto the balance.
-
-```csharp
-public sealed record OtcCollateralHeldLineDto(Guid BalanceId, OtcCollateralDirection Direction, OtcCollateralKind Kind, string Description, decimal ValuedAmount, decimal HaircutPercent, decimal HaircutAdjusted, DateOnly ValuedAsOf);
-```
-
 ## OtcCollateralJsonContext
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralJsonContext</code>. Kind: `class`.
@@ -813,4 +706,97 @@ An observation a valuation used, with where it came from and when it was observe
 
 ```csharp
 public sealed record OtcValuationInputDto(string Kind, string Source, DateTimeOffset AsOf, string? Reference, DataProvenance Provenance);
+```
+
+## OtcValuationStatus
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcValuationStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L28).
+
+Whether a contract could be valued.
+
+```csharp
+public enum OtcValuationStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Valued</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L30) |  |
+| <code>Unvalued</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L31) |  |
+
+## PayloadCorporateActionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PayloadCorporateActionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:216](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L216).
+
+Event types whose economics are carried only by the versioned JSON payload.
+
+```csharp
+public sealed record PayloadCorporateActionTerms(string EventType, JsonElement? Payload) : CorporateActionTerms(EventType);
+```
+
+## PositionCorporateActionAdjustment
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L4).
+
+Result of applying corporate actions to a live open position.
+
+```csharp
+public record PositionCorporateActionAdjustment(string Ticker, decimal OriginalQuantity, decimal AdjustedQuantity, decimal OriginalCostBasis, decimal AdjustedCostBasis, int ActionCount)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AdjustedTotalCostBasis { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L17) | Exact remaining carrying basis, when supported. Null identifies a legacy result supplying only an average unit quote. |
+
+## PostAttestedCorporateActionCashDividendRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PostAttestedCorporateActionCashDividendRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L50).
+
+```csharp
+public sealed record PostAttestedCorporateActionCashDividendRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, Guid ProjectionId, Guid AttestationId, string Reason, string Actor, CorporateActionCaseScopeDto? ScopeAssertion = null, string? CorrelationId = null, CorporateActionCashDividendDecisionAuthorityDto? Authority = null);
+```
+
+## PostCorporateActionCaseAccountingRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L161).
+
+```csharp
+public sealed record PostCorporateActionCaseAccountingRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, Guid ProjectionId, Guid ApprovalId, string Reason, string Actor, CorporateActionCaseScopeDto? ScopeAssertion = null, string? CorrelationId = null, CorporateActionAccountingDecisionAuthorityDto? Authority = null);
+```
+
+## PreferredEquityTermsDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:192](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L192).
+
+Preferred-equity-specific terms returned by the preferred-terms query.
+
+```csharp
+public sealed record PreferredEquityTermsDto(Guid SecurityId, string? Classification, decimal? DividendRate, string? DividendType, bool? IsCumulative, decimal? RedemptionPrice, DateOnly? RedemptionDate, DateOnly? CallableDate, bool? ParticipatesInCommonDividends, decimal? AdditionalDividendThreshold, string? LiquidationPreferenceKind, decimal? LiquidationPreferenceMultiple, long Version);
+```
+
+## PricingHierarchyEntryDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PricingHierarchyEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L58).
+
+One entry in a per-security pricing source priority chain.
+
+```csharp
+public sealed record PricingHierarchyEntryDto(int Priority, string SourceId, string SourceDisplayName, int MaxDaysStale);
 ```

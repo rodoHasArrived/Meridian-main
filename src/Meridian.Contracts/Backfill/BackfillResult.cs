@@ -27,8 +27,9 @@ public sealed record BackfillResult(
     [JsonIgnore]
     public ProviderProvenanceAccess? ProvenanceAccess { get; init; }
 
-    public BackfillResult ForTenant(string? tenantId) => ProviderProvenance is not null && ProvenanceAccess?.IsVisibleTo(tenantId) != true
-        ? this with { ProviderProvenance = null } : this;
+    public BackfillResult ForTenant(string? tenantId) =>
+        (ProviderProvenance is not null || QuotaReceipt is not null) && ProvenanceAccess?.IsVisibleTo(tenantId) != true
+            ? this with { ProviderProvenance = null, QuotaReceipt = null } : this;
 
     /// <summary>
     /// Symbols skipped because their checkpoint already covered the requested date range.
@@ -41,6 +42,8 @@ public sealed record BackfillResult(
     /// Provides operator-visible trust data for each symbol in <see cref="Symbols"/>.
     /// </summary>
     public SymbolValidationSignal[] SymbolValidationSignals { get; init; } = SymbolValidationSignals ?? [];
+
+    public BackfillQuotaReceipt? QuotaReceipt { get; init; }
 
     /// <summary>Immutable response revisions that were retained after storage confirmed this run's data.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]

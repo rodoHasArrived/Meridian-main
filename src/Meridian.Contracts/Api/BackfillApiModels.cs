@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Backfill;
 using Meridian.Contracts.Operations;
 
 namespace Meridian.Contracts.Api;
@@ -148,6 +149,15 @@ public sealed class BackfillExecutionResponse
 /// </summary>
 public sealed class BackfillExecution
 {
+    public string? RequestedProvider { get; set; }
+    public DateTimeOffset? ScheduledAt { get; set; }
+    public DateTimeOffset? ThrottledUntil { get; set; }
+    public BackfillQuotaEstimate? SubmissionEstimate { get; set; }
+    public BackfillQuotaReceipt? QuotaReceipt { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BackfillBatchReceiptSummary>? BatchReceipts { get; set; }
+
     /// <summary>
     /// Gets or sets the unique execution identifier.
     /// </summary>

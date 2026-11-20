@@ -6,88 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ReportPackDeliveryRecipientDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryRecipientDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:905](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L905).
-
-```csharp
-public sealed record ReportPackDeliveryRecipientDto(string DistributionId, string Recipient, string RecipientRole, string Channel);
-```
-
-## ReportPackDeliveryRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1011](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1011).
-
-```csharp
-public sealed record ReportPackDeliveryRequestDto(string DistributionId, string? Actor = null, string? DeliveryReference = null, string? Note = null, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null, ReportPackDeliveryModeDto? DeliveryMode = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## ReportPackDeliveryStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:854](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L854).
-
-```csharp
-public enum ReportPackDeliveryStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Queued = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:856](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L856) |  |
-| <code>Delivered = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:857](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L857) |  |
-| <code>Failed = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:858](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L858) |  |
-| <code>Retried = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:859](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L859) |  |
-| <code>Blocked = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:860](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L860) |  |
-
-## ReportPackEvidenceLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackEvidenceLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1757](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1757).
-
-```csharp
-public sealed record ReportPackEvidenceLinkDto(string EvidenceId, string Label, string? Route, string Source, DateTimeOffset? CapturedAtUtc = null);
-```
-
-## ReportPackLineProvenanceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackLineProvenanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1759](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1759).
-
-```csharp
-public sealed record ReportPackLineProvenanceDto(string LineKey, string SourceKind, string SourceId, string EvidenceId, string? RunId = null, string? LedgerEntryId = null, string? ReconciliationCaseId = null, string? ReportValue = null, string? SourceSessionId = null, string? ReconciliationRunId = null, string? ProviderEventId = null, string? SecurityMasterId = null, string? SecurityDefinitionId = null, string? ReconciliationOutcome = null, string? ApprovalId = null, string? FinancialRecordExplorerId = null, string? FinancialRecordHref = null);
-```
-
-## ReportPackPublicationManifestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackPublicationManifestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1777](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1777).
-
-```csharp
-public sealed record ReportPackPublicationManifestDto(string ManifestId, string RetainedManifestPath, string EvidenceHash, string SignedOffBy, DateTimeOffset SignedOffAt, IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks, ReportBrandingThemeDto? BrandingTheme = null, string? SignedOffRole = null, string? SignOffReason = null, string? SignOffContext = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## ReportPackPublishRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackPublishRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1790](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1790).
-
-Request payload for publishing an approved report pack into retained evidence storage.
-
-```csharp
-public sealed record ReportPackPublishRequestDto(string SignedOffBy, string EvidenceHash, string ManifestId, string RetainedManifestPath, IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks, string? Note = null, ReportBrandingThemeDto? BrandingTheme = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
 ## ReportPackRejectionMetadataDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRejectionMetadataDto</code>. Kind: `record`.
@@ -626,4 +544,86 @@ Typed retained research briefing payload shared by Strategy workstation surfaces
 
 ```csharp
 public sealed record ResearchBriefingDto(ResearchBriefingWorkspaceSummary Workspace, InsightFeed InsightFeed, IReadOnlyList<WorkstationWatchlist> Watchlists, IReadOnlyList<ResearchBriefingRun> RecentRuns, IReadOnlyList<ResearchSavedComparison> SavedComparisons, IReadOnlyList<ResearchBriefingAlert> Alerts, IReadOnlyList<ResearchWhatChangedItem> WhatChanged);
+```
+
+## ResearchBriefingRun
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchBriefingRun</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L53).
+
+Research run card shown in the briefing and recent-run rail.
+
+```csharp
+public sealed record ResearchBriefingRun(string RunId, string StrategyName, StrategyRunMode Mode, StrategyRunStatus Status, string Dataset, string WindowLabel, string ReturnLabel, string SharpeLabel, string LastUpdatedLabel, string Notes, StrategyRunPromotionState? PromotionState, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, ResearchRunDrillInLinks DrillIn);
+```
+
+## ResearchBriefingWorkspaceSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:118](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L118).
+
+Workspace-level summary used to drive the Research shell header.
+
+```csharp
+public sealed record ResearchBriefingWorkspaceSummary(int TotalRuns, int ActiveRuns, int PromotionCandidates, int PositivePnlRuns, string? LatestRunId, string? LatestStrategyName, bool HasLedgerCoverage, bool HasPortfolioCoverage, string Summary);
+```
+
+## ResearchRunDrillInLinks
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchRunDrillInLinks</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L42).
+
+Drill-in links attached to research run cards and comparisons.
+
+```csharp
+public sealed record ResearchRunDrillInLinks(string EquityCurve, string Fills, string Attribution, string? Ledger, string CashFlows, string? Continuity);
+```
+
+## ResearchSavedComparison
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchSavedComparison</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L84).
+
+Saved comparison summary surfaced from the briefing home.
+
+```csharp
+public sealed record ResearchSavedComparison(string ComparisonId, string StrategyName, string ModeSummary, string Summary, string? AnchorRunId, IReadOnlyList<ResearchSavedComparisonMode> Modes);
+```
+
+## ResearchSavedComparisonMode
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchSavedComparisonMode</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L73).
+
+Single mode participating in a saved comparison package.
+
+```csharp
+public sealed record ResearchSavedComparisonMode(string RunId, StrategyRunMode Mode, StrategyRunStatus Status, decimal? NetPnl, decimal? TotalReturn, ResearchRunDrillInLinks DrillIn);
+```
+
+## ResearchWhatChangedItem
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchWhatChangedItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:106](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L106).
+
+&quot;What changed&quot; entry summarizing recent run or workflow movement.
+
+```csharp
+public sealed record ResearchWhatChangedItem(string ChangeId, string Title, string Summary, string Category, DateTimeOffset Timestamp, string RelativeTime, string? RunId = null);
+```
+
+## ResolveBreakCase
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResolveBreakCase</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:27](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L27).
+
+```csharp
+public sealed record ResolveBreakCase(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
 ```

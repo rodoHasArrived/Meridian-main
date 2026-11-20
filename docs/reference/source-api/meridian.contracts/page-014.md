@@ -6,152 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## RecordBondExerciseNoticeRequest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.RecordBondExerciseNoticeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:73](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L73).
-
-```csharp
-public sealed record RecordBondExerciseNoticeRequest(Guid NoticeId, string StreamId, [property : JsonConverter(typeof(JsonStringEnumConverter<CashFlowExerciseSide>))] CashFlowExerciseSide Side, DateOnly NoticeDate, DateOnly ExerciseDate, decimal Price, decimal? Amount, string SourceDocumentSha256, DateOnly ReceivedDate, string SourceReference);
-```
-
-## SecurityContractualCashFlowTerms
-
-Qualified name: <code>Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs:8](../../../../src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs#L8).
-
-Readable-before-writable companion. Legacy document residue never activates a contract.
-
-```csharp
-public static class SecurityContractualCashFlowTerms
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Key = &quot;cashFlowContract&quot;;</code> | [src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs:10](../../../../src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs#L10) |  |
-| <code>public static bool IsDeclared(string assetClass, JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs:16](../../../../src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs#L16) |  |
-| <code>public static ContractualCashFlowContract? Read(SecurityDetailDto security);</code> | [src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs:22](../../../../src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs#L22) |  |
-
-## SecurityTermsDigest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.SecurityTermsDigest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:33](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L33).
-
-The retained Security Master terms a preview was calculated from. The asset-specific terms are hashed without their top-level SecurityTermsEnvelope.FormatKey member: the declared payload family is the only envelope key a write or the current-state backfill adds to the same economic terms (ADR-024 amendment 2026-11-13), and it only states the family the shape rule already infers, so declaring it never changes what a preview decodes. Every other member, including schemaVersion and SecurityTermsEnvelope.AssetClassTermsVersionKey (which selects the versioned terms the preview decodes), keeps its stored order and bytes and stays in the hash.
-
-```csharp
-public sealed record SecurityTermsDigest(JsonElement CommonTerms, JsonElement AssetSpecificTerms)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonElement AssetSpecificTerms { get; init; } = WithoutFormatKey(AssetSpecificTerms);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:36](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L36) | The asset-specific terms as hashed: the supplied terms without a top-level termsFormat. |
-
-## SelectedCashFlowExercise
-
-Qualified name: <code>Meridian.Contracts.CashFlows.SelectedCashFlowExercise</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:84](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L84).
-
-```csharp
-public sealed record SelectedCashFlowExercise(CashFlowExerciseSide Side, DateOnly EntryStartDate, string StreamId, DateOnly ExerciseDate, DateOnly NoticeDate, decimal Amount, bool HypotheticalNotice = true, string? NoticeEvidenceId = null, IReadOnlyList<decimal>? SelectedLotAmounts = null);
-```
-
-## CanonicalSymbolAliasDefinition
-
-Qualified name: <code>Meridian.Contracts.Catalog.CanonicalSymbolAliasDefinition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:286](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L286).
-
-Provider-aware, validity-dated alias retained from Security Master.
-
-```csharp
-public sealed record CanonicalSymbolAliasDefinition([property : JsonPropertyName("alias")] string Alias, [property : JsonPropertyName("source")] string? Source = null, [property : JsonPropertyName("provider")] string? Provider = null, [property : JsonPropertyName("validFrom")] DateTimeOffset? ValidFrom = null, [property : JsonPropertyName("validTo")] DateTimeOffset? ValidTo = null, [property : JsonPropertyName("isActive")] bool IsActive = true);
-```
-
-## CanonicalSymbolDefinition
-
-Qualified name: <code>Meridian.Contracts.Catalog.CanonicalSymbolDefinition</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:159](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L159).
-
-Defines a canonical symbol with all known identifiers, aliases, and metadata. This is the standardized representation used for symbol naming consistency.
-
-```csharp
-public sealed class CanonicalSymbolDefinition
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;canonical&quot;)] public required string Canonical { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:166](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L166) | Current canonical ticker used for lookup and display (e.g., &quot;AAPL&quot;). The durable domain identity is SecurityId; tickers may change. |
-| <code>[JsonPropertyName(&quot;securityId&quot;)] public Guid? SecurityId { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:172](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L172) | Durable Security Master identity when the symbol has been matched to a security. |
-| <code>[JsonPropertyName(&quot;securityMasterOwnsCanonical&quot;)][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool SecurityMasterOwnsCanonical { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:180](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L180) | Read-model provenance: true when only Security Master retains the canonical ticker. Ordinary registration cannot assert ownership; reconciliation establishes this value. |
-| <code>[JsonPropertyName(&quot;securityMasterCanonicalWithdrawn&quot;)][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool SecurityMasterCanonicalWithdrawn { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:191](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L191) | Read-model evidence that Security Master withdrew the canonical spelling. The Security Master reconciliation writer also accepts this flag to retain current mappings under an internal identity anchor when no unique primary identifier is currently effective. Independent aliases and identifiers can still address this retained definition; its internal canonical key alone no longer establishes a resolvable input. Ordinary registration cannot set this. |
-| <code>[JsonPropertyName(&quot;displayName&quot;)] public string? DisplayName { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:197](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L197) | Human-readable display name (e.g., &quot;Apple Inc.&quot;). |
-| <code>[JsonPropertyName(&quot;aliases&quot;)] public IReadOnlyList&lt;string&gt; Aliases { get; init; } = [];</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:204](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L204) | Known aliases for this symbol (e.g., &quot;AAPL.US&quot;, &quot;AAPL.O&quot;, &quot;US0378331005&quot;). Includes provider-specific tickers, exchange suffixes, and identifiers. |
-| <code>[JsonPropertyName(&quot;aliasDefinitions&quot;)] public IReadOnlyList&lt;CanonicalSymbolAliasDefinition&gt; AliasDefinitions { get; init; } = [];</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:210](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L210) | Rich alias history when source, provider, or validity windows are known. |
-| <code>[JsonPropertyName(&quot;providerSymbols&quot;)] public IReadOnlyDictionary&lt;string, ProviderSymbolDefinition&gt; ProviderSymbols { get; init; } = new Dictionary&lt;string, ProviderSymbolDefinition&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:216](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L216) | Provider-scoped outbound symbols keyed by normalized provider identifier. |
-| <code>[JsonPropertyName(&quot;asset_class&quot;)] public string AssetClass { get; init; } = &quot;equity&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:223](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L223) | Asset class: equity, etf, option, future, forex, crypto, index. |
-| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:229](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L229) | Primary exchange (e.g., &quot;NASDAQ&quot;, &quot;NYSE&quot;). |
-| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:235](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L235) | Trading currency (e.g., &quot;USD&quot;). |
-| <code>[JsonPropertyName(&quot;sedol&quot;)] public string? Sedol { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:241](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L241) | SEDOL identifier (Stock Exchange Daily Official List). |
-| <code>[JsonPropertyName(&quot;isin&quot;)] public string? Isin { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:247](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L247) | ISIN identifier (International Securities Identification Number). |
-| <code>[JsonPropertyName(&quot;figi&quot;)] public string? Figi { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:253](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L253) | FIGI identifier (Financial Instrument Global Identifier). |
-| <code>[JsonPropertyName(&quot;compositeFigi&quot;)] public string? CompositeFigi { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:259](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L259) | Composite FIGI (aggregate-level identifier). |
-| <code>[JsonPropertyName(&quot;cusip&quot;)] public string? Cusip { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:265](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L265) | CUSIP identifier (Committee on Uniform Securities Identification Procedures). |
-| <code>[JsonPropertyName(&quot;country&quot;)] public string? Country { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:271](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L271) | Country of listing (e.g., &quot;US&quot;). |
-
-## CatalogConfiguration
-
-Qualified name: <code>Meridian.Contracts.Catalog.CatalogConfiguration</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/StorageCatalog.cs:417](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L417).
-
-Configuration snapshot for reproducibility.
-
-```csharp
-public sealed class CatalogConfiguration
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;namingConvention&quot;)] public string? NamingConvention { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:423](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L423) | File naming convention. |
-| <code>[JsonPropertyName(&quot;datePartition&quot;)] public string? DatePartition { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:429](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L429) | Date partitioning strategy. |
-| <code>[JsonPropertyName(&quot;compression&quot;)] public string? Compression { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:435](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L435) | Compression codec in use. |
-| <code>[JsonPropertyName(&quot;rootPath&quot;)] public string? RootPath { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:441](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L441) | Storage root path. |
-
-## CatalogDateRange
-
-Qualified name: <code>Meridian.Contracts.Catalog.CatalogDateRange</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/StorageCatalog.cs:93](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L93).
-
-Date range information for the catalog.
-
-```csharp
-public sealed class CatalogDateRange
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;earliest&quot;)] public DateTime Earliest { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:99](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L99) | Earliest data timestamp. |
-| <code>[JsonPropertyName(&quot;latest&quot;)] public DateTime Latest { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:105](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L105) | Latest data timestamp. |
-| <code>[JsonPropertyName(&quot;calendarDays&quot;)] public int CalendarDays { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:111](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L111) | Total calendar days covered. |
-| <code>[JsonPropertyName(&quot;tradingDays&quot;)] public int TradingDays { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:117](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L117) | Estimated trading days covered. |
-
 ## CatalogIntegrity
 
 Qualified name: <code>Meridian.Contracts.Catalog.CatalogIntegrity</code>. Kind: `class`.
@@ -1025,7 +879,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Configuration.AppSettingsDto</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:753](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L753).
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:762](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L762).
 
 Application UI settings.
 
@@ -1037,19 +891,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;theme&quot;)] public string Theme { get; set; } = &quot;System&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:756](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L756) |  |
-| <code>[JsonPropertyName(&quot;accentColor&quot;)] public string AccentColor { get; set; } = &quot;System&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:759](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L759) |  |
-| <code>[JsonPropertyName(&quot;compactMode&quot;)] public bool CompactMode { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:762](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L762) |  |
-| <code>[JsonPropertyName(&quot;notificationsEnabled&quot;)] public bool NotificationsEnabled { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:765](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L765) |  |
-| <code>[JsonPropertyName(&quot;autoReconnectEnabled&quot;)] public bool AutoReconnectEnabled { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:768](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L768) |  |
-| <code>[JsonPropertyName(&quot;maxReconnectAttempts&quot;)] public int MaxReconnectAttempts { get; set; } = 10;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:771](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L771) |  |
-| <code>[JsonPropertyName(&quot;statusRefreshIntervalSeconds&quot;)] public int StatusRefreshIntervalSeconds { get; set; } = 2;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:774](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L774) |  |
+| <code>[JsonPropertyName(&quot;theme&quot;)] public string Theme { get; set; } = &quot;System&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:765](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L765) |  |
+| <code>[JsonPropertyName(&quot;accentColor&quot;)] public string AccentColor { get; set; } = &quot;System&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:768](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L768) |  |
+| <code>[JsonPropertyName(&quot;compactMode&quot;)] public bool CompactMode { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:771](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L771) |  |
+| <code>[JsonPropertyName(&quot;notificationsEnabled&quot;)] public bool NotificationsEnabled { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:774](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L774) |  |
+| <code>[JsonPropertyName(&quot;autoReconnectEnabled&quot;)] public bool AutoReconnectEnabled { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:777](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L777) |  |
+| <code>[JsonPropertyName(&quot;maxReconnectAttempts&quot;)] public int MaxReconnectAttempts { get; set; } = 10;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:780](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L780) |  |
+| <code>[JsonPropertyName(&quot;statusRefreshIntervalSeconds&quot;)] public int StatusRefreshIntervalSeconds { get; set; } = 2;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:783](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L783) |  |
 
 ## AutoGapRemediationConfigDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.AutoGapRemediationConfigDto</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:229](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L229).
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:238](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L238).
 
 Operator-facing automatic gap-remediation configuration.
 
@@ -1061,12 +915,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;minimumGapDurationSeconds&quot;)] public int MinimumGapDurationSeconds { get; set; } = 120;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:232](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L232) |  |
-| <code>[JsonPropertyName(&quot;minimumGapSize&quot;)] public int MinimumGapSize { get; set; } = 1;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:235](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L235) |  |
-| <code>[JsonPropertyName(&quot;symbolCooldownSeconds&quot;)] public int SymbolCooldownSeconds { get; set; } = 300;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:238](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L238) |  |
-| <code>[JsonPropertyName(&quot;providerCooldownSeconds&quot;)] public int ProviderCooldownSeconds { get; set; } = 60;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:241](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L241) |  |
-| <code>[JsonPropertyName(&quot;maxConcurrentRemediations&quot;)] public int MaxConcurrentRemediations { get; set; } = 2;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:244](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L244) |  |
-| <code>[JsonPropertyName(&quot;defaultProvider&quot;)] public string DefaultProvider { get; set; } = &quot;stooq&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:247](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L247) |  |
+| <code>[JsonPropertyName(&quot;minimumGapDurationSeconds&quot;)] public int MinimumGapDurationSeconds { get; set; } = 120;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:241](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L241) |  |
+| <code>[JsonPropertyName(&quot;minimumGapSize&quot;)] public int MinimumGapSize { get; set; } = 1;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:244](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L244) |  |
+| <code>[JsonPropertyName(&quot;symbolCooldownSeconds&quot;)] public int SymbolCooldownSeconds { get; set; } = 300;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:247](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L247) |  |
+| <code>[JsonPropertyName(&quot;providerCooldownSeconds&quot;)] public int ProviderCooldownSeconds { get; set; } = 60;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:250](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L250) |  |
+| <code>[JsonPropertyName(&quot;maxConcurrentRemediations&quot;)] public int MaxConcurrentRemediations { get; set; } = 2;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:253](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L253) |  |
+| <code>[JsonPropertyName(&quot;defaultProvider&quot;)] public string DefaultProvider { get; set; } = &quot;stooq&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:256](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L256) |  |
 
 ## BackfillConfigDto
 
@@ -1095,3 +949,174 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;symbolResolutionMode&quot;)] public SymbolResolutionMode SymbolResolutionMode { get; set; } = SymbolResolutionMode.Compare;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:216](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L216) |  |
 | <code>[JsonPropertyName(&quot;autoRemediation&quot;)] public AutoGapRemediationConfigDto? AutoRemediation { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:219](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L219) |  |
 | <code>[JsonPropertyName(&quot;providers&quot;)] public BackfillProvidersConfigDto? Providers { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:225](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L225) | Optional per-provider backfill settings used by desktop configuration workflows. |
+| <code>[JsonPropertyName(&quot;operationalBudgets&quot;)] public Dictionary&lt;string, BackfillOperationalBudgetDto&gt;? OperationalBudgets { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:229](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L229) | Retains host-owned budgets when other settings are edited. |
+
+## BackfillDryRunPlanDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.BackfillDryRunPlanDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:425](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L425).
+
+Dry-run backfill plan showing which providers would be selected per symbol.
+
+```csharp
+public sealed class BackfillDryRunPlanDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public BackfillSymbolPlanDto[] Symbols { get; set; } = [];</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:428](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L428) |  |
+| <code>[JsonPropertyName(&quot;warnings&quot;)] public string[] Warnings { get; set; } = [];</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:431](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L431) |  |
+| <code>[JsonPropertyName(&quot;validationErrors&quot;)] public string[] ValidationErrors { get; set; } = [];</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:434](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L434) |  |
+
+## BackfillOperationalBudgetDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.BackfillOperationalBudgetDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:232](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L232).
+
+```csharp
+public sealed record BackfillOperationalBudgetDto([property : JsonPropertyName("reserveHeadroomPercent")] int ReserveHeadroomPercent = 0, [property : JsonPropertyName("maxConcurrentRequests")] int? MaxConcurrentRequests = null, [property : JsonPropertyName("approvedEquivalentProviders")] string[]? ApprovedEquivalentProviders = null);
+```
+
+## BackfillProviderMetadataDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.BackfillProviderMetadataDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:345](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L345).
+
+Provider metadata descriptor used for dynamic UI generation and runtime transparency. Drives the desktop provider settings panel without requiring custom pages per provider.
+
+```csharp
+public sealed class BackfillProviderMetadataDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;tiers&quot;)] public BackfillVendorTierDto[] Tiers { get; set; } = [];</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:348](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L348) |  |
+| <code>[JsonPropertyName(&quot;providerId&quot;)] public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:351](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L351) |  |
+| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:354](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L354) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:357](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L357) |  |
+| <code>[JsonPropertyName(&quot;dataTypes&quot;)] public string[] DataTypes { get; set; } = [];</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:360](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L360) |  |
+| <code>[JsonPropertyName(&quot;requiresApiKey&quot;)] public bool RequiresApiKey { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:363](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L363) |  |
+| <code>[JsonPropertyName(&quot;hasCredentials&quot;)] public bool HasCredentials { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:366](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L366) |  |
+| <code>[JsonPropertyName(&quot;freeTier&quot;)] public bool FreeTier { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:369](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L369) |  |
+| <code>[JsonPropertyName(&quot;defaultPriority&quot;)] public int DefaultPriority { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:372](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L372) |  |
+| <code>[JsonPropertyName(&quot;defaultRateLimitPerMinute&quot;)] public int? DefaultRateLimitPerMinute { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:375](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L375) |  |
+| <code>[JsonPropertyName(&quot;defaultRateLimitPerHour&quot;)] public int? DefaultRateLimitPerHour { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:378](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L378) |  |
+| <code>[JsonPropertyName(&quot;configSource&quot;)] public string ConfigSource { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:381](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L381) |  |
+| <code>[JsonPropertyName(&quot;supportedGranularities&quot;)] public string[] SupportedGranularities { get; set; } = [];</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:384](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L384) |  |
+| <code>[JsonPropertyName(&quot;featureFlags&quot;)] public Dictionary&lt;string, bool&gt;? FeatureFlags { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:387](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L387) |  |
+
+## BackfillProviderOptionsDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.BackfillProviderOptionsDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:312](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L312).
+
+Generic backfill provider runtime options.
+
+```csharp
+public sealed class BackfillProviderOptionsDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonExtensionData] public Dictionary&lt;string, JsonElement&gt;? AdditionalProperties { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:316](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L316) | Retains host-owned fields this settings view does not model during load/save. |
+| <code>[JsonPropertyName(&quot;tierId&quot;)] public string TierId { get; set; } = &quot;free&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:319](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L319) |  |
+| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:322](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L322) |  |
+| <code>[JsonPropertyName(&quot;priority&quot;)] public int? Priority { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:325](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L325) |  |
+| <code>[JsonPropertyName(&quot;rateLimitPerMinute&quot;)] public int? RateLimitPerMinute { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:328](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L328) |  |
+| <code>[JsonPropertyName(&quot;rateLimitPerHour&quot;)] public int? RateLimitPerHour { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:331](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L331) |  |
+| <code>[JsonPropertyName(&quot;extensions&quot;)] public Dictionary&lt;string, JsonElement&gt;? Extensions { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:338](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L338) | Extension bag for provider-specific options not covered by the common fields. Keeps common fields typed while allowing provider-unique settings. |
+
+## BackfillProvidersConfigDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.BackfillProvidersConfigDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:262](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L262).
+
+Backfill provider configuration container.
+
+```csharp
+public sealed class BackfillProvidersConfigDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonExtensionData] public Dictionary&lt;string, JsonElement&gt;? AdditionalProperties { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:266](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L266) | Retains host-owned fields this settings view does not model during load/save. |
+| <code>[JsonPropertyName(&quot;alpaca&quot;)] public BackfillProviderOptionsDto? Alpaca { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:269](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L269) |  |
+| <code>[JsonPropertyName(&quot;polygon&quot;)] public BackfillProviderOptionsDto? Polygon { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:272](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L272) |  |
+| <code>[JsonPropertyName(&quot;tiingo&quot;)] public BackfillProviderOptionsDto? Tiingo { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:275](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L275) |  |
+| <code>[JsonPropertyName(&quot;finnhub&quot;)] public BackfillProviderOptionsDto? Finnhub { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:278](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L278) |  |
+| <code>[JsonPropertyName(&quot;stooq&quot;)] public BackfillProviderOptionsDto? Stooq { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:281](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L281) |  |
+| <code>[JsonPropertyName(&quot;yahoo&quot;)] public BackfillProviderOptionsDto? Yahoo { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:284](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L284) |  |
+| <code>[JsonPropertyName(&quot;alphaVantage&quot;)] public BackfillProviderOptionsDto? AlphaVantage { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:287](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L287) |  |
+| <code>[JsonPropertyName(&quot;nasdaq&quot;)] public BackfillProviderOptionsDto? NasdaqDataLink { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:290](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L290) |  |
+| <code>[JsonPropertyName(&quot;nasdaqDataLink&quot;)][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BackfillProviderOptionsDto? LegacyNasdaqDataLink { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:295](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L295) | Reads older DTO documents; all new writes use the host&#x27;s canonical nasdaq key. |
+| <code>[JsonPropertyName(&quot;twelveData&quot;)] public BackfillProviderOptionsDto? TwelveData { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:302](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L302) |  |
+| <code>[JsonPropertyName(&quot;openFigi&quot;)] public BackfillProviderOptionsDto? OpenFigi { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:305](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L305) |  |
+
+## BackfillProviderStatusDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.BackfillProviderStatusDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:395](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L395).
+
+Combined view of provider configuration with runtime health status for the desktop UI.
+
+```csharp
+public sealed class BackfillProviderStatusDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;metadata&quot;)] public BackfillProviderMetadataDto Metadata { get; set; } = new ();</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:398](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L398) |  |
+| <code>[JsonPropertyName(&quot;options&quot;)] public BackfillProviderOptionsDto Options { get; set; } = new ();</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:401](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L401) |  |
+| <code>[JsonPropertyName(&quot;healthStatus&quot;)] public string HealthStatus { get; set; } = &quot;unknown&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:404](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L404) |  |
+| <code>[JsonPropertyName(&quot;lastUsed&quot;)] public DateTime? LastUsed { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:407](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L407) |  |
+| <code>[JsonPropertyName(&quot;requestsUsedMinute&quot;)] public int RequestsUsedMinute { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:410](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L410) |  |
+| <code>[JsonPropertyName(&quot;requestsUsedHour&quot;)] public int RequestsUsedHour { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:413](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L413) |  |
+| <code>[JsonPropertyName(&quot;isThrottled&quot;)] public bool IsThrottled { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:416](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L416) |  |
+| <code>[JsonPropertyName(&quot;effectiveConfigSource&quot;)] public string EffectiveConfigSource { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:419](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L419) |  |
+
+## BackfillSymbolPlanDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.BackfillSymbolPlanDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:440](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L440).
+
+Per-symbol plan entry showing the provider fallback sequence.
+
+```csharp
+public sealed class BackfillSymbolPlanDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:443](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L443) |  |
+| <code>[JsonPropertyName(&quot;providerSequence&quot;)] public string[] ProviderSequence { get; set; } = [];</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:446](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L446) |  |
+| <code>[JsonPropertyName(&quot;selectedProvider&quot;)] public string? SelectedProvider { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:449](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L449) |  |
+| <code>[JsonPropertyName(&quot;reason&quot;)] public string? Reason { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:452](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L452) |  |
+
+## BackfillVendorTierDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.BackfillVendorTierDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:390](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L390).
+
+```csharp
+public sealed record BackfillVendorTierDto(string Id, string Label, int? RateLimitPerMinute, int? RateLimitPerHour);
+```

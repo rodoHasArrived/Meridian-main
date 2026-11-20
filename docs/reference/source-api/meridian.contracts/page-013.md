@@ -6,148 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## IBusinessDayCalendar
-
-Qualified name: <code>Meridian.Contracts.Calendars.IBusinessDayCalendar</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs:11](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs#L11).
-
-A named, content-addressed business-day calendar. Implementations are pure: they read no clock and perform no I/O, so the same calendar answers the same question the same way on every node.
-
-```csharp
-public interface IBusinessDayCalendar
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string CalendarId { get; }</code> | [src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs:14](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs#L14) | The calendar&#x27;s stable identifier, for example WEEKENDS or a joint id such as A+B. |
-| <code>string ContentHash { get; }</code> | [src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs:20](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs#L20) | The canonical (lowercase hex) SHA-256 digest of the calendar&#x27;s content, so evidence can show exactly which holiday data produced a schedule. |
-| <code>CalendarCoverage Coverage { get; }</code> | [src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs:23](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs#L23) | The date range the calendar&#x27;s holiday data is known to be complete for. |
-| <code>bool IsBusinessDay(DateOnly date);</code> | [src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs:26](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs#L26) | Whether date is a business day under this calendar. |
-
-## IBusinessDayCalendarSource
-
-Qualified name: <code>Meridian.Contracts.Calendars.IBusinessDayCalendarSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs:11](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs#L11).
-
-Resolves business-day calendars by id. A source never substitutes the weekends-only calendar for an id it does not know: an unknown id fails to resolve, so a missing holiday set is visible instead of silently producing weekend-only dates.
-
-```csharp
-public interface IBusinessDayCalendarSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool TryGet(string calendarId, [NotNullWhen(true)] out IBusinessDayCalendar? calendar);</code> | [src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs:14](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs#L14) | Looks up one calendar by id (ordinal, ignoring case). |
-| <code>bool TryResolve(IReadOnlyList&lt;string&gt; calendarIds, [NotNullWhen(true)] out IBusinessDayCalendar? calendar);</code> | [src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs:20](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs#L20) | Resolves a list of calendar ids: one id yields that calendar, several yield their joint, and an empty list or any unknown id fails. |
-
-## JointBusinessDayCalendar
-
-Qualified name: <code>Meridian.Contracts.Calendars.JointBusinessDayCalendar</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs:14](../../../../src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs#L14).
-
-The joint of two or more business-day calendars: a day is a business day only when it is a business day in every member, as in a schedule that must settle in several financial centres.
-
-```csharp
-public sealed class JointBusinessDayCalendar : IBusinessDayCalendar
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JointBusinessDayCalendar(IEnumerable&lt;IBusinessDayCalendar&gt; members);</code> | [src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs:23](../../../../src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs#L23) | Creates the joint of members. |
-| <code>public IReadOnlyList&lt;IBusinessDayCalendar&gt; Members =&gt; …;</code> | [src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs:57](../../../../src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs#L57) | The member calendars, sorted by ordinal id. |
-| <code>public string CalendarId { get; }</code> | [src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs:60](../../../../src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs#L60) |  |
-| <code>public string ContentHash { get; }</code> | [src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs:63](../../../../src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs#L63) |  |
-| <code>public CalendarCoverage Coverage { get; }</code> | [src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs:66](../../../../src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs#L66) |  |
-| <code>public bool IsBusinessDay(DateOnly date);</code> | [src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs:69](../../../../src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs#L69) |  |
-
-## StaticBusinessDayCalendarSource
-
-Qualified name: <code>Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs:27](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs#L27).
-
-An in-memory IBusinessDayCalendarSource over a fixed set of calendars, for tests and for callers that already hold their calendars.
-
-```csharp
-public sealed class StaticBusinessDayCalendarSource : IBusinessDayCalendarSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StaticBusinessDayCalendarSource(IEnumerable&lt;IBusinessDayCalendar&gt; calendars);</code> | [src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs:34](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs#L34) | Creates a source over calendars. |
-| <code>public bool TryGet(string calendarId, [NotNullWhen(true)] out IBusinessDayCalendar? calendar);</code> | [src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs:48](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs#L48) |  |
-| <code>public bool TryResolve(IReadOnlyList&lt;string&gt; calendarIds, [NotNullWhen(true)] out IBusinessDayCalendar? calendar);</code> | [src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs:55](../../../../src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs#L55) |  |
-
-## BondExerciseNoticeDto
-
-Qualified name: <code>Meridian.Contracts.CashFlows.BondExerciseNoticeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:19](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L19).
-
-Governed evidence that an issuer call or holder put was actually noticed: the source document&#x27;s hash, when it was received, and the exercise economics it states. Recording retains the claim; a separate approver makes it usable. Actual redemption posting is a different treatment; this record only lets a scenario carry a retained notice instead of a hypothetical one.
-
-```csharp
-public sealed record BondExerciseNoticeDto(Guid NoticeId, Guid SecurityId, string StreamId, [property : JsonConverter(typeof(JsonStringEnumConverter<CashFlowExerciseSide>))] CashFlowExerciseSide Side, DateOnly NoticeDate, DateOnly ExerciseDate, decimal Price, decimal? Amount, string SourceDocumentSha256, DateOnly ReceivedDate, string SourceReference, string RecordedBy, DateTimeOffset RecordedAtUtc, ExerciseNoticeApprovalState ApprovalState = ExerciseNoticeApprovalState.Recorded, string? DecidedBy = null, DateTimeOffset? DecidedAtUtc = null, string? DecisionReason = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; Validate();</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:38](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L38) |  |
-
-## BondExerciseNoticeJsonContext
-
-Qualified name: <code>Meridian.Contracts.CashFlows.BondExerciseNoticeJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:113](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L113).
-
-```csharp
-public sealed partial class BondExerciseNoticeJsonContext : JsonSerializerContext;
-```
-
-## CalculationBlockerDigest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CalculationBlockerDigest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:69](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L69).
-
-A blocked preview&#x27;s identity: its code and reason.
-
-```csharp
-public sealed record CalculationBlockerDigest(string Code, string Reason);
-```
-
-## CashFlowAmortization
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowAmortization</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:16](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L16).
-
-```csharp
-public enum CashFlowAmortization
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Bullet</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:16](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L16) |  |
-| <code>ExplicitPrincipal</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:16](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L16) |  |
-| <code>EqualPrincipal</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:16](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L16) |  |
-| <code>LevelPayment</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:16](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L16) |  |
-
 ## CashFlowBlockerDelta
 
 Qualified name: <code>Meridian.Contracts.CashFlows.CashFlowBlockerDelta</code>. Kind: `record`.
@@ -767,3 +625,149 @@ Enum declarations:
 | --- | --- | --- |
 | <code>BenchmarkCurvePvV1</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:18](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L18) |  |
 | <code>BenchmarkYieldPvV1</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:18](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L18) |  |
+
+## RecordBondExerciseNoticeRequest
+
+Qualified name: <code>Meridian.Contracts.CashFlows.RecordBondExerciseNoticeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:73](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L73).
+
+```csharp
+public sealed record RecordBondExerciseNoticeRequest(Guid NoticeId, string StreamId, [property : JsonConverter(typeof(JsonStringEnumConverter<CashFlowExerciseSide>))] CashFlowExerciseSide Side, DateOnly NoticeDate, DateOnly ExerciseDate, decimal Price, decimal? Amount, string SourceDocumentSha256, DateOnly ReceivedDate, string SourceReference);
+```
+
+## SecurityContractualCashFlowTerms
+
+Qualified name: <code>Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs:8](../../../../src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs#L8).
+
+Readable-before-writable companion. Legacy document residue never activates a contract.
+
+```csharp
+public static class SecurityContractualCashFlowTerms
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Key = &quot;cashFlowContract&quot;;</code> | [src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs:10](../../../../src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs#L10) |  |
+| <code>public static bool IsDeclared(string assetClass, JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs:16](../../../../src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs#L16) |  |
+| <code>public static ContractualCashFlowContract? Read(SecurityDetailDto security);</code> | [src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs:22](../../../../src/Meridian.Contracts/CashFlows/SecurityContractualCashFlowTerms.cs#L22) |  |
+
+## SecurityTermsDigest
+
+Qualified name: <code>Meridian.Contracts.CashFlows.SecurityTermsDigest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:33](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L33).
+
+The retained Security Master terms a preview was calculated from. The asset-specific terms are hashed without their top-level SecurityTermsEnvelope.FormatKey member: the declared payload family is the only envelope key a write or the current-state backfill adds to the same economic terms (ADR-024 amendment 2026-11-13), and it only states the family the shape rule already infers, so declaring it never changes what a preview decodes. Every other member, including schemaVersion and SecurityTermsEnvelope.AssetClassTermsVersionKey (which selects the versioned terms the preview decodes), keeps its stored order and bytes and stays in the hash.
+
+```csharp
+public sealed record SecurityTermsDigest(JsonElement CommonTerms, JsonElement AssetSpecificTerms)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonElement AssetSpecificTerms { get; init; } = WithoutFormatKey(AssetSpecificTerms);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:36](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L36) | The asset-specific terms as hashed: the supplied terms without a top-level termsFormat. |
+
+## SelectedCashFlowExercise
+
+Qualified name: <code>Meridian.Contracts.CashFlows.SelectedCashFlowExercise</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:84](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L84).
+
+```csharp
+public sealed record SelectedCashFlowExercise(CashFlowExerciseSide Side, DateOnly EntryStartDate, string StreamId, DateOnly ExerciseDate, DateOnly NoticeDate, decimal Amount, bool HypotheticalNotice = true, string? NoticeEvidenceId = null, IReadOnlyList<decimal>? SelectedLotAmounts = null);
+```
+
+## CanonicalSymbolAliasDefinition
+
+Qualified name: <code>Meridian.Contracts.Catalog.CanonicalSymbolAliasDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:286](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L286).
+
+Provider-aware, validity-dated alias retained from Security Master.
+
+```csharp
+public sealed record CanonicalSymbolAliasDefinition([property : JsonPropertyName("alias")] string Alias, [property : JsonPropertyName("source")] string? Source = null, [property : JsonPropertyName("provider")] string? Provider = null, [property : JsonPropertyName("validFrom")] DateTimeOffset? ValidFrom = null, [property : JsonPropertyName("validTo")] DateTimeOffset? ValidTo = null, [property : JsonPropertyName("isActive")] bool IsActive = true);
+```
+
+## CanonicalSymbolDefinition
+
+Qualified name: <code>Meridian.Contracts.Catalog.CanonicalSymbolDefinition</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:159](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L159).
+
+Defines a canonical symbol with all known identifiers, aliases, and metadata. This is the standardized representation used for symbol naming consistency.
+
+```csharp
+public sealed class CanonicalSymbolDefinition
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;canonical&quot;)] public required string Canonical { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:166](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L166) | Current canonical ticker used for lookup and display (e.g., &quot;AAPL&quot;). The durable domain identity is SecurityId; tickers may change. |
+| <code>[JsonPropertyName(&quot;securityId&quot;)] public Guid? SecurityId { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:172](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L172) | Durable Security Master identity when the symbol has been matched to a security. |
+| <code>[JsonPropertyName(&quot;securityMasterOwnsCanonical&quot;)][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool SecurityMasterOwnsCanonical { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:180](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L180) | Read-model provenance: true when only Security Master retains the canonical ticker. Ordinary registration cannot assert ownership; reconciliation establishes this value. |
+| <code>[JsonPropertyName(&quot;securityMasterCanonicalWithdrawn&quot;)][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool SecurityMasterCanonicalWithdrawn { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:191](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L191) | Read-model evidence that Security Master withdrew the canonical spelling. The Security Master reconciliation writer also accepts this flag to retain current mappings under an internal identity anchor when no unique primary identifier is currently effective. Independent aliases and identifiers can still address this retained definition; its internal canonical key alone no longer establishes a resolvable input. Ordinary registration cannot set this. |
+| <code>[JsonPropertyName(&quot;displayName&quot;)] public string? DisplayName { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:197](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L197) | Human-readable display name (e.g., &quot;Apple Inc.&quot;). |
+| <code>[JsonPropertyName(&quot;aliases&quot;)] public IReadOnlyList&lt;string&gt; Aliases { get; init; } = [];</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:204](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L204) | Known aliases for this symbol (e.g., &quot;AAPL.US&quot;, &quot;AAPL.O&quot;, &quot;US0378331005&quot;). Includes provider-specific tickers, exchange suffixes, and identifiers. |
+| <code>[JsonPropertyName(&quot;aliasDefinitions&quot;)] public IReadOnlyList&lt;CanonicalSymbolAliasDefinition&gt; AliasDefinitions { get; init; } = [];</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:210](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L210) | Rich alias history when source, provider, or validity windows are known. |
+| <code>[JsonPropertyName(&quot;providerSymbols&quot;)] public IReadOnlyDictionary&lt;string, ProviderSymbolDefinition&gt; ProviderSymbols { get; init; } = new Dictionary&lt;string, ProviderSymbolDefinition&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:216](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L216) | Provider-scoped outbound symbols keyed by normalized provider identifier. |
+| <code>[JsonPropertyName(&quot;asset_class&quot;)] public string AssetClass { get; init; } = &quot;equity&quot;;</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:223](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L223) | Asset class: equity, etf, option, future, forex, crypto, index. |
+| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:229](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L229) | Primary exchange (e.g., &quot;NASDAQ&quot;, &quot;NYSE&quot;). |
+| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:235](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L235) | Trading currency (e.g., &quot;USD&quot;). |
+| <code>[JsonPropertyName(&quot;sedol&quot;)] public string? Sedol { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:241](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L241) | SEDOL identifier (Stock Exchange Daily Official List). |
+| <code>[JsonPropertyName(&quot;isin&quot;)] public string? Isin { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:247](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L247) | ISIN identifier (International Securities Identification Number). |
+| <code>[JsonPropertyName(&quot;figi&quot;)] public string? Figi { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:253](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L253) | FIGI identifier (Financial Instrument Global Identifier). |
+| <code>[JsonPropertyName(&quot;compositeFigi&quot;)] public string? CompositeFigi { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:259](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L259) | Composite FIGI (aggregate-level identifier). |
+| <code>[JsonPropertyName(&quot;cusip&quot;)] public string? Cusip { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:265](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L265) | CUSIP identifier (Committee on Uniform Securities Identification Procedures). |
+| <code>[JsonPropertyName(&quot;country&quot;)] public string? Country { get; init; }</code> | [src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs:271](../../../../src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs#L271) | Country of listing (e.g., &quot;US&quot;). |
+
+## CatalogConfiguration
+
+Qualified name: <code>Meridian.Contracts.Catalog.CatalogConfiguration</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Catalog/StorageCatalog.cs:417](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L417).
+
+Configuration snapshot for reproducibility.
+
+```csharp
+public sealed class CatalogConfiguration
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;namingConvention&quot;)] public string? NamingConvention { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:423](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L423) | File naming convention. |
+| <code>[JsonPropertyName(&quot;datePartition&quot;)] public string? DatePartition { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:429](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L429) | Date partitioning strategy. |
+| <code>[JsonPropertyName(&quot;compression&quot;)] public string? Compression { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:435](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L435) | Compression codec in use. |
+| <code>[JsonPropertyName(&quot;rootPath&quot;)] public string? RootPath { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:441](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L441) | Storage root path. |
+
+## CatalogDateRange
+
+Qualified name: <code>Meridian.Contracts.Catalog.CatalogDateRange</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Catalog/StorageCatalog.cs:93](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L93).
+
+Date range information for the catalog.
+
+```csharp
+public sealed class CatalogDateRange
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;earliest&quot;)] public DateTime Earliest { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:99](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L99) | Earliest data timestamp. |
+| <code>[JsonPropertyName(&quot;latest&quot;)] public DateTime Latest { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:105](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L105) | Latest data timestamp. |
+| <code>[JsonPropertyName(&quot;calendarDays&quot;)] public int CalendarDays { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:111](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L111) | Total calendar days covered. |
+| <code>[JsonPropertyName(&quot;tradingDays&quot;)] public int TradingDays { get; set; }</code> | [src/Meridian.Contracts/Catalog/StorageCatalog.cs:117](../../../../src/Meridian.Contracts/Catalog/StorageCatalog.cs#L117) | Estimated trading days covered. |

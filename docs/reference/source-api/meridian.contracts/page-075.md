@@ -6,110 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## StatementFetchScheduleDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementFetchScheduleDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:369](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L369).
-
-A persisted scheduled-fetch configuration for a fetch-capable connector.
-
-```csharp
-public sealed record StatementFetchScheduleDto(string ScheduleId, string ConnectorId, string ExternalAccountId, string FundAccountId, string SourceInstitution, string? MappingProfileId, string ToleranceProfileId, int CadenceHours, bool Enabled, DateTimeOffset? LastRunAtUtc, string? LastRunStatus, DateTimeOffset? NextDueAtUtc, string SourceKind, DateOnly? PeriodStart = null, DateOnly? PeriodEnd = null, StatementReconciliationAccountingScopeDto? AccountingScope = null);
-```
-
-## StatementFetchScheduleUpsertRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementFetchScheduleUpsertRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:387](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L387).
-
-```csharp
-public sealed record StatementFetchScheduleUpsertRequestDto(string? ScheduleId, string ConnectorId, string ExternalAccountId, string FundAccountId, string SourceInstitution, string? MappingProfileId, string? ToleranceProfileId, int CadenceHours, bool Enabled, string? SourceKind = null, DateOnly? PeriodStart = null, DateOnly? PeriodEnd = null);
-```
-
-## StatementImportCommitResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementImportCommitResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:166](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L166).
-
-```csharp
-public sealed record StatementImportCommitResultDto(string RunId, bool Duplicate, int RecordCount, IReadOnlyList<StatementKindSummaryDto> KindSummaries, int BreakCount, int CaseCount, string RetainedSourcePath, string RetainedCanonicalPath, string Status, string NextAction)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EvidenceVaultIdentityDto? EvidenceVaultIdentity { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:178](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L178) |  |
-| <code>public string? EvidenceWorkbenchRoute { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:179](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L179) |  |
-| <code>public string? ReconciliationRoute { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:180](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L180) |  |
-| <code>public IReadOnlyList&lt;string&gt; BreakIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:181](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L181) |  |
-| <code>public IReadOnlyList&lt;string&gt; CaseIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:182](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L182) |  |
-| <code>public IReadOnlyList&lt;string&gt; ReconciliationCaseRoutes { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:183](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L183) |  |
-| <code>public IReadOnlyList&lt;StatementImportReconciliationCaseLinkDto&gt; ReconciliationCaseLinks { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:184](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L184) |  |
-| <code>public IReadOnlyList&lt;string&gt; NextActions { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:185](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L185) |  |
-| <code>public string? RetainedCanonicalEvidencePath { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:186](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L186) |  |
-| <code>public string? StatementReconciliationReportWorkflowId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:187](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L187) |  |
-| <code>public string? StatementReconciliationReportStatusRoute { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:188](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L188) |  |
-| <code>public Guid? OperationsWorkflowId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:189](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L189) |  |
-| <code>public StatementReconciliationAccountingScopeDto? AccountingScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:190](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L190) |  |
-
-## StatementImportIssueDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementImportIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L65).
-
-```csharp
-public sealed record StatementImportIssueDto(string Code, string Severity, int? RowNumber, string? Field, string Message);
-```
-
-## StatementImportPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementImportPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:144](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L144).
-
-```csharp
-public sealed record StatementImportPreviewDto(string ConnectorId, string ConnectorDisplayName, string? ProfileId, string FileName, long FileSizeBytes, IReadOnlyList<string> DetectedColumns, IReadOnlyList<StatementColumnMappingDto> ColumnMappings, int RecordCount, IReadOnlyList<StatementKindSummaryDto> KindSummaries, IReadOnlyList<StatementImportIssueDto> Issues, IReadOnlyList<StatementProfileSuggestionDto> ProfileSuggestions, string Status, string NextAction = default !)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;StatementAccountSnapshotPreviewDto&gt;? AccountSnapshots { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:159](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L159) |  |
-| <code>public IReadOnlyList&lt;StatementActivitySubtypeSummaryDto&gt;? ActivitySubtypeSummaries { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:160](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L160) |  |
-| <code>public IReadOnlyList&lt;StatementActivityCompletenessDto&gt;? ActivityCompleteness { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:161](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L161) |  |
-| <code>public int? TaxLotCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L162) |  |
-| <code>public int? BorrowPositionCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:163](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L163) |  |
-
-## StatementImportReconciliationCaseLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementImportReconciliationCaseLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L197).
-
-Direct reconciliation case handoff returned after statement import so workstation clients can render case actions without relying on parallel route arrays or rebuilding case routes.
-
-```csharp
-public sealed record StatementImportReconciliationCaseLinkDto(string CaseId, string? BreakId, string Route, string Label, string Status, string Priority, string Reason, string SuggestedNextAction);
-```
-
-## StatementKindSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementKindSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:133](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L133).
-
-Per-kind record breakdown so operators importing a mixed statement see exactly what lands in each lane (positions, transactions, cash balances, fees, dividends).
-
-```csharp
-public sealed record StatementKindSummaryDto(string Kind, int RecordCount, IReadOnlyList<StatementRecordPreviewDto> SampleRecords);
-```
-
 ## StatementMappingProfileActivityCodeDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileActivityCodeDto</code>. Kind: `record`.
@@ -668,4 +564,74 @@ Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:187](
 
 ```csharp
 public sealed record StorageMaintenanceCommandRequestDto(string PreviewId, string IdempotencyKey, string Rationale, string ConfirmationText);
+```
+
+## StorageMaintenanceItemResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenanceItemResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:193](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L193).
+
+```csharp
+public sealed record StorageMaintenanceItemResultDto(string CandidateId, string RelativePath, string Status, string? Message);
+```
+
+## StorageMaintenancePreviewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenancePreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:174](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L174).
+
+```csharp
+public sealed record StorageMaintenancePreviewDto(string PreviewId, StorageMaintenanceActionDto Action, DateTimeOffset CreatedAt, DateTimeOffset ExpiresAt, string Digest, string ConfirmationText, long AffectedBytes, IReadOnlyList<StorageMaintenanceCandidateDto> Candidates, string? RelativePath, string? TargetTier, IReadOnlyList<string> Warnings);
+```
+
+## StorageMaintenancePreviewRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenancePreviewRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:161](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L161).
+
+```csharp
+public sealed record StorageMaintenancePreviewRequestDto(StorageMaintenanceActionDto Action, string? RelativePath = null, string? TargetTier = null);
+```
+
+## StorageMaintenanceResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenanceResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:199](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L199).
+
+```csharp
+public sealed record StorageMaintenanceResultDto(string RunId, StorageMaintenanceActionDto Action, DateTimeOffset StartedAt, DateTimeOffset CompletedAt, string Status, long AffectedBytes, IReadOnlyList<StorageMaintenanceItemResultDto> Items, IReadOnlyList<string> Warnings, string? EvidenceVaultId, string? EvidenceRoute);
+```
+
+## StorageQualityAlertDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageQualityAlertDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:140](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L140).
+
+```csharp
+public sealed record StorageQualityAlertDto(string AlertId, string Severity, string Subject, string Message, DateTimeOffset DetectedAt);
+```
+
+## StorageQualitySummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageQualitySummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:102](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L102).
+
+```csharp
+public sealed record StorageQualitySummaryDto(string Status, int FilesAnalyzed, double AverageScore, int LowQualityFileCount, IReadOnlyList<string> Recommendations, string? Message);
+```
+
+## StorageTierSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageTierSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L135).
+
+```csharp
+public sealed record StorageTierSummaryDto(string Tier, int FileCount, long TotalBytes);
 ```

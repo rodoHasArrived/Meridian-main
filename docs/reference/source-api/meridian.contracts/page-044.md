@@ -6,76 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## PlaidPublicTokenExchangeResult
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidPublicTokenExchangeResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:138](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L138).
-
-```csharp
-public sealed record PlaidPublicTokenExchangeResult(PlaidItemDto Item, IReadOnlyList<PlaidAccountDto> Accounts, string? RequestId);
-```
-
-## PlaidSyncRequest
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidSyncRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:235](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L235).
-
-```csharp
-public sealed record PlaidSyncRequest(string ItemId, bool SyncBalances = true, bool SyncTransactions = true, bool SyncInvestments = true, bool SyncIdentity = true, string RequestedBy = "plaid-sync");
-```
-
-## PlaidSyncResult
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidSyncResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:243](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L243).
-
-```csharp
-public sealed record PlaidSyncResult(string ItemId, int BalanceSnapshotsRecorded, int BankStatementLinesIngested, int InvestmentHoldingsRecorded, int InvestmentTransactionsRecorded, int IdentityRecordsUpdated, DateTimeOffset SyncedAt, IReadOnlyList<string> Warnings);
-```
-
-## PlaidTransactionDto
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransactionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:179](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L179).
-
-```csharp
-public sealed record PlaidTransactionDto(string TransactionId, string PlaidAccountId, DateOnly Date, DateOnly? AuthorizedDate, decimal Amount, string Currency, string Name, string? MerchantName, string? Category, string? PaymentChannel, bool Pending, string? TransactionType);
-```
-
-## PlaidTransactionsSyncResult
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransactionsSyncResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:193](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L193).
-
-```csharp
-public sealed record PlaidTransactionsSyncResult(string? NextCursor, bool HasMore, IReadOnlyList<PlaidTransactionDto> Added, IReadOnlyList<PlaidTransactionDto> Modified, IReadOnlyList<string> RemovedTransactionIds, string? RequestId);
-```
-
-## PlaidTransferRequest
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:262](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L262).
-
-```csharp
-public sealed record PlaidTransferRequest(string ItemId, string PlaidAccountId, Guid PendingPaymentId, Guid EntityId, decimal Amount, string Currency, string Direction, string SecCode, string RequestedBy);
-```
-
-## PlaidTransferResult
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:273](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L273).
-
-```csharp
-public sealed record PlaidTransferResult(PlaidTransferStatusDto Status, string Message, string? AuthorizationId = null, string? TransferId = null, string? PlaidAccountId = null, Guid? PendingPaymentId = null, DateTimeOffset? CreatedAt = null);
-```
-
 ## PlaidTransferStatusDto
 
 Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferStatusDto</code>. Kind: `enum`.
@@ -561,3 +491,94 @@ Human rationale for opening a governed restatement. Changed-line evidence and re
 ```csharp
 public sealed record ReportingGovernanceRestatementRequestDto(long ExpectedVersion, string Reason);
 ```
+
+## ReportingGovernanceRetainedArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRetainedArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:106](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L106).
+
+Discoverable immutable artifact retained for a successfully executed governed run. Preview access is available before release; final distribution remains release-gated.
+
+```csharp
+public sealed record ReportingGovernanceRetainedArtifactDto(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, string Kind, bool IsPreview, string DownloadRoute);
+```
+
+## ReportingGovernanceSeriesHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceSeriesHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:202](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L202).
+
+```csharp
+public sealed record ReportingGovernanceSeriesHistoryDto(string SeriesId, IReadOnlyList<GovernedReportingRunDto> Runs, IReadOnlyList<ReportingGovernanceRestatementDto> RestatementRequests);
+```
+
+## ReportingGovernanceVersionRequestDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceVersionRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:10](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L10).
+
+Optimistic concurrency token for a governed reporting transition. Actor, tenant, company, permissions, command origin, readiness, artifact hashes, and evidence are intentionally absent; the server resolves those values from the authenticated request and retained state.
+
+```csharp
+public sealed record ReportingGovernanceVersionRequestDto(long ExpectedVersion);
+```
+
+## DecisionInput
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:6](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L6).
+
+Identifies a kernel input subject and supporting context.
+
+```csharp
+public sealed record DecisionInput(string SubjectId, string? SubjectType = null, string? Context = null, IReadOnlyDictionary<string, string?>? Attributes = null);
+```
+
+## DecisionReason
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionReason</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:26](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L26).
+
+Explains a single weighted rule contribution to a kernel decision.
+
+```csharp
+public sealed record DecisionReason(string RuleId, double Weight, string ReasonCode, string HumanExplanation, DecisionSeverity Severity = DecisionSeverity.Info, IReadOnlyList<string>? EvidenceRefs = null);
+```
+
+## DecisionResult (generic arity 1)
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:47](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L47).
+
+Standardized output envelope for all rule-evaluation kernels.
+
+```csharp
+public sealed record DecisionResult<TScore>(TScore Score, IReadOnlyList<DecisionReason> Reasons, DecisionTrace Trace);
+```
+
+## DecisionSeverity
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:15](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L15).
+
+Indicates how severe a specific rule reason is for downstream automation and UI.
+
+```csharp
+public enum DecisionSeverity
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info = 0</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:17](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L17) |  |
+| <code>Warning = 1</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:18](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L18) |  |
+| <code>Error = 2</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:19](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L19) |  |
+| <code>Critical = 3</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:20](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L20) |  |

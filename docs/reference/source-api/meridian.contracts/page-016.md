@@ -6,173 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SymbolConfigDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.SymbolConfigDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:134](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L134).
-
-Symbol subscription configuration.
-
-```csharp
-public class SymbolConfigDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:137](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L137) |  |
-| <code>[JsonPropertyName(&quot;subscribeTrades&quot;)] public bool SubscribeTrades { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:140](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L140) |  |
-| <code>[JsonPropertyName(&quot;subscribeDepth&quot;)] public bool SubscribeDepth { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:143](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L143) |  |
-| <code>[JsonPropertyName(&quot;depthLevels&quot;)] public int DepthLevels { get; set; } = 10;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:146](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L146) |  |
-| <code>[JsonPropertyName(&quot;securityType&quot;)] public string SecurityType { get; set; } = &quot;STK&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:149](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L149) |  |
-| <code>[JsonPropertyName(&quot;exchange&quot;)] public string Exchange { get; set; } = &quot;SMART&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:152](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L152) |  |
-| <code>[JsonPropertyName(&quot;currency&quot;)] public string Currency { get; set; } = &quot;USD&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:155](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L155) |  |
-| <code>[JsonPropertyName(&quot;primaryExchange&quot;)] public string? PrimaryExchange { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:158](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L158) |  |
-| <code>[JsonPropertyName(&quot;localSymbol&quot;)] public string? LocalSymbol { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:161](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L161) |  |
-| <code>[JsonPropertyName(&quot;instrumentType&quot;)] public string? InstrumentType { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:164](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L164) |  |
-| <code>[JsonPropertyName(&quot;strike&quot;)] public decimal? Strike { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:167](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L167) |  |
-| <code>[JsonPropertyName(&quot;right&quot;)] public string? Right { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:170](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L170) |  |
-| <code>[JsonPropertyName(&quot;lastTradeDateOrContractMonth&quot;)] public string? LastTradeDateOrContractMonth { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:173](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L173) |  |
-| <code>[JsonPropertyName(&quot;optionStyle&quot;)] public string? OptionStyle { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:176](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L176) |  |
-| <code>[JsonPropertyName(&quot;multiplier&quot;)] public int? Multiplier { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:179](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L179) |  |
-| <code>[JsonPropertyName(&quot;underlyingSymbol&quot;)] public string? UnderlyingSymbol { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:182](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L182) |  |
-
-## SymbolGroupDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.SymbolGroupDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:657](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L657).
-
-Symbol group definition.
-
-```csharp
-public sealed class SymbolGroupDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;id&quot;)] public string Id { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:660](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L660) |  |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:663](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L663) |  |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:666](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L666) |  |
-| <code>[JsonPropertyName(&quot;color&quot;)] public string Color { get; set; } = &quot;#0078D4&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:669](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L669) |  |
-| <code>[JsonPropertyName(&quot;icon&quot;)] public string Icon { get; set; } = &quot;\uE8D2&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:672](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L672) |  |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:675](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L675) |  |
-| <code>[JsonPropertyName(&quot;isExpanded&quot;)] public bool IsExpanded { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:678](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L678) |  |
-| <code>[JsonPropertyName(&quot;sortOrder&quot;)] public int SortOrder { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:681](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L681) |  |
-| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:684](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L684) |  |
-| <code>[JsonPropertyName(&quot;updatedAt&quot;)] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:687](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L687) |  |
-| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:690](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L690) |  |
-| <code>[JsonPropertyName(&quot;smartCriteria&quot;)] public SmartGroupCriteriaDto? SmartCriteria { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:693](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L693) |  |
-
-## SymbolGroupsConfigDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.SymbolGroupsConfigDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:636](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L636).
-
-Symbol groups configuration.
-
-```csharp
-public sealed class SymbolGroupsConfigDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;groups&quot;)] public SymbolGroupDto[]? Groups { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:639](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L639) |  |
-| <code>[JsonPropertyName(&quot;defaultGroupId&quot;)] public string? DefaultGroupId { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:642](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L642) |  |
-| <code>[JsonPropertyName(&quot;showUngroupedSymbols&quot;)] public bool ShowUngroupedSymbols { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:645](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L645) |  |
-| <code>[JsonPropertyName(&quot;sortBy&quot;)] public string SortBy { get; set; } = &quot;Name&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:648](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L648) |  |
-| <code>[JsonPropertyName(&quot;viewMode&quot;)] public string ViewMode { get; set; } = &quot;Tree&quot;;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:651](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L651) |  |
-
-## SymbolMappingsConfigDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.SymbolMappingsConfigDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:502](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L502).
-
-Shared symbol-resolution rollout configuration. Legacy mappings are migration inputs and remain readable while the registry operates in compare mode.
-
-```csharp
-public sealed class SymbolMappingsConfigDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonExtensionData] public Dictionary&lt;string, JsonElement&gt;? AdditionalProperties { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:506](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L506) | Retains host-owned fields this settings view does not model during load/save. |
-| <code>[JsonPropertyName(&quot;persistencePath&quot;)] public string? PersistencePath { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:509](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L509) |  |
-| <code>[JsonPropertyName(&quot;resolutionMode&quot;)] public SymbolResolutionMode ResolutionMode { get; set; } = SymbolResolutionMode.Compare;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:512](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L512) |  |
-| <code>[JsonPropertyName(&quot;reportMismatches&quot;)] public bool ReportMismatches { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:515](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L515) |  |
-| <code>[JsonPropertyName(&quot;providerResolutionModes&quot;)] public Dictionary&lt;string, SymbolResolutionMode&gt;? ProviderResolutionModes { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:518](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L518) |  |
-
-## CoordinationSnapshot
-
-Qualified name: <code>Meridian.Contracts.Coordination.CoordinationSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:3](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L3).
-
-```csharp
-public sealed record CoordinationSnapshot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Enabled { get; init; }</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:5](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L5) |  |
-| <code>public string Mode { get; init; } = &quot;SingleInstance&quot;;</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:6](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L6) |  |
-| <code>public string InstanceId { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:7](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L7) |  |
-| <code>public string RootPath { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:8](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L8) |  |
-| <code>public int HeldLeaseCount { get; init; }</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:9](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L9) |  |
-| <code>public int SymbolLeaseCount { get; init; }</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:10](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L10) |  |
-| <code>public int ScheduleLeaseCount { get; init; }</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:11](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L11) |  |
-| <code>public int JobLeaseCount { get; init; }</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:12](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L12) |  |
-| <code>public int LeaderLeaseCount { get; init; }</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:13](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L13) |  |
-| <code>public int ConflictCount { get; init; }</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:14](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L14) |  |
-| <code>public int TakeoverCount { get; init; }</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:15](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L15) |  |
-| <code>public int RenewalFailureCount { get; init; }</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:16](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L16) |  |
-| <code>public int OrphanedLeaseCount { get; init; }</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:17](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L17) |  |
-| <code>public int CorruptedLeaseCount { get; init; }</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:18](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L18) |  |
-| <code>public IReadOnlyList&lt;LeaseRecord&gt; HeldLeases { get; init; } = Array.Empty&lt;LeaseRecord&gt;();</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:19](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L19) |  |
-| <code>public IReadOnlyList&lt;string&gt; OrphanedResources { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:20](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L20) |  |
-| <code>public IReadOnlyList&lt;string&gt; CorruptedLeaseFiles { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:21](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L21) |  |
-| <code>public DateTimeOffset CapturedAtUtc { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs:22](../../../../src/Meridian.Contracts/Coordination/CoordinationSnapshot.cs#L22) |  |
-
-## ExecutionLeaseAcquireResult
-
-Qualified name: <code>Meridian.Contracts.Coordination.ExecutionLeaseAcquireResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Coordination/IExecutionLease.cs:22](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L22).
-
-```csharp
-public sealed record ExecutionLeaseAcquireResult(IExecutionLease? Lease, string? CurrentOwner)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Acquired =&gt; …;</code> | [src/Meridian.Contracts/Coordination/IExecutionLease.cs:24](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L24) |  |
-
-## ExecutionLeaseLostException
-
-Qualified name: <code>Meridian.Contracts.Coordination.ExecutionLeaseLostException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Coordination/IExecutionLease.cs:30](../../../../src/Meridian.Contracts/Coordination/IExecutionLease.cs#L30).
-
-Signals loss of execution ownership, after which the caller must stop producing side effects.
-
-```csharp
-public sealed class ExecutionLeaseLostException(string resourceId) : InvalidOperationException($"Execution ownership of '{resourceId}' was lost; no further side effects are permitted.");
-```
-
 ## IClusterCoordinator
 
 Qualified name: <code>Meridian.Contracts.Coordination.IClusterCoordinator</code>. Kind: `interface`.
@@ -851,4 +684,103 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:316](../../..
 
 ```csharp
 public sealed record CreateLoanRequest(Guid? LoanId, string FacilityName, BorrowerInfoDto Borrower, DateOnly EffectiveDate, DirectLendingTermsDto Terms);
+```
+
+## CreateServicerReportBatchRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.CreateServicerReportBatchRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:254](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L254).
+
+```csharp
+public sealed record CreateServicerReportBatchRequest(string ServicerName, string ReportType, string SourceFormat, DateOnly ReportAsOfDate, string? FileName, string? FileHash, string? Notes, IReadOnlyList<ServicerPositionReportLineImportDto>? PositionLines, IReadOnlyList<ServicerTransactionReportLineImportDto>? TransactionLines);
+```
+
+## CurrencyCode
+
+Qualified name: <code>Meridian.Contracts.DirectLending.CurrencyCode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:5](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L5).
+
+```csharp
+public enum CurrencyCode : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>USD = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:7](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L7) |  |
+| <code>EUR = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:8](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L8) |  |
+| <code>GBP = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:9](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L9) |  |
+| <code>JPY = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:10](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L10) |  |
+| <code>Other = 4</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:11](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L11) |  |
+
+## DailyAccrualEntryDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DailyAccrualEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:282](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L282).
+
+```csharp
+public sealed record DailyAccrualEntryDto(Guid AccrualEntryId, DateOnly AccrualDate, decimal InterestAmount, decimal CommitmentFeeAmount, decimal PenaltyAmount, decimal AnnualRateApplied, DateTimeOffset RecordedAt, decimal PikInterestAmount = 0m, bool PikCapitalizationDeferred = false);
+```
+
+## DayCountBasis
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DayCountBasis</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:27](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L27).
+
+```csharp
+public enum DayCountBasis : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Act360 = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:29](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L29) |  |
+| <code>Act365F = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:30](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L30) |  |
+| <code>Thirty360 = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:31](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L31) |  |
+| <code>ActualActualISDA = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:32](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L32) |  |
+
+## DeclaredRate
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DeclaredRate</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:43](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L43).
+
+A rate value together with the unit it was declared in.
+
+```csharp
+public sealed record DeclaredRate(decimal Value, DirectLendingRateUnit Unit)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DeclaredRate Fraction(decimal value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:45](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L45) |  |
+| <code>public static DeclaredRate Percent(decimal value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:47](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L47) |  |
+| <code>public static DeclaredRate BasisPoints(decimal value) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:49](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L49) |  |
+
+## DirectLendingCommandEnvelope (generic arity 1)
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:114](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L114).
+
+```csharp
+public sealed record DirectLendingCommandEnvelope<TCommand>(TCommand Command, DirectLendingCommandMetadataDto? Metadata);
+```
+
+## DirectLendingCommandError
+
+Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingCommandError</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs:14](../../../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs#L14).
+
+```csharp
+public sealed record DirectLendingCommandError(DirectLendingErrorCode Code, string Message);
 ```

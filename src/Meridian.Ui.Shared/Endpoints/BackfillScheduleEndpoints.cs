@@ -177,7 +177,8 @@ public static class BackfillScheduleEndpoints
             if (history is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill execution history");
 
-            var executions = history.GetRecentExecutions(limit ?? 50);
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var executions = history.GetRecentExecutions(limit ?? 50, tenantId);
             var defaultProvider = services
                 .GetService<IOptions<AutoGapRemediationPolicy>>()?
                 .Value.DefaultProvider;

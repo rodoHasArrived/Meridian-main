@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BrokerAdapterTemplate
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.BrokerAdapterTemplate</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L15).
+
+Broker adapter template showing strict boundary separation: - Broker-specific DTOs and enums stay inside this file/namespace. - Canonical Meridian contracts are exposed via execution SDK models.
+
+```csharp
+public static class BrokerAdapterTemplate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Register(IServiceCollection services);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:17](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L17) |  |
+
+## ITemplateBrokerStreamingClient
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.ITemplateBrokerStreamingClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L65).
+
+Defines asynchronous streaming and disposal for the template broker adapter.
+
+```csharp
+public interface ITemplateBrokerStreamingClient : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IAsyncEnumerable&lt;TemplateBrokerStreamMessage&gt; StreamAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L67) |  |
+
 ## TemplateBrokerageGateway
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGateway</code>. Kind: `class`.
@@ -676,13 +712,13 @@ Declared public members:
 | <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:45](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L45) |  |
 | <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L48) |  |
 | <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:49](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L49) |  |
-| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly with { Intraday = true, SupportedMarkets = [&quot;US&quot;, &quot;UK&quot;, &quot;DE&quot;, &quot;JP&quot;, &quot;CA&quot;, &quot;AU&quot;, &quot;HK&quot;, &quot;SG&quot;]};</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:51](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L51) |  |
-| <code>public IReadOnlyList&lt;DataGranularity&gt; SupportedGranularities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L58) |  |
-| <code>public YahooFinanceHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:60](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L60) |  |
-| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:69](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L69) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:82](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L82) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:92](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L92) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AggregateBar&gt;&gt; GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:122](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L122) |  |
+| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly with { Intraday = true, SupportedMarkets = [&quot;US&quot;, &quot;UK&quot;, &quot;DE&quot;, &quot;JP&quot;, &quot;CA&quot;, &quot;AU&quot;, &quot;HK&quot;, &quot;SG&quot;]};</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:52](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L52) |  |
+| <code>public IReadOnlyList&lt;DataGranularity&gt; SupportedGranularities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L59) |  |
+| <code>public YahooFinanceHistoricalDataProvider(HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:61](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L61) |  |
+| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:70](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L70) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:83](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L83) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:93](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L93) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AggregateBar&gt;&gt; GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs:123](../../../../src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs#L123) |  |
 
 ## YahooFinanceProviderModule
 
@@ -833,60 +869,3 @@ Declared public members:
 | <code>public bool EnableWebSocket { get; init; } = true;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:345](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L345) | Whether to use WebSocket connection. |
 | <code>public int TimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:350](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L350) | Connection timeout in seconds. |
 | <code>public int KeepAliveSeconds { get; init; } = 30;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:355](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L355) | Keep-alive interval in seconds. |
-
-## CredentialConfig
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.CredentialConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:412](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L412).
-
-Credential configuration for a data source.
-
-```csharp
-public sealed record CredentialConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Source { get; init; } = &quot;Environment&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:417](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L417) | Source of credentials: Environment, File, Vault, Config. |
-| <code>public string? ApiKeyVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:422](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L422) | Environment variable name for API key. |
-| <code>public string? KeyIdVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:427](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L427) | Environment variable name for key ID. |
-| <code>public string? SecretKeyVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:432](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L432) | Environment variable name for secret key. |
-| <code>public string? UsernameVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:437](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L437) | Environment variable name for username. |
-| <code>public string? PasswordVar { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:442](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L442) | Environment variable name for password. |
-| <code>public string? CredentialsPath { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:447](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L447) | Path to credentials file (if Source is File). |
-| <code>public string? VaultPath { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:453](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L453) | Vault path for credentials (if Source is Vault). Supports logical paths like &quot;marketdata/alpaca/prod&quot;. |
-| <code>public string? VaultProvider { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:458](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L458) | Vault provider name: AwsSecretsManager or AzureKeyVault. |
-| <code>public string ApiKeyKey { get; init; } = &quot;apiKey&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:464](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L464) | Optional key names within the vault payload for each credential. Defaults: apiKey, keyId, secretKey, username, password. |
-| <code>public string KeyIdKey { get; init; } = &quot;keyId&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:465](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L465) |  |
-| <code>public string SecretKeyKey { get; init; } = &quot;secretKey&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:466](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L466) |  |
-| <code>public string UsernameKey { get; init; } = &quot;username&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:467](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L467) |  |
-| <code>public string PasswordKey { get; init; } = &quot;password&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:468](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L468) |  |
-| <code>public static ISecretProvider SecretProvider { get; set; } = new EnvironmentSecretProvider();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:482](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L482) | Secret provider used for vault-backed credential resolution. Set at application startup via DI. Defaults to EnvironmentSecretProvider which uses MDC_VAULT__* environment variables as a bridge for local/test environments. Replace with a real vault provider (AWS Secrets Manager, Azure Key Vault) for production. |
-| <code>public string? ResolveApiKey();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:487](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L487) | Resolves the API key from configured source. |
-| <code>public string? ResolveKeyId();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:496](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L496) | Resolves the key ID from configured source. |
-| <code>public string? ResolveSecretKey();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:505](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L505) | Resolves the secret key from configured source. |
-| <code>public string? ResolveUsername();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:514](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L514) | Resolves the username from configured source. |
-| <code>public string? ResolvePassword();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:523](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L523) | Resolves the password from configured source. |
-| <code>public CredentialValidationResult Validate(bool requireApiKey = false, bool requireKeyIdAndSecret = false, bool requireUsernameAndPassword = false);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:577](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L577) | Validates that required credentials are configured and resolvable. Use this for pre-flight checks before starting a data source. |
-| <code>public void EnsureValid(string sourceName, bool requireApiKey = false, bool requireKeyIdAndSecret = false, bool requireUsernameAndPassword = false);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:711](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L711) | Performs a pre-flight check ensuring all credentials can be resolved. Throws InvalidOperationException if validation fails. |
-
-## CredentialValidationResult
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.CredentialValidationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:729](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L729).
-
-Result of credential validation.
-
-```csharp
-public sealed record CredentialValidationResult(bool IsValid, IReadOnlyList<string> Errors)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static CredentialValidationResult Success { get; } = new (true, Array.Empty&lt;string&gt;());</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:734](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L734) | Creates a successful validation result. |

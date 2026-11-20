@@ -6,88 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ResearchBriefingRun
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResearchBriefingRun</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L53).
-
-Research run card shown in the briefing and recent-run rail.
-
-```csharp
-public sealed record ResearchBriefingRun(string RunId, string StrategyName, StrategyRunMode Mode, StrategyRunStatus Status, string Dataset, string WindowLabel, string ReturnLabel, string SharpeLabel, string LastUpdatedLabel, string Notes, StrategyRunPromotionState? PromotionState, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, ResearchRunDrillInLinks DrillIn);
-```
-
-## ResearchBriefingWorkspaceSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:118](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L118).
-
-Workspace-level summary used to drive the Research shell header.
-
-```csharp
-public sealed record ResearchBriefingWorkspaceSummary(int TotalRuns, int ActiveRuns, int PromotionCandidates, int PositivePnlRuns, string? LatestRunId, string? LatestStrategyName, bool HasLedgerCoverage, bool HasPortfolioCoverage, string Summary);
-```
-
-## ResearchRunDrillInLinks
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResearchRunDrillInLinks</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L42).
-
-Drill-in links attached to research run cards and comparisons.
-
-```csharp
-public sealed record ResearchRunDrillInLinks(string EquityCurve, string Fills, string Attribution, string? Ledger, string CashFlows, string? Continuity);
-```
-
-## ResearchSavedComparison
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResearchSavedComparison</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L84).
-
-Saved comparison summary surfaced from the briefing home.
-
-```csharp
-public sealed record ResearchSavedComparison(string ComparisonId, string StrategyName, string ModeSummary, string Summary, string? AnchorRunId, IReadOnlyList<ResearchSavedComparisonMode> Modes);
-```
-
-## ResearchSavedComparisonMode
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResearchSavedComparisonMode</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L73).
-
-Single mode participating in a saved comparison package.
-
-```csharp
-public sealed record ResearchSavedComparisonMode(string RunId, StrategyRunMode Mode, StrategyRunStatus Status, decimal? NetPnl, decimal? TotalReturn, ResearchRunDrillInLinks DrillIn);
-```
-
-## ResearchWhatChangedItem
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResearchWhatChangedItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:106](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L106).
-
-&quot;What changed&quot; entry summarizing recent run or workflow movement.
-
-```csharp
-public sealed record ResearchWhatChangedItem(string ChangeId, string Title, string Summary, string Category, DateTimeOffset Timestamp, string RelativeTime, string? RunId = null);
-```
-
-## ResolveBreakCase
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResolveBreakCase</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:27](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L27).
-
-```csharp
-public sealed record ResolveBreakCase(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
 ## ResolveReconciliationBreakRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest</code>. Kind: `record`.
@@ -609,4 +527,86 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 
 ```csharp
 public sealed record SecurityMasterEntitlementApplicabilityDto(Guid EntitlementId, string VendorName, DataVendorDataType DataType, string Scope, string? ClientId, string? AccountId, string? FundProfileId, Guid? SecurityId, bool IsApplicable, bool IsMostSpecific, DataVendorEntitlementStatus Status, bool RequiresDirectClientContract, string? ContractReference, string Summary);
+```
+
+## SecurityMasterFactorPointDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterFactorPointDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:309](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L309).
+
+```csharp
+public sealed record SecurityMasterFactorPointDto(string PointId, DateOnly EffectiveDate, decimal Factor, decimal? PreviousFactor, string SourceSystem, string? SourceRecordId, DateTimeOffset? SourceAsOfUtc, string? SourceUpdatedBy, string? SourceReason, bool IsCurrentFactor);
+```
+
+## SecurityMasterGovernanceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterGovernanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:80](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L80).
+
+Read-only governance evidence from the same requirements seam that enforces edits.
+
+```csharp
+public sealed record SecurityMasterGovernanceDto(string Profile, string ProfileSource, bool IsProfileLatched, bool RequireGovernedTermAmendments, bool RequireIndependentReviewer, bool RequireIndependentProfileApprover, IReadOnlyList<string> ContradictedKeys);
+```
+
+## SecurityMasterIdentifierSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterIdentifierSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:175](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L175).
+
+```csharp
+public sealed record SecurityMasterIdentifierSummaryDto(string? PrimaryIdentifierKind, string? PrimaryIdentifierValue, int ActiveIdentifierCount, int ActiveAliasCount, int ProviderMappingCount, int DistinctProviderCount, bool HasPrimaryIdentifier, bool HasProviderMappings, string Summary, IReadOnlyList<SecurityMasterProviderSymbolMappingDto> ProviderMappings);
+```
+
+## SecurityMasterImpactLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterImpactLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:419](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L419).
+
+```csharp
+public sealed record SecurityMasterImpactLinkDto(string Target, string Label, string Summary, SecurityMasterImpactSeverity Severity, bool IsActive);
+```
+
+## SecurityMasterImpactSeverity
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterImpactSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L16).
+
+```csharp
+public enum SecurityMasterImpactSeverity
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L18) |  |
+| <code>None = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L19) |  |
+| <code>Low = 2</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L20) |  |
+| <code>Medium = 3</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L21) |  |
+| <code>High = 4</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L22) |  |
+
+## SecurityMasterLotModelDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterLotModelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:334](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L334).
+
+```csharp
+public sealed record SecurityMasterLotModelDto(string QuantityModel, decimal? LotSize, decimal? ContractMultiplier, bool UsesFaceValue, bool SupportsFactorAdjustedExposure, bool RequiresResolvedSecurityId, string Summary);
+```
+
+## SecurityMasterManualChangeApprovalPostureDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterManualChangeApprovalPostureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:568](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L568).
+
+```csharp
+public sealed record SecurityMasterManualChangeApprovalPostureDto(string PolicyKey, OperationsGateKeyDto Gate, string Route, string RequiredPermission, int RequiredDistinctApprovals, bool RequiresIndependentReviewer, string EvidenceRequirement, string Status, int ManualChangeCount, int UnapprovedManualChangeCount, string Summary);
 ```
