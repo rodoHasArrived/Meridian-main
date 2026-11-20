@@ -8,6 +8,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Artifacts;
 using Meridian.Strategies.Models;
 using Meridian.Ui.Shared.Contracts;
 using Meridian.Ui.Shared.Evidence;
@@ -39,6 +40,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     private readonly ILogger<CoveredCallBacktestService> _logger;
     private readonly TimeProvider _timeProvider;
     private readonly IEvidenceArtifactStore? _evidenceArtifactStore;
+    private readonly StrategyArtifactRegistry? _strategyArtifacts;
 
     private static readonly BoundedChannelOptions RunQueueOptions = new(capacity: 512)
     {
@@ -93,7 +95,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         IMemoryCache resultCache,
         ILoggerFactory loggerFactory,
         TimeProvider? timeProvider = null,
-        IEvidenceArtifactStore? evidenceArtifactStore = null)
+        IEvidenceArtifactStore? evidenceArtifactStore = null,
+        StrategyArtifactRegistry? strategyArtifacts = null)
     {
         _engineFactory = engineFactory ?? throw new ArgumentNullException(nameof(engineFactory));
         _chainFactory = chainFactory ?? throw new ArgumentNullException(nameof(chainFactory));
@@ -104,6 +107,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         _logger = loggerFactory.CreateLogger<CoveredCallBacktestService>();
         _timeProvider = timeProvider ?? TimeProvider.System;
         _evidenceArtifactStore = evidenceArtifactStore;
+        _strategyArtifacts = strategyArtifacts;
 
         _configuredConcurrency = Math.Max(1, options.CurrentValue.MaxConcurrentRuns);
         _concurrency = new SemaphoreSlim(_configuredConcurrency, _configuredConcurrency);
@@ -629,6 +633,41 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 state.Scope,
                 runId,
                 paramSet);
+            var dataRoot = _options.CurrentValue.DataRootOverride ?? "./data";
+            var backtestRequest = new BacktestRequest(
+                From: request.From,
+                To: request.To,
+                Symbols: [request.UnderlyingSymbol.Trim().ToUpperInvariant()],
+                InitialCash: request.InitialCash,
+                DataRoot: dataRoot,
+                RiskFreeRate: request.RiskFreeRate)
+            {
+                LedgerJournalScopeId = runId
+            };
+            if (_strategyArtifacts is not null)
+            {
+                var configuration = request with
+                {
+                    UnderlyingSymbol = request.UnderlyingSymbol.Trim().ToUpperInvariant(),
+                    Label = null,
+                    OperatorAcceptanceCriteria = [],
+                    RetainedEvidenceReferences = [],
+                    AccountingRecordReferences = [],
+                    ApprovalReferences = [],
+                    PaperValidationReferences = [],
+                    GovernedReportReferences = []
+                };
+                var artifact = new StrategyArtifact(initialEntry.StrategyId, StrategyAuthoringRoute.Code,
+                    StrategyArtifact.CodeRevision(typeof(CoveredCallOverwriteStrategy)),
+                    new Dictionary<string, string>
+                    {
+                        ["configuration"] = System.Text.Json.JsonSerializer.Serialize(
+                            configuration, CoveredCallJsonContext.Default.CoveredCallBacktestRequest)
+                    },
+                    backtestRequest.Symbols!, "equity-bars+option-chain", backtestRequest.ToRealismDescriptor().ToCanonicalString());
+                initialEntry = initialEntry.WithStrategyArtifact(await _strategyArtifacts.RetainAsync(artifact, hostCt)
+                    .ConfigureAwait(false));
+            }
             await _runRepository.RecordRunAsync(initialEntry, hostCt).ConfigureAwait(false);
 
             // Build chain provider (eager materialisation).
@@ -650,19 +689,6 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             var executionStrategy = request.InitialUnderlyingShares > 0
                 ? (IBacktestStrategy)new UnderlyingSeedingStrategy(innerStrategy, request.UnderlyingSymbol, request.InitialUnderlyingShares)
                 : innerStrategy;
-
-            // Build engine.
-            var dataRoot = _options.CurrentValue.DataRootOverride ?? "./data";
-            var backtestRequest = new BacktestRequest(
-                From: request.From,
-                To: request.To,
-                Symbols: new[] { request.UnderlyingSymbol.Trim().ToUpperInvariant() },
-                InitialCash: request.InitialCash,
-                DataRoot: dataRoot,
-                RiskFreeRate: request.RiskFreeRate)
-            {
-                LedgerJournalScopeId = runId
-            };
 
             var engine = _engineFactory(backtestRequest);
 

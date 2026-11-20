@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SyncValidationResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SyncValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:23](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L23).
+
+```csharp
+public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncValidationIssue> Issues);
+```
+
 ## ThreeWayAdjustmentDraftService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayAdjustmentDraftService</code>. Kind: `class`.
@@ -422,7 +432,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:90](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L90) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1607](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1607) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1628](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1628) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -905,14 +915,4 @@ Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:14
 
 ```csharp
 public sealed record OperatorScopePreferenceRecord(string OperatorKey, OperatingScopeValuesDto DefaultScope, DateTimeOffset UpdatedAt);
-```
-
-## OperatorScopePreferenceSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorScopePreferenceSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:145](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L145).
-
-```csharp
-public sealed record OperatorScopePreferenceSnapshot(int Version, IReadOnlyList<OperatorScopePreferenceRecord> Operators);
 ```

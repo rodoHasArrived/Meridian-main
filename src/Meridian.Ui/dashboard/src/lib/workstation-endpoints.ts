@@ -1256,6 +1256,10 @@ export function promotionEvaluateEndpoint(runId: string): string {
   return routeWithParam(UI_API_ROUTES.PromotionEvaluate, "runId", runId);
 }
 
+export function promotionLiveAuthorizationRevokeEndpoint(authorizationId: string): string {
+  return routeWithParam(UI_API_ROUTES.PromotionLiveAuthorizationRevoke, "id", authorizationId);
+}
+
 export function executionOrderCancelEndpoint(orderId: string): string {
   return routeWithParam(UI_API_ROUTES.ExecutionOrderCancel, "orderId", orderId);
 }

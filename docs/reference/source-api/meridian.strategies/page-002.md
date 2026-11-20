@@ -6,6 +6,128 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyPromotionRecord
+
+Qualified name: <code>Meridian.Strategies.Promotions.StrategyPromotionRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:126](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L126).
+
+An immutable audit record generated when a strategy is promoted to a higher-risk run type. Should be serialised and stored alongside the strategy&#x27;s run history.
+
+```csharp
+public sealed record StrategyPromotionRecord(string PromotionId, string StrategyId, string StrategyName, RunType SourceRunType, RunType TargetRunType, string SourceRunId, string? TargetRunId, double QualifyingSharpe, decimal QualifyingMaxDrawdownPercent, decimal QualifyingTotalReturn, string Decision, DateTimeOffset PromotedAt, string? ApprovalReason = null, string? ReviewNotes = null, string[]? ApprovalChecklist = null, string[]? EvidenceReferences = null, string? AuditReference = null, string? ApprovedBy = null, string? ManualOverrideId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? StrategyArtifactId { get; init; }</code> | [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:147](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L147) |  |
+| <code>public StrategyLiveAuthorization? LiveAuthorization { get; init; }</code> | [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:148](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L148) |  |
+| <code>public StrategyLiveAuthorizationStatus? LiveAuthorizationStatus { get; init; }</code> | [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:149](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L149) |  |
+
+## AggregatedPosition
+
+Qualified name: <code>Meridian.Strategies.Services.AggregatedPosition</code>. Kind: `record`.
+
+Source: [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:16](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L16).
+
+Aggregated (netted) position across multiple strategy runs.
+
+```csharp
+public sealed record AggregatedPosition(string Symbol, decimal TotalQuantity, decimal LongQuantity, decimal ShortQuantity, decimal WeightedAverageCost, decimal TotalUnrealisedPnl, IReadOnlyList<RunPositionContribution> Contributions);
+```
+
+## AggregatePortfolioService
+
+Qualified name: <code>Meridian.Strategies.Services.AggregatePortfolioService</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/AggregatePortfolioService.cs:9](../../../../src/Meridian.Strategies/Services/AggregatePortfolioService.cs#L9).
+
+Implements IAggregatePortfolioService by querying the live PortfolioRegistry for all active paper/live strategy runs.
+
+```csharp
+public sealed class AggregatePortfolioService : IAggregatePortfolioService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AggregatePortfolioService(PortfolioRegistry registry);</code> | [src/Meridian.Strategies/Services/AggregatePortfolioService.cs:13](../../../../src/Meridian.Strategies/Services/AggregatePortfolioService.cs#L13) |  |
+| <code>public IReadOnlyList&lt;AggregatedPosition&gt; GetAggregatedPositions(IReadOnlyList&lt;string&gt;? runIds = null);</code> | [src/Meridian.Strategies/Services/AggregatePortfolioService.cs:19](../../../../src/Meridian.Strategies/Services/AggregatePortfolioService.cs#L19) |  |
+| <code>public CrossStrategyExposureReport GetCrossStrategyExposure();</code> | [src/Meridian.Strategies/Services/AggregatePortfolioService.cs:106](../../../../src/Meridian.Strategies/Services/AggregatePortfolioService.cs#L106) |  |
+| <code>public NetSymbolPosition GetNetPositionForSymbol(string symbol);</code> | [src/Meridian.Strategies/Services/AggregatePortfolioService.cs:129](../../../../src/Meridian.Strategies/Services/AggregatePortfolioService.cs#L129) |  |
+
+## BankInternalCashReconciliationSourceAdapter
+
+Qualified name: <code>Meridian.Strategies.Services.BankInternalCashReconciliationSourceAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:128](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L128).
+
+Maps available bank transactions into internal cash movements for reconciliation.
+
+```csharp
+public sealed class BankInternalCashReconciliationSourceAdapter : IInternalCashReconciliationSourceAdapter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BankInternalCashReconciliationSourceAdapter(IBankTransactionSource? bankTransactionSource = null);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:132](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L132) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationCashMovementInput&gt;&gt; GetCashMovementsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:137](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L137) |  |
+
+## CashFlowProjectionService
+
+Qualified name: <code>Meridian.Strategies.Services.CashFlowProjectionService</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/CashFlowProjectionService.cs:11](../../../../src/Meridian.Strategies/Services/CashFlowProjectionService.cs#L11).
+
+Projects cash flows for a strategy run by mapping its recorded CashFlowEntry items through the F# CashLadder.build module, then returning a time-bucketed RunCashFlowSummary.
+
+```csharp
+public sealed class CashFlowProjectionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CashFlowProjectionService(IStrategyRepository repository);</code> | [src/Meridian.Strategies/Services/CashFlowProjectionService.cs:18](../../../../src/Meridian.Strategies/Services/CashFlowProjectionService.cs#L18) |  |
+| <code>public async Task&lt;RunCashFlowSummary?&gt; GetAsync(string runId, DateTimeOffset? asOf = null, string? currency = null, int? bucketDays = null, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/CashFlowProjectionService.cs:35](../../../../src/Meridian.Strategies/Services/CashFlowProjectionService.cs#L35) | Returns a cash-flow projection for the run identified by runId, or null when no run with that id exists. |
+
+## CrossStrategyExposureReport
+
+Qualified name: <code>Meridian.Strategies.Services.CrossStrategyExposureReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Strategies/Services/IAggregatePortfolioService.cs:49](../../../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs#L49).
+
+Cross-strategy gross/net exposure summary.
+
+```csharp
+public sealed record CrossStrategyExposureReport(decimal GrossExposure, decimal NetExposure, IReadOnlyList<string> Top5Concentrations, DateTimeOffset AsOf);
+```
+
+## ExternalStatementReconciliationSourceAdapter
+
+Qualified name: <code>Meridian.Strategies.Services.ExternalStatementReconciliationSourceAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:165](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L165).
+
+Delegates reconciliation statement retrieval to the configured external statement source.
+
+```csharp
+public sealed class ExternalStatementReconciliationSourceAdapter : IExternalStatementReconciliationSourceAdapter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ExternalStatementReconciliationSourceAdapter(IExternalStatementSource externalStatementSource);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:169](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L169) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:174](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L174) |  |
+
 ## FileReconciliationBreakQueueRepository
 
 Qualified name: <code>Meridian.Strategies.Services.FileReconciliationBreakQueueRepository</code>. Kind: `class`.
@@ -825,19 +947,25 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.PromotionApprovalRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/PromotionService.cs:1658](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1658).
+Source: [src/Meridian.Strategies/Services/PromotionService.cs:1761](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1761).
 
 Request to approve a strategy promotion.
 
 ```csharp
-public sealed record PromotionApprovalRequest(string RunId, string? ReviewNotes = null, string? ApprovedBy = null, string? ApprovalReason = null, string[]? ApprovalChecklist = null, string[]? EvidenceReferences = null, string? ManualOverrideId = null);
+public sealed record PromotionApprovalRequest(string RunId, string? ReviewNotes = null, string? ApprovedBy = null, string? ApprovalReason = null, string[]? ApprovalChecklist = null, string[]? EvidenceReferences = null, string? ManualOverrideId = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyLiveAuthorizationRequest? LiveAuthorization { get; init; }</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1770](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1770) |  |
 
 ## PromotionDecisionResult
 
 Qualified name: <code>Meridian.Strategies.Services.PromotionDecisionResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/PromotionService.cs:1684](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1684).
+Source: [src/Meridian.Strategies/Services/PromotionService.cs:1790](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1790).
 
 Result of a promotion approval or rejection.
 
@@ -849,7 +977,7 @@ public sealed record PromotionDecisionResult(bool Success, string? PromotionId, 
 
 Qualified name: <code>Meridian.Strategies.Services.PromotionEvaluationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/PromotionService.cs:1626](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1626).
+Source: [src/Meridian.Strategies/Services/PromotionService.cs:1727](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1727).
 
 Result of evaluating a run for promotion eligibility.
 
@@ -861,14 +989,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static PromotionEvaluationResult NotFound(string runId) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1644](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1644) |  |
-| <code>public static PromotionEvaluationResult NotReady(string runId, string reason) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1650](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1650) |  |
+| <code>public string? StrategyArtifactId { get; init; }</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1745](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1745) |  |
+| <code>public static PromotionEvaluationResult NotFound(string runId) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1747](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1747) |  |
+| <code>public static PromotionEvaluationResult NotReady(string runId, string reason) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1753](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1753) |  |
 
 ## PromotionRejectionRequest
 
 Qualified name: <code>Meridian.Strategies.Services.PromotionRejectionRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/PromotionService.cs:1668](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1668).
+Source: [src/Meridian.Strategies/Services/PromotionService.cs:1774](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1774).
 
 Request to reject a strategy promotion.
 
@@ -892,156 +1021,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PromotionService(IStrategyRepository repository, BacktestToLivePromoter promoter, IPromotionRecordStore promotionRecordStore, ILogger&lt;PromotionService&gt; logger, ExecutionOperatorControlService? operatorControls = null, ExecutionAuditTrailService? auditTrail = null, BrokerageConfiguration? brokerageConfiguration = null, IPromotedRunLauncher? runLauncher = null, IPromotionTrustEvidenceProvider? trustEvidenceProvider = null);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:30](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L30) |  |
-| <code>public Task&lt;PromotionEvaluationResult&gt; EvaluateAsync(string runId, PromotionCriteria? criteria = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:55](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L55) | Evaluates whether a completed run is eligible for promotion to the next mode. |
-| <code>public Task&lt;PromotionEvaluationResult&gt; EvaluateAsync(string runId, StrategyRunReadScope scope, PromotionCriteria? criteria = null, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:65](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L65) | Evaluates a run only when its retained tenant and company exactly match the trusted workstation scope. |
-| <code>public Task&lt;PromotionDecisionResult&gt; ApproveAsync(PromotionApprovalRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:251](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L251) | Approves a promotion: creates a new run entry for the target mode and records the audit trail. |
-| <code>public Task&lt;PromotionDecisionResult&gt; ApproveAsync(PromotionApprovalRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:260](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L260) | Approves a promotion only when the source run exactly matches the trusted tenant and company scope. |
-| <code>public Task&lt;PromotionDecisionResult&gt; RejectAsync(PromotionRejectionRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1128](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1128) | Rejects a promotion with a recorded reason. |
-| <code>public Task&lt;PromotionDecisionResult&gt; RejectAsync(PromotionRejectionRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1137](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1137) | Rejects a promotion only when the source run exactly matches the trusted tenant and company scope. |
-| <code>public Task&lt;IReadOnlyList&lt;StrategyPromotionRecord&gt;&gt; GetPromotionHistoryAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1410](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1410) | Returns the full promotion audit trail. |
-| <code>public Task&lt;IReadOnlyList&lt;StrategyPromotionRecord&gt;&gt; GetPromotionHistoryAsync(StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1417](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1417) | Returns promotion records whose source runs exactly match the trusted tenant and company scope. |
-| <code>public Task&lt;StrategyRunEntry?&gt; RecordWalkForwardEvidenceAsync(string runId, StrategyRunWalkForwardEvidence evidence, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1474](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1474) | Records walk-forward/out-of-sample robustness evidence on a completed run so the promotion policy can gate eligibility on it. Returns the updated run, or null when the run does not exist. |
-| <code>public Task&lt;StrategyRunEntry?&gt; RecordWalkForwardEvidenceAsync(string runId, StrategyRunWalkForwardEvidence evidence, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1484](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1484) | Records walk-forward evidence only when the source run exactly matches the trusted tenant and company scope. |
-
-## ReconciliationBreakQueueAuditEvent
-
-Qualified name: <code>Meridian.Strategies.Services.ReconciliationBreakQueueAuditEvent</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:497](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L497).
-
-```csharp
-public sealed record ReconciliationBreakQueueAuditEvent(string EventId, string BreakId, string EventType, ReconciliationBreakQueueStatus? PreviousStatus, ReconciliationBreakQueueStatus NewStatus, ReconciliationCaseLifecycleState? PreviousLifecycleState, ReconciliationCaseLifecycleState NewLifecycleState, DateTimeOffset OccurredAt, string? AssignedTo, string? ReviewedBy, string? ResolvedBy, string? Note, string? ExceptionRoute = null, decimal? ToleranceBand = null, string? RequiredSignoffRole = null, string? SignoffStatus = null, string? ExternalAccountId = null, string? CustodianId = null, string? UpstreamSyncCursor = null, string? Actor = null, string? BeforePayload = null, string? AfterPayload = null, string? CorrelationId = null, string? CommandId = null, string? Source = null, string? Reason = null, int SchemaVersion = 1, long Sequence = 0, string? CausationId = null, string? BeforePayloadHash = null, string? AfterPayloadHash = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? TenantId { get; init; }</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:530](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L530) |  |
-| <code>public string? CompanyId { get; init; }</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:532](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L532) |  |
-
-## ReconciliationBreakQueueTransitionErrorCode
-
-Qualified name: <code>Meridian.Strategies.Services.ReconciliationBreakQueueTransitionErrorCode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:367](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L367).
-
-```csharp
-public enum ReconciliationBreakQueueTransitionErrorCode : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:369](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L369) |  |
-| <code>MissingActor = 1</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:370](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L370) |  |
-| <code>MissingReason = 2</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:371](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L371) |  |
-| <code>MissingEvidence = 3</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:372](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L372) |  |
-| <code>IllegalTransition = 4</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:373](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L373) |  |
-| <code>DualReviewRequired = 5</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:374](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L374) |  |
-| <code>ReopenNotAllowed = 6</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:375](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L375) |  |
-| <code>MissingRootCause = 7</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:376](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L376) |  |
-| <code>MissingResolutionCode = 8</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:377](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L377) |  |
-| <code>ResolverSignerConflict = 9</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:378](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L378) |  |
-| <code>ConcurrencyConflict = 10</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:379](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L379) |  |
-| <code>InvalidTaxonomy = 11</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:380](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L380) |  |
-| <code>MaterialActionRequiresHumanOperator = 12</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:381](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L381) |  |
-| <code>MissingApproval = 13</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:382](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L382) |  |
-| <code>SelfApprovalNotAllowed = 14</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:383](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L383) |  |
-| <code>MissingSuccessor = 15</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:384](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L384) |  |
-| <code>CommandIdConflict = 16</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:385](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L385) |  |
-| <code>PersistenceFailed = 17</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:386](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L386) |  |
-| <code>InvalidRequest = 18</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:387](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L387) |  |
-| <code>IdempotencyConflict = 19</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:388](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L388) |  |
-| <code>AccountingPeriodHardClosed = 20</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:389](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L389) |  |
-
-## ReconciliationBreakQueueTransitionResult
-
-Qualified name: <code>Meridian.Strategies.Services.ReconciliationBreakQueueTransitionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:398](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L398).
-
-```csharp
-public sealed record ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus Status, ReconciliationBreakQueueItem? Item, string? Error = null, ReconciliationBreakQueueTransitionErrorCode ErrorCode = ReconciliationBreakQueueTransitionErrorCode.None, ReconciliationCaseValidationProblem? Validation = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public VerifiedOperationOutcome Outcome { get; init; } = CreateCompatibilityOutcome(Status, Item, Error, ErrorCode);</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:410](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L410) | Verified terminal receipt for the attempted transition. Repository implementations should replace this compatibility receipt with one bound to the full command input and retained audit evidence. |
-
-## ReconciliationBreakQueueTransitionStatus
-
-Qualified name: <code>Meridian.Strategies.Services.ReconciliationBreakQueueTransitionStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:356](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L356).
-
-```csharp
-public enum ReconciliationBreakQueueTransitionStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Success = 0</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:358](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L358) |  |
-| <code>NotFound = 1</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:359](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L359) |  |
-| <code>InvalidTransition = 2</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:360](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L360) |  |
-| <code>ValidationFailed = 3</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:361](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L361) |  |
-| <code>Unauthorized = 4</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:362](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L362) |  |
-| <code>Conflict = 5</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:363](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L363) |  |
-| <code>Failed = 6</code> | [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:364](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L364) |  |
-
-## ReconciliationCaseValidationProblem
-
-Qualified name: <code>Meridian.Strategies.Services.ReconciliationCaseValidationProblem</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs:392](../../../../src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs#L392).
-
-```csharp
-public sealed record ReconciliationCaseValidationProblem(string CurrentState, string RequestedState, IReadOnlyList<string> MissingFields, string Message);
-```
-
-## ReconciliationCaseWorkflowService
-
-Qualified name: <code>Meridian.Strategies.Services.ReconciliationCaseWorkflowService</code>. Kind: `class`.
-
-Source: [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowService.cs:16](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowService.cs#L16).
-
-Applies the shared reconciliation case workflow decision to a case transition request.
-
-```csharp
-public sealed class ReconciliationCaseWorkflowService : IReconciliationCaseWorkflowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReconciliationBreakQueueTransitionResult Apply(ReconciliationBreakQueueItem item, ReconciliationCaseTransitionCommand command, DateTimeOffset now);</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowService.cs:18](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowService.cs#L18) |  |
-
-## ReconciliationCaseWorkflowVocabulary
-
-Qualified name: <code>Meridian.Strategies.Services.ReconciliationCaseWorkflowVocabulary</code>. Kind: `class`.
-
-Source: [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:19](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L19).
-
-Compile-time-checked translation between the C# reconciliation enums and the string token vocabulary of the F# ReconciliationCaseWorkflow. The F# kernel is a leaf assembly and cannot reference these enums, so the previous boundary relied on coincidental name equality (enum.ToString() / Enum.Parse): an enum rename or addition silently misrouted a transition at runtime. Every mapping below references its enum member by name (via nameof), so renaming a member breaks compilation here, and the exhaustive _ =&gt; throw arms surface any newly added member immediately instead of silently falling through the workflow. The ReconciliationCaseWorkflowVocabularyTests guard additionally asserts token parity against the vocabulary the F# workflow actually recognizes.
-
-```csharp
-public static class ReconciliationCaseWorkflowVocabulary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string ToToken(ReconciliationCaseTransitionAction action) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:21](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L21) |  |
-| <code>public static string ToToken(ReconciliationCaseLifecycleState state) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:32](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L32) |  |
-| <code>public static string ToToken(ReconciliationBreakQueueStatus status) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:48](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L48) |  |
-| <code>public static ReconciliationCaseLifecycleState ParseLifecycleState(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:58](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L58) |  |
-| <code>public static ReconciliationBreakQueueStatus ParseQueueStatus(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:74](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L74) |  |
-| <code>public static ReconciliationBreakQueueTransitionErrorCode ParseErrorCode(string token) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs:84](../../../../src/Meridian.Strategies/Services/ReconciliationCaseWorkflowVocabulary.cs#L84) |  |
+| <code>public PromotionService(IStrategyRepository repository, BacktestToLivePromoter promoter, IPromotionRecordStore promotionRecordStore, ILogger&lt;PromotionService&gt; logger, ExecutionOperatorControlService? operatorControls = null, ExecutionAuditTrailService? auditTrail = null, BrokerageConfiguration? brokerageConfiguration = null, IPromotedRunLauncher? runLauncher = null, IPromotionTrustEvidenceProvider? trustEvidenceProvider = null, StrategyLiveAuthorizationService? liveAuthorizations = null);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:31](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L31) |  |
+| <code>public Task&lt;PromotionEvaluationResult&gt; EvaluateAsync(string runId, PromotionCriteria? criteria = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:58](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L58) | Evaluates whether a completed run is eligible for promotion to the next mode. |
+| <code>public Task&lt;PromotionEvaluationResult&gt; EvaluateAsync(string runId, StrategyRunReadScope scope, PromotionCriteria? criteria = null, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:68](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L68) | Evaluates a run only when its retained tenant and company exactly match the trusted workstation scope. |
+| <code>public Task&lt;PromotionDecisionResult&gt; ApproveAsync(PromotionApprovalRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:257](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L257) | Approves a promotion: creates a new run entry for the target mode and records the audit trail. |
+| <code>public Task&lt;PromotionDecisionResult&gt; ApproveAsync(PromotionApprovalRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:266](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L266) | Approves a promotion only when the source run exactly matches the trusted tenant and company scope. |
+| <code>public async Task&lt;StrategyPromotionRecord?&gt; FindLiveAuthorizationAsync(string authorizationId, StrategyRunReadScope scope, CancellationToken ct);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:875](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L875) |  |
+| <code>public Task&lt;StrategyLiveAuthorizationRevocation&gt; RevokeLiveAuthorizationAsync(StrategyPromotionRecord promotion, string actor, string reason, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:885](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L885) |  |
+| <code>public async Task&lt;(bool TargetsLive, Guid? FundAccountId)&gt; GetPromotionAuthorityScopeAsync(string runId, StrategyRunReadScope scope, CancellationToken ct);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:890](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L890) |  |
+| <code>public Task&lt;PromotionDecisionResult&gt; RejectAsync(PromotionRejectionRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1194](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1194) | Rejects a promotion with a recorded reason. |
+| <code>public Task&lt;PromotionDecisionResult&gt; RejectAsync(PromotionRejectionRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1203](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1203) | Rejects a promotion only when the source run exactly matches the trusted tenant and company scope. |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyPromotionRecord&gt;&gt; GetPromotionHistoryAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1476](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1476) | Returns the full promotion audit trail. |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyPromotionRecord&gt;&gt; GetPromotionHistoryAsync(StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1483](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1483) | Returns promotion records whose source runs exactly match the trusted tenant and company scope. |
+| <code>public Task&lt;StrategyRunEntry?&gt; RecordWalkForwardEvidenceAsync(string runId, StrategyRunWalkForwardEvidence evidence, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1561](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1561) | Records walk-forward/out-of-sample robustness evidence on a completed run so the promotion policy can gate eligibility on it. Returns the updated run, or null when the run does not exist. |
+| <code>public Task&lt;StrategyRunEntry?&gt; RecordWalkForwardEvidenceAsync(string runId, StrategyRunWalkForwardEvidence evidence, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1571](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1571) | Records walk-forward evidence only when the source run exactly matches the trusted tenant and company scope. |

@@ -279,6 +279,7 @@ public sealed partial class StrategyRunReadService
             GovernanceHooks: BuildGovernanceHooks(run, promotionLookup),
             BiasDisclosure: MapBiasDisclosure(run.Metrics?.BiasDisclosure))
         {
+            StrategyArtifactId = run.StrategyArtifactId,
             EvidenceLoop = BuildEvidenceLoop(run),
             AcceptanceChecklist = BuildAcceptanceChecklist(run, promotionLookup, promotionTargetRun, scope)
         };

@@ -200,7 +200,7 @@ internal sealed class OrderAuthorityResolver
     }
 
     /// <summary>A release is judged by the authority it was parked with, not by the approver.</summary>
-    private static OrderSubmissionAuthority Root(OrderSubmissionAuthority authority)
+    internal static OrderSubmissionAuthority Root(OrderSubmissionAuthority authority)
     {
         var current = authority;
         while (current.Origin == OrderCommandOrigin.EscalationRelease && current.ReleasedFrom is { } parked)

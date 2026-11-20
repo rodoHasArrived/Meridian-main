@@ -6750,6 +6750,7 @@ Meridian-main
 │   │   │   ├── BrokerOrderSweep.cs
 │   │   │   ├── ExecutionFailureState.cs
 │   │   │   ├── ExecutionReportHub.cs
+│   │   │   ├── ILiveStrategyOrderAuthorization.cs
 │   │   │   ├── OrderAdmissionPolicy.cs
 │   │   │   ├── OrderAmendmentBook.cs
 │   │   │   ├── OrderApprovalReservations.cs
@@ -8809,6 +8810,9 @@ Meridian-main
 │   │   ├── Meridian.Storage.Accounting.csproj
 │   │   └── README.md
 │   ├── Meridian.Strategies
+│   │   ├── Artifacts
+│   │   │   ├── StrategyArtifact.cs
+│   │   │   └── StrategyArtifactRegistry.cs
 │   │   ├── Interfaces
 │   │   │   ├── ILiveStrategy.cs
 │   │   │   ├── IPromotedRunLauncher.cs
@@ -8852,7 +8856,8 @@ Meridian-main
 │   │   ├── Promotions
 │   │   │   ├── BacktestToLivePromoter.cs
 │   │   │   ├── PromotionApprovalChecklist.cs
-│   │   │   └── PromotionRecordService.cs
+│   │   │   ├── PromotionRecordService.cs
+│   │   │   └── StrategyLiveAuthorization.cs
 │   │   ├── Serialization
 │   │   │   ├── FSharpInteropJsonContext.cs
 │   │   │   ├── PromotionRecordJsonContext.cs
@@ -8897,6 +8902,7 @@ Meridian-main
 │   │   │   ├── StrategyEngineRegistry.cs
 │   │   │   ├── StrategyEngineValidationService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
+│   │   │   ├── StrategyLiveAuthorizationService.cs
 │   │   │   ├── StrategyRunAuthoritySource.cs
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   ├── StrategyRunReadService.AttributionComparison.cs
@@ -9094,6 +9100,7 @@ Meridian-main
 │   │   │   │   │   │   ├── CandleChart.tsx
 │   │   │   │   │   │   ├── CategoryBars.tsx
 │   │   │   │   │   │   ├── chart-a11y.tsx
+│   │   │   │   │   │   ├── chart-evidence.tsx
 │   │   │   │   │   │   ├── chart-interaction.test.ts
 │   │   │   │   │   │   ├── chart-interaction.tsx
 │   │   │   │   │   │   ├── chart-sync.test.tsx
@@ -10618,6 +10625,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.css
 │   │   │   │   │   ├── app-shell.css
 │   │   │   │   │   ├── breakpoints.test.ts
+│   │   │   │   │   ├── chart-evidence.css
 │   │   │   │   │   ├── command-palette.css
 │   │   │   │   │   ├── companion-pane.css
 │   │   │   │   │   ├── dense-row-detail-accessibility.css
@@ -14891,6 +14899,7 @@ Meridian-main
 │   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── LiveTradingEngineTests.FinancingCoverage.cs
+│   │   │   ├── LiveTradingEngineTests.GovernedRehearsal.cs
 │   │   │   ├── LiveTradingEngineTests.PromotionLedgerPosting.cs
 │   │   │   ├── LiveTradingEngineTests.StopFillDrain.cs
 │   │   │   ├── MovingAverageParityTests.cs
@@ -14908,6 +14917,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAccountingEventSourceRateUnitTests.cs
 │   │   │   ├── ShadowBookValuationServiceTests.cs
 │   │   │   ├── StoppedRunPromotionTests.cs
+│   │   │   ├── StrategyArtifactAndLiveAuthorizationTests.cs
 │   │   │   ├── StrategyDesignRepositoryTests.cs
 │   │   │   ├── StrategyDesignServiceTests.cs
 │   │   │   ├── StrategyEngineValidationServiceTests.cs

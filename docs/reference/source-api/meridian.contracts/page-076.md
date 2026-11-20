@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunHistoryQuery</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:723](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L723).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:725](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L725).
 
 Filter options used for workstation run history retrieval.
 
@@ -34,7 +34,7 @@ public sealed record StrategyRunIdentity(string CanonicalRunKey, string? ParentC
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLineageEventType</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:713](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L713).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:715](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L715).
 
 Promotion/lineage event type emitted on strategy run timelines.
 
@@ -46,17 +46,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>RunStarted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:715](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L715) |  |
-| <code>RunCompleted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:716](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L716) |  |
-| <code>PromotionDecision</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:717](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L717) |  |
-| <code>CrossModeTransition</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:718](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L718) |  |
-| <code>ReplayVerified</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:719](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L719) |  |
+| <code>RunStarted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:717](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L717) |  |
+| <code>RunCompleted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:718](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L718) |  |
+| <code>PromotionDecision</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:719](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L719) |  |
+| <code>CrossModeTransition</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:720](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L720) |  |
+| <code>ReplayVerified</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:721](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L721) |  |
 
 ## StrategyRunLineageTimelineEntry
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLineageTimelineEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:756](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L756).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:758](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L758).
 
 Lineage timeline event grouped by canonical run identity.
 
@@ -198,7 +198,7 @@ public sealed record StrategyRunSummary(string RunId, string StrategyId, string 
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunTimelineEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:730](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L730).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:732](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L732).
 
 Merged run timeline entry used by research and trading surfaces.
 
@@ -210,7 +210,7 @@ public sealed record StrategyRunTimelineEntry(string RunId, string StrategyId, s
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunTimelineProjection</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:705](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L705).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:707](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L707).
 
 Projection mode for workstation run timeline queries.
 
@@ -222,8 +222,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Flat</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:707](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L707) |  |
-| <code>Lineage</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:708](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L708) |  |
+| <code>Flat</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:709](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L709) |  |
+| <code>Lineage</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:710](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L710) |  |
 
 ## StrategySavedComparison
 
@@ -397,7 +397,7 @@ public sealed record SubmitSecurityMasterRevisionRequest(Guid SecurityId, Guid R
 
 Qualified name: <code>Meridian.Contracts.Workstation.SymbolAttributionEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:937](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L937).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:939](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L939).
 
 Per-symbol P&amp;L attribution for one run.
 

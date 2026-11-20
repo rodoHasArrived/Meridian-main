@@ -74,7 +74,7 @@ public sealed record OnboardingWorkspaceDto(string WorkspaceId, string Name, str
 
 Qualified name: <code>Meridian.Contracts.Workstation.OpenLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1139](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1139).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1141](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1141).
 
 Workstation-facing summary of a single open lot for a strategy run.
 

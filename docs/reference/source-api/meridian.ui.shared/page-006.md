@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunAccrualScheduleInput
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RunAccrualScheduleInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs#L23).
+
+```csharp
+public sealed record RunAccrualScheduleInput(string FundProfileId, Guid LedgerBookId, string EntityId, int ExpectedVersion);
+```
+
 ## SamplingEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.SamplingEndpoints</code>. Kind: `class`.
@@ -1197,14 +1207,4 @@ Source: [src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs:1
 
 ```csharp
 public sealed record EvidenceAttestationSubjectSnapshot(string SubjectKind, string SubjectId, string Revision, string Hash, string SourceArtifactId, string SourceHash, string? SourceActor, string SourceProvenance, bool Eligible, IReadOnlyList<string> Checks, string? SourceSubjectKind = null, string? SourceSubjectId = null, string? SubjectSnapshotJson = null);
-```
-
-## EvidenceContribution
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceContribution</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs:9](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs#L9).
-
-```csharp
-public sealed record EvidenceContribution(IReadOnlyList<EvidenceNodeDto> Nodes, IReadOnlyList<EvidenceEdgeDto> Edges, IReadOnlyList<WorkflowActionDto> Actions, IReadOnlyList<string> RequiredEvidenceIds, IReadOnlyList<string> Warnings);
 ```

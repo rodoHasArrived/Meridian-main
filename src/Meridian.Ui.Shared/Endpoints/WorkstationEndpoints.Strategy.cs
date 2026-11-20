@@ -101,6 +101,11 @@ public static partial class WorkstationEndpoints
 
             var document = service.Normalize(request.Document);
             var validation = service.Validate(document);
+            if (validation.IsValid && context.RequestServices.GetService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>() is { } artifacts)
+            {
+                await artifacts.RetainAsync(Meridian.Strategies.Artifacts.StrategyArtifact.FromDesigner(document),
+                    context.RequestAborted).ConfigureAwait(false);
+            }
             await repository.SaveAsync(document, context.RequestAborted).ConfigureAwait(false);
             var response = new StrategyDesignDraftSaveResponse(
                 document,
@@ -188,6 +193,11 @@ public static partial class WorkstationEndpoints
             {
                 return Results.BadRequest(new { error = evidenceValidationError });
             }
+
+            if (request.FundAccountId is { } account &&
+                (account == Guid.Empty || !await EndpointAuthorization.HasScopedPermissionAsync(
+                    context, UserPermission.ExecuteTrades, AccessScopeKindDto.Account, account, ct).ConfigureAwait(false)))
+                return EndpointHelpers.Forbidden();
 
             var service = context.RequestServices.GetService<StrategyDesignService>();
             if (service is null)
@@ -322,6 +332,24 @@ public static partial class WorkstationEndpoints
                     paperValidationReferences: evidenceLoop.PaperValidationReferences,
                     governedReportReferences: evidenceLoop.GovernedReportReferences))
                 .Complete(capturedBacktest);
+            if (request.FundAccountId is { } fundAccount)
+            {
+                var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var scoped = new Dictionary<string, string>(entry.ParameterSet!, StringComparer.OrdinalIgnoreCase);
+                if (!string.IsNullOrWhiteSpace(tenant.TenantId) && !string.IsNullOrWhiteSpace(tenant.CompanyId))
+                {
+                    scoped["workstationTenantId"] = tenant.TenantId;
+                    scoped["workstationCompanyId"] = tenant.CompanyId;
+                }
+                entry = entry with { FundAccountId = fundAccount, ParameterSet = scoped };
+                entry = entry with { InputHashSha256 = StrategyRunEntry.ComputeAccountBoundInputHash(entry) };
+            }
+            if (context.RequestServices.GetService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>() is { } artifacts)
+            {
+                var artifact = Meridian.Strategies.Artifacts.StrategyArtifact.FromDesigner(
+                    document, request.Parameters, capturedBacktest.Request);
+                entry = entry.WithStrategyArtifact(await artifacts.RetainAsync(artifact, ct).ConfigureAwait(false));
+            }
             await repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
 
             return Results.Json(CreateBacktestResponse(document, preview, runId, metrics, null, biasDisclosure), jsonOptions);

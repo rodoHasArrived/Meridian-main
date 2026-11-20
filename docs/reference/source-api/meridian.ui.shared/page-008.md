@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileExtensibilityConfigurationStore
+
+Qualified name: <code>Meridian.Ui.Shared.Extensibility.FileExtensibilityConfigurationStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:139](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L139).
+
+Persists extension configuration snapshots in file-backed storage.
+
+```csharp
+public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigurationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileExtensibilityConfigurationStore(string workstationDataRoot, ILogger&lt;FileExtensibilityConfigurationStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:147](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L147) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;TenantTemplateConfigurationBundleDto&gt;&gt; ListTenantTemplatesAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:159](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L159) |  |
+| <code>public async Task&lt;TenantTemplateConfigurationBundleDto?&gt; GetTenantTemplateAsync(string tenantId, string tenantTemplateId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:168](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L168) |  |
+| <code>public async Task SaveTenantTemplateAsync(string tenantId, TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:176](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L176) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;TenantTemplateActivationResultDto&gt;&gt; ListActivationHistoryAsync(string tenantId, string? tenantTemplateId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:199](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L199) |  |
+| <code>public async Task RecordActivationResultAsync(string tenantId, TenantTemplateActivationResultDto result, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs:210](../../../../src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs#L210) |  |
+
 ## IExtensibilityCatalogProvider
 
 Qualified name: <code>Meridian.Ui.Shared.Extensibility.IExtensibilityCatalogProvider</code>. Kind: `interface`.
@@ -967,15 +990,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReadOnlyDictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt; EvidenceAssessments { get; init; } = EvidenceAssessments?? new Dictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:116](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L116) |  |
 | <code>public IReadOnlyList&lt;string&gt; ReadinessBlockers { get; init; } = ReadinessBlockers??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:119](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L119) |  |
-
-## AutomatedJournalPositionSnapshotScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalPositionSnapshotScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:9](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L9).
-
-Named durable position source used by a recurring dividend schedule.
-
-```csharp
-public sealed record AutomatedJournalPositionSnapshotScope(string RunId, string AccountId);
-```

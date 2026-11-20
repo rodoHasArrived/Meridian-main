@@ -30,7 +30,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:598](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L598).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:600](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L600).
 
 Shared ledger rollup for workstation Accounting and audit surfaces.
 
@@ -42,7 +42,7 @@ public sealed record LedgerSummary(string LedgerReference, string RunId, DateTim
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerTrialBalanceLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:626](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L626).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:628](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L628).
 
 Shared trial-balance row for workstation ledger views.
 
@@ -158,7 +158,7 @@ public sealed record MeridianAssuranceScoreDto(int Score, EvidenceStatusDto Stat
 
 Qualified name: <code>Meridian.Contracts.Workstation.MetricsDiff</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:873](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L873).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:875](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L875).
 
 High-level metrics delta between two runs.
 

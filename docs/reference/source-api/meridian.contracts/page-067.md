@@ -211,7 +211,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ParameterDiff</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:867](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L867).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:869](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L869).
 
 A single parameter change between two runs.
 
@@ -519,7 +519,7 @@ public sealed record PortfolioLedgerWorkflowStatusSnapshotDto(PortfolioLedgerWor
 
 Qualified name: <code>Meridian.Contracts.Workstation.PortfolioPositionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:577](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L577).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:579](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L579).
 
 Shared position row for workstation portfolio views.
 
@@ -683,7 +683,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.PortfolioSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:536](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L536).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:538](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L538).
 
 Shared portfolio rollup for workstation research and trading surfaces.
 
@@ -695,14 +695,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:569](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L569) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:571](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L571) |  |
+| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:571](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L571) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:573](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L573) |  |
 
 ## PositionDiffEntry
 
 Qualified name: <code>Meridian.Contracts.Workstation.PositionDiffEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:858](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L858).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:860](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L860).
 
 A single position change between two runs.
 

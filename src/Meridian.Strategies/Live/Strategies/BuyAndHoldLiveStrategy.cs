@@ -14,6 +14,7 @@ public sealed class BuyAndHoldLiveStrategy : LiveStrategyBase
 
     private readonly string _strategyId;
     private readonly long _quantityPerSymbol;
+    internal long QuantityPerSymbol => _quantityPerSymbol;
     private readonly HashSet<string> _entered = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
