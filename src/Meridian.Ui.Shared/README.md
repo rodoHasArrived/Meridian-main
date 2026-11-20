@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Ui.Shared
@@ -2835,6 +2835,8 @@ requires operator acceptance text as a requirement, while the service requires a
 `IEvidenceArtifactStore` before queueing the native run. The service records the exact
 tenant/company-scoped pre-execution entry, and shared store/read/review/Trading services preserve
 that scope and lineage.
+`ICoveredCallBacktestService` and `IEvidenceArtifactStore` expose only scoped overloads; the
+obsolete fail-closed unscoped slots were removed on 2026-11-20 (see the contract compatibility matrix).
 
 The Strategy promotion surface uses `/api/promotion/approve`; it cannot create a generic paper
 session as a promotion substitute. A checklist item becomes ready only from a durable approved
