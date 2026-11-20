@@ -2,6 +2,7 @@ using FluentAssertions;
 using FsCheck.Xunit;
 using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Tests.Execution.Enhancements;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -35,6 +36,8 @@ public sealed partial class BrokerageOrderRecoveryTests
             Guid.Parse("b3f75a60-c378-4dbe-9494-ea634cca3c74"),
             Guid.Parse("ee446b0c-f31b-493d-a81b-d94b2ca094f7"));
         var postingTarget = new EventDrivenDecouplingTests.InMemoryTradeFillLedgerPostingTarget();
+        // Current fills carry exact lot-mutation evidence from the synthetic portfolio.
+        var portfolio = new PaperTradingPortfolio(100_000m);
         LedgerPostingConsumer NewConsumer() => new(postingTarget, NullLogger<LedgerPostingConsumer>.Instance,
             new WalTradeFillPostingStore(new TradeFillPostingStoreOptions(Path.GetDirectoryName(directory.Path)!, posting),
                 NullLogger<WalTradeFillPostingStore>.Instance), posting,
@@ -47,7 +50,7 @@ public sealed partial class BrokerageOrderRecoveryTests
                 : Task.FromResult(accepted)
         };
         await using (var consumer = NewConsumer())
-        await using (var oms = CreateOms(gateway, recoveryPath: directory.Path, publisher: consumer))
+        await using (var oms = CreateOms(gateway, portfolio, recoveryPath: directory.Path, publisher: consumer))
         {
             var placed = await oms.PlaceOrderAsync(request);
             placed.Success.Should().Be(!losesAcknowledgment);
@@ -66,7 +69,7 @@ public sealed partial class BrokerageOrderRecoveryTests
 
         var reconnect = new RecoveryGateway();
         await using (var consumer = NewConsumer())
-        await using (var recovered = CreateOms(reconnect, recoveryPath: directory.Path, publisher: consumer))
+        await using (var recovered = CreateOms(reconnect, portfolio, recoveryPath: directory.Path, publisher: consumer))
         {
             recovered.GetOrder(orderId)!.FilledQuantity.Should().Be(firstQuantity);
             (await recovered.PlaceOrderAsync(request)).Success.Should().BeFalse();
