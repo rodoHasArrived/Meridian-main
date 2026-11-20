@@ -58,6 +58,80 @@ W1-DATA-001: done; health green; evidence complete. Provider trust evidence is b
 - `SRC-CONTRACTS`
 - `SRC-INFRASTRUCTURE`
 
+## W1-DATA-ALIGN-001 - Time-series alignment execution service
+| Field | Value |
+| --- | --- |
+| Wave | W1 |
+| Status | planned |
+| Health | yellow |
+| Priority | low |
+| Owner lane | Data Confidence and Validation |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-11-19 |
+
+### Current Summary
+
+W1-DATA-ALIGN-001: planned; health yellow; evidence planned_evidence. No alignment execution or preview service is wired into the host. Both routes answer 501 and create nothing; the WPF Time Series Alignment page disables its run action and says alignment is unavailable once the host reports the 501. The browser workstation has no alignment screen.
+
+### Status References
+
+- Decisions: none recorded
+- PR references (not inferred acceptance): none recorded
+- Evidence: [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs](../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs)
+- Evidence: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs](../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs)
+- Evidence: [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs](../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs)
+- Evidence: [tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs](../../../tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs)
+
+
+### Exit Criteria
+
+- The alignment create and preview routes run against stored data and never answer 501 on a host that advertises them.
+- Alignment output records the gap strategy used and marks filled values, so an aligned dataset can be told apart from source data.
+- Preview estimates are computed from the stored data, not fabricated.
+- Browser and WPF surfaces consume the same alignment routes, or the browser gap is sequenced under W8-WPF-PARITY-001.
+
+### Source Modules
+
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+
+## W1-DATA-DEDUP-001 - Archive deduplication maintenance task
+| Field | Value |
+| --- | --- |
+| Wave | W1 |
+| Status | planned |
+| Health | yellow |
+| Priority | low |
+| Owner lane | Data Confidence and Validation |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-11-19 |
+
+### Current Summary
+
+W1-DATA-DEDUP-001: planned; health yellow; evidence planned_evidence. The desktop scheduled-maintenance service defines a Deduplication task type, but the server archive-maintenance API has no deduplication task, so the task always reports that nothing was executed. No operator surface currently schedules it.
+
+### Status References
+
+- Decisions: none recorded
+- PR references (not inferred acceptance): none recorded
+- Evidence: [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs](../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs)
+- Evidence: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs](../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs)
+- Evidence: [tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs](../../../tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs)
+
+
+### Exit Criteria
+
+- The archive maintenance API exposes a deduplication task that removes duplicate stored events through the existing WAL and atomic-write paths.
+- A dry run reports the duplicates it would remove without changing storage.
+- The scheduled Deduplication task runs through that API and reports genuine counts, or the task type is removed before any operator surface can schedule it.
+
+### Source Modules
+
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+
 ## W2-PROMO-001 - Paper promotion evidence and operator acceptance
 | Field | Value |
 | --- | --- |

@@ -102,6 +102,56 @@ public sealed class TimeSeriesAlignmentViewModelTests
     }
 
     [Fact]
+    public async Task RunAlignmentCommand_WhenHostHasNoAlignmentService_DisablesRunAndSaysUnavailable()
+    {
+        var calls = 0;
+        var viewModel = CreateSubject((_, _) =>
+        {
+            calls++;
+            return Task.FromResult(new AlignmentResult
+            {
+                Success = false,
+                IsServiceUnavailable = true,
+                Error = "Time series alignment is not implemented"
+            });
+        });
+
+        viewModel.SymbolInput = "SPY,QQQ";
+        viewModel.AddSymbolsCommand.Execute(null);
+        viewModel.FromDate = new DateTime(2026, 1, 1);
+        viewModel.ToDate = new DateTime(2026, 1, 31);
+        viewModel.AlignmentReadinessTitle.Should().Be("Alignment ready");
+
+        await viewModel.RunAlignmentCommand.ExecuteAsync(null);
+
+        calls.Should().Be(1);
+        viewModel.IsAlignmentServiceUnavailable.Should().BeTrue();
+        viewModel.CanRunAlignment.Should().BeFalse();
+        viewModel.RunAlignmentCommand.CanExecute(null).Should().BeFalse();
+        viewModel.AlignmentReadinessTitle.Should().Be("Alignment not available on this host");
+        viewModel.AlignmentReadinessDetail.Should().Contain("no time-series alignment service");
+        viewModel.StatusText.Should().NotStartWith("Alignment failed");
+        viewModel.HasResults.Should().BeFalse();
+        viewModel.RecentAlignments.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RunAlignmentCommand_OrdinaryFailure_KeepsRunAvailable()
+    {
+        var viewModel = CreateSubject((_, _) => Task.FromResult(new AlignmentResult { Success = false, Error = "timeout" }));
+        viewModel.SymbolInput = "SPY,QQQ";
+        viewModel.AddSymbolsCommand.Execute(null);
+        viewModel.FromDate = new DateTime(2026, 1, 1);
+        viewModel.ToDate = new DateTime(2026, 1, 31);
+
+        await viewModel.RunAlignmentCommand.ExecuteAsync(null);
+
+        viewModel.IsAlignmentServiceUnavailable.Should().BeFalse();
+        viewModel.CanRunAlignment.Should().BeTrue();
+        viewModel.StatusText.Should().Be("Alignment failed: timeout");
+    }
+
+    [Fact]
     public void InvalidDateRange_DisablesRunAndShowsInlineGuidance()
     {
         var viewModel = CreateSubject();

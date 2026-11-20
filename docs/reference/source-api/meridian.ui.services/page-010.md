@@ -266,7 +266,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.ProviderTestResult</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:721](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L721).
+Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:719](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L719).
 
 Result of provider connectivity test.
 
@@ -278,14 +278,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Provider { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:723](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L723) |  |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:724](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L724) |  |
-| <code>public string StatusMessage { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:725](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L725) |  |
-| <code>public string ErrorMessage { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:726](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L726) |  |
-| <code>public string AccountInfo { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:727](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L727) |  |
-| <code>public DateTime StartTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:728](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L728) |  |
-| <code>public DateTime EndTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:729](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L729) |  |
-| <code>public int LatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:730](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L730) |  |
+| <code>public string Provider { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:721](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L721) |  |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:722](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L722) |  |
+| <code>public string StatusMessage { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:723](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L723) |  |
+| <code>public string ErrorMessage { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:724](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L724) |  |
+| <code>public string AccountInfo { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:725](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L725) |  |
+| <code>public DateTime StartTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:726](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L726) |  |
+| <code>public DateTime EndTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:727](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L727) |  |
+| <code>public int LatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:728](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L728) |  |
 
 ## ProviderTrustSnapshotsResult
 

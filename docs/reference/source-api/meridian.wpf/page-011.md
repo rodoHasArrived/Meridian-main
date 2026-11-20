@@ -1701,7 +1701,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.AlignmentOptionChoice</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:647](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L647).
+Source: [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:673](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L673).
 
 ```csharp
 public sealed record AlignmentOptionChoice(string Label, string Key);
