@@ -207,7 +207,8 @@ public sealed class CollectorModeRunner
         using var failoverResources = new FailoverResourceLease(failoverService, healthMonitor);
         // Declared after the resource lease so it is released first: endpoints stop seeing the
         // coordinator and saves stop applying live before the coordinator is disposed.
-        using var liveRuntime = PublishLiveRuntime(hostStartup, ctx.ConfigPath, failoverService, providerReconciler);
+        await using var liveRuntime = PublishLiveRuntime(hostStartup, ctx.ConfigPath, ctx.Config,
+            failoverService, providerReconciler, ct);
         await using var dataClientDisposable = dataClient;
 
         // The failover wrapper is not itself a gap source; its inner clients were captured
@@ -332,16 +333,10 @@ public sealed class CollectorModeRunner
                         }
                     }
 
-                    if (providerReconciler is not null)
-                    {
-                        _ = providerReconciler.ApplyAsync(nextCfg, ct).ContinueWith(task =>
-                        {
-                            if (task.IsFaulted)
-                                _log.Error(task.Exception?.GetBaseException(), "Failed to apply hot-reloaded provider configuration");
-                        }, TaskScheduler.Default);
-                    }
+                    liveRuntime.Configuration?.SignalReload();
                 }, ex => _log.Error(ex, "Configuration watcher error"));
 
+                liveRuntime.Configuration?.SignalReload();
                 _log.Information("Watching {ConfigPath} for subscription and provider changes", ctx.ConfigPath);
             }
 
@@ -439,11 +434,13 @@ public sealed class CollectorModeRunner
         return fallback;
     }
 
-    private IDisposable PublishLiveRuntime(
+    private LiveRuntimeRegistration PublishLiveRuntime(
         HostStartup hostStartup,
         string configPath,
+        AppConfig startup,
         StreamingFailoverService? failoverService,
-        ProviderConfigReconciler? reconciler)
+        ProviderConfigReconciler? reconciler,
+        CancellationToken lifetime)
     {
         if (failoverService is null || reconciler is null)
             return new LiveRuntimeRegistration(null, null, null, null);
@@ -453,20 +450,23 @@ public sealed class CollectorModeRunner
         if (!ReferenceEquals(registry, StreamingFailoverRegistry.Process))
             StreamingFailoverRegistry.Process.Service = failoverService;
 
-        var attachment = ConfigurationRuntimeAppliers.Attach(configPath, reconciler);
+        var configuration = new CollectorConfigurationRuntime(new ConfigStore(configPath), reconciler, startup, _log, lifetime);
         _log.Information("Provider and failover settings saved to {ConfigPath} now apply to the running collector", configPath);
-        return new LiveRuntimeRegistration(registry, failoverService, attachment, reconciler);
+        return new LiveRuntimeRegistration(registry, failoverService, configuration, reconciler);
     }
 
     private sealed class LiveRuntimeRegistration(
         StreamingFailoverRegistry? registry,
         StreamingFailoverService? service,
-        IDisposable? attachment,
-        ProviderConfigReconciler? reconciler) : IDisposable
+        CollectorConfigurationRuntime? configuration,
+        ProviderConfigReconciler? reconciler) : IAsyncDisposable
     {
-        public void Dispose()
+        public CollectorConfigurationRuntime? Configuration { get; } = configuration;
+
+        public async ValueTask DisposeAsync()
         {
-            attachment?.Dispose();
+            if (Configuration is not null)
+                await Configuration.DisposeAsync().ConfigureAwait(false);
             if (registry is not null && ReferenceEquals(registry.Service, service))
                 registry.Service = null;
             if (ReferenceEquals(StreamingFailoverRegistry.Process.Service, service) && service is not null)

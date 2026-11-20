@@ -35,6 +35,27 @@ describe("SettingsChangeImpactBanner", () => {
     await waitFor(() => expect(screen.queryByLabelText("Setting activation status")).not.toBeInTheDocument());
   });
 
+  it("shows only the latest collector acknowledgement and identifies an unconfirmed revision", async () => {
+    const oldRevision = { id: "revision-old", contentHash: "old-hash" };
+    const latestRevision = { id: "revision-current", contentHash: "current-hash" };
+    const loadStatus = vi.fn().mockResolvedValueOnce(status({
+      pendingChanges: [], requiresRestart: false, revision: oldRevision, runtimeState: "AppliedLive",
+      lastApply: { entries: [{ path: "dataSources.healthCheckIntervalSeconds", kind: "AppliedLive" }], appliedAtUtc: "2026-11-20T12:00:00Z" },
+      collectorAcknowledgement: {
+        revision: oldRevision, collectorInstanceId: "collector-one", appliedAtUtc: "2026-11-20T12:00:00Z",
+        entries: [{ path: "dataSources.healthCheckIntervalSeconds", kind: "AppliedLive" }]
+      }
+    })).mockResolvedValueOnce(status({ revision: latestRevision, runtimeState: "Unknown" }));
+    render(<SettingsChangeImpactBanner loadStatus={loadStatus} />);
+
+    expect(await screen.findByText("Applied live")).toBeInTheDocument();
+    expect(screen.getByText("collector-one")).toBeInTheDocument();
+    act(() => window.dispatchEvent(new Event("meridian:configuration-saved")));
+    expect(await screen.findByText("Collector application unconfirmed")).toBeInTheDocument();
+    expect(screen.getByText("revision-current")).toBeInTheDocument();
+    expect(screen.queryByText("collector-one")).not.toBeInTheDocument();
+  });
+
   it("keeps the last confirmed pending state when a refresh fails", async () => {
     const loadStatus = vi.fn().mockResolvedValueOnce(status()).mockRejectedValueOnce(new Error("offline"));
     render(<SettingsChangeImpactBanner loadStatus={loadStatus} />);

@@ -40,6 +40,7 @@ public sealed class ConfigStore
     // Resolved per use so loads after logging bootstrap reach the configured sinks.
     private static Serilog.ILogger Log => LoggingSetup.ForContext<ConfigStore>();
     private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
+    private readonly ConfigurationRevisionJournal _revisions;
 
     /// <summary>
     /// Gets the path to the configuration file.
@@ -59,6 +60,7 @@ public sealed class ConfigStore
     public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         ConfigPath = ResolvePath(configPath);
+        _revisions = new ConfigurationRevisionJournal(ConfigPath);
         _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
     }
 
@@ -111,24 +113,85 @@ public sealed class ConfigStore
     /// </summary>
     public AppConfig Load() => LoadConfig(ConfigPath);
 
-    /// <summary>Saved setting impacts and host-lifetime pending activation; contains no setting values.</summary>
-    public ConfigurationChangeStatus GetChangeStatus() => ConfigurationChangeTracker.ForPath(ConfigPath).Status;
+    /// <summary>Saved setting impacts and exact-revision collector evidence; contains no setting values.</summary>
+    public ConfigurationChangeStatus GetChangeStatus() => ProjectChangeStatus(isSaveResponse: false);
+
+    private ConfigurationChangeStatus ProjectChangeStatus(bool isSaveResponse)
+    {
+        var local = ConfigurationChangeTracker.ForPath(ConfigPath).Status;
+        var saved = _revisions.ReadCurrent();
+        if (saved is null)
+        {
+            return _revisions.Exists || local.Revision is not null
+                ? local with { Revision = null, LastApply = null, RuntimeState = ConfigurationRuntimeState.Unknown }
+                : local;
+        }
+
+        var localIsCurrent = local.Revision == saved.Revision;
+        var acknowledgement = _revisions.ActiveAcknowledgement(saved);
+        var localApply = localIsCurrent ? local.LastApply : null;
+        var collectorApply = acknowledgement?.Entries ?? [];
+        var settled = collectorApply.Where(entry => ConfigurationRevisionJournal.HasTakenEffect(entry.Kind))
+            .Select(entry => entry.Path).ToHashSet(StringComparer.Ordinal);
+        // Preserve confirmations from non-collector appliers in the process that obtained them.
+        // A stopped collector's earlier result cannot remain in the shared status as a live result.
+        var localEntries = (localApply?.Entries ?? [])
+            .Where(entry => !ConfigurationRevisionJournal.IsCollectorPath(entry.Path) || saved.Acknowledgement is null)
+            .ToArray();
+        settled.UnionWith(localEntries.Where(entry => ConfigurationRevisionJournal.HasTakenEffect(entry.Kind))
+            .Select(entry => entry.Path));
+        var entries = localEntries.Concat(collectorApply).ToArray();
+        var pending = local.PendingChanges.Where(change => !ConfigurationRevisionJournal.IsCollectorPath(change.Path))
+            .Concat(saved.CollectorPaths.Where(path => !settled.Contains(path))
+                .Select(path => new ConfigurationFieldChange(path, ConfigurationChangeTracker.Classify(path))))
+            .DistinctBy(change => change.Path, StringComparer.Ordinal)
+            .ToArray();
+        var changes = (localIsCurrent ? local.Changes : saved.Changes)
+            .Select(change => settled.Contains(change.Path) ? change with { Impact = ConfigurationChangeImpact.Live } : change)
+            .ToArray();
+
+        var state = RuntimeStateFor(saved, acknowledgement, isSaveResponse);
+
+        return new ConfigurationChangeStatus(
+            changes.Length == 0 ? ConfigurationChangeImpact.Live : changes.Max(change => change.Impact),
+            changes, pending, saved.CommittedAtUtc, local.CanReconnectInProcess,
+            LastApply: entries.Length == 0 ? null : new(entries, acknowledgement?.AppliedAtUtc ?? localApply!.AppliedAtUtc),
+            Revision: saved.Revision, RuntimeState: state, CollectorAcknowledgement: acknowledgement);
+    }
+
+    private static ConfigurationRuntimeState? RuntimeStateFor(
+        ConfigurationRevisionRecord saved, ConfigurationRuntimeAcknowledgement? acknowledgement, bool isSaveResponse)
+    {
+        if (saved.CollectorPaths.Count == 0)
+            return null;
+        if (acknowledgement is null)
+            return isSaveResponse ? ConfigurationRuntimeState.Saved : ConfigurationRuntimeState.Unknown;
+        if (acknowledgement.Entries.Any(entry => entry.Kind == ConfigurationApplyKind.Failed))
+            return ConfigurationRuntimeState.Failed;
+        if (acknowledgement.Entries.Any(entry => entry.Kind == ConfigurationApplyKind.Deferred))
+            return ConfigurationRuntimeState.Deferred;
+        if (acknowledgement.Entries.Count < saved.CollectorPaths.Count)
+            return ConfigurationRuntimeState.Unknown;
+        return acknowledgement.Entries.Any(entry => entry.Kind is ConfigurationApplyKind.AppliedLive or ConfigurationApplyKind.ProviderReconfigured)
+            ? ConfigurationRuntimeState.AppliedLive : ConfigurationRuntimeState.Saved;
+    }
 
     /// <summary>Conservative activation requirement for a configuration field, also exposed by effective settings.</summary>
     public static ConfigurationChangeImpact GetSettingImpact(string path) => ConfigurationChangeTracker.Classify(path);
 
     /// <summary>Loads existing configuration without substituting defaults when authoritative state cannot be read.</summary>
-    public AppConfig LoadRequired()
+    public AppConfig LoadRequired() => LoadRequired(File.ReadAllText(ConfigPath));
+
+    internal AppConfig LoadRequired(string json)
     {
-        var json = File.ReadAllText(ConfigPath);
         var config = JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read)
             ?? throw new InvalidDataException("Required configuration is empty.");
         return NormalizeLoadedConfig(ConfigPath, json, config);
     }
 
     // The callback must be synchronous and must not reenter configuration persistence.
-    internal Task<T> UpdateRequiredAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
-        => UpdateCoreAsync(LoadRequired, update, ct);
+    internal async Task<T> UpdateRequiredAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
+        => (await UpdateCoreAsync(LoadRequired, update, ct).ConfigureAwait(false)).Result;
 
     /// <summary>
     /// Read-modify-write of the configuration document under the cross-process configuration lock
@@ -143,7 +206,12 @@ public sealed class ConfigStore
     /// replaces a corrupt authoritative document with defaults. Returning the same reference skips
     /// the write. The callback must be synchronous and must not reenter configuration persistence.</para>
     /// </remarks>
-    public Task<T> UpdateAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
+    public async Task<T> UpdateAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
+        => (await UpdateWithChangeStatusAsync(update, ct).ConfigureAwait(false)).Result;
+
+    /// <summary>Returns the result and the exact committed revision's status before releasing the write lease.</summary>
+    internal Task<(T Result, ConfigurationChangeStatus Status)> UpdateWithChangeStatusAsync<T>(
+        Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
         => UpdateCoreAsync(LoadForUpdate, update, ct);
 
     /// <summary>Result-less form of <see cref="UpdateAsync{T}"/>.</summary>
@@ -153,7 +221,7 @@ public sealed class ConfigStore
         return UpdateCoreAsync<object?>(LoadForUpdate, current => (update(current), null), ct);
     }
 
-    private async Task<T> UpdateCoreAsync<T>(
+    private async Task<(T Result, ConfigurationChangeStatus Status)> UpdateCoreAsync<T>(
         Func<AppConfig> load,
         Func<AppConfig, (AppConfig Config, T Result)> update,
         CancellationToken ct)
@@ -164,13 +232,9 @@ public sealed class ConfigStore
         var (next, result) = update(current);
         ct.ThrowIfCancellationRequested();
         if (!ReferenceEquals(current, next))
-        {
-            var snapshot = ProviderConfigurationCredentialGuard.Prepare(next, _ownershipPolicy);
-            await SaveCoreAsync(snapshot, ct).ConfigureAwait(false);
-            var applied = await ApplyToRuntimeAsync(current, snapshot, ct).ConfigureAwait(false);
-            ConfigurationChangeTracker.ForPath(ConfigPath).Record(current, snapshot, applied);
-        }
-        return result;
+            await WriteAndApplyAsync(current, next, ct).ConfigureAwait(false);
+
+        return (result, ProjectChangeStatus(isSaveResponse: !ReferenceEquals(current, next)));
     }
 
     private AppConfig LoadForUpdate()
@@ -208,74 +272,82 @@ public sealed class ConfigStore
     {
         var snapshot = ProviderConfigurationCredentialGuard.Prepare(cfg, _ownershipPolicy);
         using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
-        var current = LoadForUpdate();
-        await SaveCoreAsync(snapshot, ct).ConfigureAwait(false);
-        var applied = await ApplyToRuntimeAsync(current, snapshot, ct).ConfigureAwait(false);
-        ConfigurationChangeTracker.ForPath(ConfigPath).Record(current, snapshot, applied);
+        await WriteAndApplyAsync(LoadForUpdate(), snapshot, ct).ConfigureAwait(false);
+    }
+
+    private async Task WriteAndApplyAsync(AppConfig current, AppConfig next, CancellationToken ct)
+    {
+        var validated = ProviderConfigurationCredentialGuard.Prepare(next, _ownershipPolicy);
+        var json = JsonSerializer.Serialize(validated, AppConfigJsonOptions.Write);
+        // Apply the same bytes used for the revision hash, including for in-process callers
+        // whose configuration model contains mutable arrays or extension dictionaries.
+        var snapshot = LoadRequired(json);
+        var changes = ConfigurationChangeTracker.Changes(current, snapshot);
+        var collectorChanges = ConfigurationChangeTracker.CollectorChanges(current, snapshot);
+        var staged = await _revisions.PrepareAsync(json, collectorChanges, ct).ConfigureAwait(false);
+        await SaveCoreAsync(json, ct).ConfigureAwait(false);
+        var committed = await _revisions.ConfirmSaveAsync(staged).ConfigureAwait(false);
+        var applied = await ApplyToRuntimeAsync(current, snapshot, changes, committed, ct).ConfigureAwait(false);
+        ConfigurationChangeTracker.ForPath(ConfigPath).Record(current, snapshot, applied, committed?.Revision);
     }
 
     /// <summary>
     /// Offers a durably saved document to the runtime appliers attached to this file. The save has already
-    /// succeeded, so applier failures and cancellation become <see cref="ConfigurationApplyKind.Deferred"/>
-    /// outcomes (restart required) instead of failing the save.
+    /// succeeded, so applier failures and cancellation become runtime outcomes instead of failing the save.
     /// </summary>
     private async Task<IReadOnlyList<ConfigurationApplyEntry>?> ApplyToRuntimeAsync(
         AppConfig previous,
         AppConfig next,
+        IReadOnlyList<ConfigurationFieldChange> changes,
+        ConfigurationRevisionRecord? committed,
         CancellationToken ct)
     {
         var appliers = ConfigurationRuntimeAppliers.For(ConfigPath);
         if (appliers.Count == 0)
             return null;
 
-        var changedPaths = ConfigurationChangeTracker.ChangedPaths(previous, next);
-        if (changedPaths.Count == 0)
-            return null;
+        var changedPaths = changes.Select(change => change.Path).ToArray();
 
         var entries = new List<ConfigurationApplyEntry>();
         foreach (var applier in appliers)
         {
-            var handled = changedPaths.Where(applier.Handles).ToArray();
+            var recordsCollectorEvidence = applier is CollectorConfigurationRuntime;
+            var paths = recordsCollectorEvidence && committed is not null ? committed.CollectorPaths : changedPaths;
+            var handled = paths.Where(applier.Handles).ToArray();
             if (handled.Length == 0)
                 continue;
 
             try
             {
                 var result = await applier.ApplyAsync(previous, next, handled, ct).ConfigureAwait(false);
-                entries.AddRange(result.Where(entry => handled.Contains(entry.Path, StringComparer.Ordinal)));
+                if (!recordsCollectorEvidence)
+                    entries.AddRange(result.Where(entry => handled.Contains(entry.Path, StringComparer.Ordinal)));
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
                 Log.Warning("Runtime apply by {Applier} was cancelled after the configuration was saved; {PathCount} setting(s) need a restart",
                     applier.Name, handled.Length);
-                entries.AddRange(handled.Select(path => new ConfigurationApplyEntry(path, ConfigurationApplyKind.Deferred,
-                    "The runtime apply was cancelled; restart the host to use the saved value.")));
+                if (!recordsCollectorEvidence)
+                    entries.AddRange(handled.Select(path => new ConfigurationApplyEntry(path, ConfigurationApplyKind.Deferred,
+                        "The runtime apply was cancelled; restart the host to use the saved value.")));
             }
             catch (Exception ex)
             {
                 Log.Error(ex, "Runtime apply by {Applier} failed after the configuration was saved; {PathCount} setting(s) need a restart",
                     applier.Name, handled.Length);
-                entries.AddRange(handled.Select(path => new ConfigurationApplyEntry(path, ConfigurationApplyKind.Deferred,
-                    "The running host could not apply this change; restart the host to use the saved value.")));
+                if (!recordsCollectorEvidence)
+                    entries.AddRange(handled.Select(path => new ConfigurationApplyEntry(path, ConfigurationApplyKind.Failed,
+                        "The running host could not apply this change; restart the host to use the saved value.")));
             }
         }
 
         return entries.Count == 0 ? null : entries;
     }
 
-    private async Task SaveCoreAsync(AppConfig cfg, CancellationToken ct)
+    private async Task SaveCoreAsync(string json, CancellationToken ct)
     {
-        // Both whole-document saves and every read-modify-write reach this final check.
-        // Keep raw legacy reads available so explicit migration/purge can remove the fields.
-        var snapshot = ProviderConfigurationCredentialGuard.Prepare(cfg, _ownershipPolicy);
         try
         {
-            var json = JsonSerializer.Serialize(snapshot, AppConfigJsonOptions.Write);
-            var dir = Path.GetDirectoryName(ConfigPath);
-            if (!string.IsNullOrEmpty(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
             await AtomicFileWriter.WriteAsync(ConfigPath, json, ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
