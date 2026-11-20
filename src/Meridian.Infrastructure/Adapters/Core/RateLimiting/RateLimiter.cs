@@ -91,11 +91,17 @@ public sealed class RateLimiter : IDisposable
         using (linked)
         {
             var waitStart = _timeProvider.GetUtcNow();
-            await _semaphore.WaitAsync(linked.Token).ConfigureAwait(false);
+            var holdsAdmission = false;
             try
             {
                 while (true)
                 {
+                    if (!holdsAdmission)
+                    {
+                        await _semaphore.WaitAsync(linked.Token).ConfigureAwait(false);
+                        holdsAdmission = true;
+                    }
+
                     TimeSpan wait;
                     lock (_sync)
                     {
@@ -112,6 +118,13 @@ public sealed class RateLimiter : IDisposable
                         }
                     }
 
+                    // Other work may use the reserved capacity while a backfill waits.
+                    if (reserveHeadroomPercent > 0)
+                    {
+                        _semaphore.Release();
+                        holdsAdmission = false;
+                    }
+
                     _log.Debug("Rate limit reached, waiting {WaitMs}ms", wait.TotalMilliseconds);
                     onWait?.Invoke(wait);
                     // Task.Delay truncates fractional milliseconds, including positive waits
@@ -124,7 +137,8 @@ public sealed class RateLimiter : IDisposable
             }
             finally
             {
-                _semaphore.Release();
+                if (holdsAdmission)
+                    _semaphore.Release();
             }
         }
     }
