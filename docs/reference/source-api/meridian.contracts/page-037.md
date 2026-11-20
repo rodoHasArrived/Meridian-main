@@ -497,7 +497,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerAccountRunningBalanceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:386](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L386).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:389](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L389).
 
 Posting history of one account inside an accounting period, with a running balance in the account&#x27;s normal-balance sign (debit-normal for assets and expenses, credit-normal otherwise). The balance starts at zero at the first posting of the period.
 
@@ -509,13 +509,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;LedgerAccountRunningBalancePointDto&gt; Points { get; init; } = Points??[];</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:398](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L398) |  |
+| <code>public IReadOnlyList&lt;LedgerAccountRunningBalancePointDto&gt; Points { get; init; } = Points??[];</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:401](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L401) |  |
 
 ## LedgerAccountRunningBalancePointDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerAccountRunningBalancePointDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:371](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L371).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:374](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L374).
 
 One posting to an account with the account balance after it.
 

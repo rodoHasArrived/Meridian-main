@@ -1,4 +1,5 @@
 import type { WorkspaceSummary } from "@/types";
+import { AMOUNT_PASSPORT_FRAGMENT_PREFIX } from "@/lib/amount-passport-api";
 import { WORKSTATION_ROUTE_CATALOG, resolveWorkstationRouteBreadcrumbLabel } from "@/lib/workspace";
 import { VIEW_STATE_QUERY_KEY } from "@/lib/view-state-envelope";
 import { REPORTING_WORK_SELECTION_PARAM } from "@/components/meridian/reporting-hub.selection";
@@ -22,11 +23,12 @@ export function buildRouteFocusState(
   const pageParts = pathname === "/" ? ["Today"] : routePageParts(pathname, activeWorkspace);
   const workspaceTitle = pageParts.join(" - ");
   const announcedTitle = pageParts.join(", ");
-  const targetElementId = normalizeHashTarget(hash);
+  const anchor = hash.startsWith(AMOUNT_PASSPORT_FRAGMENT_PREFIX) ? "" : hash;
+  const targetElementId = normalizeHashTarget(anchor);
   const targetLabel = targetElementId ? formatHashTargetLabel(targetElementId) : null;
 
   return {
-    routeKey: `${pathname}${routeFocusSearch(pathname, search)}${hash}`,
+    routeKey: `${pathname}${routeFocusSearch(pathname, search)}${anchor}`,
     announcement: targetLabel
       ? `${announcedTitle} loaded. Jumping to ${targetLabel}.`
       : `${announcedTitle} loaded.`,
@@ -82,7 +84,7 @@ function routeFocusSearch(pathname: string, search: string): string {
   } else if (isFamilyOffice) {
     params.delete("ownershipNode");
   } else if (isLedger) {
-    for (const key of ["accountRow", "accountBasis", "accountBook", "accountPeriod"]) {
+    for (const key of ["accountRow", "accountBasis", "accountBook", "accountPeriod", "ledgerSearch", "ledgerSort"]) {
       params.delete(key);
     }
   } else {
