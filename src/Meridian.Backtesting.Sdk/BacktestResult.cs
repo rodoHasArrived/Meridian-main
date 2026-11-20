@@ -74,6 +74,10 @@ public sealed record BacktestEngineMetadata(
     string ResultKind = BacktestResultKinds.Full,
     IReadOnlyList<string>? CoverageWarnings = null)
 {
+    /// <summary>Null on legacy runs or engines that cannot assess native replay inputs.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BacktestInputCoverage? InputCoverage { get; init; }
+
     /// <summary>Null retains legacy/unassessed coverage; unavailable financing is never a measured zero.</summary>
     public string? FinancingCoverageStatus { get; init; }
 

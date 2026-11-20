@@ -17,4 +17,7 @@ public interface IChartOfAccounts
     /// role's registration. Implementations must not infer a role from a name prefix or number.
     /// </summary>
     bool TryGetRegistered(LedgerAccount account, out LedgerAccountRole role);
+
+    /// <summary>Returns the registered posting identity, if the chart exposes stable account codes.</summary>
+    LedgerAccountChartReference? GetPostingReference(LedgerAccount account) => null;
 }

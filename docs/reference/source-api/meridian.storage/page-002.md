@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConflictStrategy
+
+Qualified name: <code>Meridian.Storage.ConflictStrategy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:291](../../../../src/Meridian.Storage/StorageOptions.cs#L291).
+
+Conflict resolution strategy for multi-source data.
+
+```csharp
+public enum ConflictStrategy : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>FirstWins</code> | [src/Meridian.Storage/StorageOptions.cs:294](../../../../src/Meridian.Storage/StorageOptions.cs#L294) | Keep first source&#x27;s data. |
+| <code>LastWins</code> | [src/Meridian.Storage/StorageOptions.cs:296](../../../../src/Meridian.Storage/StorageOptions.cs#L296) | Keep latest source&#x27;s data. |
+| <code>HighestPriority</code> | [src/Meridian.Storage/StorageOptions.cs:298](../../../../src/Meridian.Storage/StorageOptions.cs#L298) | Use priority order. |
+| <code>LowestLatency</code> | [src/Meridian.Storage/StorageOptions.cs:300](../../../../src/Meridian.Storage/StorageOptions.cs#L300) | Prefer lowest-latency source. |
+| <code>MostComplete</code> | [src/Meridian.Storage/StorageOptions.cs:302](../../../../src/Meridian.Storage/StorageOptions.cs#L302) | Source with most fields populated. |
+| <code>Merge</code> | [src/Meridian.Storage/StorageOptions.cs:304](../../../../src/Meridian.Storage/StorageOptions.cs#L304) | Combine and deduplicate. |
+
+## SharedStorageCoordinationStore
+
+Qualified name: <code>Meridian.Storage.Coordination.SharedStorageCoordinationStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs:12](../../../../src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs#L12).
+
+Storage-owned shared lease store using per-resource lock files and JSON lease records.
+
+```csharp
+public sealed class SharedStorageCoordinationStore : ICoordinationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SharedStorageCoordinationStore(CoordinationConfig config, string dataRoot, TimeProvider? timeProvider = null);</code> | [src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs:25](../../../../src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs#L25) |  |
+| <code>public string RootPath { get; }</code> | [src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs:34](../../../../src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs#L34) |  |
+| <code>public async Task&lt;bool&gt; ExecuteUnderLeaseAsync(LeaseRecord lease, Func&lt;CancellationToken, Task&gt; action, CancellationToken ct = default);</code> | [src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs:36](../../../../src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs#L36) |  |
+| <code>public async Task&lt;LeaseAcquireResult&gt; TryAcquireLeaseAsync(string resourceId, string instanceId, TimeSpan leaseTtl, TimeSpan takeoverDelay, CancellationToken ct = default);</code> | [src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs:54](../../../../src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs#L54) |  |
+| <code>public async Task&lt;bool&gt; RenewLeaseAsync(string resourceId, string instanceId, TimeSpan leaseTtl, CancellationToken ct = default);</code> | [src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs:107](../../../../src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs#L107) |  |
+| <code>public async Task&lt;bool&gt; ReleaseLeaseAsync(string resourceId, string instanceId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs:133](../../../../src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs#L133) |  |
+| <code>public async Task&lt;LeaseRecord?&gt; GetLeaseAsync(string resourceId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs:159](../../../../src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs#L159) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LeaseRecord&gt;&gt; GetAllLeasesAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs:168](../../../../src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs#L168) |  |
+| <code>public Task&lt;IReadOnlyList&lt;string&gt;&gt; GetCorruptedLeaseFilesAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs:185](../../../../src/Meridian.Storage/Coordination/SharedStorageCoordinationStore.cs#L185) |  |
+
 ## DataClassification
 
 Qualified name: <code>Meridian.Storage.DataClassification</code>. Kind: `enum`.
@@ -617,7 +666,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;ExportedFile&gt; WriteInvariantTextTableAsync(string path, ExportFormat format, IReadOnlyList&lt;string&gt; columns, IReadOnlyList&lt;Dictionary&lt;string, object?&gt;&gt; rows, CancellationToken ct = default);</code> | [src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs:15](../../../../src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs#L15) | Writes a schema-preserving table of already formatted text cells. Domain projections own their interpretation and formatting; this primitive owns file formats and checksums only. Empty tables retain the supplied column schema, and spreadsheet formulas remain text. |
+| <code>public static async Task&lt;byte[]&gt; RenderInvariantTextParquetAsync(IReadOnlyList&lt;string&gt; columns, IReadOnlyList&lt;IReadOnlyList&lt;string&gt;&gt; rows, CancellationToken ct = default);</code> | [src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs:11](../../../../src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs#L11) | Renders deterministic Parquet from a frozen table of invariant text cells. |
+| <code>public async Task&lt;ExportedFile&gt; WriteInvariantTextTableAsync(string path, ExportFormat format, IReadOnlyList&lt;string&gt; columns, IReadOnlyList&lt;Dictionary&lt;string, object?&gt;&gt; rows, CancellationToken ct = default);</code> | [src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs:42](../../../../src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs#L42) | Writes a schema-preserving table of already formatted text cells. Domain projections own their interpretation and formatting; this primitive owns file formats and checksums only. Empty tables retain the supplied column schema, and spreadsheet formulas remain text. |
 
 ## AnalysisQualityReport
 
@@ -1179,43 +1229,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;diskSpaceMultiplier&quot;)] public double DiskSpaceMultiplier { get; set; } = 1.2;</code> | [src/Meridian.Storage/Export/ExportRequest.cs:291](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L291) | Multiplier applied to the estimated output size to determine required free disk space. A value of 1.2 means 20 % headroom is required. Defaults to 1.2. |
 | <code>[JsonPropertyName(&quot;requireData&quot;)] public bool RequireData { get; set; }</code> | [src/Meridian.Storage/Export/ExportRequest.cs:298](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L298) | When true the export is aborted (rather than warned) when no data is found for the requested filters. |
 | <code>[JsonPropertyName(&quot;warnCsvComplexTypes&quot;)] public bool WarnCsvComplexTypes { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportRequest.cs:304](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L304) | Emit a warning when exporting nested data (e.g. LOBSnapshot) to CSV format. |
-
-## ExportValidationSeverity
-
-Qualified name: <code>Meridian.Storage.Export.ExportValidationSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Export/ExportValidator.cs:313](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L313).
-
-Severity level for export validation issues.
-
-```csharp
-public enum ExportValidationSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Storage/Export/ExportValidator.cs:315](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L315) |  |
-| <code>Warning</code> | [src/Meridian.Storage/Export/ExportValidator.cs:316](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L316) |  |
-| <code>Error</code> | [src/Meridian.Storage/Export/ExportValidator.cs:317](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L317) |  |
-
-## ExportValidator
-
-Qualified name: <code>Meridian.Storage.Export.ExportValidator</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Export/ExportValidator.cs:15](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L15).
-
-Validates an export request before any files are written. Catches problems such as insufficient disk space, missing write permissions, and empty result sets early so users are never surprised by a silent failure mid-export.
-
-```csharp
-public sealed class ExportValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ExportValidator(string dataRoot, IEnumerable&lt;IPreflightRule&lt;ExportPreflightContext&gt;&gt;? rules = null) : this(new StorageOptions { RootPath = dataRoot }, rules);</code> | [src/Meridian.Storage/Export/ExportValidator.cs:32](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L32) |  |
-| <code>public ExportValidator(StorageOptions storageOptions, IEnumerable&lt;IPreflightRule&lt;ExportPreflightContext&gt;&gt;? rules = null);</code> | [src/Meridian.Storage/Export/ExportValidator.cs:39](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L39) |  |
-| <code>public async Task&lt;ExportValidationResult&gt; ValidateAsync(ExportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Export/ExportValidator.cs:55](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L55) | Runs all pre-export checks and returns a ExportValidationResult that describes every issue found. The export should be aborted when ExportValidationResult.IsValid is false. |

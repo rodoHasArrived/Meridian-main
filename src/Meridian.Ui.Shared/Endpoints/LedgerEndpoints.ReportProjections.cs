@@ -405,7 +405,15 @@ public static partial class LedgerEndpoints
             line.Debit,
             line.Credit,
             line.Description,
-            dimensions);
+            dimensions)
+        {
+            Memo = line.Memo,
+            ChartAccount = line.ChartAccount is { } chart ? new(chart.NodeId, chart.Revision, chart.AccountCode) : null,
+            Currency = line.Currency is { } currency
+                ? new(currency.TransactionCurrency, currency.FunctionalCurrency, currency.TransactionDebit,
+                    currency.TransactionCredit, currency.FxRateToFunctional)
+                : null
+        };
 
     private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata)
     {

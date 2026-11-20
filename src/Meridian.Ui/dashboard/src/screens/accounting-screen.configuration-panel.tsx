@@ -204,6 +204,14 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
             </FormRow>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
+            <FormRow label="Account code" labelFor="accounting-chart-account-code">
+              <Input
+                id="accounting-chart-account-code"
+                value={view.chartAccountEditor.accountCodeValue}
+                readOnly={view.chartAccountEditor.accountCodeReadOnly}
+                onChange={(event) => view.chartAccountEditor.updateDraft({ accountCode: event.currentTarget.value })}
+              />
+            </FormRow>
             <FormRow label="Parent path" labelFor="accounting-chart-parent-path">
               <Input
                 id="accounting-chart-parent-path"

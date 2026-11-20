@@ -60,7 +60,11 @@ internal sealed class BackfillFeatureRegistration : IServiceFeatureRegistration
                 symbolResolver: symbolResolver,
                 symbolTimelineResolver: symbolTimelineResolver,
                 providerCatalog: sp.GetService<Meridian.Contracts.Api.IProviderCatalog>(),
-                cloneCredentials: sp.GetService<IProviderCredentialStore>() as IScopedProviderCredentialStore);
+                cloneCredentials: sp.GetService<IProviderCredentialStore>() as IScopedProviderCredentialStore)
+            {
+                ResolveSessionsAsync = new Meridian.Platform.Scheduling.HistoricalSessionScheduleResolver(
+                    sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService>()).ResolveAsync
+            };
         });
         services.AddSingleton<IBackfillExecutionGateway, BackfillCoordinatorExecutionGateway>();
 

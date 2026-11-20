@@ -13,7 +13,7 @@ public sealed partial class StatementRunWorkflowServiceTests
     [InlineData("price")]
     [InlineData("settlement")]
     [InlineData("both")]
-    public async Task CreateAsync_ConfiguredTransactionAssignmentPrefersClosestEconomicEvidence(string dimension)
+    public async Task CreateAsync_ConfiguredTransactionFallbackRetainsEveryEligibleCandidate(string dimension)
     {
         var path = await WriteStatementAsync("rank-transactions.csv",
             "EXT-1,SPY,10,10,100.5,trade,2026-05-28,2026-05-30,USD,,");
@@ -32,10 +32,33 @@ public sealed partial class StatementRunWorkflowServiceTests
         var workflow = CreatePolicyWorkflow(new([], [], [far, near]), profile, artifacts);
 
         var result = await workflow.CreateAsync(Request(path, profile.ProfileId));
-        var group = (await artifacts.GetAsync(result.Import.ImportId))!.MatchGroups.Should().ContainSingle().Subject;
-        group.InternalEvidenceReferences.Should().Equal("internal:z-near");
-        group.MatchTier.Should().Be("Tolerance");
-        result.Breaks.Should().ContainSingle(item => item.SourceReference == "internal:a-far");
+        (await artifacts.GetAsync(result.Import.ImportId))!.MatchGroups.Should().BeEmpty();
+        result.Breaks.Should().ContainSingle().Which.BreakCode.Should().Be("TRANSACTION_AMBIGUOUS");
+        result.Cases.Should().ContainSingle().Which.EvidenceReferences.Should()
+            .Contain(["internal-record:internal:a-far", "internal-record:internal:z-near"]);
+    }
+
+    [Fact]
+    public async Task CreateAsync_FillIdAmountMismatchRetainsBothRowsForCasework()
+    {
+        var path = await WriteStatementAsync("fill-id-mismatch.csv",
+            "EXT-1,SPY,10,10,100,trade,2026-05-28,2026-05-30,USD,,FILL-23");
+        var artifacts = new InMemoryStatementRunMatchArtifactStore();
+        var workflow = CreatePolicyWorkflow(new([], [], [PolicyTransaction("fill-23", 10m, 90m) with
+        {
+            ExternalTransactionId = "FILL-23",
+            Price = 9m
+        }]), StatementToleranceProfile.Default, artifacts);
+
+        var result = await workflow.CreateAsync(Request(path));
+
+        var difference = result.Breaks.Should().ContainSingle().Subject;
+        difference.BreakCode.Should().Be("TRANSACTION_AMOUNT_DIFFERENCE");
+        difference.Delta.Should().Be(10m);
+        result.Cases.Should().ContainSingle().Which.EvidenceReferences.Should()
+            .Contain($"statement-row:{difference.SourceReference}")
+            .And.Contain("internal-record:internal:fill-23");
+        (await artifacts.GetAsync(result.Import.ImportId))!.MatchGroups.Should().BeEmpty();
     }
 
     [Fact]

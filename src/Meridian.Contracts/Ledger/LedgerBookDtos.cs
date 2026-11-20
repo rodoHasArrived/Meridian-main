@@ -350,7 +350,22 @@ public sealed record LedgerJournalEntryLineDto(
     decimal Debit,
     decimal Credit,
     string Description,
-    LedgerDimensionSetDto? Dimensions = null);
+    LedgerDimensionSetDto? Dimensions = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Memo { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerJournalLineChartAccountDto? ChartAccount { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerJournalLineCurrencyDto? Currency { get; init; }
+}
+
+public sealed record LedgerJournalLineChartAccountDto(string NodeId, string Revision, string? AccountCode);
+
+public sealed record LedgerJournalLineCurrencyDto(string TransactionCurrency, string FunctionalCurrency,
+    decimal TransactionDebit, decimal TransactionCredit, decimal FxRateToFunctional);
 
 /// <summary>One posting to an account with the account balance after it.</summary>
 public sealed record LedgerAccountRunningBalancePointDto(

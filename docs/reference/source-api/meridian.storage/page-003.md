@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportValidationSeverity
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidationSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Export/ExportValidator.cs:313](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L313).
+
+Severity level for export validation issues.
+
+```csharp
+public enum ExportValidationSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Storage/Export/ExportValidator.cs:315](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L315) |  |
+| <code>Warning</code> | [src/Meridian.Storage/Export/ExportValidator.cs:316](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L316) |  |
+| <code>Error</code> | [src/Meridian.Storage/Export/ExportValidator.cs:317](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L317) |  |
+
+## ExportValidator
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportValidator.cs:15](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L15).
+
+Validates an export request before any files are written. Catches problems such as insufficient disk space, missing write permissions, and empty result sets early so users are never surprised by a silent failure mid-export.
+
+```csharp
+public sealed class ExportValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ExportValidator(string dataRoot, IEnumerable&lt;IPreflightRule&lt;ExportPreflightContext&gt;&gt;? rules = null) : this(new StorageOptions { RootPath = dataRoot }, rules);</code> | [src/Meridian.Storage/Export/ExportValidator.cs:32](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L32) |  |
+| <code>public ExportValidator(StorageOptions storageOptions, IEnumerable&lt;IPreflightRule&lt;ExportPreflightContext&gt;&gt;? rules = null);</code> | [src/Meridian.Storage/Export/ExportValidator.cs:39](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L39) |  |
+| <code>public async Task&lt;ExportValidationResult&gt; ValidateAsync(ExportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Export/ExportValidator.cs:55](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L55) | Runs all pre-export checks and returns a ExportValidationResult that describes every issue found. The export should be aborted when ExportValidationResult.IsValid is false. |
+
 ## ExportVerificationResult
 
 Qualified name: <code>Meridian.Storage.Export.ExportVerificationResult</code>. Kind: `class`.
@@ -943,41 +983,3 @@ Enum declarations:
 | <code>Imported = 0</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:154](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L154) |  |
 | <code>AlreadyImported = 1</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:155](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L155) |  |
 | <code>StoreNotEmpty = 2</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:156](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L156) |  |
-
-## FundStructureMigrationRunner
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureMigrationRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L8).
-
-Applies the PostgreSQL migrations used by fund structure persistence.
-
-```csharp
-public sealed class FundStructureMigrationRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundStructureMigrationRunner(FundStructureStoreOptions options);</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:12](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L12) |  |
-| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:30](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L30) |  |
-
-## FundStructureStoreOptions
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureStoreOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:6](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L6).
-
-Configures the PostgreSQL connection and schema for fund structure storage.
-
-```csharp
-public sealed class FundStructureStoreOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L8) |  |
-| <code>public string Schema { get; set; } = &quot;fund_structure&quot;;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:9](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L9) |  |

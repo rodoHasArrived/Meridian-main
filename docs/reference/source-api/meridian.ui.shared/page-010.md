@@ -769,7 +769,7 @@ Declared public members:
 | <code>public const string RetainedManifestSchemaVersion = &quot;meridian.reporting.retained-manifest.v1&quot;;</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L61) |  |
 | <code>public DeterministicReportingCertifiedArtifactProducer(IReportingPrimaryDocumentRenderer? primaryRenderer = null, IReportingCertifiedLedgerPresentationSource? ledgerPresentationSource = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:80](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L80) | Constructs the producer with an optional client-grade primary-document renderer and an optional exact canonical-ledger-presentation source. When the renderer is null (dependency-free hosts and the existing byte-exact tests) the built-in plain-text PDF/XLSX rendering is used. A capital-account primary document requires both a presentation-capable renderer and a checkpoint-bound canonical ledger report pack; it never falls back to recalculating partners&#x27; capital from certified display rows. Capital-account PDF, XLSX, and ClientPackage outputs all select bytes from that same canonical pair. Every other artifact (CSV, evidence vault, preview, manifest, grids) is unaffected by this choice. |
 | <code>public async ValueTask&lt;ReportingGovernedArtifactProduction&gt; ProduceAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:88](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L88) |  |
-| <code>public static ReportingRetainedManifestDocument ParseRetainedManifest(ReadOnlySpan&lt;byte&gt; retainedBytes);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:202](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L202) |  |
+| <code>public static ReportingRetainedManifestDocument ParseRetainedManifest(ReadOnlySpan&lt;byte&gt; retainedBytes);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:206](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L206) |  |
 
 ## DirectLendingOperationsReadService
 
@@ -887,7 +887,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DocumentsReportingPrimaryDocumentRenderer</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:136](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L136).
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:140](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L140).
 
 Reporting adapter over the existing Documents authority. Generic report outputs retain the presentation-neutral ClientGradeReportRenderer path, while a checkpoint-bound ledger primary document is passed intact to LedgerClientReportExportService. The latter resolves FinancialReportDocumentRenderer from composition and renders one canonical PDF/XLSX pair without rebuilding partners-capital figures or creating another renderer.
 
@@ -899,11 +899,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public byte[] RenderPdf(ReportingOutputManifest manifest) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:142](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L142) |  |
-| <code>public byte[] RenderWorkbook(ReportingOutputManifest manifest) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:145](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L145) |  |
-| <code>public DocumentsReportingPrimaryDocumentRenderer() : this(new LedgerClientReportExportService(new FinancialReportDocumentRenderer()));</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:152](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L152) | Convenience construction for dependency-light callers and focused tests. Production composition supplies the shared export service explicitly. |
-| <code>public DocumentsReportingPrimaryDocumentRenderer(LedgerClientReportExportService clientReportExportService);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:157](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L157) |  |
-| <code>public LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:164](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L164) |  |
+| <code>public byte[] RenderPdf(ReportingOutputManifest manifest) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:146](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L146) |  |
+| <code>public byte[] RenderWorkbook(ReportingOutputManifest manifest) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:149](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L149) |  |
+| <code>public DocumentsReportingPrimaryDocumentRenderer() : this(new LedgerClientReportExportService(new FinancialReportDocumentRenderer()));</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L156) | Convenience construction for dependency-light callers and focused tests. Production composition supplies the shared export service explicitly. |
+| <code>public DocumentsReportingPrimaryDocumentRenderer(LedgerClientReportExportService clientReportExportService);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:161](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L161) |  |
+| <code>public LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L168) |  |
 
 ## DrawdownGuardrailRule
 

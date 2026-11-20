@@ -130,6 +130,7 @@ export interface BackfillFormState {
   symbols: string;
   from: string;
   to: string;
+  resumeFromCheckpoint?: boolean;
 }
 
 export type BackfillPhase = "idle" | "previewing" | "running";
@@ -1283,7 +1284,7 @@ export function useDataViewModel(
     setDialogOpen(false);
   }, [busy]);
 
-  const updateBackfillForm = useCallback((field: keyof BackfillFormState, value: string) => {
+  const updateBackfillForm = useCallback(<Field extends keyof BackfillFormState>(field: Field, value: BackfillFormState[Field]) => {
     setForm((current) => ({ ...current, [field]: value }));
     setPreview(null);
     setResult(null);
@@ -4023,7 +4024,8 @@ export function buildBackfillRequest(form: BackfillFormState): BackfillTriggerRe
     provider: form.provider.trim() || null,
     symbols: parseSymbols(form.symbols),
     from: form.from.trim() || null,
-    to: form.to.trim() || null
+    to: form.to.trim() || null,
+    ...(form.resumeFromCheckpoint ? { resumeFromCheckpoint: true } : {})
   };
 }
 

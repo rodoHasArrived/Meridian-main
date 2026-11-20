@@ -43,6 +43,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     private readonly BrokerOrderSweep _brokerOrderSweep;
     private readonly Meridian.Execution.Models.IPortfolioState? _portfolioState;
     private readonly PaperSessionPersistenceService? _sessionPersistence;
+    internal bool BindNativePaperSessions { get; init; }
     private readonly BrokerageConfiguration? _brokerageConfiguration;
     private readonly OrderManagementSystemOptions _options;
     private readonly ILogger<OrderManagementSystem> _logger;
@@ -236,7 +237,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         var actor = prepared.Actor;
         var correlationId = prepared.CorrelationId;
         var runId = prepared.RunId;
-        var sessionId = prepared.SessionId;
+        var sessionId = BindNativePaperSessions ? null : prepared.SessionId;
 
         // A duplicate client order id must never reach the state table or the gateway: every
         // downstream write in this method (including gate rejections) keys on orderId, so a
@@ -537,6 +538,31 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                     journalAttemptId).ConfigureAwait(false);
             }
 
+            if (BindNativePaperSessions)
+            {
+                try
+                {
+                    sessionId = await _sessionPersistence!.ReserveNativeOrderAsync(safeRequest,
+                        prepared.Authority, prepared.SessionId, orderId, ct).ConfigureAwait(false);
+                }
+                catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or InvalidDataException or IOException)
+                {
+                    _orders.TryRemove(new KeyValuePair<string, OrderState>(orderId, orderState));
+                    SettleRiskReservations(riskDecision, commit: false, orderId);
+                    RestoreConsumedApprovals(consumedApprovalId, "paper journal scope was unavailable", orderId);
+                    return await RejectOrderAsync(orderId, safeRequest, actor, brokerName, runId, correlationId,
+                        "The paper order could not be bound to an active, verified session for this account.",
+                        sessionId: null, ct, rejectionSource: "paper journal scope", reasonCode: "PAPER_JOURNAL_UNAVAILABLE",
+                        journalAttemptId: journalAttemptId, authority: prepared.Authority).ConfigureAwait(false);
+                }
+                catch
+                {
+                    _orders.TryRemove(new KeyValuePair<string, OrderState>(orderId, orderState));
+                    RestoreConsumedApprovals(consumedApprovalId, "paper journal binding was interrupted", orderId);
+                    throw;
+                }
+            }
+
             if (orderMultiplier > 1m)
             {
                 _orderContractMultipliers[orderId] = orderMultiplier;
@@ -572,6 +598,10 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             if (!string.IsNullOrWhiteSpace(sessionId))
             {
                 _orderSessionIds[orderId] = sessionId;
+            }
+            else
+            {
+                _orderSessionIds.TryRemove(orderId, out _);
             }
 
             // The order now holds its own id in the tracked table, so an escalation
@@ -664,7 +694,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
 
             try
             {
-                await RecordSessionOrderUpdateAsync(sessionId, updatedState, ct).ConfigureAwait(false);
+                await RecordSessionOrderUpdateAsync(sessionId, updatedState,
+                    BindNativePaperSessions ? CancellationToken.None : ct).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

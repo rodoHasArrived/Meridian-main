@@ -767,6 +767,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                         (leavesQuantity is { } leaves ? cumulativeQuantity + leaves : cumulativeQuantity),
                     FilledQuantity = cumulativeQuantity,
                     LastFillQuantity = executedQuantity,
+                    BrokerActivityId = activityId,
                     AssetClass = order?.AssetClass,
                     FillPrice = fillPrice,
                     OrderStatus = status,

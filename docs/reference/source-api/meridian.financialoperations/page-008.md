@@ -87,7 +87,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementRunWorkflowFaultInjector</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs:1370](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs#L1370).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs:1375](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs#L1375).
 
 Exposes statement workflow fault points for controlled recovery testing.
 
@@ -99,7 +99,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task OnPointAsync(StatementRunWorkflowFaultPoint point, string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs:1372](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs#L1372) |  |
+| <code>Task OnPointAsync(StatementRunWorkflowFaultPoint point, string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs:1377](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs#L1377) |  |
 
 ## IStatementRunWorkflowService
 
@@ -204,7 +204,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementCashBalance</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:909](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L909).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:881](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L881).
 
 ```csharp
 public sealed record NormalizedStatementCashBalance(string CashBalanceId, string Account, string Currency, decimal EndingBalance, string EvidenceReference, DateOnly AsOfDate, bool IsForStatementPeriodEnd = true) : IStatementMatchItem
@@ -214,7 +214,7 @@ public sealed record NormalizedStatementCashBalance(string CashBalanceId, string
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementPosition</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:894](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L894).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:866](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L866).
 
 ```csharp
 public sealed record NormalizedStatementPosition(string PositionId, string Account, string SecurityId, DateOnly AsOfDate, decimal Quantity, decimal? MarketValue, string EvidenceReference) : IStatementMatchItem
@@ -224,13 +224,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:904](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L904) | Unit price in the same currency as the monetary amount, when explicitly available. |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:876](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L876) | Unit price in the same currency as the monetary amount, when explicitly available. |
 
 ## NormalizedStatementTransaction
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementTransaction</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:921](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L921).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:893](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L893).
 
 ```csharp
 public sealed record NormalizedStatementTransaction(string TransactionId, string? ExternalTransactionId, string Account, string? SecurityId, string? Currency, DateOnly TradeDate, DateOnly SettlementDate, string TransactionType, decimal Quantity, decimal NetAmount, string EvidenceReference) : IStatementMatchItem
@@ -240,7 +240,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:935](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L935) | Unit price in the same currency as the monetary amount, when explicitly available. |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:907](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L907) | Unit price in the same currency as the monetary amount, when explicitly available. |
 
 ## PortfolioPositionInput
 
@@ -481,8 +481,8 @@ Declared public members:
 | <code>public const int MaxSplitSearchCandidates = 24;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L18) | Upper bound on the candidate set a split search will consider. Callers pre-rank candidates; anything beyond this bound is deterministically ignored rather than exploding the search. |
 | <code>public static IReadOnlyList&lt;TPair&gt; SelectDeterministicAssignment&lt;TPair&gt;(IEnumerable&lt;TPair&gt; orderedAdmissiblePairs, Func&lt;TPair, IReadOnlyList&lt;string&gt;&gt; memberKeys);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L26) | Selects a non-overlapping assignment from candidate pairs that MUST already be ordered best-first with a total, deterministic order (score, then domain tie-breakers, then member ids). Walks the ranking once and takes each pair whose member keys are all unconsumed. Member keys must be unique across both populations — prefix keys per side when raw ids can collide. |
 | <code>public static bool TryFindSplit(decimal targetAmount, IReadOnlyList&lt;SplitCandidate&gt; candidates, decimal tolerance, int maxLegs, out IReadOnlyList&lt;SplitCandidate&gt; legs, out decimal residual) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:76](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L76) | Searches for the best bounded subset of same-sign candidate legs whose sum lands within tolerance of targetAmount. &quot;Best&quot; is total and deterministic: smallest absolute residual, then fewest legs, then the lexicographically smallest sorted leg-id sequence. A split needs at least two legs — single-leg matches belong to the pair stages. Candidates whose sign differs from the target are ignored (netting mixed-sign groups is casework, not floor matching), and only the MaxSplitSearchCandidates largest candidates by magnitude participate. |
-| <code>public static bool TryFindSplit(decimal targetAmount, IReadOnlyList&lt;SplitCandidate&gt; candidates, decimal tolerance, int maxLegs, Func&lt;IReadOnlyList&lt;SplitCandidate&gt;, bool&gt;? accept, out IReadOnlyList&lt;SplitCandidate&gt; legs, out decimal residual);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:91](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L91) | TryFindSplit(decimal, IReadOnlyList{SplitCandidate}, decimal, int, out IReadOnlyList{SplitCandidate}, out decimal) with a caller-supplied acceptance validator: only subsets the validator approves compete for &quot;best&quot;, so a subset that wins on the summed amount but fails a secondary constraint (for example aggregate market value on a position split) does not shadow a fully valid subset. |
-| <code>public static string CreateDeterministicId(string prefix, IReadOnlyList&lt;string&gt; parts);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:216](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L216) | Derives a stable identifier from match content (idempotency seed, rule, member ids…): the same inputs always produce the same id, so re-evaluating a cached run re-produces identical match-group, break, and evidence identifiers instead of minting fresh GUIDs per call. |
+| <code>public static bool TryFindSplit(decimal targetAmount, IReadOnlyList&lt;SplitCandidate&gt; candidates, decimal tolerance, int maxLegs, Func&lt;IReadOnlyList&lt;SplitCandidate&gt;, bool&gt;? accept, out IReadOnlyList&lt;SplitCandidate&gt; legs, out decimal residual) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:91](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L91) | TryFindSplit(decimal, IReadOnlyList{SplitCandidate}, decimal, int, out IReadOnlyList{SplitCandidate}, out decimal) with a caller-supplied acceptance validator: only subsets the validator approves compete for &quot;best&quot;, so a subset that wins on the summed amount but fails a secondary constraint (for example aggregate market value on a position split) does not shadow a fully valid subset. |
+| <code>public static string CreateDeterministicId(string prefix, IReadOnlyList&lt;string&gt; parts);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:264](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L264) | Derives a stable identifier from match content (idempotency seed, rule, member ids…): the same inputs always produce the same id, so re-evaluating a cached run re-produces identical match-group, break, and evidence identifiers instead of minting fresh GUIDs per call. |
 
 ## SplitCandidate
 
@@ -490,7 +490,7 @@ Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Reconciliation
 
 Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:65](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L65).
 
-One candidate leg offered to TryFindSplit.
+One candidate leg in a bounded split search.
 
 ```csharp
 public sealed record SplitCandidate(string Id, decimal Amount);
@@ -626,7 +626,7 @@ public sealed record SecurityLookupKey(SecurityIdentifierKind IdentifierKind, st
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementAccruedInterestReconciliation</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:526](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L526).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:535](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L535).
 
 Typed break codes and policy for reconciling custodian-stated accrued interest on a matched position against Meridian&#x27;s booked accrued interest receivable.
 
@@ -638,10 +638,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string VarianceBreakCode = &quot;POSITION_ACCRUED_INTEREST_VARIANCE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:529](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L529) | Booked and custodian accrued interest differ beyond tolerance. |
-| <code>public const string UnavailableBreakCode = &quot;POSITION_ACCRUED_INTEREST_UNAVAILABLE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:532](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L532) | The custodian states accrued interest but no comparable internal figure exists. |
-| <code>public const string RuleId = &quot;statement-position-accrued-interest-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:534](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L534) |  |
-| <code>public const decimal MinimumTolerance = 0.01m;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:537](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L537) | One minor unit: accrued interest is a rounded cash amount, so sub-cent drift is noise. |
+| <code>public const string VarianceBreakCode = &quot;POSITION_ACCRUED_INTEREST_VARIANCE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:538](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L538) | Booked and custodian accrued interest differ beyond tolerance. |
+| <code>public const string UnavailableBreakCode = &quot;POSITION_ACCRUED_INTEREST_UNAVAILABLE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:541](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L541) | The custodian states accrued interest but no comparable internal figure exists. |
+| <code>public const string RuleId = &quot;statement-position-accrued-interest-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:543](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L543) |  |
+| <code>public const decimal MinimumTolerance = 0.01m;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:546](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L546) | One minor unit: accrued interest is a rounded cash amount, so sub-cent drift is noise. |
 
 ## StatementBreakClassificationRequest
 

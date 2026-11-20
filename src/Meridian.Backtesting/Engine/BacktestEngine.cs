@@ -10,6 +10,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
+using Meridian.Platform.Scheduling;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.Replay;
 using Meridian.Storage.Services;
@@ -118,6 +119,7 @@ public sealed class BacktestEngine(
         var universe = await UniverseDiscovery.DiscoverAsync(
             catalogService, request.DataRoot, request.Symbols, request.From, request.To, ct)
             .ConfigureAwait(false);
+        var inputEvidence = new BacktestInputEvidence(request.DataRoot, new HistoricalSessionScheduleResolver(_securityIdentity));
 
         if (rawCanonical && universe.Count == 0)
             throw new InvalidOperationException("Canonical raw-price replay requires a nonempty historical-bar universe.");
@@ -127,11 +129,12 @@ public sealed class BacktestEngine(
             logger.LogWarning("No symbols found in data root '{DataRoot}' for the requested date range", request.DataRoot);
             stageTimer.Transition(BacktestStage.Completed);
             stageTimer.Stop();
-            return CreateEmptyResult(request, universe, sw.Elapsed) with
+            var empty = CreateEmptyResult(request, universe, sw.Elapsed) with
             {
                 ProviderProvenance = ResearchProviderProvenance.Create(request, startedUtc, DateTimeOffset.UtcNow,
                     preflightEnabled: backtestPreflightService is not null, corporateActionsApplied: false)
             };
+            return await AttachCoverageAsync(empty, inputEvidence, ct).ConfigureAwait(false);
         }
 
         logger.LogInformation("Universe contains {Count} symbols: {Symbols}",
@@ -190,7 +193,7 @@ public sealed class BacktestEngine(
         IReadOnlyList<IAsyncEnumerable<MarketEvent>> streams = [];
         if (rawCanonical)
         {
-            streams = await BuildSymbolStreamsAsync(replaySymbols, request with { AdjustForCorporateActions = false }, ct).ConfigureAwait(false);
+            streams = await BuildSymbolStreamsAsync(replaySymbols, request with { AdjustForCorporateActions = false }, ct, inputEvidence: inputEvidence).ConfigureAwait(false);
             await rawCapture.CaptureAsync(streams, symbolOrder, ct).ConfigureAwait(false);
             streams = [rawCapture.ReadAsync(ct)];
         }
@@ -207,7 +210,8 @@ public sealed class BacktestEngine(
         var accounts = request.ResolveAccounts();
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp, lotConventions)
         {
-            FailOnLedgerIntegrityBreak = request.FailOnLedgerIntegrityBreak
+            FailOnLedgerIntegrityBreak = request.FailOnLedgerIntegrityBreak,
+            MarketDataEvidence = inputEvidence.PriceEvidence
         };
         if (canonicalActions is not null)
             portfolio.ConfigureCanonicalActions(canonicalActions);
@@ -247,7 +251,7 @@ public sealed class BacktestEngine(
         // action. Retain the original request and the captured events as run provenance.
         if (!rawCanonical)
             streams = await BuildSymbolStreamsAsync(replaySymbols,
-                portfolioActionAccounting ? request with { AdjustForCorporateActions = false } : request, ct).ConfigureAwait(false);
+                portfolioActionAccounting ? request with { AdjustForCorporateActions = false } : request, ct, inputEvidence: inputEvidence).ConfigureAwait(false);
 
         // 5. Replay loop — multi-symbol chronological merge
         stageTimer.Transition(BacktestStage.Replaying);
@@ -285,6 +289,7 @@ public sealed class BacktestEngine(
             sourceCounts[providerId] = sourceCounts.GetValueOrDefault(providerId) + 1;
             delistingMonitor.RecordEvent(evt.EffectiveSymbol, evtDate);
             lastEventTimestamps[evt.EffectiveSymbol] = evt.Timestamp;
+            inputEvidence.Observe(evt);
 
             // Update last known price from event
             UpdateLastPrice(portfolio, evt);
@@ -358,7 +363,7 @@ public sealed class BacktestEngine(
         if (journalStream is not null)
             await journalStream.CompleteAsync(ct).ConfigureAwait(false);
 
-        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, BiasDisclosure: biasDisclosure)
+        var result = new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, BiasDisclosure: biasDisclosure)
         {
             LedgerIntegrityBreaks = ledgerIntegrityBreaks,
             CanonicalCorporateActions = canonicalActions?.Snapshot,
@@ -367,6 +372,7 @@ public sealed class BacktestEngine(
                 corporateActionsApplied: rawCanonical || portfolioActionAccounting ||
                     (request.AdjustForCorporateActions && corporateActionAdjustment is not null))
         };
+        return await AttachCoverageAsync(result, inputEvidence, ct).ConfigureAwait(false);
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
@@ -403,7 +409,8 @@ public sealed class BacktestEngine(
         IReadOnlyList<string> replaySymbols,
         BacktestRequest request,
         CancellationToken ct,
-        Func<string, IReadOnlyDictionary<string, int>, CancellationToken, IAsyncEnumerable<MarketEvent>>? sourceFactory = null)
+        Func<string, IReadOnlyDictionary<string, int>, CancellationToken, IAsyncEnumerable<MarketEvent>>? sourceFactory = null,
+        BacktestInputEvidence? inputEvidence = null)
     {
         sourceFactory ??= static (root, symbols, token) => new JsonlReplayer(root, symbols).ReadEventsAsync(token);
         var sourceSymbols = new Dictionary<string, Dictionary<string, int>>(
@@ -427,6 +434,8 @@ public sealed class BacktestEngine(
             // JsonlReplayer filters selected symbols before sorting and uses the same ranks as the
             // outer merge. Shared roots are therefore captured once, rather than once per symbol.
             var source = FilterBySymbolsAndDate(sourceFactory(sourceRoot, symbols, ct), symbols, request.From, request.To, ct);
+            if (inputEvidence is not null)
+                source = inputEvidence.VerifyAsync(source, ct);
             if (request.CorporateActionMode == BacktestCorporateActionMode.Legacy && request.AdjustForCorporateActions && corporateActionAdjustment != null)
             {
                 streams.Add(CapturePrepareAndReplayAsync(source, symbols, request, ct));
@@ -1011,6 +1020,40 @@ public sealed class BacktestEngine(
             inactiveSecurityMasterSymbols: [],
             delistingMonitor: null);
         return new BacktestResult(request, universe, [], [], [], metrics, new BacktestLedger(), elapsed, 0, [], BiasDisclosure: biasDisclosure);
+    }
+
+    private static async Task<BacktestResult> AttachCoverageAsync(
+        BacktestResult result, BacktestInputEvidence evidence, CancellationToken ct)
+    {
+        var request = result.Request;
+        var requiredInstruments = result.Universe.Concat(request.Symbols ?? []).ToArray();
+        var coverage = await evidence.CompleteAsync(requiredInstruments, request.From, request.To, ct).ConfigureAwait(false);
+
+        var incomplete = coverage.Instruments.Where(static item => item.Status == "Incomplete")
+            .Select(static item => $"{item.Instrument} ({item.ObservedSessions}/{item.ExpectedSessions} sessions)").ToArray();
+        var unknown = coverage.Instruments.Where(static item => item.Status == "Unknown")
+            .Select(static item => item.Instrument).ToArray();
+        var disclosures = new List<BiasDisclosureItem>();
+        if (incomplete.Length > 0)
+            disclosures.Add(new("backtest-data-incomplete", BiasSeverity.Warning, "Data incomplete",
+                $"Expected session coverage is below 100% for {string.Join(", ", incomplete)}."));
+        if (unknown.Length > 0 || coverage.Instruments.Count == 0)
+            disclosures.Add(new("backtest-coverage-unknown", BiasSeverity.Caution, "Coverage unknown",
+                unknown.Length > 0
+                    ? $"Calendar or input evidence is unavailable for {string.Join(", ", unknown)}."
+                    : "No instruments were available to assess."));
+
+        return result with
+        {
+            EngineMetadata = (result.EngineMetadata ?? new BacktestEngineMetadata("MeridianNative")) with
+            {
+                InputCoverage = coverage
+            },
+            BiasDisclosure = result.BiasDisclosure! with
+            {
+                Items = result.BiasDisclosure!.Items.Concat(disclosures).OrderByDescending(static item => item.Severity).ToArray()
+            }
+        };
     }
 
     /// <summary>

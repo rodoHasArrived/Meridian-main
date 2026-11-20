@@ -85,7 +85,11 @@ internal static class StatementRunMatcher
             populations.Positions,
             internalCash,
             internalTransactions,
-            ToEngineTolerance(toleranceProfile)));
+            ToEngineTolerance(toleranceProfile))
+        {
+            StatementPeriodStart = import.StatementPeriodStart == default ? null : import.StatementPeriodStart,
+            StatementPeriodEnd = statementPeriodEnd == default ? null : statementPeriodEnd
+        });
 
         var breaks = new List<StatementRunBreak>();
         var matchGroups = new List<StatementRunMatchGroupRecord>();
@@ -475,6 +479,11 @@ internal static class StatementRunMatcher
 
     private static string BuildBreakCode(StatementMatchResult result)
     {
+        if (result.BreakCode is { } code)
+        {
+            return code;
+        }
+
         var tier = result.MatchTier == StatementMatchTier.Candidate ? "CANDIDATE" : "UNMATCHED";
         return $"{result.Kind.ToString().ToUpperInvariant()}_{tier}";
     }

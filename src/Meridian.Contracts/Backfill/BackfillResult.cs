@@ -42,6 +42,10 @@ public sealed record BackfillResult(
     /// </summary>
     public SymbolValidationSignal[] SymbolValidationSignals { get; init; } = SymbolValidationSignals ?? [];
 
+    /// <summary>Immutable response revisions that were retained after storage confirmed this run's data.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BackfillBatchReceipt>? BatchReceipts { get; init; }
+
     public static BackfillResult Failed(string provider, IReadOnlyList<string> symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex)
         => new(false, provider, symbols.ToArray(), from, to, 0, started, DateTimeOffset.UtcNow, ex.Message);
 }
