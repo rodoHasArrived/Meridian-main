@@ -195,7 +195,8 @@ public static class FiscalYearCloseProjection
             postClosing.Where(r => r.Balance != 0m).ToArray(),
             postClosing.Where(r => !IsTemporary(r) && r.Balance != 0m).ToArray(),
             Normalize(income), Normalize(Equity(opening)), Normalize(preEquity), Normalize(postEquity),
-            PlanHashSha256: null) { Book = bookEvidence };
+            PlanHashSha256: null)
+        { Book = bookEvidence };
         var canonical = JsonSerializer.Serialize(plan, FiscalYearClosePlanHashJsonContext.Default.FiscalYearClosePlanDto);
         return plan with { PlanHashSha256 = Sha256Digest.ComputeUtf8(canonical) };
     }

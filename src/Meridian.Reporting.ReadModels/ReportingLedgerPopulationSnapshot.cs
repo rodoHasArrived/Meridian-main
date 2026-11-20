@@ -130,7 +130,8 @@ public sealed record ReportingLedgerPopulationSnapshot(
             throw new LedgerValidationException("The comparative period lacks its exact retained close snapshot.");
 
         LedgerPeriodCloseSnapshotPayload prior;
-        try { prior = snapshot.VerifyIntegrity(); }
+        try
+        { prior = snapshot.VerifyIntegrity(); }
         catch (Exception exception) when (exception is InvalidDataException or JsonException)
         {
             throw new LedgerValidationException("The comparative close snapshot failed integrity verification.", exception);
@@ -152,7 +153,8 @@ public sealed record ReportingLedgerPopulationSnapshot(
         };
         var request = new LedgerReportPackRequest($"{Request.ReportId}-comparative-{snapshot.PeriodId:N}", Request.FundId,
             snapshot.PeriodId.ToString("D"), start, end, end, Request.BaseCurrency, Request.GeneratedBy, snapshot.ClosedAt,
-            lineDimensions: Request.LineDimensions) { StatementControl = definition };
+            lineDimensions: Request.LineDimensions)
+        { StatementControl = definition };
         var ledger = new Meridian.Ledger.Ledger();
         foreach (var record in prior.Entries.OrderBy(static item => item.GlobalSequence))
             ledger.Post(record.Entry);

@@ -91,7 +91,8 @@ public sealed class PaperSessionDailyReconciliationStore(string root)
         for (var attempt = 0; ; attempt++)
         {
             ct.ThrowIfCancellationRequested();
-            try { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+            try
+            { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
             catch (IOException) when (attempt < 39)
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(25), ct).ConfigureAwait(false);

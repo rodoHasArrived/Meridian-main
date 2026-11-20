@@ -26,7 +26,8 @@ public sealed partial class LedgerReportingAuthoritativeSource
         var periodStart = period.StartDate;
         var fxJournals = ResolveCashRevaluationSources(journals, periodStart, cutoff);
         var definition = new LedgerStatementControlDefinition(LedgerStatementControlDefinition.CurrentVersion,
-            book.AccountingBasis) { CashFxRevaluationJournalIds = fxJournals };
+            book.AccountingBasis)
+        { CashFxRevaluationJournalIds = fxJournals };
         if (parameters.TemplateParameters.TryGetValue(BookFxSettlementSetParameter, out var settlementValue))
         {
             var settlement = await RequireSettlementSetAsync(settlementValue, parameters.AsOfDate, book, journals,

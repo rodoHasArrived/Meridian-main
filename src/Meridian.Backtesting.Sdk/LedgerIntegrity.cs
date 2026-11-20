@@ -54,7 +54,8 @@ public static class BacktestLedgerIntegrityValidator
         {
             if (Math.Abs(actual - expected) > LedgerToleranceConstants.Balance)
                 breaks.Add(new(snapshot.Timestamp, check, account?.FinancialAccountId, account?.Symbol,
-                    expected, actual, message) { Currency = currency });
+                    expected, actual, message)
+                { Currency = currency });
         }
 
         var net = balances.Sum(pair => pair.Key.AccountType is LedgerAccountType.Asset or LedgerAccountType.Expense

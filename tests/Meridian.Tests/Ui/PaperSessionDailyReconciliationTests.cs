@@ -57,7 +57,8 @@ public sealed class PaperSessionDailyReconciliationTests
     {
         var retained = new PaperSessionCutoffEvidence(
             "simulated-session", "owned-account", "USD", new DateTimeOffset(2025, 11, 28, 18, 0, 0, TimeSpan.Zero),
-            100m, 100m, [], null) { SourceHashSha256 = new string('a', 64) };
+            100m, 100m, [], null)
+        { SourceHashSha256 = new string('a', 64) };
         var current = retained with { SourceHashSha256 = new string('b', 64) };
 
         PaperSessionDailyReconciliationStore.AssessFreshness(retained, retained).Should().BeSameAs(retained);

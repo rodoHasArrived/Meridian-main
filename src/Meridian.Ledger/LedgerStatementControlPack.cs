@@ -191,8 +191,13 @@ internal static class LedgerStatementControlPackBuilder
                 throw new LedgerValidationException($"Ledger line '{line.EntryId:D}' lacks a valid account mapping or is outside the report currency.");
 
             var account = line.Account;
-            var accountKey = Digest(new { account.Name, account.AccountType, account.Symbol,
-                FinancialAccountId = account.FinancialAccountId?.ToUpperInvariant() });
+            var accountKey = Digest(new
+            {
+                account.Name,
+                account.AccountType,
+                account.Symbol,
+                FinancialAccountId = account.FinancialAccountId?.ToUpperInvariant()
+            });
             var pnl = !isOpening && !isClosingTransfer && account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense
                 ? MapProfitAndLoss(entry, line)
                 : null;
@@ -336,9 +341,14 @@ internal static class LedgerStatementControlPackBuilder
     private static string Digest<T>(T value) => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(value));
 
     private static string CapitalRowKey(LedgerAccount account, string? investorId)
-        => Digest(new { account.Name, account.AccountType, account.Symbol,
+        => Digest(new
+        {
+            account.Name,
+            account.AccountType,
+            account.Symbol,
             FinancialAccountId = account.FinancialAccountId?.ToUpperInvariant(),
-            InvestorId = investorId?.ToUpperInvariant() });
+            InvestorId = investorId?.ToUpperInvariant()
+        });
 
     private sealed record Posting(Guid JournalEntryId, LedgerEntry Line, string AccountKey, bool IsOpening,
         bool IsClosingTransfer, ProfitAndLoss? ProfitAndLossAccount);

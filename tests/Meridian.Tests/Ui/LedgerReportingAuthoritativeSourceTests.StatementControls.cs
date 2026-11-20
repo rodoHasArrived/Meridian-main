@@ -43,8 +43,12 @@ public sealed partial class LedgerReportingAuthoritativeSourceTests
         var fixture = CreateFixture();
         var prior = fixture.Period with
         {
-            PeriodId = Guid.NewGuid(), PeriodNo = 6, Label = "2026-06", StartDate = new(2026, 6, 1),
-            EndDate = new(2026, 6, 30), Version = 3
+            PeriodId = Guid.NewGuid(),
+            PeriodNo = 6,
+            Label = "2026-06",
+            StartDate = new(2026, 6, 1),
+            EndDate = new(2026, 6, 30),
+            Version = 3
         };
         var opening = Record(fixture, new DateTimeOffset(2026, 6, 15, 12, 0, 0, TimeSpan.Zero), 1) with { PeriodId = prior.PeriodId };
         var activity = Record(fixture, new DateTimeOffset(2026, 7, 10, 12, 0, 0, TimeSpan.Zero), 2);

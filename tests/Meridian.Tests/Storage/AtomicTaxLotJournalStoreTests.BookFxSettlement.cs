@@ -121,7 +121,9 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var lotId = Guid.NewGuid();
             var evidence = BuildEvidence($"foreign-lot-{lotId:N}", 'c') with
             {
-                SubjectType = "OpenLotAcquisition", SubjectId = lotId.ToString("D"), EffectiveDate = acquired
+                SubjectType = "OpenLotAcquisition",
+                SubjectId = lotId.ToString("D"),
+                EffectiveDate = acquired
             };
             await store.SaveTaxLotPolicyAsync(new(Guid.NewGuid(), bookId, security,
                 LedgerTaxLotReliefMethod.Fifo, "fx-lot-policy-v1", acquired, at, at));

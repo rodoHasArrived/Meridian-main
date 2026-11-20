@@ -218,7 +218,8 @@ public static partial class ExecutionEndpoints
             var actionId = GenerateActionId();
             var existingSession = persistence.GetSession(sessionId);
             bool closed;
-            try { closed = await persistence.CloseSessionAsync(sessionId, context.RequestAborted).ConfigureAwait(false); }
+            try
+            { closed = await persistence.CloseSessionAsync(sessionId, context.RequestAborted).ConfigureAwait(false); }
             catch (InvalidOperationException ex) { return Results.Problem(ex.Message, statusCode: 409); }
 
             var auditEntry = await RecordOperatorAuditAsync(

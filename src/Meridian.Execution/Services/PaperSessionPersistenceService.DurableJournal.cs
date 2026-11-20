@@ -34,11 +34,18 @@ public sealed partial class PaperSessionPersistenceService
 
         var session = new PaperSession
         {
-            SessionId = record.SessionId, StrategyId = record.StrategyId, StrategyName = record.StrategyName,
-            InitialCash = record.InitialCash, CreatedAt = record.CreatedAt, ClosedAt = record.ClosedAt,
-            IsActive = record.IsActive, Symbols = record.Symbols.ToList(),
-            MatchingModelVersion = record.MatchingModelVersion, CostModelVersion = record.CostModelVersion,
-            FinancialAccountId = record.FinancialAccountId, JournalCurrency = record.JournalCurrency,
+            SessionId = record.SessionId,
+            StrategyId = record.StrategyId,
+            StrategyName = record.StrategyName,
+            InitialCash = record.InitialCash,
+            CreatedAt = record.CreatedAt,
+            ClosedAt = record.ClosedAt,
+            IsActive = record.IsActive,
+            Symbols = record.Symbols.ToList(),
+            MatchingModelVersion = record.MatchingModelVersion,
+            CostModelVersion = record.CostModelVersion,
+            FinancialAccountId = record.FinancialAccountId,
+            JournalCurrency = record.JournalCurrency,
             IsAccountDefault = record.IsAccountDefault
         };
         var fills = await _store.LoadFillRecordsAsync(session.SessionId, ct).ConfigureAwait(false);

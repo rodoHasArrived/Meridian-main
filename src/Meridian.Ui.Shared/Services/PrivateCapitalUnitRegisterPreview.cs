@@ -185,7 +185,8 @@ internal static class PrivateCapitalUnitRegisterPreview
         var residual = wholeBookNav - holdings.Sum(holding => holding.Value);
         var precision = CurrencyMinorUnits.GetPrecision(scope.Currency);
         var minorUnit = 1m;
-        for (var place = 0; place < precision; place++) minorUnit /= 10m;
+        for (var place = 0; place < precision; place++)
+            minorUnit /= 10m;
         var roundingBound = holdings.Count(holding => holding.Units != 0) * minorUnit / 2m
             + Math.Abs(register.UnitsOutstanding) * 0.0000005m;
         if (Math.Abs(residual) > roundingBound || register.UnitsOutstanding == 0 && wholeBookNav != 0)
@@ -215,7 +216,8 @@ internal static class PrivateCapitalUnitRegisterPreview
     {
         if (element.ValueKind == JsonValueKind.Array)
         {
-            foreach (var item in element.EnumerateArray()) EnsureUniqueFields(item);
+            foreach (var item in element.EnumerateArray())
+                EnsureUniqueFields(item);
             return;
         }
         if (element.ValueKind != JsonValueKind.Object)

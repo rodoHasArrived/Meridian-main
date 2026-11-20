@@ -11421,7 +11421,6 @@ Meridian-main
 │   │   │   ├── LedgerAmountProvenanceService.cs
 │   │   │   ├── LedgerBookOrdering.cs
 │   │   │   ├── LedgerClientReportExportService.cs
-│   │   │   ├── LedgerDimensionMapper.cs
 │   │   │   ├── LedgerMarkToMarketCarryingValueSource.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.cs
 │   │   │   ├── LedgerReportingAuthoritativeSource.StatementControls.cs

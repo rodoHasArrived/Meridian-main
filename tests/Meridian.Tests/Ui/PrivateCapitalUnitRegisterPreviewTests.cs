@@ -118,7 +118,8 @@ public sealed class PrivateCapitalUnitRegisterPreviewTests
             state == "different-bytes" ? new string('0', 64) : hash, At(Cutoff), "synthetic-upload", "source-operator",
             Scope.TenantId, Scope.CompanyId, EvidenceExtractionStatusDto.Accepted, [],
             new(state == "unreviewed" ? EvidenceDocumentReviewStatusDto.Unreviewed : EvidenceDocumentReviewStatusDto.Accepted,
-                "source-reviewer", At(Cutoff)), []) { ContentType = "application/json" };
+                "source-reviewer", At(Cutoff)), [])
+        { ContentType = "application/json" };
         var identity = new EvidenceVaultIdentityDto(vaultId, "fund", Scope.FundProfileId, "retained.json",
             "/api/evidence", At(Cutoff), hash, 1, "file-bundle")
         {

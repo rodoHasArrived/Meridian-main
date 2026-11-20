@@ -110,7 +110,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionCutoffEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:291](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L291).
+Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:298](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L298).
 
 Read-only paper accounting proof for one session and cutoff.
 
@@ -122,7 +122,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceHashSha256 { get; init; }</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:296](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L296) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceHashSha256 { get; init; }</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:303](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L303) |  |
 
 ## PaperSessionDetailDto
 
@@ -324,7 +324,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;PaperSessionCutoffEvidence?&gt; GetCutoffEvidenceAsync(string sessionId, DateTimeOffset cutoff, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:253](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L253) | Compares the independently replayed portfolio to the verified journal at a single cutoff. |
+| <code>public async Task&lt;PaperSessionCutoffEvidence?&gt; GetCutoffEvidenceAsync(string sessionId, DateTimeOffset cutoff, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:260](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L260) | Compares the independently replayed portfolio to the verified journal at a single cutoff. |
 
 Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.HistoricalAccounting.cs:8](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.HistoricalAccounting.cs#L8).
 

@@ -130,7 +130,8 @@ public sealed partial class StatementMatchingEngine
         return CreateTransactionResult(statement, transaction,
             code is null ? StatementMatchTier.Exact : StatementMatchTier.Candidate,
             code is null ? 1.00m : 0.50m, [TransactionExternalIdRuleId], variance,
-            TransactionTolerance(tolerance), explanation) with { BreakCode = code };
+            TransactionTolerance(tolerance), explanation) with
+        { BreakCode = code };
     }
 
     // Group eligible pairs before assigning any of them. A tie is evidence for an operator, and

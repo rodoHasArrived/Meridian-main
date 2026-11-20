@@ -82,7 +82,8 @@ public static partial class LedgerFinancialStatementBuilder
             CashFlow = cashFlow with { PeriodStart = periodStart },
             PartnersCapital = partnersCapital with { PeriodStart = periodStart },
             PeriodIncome = control is null ? null : BuildIncomeStatementForPeriod(
-                ledger, opening, asOf, chart, financialAccountId, lineDimensions) with { PeriodStart = periodStart }
+                ledger, opening, asOf, chart, financialAccountId, lineDimensions) with
+            { PeriodStart = periodStart }
         };
     }
 
@@ -171,7 +172,8 @@ public static partial class LedgerFinancialStatementBuilder
             operating,
             investing,
             financing,
-            lines) { ExchangeRateEffects = exchangeRateEffects };
+            lines)
+        { ExchangeRateEffects = exchangeRateEffects };
     }
 
     private static LedgerPartnersCapitalStatement BuildPartnersCapitalStatement(
