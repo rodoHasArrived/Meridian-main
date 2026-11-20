@@ -1569,7 +1569,7 @@ describe("PortfolioScreen", () => {
     // crosshair slider is exposed beside (not inside) the image.
     const equityTable = screen.getByRole("table", { name: "Equity and drawdown by date for Mean Reversion" });
     expect(within(equityTable).getByRole("row", { name: "2026-05-03 100,390 -0.80%" })).toBeDefined();
-    expect(equityChart.contains(screen.getByRole("slider"))).toBe(false);
+    expect(equityChart.contains(within(screen.getByRole("region", { name: "Run equity and drawdown inspector" })).getByRole("slider"))).toBe(false);
 
     // The daily-return distribution reuses the same fetched points — no extra request — and
     // surfaces the signed histogram with mean, best, worst, and positive-day readouts. Scope the

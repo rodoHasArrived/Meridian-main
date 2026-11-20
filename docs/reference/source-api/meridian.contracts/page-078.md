@@ -480,6 +480,28 @@ Healthy providers out of every provider the Data workspace lists.
 public sealed record WorkstationProviderHealthCount(int Healthy, int Total, string Definition);
 ```
 
+## WorkstationRecordSearchHit
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRecordSearchHit</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs#L4).
+
+A navigation projection of an authorized record. Financial values stay in the detail view.
+
+```csharp
+public sealed record WorkstationRecordSearchHit(string RecordType, string RecordId, string Label, string Scope, string AsOfPosture, string Status, string Href);
+```
+
+## WorkstationRecordSearchResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRecordSearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs#L13).
+
+```csharp
+public sealed record WorkstationRecordSearchResult(IReadOnlyList<WorkstationRecordSearchHit> Items, bool IsPartial);
+```
+
 ## WorkstationReportAccessAuditSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportAccessAuditSummaryDto</code>. Kind: `record`.
@@ -538,28 +560,4 @@ Canonical tenant/company reporting history over durable run and delivery authori
 
 ```csharp
 public sealed record WorkstationReportingHistoryPayload(IReadOnlyList<WorkstationReportingRunPayload> Runs, IReadOnlyList<WorkstationReportingDeliveryPayload> Deliveries, int Limit, DateTimeOffset GeneratedAtUtc);
-```
-
-## WorkstationReportingPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:756](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L756).
-
-Typed reporting payload returned directly by GET /api/workstation/reporting and also embedded as the Reporting summary inside WorkstationAccountingPayload.
-
-```csharp
-public sealed record WorkstationReportingPayload(int ProfileCount, IReadOnlyList<string> RecommendedProfiles, IReadOnlyList<WorkstationReportingProfilePayload> Profiles, IReadOnlyList<WorkstationReportPackDistributionPayload> ReportPackDistributions, string Summary, IReadOnlyList<WorkstationReportingTemplatePayload> Templates, IReadOnlyList<WorkstationReportingRunPayload> RecentRuns, IReadOnlyList<ReportingScheduleRecordDto>? Schedules = null, IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null, string? SelectedFundProfileId = null, IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null, FinancialRecordExplorerDto? ReportLineProvenanceExplorer = null, IReadOnlyList<PortfolioReportingCutDto>? PortfolioCuts = null, IReadOnlyList<PortfolioReportingLiveViewDto>? LivePortfolioViews = null, IReadOnlyList<CrossFundReportingConsolidationDto>? CrossFundConsolidations = null, IReadOnlyList<PortfolioReportingPnlSliceDto>? PnlSlices = null, IReadOnlyList<PortfolioReportingAnalyticsRowDto>? AnalyticsRows = null, IReadOnlyList<StructuredReportingExportDto>? StructuredExports = null, IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null, IReadOnlyList<WorkstationReportWriterDatasetSourcePayload>? ReportWriterDatasetSources = null, WorkstationReportAccessAuditSummaryDto? AccessAudit = null, IReadOnlyList<WorkstationReportingDailyWorkItemDto>? DailyWork = null, IReadOnlyList<ReportingStarterKitDto>? StarterKits = null, ReportingStarterKitStateDto? StarterKitState = null, ReportingDeploymentCapabilityDto? DeploymentCapability = null, IReadOnlyList<WorkstationReportingDeliveryPayload>? CanonicalDeliveries = null);
-```
-
-## WorkstationReportingProfilePayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingProfilePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:481](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L481).
-
-A single export/reporting profile shown in the Reporting workspace. Matches the Reporting profile type in browser workstation models.
-
-```csharp
-public sealed record WorkstationReportingProfilePayload(string Id, string Name, string TargetTool, string Format, string Description, bool LoaderScript, bool DataDictionary);
 ```

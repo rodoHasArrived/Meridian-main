@@ -695,8 +695,14 @@ Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySearchRequest</c
 Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L10).
 
 ```csharp
-public sealed record SecuritySearchRequest(string Query, int Take = 50, int Skip = 0, bool ActiveOnly = false, string? CustomProfileId = null, int? ProfileVersion = null, string? ProfileFieldKey = null, string? ProfileFieldValue = null);
+public sealed record SecuritySearchRequest(string Query, int Take = 50, int Skip = 0, bool ActiveOnly = false, string? CustomProfileId = null, int? ProfileVersion = null, string? ProfileFieldKey = null, string? ProfileFieldValue = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool PrefixOnly { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L20) |  |
 
 ## SecuritySettlementMethod
 

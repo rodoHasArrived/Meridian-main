@@ -6,6 +6,7 @@ import { AXIS_LABEL_STYLE, fitValueTicks, formatTimeTickLabel, selectTimeTickInd
 import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
 import { ChartInteractionOverlay, isChartInteractive } from "./chart-interaction";
 import { useChartSize } from "./use-chart-size";
+import { ChartEvidenceMark, type ChartInspection } from "./chart-evidence";
 
 export interface EquitySeries {
   label: string;
@@ -44,6 +45,7 @@ export interface EquityCurveProps extends ChartA11yProps {
   showLegend?: boolean;
   /** Area fill under the primary series. @default true */
   fill?: boolean;
+  inspection?: ChartInspection;
 }
 
 const PLOT = "var(--chart-plot, #F8F7F3)";
@@ -67,7 +69,8 @@ export function EquityCurve({
   fill = true,
   ariaLabel = "Equity performance curve",
   ariaDescription,
-  accessibleData
+  accessibleData,
+  inspection
 }: EquityCurveProps) {
   const [plotRef, size] = useChartSize({ width: 960, height: 460 });
   const W = size.width;
@@ -144,8 +147,14 @@ export function EquityCurve({
         ariaLabel={ariaLabel}
         ariaDescription={ariaDescription}
         accessibleData={accessibleData}
+        overlayHintId={inspection?.hintId}
         overlay={
-          isChartInteractive(n, onCrosshairChange, onPointActivate) ? (
+          inspection ? primary?.points.map((_, index) => {
+            const halfSlot = (plotR - plotL) / denom / 2;
+            const left = Math.max(plotL, x(index) - halfSlot);
+            const right = Math.min(plotR, x(index) + halfSlot);
+            return <ChartEvidenceMark key={inspection.pointId(index)} inspection={inspection} index={index} geometry={{ x: left, y: eqT, width: right - left, height: ddB - eqT }} />;
+          }) : isChartInteractive(n, onCrosshairChange, onPointActivate) ? (
             <ChartInteractionOverlay
               x={plotL}
               y={eqT}

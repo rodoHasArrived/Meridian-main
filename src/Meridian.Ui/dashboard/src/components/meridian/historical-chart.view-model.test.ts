@@ -230,7 +230,7 @@ describe("buildCandlestickChartViewModel", () => {
     }
   });
 
-  it("includes OHLC values in tooltip label for each bar", () => {
+  it("includes OHLC values in the evidence for each bar", () => {
     const bars = [
       bar("2026-05-01T14:30:00Z", 100, 105, 99, 103, 1000)
     ];
@@ -241,12 +241,15 @@ describe("buildCandlestickChartViewModel", () => {
       timeframe: "1D"
     });
 
-    expect(vm?.bars[0]?.tooltipLabel).toContain("103");
-    expect(vm?.bars[0]?.tooltipLabel).toContain("105");
-    expect(vm?.bars[0]?.tooltipLabel).toContain("99");
+    expect(vm?.bars[0]?.evidence.values.slice(0, 4)).toMatchObject([
+      { series: "Open", value: 100 },
+      { series: "High", value: 105 },
+      { series: "Low", value: 99 },
+      { series: "Close", value: 103 }
+    ]);
   });
 
-  it("exposes per-bar hover detail with OHLC, volume, and change-from-prev", () => {
+  it("exposes per-bar decision evidence with OHLC, volume, and change-from-prev", () => {
     const bars = [
       bar("2026-05-01T14:30:00Z", 100, 102, 99, 100, 1000),
       bar("2026-05-01T14:35:00Z", 100, 105, 100, 104, 1500)
@@ -258,25 +261,20 @@ describe("buildCandlestickChartViewModel", () => {
       timeframe: "1D"
     });
 
-    const firstHover = vm?.bars[0]?.hover;
-    expect(firstHover?.index).toBe(0);
-    expect(firstHover?.openLabel).toBe("100.00");
-    expect(firstHover?.highLabel).toBe("102.00");
-    expect(firstHover?.lowLabel).toBe("99.00");
-    expect(firstHover?.closeLabel).toBe("100.00");
-    expect(firstHover?.volumeLabel).toBe("1.0K");
-    // First bar has no prior close, so change is "-"
-    expect(firstHover?.changeLabel).toBe("-");
-    expect(firstHover?.changeTone).toBe("neutral");
-    expect(firstHover?.ariaLabel).toContain("Open 100.00");
-    expect(firstHover?.ariaLabel).toContain("Volume 1.0K");
+    const first = vm?.bars[0]?.evidence;
+    expect(first?.asOf).toBe("2026-05-01T14:30:00Z");
+    expect(first?.values).toMatchObject([
+      { series: "Open", value: 100 },
+      { series: "High", value: 102 },
+      { series: "Low", value: 99 },
+      { series: "Close", value: 100 },
+      { series: "Volume", value: 1000, unit: "Instrument units" }
+    ]);
+    expect(first?.sourceDetail).not.toContain("Close change");
+    expect(first?.proof?.href).toContain("intervalMinutes=5&from=2026-05-01&to=2026-05-01");
 
-    const secondHover = vm?.bars[1]?.hover;
-    expect(secondHover?.index).toBe(1);
-    // Close moved from 100 -> 104, +4 (+4%)
-    expect(secondHover?.changeLabel).toContain("+4");
-    expect(secondHover?.changeLabel).toContain("%");
-    expect(secondHover?.changeTone).toBe("positive");
+    const second = vm?.bars[1]?.evidence;
+    expect(second?.sourceDetail).toContain("Close change from the previous bar +4.00 (+4.00%)");
   });
 
   it("exposes geometry needed for crosshair hit-testing", () => {

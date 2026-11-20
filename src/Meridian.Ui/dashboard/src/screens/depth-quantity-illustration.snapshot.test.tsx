@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { DepthQuantityIllustration, illustrateDepth } from "./depth-quantity-illustration";
@@ -44,5 +44,22 @@ describe("displayed depth illustration", () => {
     await user.type(screen.getByRole("textbox", { name: /Illustrative quantity/ }), "0.000000001");
     expect(screen.getByRole("status")).toHaveTextContent(/0 of 1E-9.*covered/);
     expect(screen.getByRole("status")).toHaveTextContent("1E-9 beyond displayed levels");
+  });
+
+  it("links the inspected cumulative depth to the captured source level after a newer snapshot arrives", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<DepthQuantityIllustration book={book} />);
+    const point = screen.getByRole("button", { name: /^ABC ask level 2\./ });
+    await user.hover(point);
+    const inspector = screen.getByRole("region", { name: "ABC order-book depth inspector" });
+    expect(within(inspector).getByRole("row", { name: /Cumulative ask depth 130/ })).toBeInTheDocument();
+
+    rerender(<DepthQuantityIllustration book={{ ...book, sequenceNumber: 2, asks: [] }} />);
+    expect(inspector).toHaveTextContent("Snapshot 1");
+    const proof = within(inspector).getByRole("link", { name: "Open captured ask level 2" });
+    const proofTarget = proof.getAttribute("href")?.slice(1);
+    await user.click(proof);
+    const table = screen.getByRole("table", { name: "Captured depth levels" });
+    expect(within(table).getByRole("row", { name: "Ask 2 12 70" })).toContainElement(document.getElementById(proofTarget!));
   });
 });
