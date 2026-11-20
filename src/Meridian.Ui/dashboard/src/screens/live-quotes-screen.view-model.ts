@@ -1926,8 +1926,8 @@ export function buildPriceSparklineViewModel(
           ...source,
           id: `trade-${key}:${series[0]!.trade.symbol}`,
           label: `Recent trade ${key}`,
-          x: (width - padX).toFixed(2),
-          y: yFor(value).toFixed(2),
+          x: formatFixed(width - padX, 2),
+          y: formatFixed(yFor(value), 2),
           values: [{ series: `Trade ${key}`, value, unit: "Price per unit (currency unreported)", basis: `Window ${key} across buffered trade prices.` }]
         };
       })
