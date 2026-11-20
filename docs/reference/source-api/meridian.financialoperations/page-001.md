@@ -169,13 +169,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.AccountingClose.AccountingReportPackageService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.Certification.cs:6](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.Certification.cs#L6).
-
-```csharp
-public sealed partial class AccountingReportPackageService
-```
-
-Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:49](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L49).
+Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:50](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L50).
 
 Builds and retains accounting report packages and their certification state.
 
@@ -187,12 +181,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AccountingReportPackageService(IAccountingCloseManagementService? closeManagementService = null);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:64](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L64) |  |
-| <code>public AccountingReportPackageService(IAccountingCloseManagementService? closeManagementService, StorageOptions storageOptions, IExternalGlConfirmationGate? externalGl = null) : this(closeManagementService);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:69](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L69) |  |
-| <code>public async Task&lt;AccountingReportPackageBundleDto&gt; BuildPackageAsync(AccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:80](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L80) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountingReportPackageBundleDto&gt;&gt; ListPackagesAsync(string? fundProfileId = null, string? periodId = null, Guid? ledgerBookId = null, LedgerDimensionSetDto? dimensions = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:274](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L274) |  |
-| <code>public async Task&lt;AccountingReportPackageBundleDto?&gt; CertifyPackageAsync(CertifyAccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:301](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L301) |  |
-| <code>public Task&lt;ReportExportArtifactManifestDto?&gt; GetExportArtifactManifestAsync(string packageId, string artifactId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:467](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L467) |  |
+| <code>public AccountingReportPackageService(IAccountingCloseManagementService? closeManagementService = null);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:65](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L65) |  |
+| <code>public AccountingReportPackageService(IAccountingCloseManagementService? closeManagementService, StorageOptions storageOptions, IExternalGlConfirmationGate? externalGl = null) : this(closeManagementService);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:70](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L70) |  |
+| <code>public async Task&lt;AccountingReportPackageBundleDto&gt; BuildPackageAsync(AccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:81](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L81) |  |
+| <code>public Task&lt;IReadOnlyList&lt;AccountingReportPackageBundleDto&gt;&gt; ListPackagesAsync(string? fundProfileId = null, string? periodId = null, Guid? ledgerBookId = null, LedgerDimensionSetDto? dimensions = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:275](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L275) |  |
+| <code>public async Task&lt;AccountingReportPackageBundleDto?&gt; CertifyPackageAsync(CertifyAccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:302](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L302) |  |
+| <code>public Task&lt;ReportExportArtifactManifestDto?&gt; GetExportArtifactManifestAsync(string packageId, string artifactId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:468](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L468) |  |
 
 Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.Dimensions.cs:8](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.Dimensions.cs#L8).
 
@@ -451,7 +445,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.AccountingClose.IAccountingReportPackageService</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:19](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L19).
+Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:20](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L20).
 
 Defines creation, listing, and certification of accounting report packages.
 
@@ -463,10 +457,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;AccountingReportPackageBundleDto&gt; BuildPackageAsync(AccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:21](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L21) |  |
-| <code>Task&lt;IReadOnlyList&lt;AccountingReportPackageBundleDto&gt;&gt; ListPackagesAsync(string? fundProfileId = null, string? periodId = null, Guid? ledgerBookId = null, LedgerDimensionSetDto? dimensions = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:25](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L25) |  |
-| <code>Task&lt;AccountingReportPackageBundleDto?&gt; CertifyPackageAsync(CertifyAccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:34](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L34) |  |
-| <code>Task&lt;ReportExportArtifactManifestDto?&gt; GetExportArtifactManifestAsync(string packageId, string artifactId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:38](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L38) |  |
+| <code>Task&lt;AccountingReportPackageBundleDto&gt; BuildPackageAsync(AccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:22](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L22) |  |
+| <code>Task&lt;IReadOnlyList&lt;AccountingReportPackageBundleDto&gt;&gt; ListPackagesAsync(string? fundProfileId = null, string? periodId = null, Guid? ledgerBookId = null, LedgerDimensionSetDto? dimensions = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:26](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L26) |  |
+| <code>Task&lt;AccountingReportPackageBundleDto?&gt; CertifyPackageAsync(CertifyAccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:35](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L35) |  |
+| <code>Task&lt;ReportExportArtifactManifestDto?&gt; GetExportArtifactManifestAsync(string packageId, string artifactId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:39](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L39) |  |
 
 ## JournalEntry
 

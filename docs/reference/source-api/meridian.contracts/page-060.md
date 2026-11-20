@@ -30,7 +30,7 @@ public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlo
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashLadderBucketDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:973](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L973).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:978](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L978).
 
 A single time-bucket within a projected cash ladder.
 
@@ -81,7 +81,7 @@ public sealed record ChangeSinglePrincipalDeclarationRequestDto(Guid CommandId, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ClosedLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1155](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1155).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1160](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1160).
 
 Workstation-facing summary of a closed lot for a strategy run.
 
