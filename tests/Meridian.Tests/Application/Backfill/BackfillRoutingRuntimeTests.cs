@@ -200,7 +200,7 @@ public sealed class BackfillRoutingRuntimeTests : IDisposable
         result.Success.Should().BeTrue();
         result.BarsWritten.Should().Be(1);
         result.ProviderProvenance!.FallbackChain.Should().Equal("stooq");
-        result.RoutingAttempts.Should().ContainSingle(attempt => attempt is { ProviderId: "stooq", Attempted: true });
+        result.RoutingAttempts.Should().ContainSingle(attempt => attempt.ProviderId == "stooq" && attempt.Attempted);
         result.QuotaReceipt!.ObservedProviders.Should().Equal("stooq");
         result.ForTenant("requester").RoutingAttempts.Should().BeSameAs(result.RoutingAttempts);
         result.ForTenant("owner").RoutingAttempts.Should().BeNull();
