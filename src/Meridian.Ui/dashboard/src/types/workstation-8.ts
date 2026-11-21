@@ -283,6 +283,7 @@ export interface StrategyDesignDocument {
   metadata?: Record<string, string> | null;
   createdAt: string;
   updatedAt: string;
+  revision?: string | null;
 }
 
 export interface StrategyDesignCell {
@@ -350,10 +351,12 @@ export interface StrategyDesignDraftSummary {
   transitionCount: number;
   updatedAt: string;
   validationSummary: string;
+  revision?: string | null;
 }
 
 export interface StrategyDesignDraftSaveRequest {
   document: StrategyDesignDocument;
+  expectedRevision?: string | null;
 }
 
 export interface StrategyDesignDraftSaveResponse {
@@ -399,6 +402,9 @@ export interface StrategyDesignPreviewResult {
 export interface StrategyDesignRunBacktestRequest {
   document: StrategyDesignDocument;
   parameters?: Record<string, string> | null;
+  fundAccountId?: string;
+  from?: string;
+  to?: string;
   operatorAcceptanceCriteria: string[];
   retainedEvidenceReferences: string[];
   accountingRecordReferences: string[];
@@ -422,6 +428,9 @@ export interface StrategyDesignRunBacktestResponse {
   promotionCandidatePath: string | null;
   reviewPacketPath: string | null;
   biasDisclosure?: BiasDisclosure | null;
+  strategyVersionSha256?: string | null;
+  dataSnapshotSha256?: string | null;
+  dataProvenanceToken?: string | null;
 }
 
 // --- Quant Notebook ---

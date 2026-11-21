@@ -5,6 +5,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Backfill;
 using Meridian.Application.Scheduling;
+using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Operations;
 using Meridian.Core.Config;
 using Meridian.Identity.Auth;
@@ -359,7 +360,7 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
     }
 
     [Fact]
-    public void ProviderPlanning_AbsentAlphaVantageOptionsAreDisabledAndKeepPresetPacing()
+    public void ProviderPlanning_AbsentAlphaVantageConfig_IsDisabledWithPresetLimits()
     {
         var options = BackfillEndpoints.GetProviderOptionsFromConfig(
             new BackfillProvidersConfig(),
@@ -414,44 +415,30 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
     }
 
     [Fact]
-    public async Task ProviderStatuses_WhenRoutingIsAvailable_ReturnsPresetOptionsForMissingConfiguration()
+    public async Task ProviderStatuses_WhenRuntimeIsActive_ExposeDefaultsWithoutProviderConfiguration()
     {
-        _fixture.Services.GetRequiredService<BackfillRoutingRuntime>().Current.Should().NotBeNull();
         using var response = await _client.GetAsync("/api/backfill/providers/statuses");
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var providers = await response.Content.ReadFromJsonAsync<JsonElement>();
-        var alphaVantage = providers.EnumerateArray()
-            .Single(provider => provider.GetProperty("metadata").GetProperty("providerId").GetString() == "alphavantage");
-        alphaVantage.GetProperty("effectiveConfigSource").GetString().Should().Be("default");
-        alphaVantage.GetProperty("options").GetProperty("enabled").GetBoolean().Should().BeFalse();
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var statuses = await response.Content.ReadFromJsonAsync<BackfillProviderStatusDto[]>();
+        var alphaVantage = statuses.Should().ContainSingle(status =>
+            status.Metadata.ProviderId == "alphavantage").Which;
+        alphaVantage.EffectiveConfigSource.Should().Be("default");
+        alphaVantage.Options.Enabled.Should().BeFalse();
     }
 
-    [Theory]
-    [InlineData("/api/backfill/providers/statuses")]
-    [InlineData("/api/backfill/providers/fallback-chain")]
-    public async Task ProviderPlanningRead_WhenProviderConfigurationAndRuntimeAreMissing_ReturnsServiceUnavailable(string route)
+    [Fact]
+    public async Task ProviderFallbackChain_WhenProviderConfigurationIsMissing_ReturnsServiceUnavailable()
     {
-        var fixture = new EndpointTestFixture();
-        await fixture.InitializeAsync();
-        try
-        {
-            fixture.Services.GetRequiredService<BackfillRoutingRuntime>().Dispose();
-            using var client = fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
-            using var response = await client.GetAsync(route);
+        using var response = await _client.GetAsync("/api/backfill/providers/fallback-chain");
 
-            response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
-            var problem = await AssertProblemDetailsAsync(
-                response,
-                "https://meridian.io/errors/service-unavailable",
-                "Service Unavailable");
-            problem.GetProperty("service").GetString()
-                .Should().Be("backfill provider configuration");
-        }
-        finally
-        {
-            await fixture.DisposeAsync();
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        var problem = await AssertProblemDetailsAsync(
+            response,
+            "https://meridian.io/errors/service-unavailable",
+            "Service Unavailable");
+        problem.GetProperty("service").GetString()
+            .Should().Be("backfill provider configuration");
     }
 
     [Fact]

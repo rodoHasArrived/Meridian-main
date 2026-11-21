@@ -97,7 +97,7 @@ public sealed record BankStatementImportResultDto(string UploadId, Guid BatchId,
 
 Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:280](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L280).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:285](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L285).
 
 Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
 
@@ -109,7 +109,7 @@ public sealed record BiasDisclosureDto(string FillTiming, string FillConservatis
 
 Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:269](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L269).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:274](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L274).
 
 One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
 
@@ -365,7 +365,7 @@ public sealed record CashFinancingSummary(string Currency, decimal TotalCash, de
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashFlowEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:989](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L989).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:994](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L994).
 
 A single historical cash-flow entry from a strategy run.
 
@@ -397,7 +397,7 @@ public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlo
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashLadderBucketDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:999](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L999).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1004](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1004).
 
 A single time-bucket within a projected cash ladder.
 
@@ -448,7 +448,7 @@ public sealed record ChangeSinglePrincipalDeclarationRequestDto(Guid CommandId, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ClosedLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1181](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1181).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1186](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1186).
 
 Workstation-facing summary of a closed lot for a strategy run.
 

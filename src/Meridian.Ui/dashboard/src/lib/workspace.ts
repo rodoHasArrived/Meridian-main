@@ -412,7 +412,7 @@ export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> 
   evidence: "Evidence",
   exceptions: "Exceptions",
   "family-office": "Family Office",
-  "journal-entries": "Journal entries",
+  "journal-entries": "Journal Entries",
   ledger: "Ledger Explorer",
   nav: "NAV",
   "factor-paydown": "Factor Paydown",

@@ -188,6 +188,10 @@ export function buildOrderTicketStatusAnnouncement({
     return `Order parked for risk approval${escalationId ? `, escalation ${escalationId}` : ""}.`;
   }
 
+  if (phase === "reconciliation") {
+    return errorText ?? "This order requires reconciliation.";
+  }
+
   if (errorText) {
     return `Order submission failed: ${errorText}`;
   }

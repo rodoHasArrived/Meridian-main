@@ -5,6 +5,7 @@ import type { StrategySweepResultGroup } from "@/types/workstation-6";
 import type { EquityCurveSummary, LedgerJournalLine, LedgerSummary, LedgerTrialBalanceLine, OrderResult, OrderSubmitRequest, PaperSessionSummary, PromotionDecisionResult, PromotionEvaluationResult, PromotionRecord, RiskRuleConfig, RiskRuleConfigUpdateRequest, RiskRuleStatus, StrategyRunSummaryApiRecord, RunAttributionSummary, RunCashFlowSummary, RunComparisonRow, RunDiff, RunFillSummary, ReplayFileRecord, ReplayStatus, StrategyRunContinuityDto, StrategyRunReviewPacket, TradingActionResult, CreateExecutionManualOverrideRequest, ExecutionManualOverride } from "@/types";
 import { EXECUTION_API_ENDPOINTS, PROMOTION_API_ENDPOINTS, REPLAY_API_ENDPOINTS, executionManualOverrideClearEndpoint, executionOrderCancelEndpoint, executionPositionCloseEndpoint, executionSessionCloseEndpoint, riskRuleConfigEndpoint, riskRuleStatusEndpoint, portfolioRunCashFlowsEndpoint, promotionEvaluateEndpoint, replayFilesEndpoint, replaySessionActionEndpoint, strategyActionEndpoint, workstationRunAttributionEndpoint, workstationRunCompareEndpoint, workstationRunContinuityEndpoint, workstationRunDiffEndpoint, workstationRunEquityCurveEndpoint, workstationRunFillsEndpoint, workstationRunHistoryEndpoint, workstationRunLedgerEndpoint, workstationRunLedgerJournalEndpoint, workstationRunLedgerTrialBalanceEndpoint, workstationRunReconciliationEndpoint, workstationRunReconciliationHistoryEndpoint, workstationRunReviewPacketEndpoint, workstationRunSweepsEndpoint, workstationRunTimelineEndpoint, RISK_API_ENDPOINTS, type LedgerJournalQueryOptions, type LedgerTrialBalanceQueryOptions } from "@/lib/workstation-endpoints";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
+import { isApiError } from "@/lib/api-errors";
 import { getJson, postJson, putJson } from "@/lib/api/http-client";
 import { promotionLiveAuthorizationRevokeEndpoint } from "@/lib/workstation-endpoints";
 
@@ -34,10 +35,22 @@ export function revokeLiveAuthorization(authorizationId: string, reason: string)
 
 // --- Order management ---
 
-export function submitOrder(request: OrderSubmitRequest) {
-  return postJson<OrderResult>(EXECUTION_API_ENDPOINTS.ordersSubmit, { ...request,
-    type: request.type === "Stop" ? "StopMarket" : request.type,
-    ...(request.type === "Stop" ? { stopPrice: request.limitPrice, limitPrice: null } : {}) });
+export async function submitOrder(request: OrderSubmitRequest): Promise<OrderResult> {
+  try {
+    return await postJson<OrderResult>(EXECUTION_API_ENDPOINTS.ordersSubmit, { ...request,
+      type: request.type === "Stop" ? "StopMarket" : request.type,
+      ...(request.type === "Stop" ? { stopPrice: request.limitPrice, limitPrice: null } : {}) });
+  } catch (error) {
+    if (request.intentId && isApiError(error) && error.responseBody && (error.status === 400 || error.status === 409)) {
+      try {
+        const result = JSON.parse(error.responseBody) as OrderResult | null;
+        if (result?.intentId === request.intentId && result.success === false && result.intentStatus) return result;
+      } catch {
+        // The response did not contain a typed intent receipt.
+      }
+    }
+    throw error;
+  }
 }
 
 export function cancelOrder(orderId: string) {

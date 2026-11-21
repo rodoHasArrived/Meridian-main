@@ -9,7 +9,7 @@ import { Select } from "@/components/ui/select";
 import { TextArea } from "@/components/ui/text-area";
 import { PrincipalIdInput } from "@/components/meridian/principal-id-input";
 import { ReportWriterExtraFilters } from "@/screens/reporting-screen.report-writer-filters";
-import { buildReportWriterDatasetFieldCatalog, parseReportWriterCustomDatasetRows } from "@/screens/reporting-screen.report-writer-datasets";
+import { buildReportWriterDatasetFieldCatalog, parseReportWriterCustomDatasetRows } from "@/screens/reporting-screen.report-writer-dataset";
 import { ReportWriterChartPreview } from "@/components/meridian/report-writer-chart-preview";
 import { ReportWriterGridDiffView } from "@/components/meridian/report-writer-grid-diff-view";
 import { buildReportWriterGridDiff } from "@/lib/report-writer-grid-diff";

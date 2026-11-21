@@ -69,11 +69,15 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
         await using var app = await CreateAppAsync("production", config);
         using var response = await app.GetTestClient().PostAsJsonAsync(route, Request(route, null));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "the server returned {0}",
+            await response.Content.ReadAsStringAsync());
         var retained = new CoreConfigStore(ConfigPath).LoadRequired();
         retained.ProviderModules!.Modules!["alpaca"].Credentials!["keyId"].Should().Be("ALPACA_KEY_ID");
         if (route.EndsWith("/alpaca", StringComparison.Ordinal))
+        {
             retained.Alpaca!.Feed.Should().Be("iex");
+            retained.Alpaca.UseSandbox.Should().BeTrue();
+        }
         else
             retained.DataSources!.Sources!.Single().Description.Should().Be("ApiKey is a configuration field name, not a submitted credential.");
     }

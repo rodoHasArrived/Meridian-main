@@ -53,7 +53,8 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
             sp.GetService<IStrategyDesignRepository>(),
             sp.GetService<StrategyDesignService>() ?? new StrategyDesignService(),
             sp.GetService<ILogger<DesignerDocumentLiveSource>>(),
-            artifacts: sp.GetService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>()));
+            artifacts: sp.GetService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>(),
+            scopedDesigns: sp.GetService<Meridian.Strategies.Storage.ScopedStrategyDesignStore>()));
 
         services.TryAddSingleton<ILiveStrategyCatalog>(static sp =>
         {
@@ -94,7 +95,10 @@ internal static class LiveTradingEngineHostServiceCollectionExtensions
             sp.GetService<BrokerageConfiguration>(),
             sp.GetService<Meridian.Execution.Services.PortfolioRegistry>(),
             sp.GetService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>(),
-            sp.GetService<Meridian.Strategies.Services.StrategyLiveAuthorizationService>()));
+            sp.GetService<Meridian.Strategies.Services.StrategyLiveAuthorizationService>(),
+            designerPaper: sp.GetService<DesignerPaperExecution>()));
+        services.TryAddSingleton<IDesignerPaperReviewAuthority, RetainedDesignerPaperReviewAuthority>();
+        services.TryAddSingleton<DesignerPaperExecution>();
         services.TryAddSingleton<IPromotedRunLauncher>(static sp => sp.GetRequiredService<LiveTradingEngine>());
         services.AddHostedService<LiveTradingEngineHostedService>();
 

@@ -20,6 +20,23 @@ public sealed partial class TradingOperatorReadinessService
                 StringComparison.Ordinal));
     }
 
+    private static TradingOperatorReadinessDto BuildScopedPaperUnavailable(DateTimeOffset asOf)
+    {
+        const string reason = "Select the authorized simulator account to view its paper readiness.";
+        return new TradingOperatorReadinessDto(asOf, null, [], null,
+            new TradingControlReadinessDto(false, null, null, null, 0, 0, null), null,
+            new TradingTrustGateReadinessDto("scoped-paper", "Blocked", false, false,
+                "Unavailable", null, null, null, 0, 0, 0, [], [reason], reason),
+            null, [], [reason])
+        {
+            OverallStatus = TradingAcceptanceGateStatusDto.Blocked,
+            AcceptanceGates = [new("scoped-paper", "Paper account scope", TradingAcceptanceGateStatusDto.Blocked, reason)],
+            LiveOperationBlockers = [reason],
+            SnapshotMaterializedAt = asOf,
+            SnapshotVersion = "scoped-paper-unavailable"
+        };
+    }
+
     private static TradingPromotionReadinessDto? BuildPromotion(
         StrategyRunDetail? latestRun,
         IReadOnlyList<StrategyPromotionRecord> promotionRecords)

@@ -1,6 +1,6 @@
 import { useState, type ComponentProps } from "react";
 import { MemoryRouter } from "react-router-dom";
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { resetSinceLastVisitCache, type RecordSurfaceVisit, type SurfaceVisitServices } from "@/lib/since-last-visit";
@@ -199,7 +199,7 @@ describe("Reconciliation workbench", () => {
     const user = userEvent.setup();
     const services = fakeBulkServices();
     services.execute.mockRejectedValueOnce(new Error("Statement handoff interrupted"));
-    const readResult = vi.fn(async () => {
+    const readResult = vi.fn(async (): Promise<ReconciliationBulkCaseworkResult> => {
       const result = bulkResult(services.execute.mock.calls[0][0], () => true);
       return { ...result, results: result.results.map((entry) => {
         if (!entry.item) throw new Error("The retained fixture result must include its case.");
@@ -393,10 +393,8 @@ describe("Reconciliation workbench", () => {
   it("opens the shortcut sheet with ? and lists every key in the map (C2)", async () => {
     const user = userEvent.setup();
     renderWorkbench();
-    const firstRow = queueRows()[0]!;
-    act(() => firstRow.focus());
-    expect(firstRow).toHaveFocus();
-    fireEvent.keyDown(firstRow, { key: "?", code: "Slash", shiftKey: true });
+    queueRows()[0]!.focus();
+    await user.keyboard("?");
     const sheet = await screen.findByRole("dialog", { name: "Break queue shortcuts" });
     for (const description of ["Move to the next break", "Move to the previous break", "Open the evidence drawer for the current break", "Show these shortcuts"]) {
       expect(within(sheet).getByText(description)).toBeInTheDocument();

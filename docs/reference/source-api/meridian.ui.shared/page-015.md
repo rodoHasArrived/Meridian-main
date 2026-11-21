@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OmsIntegrationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OmsIntegrationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:14](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L14).
+
+Compatibility facade for older tests and hosts. New OMS/EMS API handling lives behind IOmsIntegrationApiHandler and is registered from Meridian.Ui.Services.
+
+```csharp
+public sealed class OmsIntegrationService : IOmsIntegrationApiHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OmsIngestionResult Ingest(OmsInboundMessage message, OmsRequestSignatureInput? signature = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:18](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L18) |  |
+| <code>public IReadOnlyCollection&lt;OmsInboundMessage&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:21](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L21) |  |
+| <code>public IReadOnlyCollection&lt;OmsAdapterDiagnostics&gt; AdapterDiagnostics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:23](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L23) |  |
+| <code>public OmsSyncConflictResult ResolveSyncConflict(OmsSyncRequest request, OmsRequestSignatureInput? signature = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:25](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L25) |  |
+| <code>public IReadOnlyCollection&lt;OmsIntegrationAuditEntry&gt; AuditTrail(int take = 200) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:28](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L28) |  |
+| <code>public OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:30](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L30) |  |
+| <code>public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:33](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L33) |  |
+
+## OnboardingComparisonSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OnboardingComparisonSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs:20](../../../../src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs#L20).
+
+Pins existing comparison evidence without importing, posting, resolving casework, or changing book authority. Account observations always describe the selected financial account, never a substituted whole-book total.
+
+```csharp
+public sealed class OnboardingComparisonSource(AccountingSystemIntegrationService accounting, IAccountQueryService? accounts = null, ILedgerBookService? books = null, IFundProfileTenancyRegistry? tenancy = null, ProviderLedgerReconciliationService? providerComparisons = null, FundAccountCloseReadinessService? closeReadiness = null, IEvidenceArtifactStore? evidence = null, BrokeragePortfolioSyncService? brokerageSnapshots = null, BrokeragePortfolioSyncOptions? brokerageOptions = null) : IOnboardingSourceProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;OnboardingSourceSelectionDto&gt;&gt; GetSelectionAsync(OnboardingWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs:36](../../../../src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs#L36) |  |
+| <code>public async Task&lt;OnboardingSourceCaptureDto&gt; CaptureAsync(OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs:46](../../../../src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs#L46) |  |
+
 ## OnboardingOpeningStateSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OnboardingOpeningStateSource</code>. Kind: `class`.
@@ -938,31 +981,3 @@ Declared public members:
 | <code>public async IAsyncEnumerable&lt;ProviderDataProjectionSnapshot&gt; WatchAsync(string tenantId, string companyId, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:113](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L113) | Emits only projection updates owned by the requested tenant and company. Tenant-scoped providers are never consumed through their unscoped watch surface. |
 | <code>public ProviderDataProjectionSnapshot GetProjection() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:147](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L147) |  |
 | <code>public ProviderDataProjectionSnapshot GetProjection(string tenantId, string companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:150](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L150) |  |
-
-## ProviderInstrumentDiscoveryReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderInstrumentDiscoveryReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:27](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L27).
-
-```csharp
-public sealed record ProviderInstrumentDiscoveryReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderInstrumentDiscoveryResult Item);
-```
-
-## ProviderLedgerDailyReconciliationOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderLedgerDailyReconciliationOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:11](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L11).
-
-```csharp
-public sealed class ProviderLedgerDailyReconciliationOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int UtcHour { get; set; } = 23;</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:13](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L13) |  |
-| <code>public int RetryMinutes { get; set; } = 15;</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:14](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L14) |  |
-| <code>public List&lt;ProviderLedgerDailyReconciliationTarget&gt; Targets { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:15](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L15) |  |

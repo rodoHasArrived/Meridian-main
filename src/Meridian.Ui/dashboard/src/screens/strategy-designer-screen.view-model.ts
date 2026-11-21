@@ -211,6 +211,7 @@ export interface StrategyBuilderCell {
   source: string;
   fieldRefs: string[];
   parameters?: Record<string, string>;
+  disabledReason?: string | null;
 }
 
 export interface StateCellParameters {
@@ -383,6 +384,10 @@ export interface StrategyBuilderDocument {
   cells: StrategyBuilderCell[];
   transitions: StrategyBuilderTransition[];
   updatedAt: string;
+  createdAt?: string;
+  metadata?: Record<string, string> | null;
+  revision?: string | null;
+  dirty?: boolean;
 }
 
 export interface StrategyBuilderTemplate {
@@ -514,6 +519,7 @@ export interface StrategyCanvasLegViewModel extends StrategyLeg {
 
 export interface StrategyDesignerViewModel {
   workbench: StrategyBuilderWorkbenchViewModel;
+  applyBuilderDocument: (document: StrategyBuilderDocument) => void;
   legs: StrategyLeg[];
   canvasLegs: StrategyCanvasLegViewModel[];
   palette: StrategyLegPaletteEntry[];
@@ -2016,12 +2022,18 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
     setSelectedBuilderCellId(cellId);
   }, []);
 
-  const loadBuilderTemplate = useCallback((templateId: string) => {
-    const document = loadStrategyBuilderTemplate(templateId);
+  const applyBuilderDocument = useCallback((document: StrategyBuilderDocument) => {
     setBuilderDocument(document);
     setSelectedBuilderCellId(document.cells[0]?.cellId ?? null);
     setBuilderFieldSearch("");
   }, []);
+
+  const loadBuilderTemplate = useCallback((templateId: string) => {
+    applyBuilderDocument({
+      ...loadStrategyBuilderTemplate(templateId),
+      documentId: "strategy-design-" + crypto.randomUUID()
+    });
+  }, [applyBuilderDocument]);
 
   const workbench = useMemo(
     () =>
@@ -2057,6 +2069,7 @@ export function useStrategyDesignerViewModel(initialLegs: StrategyLeg[] = []): S
 
   return {
     workbench,
+    applyBuilderDocument,
     legs,
     canvasLegs,
     palette: PALETTE,

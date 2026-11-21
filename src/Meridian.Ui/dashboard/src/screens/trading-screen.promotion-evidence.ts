@@ -404,20 +404,3 @@ export function buildPromotionApprovalChecklist(
     ariaLabel: `${item.label}: ${item.status}${item.description ? `. ${item.description}` : ""}`
   }));
 }
-
-export function formatTradingOperatorLabel(value: string | null | undefined): string {
-  const normalized = value?.trim() ?? "";
-  if (!normalized) {
-    return "Unknown operator";
-  }
-
-  if (/^fixture[-_:]/i.test(normalized)) {
-    return "Paper operator";
-  }
-
-  const words = normalized.replace(/[._:-]+/g, " ").replace(/\s+/g, " ").trim();
-  return words
-    .split(" ")
-    .map((word) => word ? `${word.charAt(0).toUpperCase()}${word.slice(1)}` : word)
-    .join(" ");
-}

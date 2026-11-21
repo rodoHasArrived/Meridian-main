@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
+import { closeCalendarColumns } from "@/screens/operations-continuity-screen.close-calendar-columns";
 import {
   buildReopenWorkflowFormDisabledReason,
   formatApprovalDecisionCommandError,
@@ -37,13 +38,11 @@ import {
   formatReopenWorkflowCommandError,
   type ReopenWorkflowFormState
 } from "@/screens/operations-continuity-screen.command-state";
-import { buildChecklistColumns } from "@/screens/operations-continuity-screen.checklist-columns";
 import {
   useOperationsContinuityScreenViewModel,
   type FinancialOperationsCommandSpineRow,
   type FinancialOperationsOperatorQueueRow,
   type OperationsAccountingRecordEvidenceRow,
-  type OperationsContinuityCloseCalendarRow,
   type OperationsContinuityCloseCockpitApprovalRow,
   type OperationsContinuityCloseCockpitLaneRow,
   type OperationsContinuityCloseCockpitWorkflowRow,
@@ -196,61 +195,6 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
     label: "Route",
     render: (row) => row.routeHref ? (
       <Link className="text-xs" to={row.routeHref} aria-label={`Open operational dashboard metric ${row.label}`}>
-        {row.routeLabel}
-      </Link>
-    ) : (
-      <span className="text-xs text-muted-foreground">{row.routeLabel}</span>
-    )
-  }
-];
-
-const closeCalendarColumns: DenseDataTableColumn<OperationsContinuityCloseCalendarRow>[] = [
-  {
-    id: "scope",
-    label: "Scope",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.periodLabel}</span>
-        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.taskLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-        <span className="mt-1 block text-muted-foreground">{row.dueLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "readiness",
-    label: "Readiness",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <Badge variant={statusBadgeVariant(row.readinessTone)}>{row.readinessLabel}</Badge>
-        <span className="mt-1 block text-muted-foreground">{row.ownerLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "controls",
-    label: "Controls",
-    render: (row) => (
-      <span className="block text-xs leading-5 text-muted-foreground">
-        <span className="block text-foreground">{row.blockerLabel}</span>
-        <span className="block">{row.checklistLabel}</span>
-        <span className="block">{row.approvalLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "route",
-    label: "Route",
-    render: (row) => row.routeHref ? (
-      <Link className="text-xs" to={row.routeHref} aria-label={`Open close calendar workflow ${row.periodLabel}`}>
         {row.routeLabel}
       </Link>
     ) : (
@@ -744,6 +688,102 @@ function buildBreakCaseColumns({
               <span className="mt-1 block text-muted-foreground">{row.caseworkRouteLabel}</span>
             )}
             <span className="block font-mono text-muted-foreground">{row.symbolLabel}</span>
+          </span>
+        );
+      }
+    }
+  ];
+}
+
+interface ChecklistColumnOptions {
+  pendingTaskId: string | null;
+  onAcknowledge: (row: OperationsContinuityChecklistRow) => void;
+}
+
+function buildChecklistColumns({
+  pendingTaskId,
+  onAcknowledge
+}: ChecklistColumnOptions): DenseDataTableColumn<OperationsContinuityChecklistRow>[] {
+  return [
+    {
+      id: "task",
+      label: "Task",
+      render: (row) => (
+        <span className="block min-w-0">
+          <span className="block font-semibold text-foreground">{row.label}</span>
+          <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.requiredEvidence}</span>
+        </span>
+      )
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    },
+    {
+      id: "owner",
+      label: "Owner",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block font-mono text-foreground/80">{row.ownerLabel}</span>
+          <span className="block text-muted-foreground">{row.approvalLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "due",
+      label: "Due",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block text-foreground">{row.dueLabel}</span>
+          <span className="block text-muted-foreground">{row.expiresLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "evidence",
+      label: "Evidence",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block font-mono text-muted-foreground">{row.evidenceLabel}</span>
+          {row.remediationHref ? (
+            <Link to={row.remediationHref} aria-label={`Open remediation for ${row.label}`}>
+              {row.remediationLabel}
+            </Link>
+          ) : (
+            <span className="block text-muted-foreground">{row.remediationLabel}</span>
+          )}
+        </span>
+      )
+    },
+    {
+      id: "acknowledgement",
+      label: "Acknowledgement",
+      render: (row) => {
+        const busy = pendingTaskId === row.id;
+        const disabledReason = pendingTaskId && !busy
+          ? "Wait for the active checklist acknowledgement command to finish."
+          : row.acknowledgeDisabledReason;
+
+        return (
+          <span className="block text-xs leading-5">
+            <span className="block text-muted-foreground">{row.acknowledgementLabel}</span>
+            <span className="mt-1 block font-medium text-foreground">{row.acknowledgementCommandPostureLabel}</span>
+            <span className="block font-mono text-muted-foreground">{row.acknowledgementGuardLabel}</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="mt-2"
+              busy={busy}
+              busyLabel="Acknowledging"
+              disabled={disabledReason !== null}
+              disabledReason={disabledReason}
+              aria-label={row.acknowledgeAriaLabel}
+              onClick={() => onAcknowledge(row)}
+            >
+              {row.acknowledgeLabel}
+            </Button>
           </span>
         );
       }

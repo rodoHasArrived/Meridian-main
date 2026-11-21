@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyLiveAuthorization
+
+Qualified name: <code>Meridian.Strategies.Promotions.StrategyLiveAuthorization</code>. Kind: `record`.
+
+Source: [src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs:12](../../../../src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs#L12).
+
+```csharp
+public sealed record StrategyLiveAuthorization(Guid FundAccountId, string GatewayId, string BrokerScope, IReadOnlyList<string> AllowedSymbols, decimal MaxOrderNotional, string Currency, DateTimeOffset ExpiresAt);
+```
+
+## StrategyLiveAuthorizationRequest
+
+Qualified name: <code>Meridian.Strategies.Promotions.StrategyLiveAuthorizationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs:5](../../../../src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs#L5).
+
+```csharp
+public sealed record StrategyLiveAuthorizationRequest(string ExpectedStrategyArtifactId, IReadOnlyList<string> AllowedSymbols, decimal MaxOrderNotional, string Currency, DateTimeOffset ExpiresAt);
+```
+
+## StrategyLiveAuthorizationRevocation
+
+Qualified name: <code>Meridian.Strategies.Promotions.StrategyLiveAuthorizationRevocation</code>. Kind: `record`.
+
+Source: [src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs:21](../../../../src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs#L21).
+
+```csharp
+public sealed record StrategyLiveAuthorizationRevocation(string AuthorizationId, string Actor, string Reason, DateTimeOffset RevokedAt);
+```
+
+## StrategyLiveAuthorizationStatus
+
+Qualified name: <code>Meridian.Strategies.Promotions.StrategyLiveAuthorizationStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs:24](../../../../src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs#L24).
+
+```csharp
+public sealed record StrategyLiveAuthorizationStatus(string State, string? Reason);
+```
+
 ## StrategyPromotionRecord
 
 Qualified name: <code>Meridian.Strategies.Promotions.StrategyPromotionRecord</code>. Kind: `record`.
@@ -22,9 +62,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? StrategyArtifactId { get; init; }</code> | [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:147](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L147) |  |
-| <code>public StrategyLiveAuthorization? LiveAuthorization { get; init; }</code> | [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:148](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L148) |  |
-| <code>public StrategyLiveAuthorizationStatus? LiveAuthorizationStatus { get; init; }</code> | [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:149](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L149) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? StrategyVersionSha256 { get; init; }</code> | [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:148](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L148) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? SourceInputHashSha256 { get; init; }</code> | [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:151](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L151) |  |
+| <code>public string? StrategyArtifactId { get; init; }</code> | [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:153](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L153) |  |
+| <code>public StrategyLiveAuthorization? LiveAuthorization { get; init; }</code> | [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:154](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L154) |  |
+| <code>public StrategyLiveAuthorizationStatus? LiveAuthorizationStatus { get; init; }</code> | [src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs:155](../../../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs#L155) |  |
 
 ## AggregatedPosition
 
@@ -968,65 +1010,3 @@ Declared public members:
 | <code>public PortfolioSummary? BuildSummary(StrategyRunEntry entry) =&gt; …;</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:24](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L24) |  |
 | <code>public async Task&lt;PortfolioSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:27](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L27) |  |
 | <code>public IReadOnlyList&lt;StrategyRunContinuityWarning&gt; BuildContinuityWarnings(string runId, PortfolioSummary? summary);</code> | [src/Meridian.Strategies/Services/PortfolioReadService.cs:56](../../../../src/Meridian.Strategies/Services/PortfolioReadService.cs#L56) |  |
-
-## PromotionApprovalRequest
-
-Qualified name: <code>Meridian.Strategies.Services.PromotionApprovalRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Services/PromotionService.cs:1761](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1761).
-
-Request to approve a strategy promotion.
-
-```csharp
-public sealed record PromotionApprovalRequest(string RunId, string? ReviewNotes = null, string? ApprovedBy = null, string? ApprovalReason = null, string[]? ApprovalChecklist = null, string[]? EvidenceReferences = null, string? ManualOverrideId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StrategyLiveAuthorizationRequest? LiveAuthorization { get; init; }</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1770](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1770) |  |
-
-## PromotionDecisionResult
-
-Qualified name: <code>Meridian.Strategies.Services.PromotionDecisionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Services/PromotionService.cs:1790](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1790).
-
-Result of a promotion approval or rejection.
-
-```csharp
-public sealed record PromotionDecisionResult(bool Success, string? PromotionId, string? NewRunId, string Reason, string? AuditReference = null, string? ApprovedBy = null);
-```
-
-## PromotionEvaluationResult
-
-Qualified name: <code>Meridian.Strategies.Services.PromotionEvaluationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Services/PromotionService.cs:1727](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1727).
-
-Result of evaluating a run for promotion eligibility.
-
-```csharp
-public sealed record PromotionEvaluationResult(string RunId, string? StrategyId, string? StrategyName, RunType? SourceMode, RunType? TargetMode, bool IsEligible, double SharpeRatio, decimal MaxDrawdownPercent, decimal TotalReturn, string Reason, bool Found = true, bool Ready = true, bool RequiresHumanApproval = false, bool RequiresManualOverride = false, string? RequiredManualOverrideKind = null, IReadOnlyList<string>? BlockingReasons = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? StrategyArtifactId { get; init; }</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1745](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1745) |  |
-| <code>public static PromotionEvaluationResult NotFound(string runId) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1747](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1747) |  |
-| <code>public static PromotionEvaluationResult NotReady(string runId, string reason) =&gt; …;</code> | [src/Meridian.Strategies/Services/PromotionService.cs:1753](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1753) |  |
-
-## PromotionRejectionRequest
-
-Qualified name: <code>Meridian.Strategies.Services.PromotionRejectionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Services/PromotionService.cs:1774](../../../../src/Meridian.Strategies/Services/PromotionService.cs#L1774).
-
-Request to reject a strategy promotion.
-
-```csharp
-public sealed record PromotionRejectionRequest(string RunId, string Reason, string? ReviewNotes = null, string? RejectedBy = null, string? ManualOverrideId = null);
-```

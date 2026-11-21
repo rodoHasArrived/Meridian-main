@@ -237,11 +237,7 @@ Configuration values are resolved in this order (last wins):
 ## Viewing Effective Configuration
 
 The `/api/config/effective` endpoint returns settings in `entries` with a `source` annotation
-(`default`, `config`, or `env:VAR_NAME`) and an activation impact. It reports declared configuration
-sections, masks credential values and additional free-form text, and summarizes dictionaries and
-large arrays with counts. Operator-defined dictionary keys and undeclared sections are excluded.
-The `env:` annotation identifies a recognized startup override. Displayed values come from the
-saved configuration and its defaults. The endpoint requires `ViewConfig` or `ModifyConfig`. See the
+(`default`, `config`, or `env:VAR_NAME`). It requires `ViewConfig` or `ModifyConfig`; use the
 [authenticated preflight procedure](../operators/preflight-checklist.md#authenticated-evidence-collection)
 for session or API-key examples.
 
