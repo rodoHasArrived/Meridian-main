@@ -285,7 +285,8 @@ test("match workbench readiness proves the retained selected case and its eviden
   assert.ok(capture.waitForTexts.includes("Disagreement"));
   assert.ok(capture.waitForTexts.includes("Retained comparison and lineage"));
   assert.ok(capture.waitForTexts.includes("Retained evidence"));
-  assert.ok(capture.waitForSelectors.includes(`a[href="/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=${encodeURIComponent(selectedBreak.breakId)}"]:visible`));
+  assert.ok(capture.waitForSelectors.includes(`[aria-label="Case inspector"][data-case-id="${selectedBreak.breakId}"][aria-busy="false"]`));
+  assert.ok(capture.waitForSelectors.includes(`[aria-label="Case inspector"] a[href="/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=${encodeURIComponent(selectedBreak.breakId)}"]:visible`));
   assert.ok(capture.waitForSelectors.includes(`#match-selected-case:has(option:checked[value="${selectedBreak.breakId}"])`));
   assert.ok(capture.waitForSelectors.includes('[aria-label="Case inspector"] summary:has-text("Case identifiers")'));
   for (const obsolete of ["Open breaks", "Record match decision", "Review retained evidence", "Source lineage"]) {
@@ -300,7 +301,7 @@ test("exact report review readiness targets the selected accessible tab and its 
   assert.ok(capture.waitForSelectors.includes('[role="tabpanel"][id$="-panel-changes"]:not([hidden])'));
   assert.ok(!capture.waitForSelectors.includes("#tab-panel-changes:not([hidden])"));
   assert.ok(capture.requiredApiRoutes.includes("/api/fund-structure/reporting/runs/report-run-investor-202605/review"));
-  assert.ok(capture.waitForTexts.includes("Current run · version 6"));
+  assert.ok(capture.waitForTexts.includes("Current retained version 6"));
   const detail = routeConfig.captures.find((item) => item.id === "W04I2");
   assert.ok(detail.requiredApiRoutes.includes("/api/fund-structure/reporting/runs/report-run-investor-202605/review"));
   assert.ok(detail.waitForTexts.includes("Materiality not assessed"));
@@ -310,7 +311,7 @@ test("exact report review readiness targets the selected accessible tab and its 
 test("instrument readiness retains exact identity without requiring a visible internal key", async () => {
   const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
   const capture = routeConfig.captures.find((item) => item.id === "W02D1");
-  assert.ok(capture.waitForTexts.includes("Technical identity"));
+  assert.ok(capture.waitForTexts.includes("Ticker AAPL"));
   assert.ok(!capture.waitForTexts.includes("sec-dev-001"));
   assert.ok(capture.waitForSelectors.includes('[data-instrument-id="sec-dev-001"]'));
   assert.ok(capture.waitForSelectors.includes('[role="tab"][data-tab-id="positions"][aria-selected="true"]'));
@@ -323,7 +324,7 @@ test("close readiness retains measured check coverage and the posting blocker", 
   const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
   for (const name of ["web-accounting-operations-continuity", "web-close-legacy-redirect", "web-close-legacy-route"]) {
     const capture = routeConfig.captures.find((item) => item.name === name);
-    assert.ok(capture.waitForTexts.includes("3/7 checks ready across 1 close workflow."));
+    assert.ok(capture.waitForTexts.includes("3/7 workstreams ready across 1 close workflow."));
     assert.ok(!capture.waitForTexts.includes("3/7 lanes ready across 1 close workflow."));
     assert.ok(capture.waitForTexts.includes("Balanced journal preview must be validated before posting."));
     assert.ok(capture.waitForTexts.includes("Evidence"));

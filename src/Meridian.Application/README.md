@@ -29,6 +29,18 @@ cannot hide earlier carrying legs: the comparison reports unavailable with its c
 Migration `012_direct_lending_reconciliation_evidence.sql` retains
 new request/source evidence across restarts while leaving legacy evidence unknown.
 
+`SecurityMaster/Valuation/AssetPositionMarketValuationService` adapts an owned book's exact dated
+instrument-position projection to registered valuation models. It resolves retained-only dated
+Security Master terms, validates their economic window, checks position/state identity and all
+book/policy/account/currency boundaries, and replays the exact golden-copy receipt for quoted
+prices. Stale or mismatched evidence blocks amounts. Supported long holder share/unit conventions
+and original-face DCF delegate to existing kernels; any retained current factor is reconciled with
+the model amount even when current face is absent. Multiplier/notional and ambiguous signed
+conventions require dedicated adapters. DCF dirty values withhold P/L without a compatible
+carrying/accrual basis. The comparison is market value less retained carrying amount, separate
+from posted ledger, realized, tax-cost or total-return P/L. `KnownAt` is refused because projection
+history does not certify historical transaction visibility. Tests: `AssetPositionMarketValuationServiceTests`.
+
 Native intercompany legal rules validate structured declarations without turning them into accrual
 or settlement calculations. The shared preview reuses schedule/day-count/calendar kernels for
 dates only. The separate pure `IntercompanyAccrualPreviewService` (ADR-028) reuses the same schedule

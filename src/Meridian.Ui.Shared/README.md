@@ -33,6 +33,18 @@ account rows retain counts and an unavailable explanation instead of a dollar to
 this distinction; the legacy scalar is only a compatibility field. Ledger-impact previews are
 omitted when this comparison evidence is unavailable.
 
+Asset Detail reads full canonical terms through `SecurityInstrumentTermsEndpoints` and
+`SecurityInstrumentTermsReadService`. The schema-guided read preserves exact scalar JSON text,
+all nested/unknown properties and raw blocks, with version/fingerprint and matching source evidence.
+Unsupported envelopes and ambiguous fields remain inspectable and explicitly require review.
+
+The workstation `market-valuation` endpoint checks the authenticated tenant/company, authoritative
+book ownership and scoped access before resolving any position or price. It delegates to
+`AssetPositionMarketValuationService` with only retained identities; clients supply no amounts.
+Results are exact decimal strings with model, scope, freshness, receipt and blocker evidence.
+These reads do not approve a valuation or create ledger entries. Their HTTP behavior is covered by
+`SecurityInstrumentTermsEndpointsTests` and `AssetMarketValuation_` endpoint tests.
+
 The book receipt queue composes approved historical positions, accepted Asset Operations schedules,
 canonical statement cash and retained reconciliation/journal links. Expected, received and posted
 amounts stay separate; missing account/provider coverage remains incomplete. Explicit capture commands

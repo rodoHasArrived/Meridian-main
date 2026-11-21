@@ -921,9 +921,9 @@ describe("Operations Continuity view model", () => {
     expect(vm.selectedDetail).toMatchObject({
       id: OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID,
       ariaLabel: "Operations continuity detail for 2026-05 close workflow",
-      description: "Selected close review evidence, gate progress, Security Master snapshot, and blocker count."
+      description: "Selected close-workstream evidence, gate progress, Security Master snapshot, and blocker count."
     });
-    expect(vm.workflowsTableCaption).toContain("Select a row to inspect close review gates");
+    expect(vm.workflowsTableCaption).toContain("Select a row to inspect close-workstream gates");
     expect(vm.selectedDetail?.metadata).toContainEqual({ label: "Break cases", value: "0" });
     expect(vm.selectedDetail?.metadata).toEqual(expect.arrayContaining([
       { label: "Reconciliation", value: "In Review" },
@@ -952,7 +952,7 @@ describe("Operations Continuity view model", () => {
       stageLabel: "Core flow: Resolve Exceptions",
       metricCountLabel: "2/6 metrics ready",
       evidenceLabel: "1 retained evidence link",
-      requiredActionsLabel: "Complete source-backed reconciliation checks before approval.; Publish and retain the evidence package before period close."
+      requiredActionsLabel: "Complete source-backed reconciliation workstreams before approval.; Publish and retain the evidence package before period close."
     });
     expect(vm.dashboard.metrics).toHaveLength(6);
     expect(vm.dashboard.metrics.map((metric) => metric.id)).toEqual([
@@ -974,16 +974,16 @@ describe("Operations Continuity view model", () => {
     expect(vm.dashboard.metrics[1]).toMatchObject({
       id: "match-records",
       label: "Match Records",
-      valueLabel: "6/7 checks ready",
+      valueLabel: "6/7 workstreams ready",
       statusLabel: "Review Required",
       evidenceLabel: "1 evidence link",
-      requiredActionsLabel: "Complete source-backed reconciliation checks before approval.",
+      requiredActionsLabel: "Complete source-backed reconciliation workstreams before approval.",
       routeHref: "/accounting/reconciliation"
     });
     expect(vm.commandSpine).toMatchObject({
       statusLabel: "Missing",
       statusTone: "blocked",
-      summaryLabel: "Core flow: Resolve Exceptions; 2/6 metrics ready; Complete source-backed reconciliation checks before approval.; Publish and retain the evidence package before period close."
+      summaryLabel: "Core flow: Resolve Exceptions; 2/6 metrics ready; Complete source-backed reconciliation workstreams before approval.; Publish and retain the evidence package before period close."
     });
     expect(vm.commandSpine.rows.map((row) => row.id)).toEqual([
       "receive-activity",
@@ -1076,7 +1076,7 @@ describe("Operations Continuity view model", () => {
       "command-stage:close-support"
     ]);
     expect(vm.financialOperationsQueue.items[0]).toMatchObject({
-      kindLabel: "Reconciliation check",
+      kindLabel: "Reconciliation workstream",
       title: "MBS factor reconciliation",
       statusLabel: "Review Required",
       statusTone: "review",
@@ -1111,7 +1111,6 @@ describe("Operations Continuity view model", () => {
     expect(vm.financialOperationsQueue.items[3]).toMatchObject({
       kindLabel: "Approval",
       title: "Workflow approval",
-      recordId: "approval-close-2026-05",
       statusLabel: "Reviewer Assigned",
       statusTone: "review",
       ownerLabel: "Reviewer fund-controller",
@@ -1175,13 +1174,13 @@ describe("Operations Continuity view model", () => {
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "command-stage:match-records")).toMatchObject({
       kindLabel: "Command stage",
       title: "Match Records",
-      detail: "Run reconciliation and refresh status; Cash, position, trade, income, MBS factor, bank, and GL reconciliation checks are tracked from the shared workflow detail.",
+      detail: "Run reconciliation and refresh status; Cash, position, trade, income, MBS factor, bank, and GL reconciliation workstreams are tracked from the shared workflow detail.",
       statusLabel: "Review Required",
       statusTone: "review",
       ownerLabel: "Reconciliation operations",
-      dueLabel: "6/7 checks ready",
+      dueLabel: "6/7 workstreams ready",
       evidenceLabel: "1 evidence link",
-      actionLabel: "Complete source-backed reconciliation checks before approval.",
+      actionLabel: "Complete source-backed reconciliation workstreams before approval.",
       routeHref: "/accounting/reconciliation"
     });
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "command-stage:produce-evidence")).toMatchObject({
@@ -1549,9 +1548,12 @@ describe("Operations Continuity view model", () => {
     expect(vm.breakCases).toHaveLength(1);
     expect(vm.breakCases[0]).toMatchObject({
       id: "recon-break-42",
-      caseLabel: "recon-break-42",
-      caseDisplayLabel: "CashBalance",
-      categoryLabel: "CashBalance / cash-balance-check",
+      caseLabel: "Cash Balance",
+      categoryLabel: "Reconciliation check",
+      technicalDetails: expect.arrayContaining([
+        { label: "Break ID", value: "recon-break-42" },
+        { label: "Check ID", value: "cash-balance-check" }
+      ]),
       statusLabel: "Resolved",
       statusTone: "ready",
       severityLabel: "Warning",
@@ -2162,7 +2164,7 @@ describe("Operations Continuity view model", () => {
       evidenceHref: null,
       evidenceRouteLabel: "No local supporting record link",
       routeHref: "/accounting/reconciliation",
-      routeLabel: "Open check"
+      routeLabel: "Open workstream"
     });
   });
 
@@ -2365,11 +2367,11 @@ describe("Operations Continuity view model", () => {
     expect(vm.closeCockpit).toMatchObject({
       statusLabel: "Blocked",
       statusTone: "blocked",
-      summaryLabel: "2/5 checks ready across 1 close workflow.",
-      scopeLabel: `Fund profile fund-alpha / Ledger book ledger-main / Fund account ${fundAccountId} / Period 2026-05 / Entity entity-master`,
+      summaryLabel: "2/5 workstreams ready across 1 close workflow.",
+      scopeLabel: "2026-05 close scope",
       readinessLabel: "Select the complete close scope and refresh shared close readiness before publishing a close package.",
-      laneCountLabel: "2 ready / 1 blocked checks",
-      proofLaneSummaryLabel: "2/5 proof checks ready; review NAV support, evidence package, period lock",
+      laneCountLabel: "2 ready / 1 blocked workstreams",
+      proofLaneSummaryLabel: "2/5 control workstreams ready; review NAV support, evidence package, period lock",
       blockerCountLabel: "1 close blocker",
       fundEventCountLabel: "3 fund events",
       reportOutputCountLabel: "1/2 report outputs delivered",
@@ -2404,8 +2406,11 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.closeCockpit.workflows[0]).toMatchObject({
       id: workflowId,
-      fundAccountId,
-      periodLabel: summary.periodId,
+      periodLabel: `${summary.periodId} close`,
+      technicalDetails: expect.arrayContaining([
+        { label: "Workflow ID", value: workflowId },
+        { label: "Fund account ID", value: fundAccountId }
+      ]),
       readinessLabel: "72% ready",
       readinessTone: "blocked",
       blockersLabel: "1 blocker",
@@ -2459,8 +2464,11 @@ describe("Operations Continuity view model", () => {
     expect(vm.closeCockpit.approvalHistory).toHaveLength(1);
     expect(vm.closeCockpit.approvalHistory[0]).toMatchObject({
       id: "approval-close-2026-05",
-      fundAccountId,
-      workflowLabel: summary.periodId,
+      workflowLabel: `${summary.periodId} close`,
+      technicalDetails: expect.arrayContaining([
+        { label: "Approval ID", value: "approval-close-2026-05" },
+        { label: "Fund account ID", value: fundAccountId }
+      ]),
       statusLabel: "Reviewer Assigned",
       statusTone: "review",
       actorLabel: "Reviewer fund-controller / Operator ops-user",
@@ -2483,7 +2491,7 @@ describe("Operations Continuity view model", () => {
       routeHref: "/portfolio/nav"
     });
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-proof-lane:nav-support")).toMatchObject({
-      kindLabel: "Private-capital proof check",
+      kindLabel: "Private-capital control workstream",
       title: "NAV support",
       detail: "Shadow NAV support package still needs retained positions, cash, and pricing evidence.",
       statusLabel: "Review Required",
@@ -2495,7 +2503,7 @@ describe("Operations Continuity view model", () => {
       routeHref: "/portfolio/nav"
     });
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-proof-lane:close-package")).toMatchObject({
-      kindLabel: "Private-capital proof check",
+      kindLabel: "Private-capital control workstream",
       title: "Evidence package",
       statusLabel: "Blocked",
       statusTone: "blocked",
@@ -2505,7 +2513,7 @@ describe("Operations Continuity view model", () => {
       routeHref: "/accounting/operations-continuity"
     });
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-proof-lane:period-lock")).toMatchObject({
-      kindLabel: "Private-capital proof check",
+      kindLabel: "Private-capital control workstream",
       title: "Period lock evidence",
       statusLabel: "Review Required",
       statusTone: "review",
@@ -2550,9 +2558,8 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-approval:approval-close-2026-05")).toMatchObject({
       kindLabel: "Private-capital approval",
-      title: "Private-capital close approval",
-      recordId: "approval-close-2026-05",
-      detail: "2026-05: Pending final ledger validation before close sign-off.",
+      title: "2026-05 close approval",
+      detail: `2026-05 close: Pending final ledger validation before close sign-off.`,
       statusLabel: "Reviewer Assigned",
       statusTone: "review",
       ownerLabel: "Reviewer fund-controller / Operator ops-user",
@@ -2584,7 +2591,7 @@ describe("Operations Continuity view model", () => {
       statusLabel: "Blocked",
       statusTone: "blocked",
       summaryLabel: "0/1 calendar item ready; 2 open checklist items.",
-      scopeLabel: `Selected 2026-05 / ${fundAccountId}`,
+      scopeLabel: "Selected 2026-05 close",
       freshnessLabel: "Generated May 10, 2026, 18:45 UTC",
       itemCountLabel: "1 calendar item",
       blockerCountLabel: "1 blocker",
@@ -2594,8 +2601,11 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.closeCalendar.rows[0]).toMatchObject({
       id: workflowId,
-      fundAccountId,
-      periodLabel: "2026-05",
+      periodLabel: "2026-05 close",
+      technicalDetails: expect.arrayContaining([
+        { label: "Workflow ID", value: workflowId },
+        { label: "Fund account ID", value: fundAccountId }
+      ]),
       statusLabel: "Ledger Posting Draft",
       statusTone: "review",
       dueLabel: "May 12, 2026",
@@ -2610,8 +2620,7 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.financialOperationsQueue.items.find((item) => item.id === `close-calendar:${workflowId}`)).toMatchObject({
       kindLabel: "Close calendar",
-      recordId: workflowId,
-      title: "2026-05: Ledger posting controller check",
+      title: `2026-05 close: Ledger posting controller check`,
       detail: "1 blocker; 2 open checklist items; 1/2 approvals complete",
       statusLabel: "72% ready",
       statusTone: "blocked",
@@ -2646,7 +2655,7 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "close-calendar:error")).toMatchObject({
       kindLabel: "Close calendar",
-      title: `2026-05 / ${fundAccountId}: Close calendar unavailable`,
+      title: `2026-05 close: Close calendar unavailable`,
       statusLabel: "Unavailable",
       statusTone: "blocked",
       ownerLabel: "Operations control",
@@ -2676,17 +2685,17 @@ describe("Operations Continuity view model", () => {
     expect(vm.closeCockpit).toMatchObject({
       statusLabel: "Blocked",
       statusTone: "blocked",
-      scopeLabel: `Selected ${summary.periodId} / ${fundAccountId}`,
+      scopeLabel: `Selected ${summary.periodId} close`,
       readinessLabel: "Select the complete close scope and refresh shared close readiness before publishing a close package.",
       nextActionDisabled: true,
       lanes: [],
       workflows: []
     });
     expect(vm.closeCockpit.errorText).toBe("Private-capital close cockpit could not be loaded.");
-    expect(vm.closeCockpit.lanesEmptyText).toBe("Private-capital cockpit checks could not be loaded.");
+    expect(vm.closeCockpit.lanesEmptyText).toBe("Private-capital cockpit workstreams could not be loaded.");
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-close-cockpit:error")).toMatchObject({
       kindLabel: "Private-capital close cockpit",
-      title: `2026-05 / ${fundAccountId}: Private-capital close cockpit unavailable`,
+      title: `2026-05 close: Private-capital close cockpit unavailable`,
       statusLabel: "Unavailable",
       statusTone: "blocked",
       ownerLabel: "Operations control",

@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import * as bondReferenceApi from "@/lib/api/bond-reference.api";
@@ -42,6 +42,7 @@ import type {
   ReconciliationCaseworkOperationResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
+  SecurityIdentityDrillIn,
   SecurityMasterConflict,
   SecurityMasterEntry,
   SecurityMasterTrustSnapshot,
@@ -1644,6 +1645,10 @@ function findAppleSecuritySearchRow() {
     { name: "Open identity drill-in for Apple Inc." },
     { timeout: SECURITY_MASTER_SEARCH_TIMEOUT_MS }
   );
+}
+
+function linkedSecurityIdentity(securityId: string, displayName = securityId): SecurityIdentityDrillIn {
+  return { securityId, displayName, assetClass: "Equity", status: "Active", version: 1, effectiveFrom: "2026-01-01", effectiveTo: null, identifiers: [], aliases: [] };
 }
 
 function inspectorCase(item: ReconciliationBreakQueueItem): ReconciliationBreakQueueItem {
@@ -5104,6 +5109,45 @@ describe("AccountingScreen", () => {
     expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("No selection");
     expect(screen.getByLabelText("Security & Instrument Explorer proof actions")).toHaveTextContent("Open search");
     expect(screen.getAllByText("Security coverage").length).toBeGreaterThan(0);
+  });
+
+  it("opens the exact securityId deep link and preserves a subsequent manual selection through tab changes", async () => {
+    const user = userEvent.setup();
+    const explorer = await api.getFinancialRecordExplorer("security-instrument");
+    const sourceRow = explorer.rows[0];
+    const selectedRow = { ...sourceRow, recordId: "security-instrument:sec-dev-001", detail: { ...sourceRow.detail, recordId: "security-instrument:sec-dev-001" } };
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValueOnce({ ...explorer, rows: [selectedRow], selectedRecord: selectedRow.detail });
+    vi.mocked(api.getSecurityIdentity).mockClear()
+      .mockResolvedValueOnce(linkedSecurityIdentity("sec-linked", "Linked asset"))
+      .mockResolvedValueOnce(linkedSecurityIdentity("22222222-2222-2222-2222-222222222222", "Apple Inc."));
+
+    await renderAccountingScreen(data, "/accounting/security-master?securityId=sec-linked&fundAccountId=fund-alpha");
+    await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-linked"));
+    await waitFor(() => expect(screen.getByRole("region", { name: "Security Master command deck" })).toHaveTextContent("Linked asset"));
+    expect(api.getSecurityIdentity).not.toHaveBeenCalledWith("sec-dev-001");
+
+    enterAppleSecuritySearch();
+    const row = await findAppleSecuritySearchRow();
+    await user.click(row);
+    await waitFor(() => expect(row).toHaveAttribute("aria-selected", "true"));
+    const linkedLoads = vi.mocked(api.getSecurityIdentity).mock.calls.filter(([id]) => id === "sec-linked").length;
+    await user.click(screen.getByRole("tab", { name: /^Evidence/ }));
+    await waitFor(() => expect(row).toHaveAttribute("aria-selected", "true"));
+    expect(vi.mocked(api.getSecurityIdentity).mock.calls.filter(([id]) => id === "sec-linked")).toHaveLength(linkedLoads);
+  });
+
+  it("consumes a changed securityId deep link without requiring the Security Master screen to remount", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getSecurityIdentity).mockClear()
+      .mockResolvedValueOnce(linkedSecurityIdentity("sec-linked"))
+      .mockResolvedValueOnce(linkedSecurityIdentity("sec-linked-next"));
+    renderWithRouter(<><AccountingScreen data={data} /><Link to="/accounting/security-master?securityId=sec-linked-next&tab=reference">Open another linked asset</Link></>, {
+      initialEntries: ["/accounting/security-master?securityId=sec-linked"]
+    });
+    await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-linked"));
+    await user.click(screen.getByRole("link", { name: "Open another linked asset" }));
+    await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-linked-next"));
+    await waitFor(() => expect(screen.getByRole("region", { name: "Security Master command deck" })).toHaveTextContent("sec-linked-next"));
   });
 
   it("synchronizes a resolved explorer instrument with the Security Master command deck", async () => {

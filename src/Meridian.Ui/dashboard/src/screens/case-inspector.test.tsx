@@ -31,6 +31,39 @@ function setup(readRecord: ReconciliationBreakQueueItem = record, options: { ope
 }
 
 describe("shared case inspector", () => {
+  it("keeps exact case and scope identifiers inspectable without placing them in the primary facts", async () => {
+    const { user, services } = setup({ ...record, fundAccountId: "fund-account-42", accountingPeriodId: "period-2026-05" });
+    const inspector = screen.getByRole("region", { name: "Case inspector" });
+    await waitFor(() => expect(inspector).toHaveAttribute("aria-busy", "false"));
+    expect(inspector).toHaveAttribute("data-case-id", record.breakId);
+    expect(screen.getByRole("heading", { name: record.reason })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled();
+    const identifiers = within(inspector).getByText("Case identifiers").closest("details")!;
+    for (const value of [record.breakId, "fund-account-42", "period-2026-05"]) {
+      expect(within(identifiers).getByText(value)).not.toBeVisible();
+    }
+    await user.click(within(identifiers).getByText("Case identifiers"));
+    for (const value of [record.breakId, "fund-account-42", "period-2026-05"]) {
+      expect(within(identifiers).getByText(value)).toBeVisible();
+    }
+    expect(services.resolve).not.toHaveBeenCalled();
+  });
+
+  it("states the shared unknown data condition once and retains its context on every comparison value", async () => {
+    setup();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
+    const comparison = screen.getByRole("region", { name: "Comparison" });
+    const notice = within(comparison).getByText(/^Data condition unavailable\./);
+    expect(notice).toBeVisible();
+    expect(within(comparison).getAllByText(/Data condition unavailable/)).toHaveLength(1);
+    expect(within(comparison).queryByText("Confirmed")).not.toBeInTheDocument();
+    for (const value of ["100.00 USD", "600.00 USD", "+500.00 USD", "1.00 USD"]) {
+      const amount = within(comparison).getByText(value).closest("[aria-describedby]")!;
+      expect(amount.getAttribute("aria-describedby")?.split(/\s+/)).toContain(notice.id);
+      expect(amount).toHaveAttribute("title", "A verified data condition was not supplied for this case measure.");
+    }
+  });
+
   it("prefers exact wire text for comparison sides and the queue fallback above the safe integer limit", async () => {
     const precise = { ...record, variance: 9007199254740992, varianceExact: "9007199254740993.125",
       measures: [{ ...record.measures![0], expected: 9007199254740992, expectedExact: "9007199254740993.125",

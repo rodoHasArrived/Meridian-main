@@ -50,6 +50,8 @@ export * from "./types/workstation-corporate-actions";
 
 export * from "./types/factor-paydown";
 export * from "./types/asset-accounting-workflow";
+export type * from "./types/asset-market-valuation";
+export type * from "./types/security-instrument-terms";
 export * from "./types/bond-analytics.types";
 export * from "./types/bond-settlement.types";
 export * from "./types/security-curves.types";

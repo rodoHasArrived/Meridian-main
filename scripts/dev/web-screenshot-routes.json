@@ -173,12 +173,20 @@
         "/api/workstation/security-master/securities/sec-dev-001",
         "/api/workstation/security-master/securities/sec-dev-001/identity",
         "/api/security-master/sec-dev-001/corporate-actions",
-        "/api/security-master/sec-dev-001/trading-parameters"
+        "/api/security-master/sec-dev-001/trading-parameters",
+        "/api/workstation/security-master/securities/sec-dev-001/passport",
+        "/api/workstation/assets/sec-dev-001/operations",
+        "/api/data/quotes-snapshot",
+        "/api/security-master/sec-dev-001/instrument-terms",
+        "/api/workstation/assets/sec-dev-001/market-valuation"
       ],
       "waitForTexts": [
         "Apple Inc.",
         "AAPL",
-        "Trading parameters"
+        "Trading Parameters",
+        "Readiness & evidence",
+        "Financial context",
+        "Market valuation"
       ]
     },
     {
@@ -364,12 +372,20 @@
         "/api/workstation/security-master/securities/sec-dev-001",
         "/api/workstation/security-master/securities/sec-dev-001/identity",
         "/api/security-master/sec-dev-001/corporate-actions",
-        "/api/security-master/sec-dev-001/trading-parameters"
+        "/api/security-master/sec-dev-001/trading-parameters",
+        "/api/workstation/security-master/securities/sec-dev-001/passport",
+        "/api/workstation/assets/sec-dev-001/operations",
+        "/api/data/quotes-snapshot",
+        "/api/security-master/sec-dev-001/instrument-terms",
+        "/api/workstation/assets/sec-dev-001/market-valuation"
       ],
       "waitForTexts": [
         "Apple Inc.",
         "AAPL",
-        "Trading parameters"
+        "Trading Parameters",
+        "Readiness & evidence",
+        "Financial context",
+        "Market valuation"
       ]
     },
     {
@@ -512,7 +528,7 @@
         "1 operations continuity workflow loaded.",
         "Workflows",
         "Ledger Posting Draft",
-        "3/7 checks ready across 1 close workflow.",
+        "3/7 workstreams ready across 1 close workflow.",
         "Board",
         "Blockers",
         "Checklist",
@@ -665,7 +681,7 @@
         "Timeline and discussion"
       ],
       "waitForSelectors": [
-        "a[href=\"/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=run-42%3Acash\"]:visible",
+        "[aria-label=\"Case inspector\"] a[href=\"/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=run-42%3Acash\"]:visible",
         "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
         "[aria-label=\"Case inspector\"] summary:has-text(\"Case identifiers\")",
@@ -1846,7 +1862,7 @@
         "/api/fund-structure/reporting/runs/report-run-investor-202605/review"
       ],
       "waitForTexts": [
-        "Current run · version 6",
+        "Current retained version 6",
         "No prior approved comparable run.",
         "Materiality not assessed"
       ],
@@ -1956,7 +1972,7 @@
         "Checklist",
         "Approvals",
         "Evidence",
-        "3/7 checks ready across 1 close workflow.",
+        "3/7 workstreams ready across 1 close workflow.",
         "Balanced journal preview must be validated before posting."
       ],
       "waitForAbsentTexts": [
@@ -2010,13 +2026,14 @@
       ],
       "waitForTexts": [
         "Positions by account",
-        "Technical identity",
+        "Ticker AAPL",
         "alpaca-roth",
         "38 units"
       ],
       "waitForSelectors": [
         "[data-instrument-id=\"sec-dev-001\"]",
         "[role=\"tab\"][data-tab-id=\"positions\"][aria-selected=\"true\"]",
+        "[data-position-source=\"brokerage-household\"] table[aria-label=\"Instrument positions by account\"]",
         "[role=\"tabpanel\"]:not([hidden]) tbody tr:has-text(\"alpaca-roth\")"
       ],
       "waitForAbsentTexts": [
@@ -2073,7 +2090,7 @@
         "Checklist",
         "Approvals",
         "Evidence",
-        "3/7 checks ready across 1 close workflow.",
+        "3/7 workstreams ready across 1 close workflow.",
         "Balanced journal preview must be validated before posting."
       ],
       "waitForAbsentTexts": [

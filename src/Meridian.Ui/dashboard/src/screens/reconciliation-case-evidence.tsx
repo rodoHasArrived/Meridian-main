@@ -270,17 +270,13 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
         <h3 id={`${id}-lineage`} className="text-sm font-semibold">Source lineage</h3>
         {!lineage ? <p className="text-sm text-muted-foreground">No retained source observation.</p> : null}
         {lineage ? <dl className="reconciliation-case-facts">
-          <CaseFact label="Last observed run">{lineage.lastObservedRunId}</CaseFact>
           <CaseFact label="Last observed">{formatDateTimeLabel(lineage.lastObservedAt)}</CaseFact>
-          {lineage.clearedByRunId ? <CaseFact label="Cleared by run">{lineage.clearedByRunId}</CaseFact> : null}
           {lineage.clearedAt ? <CaseFact label="Source cleared at">{formatDateTimeLabel(lineage.clearedAt)}</CaseFact> : null}
         </dl> : null}
         {regrouping ? <section className="grid min-w-0 gap-2" aria-label="Confirmed run match group">
           <h4 className="text-sm font-semibold">Confirmed match group</h4>
           <p className="text-sm text-muted-foreground">{regrouping.group.evidence.match.explanation}</p>
           <dl className="reconciliation-case-facts">
-            <CaseFact label="Prior run">{regrouping.priorRunId}</CaseFact>
-            <CaseFact label="Match run">{regrouping.group.evidence.runId}</CaseFact>
             <CaseFact label="Match tier">{regrouping.group.evidence.match.tier === "Exact" ? "Exact" : "Within tolerance"}</CaseFact>
             <CaseFact label="Group policy version">{regrouping.group.evidence.tolerancePolicy.version}</CaseFact>
           </dl>
@@ -305,6 +301,8 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
             <CaseFact label="Accounting period">{item.accountingPeriodId}</CaseFact>
             <CaseFact label="Source record">{item.sourceReference}</CaseFact>
             <CaseFact label={item.sourceImportId ? "Source import" : "Source run"}>{sourceRun}</CaseFact>
+            {lineage ? <CaseFact label="Last observed run">{lineage.lastObservedRunId}</CaseFact> : null}
+            {lineage?.clearedByRunId ? <CaseFact label="Cleared by run">{lineage.clearedByRunId}</CaseFact> : null}
             <CaseFact label="Tolerance policy">{policy ? `${policy.profileId} · Version ${policy.version}`
               : item.toleranceProfileId ? `${item.toleranceProfileId} · Version unavailable` : null}</CaseFact>
             <CaseFact label="Lineage ID">{lineage?.lineageId}</CaseFact>
@@ -317,6 +315,8 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
               <CaseFact label="Executed comparison policy fingerprint">{policy?.comparisonPolicyFingerprint}</CaseFact>
             </> : null}
             {regrouping ? <>
+              <CaseFact label="Prior run">{regrouping.priorRunId}</CaseFact>
+              <CaseFact label="Match run">{regrouping.group.evidence.runId}</CaseFact>
               <CaseFact label="Match group ID">{regrouping.group.matchGroupId}</CaseFact>
               <CaseFact label="Match group artifact SHA-256">{regrouping.group.evidence.matchArtifactSha256}</CaseFact>
             </> : null}

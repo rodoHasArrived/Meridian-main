@@ -26,9 +26,9 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { OperationsSystemDetails, reconciliationLaneColumns, closeCockpitLaneColumns } from "@/screens/operations-continuity-screen.workstream-columns";
 import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
 import { closeCalendarColumns } from "@/screens/operations-continuity-screen.close-calendar-columns";
-import { CloseRecordIdentifiers } from "@/screens/operations-continuity-screen.record-identifiers";
 import {
   buildReopenWorkflowFormDisabledReason,
   formatApprovalDecisionCommandError,
@@ -45,7 +45,6 @@ import {
   type FinancialOperationsOperatorQueueRow,
   type OperationsAccountingRecordEvidenceRow,
   type OperationsContinuityCloseCockpitApprovalRow,
-  type OperationsContinuityCloseCockpitLaneRow,
   type OperationsContinuityCloseCockpitWorkflowRow,
   type OperationsContinuityBreakCaseRow,
   type OperationsContinuityBlockerRow,
@@ -54,7 +53,6 @@ import {
   type OperationsContinuityEvidencePackageRow,
   type OperationsContinuityGateRow,
   type OperationsContinuityNavSupportPackageRow,
-  type OperationsContinuityReconciliationLaneRow,
   type OperationsReviewedAutomationArtifactRow,
   type OperationsContinuityTimelineRow,
   type OperationsContinuityWorkflowApprovalRow,
@@ -165,10 +163,11 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
     id: "metric",
     label: "Metric",
     render: (row) => (
-      <span className="block min-w-0">
+      <div className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.label}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
-      </span>
+        <OperationsSystemDetails fields={row.technicalDetails} />
+      </div>
     )
   },
   {
@@ -315,10 +314,10 @@ const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsO
         <span className={eyebrowClassName(row.kindLabel)}>{row.kindLabel}</span>
         <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
-        {row.technicalCode || row.recordId ? (
+        <OperationsSystemDetails fields={row.technicalDetails} />
+        {row.technicalCode ? (
           <TechnicalDetails label="System details" className="mt-2" contentClassName="py-2">
-            {row.technicalCode ? <p className="break-all font-mono text-xs text-muted-foreground">Rule code: {row.technicalCode}</p> : null}
-            {row.recordId ? <p className="break-all font-mono text-xs text-muted-foreground">Record ID: {row.recordId}</p> : null}
+            <p className="font-mono text-xs text-muted-foreground">Rule code: {row.technicalCode}</p>
           </TechnicalDetails>
         ) : null}
       </div>
@@ -367,10 +366,10 @@ function buildWorkflowApprovalHistoryColumns({
       id: "approval",
       label: "Approval",
       render: (row) => (
-        <div className="min-w-0">
+        <div className="block min-w-0">
           <span className="block text-xs font-semibold text-foreground">Workflow approval</span>
           <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.rationale}</span>
-          <CloseRecordIdentifiers recordId={row.id} />
+          <OperationsSystemDetails fields={[{ label: "Approval ID", value: row.id }]} />
         </div>
       )
     },
@@ -579,10 +578,10 @@ function buildBreakCaseColumns({
       id: "case",
       label: "Break",
       render: (row) => (
-        <div className="min-w-0">
-          <span className="block text-xs font-semibold text-foreground">{row.caseDisplayLabel || "Reconciliation case"}</span>
+        <div className="block min-w-0">
+          <span className="block break-words font-mono text-xs font-semibold text-foreground">{row.caseLabel}</span>
           <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.categoryLabel}</span>
-          <CloseRecordIdentifiers recordId={row.id} />
+          <OperationsSystemDetails fields={row.technicalDetails} />
         </div>
       )
     },
@@ -795,106 +794,12 @@ function buildChecklistColumns({
   ];
 }
 
-const reconciliationLaneColumns: DenseDataTableColumn<OperationsContinuityReconciliationLaneRow>[] = [
-  {
-    id: "lane",
-    label: "Check",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.summary}</span>
-      </span>
-    )
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-        <span className="mt-1 block text-muted-foreground">{row.breakCountLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "evidence",
-    label: "Evidence",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
-        {row.evidenceHref ? (
-          <Link to={row.evidenceHref} aria-label={`Open retained evidence for reconciliation check ${row.label}`}>
-            {row.evidenceRouteLabel}
-          </Link>
-        ) : (
-          <span className="block text-muted-foreground">{row.evidenceRouteLabel}</span>
-        )}
-      </span>
-    )
-  },
-  {
-    id: "actions",
-    label: "Actions",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-foreground">{row.requiredActionsLabel}</span>
-        {row.routeHref ? (
-          <Link className="link-subtle mt-1 inline-flex" to={row.routeHref} aria-label={`Open reconciliation check: ${row.label}`}>
-            {row.routeLabel}
-          </Link>
-        ) : (
-          <span className="mt-1 block text-muted-foreground">{row.routeLabel}</span>
-        )}
-      </span>
-    )
-  }
-];
-
-const closeCockpitLaneColumns: DenseDataTableColumn<OperationsContinuityCloseCockpitLaneRow>[] = [
-  {
-    id: "lane",
-    label: "Check",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.summary}</span>
-      </span>
-    )
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-  },
-  {
-    id: "evidence",
-    label: "Evidence",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
-        {row.routeHref ? (
-          <Link to={row.routeHref} aria-label={`Open private-capital close cockpit check: ${row.label}`}>
-            {row.routeLabel}
-          </Link>
-        ) : (
-          <span className="block text-muted-foreground">{row.routeLabel}</span>
-        )}
-      </span>
-    )
-  },
-  {
-    id: "actions",
-    label: "Required actions",
-    render: (row) => <span className="text-xs leading-5 text-muted-foreground">{row.requiredActionsLabel}</span>
-  }
-];
-
 const closeCockpitWorkflowColumns: DenseDataTableColumn<OperationsContinuityCloseCockpitWorkflowRow>[] = [
   {
     id: "workflow",
     label: "Workflow",
     render: (row) => (
-      <div className="min-w-0">
+      <div className="block min-w-0">
         {row.workflowHref ? (
           <Link to={row.workflowHref} aria-label={`Open private-capital close workflow ${row.periodLabel}`}>
             {row.periodLabel}
@@ -902,7 +807,7 @@ const closeCockpitWorkflowColumns: DenseDataTableColumn<OperationsContinuityClos
         ) : (
           <span className="block font-semibold text-foreground">{row.periodLabel}</span>
         )}
-        <CloseRecordIdentifiers recordId={row.id} fundAccountId={row.fundAccountId} />
+        <OperationsSystemDetails fields={row.technicalDetails} />
       </div>
     )
   },
@@ -944,9 +849,9 @@ const closeCockpitApprovalColumns: DenseDataTableColumn<OperationsContinuityClos
     id: "approval",
     label: "Approval",
     render: (row) => (
-      <div className="min-w-0">
+      <div className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.workflowLabel}</span>
-        <CloseRecordIdentifiers recordId={row.id} fundAccountId={row.fundAccountId} />
+        <OperationsSystemDetails fields={row.technicalDetails} />
       </div>
     )
   },
@@ -1199,7 +1104,7 @@ export function OperationsContinuityScreen({ closeHub = false }: { closeHub?: bo
             expectedVersion: row.expectedWorkflowVersion,
             actor: "browser-operator",
             owner: row.assignmentOwner,
-            rationale: `Assigned break ${row.caseLabel} from Operations Continuity exception management.`,
+            rationale: `Assigned break ${row.id} from Operations Continuity exception management.`,
             escalationLevel: row.assignmentEscalationLevel,
             escalationReason: row.assignmentEscalationReason,
             dueDate: row.assignmentDueDate,
@@ -1210,7 +1115,7 @@ export function OperationsContinuityScreen({ closeHub = false }: { closeHub?: bo
             expectedVersion: row.expectedWorkflowVersion,
             actor: "browser-operator",
             resolutionStatus: row.resolutionStatus,
-            rationale: `Resolved break ${row.caseLabel} after retained evidence review.`,
+            rationale: `Resolved break ${row.id} after retained evidence review.`,
             correlationId: `browser-break-resolve:${row.id}`,
             evidenceLinks: row.resolutionEvidenceLinks,
             actionOrigin: "HumanOperator"
@@ -1607,6 +1512,7 @@ board: <>{vm.selectedDetail ? (
                   {vm.dashboard.title}
                 </CardTitle>
                 <CardDescription>{vm.dashboard.summaryLabel}</CardDescription>
+                <OperationsSystemDetails fields={vm.dashboard.technicalDetails} label="Dashboard source details" />
               </div>
               <Badge variant={statusBadgeVariant(vm.dashboard.statusTone)}>
                 {vm.dashboard.statusLabel}
@@ -1653,8 +1559,7 @@ board: <>{vm.selectedDetail ? (
               aria-label="Operations close calendar summary"
               className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-4"
             >
-              <div role="listitem"><span>{vm.selectedDetail ? "Selected close scope" : "Loaded close calendar scopes"}</span>
-                <TechnicalDetails label="Calendar scope identifiers"><p className="break-all font-mono text-xs">{vm.closeCalendar.scopeLabel}</p></TechnicalDetails></div>
+              <span role="listitem">{vm.closeCalendar.scopeLabel}</span>
               <span role="listitem">{vm.closeCalendar.itemCountLabel}</span>
               <span role="listitem">{vm.closeCalendar.nextDueLabel}</span>
               <span role="listitem">{vm.closeCalendar.blockerCountLabel}</span>
@@ -1728,8 +1633,7 @@ board: <>{vm.selectedDetail ? (
               aria-label="Private-capital close cockpit summary"
               className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-4"
             >
-              <div role="listitem"><span>{vm.selectedDetail ? "Selected close scope" : "Loaded private-capital close scopes"}</span>
-                <TechnicalDetails label="Close scope identifiers"><p className="break-all font-mono text-xs">{vm.closeCockpit.scopeLabel}</p></TechnicalDetails></div>
+              <span role="listitem">{vm.closeCockpit.scopeLabel}</span>
               <span role="listitem">{vm.closeCockpit.readinessLabel}</span>
               <span role="listitem">{vm.closeCockpit.laneCountLabel}</span>
               <span role="listitem">{vm.closeCockpit.proofLaneSummaryLabel}</span>
@@ -1747,6 +1651,7 @@ board: <>{vm.selectedDetail ? (
             ) : null}
           </CardHeader>
           <CardContent className="space-y-4">
+            <OperationsSystemDetails fields={vm.closeCockpit.technicalDetails} label="Close scope system details" />
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-background/60 px-3 py-3">
               <div className="min-w-0 text-xs leading-5 text-muted-foreground">
                 <p className="font-semibold text-foreground">{vm.closeCockpit.nextActionLabel}</p>
@@ -1772,14 +1677,14 @@ board: <>{vm.selectedDetail ? (
 
             <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-foreground">Cockpit checks</h3>
+                <h3 className="text-sm font-semibold text-foreground">Cockpit workstreams</h3>
                 <DenseDataTable
                   columns={closeCockpitLaneColumns}
                   rows={vm.closeCockpit.lanes}
                   getRowId={(row) => row.id}
                   getRowAriaLabel={(row) => row.ariaLabel}
                   emptyText={vm.closeCockpit.lanesEmptyText}
-                  ariaLabel="Private-capital close cockpit checks"
+                  ariaLabel="Private-capital close cockpit workstreams"
                 />
               </div>
               <div className="space-y-2">
@@ -1855,7 +1760,7 @@ blockers: <><section className="grid gap-4"><Card className="panel-surface">
               <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
               {vm.reconciliationLanesLabel}
             </CardTitle>
-            <CardDescription>Shared reconciliation coverage for cash, position, trade, income, MBS factor, bank, and GL support checks.</CardDescription>
+            <CardDescription>Shared reconciliation coverage for cash, position, trade, income, MBS factor, bank, and GL support workstreams.</CardDescription>
           </CardHeader>
           <CardContent>
             <DenseDataTable
@@ -1864,7 +1769,7 @@ blockers: <><section className="grid gap-4"><Card className="panel-surface">
               getRowId={(row) => row.id}
               getRowAriaLabel={(row) => row.ariaLabel}
               emptyText={vm.reconciliationLanesEmptyText}
-              ariaLabel="Operations continuity reconciliation check coverage"
+              ariaLabel="Operations continuity reconciliation workstream coverage"
             />
           </CardContent>
         </Card>
@@ -1896,7 +1801,7 @@ blockers: <><section className="grid gap-4"><Card className="panel-surface">
               ariaLabel="Operations continuity break assignment and escalation"
               selectedRowId={searchParams.get("reconciliationBreak")}
               onRowSelect={(row) => navigate({ search: updateWorkstationSearch(updateWorkstationSearch(location.search, "closeTab", "blockers"), "reconciliationBreak", row.id), hash: location.hash })}
-              getRowSelectAriaLabel={(row) => `Open case ${row.id}`}
+              getRowSelectAriaLabel={(row) => `Open ${row.caseLabel} case`}
             />
             {searchParams.get("reconciliationBreak") ? <CaseInspector key={searchParams.get("reconciliationBreak")} caseId={searchParams.get("reconciliationBreak")!} onChanged={() => void vm.refresh()} /> : null}
           </CardContent>
@@ -2288,11 +2193,12 @@ evidence: <><section className="grid gap-4">
               aria-label="Accounting record evidence summary"
               className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2"
             >
-              <div role="listitem"><TechnicalDetails label="Accounting record identifier"><p className="break-all font-mono text-xs">{vm.accountingRecordSummary.recordIdLabel}</p></TechnicalDetails></div>
+              <span role="listitem">{vm.accountingRecordSummary.recordDisplayLabel}</span>
               <span role="listitem">{vm.accountingRecordSummary.evidenceLabel}</span>
               <span role="listitem">{vm.accountingRecordSummary.auditPackLabel}</span>
               <span role="listitem">{vm.accountingRecordSummary.auditPackTimingLabel}</span>
             </div>
+            <OperationsSystemDetails fields={vm.accountingRecordSummary.technicalDetails} label="Accounting record system details" />
           </CardHeader>
           <CardContent>
             <DenseDataTable
@@ -2374,7 +2280,7 @@ evidence: <><section className="grid gap-4">
               <Workflow className="h-5 w-5 text-primary" aria-hidden="true" />
               Workflows
             </CardTitle>
-            <CardDescription>Select a workflow to inspect close review gates, blockers, next action, and timeline.</CardDescription>
+            <CardDescription>Select a workflow to inspect close-workstream gates, blockers, next action, and timeline.</CardDescription>
           </CardHeader>
           <CardContent>
             {vm.workflowsFundScopeNote && !vm.loading && !vm.errorText ? (

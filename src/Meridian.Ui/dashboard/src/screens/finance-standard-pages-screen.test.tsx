@@ -363,6 +363,33 @@ describe("finance standard pages", () => {
     expect(selector).toHaveValue("run-tb-1");
   });
 
+  it("names retained preview choices without exposing identifiers and preserves the exact selected run", async () => {
+    const retained = requireFirst(data.reporting.recentRuns, "reporting.recentRuns");
+    const previewData = {
+      ...data.reporting,
+      recentRuns: [
+        { ...retained, runId: "report-run-first", reportName: "Monthly statement", status: "Published", asOfDate: "2026-05-31" },
+        { ...retained, runId: "report-run-second", reportName: "Monthly statement", status: "Published", asOfDate: "2026-05-31" }
+      ]
+    };
+    await renderPage(<ReportPreviewValidationScreen data={previewData} />, "/reporting/preview");
+
+    const selector = screen.getByLabelText("Report run");
+    const second = within(selector).getByRole("option", { name: /Monthly statement.*Retained run 2/ });
+    expect(second).toHaveValue("report-run-second");
+    expect(within(selector).getAllByRole("option").every((option) => !option.textContent?.includes("report-run-"))).toBe(true);
+    fireEvent.change(selector, { target: { value: "report-run-second" } });
+
+    expect(selector).toHaveValue("report-run-second");
+    const audit = within(screen.getByText("Run audit details", { exact: true }).closest("details")!);
+    expect(audit.getByText("report-run-second", { exact: true })).not.toBeVisible();
+    fireEvent.click(screen.getByText("Run audit details", { exact: true }));
+    expect(audit.getByText("report-run-second", { exact: true })).toBeVisible();
+    expect(audit.queryByText("report-run-first", { exact: true })).not.toBeInTheDocument();
+    const identifiers = within(screen.getByText("Report run identifiers", { exact: true }).closest("details")!);
+    expect(identifiers.getByText("report-run-first", { exact: true })).not.toBeVisible();
+  });
+
   it("does not substitute reporting-workspace fixtures when run detail has no runId", async () => {
     await renderPage(<ReportRunDetailScreen data={data} />, "/reporting/runs/detail");
 
@@ -1393,6 +1420,28 @@ describe("finance standard pages", () => {
     expect(screen.getByRole("combobox", { name: "Case" })).toHaveValue(data.breakQueue[0].breakId);
     expect(screen.getByRole("region", { name: "Case inspector" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Record match decision" })).not.toBeInTheDocument();
+  });
+
+  it("names duplicate case choices without exposing keys and preserves exact selection and evidence links", async () => {
+    const first = requireFirst(data.breakQueue, "reconciliation break");
+    const second = { ...first, breakId: "run-42:second-case" };
+    await renderPage(
+      <ReconciliationMatchWorkbenchScreen data={{ ...data, breakQueue: [first, second] }} />,
+      `/accounting/reconciliation/match?reconciliationBreak=${encodeURIComponent(first.breakId)}`
+    );
+
+    const selector = screen.getByRole("combobox", { name: "Case" });
+    const secondOption = within(selector).getByRole("option", { name: /Retained case 2$/ });
+    expect(secondOption).toHaveValue(second.breakId);
+    expect(within(selector).getAllByRole("option").every((option) =>
+      !option.textContent?.includes(first.breakId) && !option.textContent?.includes(second.breakId))).toBe(true);
+    fireEvent.change(selector, { target: { value: second.breakId } });
+
+    expect(selector).toHaveValue(second.breakId);
+    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute(
+      "href", `/accounting/reconciliation?reconciliationBreak=${encodeURIComponent(second.breakId)}`);
+    expect(screen.getByRole("link", { name: "Retained evidence" })).toHaveAttribute(
+      "href", `/reporting/evidence?subjectKind=reconciliation-break&subjectId=${encodeURIComponent(second.breakId)}`);
   });
 
   it.each([

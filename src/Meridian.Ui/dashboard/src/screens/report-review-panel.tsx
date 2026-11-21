@@ -36,22 +36,27 @@ export function ReportReviewPanel({ runId, version, onReview }: {
         : !review ? <p role="status">Loading retained review evidence…</p>
         : <>
           <div className="grid gap-2 text-sm md:grid-cols-2">
-            <p>Current run · version {review.version}</p>
-            {review.baselineRunId ? <p><Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: review.baselineRunId })}>Prior approved run</Link> · version {review.baselineVersion}</p>
+            <p>Current retained version {review.version}</p>
+            {review.baselineRunId ? <p><Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: review.baselineRunId })}>Open prior approved run</Link> · version {review.baselineVersion}</p>
               : <p>No prior approved comparable run.</p>}
             <p className="md:col-span-2">Period {review.periodId} · Presentation currency {review.currency ?? "Not recorded"} · Accounting basis {review.accountingBasis ?? "Not recorded"}</p>
+            <TechnicalDetails label="Comparison identifiers" className="md:col-span-2">
+              <dl className="space-y-2 text-sm">
+                <div><dt className="font-semibold">Current run ID</dt><dd className="break-all font-mono">{review.runId}</dd></div>
+                {review.baselineRunId ? <div><dt className="font-semibold">Prior approved run ID</dt><dd className="break-all font-mono">{review.baselineRunId}</dd></div> : null}
+                <div><dt className="font-semibold">Review receipt</dt><dd className="break-all font-mono">{review.reviewId}</dd></div>
+                <div><dt className="font-semibold">Snapshot</dt><dd className="break-all font-mono">{review.snapshotHash}</dd></div>
+              </dl>
+            </TechnicalDetails>
           </div>
-          <TechnicalDetails label="Retained review identities"><dl className="grid gap-2 text-sm">
-            <div><dt>Current run</dt><dd className="break-all font-mono">{review.runId}</dd></div>
-            {review.baselineRunId ? <div><dt>Prior approved run</dt><dd className="break-all font-mono">{review.baselineRunId}</dd></div> : null}
-            <div><dt>Review receipt</dt><dd className="break-all font-mono">{review.reviewId}</dd></div>
-            <div><dt>Snapshot</dt><dd className="break-all font-mono">{review.snapshotHash}</dd></div>
-          </dl></TechnicalDetails>
           <p>{review.materialChangeCount === null
             ? review.materialityOutcome === "MaterialException" ? "Material changes require review · assessment incomplete" : "Materiality not assessed"
             : `${review.materialChangeCount} material line change${review.materialChangeCount === 1 ? "" : "s"}`}</p>
           {review.materialityPolicy ? <div className="text-sm" aria-label="Authoritative materiality policy">
-            <p>Policy {review.materialityPolicy.policyId} · version {review.materialityPolicy.version} · {review.materialityPolicy.currency}</p>
+            <p>Retained materiality policy · {review.materialityPolicy.currency}</p>
+            <TechnicalDetails label="Materiality policy identifiers">
+              <p className="break-all font-mono">Policy {review.materialityPolicy.policyId} · version {review.materialityPolicy.version}</p>
+            </TechnicalDetails>
             <ul className="list-disc pl-5">{review.materialityPolicy.metrics.map((metric) => <li key={JSON.stringify([metric.gridId, metric.column])}>
               {metric.gridId} / {metric.column}: absolute tolerance {metric.absoluteVariance === null ? "Not assessed" : `${metric.absoluteVariance} ${review.materialityPolicy!.currency}`}; relative tolerance {metric.relativeVariancePercent === null ? "Not assessed" : `${metric.relativeVariancePercent}%`}.
             </li>)}</ul>

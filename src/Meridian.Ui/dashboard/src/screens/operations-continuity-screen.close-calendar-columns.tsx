@@ -2,18 +2,18 @@ import { Link } from "react-router-dom";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { statusBadgeVariant } from "@/design-system/status-styles";
+import { OperationsSystemDetails } from "@/screens/operations-continuity-screen.workstream-columns";
 import type { OperationsContinuityCloseCalendarRow } from "@/screens/operations-continuity-screen.view-model";
-import { CloseRecordIdentifiers } from "@/screens/operations-continuity-screen.record-identifiers";
 
 export const closeCalendarColumns: DenseDataTableColumn<OperationsContinuityCloseCalendarRow>[] = [
   {
     id: "scope",
     label: "Scope",
     render: (row) => (
-      <div className="min-w-0">
+      <div className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.periodLabel}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.taskLabel}</span>
-        <CloseRecordIdentifiers recordId={row.id} fundAccountId={row.fundAccountId} />
+        <OperationsSystemDetails fields={row.technicalDetails} />
       </div>
     )
   },

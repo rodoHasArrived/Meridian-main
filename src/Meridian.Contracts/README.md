@@ -30,6 +30,16 @@ does not imply a zero balance or a match.
 External-GL export packages optionally pin `MappingContentHash` alongside the mapping version.
 The field is omitted when absent to preserve historical manifest preimages.
 
+`SecurityInstrumentTermsDto` provides version/fingerprint-bound canonical term blocks as exact JSON
+text and recursive schema-guided field records. It distinguishes presence, missing, null, invalid
+and ambiguous state, carries explicit unit paths, and retains undeclared/read-ahead content.
+The shared exact schedule decimal reader also validates decimal field shape without rounding.
+
+`AssetPositionMarketValuationDto` echoes the retained security/position/book/account/date/state
+identity and transports decimal operands/results as strings. Metric-specific blockers preserve
+partial market-value results without inventing P/L; basis, model, input/receipt provenance and
+freshness remain part of the response. The comparison is an unposted mark to carrying amount.
+
 `AssetOperations/BookReceiptDtos.cs` shares exact tenant/company/book scope, accepted expectation
 versions, canonical receipt allocations, distinct posted evidence, coverage and immutable daily runs
 across workstation consumers. Monetary values and quantities serialize as decimal strings. Stable
