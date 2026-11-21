@@ -22,8 +22,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public byte[] RenderPdf(ReportDocumentModel model);</code> | [src/Meridian.Documents/ClientGradeReportRenderer.cs:19](../../../../src/Meridian.Documents/ClientGradeReportRenderer.cs#L19) |  |
-| <code>public byte[] RenderWorkbook(ReportDocumentModel model);</code> | [src/Meridian.Documents/ClientGradeReportRenderer.cs:81](../../../../src/Meridian.Documents/ClientGradeReportRenderer.cs#L81) |  |
+| <code>public byte[] RenderPdf(ReportDocumentModel model) =&gt; …;</code> | [src/Meridian.Documents/ClientGradeReportRenderer.cs:19](../../../../src/Meridian.Documents/ClientGradeReportRenderer.cs#L19) |  |
+| <code>public byte[] RenderGridPdf(ReportDocumentModel model, IReadOnlyList&lt;bool&gt; numericColumns, string? firmName, string? primaryColor);</code> | [src/Meridian.Documents/ClientGradeReportRenderer.cs:23](../../../../src/Meridian.Documents/ClientGradeReportRenderer.cs#L23) | Renders the first table as a grid and flows any following tables as supporting detail. |
+| <code>public byte[] RenderWorkbook(ReportDocumentModel model);</code> | [src/Meridian.Documents/ClientGradeReportRenderer.cs:121](../../../../src/Meridian.Documents/ClientGradeReportRenderer.cs#L121) |  |
 
 ## DesignModule
 

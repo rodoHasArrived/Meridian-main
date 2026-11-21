@@ -121,7 +121,10 @@ public static class UiConfigurationSaveGuard
         if (!string.Equals(current.TenantScopeEnforcement, next.TenantScopeEnforcement, StringComparison.Ordinal))
             errors["TenantScopeEnforcement"] = ["Tenant posture is a host deployment setting and cannot be changed by a UI save."];
         if (!verifiedAlpacaSip && IntroducesAlpacaSip(current, next))
+        {
             errors["Alpaca.Feed"] = ["Use the Alpaca equity feed editor to verify the selected account's SIP access before saving."];
+            throw new UiConfigurationValidationException(errors);
+        }
 
         var before = JsonSerializer.SerializeToNode(current, AppConfigJsonOptions.Write);
         var after = JsonSerializer.SerializeToNode(next, AppConfigJsonOptions.Write);

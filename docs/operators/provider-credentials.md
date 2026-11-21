@@ -251,6 +251,9 @@ saved credential and its verification history intact. Choose **Save anyway** whe
 offline connection. The saved-credential panel shows the vault's rotation date beginning 14 days
 before it is due. Re-verify the saved connection to retain verification evidence.
 
+The legacy `/api/providers/{providerId}/test-connection` route saves any credentials supplied in
+its request. Use `verify-draft` to check unsaved fields.
+
 The Alpaca equity feed selector verifies recent SIP trades with the selected owned runtime
 connection before saving SIP. Feed changes take effect when the host restarts.
 

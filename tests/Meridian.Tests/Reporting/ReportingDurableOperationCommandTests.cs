@@ -199,6 +199,41 @@ public sealed class ReportingDurableOperationCommandTests(ReportingArtifactDatab
     }
 
     [ReportingDatabaseFact]
+    public async Task FailedMetricOperation_ReplaysTheSameDiagnosticWithoutRegeneration()
+    {
+        var id = $"metric-command-failed-{Guid.NewGuid():N}";
+        var contract = ReportingDurableOperationTests.DurableContract(id);
+        var template = new DefaultReportingTemplateCatalog().Get(contract.TemplateId) with
+        {
+            ReportWriterGrids = [new("amounts", "Amounts", ReportWriterGridKindDto.Pivot,
+                Metrics: [new("amount", "misspelledAmount")])]
+        };
+        var catalog = Substitute.For<IReportingTemplateCatalog>();
+        catalog.Get(contract.ResolvedTemplate!, contract.OperationalScope).Returns(template);
+        var store = new PostgresReportingRunStore(database.Options);
+        var renderer = new FailingRenderer();
+        var host = new ReportingOrchestrationService(catalog, renderer, () => Now, store);
+
+        await host.Awaiting(service => service.ExecuteAsync(contract with { MaxRetries = 2 }, CancellationToken.None))
+            .Should().ThrowAsync<ReportWriterMetricValidationException>().WithMessage("*misspelledAmount*");
+
+        var retained = store.GetManifest("tenant-a", id)!;
+        retained.FailureCode.Should().Be(ReportWriterMetricValidationException.FailureCode);
+        retained.AttemptCount.Should().Be(1);
+        retained.Artifacts.Should().BeEmpty();
+        var coordinator = Substitute.For<IReportingGovernanceEndpointCoordinator>();
+        var replay = Command(new PostgresReportingRunStore(database.Options), coordinator);
+        var operation = new ReportingRunOperation(id, contract.OperationRequestHash!);
+        await replay.Service.Awaiting(service => service.RunOperationAsync(Request(retained), operation, "operator", Access, Caller))
+            .Should().ThrowAsync<ReportingNoticeOperationFailedException>().WithMessage(retained.FailureReason);
+
+        AssertCurrentInputsUnused(replay);
+        coordinator.ReceivedCalls().Should().BeEmpty();
+        renderer.RenderCount.Should().Be(0);
+        store.GetAudit("tenant-a", id).Select(entry => entry.Action).Should().Equal("RunFailed");
+    }
+
+    [ReportingDatabaseFact]
     public async Task SelectedCommitmentNotices_RetainSeparateExactRuns_RefuseRetargetAndRecoverLegacyOmission()
     {
         var fixture = CapitalCallNoticeReportingTests.MultipleCommitments();

@@ -1095,14 +1095,7 @@ public sealed class ProviderConnectionEndpointsTests
         await core.UpdateAsync(config => config with
         {
             Alpaca = new(Feed: removeOverride ? "sip" : "iex"),
-            ProviderModules = new(new()
-            {
-                ["alpaca-api"] = new(Settings: new()
-                {
-                    ["feed"] = "iex",
-                    ["FeEd"] = "iex"
-                })
-            })
+            ProviderModules = new(new() { ["alpaca-api"] = new(Settings: new() { ["FeEd"] = "iex" }) })
         });
 
         var update = async () => await store.UpdateAsync(config => config with

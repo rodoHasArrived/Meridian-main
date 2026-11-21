@@ -79,7 +79,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ProviderQuotaChoice</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:260](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L260).
+Source: [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:264](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L264).
 
 ```csharp
 public sealed record ProviderQuotaChoice(string Id, string Label);
@@ -114,17 +114,17 @@ Declared public members:
 | <code>public string? Error { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L98) |  |
 | <code>public IReadOnlyList&lt;ProviderRateLimitDailyRollupDto&gt; DailyRollups { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L99) |  |
 | <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L105) |  |
-| <code>public bool CanSelectProvider =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:118](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L118) |  |
-| <code>public bool HasSnapshot =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L119) |  |
-| <code>public bool ShowEditor =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:120](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L120) |  |
-| <code>public bool CanEdit =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L121) |  |
-| <code>public string MinuteAllowanceLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L123) |  |
-| <code>public string DailyLimitLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L124) |  |
-| <code>public string TierGuidance =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L127) |  |
-| <code>public string SavedLimits =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L131) |  |
-| <code>public string RunningLimits =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L135) |  |
-| <code>public string ResetPolicy =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L139) |  |
-| <code>public void Cancel();</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:146](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L146) |  |
+| <code>public bool CanSelectProvider =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L119) |  |
+| <code>public bool HasSnapshot =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:120](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L120) |  |
+| <code>public bool ShowEditor =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L121) |  |
+| <code>public bool CanEdit =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L122) |  |
+| <code>public string MinuteAllowanceLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L124) |  |
+| <code>public string DailyLimitLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L125) |  |
+| <code>public string TierGuidance =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L128) |  |
+| <code>public string SavedLimits =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L132) |  |
+| <code>public string RunningLimits =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L136) |  |
+| <code>public string ResetPolicy =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L140) |  |
+| <code>public void Cancel();</code> | [src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/ProviderQuotaEditorViewModel.cs#L147) |  |
 
 ## ProviderRateLimitPresentation
 

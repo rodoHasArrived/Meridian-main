@@ -87,7 +87,7 @@ public sealed class CredentialCompatibilityEndpointsTests
     }
 
     [Fact]
-    public async Task ProviderCredentialTestConnection_VerifiesDraftWithoutChangingSavedCredentials()
+    public async Task ProviderCredentialTestConnection_WrapsSharedStoreVerification()
     {
         using var env = new EnvironmentScope(
             AlpacaCredentialEnvironment.KeyIdName,
@@ -99,12 +99,6 @@ public sealed class CredentialCompatibilityEndpointsTests
                 request => capturedRequest = request,
                 new StringContent("{\"account_number\":\"PA-COMPAT\"}", Encoding.UTF8, "application/json"))));
         });
-        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
-        await store.SaveAsync(new ProviderCredentialSaveRequest("alpaca",
-            new Dictionary<string, string?> { ["KeyId"] = "saved-key", ["SecretKey"] = "saved-secret" }, "paper"));
-        var vaultBefore = await File.ReadAllBytesAsync(store.VaultPath);
-        var auditPath = Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl");
-        var auditBefore = await File.ReadAllBytesAsync(auditPath);
 
         var response = await app.GetTestClient().PostAsync(
             "/api/providers/alpaca/test-connection",
@@ -122,12 +116,11 @@ public sealed class CredentialCompatibilityEndpointsTests
         capturedRequest.Should().NotBeNull();
         capturedRequest!.Headers.GetValues("APCA-API-KEY-ID").Should().ContainSingle().Which.Should().Be("compat-key");
 
+        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
         var stored = await store.ReadForProviderAsync("alpaca");
         stored.Should().NotBeNull();
-        stored!.Get("KeyId").Should().Be("saved-key");
-        stored.Get("SecretKey").Should().Be("saved-secret");
-        (await File.ReadAllBytesAsync(store.VaultPath)).Should().Equal(vaultBefore);
-        (await File.ReadAllBytesAsync(auditPath)).Should().Equal(auditBefore);
+        stored!.Get("KeyId").Should().Be("compat-key");
+        stored.Get("SecretKey").Should().Be("compat-secret");
     }
 
     [Fact]

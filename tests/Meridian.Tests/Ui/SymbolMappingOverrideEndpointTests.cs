@@ -132,6 +132,7 @@ public sealed class SymbolMappingOverrideEndpointTests
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
             builder.WebHost.UseTestServer();
             builder.Services.AddSingleton<ICanonicalSymbolRegistry>(Registry);
+            builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(Path.Combine(_directory, "appsettings.json")));
             builder.Services.AddRateLimiter(options =>
                 options.AddPolicy(UiEndpoints.MutationRateLimitPolicy, _ => RateLimitPartition.GetNoLimiter("test")));
             var app = builder.Build();
