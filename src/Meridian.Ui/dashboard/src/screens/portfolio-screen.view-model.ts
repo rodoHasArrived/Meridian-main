@@ -72,6 +72,11 @@ type PortfolioSourceRun = {
 };
 
 export interface PortfolioPositionRow {
+  securityId?: string | null;
+  averagePriceExact?: string | null;
+  markPriceExact?: string | null;
+  unrealizedPnlExact?: string | null;
+  exposureExact?: string | null;
   /** Display values from the shared holdings model; the `*Figure` fields carry reason and staleness. */
   marketValue: string;
   marketValueFigure: HoldingFigure;
@@ -329,6 +334,7 @@ interface PortfolioRunContinuityBlocker {
 }
 
 export interface PortfolioPositionDetail {
+  securityId?: string | null;
   id: string;
   record: RecordIdentity;
   linkedRef: string;
@@ -706,6 +712,11 @@ export function buildPortfolioScreenViewModel({
       symbol: p.symbol,
       side: p.side,
       quantity: p.quantity,
+      securityId: p.markFreshness?.securityId,
+      averagePriceExact: p.averagePriceExact,
+      markPriceExact: p.markPriceExact,
+      unrealizedPnlExact: p.unrealizedPnlExact,
+      exposureExact: p.exposureExact,
       avgPrice: p.averagePrice,
       ...holdingRowFigures(holding),
       markFreshness: presentMarkFreshness(p.markFreshness),
@@ -2333,6 +2344,7 @@ function buildSelectedPositionDetail(
 
   return {
     id: position.id,
+    securityId: position.securityId,
     record,
     linkedRef,
     title: position.symbol,

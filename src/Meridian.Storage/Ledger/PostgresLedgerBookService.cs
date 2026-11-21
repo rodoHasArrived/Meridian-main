@@ -783,6 +783,16 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         return parts.Count == 0 ? "ledger-book-rollout" : string.Join(";", parts);
     }
 
+    /// <summary>Canonical balance/dimension projection for immutable journal checkpoint proofs.</summary>
+    public static IReadOnlyList<LedgerPeriodTrialBalanceLineDto> ProjectTrialBalanceCheckpoint(
+        IEnumerable<LedgerJournalEntryRecord> records)
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        foreach (var record in records.OrderBy(static record => record.Entry.Timestamp).ThenBy(static record => record.GlobalSequence))
+            ledger.Post(record.Entry);
+        return CalculateFinancials(ledger).TrialBalance;
+    }
+
     private static LedgerPeriodFinancials CalculateFinancials(Meridian.Ledger.Ledger ledger)
     {
         ArgumentNullException.ThrowIfNull(ledger);
@@ -807,7 +817,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
                     totals[key] = accumulator;
                 }
 
-                accumulator.Add(line.Debit, line.Credit);
+                accumulator.Add(line.Debit, line.Credit, entry.JournalEntryId, line.EntryId);
             }
         }
 
@@ -827,7 +837,11 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
                     accumulator.Credits,
                     balance,
                     accumulator.EntryCount,
-                    Dimensions: accumulator.Dimensions);
+                    Dimensions: accumulator.Dimensions)
+                {
+                    JournalEntryIds = accumulator.JournalEntryIds.Order().ToArray(),
+                    LedgerEntryIds = accumulator.LedgerEntryIds.Order().ToArray()
+                };
             })
             .OrderBy(static row => row.AccountType, StringComparer.Ordinal)
             .ThenBy(static row => row.AccountName, StringComparer.Ordinal)
@@ -1124,12 +1138,16 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         public decimal Debits { get; private set; }
         public decimal Credits { get; private set; }
         public int EntryCount { get; private set; }
+        public HashSet<Guid> JournalEntryIds { get; } = [];
+        public HashSet<Guid> LedgerEntryIds { get; } = [];
 
-        public void Add(decimal debit, decimal credit)
+        public void Add(decimal debit, decimal credit, Guid journalEntryId, Guid ledgerEntryId)
         {
             Debits += debit;
             Credits += credit;
             EntryCount++;
+            JournalEntryIds.Add(journalEntryId);
+            LedgerEntryIds.Add(ledgerEntryId);
         }
     }
 

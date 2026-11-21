@@ -14,6 +14,7 @@ import type {
   StatementImportCommitResult,
   StatementImportIssue,
   StatementImportPreview,
+  StatementImportRowDisposition,
   StatementImportSourceKind,
   StatementKindSummary,
   StatementMappingProfile
@@ -323,6 +324,8 @@ export interface StatementImportPanelViewModel {
   fileAccept: string;
   preview: StatementImportPreview | null;
   previewBusy: boolean;
+  rowDispositions: Record<string, StatementImportRowDisposition>;
+  setRowDisposition: (decision: StatementImportRowDisposition | null, rowId: string) => void;
   previewError: ApiErrorDisplay | null;
   issues: StatementImportIssue[];
   hasBlockingIssues: boolean;
@@ -385,6 +388,18 @@ export function useStatementImportPanelViewModel(
   const [selectedConnectorId, setSelectedConnectorId] = useState("");
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [preview, setPreview] = useState<StatementImportPreview | null>(null);
+  const [previewEpoch, setPreviewEpoch] = useState(0);
+  const commitBusyRef = useRef(false);
+  const [rowDispositions, setRowDispositions] = useState<Record<string, StatementImportRowDisposition>>({});
+  const [previewBinding, setPreviewBinding] = useState<{ file: File; connectorId: string; profileId: string; form: string } | null>(null);
+  const setRowDisposition = useCallback((decision: StatementImportRowDisposition | null, rowId: string) => {
+    if (commitBusyRef.current) return;
+    setRowDispositions((current) => {
+      const next = { ...current };
+      if (decision) next[rowId] = decision; else delete next[rowId];
+      return next;
+    });
+  }, []);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewError, setPreviewError] = useState<ApiErrorDisplay | null>(null);
   const [selectedKind, setSelectedKind] = useState<string | null>(null);
@@ -457,6 +472,8 @@ export function useStatementImportPanelViewModel(
     previewRevisionRef.current = revision;
     setPreviewBusy(true);
     setPreviewError(null);
+    setRowDispositions({});
+    const binding = { ...args, form: JSON.stringify(commitFormRef.current) };
 
     try {
       const next = await services.previewImport({
@@ -468,6 +485,7 @@ export function useStatementImportPanelViewModel(
         sourceInstitution: commitFormRef.current.sourceInstitution.trim(),
         fundAccountId: commitFormRef.current.fundAccountId.trim(),
         periodStart: commitFormRef.current.periodStart.trim(),
+        toleranceProfileId: commitFormRef.current.toleranceProfileId.trim() || undefined,
         periodEnd: commitFormRef.current.periodEnd.trim()
       });
       if (previewRevisionRef.current !== revision || !mountedRef.current) {
@@ -475,6 +493,7 @@ export function useStatementImportPanelViewModel(
       }
 
       setPreview(next);
+      setPreviewBinding(binding);
       setSelectedKind((current) => {
         if (current && next.kindSummaries.some((summary) => summary.kind === current)) {
           return current;
@@ -527,15 +546,17 @@ export function useStatementImportPanelViewModel(
         previewRevisionRef.current += 1;
       }
     };
-  }, [commitForm, runPreview, selectedConnectorId, selectedFile, selectedProfileId]);
+  }, [commitForm, runPreview, selectedConnectorId, selectedFile, selectedProfileId, previewEpoch]);
 
   const selectFile = useCallback((file: File | null) => {
+    if (commitBusyRef.current) return;
     setSelectedFile(file);
     setCommitResult(null);
     setCommitError(null);
   }, []);
 
   const selectConnector = useCallback((connectorId: string) => {
+    if (commitBusyRef.current) return;
     setSelectedConnectorId(connectorId);
     const connector = connectors.find((entry) => entry.connectorId === connectorId) ?? null;
     let nextProfileId = selectedProfileId;
@@ -557,6 +578,7 @@ export function useStatementImportPanelViewModel(
   }, [connectors, selectedProfileId]);
 
   const selectProfile = useCallback((profileId: string) => {
+    if (commitBusyRef.current) return;
     setSelectedProfileId(profileId);
   }, []);
 
@@ -651,7 +673,7 @@ export function useStatementImportPanelViewModel(
 
   const saveProfileDraft = useCallback(async () => {
     const draft = profileDraft;
-    if (!draft || profileSaveBusy) {
+    if (!draft || profileSaveBusy || commitBusyRef.current) {
       return;
     }
 
@@ -686,6 +708,10 @@ export function useStatementImportPanelViewModel(
       setProfileDraft(buildStatementMappingProfileDraft(saved));
       setProfileSaveMessage(`Saved mapping profile ${saved.displayName}.`);
       setSelectedProfileId(saved.profileId);
+      setPreview(null);
+      setPreviewBinding(null);
+      setRowDispositions({});
+      setPreviewEpoch((current) => current + 1);
     } catch (error) {
       if (!mountedRef.current) {
         return;
@@ -700,6 +726,7 @@ export function useStatementImportPanelViewModel(
   }, [profileDraft, profileSaveBusy, services]);
 
   const updateCommitForm = useCallback((field: StatementImportCommitFormField, value: string) => {
+    if (commitBusyRef.current) return;
     setCommitForm((current) => ({ ...current, [field]: value }));
     setCommitFormErrors((current) => {
       if (!(field in current)) {
@@ -716,7 +743,7 @@ export function useStatementImportPanelViewModel(
 
   const issues = preview?.issues ?? [];
   const hasBlockingIssues = issues.some((issue) => issue.severity === "Error");
-  const kindSummaries = preview?.kindSummaries ?? [];
+  const kindSummaries = useMemo(() => preview?.kindSummaries ?? [], [preview]);
   const selectedKindSummary = useMemo(
     () => kindSummaries.find((summary) => summary.kind === selectedKind) ?? null,
     [kindSummaries, selectedKind]
@@ -742,6 +769,10 @@ export function useStatementImportPanelViewModel(
       return "Statement import is already being committed.";
     }
 
+    if (profileSaveBusy) {
+      return "Wait for the mapping profile to finish saving, then review the refreshed preview.";
+    }
+
     if (previewBusy) {
       return "Wait for the statement preview to finish before committing.";
     }
@@ -754,15 +785,26 @@ export function useStatementImportPanelViewModel(
       return "Preview the statement before committing.";
     }
 
+    if (!preview.reviewId) {
+      return "This server did not retain a reviewed preview. Refresh the preview before committing.";
+    }
+    if (!previewBinding || previewBinding.file !== selectedFile || previewBinding.connectorId !== selectedConnectorId
+      || previewBinding.profileId !== selectedProfileId || previewBinding.form !== JSON.stringify(commitForm)) {
+      return "The import details changed. Wait for a fresh preview before committing.";
+    }
+    if (Object.values(rowDispositions).some((decision) => !decision.reason.trim())) {
+      return "Enter a reason for each row decision before committing.";
+    }
+
     if (hasBlockingIssues || preview.status !== "ReadyToImport") {
       return "Resolve preview errors before committing the statement import.";
     }
 
     return null;
-  }, [commitBusy, hasBlockingIssues, preview, previewBusy, previewError, previewRequirements, selectedFile]);
+  }, [commitBusy, hasBlockingIssues, preview, previewBusy, previewError, previewRequirements, selectedFile, previewBinding, selectedConnectorId, selectedProfileId, commitForm, rowDispositions, profileSaveBusy]);
 
   const commit = useCallback(async () => {
-    if (commitBusy) {
+    if (commitBusyRef.current) {
       return;
     }
 
@@ -784,6 +826,7 @@ export function useStatementImportPanelViewModel(
       return;
     }
 
+    commitBusyRef.current = true;
     setCommitBusy(true);
     setCommitError(null);
     setCommitResult(null);
@@ -799,7 +842,9 @@ export function useStatementImportPanelViewModel(
         fundAccountId: commitForm.fundAccountId.trim(),
         periodStart: commitForm.periodStart.trim(),
         periodEnd: commitForm.periodEnd.trim(),
-        toleranceProfileId: commitForm.toleranceProfileId.trim() || undefined
+        toleranceProfileId: commitForm.toleranceProfileId.trim() || undefined,
+        reviewId: preview!.reviewId,
+        rowDispositions: Object.values(rowDispositions)
       });
       if (!mountedRef.current) {
         return;
@@ -816,11 +861,12 @@ export function useStatementImportPanelViewModel(
 
       setCommitError(describeApiError(error, "Statement import commit failed."));
     } finally {
+      commitBusyRef.current = false;
       if (mountedRef.current) {
         setCommitBusy(false);
       }
     }
-  }, [commitBusy, commitDisabledReason, commitForm, selectedConnectorId, selectedFile, selectedProfileId, services]);
+  }, [commitDisabledReason, commitForm, selectedConnectorId, selectedFile, selectedProfileId, services, preview, rowDispositions]);
 
   const selectedConnector = useMemo(
     () => connectors.find((entry) => entry.connectorId === selectedConnectorId) ?? null,
@@ -856,6 +902,8 @@ export function useStatementImportPanelViewModel(
     fileAccept,
     preview,
     previewBusy,
+    rowDispositions,
+    setRowDisposition,
     previewError,
     issues,
     hasBlockingIssues,

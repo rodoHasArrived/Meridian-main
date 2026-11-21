@@ -941,6 +941,8 @@ public static class UiApiRoutes
     public const string ReconciliationStatementMappingProfileById = "/api/workstation/reconciliation/statement-mapping-profiles/{profileId}";
     public const string ReconciliationStatementImportPreview = "/api/workstation/reconciliation/statement-imports/preview";
     public const string ReconciliationStatementImportCommit = "/api/workstation/reconciliation/statement-imports/commit";
+    public const string ReconciliationStatementImportReviewRows = "/api/workstation/reconciliation/statement-imports/reviews/{reviewId}/rows";
+    public const string ReconciliationStatementImportReviewOutcomes = "/api/workstation/reconciliation/statement-imports/reviews/{reviewId}/outcomes";
     public const string ReconciliationStatementReconciliationReport = "/api/workstation/reconciliation/statement-reconciliation-report";
     public const string ReconciliationStatementReconciliationReportById = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}";
     public const string ReconciliationStatementReconciliationReportResume = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/resume";
