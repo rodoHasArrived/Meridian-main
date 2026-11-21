@@ -191,12 +191,12 @@ classDiagram
         +string AccountName
         +string AccountType
         +decimal Balance
+        +string? BalanceProofCurrency
+        +LedgerAmountScopeDto? BalanceProofScope
+        +string? BalanceProofSubjectId
         +decimal CreditTotal
         +decimal DebitTotal
         +LedgerDimensionSetDto? Dimensions
-        +int EntryCount
-        +string? FinancialAccountId
-        +string? RuleId
     }
     class Meridian_Contracts_Ledger_LedgerPostingKindDto["LedgerPostingKindDto"] {
     }

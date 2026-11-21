@@ -20,9 +20,11 @@ public sealed class ReportingRunReviewService(IReportingRunStore runs, IReportin
         foreach (var candidate in series.Runs.OrderByDescending(r => r.Revision))
         {
             if (candidate.RunId == current.RunId || candidate.Revision >= current.Revision
-                || candidate.GovernanceState is not (GovernedReportingState.Approved or GovernedReportingState.Released)) continue;
+                || candidate.GovernanceState is not (GovernedReportingState.Approved or GovernedReportingState.Released))
+                continue;
             var manifest = Manifest(candidate, caller);
-            if (!ReportingRunReviewEngine.Comparable(current, currentManifest, candidate, manifest)) continue;
+            if (!ReportingRunReviewEngine.Comparable(current, currentManifest, candidate, manifest))
+                continue;
             baseline = candidate;
             baselineManifest = manifest;
             break;
@@ -36,7 +38,8 @@ public sealed class ReportingRunReviewService(IReportingRunStore runs, IReportin
         IReportingGovernanceEndpointCoordinator coordinator, string runId, long expectedVersion,
         string reviewId, ReportingGovernanceCallerContext caller, CancellationToken ct = default)
     {
-        if (!Sha256Digest.IsCanonical(reviewId)) throw new ArgumentException("A canonical review evidence identity is required.");
+        if (!Sha256Digest.IsCanonical(reviewId))
+            throw new ArgumentException("A canonical review evidence identity is required.");
         var retained = await PrepareAsync(coordinator, runId, caller, ct).ConfigureAwait(false);
         if (retained.Review.Version != expectedVersion || !Sha256Digest.FixedEquals(reviewId, retained.Review.ReviewId))
             throw new ReportingGovernanceConcurrencyException("The report review basis changed. Refresh the comparison before approving.");
@@ -59,7 +62,8 @@ public sealed class ReportingRunReviewService(IReportingRunStore runs, IReportin
         IReportingGovernanceEndpointCoordinator coordinator, string runId, string reviewId,
         ReportingGovernanceCallerContext caller, CancellationToken ct = default)
     {
-        if (!Sha256Digest.IsCanonical(reviewId)) throw new ArgumentException("A canonical review evidence identity is required.");
+        if (!Sha256Digest.IsCanonical(reviewId))
+            throw new ArgumentException("A canonical review evidence identity is required.");
         var current = await coordinator.GetAsync(runId, caller, ct).ConfigureAwait(false);
         var identity = new ReportingArtifactIdentity(caller.TenantId, reviewId);
         var artifact = await artifacts.ReadAsync(identity, ct).ConfigureAwait(false);
@@ -109,7 +113,8 @@ public sealed class ReportingRunReviewService(IReportingRunStore runs, IReportin
             HasGlobalOverride: caller.Permissions.HasFlag(Meridian.Identity.Auth.UserPermission.AdminMaintenance),
             TenantId: caller.TenantId, RequireBoundScope: true);
         var evaluation = ReportAccessPolicyEvaluator.Evaluate(manifest, access);
-        if (!evaluation.IsAccessible) throw new UnauthorizedAccessException(evaluation.Reason);
+        if (!evaluation.IsAccessible)
+            throw new UnauthorizedAccessException(evaluation.Reason);
         return manifest;
     }
 }

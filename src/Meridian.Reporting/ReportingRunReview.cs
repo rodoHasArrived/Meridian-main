@@ -75,7 +75,8 @@ public static class ReportingRunReviewEngine
                 var after = SourceRows(currentManifest);
                 if (before is null || after is null)
                     unavailable.Add("Dataset revisions unavailable: certified source rows have missing or duplicate entry identities.");
-                else sources.AddRange(Diff(before, after));
+                else
+                    sources.AddRange(Diff(before, after));
             }
             var priorGrids = baselineManifest.RenderedReportWriterGrids.IsDefault ? [] : baselineManifest.RenderedReportWriterGrids;
             var nextGrids = currentManifest.RenderedReportWriterGrids.IsDefault ? [] : currentManifest.RenderedReportWriterGrids;
@@ -86,15 +87,18 @@ public static class ReportingRunReviewEngine
             }
             var duplicateGrid = priorGrids.GroupBy(g => g.GridId).Any(g => g.Count() > 1)
                 || nextGrids.GroupBy(g => g.GridId).Any(g => g.Count() > 1);
-            if (duplicateGrid) { completeLineComparison = false; unavailable.Add("Line amounts unavailable: retained grid identities are duplicated."); }
+            if (duplicateGrid)
+            { completeLineComparison = false; unavailable.Add("Line amounts unavailable: retained grid identities are duplicated."); }
             else
             {
                 foreach (var next in nextGrids)
                 {
                     var prior = priorGrids.SingleOrDefault(g => g.GridId == next.GridId);
-                    if (prior is null) { completeLineComparison = false; unavailable.Add($"Grid '{next.GridId}' has no prior retained grid."); continue; }
+                    if (prior is null)
+                    { completeLineComparison = false; unavailable.Add($"Grid '{next.GridId}' has no prior retained grid."); continue; }
                     Meridian.Contracts.Workstation.ReportWriterGridDiffDto diff;
-                    try { diff = ReportSnapshotDiffEngine.Diff(prior, next); }
+                    try
+                    { diff = ReportSnapshotDiffEngine.Diff(prior, next); }
                     catch (OverflowException)
                     {
                         completeLineComparison = false;
@@ -107,30 +111,34 @@ public static class ReportingRunReviewEngine
                         unavailable.AddRange(diff.Warnings.Select(w => $"Grid '{next.GridId}': {w}"));
                         // Ambiguous identities must not yield apparently reliable line differences.
                         if (prior.Rows.GroupBy(r => r.RowKey).Any(g => g.Count() > 1)
-                            || next.Rows.GroupBy(r => r.RowKey).Any(g => g.Count() > 1)) continue;
+                            || next.Rows.GroupBy(r => r.RowKey).Any(g => g.Count() > 1))
+                            continue;
                     }
                     foreach (var row in diff.Rows)
-                    foreach (var cell in row.Cells)
-                    {
-                        if (cell.PriorValue == cell.CurrentValue) continue;
-                        string? exactDelta = null;
-                        string? percent = null;
-                        var hasPrior = decimal.TryParse(cell.PriorValue, NumberStyles.Number, CultureInfo.InvariantCulture, out var p);
-                        var hasCurrent = decimal.TryParse(cell.CurrentValue, NumberStyles.Number, CultureInfo.InvariantCulture, out var c);
-                        if (hasPrior && hasCurrent) exactDelta = (c - p).ToString("0.############################", CultureInfo.InvariantCulture);
-                        if (hasPrior && decimal.TryParse(exactDelta, NumberStyles.Number, CultureInfo.InvariantCulture, out var d) && p != 0)
+                        foreach (var cell in row.Cells)
                         {
-                            try { percent = (d / Math.Abs(p) * 100m).ToString("0.############################", CultureInfo.InvariantCulture); }
-                            catch (OverflowException)
-                            { unavailable.Add($"Grid '{next.GridId}', row '{row.RowKey}': percentage exceeds supported decimal range."); }
+                            if (cell.PriorValue == cell.CurrentValue)
+                                continue;
+                            string? exactDelta = null;
+                            string? percent = null;
+                            var hasPrior = decimal.TryParse(cell.PriorValue, NumberStyles.Number, CultureInfo.InvariantCulture, out var p);
+                            var hasCurrent = decimal.TryParse(cell.CurrentValue, NumberStyles.Number, CultureInfo.InvariantCulture, out var c);
+                            if (hasPrior && hasCurrent)
+                                exactDelta = (c - p).ToString("0.############################", CultureInfo.InvariantCulture);
+                            if (hasPrior && decimal.TryParse(exactDelta, NumberStyles.Number, CultureInfo.InvariantCulture, out var d) && p != 0)
+                            {
+                                try
+                                { percent = (d / Math.Abs(p) * 100m).ToString("0.############################", CultureInfo.InvariantCulture); }
+                                catch (OverflowException)
+                                { unavailable.Add($"Grid '{next.GridId}', row '{row.RowKey}': percentage exceeds supported decimal range."); }
+                            }
+                            lines.Add(new(next.GridId, row.RowKey, cell.Column, row.State.ToString(),
+                                cell.PriorValue, cell.CurrentValue, exactDelta, percent,
+                                [$"run:{baseline.RunId}:snapshot:{baseline.Snapshot.SnapshotHash}", $"run:{current.RunId}:snapshot:{current.Snapshot.SnapshotHash}"])
+                            {
+                                IsMeasure = next.Columns.Concat(prior.Columns).Any(column => column.Key == cell.Column && column.Role is "metric" or "formula")
+                            });
                         }
-                        lines.Add(new(next.GridId, row.RowKey, cell.Column, row.State.ToString(),
-                            cell.PriorValue, cell.CurrentValue, exactDelta, percent,
-                            [$"run:{baseline.RunId}:snapshot:{baseline.Snapshot.SnapshotHash}", $"run:{current.RunId}:snapshot:{current.Snapshot.SnapshotHash}"])
-                        {
-                            IsMeasure = next.Columns.Concat(prior.Columns).Any(column => column.Key == cell.Column && column.Role is "metric" or "formula")
-                        });
-                    }
                 }
                 foreach (var prior in priorGrids.Where(g => !nextGrids.Any(n => n.GridId == g.GridId)))
                 {
@@ -186,7 +194,8 @@ public static class ReportingRunReviewEngine
                     foreach (var property in value.EnumerateObject().OrderBy(p => p.Name, StringComparer.Ordinal))
                         Add(string.IsNullOrEmpty(key) ? property.Name : $"{key}.{property.Name}", property.Value);
                 }
-                else result[key] = value.ValueKind == JsonValueKind.String ? value.GetString() ?? "Not recorded"
+                else
+                    result[key] = value.ValueKind == JsonValueKind.String ? value.GetString() ?? "Not recorded"
                     : value.ValueKind == JsonValueKind.Null ? "Not recorded" : value.GetRawText();
             }
             Add("", json);
@@ -200,9 +209,12 @@ public static class ReportingRunReviewEngine
         var identities = new HashSet<string>(StringComparer.Ordinal);
         foreach (var row in manifest.CertifiedDatasetRows)
         {
-            if (!row.TryGetValue("entryId", out var id) || string.IsNullOrWhiteSpace(id)) return null;
-            if (!identities.Add(id)) return null;
-            foreach (var pair in row.OrderBy(p => p.Key, StringComparer.Ordinal)) result.Add($"{id} · {pair.Key}", pair.Value);
+            if (!row.TryGetValue("entryId", out var id) || string.IsNullOrWhiteSpace(id))
+                return null;
+            if (!identities.Add(id))
+                return null;
+            foreach (var pair in row.OrderBy(p => p.Key, StringComparer.Ordinal))
+                result.Add($"{id} · {pair.Key}", pair.Value);
         }
         return result;
     }

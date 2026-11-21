@@ -295,6 +295,25 @@ Declared public members:
 | <code>public IReadOnlyCollection&lt;string&gt; ConfiguredTransportIds =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:237](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L237) |  |
 | <code>public ValueTask&lt;string?&gt; ResolveDestinationAsync(ReportingRecipientDestinationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L239) |  |
 
+## ConfiguredReportingReviewMaterialityPolicyProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ConfiguredReportingReviewMaterialityPolicyProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs:14](../../../../src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs#L14).
+
+Admin-owned host configuration seam. Empty configuration provides no policy; never falls back to browser defaults. Hosts may replace this DI interface with a durable policy registry.
+
+```csharp
+public sealed class ConfiguredReportingReviewMaterialityPolicyProvider(CompositionConfiguration configuration) : IReportingReviewMaterialityPolicyProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConfigurationKey = &quot;MERIDIAN_REPORTING_REVIEW_POLICIES&quot;;</code> | [src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs:17](../../../../src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs#L17) |  |
+| <code>public ValueTask&lt;ReportingReviewMaterialityPolicy?&gt; ResolveAsync(ReportingOperationalScope scope, string templateId, string templateVersion, string currency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs:41](../../../../src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs#L41) |  |
+
 ## ConsolidationWorkbenchService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ConsolidationWorkbenchService</code>. Kind: `class`.
@@ -438,7 +457,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService.CoveredCallCommand.Start</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1181](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1181).
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1182](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1182).
 
 ```csharp
 public sealed record Start(string RunId) : CoveredCallCommand(RunId);
@@ -506,8 +525,8 @@ Declared public members:
 | <code>public CoveredCallChainProviderFactory(OptionsChainService chainService, IOptionsMonitor&lt;CoveredCallBacktestOptions&gt; options, ILoggerFactory loggerFactory);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:25](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L25) |  |
 | <code>public ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:37](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L37) |  |
 | <code>public async ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, string? tenantId, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:40](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L40) |  |
-| <code>public async ValueTask&lt;CoveredCallChainPreviewResult&gt; PreviewAsync(string underlyingSymbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:166](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L166) |  |
-| <code>public static List&lt;OptionCandidateInfo&gt; ConvertCalls(OptionChainSnapshot snapshot, DateOnly scanDate);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:244](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L244) | Converts the calls in an OptionChainSnapshot into strategy-side OptionCandidateInfo records. Surfaces only fields that are well-defined from a chain quote. |
+| <code>public async ValueTask&lt;CoveredCallChainPreviewResult&gt; PreviewAsync(string underlyingSymbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:169](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L169) |  |
+| <code>public static List&lt;OptionCandidateInfo&gt; ConvertCalls(OptionChainSnapshot snapshot, DateOnly scanDate);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:247](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L247) | Converts the calls in an OptionChainSnapshot into strategy-side OptionCandidateInfo records. Surfaces only fields that are well-defined from a chain quote. |
 
 ## ICoveredCallBacktestService
 
@@ -909,23 +928,3 @@ Outcome of seeding the demo workspace.
 ```csharp
 public sealed record DemoWorkspaceSeedReport(string DemoRoot, string Provenance, DemoTenantProvisioningReport Provisioning, int MarketHistoryTradePrintsSeeded = 0);
 ```
-
-## DesktopLaunchTicketService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DesktopLaunchTicketService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:12](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L12).
-
-Issues short-lived, single-use launch claims so the desktop workstation never trusts browser-selected identity or navigation state directly from process arguments.
-
-```csharp
-public sealed class DesktopLaunchTicketService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DesktopLaunchTicketService(TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:18](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L18) |  |
-| <code>public string Issue(string username, string page);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:23](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L23) |  |
-| <code>public DesktopLaunchTicketRedemptionDto? Redeem(IPAddress? remoteAddress, string token);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:35](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L35) |  |

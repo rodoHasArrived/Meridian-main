@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
+import { LiveAuthorizationRevokeForm } from "@/screens/trading-screen.live-authorization-revoke";
 import { OverflowMenu } from "@/components/ui/overflow-menu";
 import { OrderStatusBanner } from "@/components/ui/order-status-banner";
 import { TradingOrderTicketForm } from "@/screens/trading-screen.order-ticket-form";
@@ -492,6 +493,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
   const governedApprovals = useGovernedApprovalsViewModel(LIVE_GOVERNED_APPROVAL_SERVICES);
   const orderTicket = useOrderTicketViewModel({
     fundAccountId,
+    scopedPaperIntentKey: data?.scopedPaperOrderIntentKey,
     positions: data?.positions ?? [],
     risk: data?.risk ?? null,
     manualOrderEntry: data?.manualOrderEntry ?? null,
@@ -861,6 +863,11 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
               riskWarnings={orderTicket.riskWarnings}
             />
           )}
+          {!orderTicket.open && orderTicket.phase === "reconciliation" ? (
+            <CardContent className="border-b border-border/60 py-3">
+              <p role="status" className="text-sm text-warning">{orderTicket.errorText}</p>
+            </CardContent>
+          ) : null}
           <CardContent className="space-y-3 px-3 py-2">
             <TableWorkbench
               workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
@@ -1818,46 +1825,6 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
         onConfirm={confirmSessionClose}
       />
     </div>
-  );
-}
-
-function LiveAuthorizationRevokeForm({ authorizationId, disabled, revoke }: {
-  authorizationId: string;
-  disabled: boolean;
-  revoke: (id: string, reason: string) => Promise<void>;
-}) {
-  const [reason, setReason] = React.useState("");
-  const [busy, setBusy] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  return (
-    <details className="my-2 font-sans">
-      <summary className="cursor-pointer font-medium">Revoke live authorization</summary>
-      <form className="mt-2 grid gap-2" onSubmit={async (event) => {
-        event.preventDefault();
-        if (busy || disabled || !reason.trim()) return;
-        setBusy(true);
-        setError(null);
-        try {
-          await revoke(authorizationId, reason.trim());
-        } catch (failure) {
-          setError(failure instanceof Error ? failure.message : "Revocation could not be confirmed.");
-        } finally {
-          setBusy(false);
-        }
-      }}>
-        <p className="text-muted-foreground">Blocks new orders and replacements for this run.</p>
-        <label className="grid gap-1">
-          Revocation reason
-          <Input required disabled={busy || disabled} value={reason} onChange={(event) => setReason(event.target.value)} />
-        </label>
-        <Button type="submit" size="sm" variant="destructive" className="justify-self-start"
-          disabled={disabled || !reason.trim()} busy={busy} busyLabel="Revoking authorization">
-          Confirm revocation
-        </Button>
-        {error && <p role="alert" className="text-danger">{error}</p>}
-      </form>
-    </details>
   );
 }
 

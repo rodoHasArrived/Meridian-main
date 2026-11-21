@@ -44,7 +44,7 @@ import type {
   ReconciliationBreakQueueItem,
   StatementRunSummary,
 } from "@/types";
-import { formatCount, pluralizeCount, formatCurrency, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatCount, pluralizeCount, formatCurrency, formatPrefixedCurrency } from "@/lib/format";
 import {
   TIE_OUT_EPSILON,
   usableAmount,

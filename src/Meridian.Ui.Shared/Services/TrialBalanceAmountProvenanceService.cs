@@ -76,43 +76,47 @@ public sealed class TrialBalanceAmountProvenanceService(
         var accountingAttestations = new List<AccountingPreparerAttestationDisclosureDto>();
         var staleSupport = false;
         foreach (var record in records.Where(record => row.JournalEntryIds.Contains(record.Entry.JournalEntryId)))
-        foreach (var line in record.Entry.Lines.Where(line => row.LedgerEntryIds.Contains(line.EntryId)))
-        {
-            // Classification belongs to the frozen posting even when its source proof is blocked.
-            // Aggregation must not turn preparer-only accounting into independent approval.
-            accountingAttestations.AddRange(AccountingPreparerAttestationDisclosure.Read(record, scope) ?? []);
-            var sourceSubject = $"{record.Entry.JournalEntryId:D}:{line.EntryId:D}:{(line.Debit > 0m ? "debit" : "credit")}";
-            var packet = await postedAmounts.GetRetainedPacketAsync(sourceSubject, scope, record, book.BaseCurrency, ct).ConfigureAwait(false);
-            staleSupport |= packet?.LedgerAmount?.RetainedSupportStale == true;
-            if (packet?.LedgerAmount is not { } proof || proof.Status != EvidenceStatusDto.Ready
-                || !string.Equals(proof.Currency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase))
+            foreach (var line in record.Entry.Lines.Where(line => row.LedgerEntryIds.Contains(line.EntryId)))
             {
-                warnings.Add("A contributing journal line lacks verified retained source evidence in this currency.");
-                warnings.AddRange(packet?.Warnings ?? []);
-                continue;
-            }
-            string Qualify(string id) => $"{id}@{sourceSubject}";
-            string? Rebind(string? route, string? digest)
-            {
-                if (route is null) return null;
-                return route.Split('?')[0] + $"?ledgerAmountSubjectId={Uri.EscapeDataString(subjectId)}&ledgerBookId={scope.LedgerBookId:D}"
-                    + $"&periodId={scope.PeriodId:D}&fundProfileId={Uri.EscapeDataString(scope.FundProfileId)}&expectedContentHash={digest}";
-            }
-            evidence.AddRange(proof.Evidence.Select(item => item with
-            {
-                EvidenceId = Qualify(item.EvidenceId), SourceScope = scope, SourceSubjectId = sourceSubject,
-                Route = Rebind(item.Route, item.ContentHash)
-            }));
-            nodes.AddRange(packet.Nodes.Select(node => node with
-            {
-                EvidenceId = Qualify(node.EvidenceId),
-                ArtifactRefs = node.ArtifactRefs.Select(artifact => artifact with
+                // Classification belongs to the frozen posting even when its source proof is blocked.
+                // Aggregation must not turn preparer-only accounting into independent approval.
+                accountingAttestations.AddRange(AccountingPreparerAttestationDisclosure.Read(record, scope) ?? []);
+                var sourceSubject = $"{record.Entry.JournalEntryId:D}:{line.EntryId:D}:{(line.Debit > 0m ? "debit" : "credit")}";
+                var packet = await postedAmounts.GetRetainedPacketAsync(sourceSubject, scope, record, book.BaseCurrency, ct).ConfigureAwait(false);
+                staleSupport |= packet?.LedgerAmount?.RetainedSupportStale == true;
+                if (packet?.LedgerAmount is not { } proof || proof.Status != EvidenceStatusDto.Ready
+                    || !string.Equals(proof.Currency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase))
                 {
-                    ArtifactId = Qualify(artifact.ArtifactId), Route = Rebind(artifact.Route, artifact.Hash)
-                }).ToArray()
-            }));
-            edges.AddRange(packet.Edges.Select(edge => edge with { FromId = Qualify(edge.FromId), ToId = Qualify(edge.ToId) }));
-        }
+                    warnings.Add("A contributing journal line lacks verified retained source evidence in this currency.");
+                    warnings.AddRange(packet?.Warnings ?? []);
+                    continue;
+                }
+                string Qualify(string id) => $"{id}@{sourceSubject}";
+                string? Rebind(string? route, string? digest)
+                {
+                    if (route is null)
+                        return null;
+                    return route.Split('?')[0] + $"?ledgerAmountSubjectId={Uri.EscapeDataString(subjectId)}&ledgerBookId={scope.LedgerBookId:D}"
+                        + $"&periodId={scope.PeriodId:D}&fundProfileId={Uri.EscapeDataString(scope.FundProfileId)}&expectedContentHash={digest}";
+                }
+                evidence.AddRange(proof.Evidence.Select(item => item with
+                {
+                    EvidenceId = Qualify(item.EvidenceId),
+                    SourceScope = scope,
+                    SourceSubjectId = sourceSubject,
+                    Route = Rebind(item.Route, item.ContentHash)
+                }));
+                nodes.AddRange(packet.Nodes.Select(node => node with
+                {
+                    EvidenceId = Qualify(node.EvidenceId),
+                    ArtifactRefs = node.ArtifactRefs.Select(artifact => artifact with
+                    {
+                        ArtifactId = Qualify(artifact.ArtifactId),
+                        Route = Rebind(artifact.Route, artifact.Hash)
+                    }).ToArray()
+                }));
+                edges.AddRange(packet.Edges.Select(edge => edge with { FromId = Qualify(edge.FromId), ToId = Qualify(edge.ToId) }));
+            }
         if (row.LedgerEntryIds.Count == 0 || evidence.Select(item => item.EvidenceId).Distinct().Count() != evidence.Count)
             warnings.Add("Contributing ledger identities are missing or ambiguous.");
         var result = ReportLedgerAmountProvenanceService.Packet(subjectId, scope, row.AccountName, row.Balance, book.BaseCurrency,

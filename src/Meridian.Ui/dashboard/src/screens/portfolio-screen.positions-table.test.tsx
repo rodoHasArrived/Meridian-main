@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
@@ -162,13 +162,15 @@ describe("Portfolio Open positions controls", () => {
     await user.tab(); // Flush the debounced query before following the retained record link.
     expect(screen.getByText("Selected holding is outside the current results.")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "AAPL holding detail" })).toBeInTheDocument();
-    const filteredHref = new URL(screen.getByRole("link", { name: "Open asset detail for AAPL" }).getAttribute("href")!, "https://meridian.local");
-    const filteredContext = readRecordWorkspaceContext(filteredHref.search);
-    expect(filteredContext?.record).toEqual(originalRecord);
-    const returnTo = new URL(filteredContext!.origin, "https://meridian.local");
-    expect(returnTo.searchParams.get("positionRef")).toBe("symbol:AAPL:Short");
-    expect(returnTo.searchParams.has("view")).toBe(true);
-    expect(returnTo.hash).toBe("#portfolio-position-detail");
+    await waitFor(() => {
+      const filteredHref = new URL(screen.getByRole("link", { name: "Open asset detail for AAPL" }).getAttribute("href")!, "https://meridian.local");
+      const filteredContext = readRecordWorkspaceContext(filteredHref.search);
+      expect(filteredContext?.record).toEqual(originalRecord);
+      const returnTo = new URL(filteredContext!.origin, "https://meridian.local");
+      expect(returnTo.searchParams.get("positionRef")).toBe("symbol:AAPL:Short");
+      expect(returnTo.searchParams.has("view")).toBe(true);
+      expect(returnTo.hash).toBe("#portfolio-position-detail");
+    });
     expect(positionIds()).toEqual(["msft-long-0", "msft-long-2"]);
     await user.click(screen.getByRole("button", { name: "Clear filters" }));
     expect(positionTable().querySelector('[data-dense-row-id="aapl-short-1"]')).toHaveAttribute("aria-selected", "true");

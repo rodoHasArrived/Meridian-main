@@ -199,7 +199,7 @@ describe("Reconciliation workbench", () => {
     const user = userEvent.setup();
     const services = fakeBulkServices();
     services.execute.mockRejectedValueOnce(new Error("Statement handoff interrupted"));
-    const readResult = vi.fn(async () => {
+    const readResult = vi.fn(async (): Promise<ReconciliationBulkCaseworkResult> => {
       const result = bulkResult(services.execute.mock.calls[0][0], () => true);
       return { ...result, results: result.results.map((entry) => {
         if (!entry.item) throw new Error("The retained fixture result must include its case.");

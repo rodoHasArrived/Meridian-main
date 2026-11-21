@@ -12,7 +12,8 @@ public sealed partial class StatementReconciliationReportWorkflowService
     private async Task<WorkflowSnapshot> PublishReviewedRowCasesAsync(WorkflowSnapshot snapshot, CancellationToken ct)
     {
         var accepted = snapshot.Request.RowDispositions.Where(row => row.Disposition == "AcceptAsBreak").ToArray();
-        if (accepted.Length == 0) return snapshot;
+        if (accepted.Length == 0)
+            return snapshot;
         if (!SupportsReviewedRowCases || _imports is not StatementImportService imports
             || snapshot.Request.ReviewId is not { } reviewId || snapshot.ImportResult is not { } import
             || snapshot.Request.AccountingScope is not { } accountingScope || snapshot.Workflow.CompanyId is not { } companyId)
@@ -42,7 +43,9 @@ public sealed partial class StatementReconciliationReportWorkflowService
                 Measures: [new(ReconciliationBreakMeasureKindDto.Value, null, null, null, null, row.Record.Currency ?? "unit unavailable",
                     "Operator-requested investigation. A comparable statement and ledger pair has not been retained.")])
             {
-                TenantId = snapshot.Workflow.TenantId, CompanyId = companyId, FundProfileId = accountingScope.FundProfileId
+                TenantId = snapshot.Workflow.TenantId,
+                CompanyId = companyId,
+                FundProfileId = accountingScope.FundProfileId
             };
             await _breakQueue!.CreateIfMissingAsync(queueScope, item, ct).ConfigureAwait(false);
             var retained = await _breakQueue.GetByIdAsync(queueScope, caseId, ct).ConfigureAwait(false)
@@ -57,8 +60,10 @@ public sealed partial class StatementReconciliationReportWorkflowService
         {
             ImportResult = updated with
             {
-                EvidenceVaultIdentity = import.EvidenceVaultIdentity, EvidenceWorkbenchRoute = import.EvidenceWorkbenchRoute,
-                OperationsWorkflowId = import.OperationsWorkflowId, AccountingScope = import.AccountingScope
+                EvidenceVaultIdentity = import.EvidenceVaultIdentity,
+                EvidenceWorkbenchRoute = import.EvidenceWorkbenchRoute,
+                OperationsWorkflowId = import.OperationsWorkflowId,
+                AccountingScope = import.AccountingScope
             },
             Workflow = snapshot.Workflow with
             {

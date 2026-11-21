@@ -35,20 +35,25 @@ public static partial class WorkstationEndpoints
         string reviewId, int offset, int limit, bool outcomes, HttpContext context,
         StatementImportService? service, JsonSerializerOptions jsonOptions)
     {
-        if (!HasReconciliationMutationPermission(context)) return EndpointHelpers.Forbidden();
-        if (service is null) return StatementConnectorsNotRegistered();
+        if (!HasReconciliationMutationPermission(context))
+            return EndpointHelpers.Forbidden();
+        if (service is null)
+            return StatementConnectorsNotRegistered();
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         if (string.IsNullOrWhiteSpace(tenant.TenantId) || string.IsNullOrWhiteSpace(tenant.CompanyId))
             return EndpointHelpers.Forbidden();
         try
         {
             var review = await service.GetReviewAsync(reviewId, tenant.TenantId, tenant.CompanyId, context.RequestAborted).ConfigureAwait(false);
-            if (review is null) return Results.NotFound();
+            if (review is null)
+                return Results.NotFound();
             var scope = new StatementReconciliationReportScope(review.SourceKind, review.SourceInstitution, review.FundAccountId,
                 review.ExternalAccountId, review.PeriodStart, review.PeriodEnd, null, review.AccountingScope);
             var ownershipProblem = await RequireStatementReconciliationReportAccountOwnershipAsync(scope, tenant, context).ConfigureAwait(false);
-            if (ownershipProblem is not null) return ownershipProblem;
-            if (!outcomes) return Results.Json(StatementImportService.ReviewRows(review, offset, limit), jsonOptions);
+            if (ownershipProblem is not null)
+                return ownershipProblem;
+            if (!outcomes)
+                return Results.Json(StatementImportService.ReviewRows(review, offset, limit), jsonOptions);
             var page = await service.GetReviewOutcomesAsync(review, offset, limit, context.RequestAborted).ConfigureAwait(false);
             return page is null ? Results.NotFound() : Results.Json(page, jsonOptions);
         }

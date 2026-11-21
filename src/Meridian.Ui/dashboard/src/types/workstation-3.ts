@@ -916,6 +916,7 @@ export interface OrderSubmitRequest {
   quantity: number;
   limitPrice?: number | null;
   fundAccountId?: string | null;
+  intentId?: string;
 }
 
 export interface OrderResult {
@@ -932,6 +933,8 @@ export interface OrderResult {
   requiresApproval?: boolean;
   escalationId?: string | null;
   riskWarnings?: string[] | null;
+  intentId?: string;
+  intentStatus?: "Retained" | "Conflict" | "ReconciliationRequired" | "Blocked";
   /** Set when order authority refused the order, and when a typed submission was admitted. */
   authorityDecision?: AuthorityDecisionSummary | null;
 }
@@ -1366,6 +1369,7 @@ export interface TradingWorkspaceResponse {
   risk: TradingRiskState;
   brokerage: BrokerageWiringStatus;
   readiness?: TradingOperatorReadiness | null;
+  scopedPaperOrderIntentKey?: string | null;
   /** Whether manual orders may be submitted on the active routing path; absent when no OMS is active. */
   manualOrderEntry?: TradingManualOrderEntry | null;
 }
