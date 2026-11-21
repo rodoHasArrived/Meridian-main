@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IPaperFillEvaluationTrigger
+
+Qualified name: <code>Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs:9](../../../../src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs#L9).
+
+Implemented by paper gateways that hold resting limit/stop orders. The host&#x27;s market event tap pokes this after recording new market data for a symbol so resting orders are re-evaluated against the fresh observation without polling. Implementations must be non-blocking: evaluation work is scheduled, never run inline on the market data path.
+
+```csharp
+public interface IPaperFillEvaluationTrigger
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs:12](../../../../src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs#L12) | Schedules re-evaluation of resting paper orders for symbol. |
+
+## MarketDataSnapshot
+
+Qualified name: <code>Meridian.Execution.Interfaces.MarketDataSnapshot</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs:62](../../../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs#L62).
+
+A single coherent observation of the last-known market data for one symbol: the fields were read together, so a consumer never sees a quote from before an update paired with a trade from after it.
+
+```csharp
+public readonly record struct MarketDataSnapshot(BboQuotePayload? Quote, Trade? Trade, HistoricalBar? Bar);
+```
+
 ## IOrderManagementLifecycle
 
 Qualified name: <code>Meridian.Execution.IOrderManagementLifecycle</code>. Kind: `interface`.
@@ -1140,35 +1170,3 @@ Declared public members:
 | <code>public decimal? ResolveStopTriggerPrice(OrderSide side) =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:90](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L90) |  |
 | <code>public static PaperMarketObservation Capture(ILiveFeedAdapter? feed, string symbol);</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:98](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L98) | Captures the current observation for symbol from a live feed adapter. Non-positive prices are treated as absent. Returns an empty observation when no feed is wired or nothing has been observed yet. |
 | <code>public static PaperMarketObservation FromCallerPrice(decimal price) =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:151](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L151) | Builds a degenerate observation from a caller-supplied simulated price (the documented Market-order seam where the caller provides its own mark). The envelope collapses to that single price. |
-
-## PaperMatchOutcome
-
-Qualified name: <code>Meridian.Execution.PaperMatching.PaperMatchOutcome</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:6](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L6).
-
-Outcome kind of one paper-matching evaluation.
-
-```csharp
-public enum PaperMatchOutcome
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Filled</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:9](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L9) | The order fills now at PaperMatchResult.FillPrice. |
-| <code>Resting</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:12](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L12) | The order does not fill against the current observation and rests. |
-| <code>NoMarketData</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:15](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L15) | No usable market data has been observed for the symbol. |
-
-## PaperMatchResult
-
-Qualified name: <code>Meridian.Execution.PaperMatching.PaperMatchResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:28](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L28).
-
-Result of one paper-matching evaluation.
-
-```csharp
-public readonly record struct PaperMatchResult(PaperMatchOutcome Outcome, decimal? FillPrice, bool StopTriggered);
-```

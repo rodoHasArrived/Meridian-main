@@ -7,7 +7,9 @@ public delegate Task<string?> ResolvePaperAccountCurrency(Guid accountId, Cancel
 
 public sealed partial class PaperSessionPersistenceService
 {
-    internal bool SupportsNativeOrderRouting => _store is { SupportsJournalBatches: true } && _financing is null;
+    // Native per-account journals serve hosts without trade-fill posting. A host that posts fills
+    // (Postgres or file-backed) binds every session to its posting scope instead.
+    internal bool SupportsNativeOrderRouting => _store is { SupportsJournalBatches: true } && _accountingContext is null;
 
     internal bool IsNativeDurableSession(string sessionId) =>
         CurrentSessions.TryGetValue(sessionId, out var session) && session.JournalCurrency is not null;

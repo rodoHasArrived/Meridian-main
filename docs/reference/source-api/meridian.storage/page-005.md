@@ -623,6 +623,41 @@ Declared public members:
 | <code>public async Task&lt;LegacyIntercompanyAttributionDto&gt; AppendAsync(LegacyIntercompanyAttributionDto attribution, Guid? expectedPreviousAttributionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLegacyIntercompanyAttributionStore.cs:26](../../../../src/Meridian.Storage/Ledger/FileLegacyIntercompanyAttributionStore.cs#L26) |  |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLegacyIntercompanyAttributionStore.cs:51](../../../../src/Meridian.Storage/Ledger/FileLegacyIntercompanyAttributionStore.cs#L51) |  |
 
+## FileTradeFillLedgerJournalStore
+
+Qualified name: <code>Meridian.Storage.Ledger.FileTradeFillLedgerJournalStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:33](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L33).
+
+File-backed journal store for execution trade-fill postings when no Postgres ledger is configured. Journal entries live in a hash-chained FileLedgerJournalLog; the posting envelope that the governed posting path compares on replay (aggregate, period, command, policy, rule and source identities) lives in a separate fsynced write-ahead log.
+
+```csharp
+public sealed class FileTradeFillLedgerJournalStore : ILedgerJournalStore, ILedgerPostingIdentityCollisionLookup, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileTradeFillLedgerJournalStore(string directory, string scopeId, LedgerPolicy? policy);</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:57](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L57) |  |
+| <code>public string RootDirectory { get; }</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:74](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L74) | Directory that holds this scope&#x27;s envelope WAL and journal. |
+| <code>public string ScopeId { get; }</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:77](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L77) | Posting scope the journal belongs to. |
+| <code>public static string DirectoryFor(string root, string scopeId);</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:83](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L83) | Default directory for scopeId under root. Scopes are hashed so any scope id is a safe directory name and two scopes can never share a journal. |
+| <code>public async Task&lt;LedgerJournalChainVerification&gt; VerifyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:95](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L95) | Loads and verifies the journal chain and its envelope bindings. Call before the host starts so a damaged ledger stops startup instead of surfacing on the first fill. |
+| <code>public async Task&lt;global::Meridian.Ledger.Ledger&gt; LoadLedgerAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:114](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L114) | Returns a fresh ledger rebuilt from every retained journal, in posting order. |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; GetAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:129](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L129) | Every retained journal record, in posting order. |
+| <code>public async Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:144](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L144) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:194](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L194) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:214](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L214) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; GetByPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:229](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L229) |  |
+| <code>public Task&lt;LedgerAccountingPeriod?&gt; GetPeriodAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:244](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L244) |  |
+| <code>public Task&lt;IReadOnlyList&lt;LedgerAccountingPeriod&gt;&gt; ListPeriodsAsync(Guid? ledgerBookId = null, string? status = null, string? fundProfileId = null, Guid? fundStructureNodeId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:248](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L248) |  |
+| <code>public Task&lt;LedgerAccountingPeriod&gt; SavePeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord? closeEvent = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:257](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L257) |  |
+| <code>public Task&lt;LedgerBookRecord?&gt; GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:265](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L265) |  |
+| <code>public Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt; ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null, FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:269](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L269) |  |
+| <code>public Task&lt;LedgerBookRecord&gt; SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:277](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L277) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:359](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L359) |  |
+
 ## FiscalYearCloseProjection
 
 Qualified name: <code>Meridian.Storage.Ledger.FiscalYearCloseProjection</code>. Kind: `class`.
@@ -906,21 +941,3 @@ Declared public members:
 | <code>Task&lt;FiscalYearClosePlanDto&gt; GetFiscalYearClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:8](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L8) |  |
 | <code>Task&lt;FiscalYearCloseReceiptDto?&gt; GetFiscalYearCloseReceiptAsync(Guid ledgerBookId, int fiscalYear, Guid? receiptId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:11](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L11) |  |
 | <code>Task&lt;FiscalYearCloseReceiptDto&gt; FinalizeFiscalYearCloseAsync(Guid ledgerBookId, int fiscalYear, FinalizeFiscalYearCloseRequestDto request, string actor, string controllerRole, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:14](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L14) |  |
-
-## IGovernedLedgerPostingTarget
-
-Qualified name: <code>Meridian.Storage.Ledger.IGovernedLedgerPostingTarget</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:13](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L13).
-
-Durable posting seam used after a governed workflow has approved a journal write. The workflow remains responsible for validation and approval; this target owns the idempotent handoff to the authoritative journal store.
-
-```csharp
-public interface IGovernedLedgerPostingTarget
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;GovernedLedgerPostingResult&gt; PostAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:15](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L15) |  |
