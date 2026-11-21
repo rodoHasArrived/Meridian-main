@@ -9,12 +9,61 @@ using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Meridian.Tests.Strategies;
 
 public sealed class StrategyRunReadServiceTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetRunDetail_PaperQualityUsesOneAuthorizedPostedCaptureAndExactFillIdentity(bool matchesExpectedFill)
+    {
+        var run = BuildCompletedRun("posted-quality", "quality-strategy", "Quality", 101_000m, 1000m, .01m,
+            1000m, 0m, 1, 1d, 0m);
+        run = run with
+        {
+            RunType = RunType.Paper,
+            ParameterSet = new Dictionary<string, string>
+            {
+                ["workstationTenantId"] = "tenant-alpha", ["workstationCompanyId"] = "company-alpha"
+            },
+            Metrics = run.Metrics! with { Ledger = new Meridian.Ledger.Ledger() }
+        };
+        var expectedFill = run.Metrics!.Fills.Single().FillId;
+        var postedFill = matchesExpectedFill ? expectedFill : Guid.NewGuid();
+        var time = run.EndedAt!.Value;
+        var date = DateOnly.FromDateTime(time.UtcDateTime);
+        var tags = new Dictionary<string, string>(Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Create([
+            new(ProviderId: "fixture", EventReference: "retained-paper-price", ObservedAt: time,
+                Repaired: matchesExpectedFill, GapFilled: false, QualityScore: .95, QualityThreshold: .8,
+                QualityAssessedAt: time, AssessmentFrom: date, AssessmentTo: date)]))
+        {
+            [LedgerQuery.StrategyRunIdTag] = run.RunId, [LedgerQuery.AccountingRunIdTag] = run.RunId
+        };
+        var posted = new Meridian.Ledger.Ledger();
+        posted.PostLines(time, "retained trade", [(LedgerAccounts.Cash, 100m, 0m), (LedgerAccounts.RealizedGain, 0m, 100m)],
+            new JournalEntryMetadata(FillId: postedFill, Tags: tags));
+        posted.PostLines(time, "retained fee", [(LedgerAccounts.CommissionExpense, 1m, 0m), (LedgerAccounts.Cash, 0m, 1m)],
+            new JournalEntryMetadata(FillId: postedFill, Tags: tags));
+        var scope = new StrategyRunReadScope("tenant-alpha", "company-alpha");
+        var source = new Mock<IStrategyRunLedgerSource>(MockBehavior.Strict);
+        source.Setup(service => service.ReadAsync(It.Is<StrategyRunEntry>(entry => entry.RunId == run.RunId), scope,
+            It.IsAny<CancellationToken>())).ReturnsAsync(posted);
+        source.Setup(service => service.GetPostingChart(posted, It.IsAny<DateTimeOffset?>())).Returns(StandardChartOfAccounts.Instance);
+        source.Setup(service => service.GetBalanceComparisonUnavailableReason(posted)).Returns("Run activity is not an account balance.");
+        var store = new StrategyRunStore();
+        await store.RecordRunAsync(run);
+        var reader = new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService(), postedLedgerSource: source.Object);
+
+        var warnings = (await reader.GetRunDetailAsync(run.RunId, scope))!.ReplayProvenance!.DataQualityWarnings!;
+
+        warnings.Should().ContainSingle().Which.Kind.Should().Be(matchesExpectedFill ? "Repaired" : "Unknown");
+        warnings[0].AffectedFillCount.Should().Be(1, "fee journals cannot duplicate a fill and another fill cannot replace missing evidence");
+        source.Verify(service => service.ReadAsync(It.IsAny<StrategyRunEntry>(), scope, It.IsAny<CancellationToken>()), Times.Once);
+    }
 
     [Theory]
     [InlineData(true)]
