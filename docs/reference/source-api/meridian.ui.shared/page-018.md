@@ -674,7 +674,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;SecurityInstrumentTermsDto?&gt; ReadAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:18](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L18) |  |
-| <code>public static SecurityInstrumentTermsDto Project(SecurityDetailDto detail, SecurityEconomicDefinitionRecord? economic, ISecurityAssetProfileCatalog? profiles, DateTimeOffset retrievedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:31](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L31) |  |
+| <code>public static SecurityInstrumentTermsDto Project(SecurityDetailDto detail, SecurityEconomicDefinitionRecord? economic, ISecurityAssetProfileCatalog? profiles, DateTimeOffset retrievedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:32](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L32) |  |
 
 ## SecurityMasterExceptionCaseworkService
 

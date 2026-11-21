@@ -78,7 +78,8 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
             // Empty adapter is still valid — the strategy will produce zero trades and the UI surfaces that.
             return new CoveredCallChainProviderAdapter(
                 new Dictionary<DateOnly, IReadOnlyList<OptionCandidateInfo>>(),
-                _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>()) { Provenance = provenance };
+                _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>())
+            { Provenance = provenance };
         }
 
         // Slice 1: production IOptionsChainProvider implementations return a live (current-time)
@@ -131,7 +132,8 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
                 normalisedSymbol, from, to);
             return new CoveredCallChainProviderAdapter(
                 new Dictionary<DateOnly, IReadOnlyList<OptionCandidateInfo>>(),
-                _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>()) { Provenance = provenance };
+                _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>())
+            { Provenance = provenance };
         }
 
         // Fan the snapshot out across every trading-day date in [from, to]. Each scan date sees the
@@ -159,7 +161,8 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
 
         return new CoveredCallChainProviderAdapter(
             snapshotsByDate,
-            _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>()) { Provenance = provenance };
+            _loggerFactory.CreateLogger<CoveredCallChainProviderAdapter>())
+        { Provenance = provenance };
     }
 
     /// <inheritdoc/>

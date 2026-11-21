@@ -50,8 +50,11 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         var request = BuildCommand().Import with
         {
             Document = new StatementSourceDocument("review.csv", "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\nexternal-alpha,AAPL,1,100,0,position,2026-06-30,USD"u8.ToArray()),
-            ConnectorId = null, AccountingScope = AccountingScope,
-            TenantId = QueueScope.TenantId, CompanyId = QueueScope.CompanyId, AllowAcceptAsBreak = true
+            ConnectorId = null,
+            AccountingScope = AccountingScope,
+            TenantId = QueueScope.TenantId,
+            CompanyId = QueueScope.CompanyId,
+            AllowAcceptAsBreak = true
         };
         var preview = await imports.PreviewReviewAsync(request);
         preview.Rows.Single().CanAcceptAsBreak.Should().BeTrue();

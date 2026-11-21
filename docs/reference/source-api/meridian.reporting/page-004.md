@@ -374,7 +374,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string Format = &quot;report-run-review/v1&quot;;</code> | [src/Meridian.Reporting/ReportingRunReview.cs:47](../../../../src/Meridian.Reporting/ReportingRunReview.cs#L47) |  |
 | <code>public static RetainedReportingRunReview Build(GovernedReportingRun current, ReportingOutputManifest currentManifest, GovernedReportingRun? baseline, ReportingOutputManifest? baselineManifest, ReportingReviewMaterialityPolicy? policy = null);</code> | [src/Meridian.Reporting/ReportingRunReview.cs:49](../../../../src/Meridian.Reporting/ReportingRunReview.cs#L49) |  |
-| <code>public static bool Comparable(GovernedReportingRun current, ReportingOutputManifest currentManifest, GovernedReportingRun prior, ReportingOutputManifest priorManifest) =&gt; …;</code> | [src/Meridian.Reporting/ReportingRunReview.cs:165](../../../../src/Meridian.Reporting/ReportingRunReview.cs#L165) |  |
+| <code>public static bool Comparable(GovernedReportingRun current, ReportingOutputManifest currentManifest, GovernedReportingRun prior, ReportingOutputManifest priorManifest) =&gt; …;</code> | [src/Meridian.Reporting/ReportingRunReview.cs:173](../../../../src/Meridian.Reporting/ReportingRunReview.cs#L173) |  |
 
 ## ReportingRunReviewJsonContext
 

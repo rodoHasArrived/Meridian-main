@@ -300,7 +300,7 @@
       "waitForSelectors": [
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] dd:has-text(\"run-42:cash\")"
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -335,7 +335,7 @@
         "#reconciliation-break-queue tr[data-dense-row-id=\"run-42:cash\"][aria-selected=\"true\"]",
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] dd:has-text(\"run-42:cash\")"
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
       ],
       "waitForAbsentTexts": [
         "Loading reconciliation break queue...",
@@ -674,17 +674,17 @@
       "waitForTexts": [
         "Cash variance over tolerance.",
         "Open reconciliation casework",
-        "Review retained evidence",
-        "Source lineage",
+        "Retained evidence",
+        "Retained comparison and lineage",
         "Disagreement",
         "Resolve",
         "Timeline and discussion"
       ],
       "waitForSelectors": [
-        "a[href=\"/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=run-42%3Acash\"]",
+        "[aria-label=\"Case inspector\"] a[href=\"/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=run-42%3Acash\"]:visible",
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] dd:has-text(\"run-42:cash\")"
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -1769,7 +1769,7 @@
       "waitForSelectors": [
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] dd:has-text(\"run-42:cash\")"
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -1856,12 +1856,13 @@
         "/api/fund-structure/reporting/runs/report-run-investor-202605/review"
       ],
       "waitForTexts": [
-        "report-run-investor-202605",
+        "Current retained version 6",
         "No prior approved comparable run.",
         "Materiality not assessed"
       ],
       "waitForSelectors": [
-        "#tab-panel-changes:not([hidden])"
+        "[role=\"tab\"][data-tab-id=\"changes\"][aria-selected=\"true\"]",
+        "[role=\"tabpanel\"]:not([hidden])"
       ],
       "waitForAbsentTexts": [
         "Loading retained review evidence",
@@ -1965,7 +1966,7 @@
         "Checklist",
         "Approvals",
         "Evidence",
-        "3/7 lanes ready across 1 close workflow.",
+        "3/7 workstreams ready across 1 close workflow.",
         "Balanced journal preview must be validated before posting."
       ],
       "waitForAbsentTexts": [
@@ -2019,12 +2020,13 @@
       ],
       "waitForTexts": [
         "Positions by account",
-        "sec-dev-001",
+        "Ticker AAPL",
         "alpaca-roth",
         "38 units"
       ],
       "waitForSelectors": [
         "[role=\"tab\"][data-tab-id=\"positions\"][aria-selected=\"true\"]",
+        "[data-position-source=\"brokerage-household\"] table[aria-label=\"Instrument positions by account\"]",
         "[role=\"tabpanel\"]:not([hidden]) tbody tr:has-text(\"alpaca-roth\")"
       ],
       "waitForAbsentTexts": [
@@ -2081,7 +2083,7 @@
         "Checklist",
         "Approvals",
         "Evidence",
-        "3/7 lanes ready across 1 close workflow.",
+        "3/7 workstreams ready across 1 close workflow.",
         "Balanced journal preview must be validated before posting."
       ],
       "waitForAbsentTexts": [

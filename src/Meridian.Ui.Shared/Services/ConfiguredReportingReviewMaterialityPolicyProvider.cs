@@ -19,7 +19,8 @@ public sealed class ConfiguredReportingReviewMaterialityPolicyProvider(Compositi
     private static string NormalizeThreshold(string input)
     {
         var text = input.Trim();
-        if (text.Length is 0 or > 1024) throw new JsonException("A bounded decimal threshold string is required.");
+        if (text.Length is 0 or > 1024)
+            throw new JsonException("A bounded decimal threshold string is required.");
         var negative = text[0] == '-';
         var unsigned = text[0] is '+' or '-' ? text[1..] : text;
         var parts = unsigned.Split('.');
@@ -42,7 +43,8 @@ public sealed class ConfiguredReportingReviewMaterialityPolicyProvider(Compositi
     {
         ct.ThrowIfCancellationRequested();
         var json = configuration[ConfigurationKey];
-        if (string.IsNullOrWhiteSpace(json)) return ValueTask.FromResult<ReportingReviewMaterialityPolicy?>(null);
+        if (string.IsNullOrWhiteSpace(json))
+            return ValueTask.FromResult<ReportingReviewMaterialityPolicy?>(null);
         IReadOnlyList<ReportingReviewMaterialityPolicy> policies;
         try
         {
@@ -53,10 +55,12 @@ public sealed class ConfiguredReportingReviewMaterialityPolicyProvider(Compositi
                     throw new JsonException("Explicit metric policies are required.");
                 foreach (var entryMetric in metrics)
                 {
-                    if (entryMetric is not JsonObject metric) throw new JsonException("Each metric policy must be an object.");
+                    if (entryMetric is not JsonObject metric)
+                        throw new JsonException("Each metric policy must be an object.");
                     foreach (var name in new[] { "absoluteVariance", "relativeVariancePercent" })
                     {
-                        if (!metric.TryGetPropertyValue(name, out var threshold) || threshold is null) continue;
+                        if (!metric.TryGetPropertyValue(name, out var threshold) || threshold is null)
+                            continue;
                         if (threshold is not JsonValue value || !value.TryGetValue<string>(out var text))
                             throw new JsonException("Materiality thresholds require decimal strings or null; JSON numbers may round approved precision.");
                         metric[name] = NormalizeThreshold(text);
@@ -67,10 +71,12 @@ public sealed class ConfiguredReportingReviewMaterialityPolicyProvider(Compositi
                 ?? throw new JsonException("A policy array is required.");
         }
         catch (JsonException exception) { throw new InvalidDataException("Reporting review policy configuration is invalid.", exception); }
-        foreach (var policy in policies) ReportingReviewMateriality.ValidatePolicy(policy);
+        foreach (var policy in policies)
+            ReportingReviewMateriality.ValidatePolicy(policy);
         var matches = policies.Where(p => p.Scope == scope && p.TemplateId == templateId
             && p.TemplateVersion == templateVersion && p.Currency == currency).ToArray();
-        if (matches.Length > 1) throw new InvalidDataException("Multiple reporting review policies match the same scope, template revision and currency.");
+        if (matches.Length > 1)
+            throw new InvalidDataException("Multiple reporting review policies match the same scope, template revision and currency.");
         return ValueTask.FromResult(matches.SingleOrDefault());
     }
 }

@@ -57,12 +57,18 @@ public sealed class AssetPositionMarketValuationServiceTests
         var f = new AssetPositionValuationFixture();
         var position = f.Position;
         var state = f.State;
-        if (mismatch == "account") position = position with { PrimaryAccountId = "foreign-account" };
-        if (mismatch == "book-owner") position = position with { BookContext = position.BookContext with { FundProfileId = "foreign-fund" } };
-        if (mismatch == "currency") state = state with { Currency = "EUR" };
-        if (mismatch == "short") position = position with { PositionSide = BookPositionSides.Short };
-        if (mismatch == "state-date") state = state with { AsOfDate = f.Request.ValuationDate.AddDays(-1) };
-        if (mismatch == "foreign-source") state = state with { SourceEvent = new EconomicEventReferenceDto(Guid.NewGuid(), "Source", 1, state.AsOfDate, f.AsOf, "test") { SecurityId = Guid.NewGuid() } };
+        if (mismatch == "account")
+            position = position with { PrimaryAccountId = "foreign-account" };
+        if (mismatch == "book-owner")
+            position = position with { BookContext = position.BookContext with { FundProfileId = "foreign-fund" } };
+        if (mismatch == "currency")
+            state = state with { Currency = "EUR" };
+        if (mismatch == "short")
+            position = position with { PositionSide = BookPositionSides.Short };
+        if (mismatch == "state-date")
+            state = state with { AsOfDate = f.Request.ValuationDate.AddDays(-1) };
+        if (mismatch == "foreign-source")
+            state = state with { SourceEvent = new EconomicEventReferenceDto(Guid.NewGuid(), "Source", 1, state.AsOfDate, f.AsOf, "test") { SecurityId = Guid.NewGuid() } };
         position = position with { CurrentEconomicState = state };
         f.Snapshot = f.Snapshot with { BookPositions = mismatch == "ambiguous" ? [position, position] : [position], PositionEconomicStates = [state] };
         var result = await f.ValueAsync();
@@ -94,15 +100,20 @@ public sealed class AssetPositionMarketValuationServiceTests
     public async Task RequiresReplayableTypedFreshPriceEvidence(string failure)
     {
         var f = new AssetPositionValuationFixture();
-        if (failure == "stale") f.Selection = f.Selection with { IsStaleFallback = true, DaysStale = 90 };
-        if (failure == "missing-receipt") f.Replay = null;
-        if (failure == "changed-receipt") f.Replay = f.Selection with { GoldenCopyPrice = 99m };
-        if (failure == "unspecified-unit") f.Selection = f.Selection with { Unit = SecurityPriceUnit.Unspecified };
+        if (failure == "stale")
+            f.Selection = f.Selection with { IsStaleFallback = true, DaysStale = 90 };
+        if (failure == "missing-receipt")
+            f.Replay = null;
+        if (failure == "changed-receipt")
+            f.Replay = f.Selection with { GoldenCopyPrice = 99m };
+        if (failure == "unspecified-unit")
+            f.Selection = f.Selection with { Unit = SecurityPriceUnit.Unspecified };
         var result = await f.ValueAsync();
         result.Status.Should().Be("Blocked");
         result.MarketValue.Should().BeNull();
         result.UnrealizedPnl.Should().BeNull();
-        if (failure == "stale") result.FreshnessStatus.Should().Be("Stale");
+        if (failure == "stale")
+            result.FreshnessStatus.Should().Be("Stale");
     }
 
     [Fact]
@@ -197,8 +208,10 @@ public sealed class AssetPositionMarketValuationServiceTests
     public async Task NeverValuesCurrentProjectionOnlyOrFutureEffectiveTerms(string failure)
     {
         var f = new AssetPositionValuationFixture();
-        if (failure == "future-effective") f.Security = f.Security with { EffectiveFrom = f.AsOf.AddDays(1) };
-        else f.Query.GetRecordedByIdAsOfAsync(Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns((SecurityDetailDto?)null);
+        if (failure == "future-effective")
+            f.Security = f.Security with { EffectiveFrom = f.AsOf.AddDays(1) };
+        else
+            f.Query.GetRecordedByIdAsOfAsync(Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns((SecurityDetailDto?)null);
         var result = await f.ValueAsync();
         result.Status.Should().Be("Blocked");
         result.MarketValue.Should().BeNull();

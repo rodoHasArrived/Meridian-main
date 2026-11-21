@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select } from "@/components/ui/select";
 import type { CorporateAction } from "@/types";
 import type { AssetResource } from "./asset-detail-resource";
 
@@ -61,15 +62,14 @@ export function AssetDetailEvents({
       {!compact ? (
         <label className="flex items-center gap-2 text-sm">
           Event dates
-          <select
-            className="rounded border border-border bg-background px-2 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          <Select
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
           >
             {["All", ...groups].map((group) => (
               <option key={group}>{group}</option>
             ))}
-          </select>
+          </Select>
         </label>
       ) : null}
       <p className="text-xs text-muted-foreground">

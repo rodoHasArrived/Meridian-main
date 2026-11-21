@@ -15,11 +15,17 @@ internal static class AmountPassportTestRoutes
                 .Replace("{subjectId}", Uri.EscapeDataString(identity.SubjectId), StringComparison.Ordinal),
             new Dictionary<string, string?>
             {
-                ["asOf"] = identity.AsOf, ["revision"] = identity.Revision,
-                ["tenantId"] = scope.TenantId, ["companyId"] = scope.CompanyId, ["basis"] = scope.Basis,
-                ["fundProfileId"] = scope.FundProfileId, ["ledgerBookId"] = scope.LedgerBookId?.ToString("D"),
-                ["periodId"] = scope.PeriodId?.ToString("D"), ["entityId"] = scope.EntityId,
-                ["accountId"] = scope.AccountId, ["organizationId"] = scope.OrganizationId
+                ["asOf"] = identity.AsOf,
+                ["revision"] = identity.Revision,
+                ["tenantId"] = scope.TenantId,
+                ["companyId"] = scope.CompanyId,
+                ["basis"] = scope.Basis,
+                ["fundProfileId"] = scope.FundProfileId,
+                ["ledgerBookId"] = scope.LedgerBookId?.ToString("D"),
+                ["periodId"] = scope.PeriodId?.ToString("D"),
+                ["entityId"] = scope.EntityId,
+                ["accountId"] = scope.AccountId,
+                ["organizationId"] = scope.OrganizationId
             });
     }
 }

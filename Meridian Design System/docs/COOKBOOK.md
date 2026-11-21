@@ -95,6 +95,20 @@ withhold the read and offer asset reload. `AssetMarketValuation` presents server
 with currency and comparison basis, independent partial/error states, and inspectable model/input
 provenance. It must never reconstruct a missing amount from a symbol quote in the browser.
 
+### Shared unavailable-condition context
+
+Use browser `FinancialValue` for exact amounts with their supplied currency/unit, data condition,
+and proof. When several values share an unavailable condition, render one visible explanation
+with a `useId` identity and pass it as `conditionContextId` to each value. Individual reasons,
+basis, freshness, amount identity, and proof controls remain available; focused controls reference
+the shared explanation through `aria-describedby`. Other conditions keep their inline labels.
+The shared notice describes condition evidence, not whether an amount is present or reconciled.
+
+Keep immutable record IDs separate from display labels in read models. Use the exact ID for
+selection, commands, proof requests, and return links; retain it in a native technical disclosure.
+Render supplied business names, dates, and versions in primary summaries. Use the shared browser
+`Select` primitive so choices keep consistent labels, keyboard behavior, and focus treatment.
+
 ### Reconciliation queue–inspector pilot
 
 The browser adapter combines `WorkspaceWorkbenchShell`, `DenseDataTable` and

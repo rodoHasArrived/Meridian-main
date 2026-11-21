@@ -186,7 +186,8 @@ public sealed class AssetPositionMarketValuationService(
             Block("CarryingAmountUnavailable", "The retained projection carries no carrying amount; no cost basis is inferred.", "UnrealizedPnl");
         else
         {
-            try { comparison = checked(marketValue.Value - state.CarryingAmount.Value); }
+            try
+            { comparison = checked(marketValue.Value - state.CarryingAmount.Value); }
             catch (OverflowException) { Block("ComparisonOverflow", "The mark-to-carrying comparison exceeds the supported decimal range.", "UnrealizedPnl"); }
         }
         return Result();

@@ -18,7 +18,8 @@ public sealed class SecurityInstrumentTermsReadService(
     public async Task<SecurityInstrumentTermsDto?> ReadAsync(Guid securityId, CancellationToken ct = default)
     {
         var detail = await query.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-        if (detail is null) return null;
+        if (detail is null)
+            return null;
         if (detail.SecurityId != securityId)
             throw new InvalidOperationException("Canonical terms returned a different security identity.");
 
@@ -42,7 +43,8 @@ public sealed class SecurityInstrumentTermsReadService(
         var declaredFormat = SecurityTermsEnvelope.GetDeclaredFormat(detail.AssetSpecificTerms);
         var format = declaredFormat ?? "Undeclared";
         var termsVersion = SecurityTermsEnvelope.ResolveAssetClassTermsVersion(detail.AssetSpecificTerms);
-        if (!supported) diagnostics.Add($"Asset class '{detail.AssetClass}' has no registered term schema; supplied values remain unvalidated.");
+        if (!supported)
+            diagnostics.Add($"Asset class '{detail.AssetClass}' has no registered term schema; supplied values remain unvalidated.");
         if (declaredFormat is null)
         {
             supported = false;
@@ -80,7 +82,8 @@ public sealed class SecurityInstrumentTermsReadService(
         }
 
         var source = Source(detail, economic);
-        if (source.Status != SecurityInstrumentTermsSourceStatus.Matched) diagnostics.Add(source.Summary);
+        if (source.Status != SecurityInstrumentTermsSourceStatus.Matched)
+            diagnostics.Add(source.Summary);
         var context = new ProjectionContext(assetClass, termsVersion, detail.AssetSpecificTerms, profile, diagnostics);
         var fields = new List<SecurityInstrumentTermDto>();
         fields.AddRange(context.Block(detail.CommonTerms, "/commonTerms", "Common terms", []));
@@ -101,8 +104,14 @@ public sealed class SecurityInstrumentTermsReadService(
         var terms = Raw(detail.AssetSpecificTerms);
         var fingerprintInput = JsonSerializer.Serialize(new
         {
-            detail.SecurityId, detail.AssetClass, detail.Currency, detail.Version,
-            detail.EffectiveFrom, detail.EffectiveTo, CommonTerms = common, AssetSpecificTerms = terms
+            detail.SecurityId,
+            detail.AssetClass,
+            detail.Currency,
+            detail.Version,
+            detail.EffectiveFrom,
+            detail.EffectiveTo,
+            CommonTerms = common,
+            AssetSpecificTerms = terms
         });
         var fingerprint = Sha256Digest.ComputeUtf8(fingerprintInput);
         return new(detail.SecurityId, detail.AssetClass, detail.Currency, detail.Version,
@@ -131,10 +140,12 @@ public sealed class SecurityInstrumentTermsReadService(
     {
         profileId = null;
         profileVersion = null;
-        if (terms.ValueKind != JsonValueKind.Object) return null;
+        if (terms.ValueKind != JsonValueKind.Object)
+            return null;
         var ids = Properties(terms, "customProfileId");
         var versions = Properties(terms, "profileVersion");
-        if (ids.Count == 0 && versions.Count == 0) return null;
+        if (ids.Count == 0 && versions.Count == 0)
+            return null;
         if (ids.Count != 1 || versions.Count != 1 || ids[0].Value.ValueKind != JsonValueKind.String
             || versions[0].Value.ValueKind != JsonValueKind.Number || !versions[0].Value.TryGetInt32(out var version) || version < 1)
         {
@@ -155,7 +166,8 @@ public sealed class SecurityInstrumentTermsReadService(
 
     private static bool HasInvalidEnvelope(JsonElement terms)
     {
-        if (terms.ValueKind is not JsonValueKind.Object) return false;
+        if (terms.ValueKind is not JsonValueKind.Object)
+            return false;
         var formats = Properties(terms, SecurityTermsEnvelope.FormatKey);
         var versions = Properties(terms, SecurityTermsEnvelope.AssetClassTermsVersionKey);
         var codecVersions = Properties(terms, SecurityTermsEnvelope.SchemaVersionKey);
@@ -217,7 +229,8 @@ public sealed class SecurityInstrumentTermsReadService(
                 message = Validate(value, field);
                 if (field.SinceTermsVersion > termsVersion)
                     message = "This field was introduced after the payload's declared terms version.";
-                if (message is not null) state = SecurityInstrumentTermState.Invalid;
+                if (message is not null)
+                    state = SecurityInstrumentTermState.Invalid;
             }
             var toleratedReadAbsence = state == SecurityInstrumentTermState.Missing && field?.AbsentReadDefault is not null;
             if (state == SecurityInstrumentTermState.Missing && field?.Required == true)
@@ -228,7 +241,8 @@ public sealed class SecurityInstrumentTermsReadService(
                 message = "Required by the retained asset-class schema; an explicit null was supplied.";
             if (field is null && message is not null && !ambiguous && value.ValueKind != JsonValueKind.Undefined)
                 state = SecurityInstrumentTermState.Invalid;
-            if (message is not null && !toleratedReadAbsence) diagnostics.Add($"{path}: {message}");
+            if (message is not null && !toleratedReadAbsence)
+                diagnostics.Add($"{path}: {message}");
 
             IReadOnlyList<SecurityInstrumentTermDto> children = [];
             if (depth < 32)
@@ -288,7 +302,8 @@ public sealed class SecurityInstrumentTermsReadService(
                 SecurityAssetTermFieldType.Object => value.ValueKind == JsonValueKind.Object,
                 _ => false
             };
-            if (!valid) return $"Retained JSON does not match declared type {field.Type}; its original value is preserved.";
+            if (!valid)
+                return $"Retained JSON does not match declared type {field.Type}; its original value is preserved.";
             if (value.ValueKind == JsonValueKind.String && (!field.Allows(value.GetString()) || !field.SatisfiesConvention(value.GetString())))
                 return "Retained string does not match the declared vocabulary or convention; no substitute was selected.";
             return null;
@@ -307,8 +322,8 @@ public sealed class SecurityInstrumentTermsReadService(
                 if (rateField.HonorsRecordUnit && !schemaPath.Contains('.')
                     && !SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, assetTerms))
                 {
-                    var conventionField = SecurityAssetTermsSchema.Field(assetClass, "scheduleConventions");
-                    var conventions = Properties(assetTerms, "scheduleConventions");
+                    var conventionField = SecurityAssetTermsSchema.Field(assetClass, SecurityVersionedTerms.ScheduleConventionsKey);
+                    var conventions = Properties(assetTerms, SecurityVersionedTerms.ScheduleConventionsKey);
                     if (conventionField is not null && conventionField.SinceTermsVersion <= termsVersion
                         && termsVersion <= SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass) && conventions.Count == 1)
                     {
@@ -330,8 +345,10 @@ public sealed class SecurityInstrumentTermsReadService(
             // an instrument's reporting currency does not prove strike currency or a quote basis.
             var companion = key switch
             {
-                "couponRate" => "couponRateUnit", "yield" or "yieldRate" => "yieldUnit",
-                "strike" or "strikePrice" => "strikeCurrency", "price" or "cleanPrice" => "quoteUnit",
+                "couponRate" => "couponRateUnit",
+                "yield" or "yieldRate" => "yieldUnit",
+                "strike" or "strikePrice" => "strikeCurrency",
+                "price" or "cleanPrice" => "quoteUnit",
                 "callPrice" or "putPrice" => "priceBasis",
                 _ => null
             };

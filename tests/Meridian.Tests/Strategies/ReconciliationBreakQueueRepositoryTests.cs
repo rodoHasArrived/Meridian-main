@@ -2986,10 +2986,12 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         {
             if (node is JsonArray array)
             {
-                foreach (var child in array) StripWireFields(child);
+                foreach (var child in array)
+                    StripWireFields(child);
                 return;
             }
-            if (node is not JsonObject obj) return;
+            if (node is not JsonObject obj)
+                return;
             foreach (var key in new[] { "varianceExact", "toleranceBandExact", "permittedCommands", "expectedExact", "actualExact", "toleranceExact" })
                 obj.Remove(key);
             foreach (var (name, value) in obj.ToArray())
@@ -3002,7 +3004,8 @@ public sealed class ReconciliationBreakQueueRepositoryTests
                     obj[name] = historical;
                     obj[name + "Hash"] = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(historical))).ToLowerInvariant();
                 }
-                else StripWireFields(value);
+                else
+                    StripWireFields(value);
             }
         }
     }

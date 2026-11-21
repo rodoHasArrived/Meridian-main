@@ -31,8 +31,12 @@ public sealed partial class WorkstationEndpointsTests
             .Returns(new ScopedAuthorizationDecisionDto(false, "ops-user", UserPermission.ViewTrades, AccessScopeKindDto.Account, f.Book.FundStructureNodeId, "Denied"));
         await using var app = await CreateAppAsync(services =>
         {
-            services.AddSingleton(books); services.AddSingleton(registry); services.AddSingleton(f.Store);
-            services.AddSingleton(f.Query); services.AddSingleton(f.Pricing); services.AddSingleton(authorization);
+            services.AddSingleton(books);
+            services.AddSingleton(registry);
+            services.AddSingleton(f.Store);
+            services.AddSingleton(f.Query);
+            services.AddSingleton(f.Pricing);
+            services.AddSingleton(authorization);
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityValuationModel>(new Meridian.Application.SecurityMaster.Valuation.QuotedPriceValuationModel(f.Pricing));
         }, currentUserPermissions: UserPermission.ViewTrades);
         var request = f.Request;
@@ -53,8 +57,11 @@ public sealed partial class WorkstationEndpointsTests
             .Returns(new ScopedAuthorizationDecisionDto(true, "ops-user", UserPermission.ViewTrades, AccessScopeKindDto.Account, f.Book.FundStructureNodeId, "Authorized"));
         await using var app = await CreateAppAsync(services =>
         {
-            services.AddSingleton(books); services.AddSingleton(f.Store); services.AddSingleton(f.Query);
-            services.AddSingleton(f.Pricing); services.AddSingleton(authorization);
+            services.AddSingleton(books);
+            services.AddSingleton(f.Store);
+            services.AddSingleton(f.Query);
+            services.AddSingleton(f.Pricing);
+            services.AddSingleton(authorization);
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityValuationModel>(new Meridian.Application.SecurityMaster.Valuation.QuotedPriceValuationModel(f.Pricing));
         }, currentUserPermissions: UserPermission.ViewTrades);
         var request = f.Request;

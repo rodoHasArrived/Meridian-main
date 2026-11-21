@@ -241,11 +241,13 @@ public sealed class SecurityInstrumentTermsEndpointsTests
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
-        if (query is not null) builder.Services.AddSingleton(query);
+        if (query is not null)
+            builder.Services.AddSingleton(query);
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            if (permissions.HasValue) context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions.Value;
+            if (permissions.HasValue)
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions.Value;
             await next();
         });
         app.MapSecurityInstrumentTermsEndpoints(Json);

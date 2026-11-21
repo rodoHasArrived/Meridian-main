@@ -64,6 +64,14 @@ Reconciliation case evidence retains exact source, scope, and policy IDs in Evid
 and groups missing comparison context into one explicit notice. Screenshot readiness checks
 exercise the current Match Workbench's retained case evidence.
 
+`FinancialValue.conditionContextId` links unavailable data conditions to one visible shared
+notice in Trial Balance, case comparisons, and instrument positions. Each value keeps its exact
+amount, currency/unit, individual reason, and scoped proof control; the focused proof control
+references the notice through `aria-describedby`. Other conditions remain visible inline.
+Primary summaries use business labels while immutable IDs stay in technical disclosures and
+continue to drive requests, record identity, and evidence links. Reporting review and income
+comparison panels use distinct per-run keys so form updates retain stable review evidence.
+
 Data → Backfills previews the historical adapter's quota, observed budget, and expected cost.
 The same dialog queues, schedules, or previews a provider administrator-approved equivalent.
 Workstation backfill receipts show the submission estimate, waiting states, observed providers,

@@ -37,6 +37,24 @@ const retainedMatch: RetainedStatementCaseEvidence = {
 };
 
 describe("retained reconciliation case evidence", () => {
+  it("retains exact source-run identities under disclosure while keeping clearing state and dates visible", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter><ReconciliationCaseEvidence item={{ ...item, lineage: { ...lineage,
+      observationState: "Cleared", lastObservedRunId: "run-latest-42", clearedByRunId: "run-cleared-43",
+      clearedAt: "2026-11-21T00:00:00Z" } }} /></MemoryRouter>);
+    expect(screen.getByText("Source cleared")).toBeVisible();
+    expect(screen.getByText("Last observed")).toBeVisible();
+    expect(screen.getByText("Source cleared at")).toBeVisible();
+    const identifiers = screen.getByText("Evidence identifiers").closest("details")!;
+    expect(within(identifiers).getByText("run-latest-42")).not.toBeVisible();
+    expect(within(identifiers).getByText("run-cleared-43")).not.toBeVisible();
+    await user.click(within(identifiers).getByText("Evidence identifiers"));
+    expect(within(identifiers).getByText("run-latest-42")).toBeVisible();
+    expect(within(identifiers).getByText("run-cleared-43")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Review retained evidence" })).toHaveAttribute("href",
+      "/reporting/evidence?subjectKind=reconciliation-break&subjectId=cash-break-20");
+  });
+
   it("keeps source identifiers inspectable and groups missing comparison context", async () => {
     const user = userEvent.setup();
     render(<MemoryRouter><ReconciliationCaseEvidence item={{ ...item, lineage: undefined,

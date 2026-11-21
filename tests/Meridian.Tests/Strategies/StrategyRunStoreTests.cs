@@ -220,7 +220,8 @@ public sealed class StrategyRunStoreTests
 
             var changed = retained.ActivationDeferred("Retry scoped launch.") with { FundAccountId = Guid.NewGuid() };
             var changeWithOldHash = () => restarted.RecordRunAsync(changed);
-            await changeWithOldHash.Should().ThrowAsync<ArgumentException>().WithMessage("*fund account*");
+            await changeWithOldHash.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("*input hash does not bind its account or strategy artifact*");
 
             var changeWithNewHash = () => restarted.RecordRunAsync(changed with
             {
@@ -235,6 +236,7 @@ public sealed class StrategyRunStoreTests
             };
             var removeScope = () => restarted.RecordRunAsync(removed);
             await removeScope.Should().ThrowAsync<InvalidOperationException>().WithMessage("*immutable*");
+            (await restarted.GetRunByIdAsync(retained.RunId))!.FundAccountId.Should().Be(accountId);
         }
         finally
         {
@@ -255,7 +257,9 @@ public sealed class StrategyRunStoreTests
             };
             var record = () => store.RecordRunAsync(entry);
 
-            await record.Should().ThrowAsync<ArgumentException>().WithMessage("*fund account*");
+            await record.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("*input hash does not bind its account or strategy artifact*");
+            (await store.GetRunByIdAsync(entry.RunId)).Should().BeNull();
         }
         finally
         {

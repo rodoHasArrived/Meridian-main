@@ -42,7 +42,8 @@ public static partial class WorkstationEndpoints
                 || pricing is Meridian.Application.SecurityMaster.NullSecurityMasterPricingService || models.Length == 0)
                 return Results.Problem("Owned ledger books, retained position projections and valuation/pricing composition are required.", statusCode: StatusCodes.Status503ServiceUnavailable);
             LedgerBookDto? book;
-            try { book = await books.GetBookAsync(ledgerBookId, context.RequestAborted).ConfigureAwait(false); }
+            try
+            { book = await books.GetBookAsync(ledgerBookId, context.RequestAborted).ConfigureAwait(false); }
             catch (KeyNotFoundException) { return EndpointHelpers.Forbidden(); }
             if (book is null || book.LedgerBookId != ledgerBookId || string.IsNullOrWhiteSpace(book.FundProfileId))
                 return EndpointHelpers.Forbidden();
@@ -61,7 +62,8 @@ public static partial class WorkstationEndpoints
                     context, permission, scopeKind, book.FundStructureNodeId, context.RequestAborted).ConfigureAwait(false))
                 { allowed = true; break; }
             }
-            if (!allowed) return EndpointHelpers.Forbidden();
+            if (!allowed)
+                return EndpointHelpers.Forbidden();
             var request = new AssetPositionMarketValuationRequest(securityId, positionId, ledgerBookId,
                 accountId, valuationDate, economicStateId, economicStateVersion, knownAt);
             var service = new AssetPositionMarketValuationService(positions, securities, models, pricing);

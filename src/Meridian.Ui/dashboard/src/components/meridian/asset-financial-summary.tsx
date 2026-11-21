@@ -2,6 +2,7 @@ import { useEffect, useId, useState } from "react";
 import { AssetMarketValuation } from "./asset-market-valuation";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { getAssetOperations, getLiveQuotesSnapshot } from "@/lib/api";
 import { workstationRouteWithQuery } from "@/lib/workspace";
@@ -170,7 +171,7 @@ export function AssetFinancialSummary({
               <label htmlFor={selectorId} className="text-xs text-muted-foreground">
                 Book position
               </label>
-              <select
+              <Select
                 id={selectorId}
                 value={selected?.positionId ?? ""}
                 onChange={(event) =>
@@ -179,7 +180,6 @@ export function AssetFinancialSummary({
                     positionId: event.target.value
                   })
                 }
-                className="min-h-9 rounded-[2px] border border-border bg-background px-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 <option value="">Select a book position</option>
                 {positions.map((position, index) => (
@@ -187,7 +187,7 @@ export function AssetFinancialSummary({
                     Position {index + 1} · {positionLabel(position)}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           ) : null}
           {selected ? (

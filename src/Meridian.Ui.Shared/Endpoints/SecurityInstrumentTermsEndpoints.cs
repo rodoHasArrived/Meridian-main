@@ -16,7 +16,8 @@ public static class SecurityInstrumentTermsEndpoints
 {
     public static void MapSecurityInstrumentTermsEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
-        if (app.Services.GetService<ISecurityMasterQueryService>() is null) return;
+        if (app.Services.GetService<ISecurityMasterQueryService>() is null)
+            return;
 
         app.MapGet(UiApiRoutes.SecurityMasterInstrumentTerms, async (
             Guid securityId,

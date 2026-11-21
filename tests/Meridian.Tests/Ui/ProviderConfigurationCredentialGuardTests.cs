@@ -67,11 +67,12 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
         await using var app = await CreateAppAsync("production", config);
         using var response = await app.GetTestClient().PostAsJsonAsync(route, Request(route, null));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var responseBody = await response.Content.ReadAsStringAsync();
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "the secret-free settings request should be accepted: {0}", responseBody);
         var retained = new CoreConfigStore(ConfigPath).LoadRequired();
         retained.ProviderModules!.Modules!["alpaca"].Credentials!["keyId"].Should().Be("ALPACA_KEY_ID");
         if (route.EndsWith("/alpaca", StringComparison.Ordinal))
-            retained.Alpaca!.Feed.Should().Be("sip");
+            retained.Alpaca!.Feed.Should().Be("iex");
         else
             retained.DataSources!.Sources!.Single().Description.Should().Be("ApiKey is a configuration field name, not a submitted credential.");
     }
@@ -198,7 +199,7 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
         {
             keyId = field == "alpaca-key" ? "synthetic-submitted-key" : null,
             secretKey = field == "alpaca-secret" ? "synthetic-submitted-secret" : null,
-            feed = "sip",
+            feed = "iex",
             useSandbox = true
         };
         return route.EndsWith("/alpaca", StringComparison.Ordinal) ? alpaca : new

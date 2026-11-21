@@ -51,7 +51,8 @@ public static class ReportingReviewMateriality
         ValidatePolicy(policy);
         var unassessed = !completeLineComparison || baseline is null;
         var reasons = new List<string>();
-        if (unassessed) reasons.Add("Materiality not fully assessed: a complete comparable retained line population is required.");
+        if (unassessed)
+            reasons.Add("Materiality not fully assessed: a complete comparable retained line population is required.");
         // Even unchanged missing cells must not turn an absent input into a passing assessment.
         foreach (var metric in policy.Metrics)
         {
@@ -80,7 +81,8 @@ public static class ReportingReviewMateriality
         var assessed = new List<ReportingReviewLine>(lines.Count);
         foreach (var line in lines)
         {
-            if (!line.IsMeasure) { assessed.Add(line); continue; }
+            if (!line.IsMeasure)
+            { assessed.Add(line); continue; }
             var threshold = policy.Metrics.SingleOrDefault(m => m.GridId == line.GridId && m.Column == line.Column);
             var hasDelta = Try(line.Delta, out var delta);
             var hasPrior = Try(line.Previous, out var prior);
@@ -95,8 +97,10 @@ public static class ReportingReviewMateriality
                 var missing = false;
                 if (threshold.RelativeVariancePercent is { } relative)
                 {
-                    if (prior == 0m) missing = true;
-                    else breach |= ExceedsRelative(delta, prior, relative);
+                    if (prior == 0m)
+                        missing = true;
+                    else
+                        breach |= ExceedsRelative(delta, prior, relative);
                 }
                 outcome = breach ? "MaterialException" : missing ? "NotAssessed" : "WithinTolerance";
             }
@@ -126,7 +130,9 @@ public static class ReportingReviewMateriality
             return ((BigInteger)(uint)bits[0] | (BigInteger)(uint)bits[1] << 32 | (BigInteger)(uint)bits[2] << 64,
                 (bits[3] >> 16) & 255);
         }
-        var d = Parts(delta); var p = Parts(prior); var t = Parts(threshold);
+        var d = Parts(delta);
+        var p = Parts(prior);
+        var t = Parts(threshold);
         return d.Coefficient * 100 * BigInteger.Pow(10, p.Scale + t.Scale)
             > p.Coefficient * t.Coefficient * BigInteger.Pow(10, d.Scale);
     }

@@ -26,8 +26,10 @@ public sealed partial class StatementImportService
             ?? throw new InvalidDataException("The retained import receipt is unreadable.");
         var outcomes = receipt.Outcomes.Select(row =>
         {
-            if (!casesByRow.TryGetValue(row.RowId, out var caseId)) return row;
-            if (row.Disposition != "AcceptAsBreak") throw new InvalidDataException("Case admission requires an explicit accepted row disposition.");
+            if (!casesByRow.TryGetValue(row.RowId, out var caseId))
+                return row;
+            if (row.Disposition != "AcceptAsBreak")
+                throw new InvalidDataException("Case admission requires an explicit accepted row disposition.");
             return row with { Status = "AcceptedAsBreak", CaseIds = [caseId] };
         }).ToArray();
         var additions = casesByRow.Where(pair => !receipt.Result.CaseIds.Contains(pair.Value, StringComparer.Ordinal)).ToArray();
@@ -37,7 +39,8 @@ public sealed partial class StatementImportService
             "Review retained statement row evidence and resolve the case.")).ToArray();
         var result = receipt.Result with
         {
-            RowOutcomes = outcomes.Take(ReviewPageSize).ToArray(), TotalRows = outcomes.Length,
+            RowOutcomes = outcomes.Take(ReviewPageSize).ToArray(),
+            TotalRows = outcomes.Length,
             CaseCount = receipt.Result.CaseCount + additions.Length,
             CaseIds = receipt.Result.CaseIds.Concat(additions.Select(pair => pair.Value)).ToArray(),
             ReconciliationCaseLinks = receipt.Result.ReconciliationCaseLinks.Concat(links).ToArray(),
@@ -57,7 +60,8 @@ public sealed partial class StatementImportService
     {
         if (string.IsNullOrWhiteSpace(request.ReviewId))
         {
-            if (request.RowDispositions.Count != 0) throw new InvalidDataException("Row dispositions require a retained preview.");
+            if (request.RowDispositions.Count != 0)
+                throw new InvalidDataException("Row dispositions require a retained preview.");
             return;
         }
         RequireReviewScope(request);
@@ -77,9 +81,11 @@ public sealed partial class StatementImportService
         if (request.Document.Content.Length > _ingressLimits.MaxDocumentBytes)
             return preview;
         var (connector, _) = ResolveConnector(request.Document, request.ConnectorId);
-        if (connector is null) return preview;
+        if (connector is null)
+            return preview;
         var parse = RequireCurrencyEvidence(await connector.ParseAsync(request.Document, ct).ConfigureAwait(false));
-        if (parse.TotalRetainedRows > _ingressLimits.MaxRecords) return preview;
+        if (parse.TotalRetainedRows > _ingressLimits.MaxRecords)
+            return preview;
         // Account mismatch is an authority error, not an exception that may be excluded.
         EnsureParsedAccountAuthority(request.Document, parse.Records, request.ExternalAccountId);
         var binding = ComputeReviewBinding(request, parse);
@@ -99,7 +105,9 @@ public sealed partial class StatementImportService
                 StatementImportReviewJsonContext.Default.StatementImportReviewSnapshot), ct).ConfigureAwait(false);
         return preview with
         {
-            ReviewId = reviewId, Rows = rows.Take(ReviewPageSize).ToArray(), TotalRows = rows.Length,
+            ReviewId = reviewId,
+            Rows = rows.Take(ReviewPageSize).ToArray(),
+            TotalRows = rows.Length,
             RowsRoute = ReviewRoute(reviewId, "rows")
         };
     }
@@ -108,7 +116,8 @@ public sealed partial class StatementImportService
         string reviewId, string tenantId, string companyId, CancellationToken ct = default)
     {
         var path = ReviewPath(reviewId, "preview");
-        if (!File.Exists(path)) return null;
+        if (!File.Exists(path))
+            return null;
         var review = JsonSerializer.Deserialize(await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false),
             StatementImportReviewJsonContext.Default.StatementImportReviewSnapshot)
             ?? throw new InvalidDataException("The retained import review is unreadable.");
@@ -131,7 +140,8 @@ public sealed partial class StatementImportService
     {
         ValidateReviewPage(offset, limit);
         var path = ReviewPath(review.ReviewId, "receipt");
-        if (!File.Exists(path)) return null;
+        if (!File.Exists(path))
+            return null;
         var receipt = JsonSerializer.Deserialize(await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false),
             StatementImportReviewJsonContext.Default.StatementImportReviewReceipt)
             ?? throw new InvalidDataException("The retained row outcome receipt is unreadable.");
@@ -177,7 +187,8 @@ public sealed partial class StatementImportService
         }).ToArray();
         result = result with
         {
-            ReviewId = review.ReviewId, RowOutcomes = outcomes.Take(ReviewPageSize).ToArray(),
+            ReviewId = review.ReviewId,
+            RowOutcomes = outcomes.Take(ReviewPageSize).ToArray(),
             TotalRows = outcomes.Length,
             OutcomesRoute = ReviewRoute(review.ReviewId, "outcomes"),
             NextAction = outcomes.Any(row => row.Status == "Excluded")
@@ -193,7 +204,8 @@ public sealed partial class StatementImportService
     private async Task<StatementParseResult> ApplyReviewedDispositionsAsync(
         StatementImportCommitRequest request, StatementParseResult parse, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(request.ReviewId)) return parse;
+        if (string.IsNullOrWhiteSpace(request.ReviewId))
+            return parse;
         RequireReviewScope(request);
         var review = await GetReviewAsync(request.ReviewId, request.TenantId!, request.CompanyId!, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The retained preview is unavailable in this scope. Preview again.");
@@ -206,7 +218,8 @@ public sealed partial class StatementImportService
         {
             if (!rowIds.TryGetValue(decision.RowId, out var row))
                 throw new InvalidDataException("A row disposition does not belong to this preview.");
-            if (!dispositioned.Add(decision.RowId)) throw new InvalidDataException("A row was dispositioned more than once.");
+            if (!dispositioned.Add(decision.RowId))
+                throw new InvalidDataException("A row was dispositioned more than once.");
             if (decision.Disposition is not ("Exclude" or "AcceptAsBreak"))
                 throw new InvalidDataException("Unknown row disposition.");
             if (string.IsNullOrWhiteSpace(decision.Reason))
@@ -228,7 +241,8 @@ public sealed partial class StatementImportService
         if (request.Document.Content.Length > _ingressLimits.MaxDocumentBytes)
             throw new InvalidDataException("Statement exceeds the import size limit.");
         var (connector, issue) = ResolveConnector(request.Document, request.ConnectorId);
-        if (connector is null) throw new InvalidDataException(issue?.Message ?? "Connector unavailable.");
+        if (connector is null)
+            throw new InvalidDataException(issue?.Message ?? "Connector unavailable.");
         var parse = RequireCurrencyEvidence(await connector.ParseAsync(request.Document, ct).ConfigureAwait(false));
         if (parse.HasErrors || parse.TotalRetainedRows > _ingressLimits.MaxRecords)
             throw new InvalidDataException("Statement source validation failed. Correct the source before importing.");
@@ -282,7 +296,8 @@ public sealed partial class StatementImportService
             record.Currency, record.FeesCommission, record.ExternalTransactionId, record.ActivityCategory, record.ActivitySubtype,
             record.ProviderActivityCode, record.RelatedTransactionId, record.OrderId, record.Description)
         {
-            QuantityExact = record.Quantity.ToString(CultureInfo.InvariantCulture), PriceExact = record.Price.ToString(CultureInfo.InvariantCulture),
+            QuantityExact = record.Quantity.ToString(CultureInfo.InvariantCulture),
+            PriceExact = record.Price.ToString(CultureInfo.InvariantCulture),
             CashAmountExact = record.CashAmount.ToString(CultureInfo.InvariantCulture)
         };
 
@@ -304,7 +319,8 @@ public sealed partial class StatementImportService
         while (true)
         {
             ct.ThrowIfCancellationRequested();
-            try { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+            try
+            { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
             catch (IOException) { await Task.Delay(50, ct).ConfigureAwait(false); }
         }
     }
