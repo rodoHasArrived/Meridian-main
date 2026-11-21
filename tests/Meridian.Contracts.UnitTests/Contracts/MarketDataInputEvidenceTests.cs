@@ -46,6 +46,17 @@ public sealed class MarketDataInputEvidenceTests
     }
 
     [Fact]
+    public void UnknownProviderSentinel_CannotCertifyCleanSourceCoverage()
+    {
+        var input = new MarketDataInputEvidence(ProviderId: "UNKNOWN", Repaired: false, GapFilled: false,
+            QualityScore: 1d, QualityThreshold: .8, QualityAssessedAt: DateTimeOffset.UtcNow,
+            AssessmentFrom: new(2026, 11, 1), AssessmentTo: new(2026, 11, 20));
+
+        MarketDataInputEvidenceTags.BuildWarnings([[input]]).Should().ContainSingle().Which.Kind.Should().Be("Unknown");
+        MarketDataInputEvidenceTags.Freeze([input])![0].ProviderId.Should().BeNull();
+    }
+
+    [Fact]
     public void RepairedAndGapFilledWarnings_CountEachLogicalFillOnceAndNeverInventPnl()
     {
         var input = new MarketDataInputEvidence(ProviderId: "stooq", Repaired: true, GapFilled: true,

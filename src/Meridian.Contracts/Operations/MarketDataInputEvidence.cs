@@ -39,6 +39,8 @@ public static class MarketDataInputEvidenceTags
         return Array.AsReadOnly(inputs.Select(static input =>
         {
             if (input is null) return new MarketDataInputEvidence(EvidenceIssue: "Missing source evidence.");
+            if (string.Equals(input.ProviderId?.Trim(), ProviderProvenanceLabels.Unknown, StringComparison.OrdinalIgnoreCase))
+                input = input with { ProviderId = null };
             var issues = new List<string>();
             if (input.EvidenceIssue is { Length: > 0 } existing) issues.Add(existing);
             if (input.QualityScore is { } score && (!double.IsFinite(score) || score < 0d || score > 1d))

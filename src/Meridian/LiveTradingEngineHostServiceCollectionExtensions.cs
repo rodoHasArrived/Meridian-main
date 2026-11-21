@@ -216,6 +216,7 @@ internal sealed class LiveTradingMarketEventTap : IMarketEventPublisher
         return [evidence with
         {
             ProviderId = Meridian.Contracts.Domain.MarketDataSources.IsMissing(evt.Source)
+                || string.Equals(evt.Source.Trim(), Meridian.Contracts.Domain.MarketDataSources.Unknown, StringComparison.OrdinalIgnoreCase)
                 ? null : ProviderProvenanceLabels.ProviderId(evt.Source),
             EventReference = $"{evt.Type}:{evt.Sequence}", ObservedAt = evt.Timestamp,
             BackfillRevisionId = evt.BackfillRevisionId

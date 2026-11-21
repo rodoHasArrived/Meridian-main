@@ -495,7 +495,9 @@ public sealed class HistoricalBackfillService : IDisposable
                                 if (sourceEvidence is not null)
                                     batch = batch.WithInputEvidence(sourceEvidence with
                                     {
-                                        ProviderId = string.IsNullOrWhiteSpace(servingProvider) ? null : ProviderProvenanceLabels.ProviderId(servingProvider),
+                                        ProviderId = string.IsNullOrWhiteSpace(servingProvider)
+                                            || string.Equals(servingProvider.Trim(), ProviderProvenanceLabels.Unknown, StringComparison.OrdinalIgnoreCase)
+                                            ? null : ProviderProvenanceLabels.ProviderId(servingProvider),
                                         DatasetId = coverageFeed
                                     });
                                 receipt = (await _checkpointStore.Batches.ReadAsync(batch.Receipt.RevisionId, ct).ConfigureAwait(false))?.Receipt;
