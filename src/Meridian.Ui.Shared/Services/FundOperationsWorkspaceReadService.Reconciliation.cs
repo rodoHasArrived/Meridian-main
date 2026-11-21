@@ -155,7 +155,9 @@ public sealed partial class FundOperationsWorkspaceReadService
             RecentRuns: ordered,
             SecurityCoverageIssueCount: securityCoverageIssues,
             BreakQueue: breakQueue,
-            LedgerImpactPreview: total.Amount.HasValue ? BuildLedgerImpactPreview(ordered) : null,
+            // The legacy preview has no currency field. Only proven USD comparison amounts
+            // can enter it; a residual is advisory evidence, never a corrective journal.
+            LedgerImpactPreview: total.Amount.HasValue && total.Currency == "USD" ? BuildLedgerImpactPreview(ordered) : null,
             HasCriticalBreakOpen: breakQueue?.CriticalOpenCount > 0)
         {
             ComparableBreakAmountTotal = total.Amount,
