@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutomatedJournalEventProduction
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEventProduction</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:17](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L17).
+
+Events produced for automated journal intake plus the skips that need attention.
+
+```csharp
+public sealed record AutomatedJournalEventProduction(IReadOnlyList<AutomatedJournalEvent> Events, IReadOnlyList<AutomatedJournalEventProductionSkip> Skipped, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyDictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt; EvidenceAssessments { get; init; } = EvidenceAssessments?? new Dictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:22](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L22) |  |
+
 ## AutomatedJournalEventProductionSkip
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEventProductionSkip</code>. Kind: `record`.
@@ -1000,26 +1018,3 @@ Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:73](../
 ```csharp
 public sealed record CashForecastPoint(DateOnly Date, string AccountId, string Currency, decimal ExpectedInflow, decimal ExpectedOutflow, decimal Net);
 ```
-
-## CashOperationsOrchestratorService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CashOperationsOrchestratorService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:22](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L22).
-
-Builds cash synchronization windows, validation decisions, approval requirements, forecasts, and settlement trails.
-
-```csharp
-public sealed class CashOperationsOrchestratorService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;CashSyncWindow&gt; BuildDailySyncWindows(DateTimeOffset nowUtc, IReadOnlyList&lt;CashSyncWindow&gt; configuredWindows);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:24](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L24) |  |
-| <code>public WorkstationSyncValidationResult ValidateSync(IReadOnlyList&lt;SyncCompletenessResult&gt; completeness, IReadOnlyList&lt;DeltaOutlierResult&gt; outliers);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:36](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L36) |  |
-| <code>public WorkstationApprovalDecision EvaluateApproval(decimal amount, string currency, Guid accountId, string riskBucket, WorkstationApprovalPolicy policy);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:52](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L52) |  |
-| <code>public DateOnly ResolveSettlementDateWithCutoff(DateTimeOffset bookingTimeLocal, TimeOnly cutoffLocal, int normalSettlementLagDays);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:102](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L102) |  |
-| <code>public CashForecastResult BuildCashForecast(DateOnly asOf, IReadOnlyDictionary&lt;(Guid AccountId, string Currency), decimal&gt; openingBalances, IReadOnlyList&lt;WorkstationPaymentInstruction&gt; payments, IReadOnlyList&lt;WorkstationSettlementInstruction&gt; settlements, IReadOnlyList&lt;WorkstationCouponEvent&gt; coupons, IReadOnlyList&lt;WorkstationFxConversionReference&gt; fx, decimal liquidityWarningThreshold);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:110](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L110) |  |
-| <code>public IReadOnlyList&lt;WorkstationStpStateTransition&gt; BuildStpTrail(Guid instructionId, bool validationPassed, bool approved, bool settled, string? exceptionReason);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:150](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L150) |  |

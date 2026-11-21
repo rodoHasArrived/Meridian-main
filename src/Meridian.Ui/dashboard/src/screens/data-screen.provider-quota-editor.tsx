@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { useRequestLifecycle } from "@/hooks/use-request-lifecycle";
 import { getJson, putJson } from "@/lib/api/http-client";
 
@@ -51,8 +52,6 @@ const quotaServices = {
   save: (id: string, draft: QuotaEdit, signal: AbortSignal) =>
     putJson<ProviderQuotaResponse>(endpoint(id), draft, { signal })
 };
-
-const selectClassName = "mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs focus-visible:outline-2";
 
 export function ProviderQuotaEditor({ services = quotaServices }: { services?: typeof quotaServices }) {
   const [provider, setProvider] = useState("twelvedata");
@@ -108,13 +107,13 @@ export function ProviderQuotaEditor({ services = quotaServices }: { services?: t
       <summary className="cursor-pointer text-sm font-semibold focus-visible:outline-2">Quota settings</summary>
       <div className="mt-3 space-y-3">
         <div className="flex flex-wrap items-end gap-2">
-          <label className="grid text-sm">Quota provider
-            <select className={selectClassName} value={provider} disabled={status.inFlight}
+          <label className="grid gap-1 text-sm">Quota provider
+            <Select value={provider} disabled={status.inFlight}
               onChange={(event) => setProvider(event.target.value)}>
               <option value="twelvedata">Twelve Data</option>
               <option value="alphavantage">Alpha Vantage</option>
               <option value="fred">FRED</option>
-            </select>
+            </Select>
           </label>
           <Button type="button" variant="outline" disabled={status.inFlight} onClick={() => void run()}>
             Load limits
@@ -147,12 +146,12 @@ export function ProviderQuotaEditor({ services = quotaServices }: { services?: t
               <form onSubmit={save}>
                 <fieldset className="space-y-3" disabled={status.inFlight}>
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                    <label className="grid text-sm">Vendor tier
-                      <select className={selectClassName} value={draft?.tierId ?? ""}
+                    <label className="grid gap-1 text-sm">Vendor tier
+                      <Select value={draft?.tierId ?? ""}
                         onChange={(event) => selectTier(event.target.value)} required>
                         <option value="">Select tier</option>
                         {quota.tiers.map((item) => <option value={item.id} key={item.id}>{item.label}</option>)}
-                      </select>
+                      </Select>
                     </label>
                     {tier && draft && (
                       <>

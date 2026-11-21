@@ -561,7 +561,12 @@ Yield is not discount margin. Model changes clear pending/results state; incompa
 inputs remain typed refusals with no metrics, payments or model fallback. See the
 [synthetic SOFR walkthrough](../../../docs/engineering/plans/bond-capability-expansion.md#workstation-floating-analytics).
 
-Provider credential editors require explicit selection of an existing owned connection. Status,
+**Data > Providers > Add provider** opens the connection template catalog. The review shows the settings,
+required capabilities, and verification checklist before opening the credential vault. **Manage connection
+templates** imports and exports versioned JSON and saves portable settings from an owned connection.
+See [provider connection templates](../../Meridian.Ui.Shared/README.md#provider-connection-templates).
+
+Existing provider credential editors require explicit selection of an owned connection. Status,
 save, verification and deletion use the same retained connection; account and environment come
 from authenticated ownership. Missing or changed ownership blocks changes without provider-wide
 fallback. Refresh or session changes clear secret drafts and invalidate delayed responses. This

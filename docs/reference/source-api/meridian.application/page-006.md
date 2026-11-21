@@ -6,43 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## DedupReservation
-
-Qualified name: <code>Meridian.Application.Pipeline.DedupReservation</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:68](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L68).
-
-A pending, memory-only claim on an event identity.
-
-```csharp
-public readonly record struct DedupReservation(string Key, long Token)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsHeld =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:71](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L71) | True when this value represents an actual held reservation. |
-
-## DedupReservationResult
-
-Qualified name: <code>Meridian.Application.Pipeline.DedupReservationResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:85](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L85).
-
-Result of an IDedupStore.TryReserveAsync call.
-
-```csharp
-public readonly record struct DedupReservationResult(DedupReservationStatus Status, DedupReservation Reservation)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReserved =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:88](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L88) | The caller holds the reservation and must commit or release it. |
-| <code>public bool IsSuppressed =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:91](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L91) | The event must be suppressed (committed duplicate or pending elsewhere). |
-
 ## DedupReservationStatus
 
 Qualified name: <code>Meridian.Application.Pipeline.DedupReservationStatus</code>. Kind: `enum`.
@@ -485,7 +448,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.ProviderRouting.IProviderFamilyCatalogService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:552](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L552).
+Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:573](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L573).
 
 Exposes the provider-family adapters available to routing.
 
@@ -497,8 +460,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:554](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L554) |  |
-| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:556](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L556) |  |
+| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:575](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L575) |  |
+| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:577](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L577) |  |
 
 ## IProviderRuntimeCredentialApplier
 
@@ -738,8 +701,34 @@ Declared public members:
 | <code>public Task&lt;ProviderConnectionDto&gt; UpsertAsync(CreateProviderConnectionRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:54](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L54) |  |
 | <code>public Task&lt;ProviderConnectionDto&gt; UpsertForTenantAsync(CreateProviderConnectionRequest request, string tenantId, string environment, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:58](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L58) | Creates or updates a connection for a server-authorized tenant. Legacy ownership is never inferred. |
 | <code>public Task&lt;ProviderCredentialScope?&gt; GetCredentialScopeForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:66](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L66) | Resolves retained credential ownership only for the authorized tenant. |
-| <code>public Task&lt;bool&gt; DeleteAsync(string connectionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:163](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L163) |  |
-| <code>public Task&lt;bool&gt; DeleteForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:167](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L167) | Deletes configuration only after matching its retained tenant owner. |
+| <code>public Task&lt;bool&gt; DeleteAsync(string connectionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:167](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L167) |  |
+| <code>public Task&lt;bool&gt; DeleteForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs:171](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs#L171) | Deletes configuration only after matching its retained tenant owner. |
+
+## ProviderConnectionTemplateService
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderConnectionTemplateService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:18](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L18).
+
+Owns the portable template library and the draft-to-connection transaction.
+
+```csharp
+public sealed class ProviderConnectionTemplateService(UI.ConfigStore store, IProviderCredentialStore credentialStore)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderConnectionTemplateOption[] List(string tenantId);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:23](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L23) |  |
+| <code>public ProviderConnectionTemplateFile Export(string tenantId, string name);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:33](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L33) |  |
+| <code>public Task&lt;ProviderConnectionTemplateOption&gt; SaveFromConnectionAsync(string tenantId, SaveProviderConnectionTemplateRequest request, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:41](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L41) |  |
+| <code>public Task&lt;int&gt; ImportAsync(string tenantId, JsonElement payload, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:59](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L59) |  |
+| <code>public Task&lt;ProviderTemplateSetupDraft&gt; BeginAsync(string tenantId, string actor, BeginProviderTemplateSetupRequest request, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:83](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L83) |  |
+| <code>public static ProviderCredentialScope RequireDraftScope(AppConfig config, Guid setupId, string tenantId, string actor, string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:129](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L129) | Called under the workstation configuration lease on every scoped vault operation. |
+| <code>public async Task&lt;ProviderTemplateSetupTestResult&gt; TestAsync(string tenantId, string actor, Guid setupId, Func&lt;string, CancellationToken, Task&lt;ProviderTemplateSetupTestResult&gt;&gt; verify, CancellationToken ct);</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:137](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L137) |  |
+| <code>public Task&lt;SavedProviderTemplateConnection&gt; SaveAsync(string tenantId, string actor, Guid setupId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:168](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L168) |  |
+| <code>public Task&lt;bool&gt; DiscardAsync(string tenantId, string actor, Guid setupId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:210](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L210) |  |
 
 ## ProviderCredentialOwnershipPolicy
 
@@ -913,7 +902,7 @@ Declared public members:
 | <code>public ValueTask&lt;ProviderRouteResult&gt; RouteAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L37) |  |
 | <code>public ValueTask&lt;ProviderRouteResult&gt; RouteForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:41](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L41) | Routes using only connections retained for the authorized tenant. |
 | <code>public ValueTask&lt;ProviderRouteResult&gt; PreviewForTenantAsync(ProviderRouteContext context, string tenantId, ProviderRoutingProposedConfig proposed, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:48](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L48) | Evaluates a cloned, restricted config without publishing a runtime snapshot or route history. |
-| <code>public IReadOnlyList&lt;ProviderRouteResult&gt; GetRouteHistory() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:303](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L303) |  |
+| <code>public IReadOnlyList&lt;ProviderRouteResult&gt; GetRouteHistory() =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:308](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L308) |  |
 
 ## ProviderRuntimeCredentialApplicationTracker
 
@@ -1012,7 +1001,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.ProviderRouting.ProviderRuntimeCredentialService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:11](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L11).
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:12](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L12).
 
 Explicit host credential selection and ownership-checked migration commands.
 
@@ -1024,11 +1013,31 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;ProviderCredentialStoreStatus&gt; GetMigrationPreviewAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:23](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L23) |  |
-| <code>public async Task&lt;ProviderRuntimeCredentialBinding&gt; BindAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:35](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L35) |  |
-| <code>public ProviderRuntimeCredentialApplicationStatus GetApplicationStatus(string providerId, string connectionId, string tenantId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:69](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L69) | Whether the retained binding for this connection has reached running instances of this host. |
-| <code>public async Task&lt;ProviderRuntimeCredentialApplicationStatus&gt; ApplyAsync(string providerId, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:89](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L89) | Asks the host&#x27;s applier to recycle the provider&#x27;s running instances under the retained binding. The default host has no in-process recycle and reports the binding as pending a deliberate restart. |
-| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; TransferAsync(string providerId, string connectionId, string tenantId, string migrationId, string? expectedGeneration, string actor, bool rollback, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:135](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L135) |  |
-| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; FinalizeAsync(string providerId, string connectionId, string tenantId, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:159](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L159) | Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit. |
-| <code>public static ProviderCredentialScope? ResolveScope(AppConfig config, string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:175](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L175) | Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default. |
-| <code>public static ProviderCredentialScope RequireScope(AppConfig config, string providerId, string connectionId, string tenantId, bool requireEnabled = true);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:192](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L192) |  |
+| <code>public async Task&lt;ProviderCredentialStoreStatus&gt; GetMigrationPreviewAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:24](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L24) |  |
+| <code>public async Task&lt;ProviderRuntimeCredentialBinding&gt; BindAsync(string providerId, string connectionId, string tenantId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:36](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L36) |  |
+| <code>public ProviderRuntimeCredentialApplicationStatus GetApplicationStatus(string providerId, string connectionId, string tenantId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:70](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L70) | Whether the retained binding for this connection has reached running instances of this host. |
+| <code>public async Task&lt;ProviderRuntimeCredentialApplicationStatus&gt; ApplyAsync(string providerId, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:90](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L90) | Asks the host&#x27;s applier to recycle the provider&#x27;s running instances under the retained binding. The default host has no in-process recycle and reports the binding as pending a deliberate restart. |
+| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; TransferAsync(string providerId, string connectionId, string tenantId, string migrationId, string? expectedGeneration, string actor, bool rollback, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:136](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L136) |  |
+| <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; FinalizeAsync(string providerId, string connectionId, string tenantId, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:160](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L160) | Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit. |
+| <code>public static ProviderCredentialScope? ResolveScope(AppConfig config, string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:176](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L176) | Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default. |
+| <code>public static ProviderCredentialScope RequireScope(AppConfig config, string providerId, string connectionId, string tenantId, bool requireEnabled = true);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:205](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L205) |  |
+
+## ProviderSetupService
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderSetupService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:14](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L14).
+
+Configures provider setup requests without persisting raw provider credentials in application config.
+
+```csharp
+public sealed class ProviderSetupService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderSetupService(UI.ConfigStore store, IProviderCredentialStore credentialStore, IProviderSetupRegistry setupRegistry, ProviderCredentialOwnershipPolicy? ownershipPolicy = null, ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:25](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L25) |  |
+| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureForConnectionAsync(ProviderSetupRequest request, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L37) | Configures credentials for an existing connection whose tenant ownership is already retained. |
+| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:86](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L86) |  |

@@ -115,6 +115,12 @@ public static class UiApiRoutes
     public const string ProviderMetrics = "/api/providers/metrics";
     public const string ProviderConfigure = "/api/providers/configure";
     public const string ProviderConnections = "/api/providers/connections";
+    public const string ProviderConnectionTemplates = "/api/provider-routing/templates";
+    public const string ProviderConnectionTemplateExport = "/api/provider-routing/templates/export";
+    public const string ProviderConnectionTemplateImport = "/api/provider-routing/templates/import";
+    public const string ProviderConnectionTemplateSetups = "/api/provider-routing/templates/setups";
+    public const string ProviderConnectionTemplateSetup = "/api/provider-routing/templates/setups/{setupId}";
+    public const string ProviderConnectionTemplateSetupTest = "/api/provider-routing/templates/setups/{setupId}/test";
     public const string ProviderCredentialMutation = "/api/providers/{providerId}/credentials";
     public const string ProviderCredentialVerify = "/api/providers/{providerId}/verify";
     public const string ProviderCredentialVerifyDraft = "/api/providers/{providerId}/verify-draft";

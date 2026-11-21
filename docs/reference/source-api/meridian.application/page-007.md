@@ -6,25 +6,21 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ProviderSetupService
+## ProviderTemplateCompatibilityException
 
-Qualified name: <code>Meridian.Application.ProviderRouting.ProviderSetupService</code>. Kind: `class`.
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderTemplateCompatibilityException</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:14](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L14).
-
-Configures provider setup requests without persisting raw provider credentials in application config.
+Source: [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:11](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L11).
 
 ```csharp
-public sealed class ProviderSetupService
+public sealed class ProviderTemplateCompatibilityException(IReadOnlyList<ProviderTemplateImportIssue> issues) : InvalidOperationException("The template file is incompatible with this host.")
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderSetupService(UI.ConfigStore store, IProviderCredentialStore credentialStore, IProviderSetupRegistry setupRegistry, ProviderCredentialOwnershipPolicy? ownershipPolicy = null, ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:25](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L25) |  |
-| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureForConnectionAsync(ProviderSetupRequest request, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L37) | Configures credentials for an existing connection whose tenant ownership is already retained. |
-| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:86](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L86) |  |
+| <code>public IReadOnlyList&lt;ProviderTemplateImportIssue&gt; Issues { get; } = issues;</code> | [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:14](../../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs#L14) |  |
 
 ## ProviderTrustScoringService
 

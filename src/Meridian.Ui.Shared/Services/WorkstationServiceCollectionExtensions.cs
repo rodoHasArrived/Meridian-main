@@ -370,6 +370,9 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<ProviderCredentialOwnershipPolicy>(),
             sp.GetService<IProviderRuntimeCredentialApplier>(), sp.GetService<ProviderRuntimeCredentialApplicationTracker>()));
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
+        services.TryAddSingleton<ProviderConnectionTemplateService>();
+        services.AddHttpClient(ProviderConnectionLifecycleService.TemplateProbeClientName)
+            .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { AllowAutoRedirect = false });
         services.TryAddSingleton<ProviderReadinessService>();
         // These runtimes do not carry a trusted tenant/connection per import, statement or Plaid item.
         // Keep them legacy-only until that ownership is propagated through their full workflows.

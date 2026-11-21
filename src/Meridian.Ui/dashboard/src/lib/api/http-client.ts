@@ -79,11 +79,16 @@ export function markDevelopmentFixtureUsage() {
 }
 
 export async function postJson<T>(path: string, body?: unknown, options: ApiRequestOptions = {}): Promise<T> {
+  return postJsonDocument<T>(path, body !== undefined ? JSON.stringify(body) : undefined, options);
+}
+
+/** Preserves the source JSON so the server can detect duplicate fields. */
+export async function postJsonDocument<T>(path: string, body: string | undefined, options: ApiRequestOptions = {}): Promise<T> {
   const response = await fetch(path, {
     method: "POST",
     signal: options.signal,
     headers: buildMutationHeaders(),
-    body: body !== undefined ? JSON.stringify(body) : undefined
+    body
   });
 
   if (!response.ok) {
@@ -168,10 +173,11 @@ export async function patchJson<T>(path: string, body?: unknown, options: ApiReq
   return readJsonResponse<T>(path, response);
 }
 
-export async function deleteJson<T>(path: string, options: ApiRequestOptions = {}, body?: unknown): Promise<T> {
+export async function deleteJson<T>(path: string, options: ApiRequestOptions & { keepalive?: boolean } = {}, body?: unknown): Promise<T> {
   const response = await fetch(path, {
     method: "DELETE",
     signal: options.signal,
+    ...(options.keepalive ? { keepalive: true } : {}),
     headers: buildMutationHeaders(),
     body: body !== undefined ? JSON.stringify(body) : undefined
   });

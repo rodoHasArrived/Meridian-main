@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RevokeStrategyLiveAuthorizationRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RevokeStrategyLiveAuthorizationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs:262](../../../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs#L262).
+
+```csharp
+public sealed record RevokeStrategyLiveAuthorizationRequest(string Reason);
+```
+
 ## RiskEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEndpoints</code>. Kind: `class`.
@@ -1195,14 +1205,4 @@ Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:2
 
 ```csharp
 public sealed record AccountCashSourceFx(string Currency, string BaseCurrency, DateOnly ConversionDate, decimal BaseUnitsPerCurrencyUnit);
-```
-
-## AccountCashSourceReceiptRevision
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceReceiptRevision</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:27](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L27).
-
-```csharp
-public sealed record AccountCashSourceReceiptRevision(string ExpectedFlowId, DateOnly ReceiptDate);
 ```

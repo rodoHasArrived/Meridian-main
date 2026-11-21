@@ -6,6 +6,110 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IngestionSymbolProgressDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.IngestionSymbolProgressDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L52).
+
+```csharp
+public sealed record IngestionSymbolProgressDto(string Symbol, string State, long DataPointsProcessed, long ExpectedDataPoints, double ProgressPercent, DateTimeOffset? LastCommittedAt, int RetryCount, string? ErrorMessage);
+```
+
+## InsightFeed
+
+Qualified name: <code>Meridian.Contracts.Workstation.InsightFeed</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L19).
+
+Personalized insight feed shown at the top of the Strategy workspace.
+
+```csharp
+public sealed record InsightFeed(string FeedId, string Title, string Summary, DateTimeOffset GeneratedAt, IReadOnlyList<InsightWidget> Widgets);
+```
+
+## InsightWidget
+
+Qualified name: <code>Meridian.Contracts.Workstation.InsightWidget</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L6).
+
+Shared insight tile used by Market Briefing style surfaces.
+
+```csharp
+public sealed record InsightWidget(string WidgetId, string Title, string Subtitle, string Headline, string Tone, string Summary, string? RunId = null, string? DrillInRoute = null);
+```
+
+## InstrumentPassportClassificationProfileDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportClassificationProfileDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:581](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L581).
+
+```csharp
+public sealed record InstrumentPassportClassificationProfileDto(string InstrumentType, string DisplayName, string SecurityMasterAssetClass, string? AssetFamily, string? SubType, string DefaultProviderSecurityType, bool IsTradeable, bool IsReferenceOnly, bool IsDerivative, bool RequiresUnderlying, bool ProducesCashFlows, bool RequiresLotTracking, string SettlementModel, IReadOnlyList<string> CompatibleSecurityMasterAssetClasses, IReadOnlyList<string> PreferredIdentifierKinds, IReadOnlyList<string> RequiredEconomicTerms, IReadOnlyList<string> ProviderCapabilities, IReadOnlyList<string> LifecycleEvents, IReadOnlyList<string> ValidationRules, IReadOnlyList<string> LedgerBehaviorHints, IReadOnlyList<string> RiskModelHints, string Summary);
+```
+
+## InstrumentPassportDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:605](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L605).
+
+```csharp
+public sealed record InstrumentPassportDto(Guid SecurityId, SecurityIdentityDrillInDto Identity, SecurityMasterEconomicDefinitionDrillInDto EconomicDefinition, SecurityMasterIdentifierSummaryDto IdentifierSummary, IReadOnlyList<SecurityMasterProviderSymbolMappingDto> ProviderMappings, IReadOnlyList<SecurityMasterChangeHistoryItemDto> LifecycleEvents, IReadOnlyList<CorporateActionDto> CorporateActions, InstrumentPassportPricingDto Pricing, SecurityMasterDownstreamImpactDto Usage, SecurityMasterTrustPostureDto TrustPosture, DateTimeOffset RetrievedAtUtc)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;InstrumentPassportProviderConfidenceDto&gt; ProviderConfidence { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:618](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L618) |  |
+| <code>public InstrumentPassportReferenceDataWorkbenchDto? ReferenceDataWorkbench { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:619](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L619) |  |
+| <code>public SecurityMasterOperatingModelDto? OperatingModel { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:620](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L620) |  |
+| <code>public InstrumentPassportOperationsWorkbenchDto? OperationsWorkbench { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:621](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L621) |  |
+| <code>public InstrumentPassportClassificationProfileDto? ClassificationProfile { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:622](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L622) |  |
+
+## InstrumentPassportOperationsHandoffDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsHandoffDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:469](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L469).
+
+```csharp
+public sealed record InstrumentPassportOperationsHandoffDto(string HandoffId, string Target, string Title, string Detail, string Status, bool IsEnabled)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? Owner { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:477](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L477) |  |
+| <code>public string? BlockerReason { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:478](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L478) |  |
+| <code>public IReadOnlyList&lt;string&gt; ImpactedOutputs { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:479](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L479) |  |
+| <code>public IReadOnlyList&lt;string&gt; LinkedCases { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:480](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L480) |  |
+| <code>public string? Route { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:481](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L481) |  |
+
+## InstrumentPassportOperationsReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:508](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L508).
+
+```csharp
+public sealed record InstrumentPassportOperationsReadinessDto(string ReadinessId, string Label, string Status, bool IsReady, string Summary, int EvidenceCount, int BlockingIssueCount, string NextAction, string? Route = null);
+```
+
+## InstrumentPassportOperationsWorkbenchDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsWorkbenchDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:484](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L484).
+
+```csharp
+public sealed record InstrumentPassportOperationsWorkbenchDto(string Status, string Summary, IReadOnlyList<InstrumentPassportOperationsWorkbenchPanelDto> Panels, IReadOnlyList<InstrumentPassportOperationsReadinessDto> Readiness, IReadOnlyList<InstrumentPassportOperationsHandoffDto> Handoffs);
+```
+
 ## InstrumentPassportOperationsWorkbenchItemDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsWorkbenchItemDto</code>. Kind: `record`.
@@ -452,7 +556,7 @@ public sealed record LedgerImpactPreviewDto(int DraftEntryCount, decimal NetDebi
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerJournalLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:678](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L678).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:667](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L667).
 
 Shared journal row for workstation audit surfaces.
 
@@ -484,27 +588,19 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:624](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L624).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:618](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L618).
 
 Shared ledger rollup for workstation Accounting and audit surfaces.
 
 ```csharp
-public sealed record LedgerSummary(string LedgerReference, string RunId, DateTimeOffset AsOf, int JournalEntryCount, int LedgerEntryCount, decimal AssetBalance, decimal LiabilityBalance, decimal EquityBalance, decimal RevenueBalance, decimal ExpenseBalance, IReadOnlyList<LedgerTrialBalanceLine> TrialBalance, IReadOnlyList<LedgerJournalLine> Journal, int SecurityResolvedCount = 0, int SecurityMissingCount = 0, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, LedgerDimensionSetDto? Dimensions = null)
+public sealed record LedgerSummary(string LedgerReference, string RunId, DateTimeOffset AsOf, int JournalEntryCount, int LedgerEntryCount, decimal AssetBalance, decimal LiabilityBalance, decimal EquityBalance, decimal RevenueBalance, decimal ExpenseBalance, IReadOnlyList<LedgerTrialBalanceLine> TrialBalance, IReadOnlyList<LedgerJournalLine> Journal, int SecurityResolvedCount = 0, int SecurityMissingCount = 0, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, LedgerDimensionSetDto? Dimensions = null);
 ```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;StrategyPositionAccountingEvidence&gt; AccountingPositions { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:649](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L649) |  |
-| <code>public bool HasUnresolvedValuation { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:650](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L650) |  |
-| <code>public decimal? HistoricalCostNetAssets { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:651](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L651) |  |
 
 ## LedgerTrialBalanceLine
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerTrialBalanceLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:657](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L657).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:646](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L646).
 
 Shared trial-balance row for workstation ledger views.
 
@@ -563,97 +659,3 @@ Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:65](../..
 ```csharp
 public sealed record MarginControlCenterDto(DateTimeOffset GeneratedAtUtc = default, IReadOnlyList<MarginControlAccountDto> Accounts = default !, IReadOnlyList<MarginControlPrimeSummaryDto> PrimeSummaries = default !, IReadOnlyList<MarginControlAlertDto> Alerts = default !, int ProviderCount = default, int AccountCount = default, int ProvisionalAccountCount = default, int EndOfDayCertificationCandidateCount = default, string AuthorityNote = default !, string NextAction = default !);
 ```
-
-## MarginControlPrimeSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L49).
-
-```csharp
-public sealed record MarginControlPrimeSummaryDto(string ProviderId = default !, int AccountCount = default, decimal TotalEquity = default, decimal? ProviderMaintenanceMargin = null, decimal? ProviderExcessLiquidity = null, int CriticalAccountCount = default);
-```
-
-## MarginPositionContributionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MarginPositionContributionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L36).
-
-```csharp
-public sealed record MarginPositionContributionDto(string Symbol = default !, decimal Quantity = default, decimal MarketValue = default, decimal ShadowInitialMargin = default, decimal ShadowMaintenanceMargin = default, string? BorrowStatus = null, decimal? BorrowRate = null, int TaxLotCount = default, int OptionLifecycleEventCount = default, string? SecurityId = null, string? SecurityMasterSource = null);
-```
-
-## MarginRequirementDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MarginRequirementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L23).
-
-```csharp
-public sealed record MarginRequirementDto(decimal InitialMargin, decimal VariationMargin, decimal TotalRequired);
-```
-
-## MarkFreshnessAssessmentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs#L4).
-
-Server-assessed mark support for a single position and valuation date.
-
-```csharp
-public sealed record MarkFreshnessAssessmentDto(string Symbol, Guid? SecurityId, string? FinancialAccountId, DateOnly ValuationDate, DateOnly? ObservedOn, int? AgeDays, string PolicyVersion, string Status, string? BlockReason);
-```
-
-## MeridianAssuranceScoreDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MeridianAssuranceScoreDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:353](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L353).
-
-```csharp
-public sealed record MeridianAssuranceScoreDto(int Score, EvidenceStatusDto Status, IReadOnlyList<EvidenceAssuranceComponentDto> Components, IReadOnlyList<EvidenceSlaAssessmentDto> SlaAssessments);
-```
-
-## MetricsDiff
-
-Qualified name: <code>Meridian.Contracts.Workstation.MetricsDiff</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:910](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L910).
-
-High-level metrics delta between two runs.
-
-```csharp
-public sealed record MetricsDiff(decimal NetPnlDelta, decimal TotalReturnDelta, int FillCountDelta, decimal? BaseNetPnl, decimal? TargetNetPnl, decimal? BaseTotalReturn, decimal? TargetTotalReturn, decimal? FinalEquityDelta = null, decimal? MaxDrawdownDelta = null, double? SharpeRatioDelta = null, decimal? BaseFinalEquity = null, decimal? TargetFinalEquity = null, decimal? BaseMaxDrawdown = null, decimal? TargetMaxDrawdown = null, double? BaseSharpeRatio = null, double? TargetSharpeRatio = null);
-```
-
-## MultiAssetClassCoverageDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetClassCoverageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1045](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1045).
-
-Operational coverage row for one asset class across Security Master, provider evidence, ledger, reconciliation, and close readiness.
-
-```csharp
-public sealed record MultiAssetClassCoverageDto(string AssetClass, string DisplayName, string Status, string StatusLabel, string Summary, IReadOnlyList<MultiAssetEvidenceRequirementDto> EvidenceRequirements, IReadOnlyList<MultiAssetReadinessBlockerDto> Blockers, IReadOnlyList<MultiAssetDrillThroughTargetDto> DrillThroughTargets, IReadOnlyDictionary<string, string> LedgerClassification, IReadOnlyDictionary<string, string> ReconciliationSignals);
-```
-
-## MultiAssetCoverageSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetCoverageSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1091](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1091).
-
-Shared multi-asset operational coverage payload returned by GET /api/workstation/portfolio/multi-asset-coverage.
-
-```csharp
-public sealed record MultiAssetCoverageSummaryDto(string FundAccountId, string Entity, string AsOfUtc, IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<MultiAssetClassCoverageDto> AssetClasses, IReadOnlyDictionary<string, string> DrillThroughRoutes, IReadOnlyList<MultiAssetPackCoverageDto>? AssetPacks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;MultiAssetPackCoverageDto&gt; AssetPacks { get; init; } = AssetPacks??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1100](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1100) |  |

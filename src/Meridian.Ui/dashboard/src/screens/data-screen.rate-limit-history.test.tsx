@@ -45,7 +45,7 @@ describe("RateLimitHistoryPanel", () => {
     await user.click(screen.getByText("Rate-limit and quota history"));
     await user.click(screen.getByRole("button", { name: "Load quota history" }));
     expect(await screen.findByRole("table", { name: "Daily quota observations for polygon" })).toBeInTheDocument();
-    expect(screen.getByRole("cell", { name: "2026-11-12" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Nov 12, 2026" })).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "9" })).toBeInTheDocument();
   });
 

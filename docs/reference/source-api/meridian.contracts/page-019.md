@@ -6,6 +6,168 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RateResetFrequency
+
+Qualified name: <code>Meridian.Contracts.DirectLending.RateResetFrequency</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:34](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L34).
+
+How often a floating rate resets.
+
+```csharp
+public enum RateResetFrequency : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Monthly = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:36](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L36) |  |
+| <code>Quarterly = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:37](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L37) |  |
+| <code>SemiAnnual = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:38](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L38) |  |
+| <code>Annual = 3</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:39](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L39) |  |
+
+## RateResetKind
+
+Qualified name: <code>Meridian.Contracts.DirectLending.RateResetKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:66](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L66).
+
+Whether a rate reset came from an operator request or the reset schedule.
+
+```csharp
+public enum RateResetKind : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Manual = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:68](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L68) |  |
+| <code>Scheduled = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:69](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L69) |  |
+
+## RateTypeKind
+
+Qualified name: <code>Meridian.Contracts.DirectLending.RateTypeKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:55](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L55).
+
+```csharp
+public enum RateTypeKind : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Fixed = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:57](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L57) |  |
+| <code>Floating = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:58](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L58) |  |
+
+## RateUnitNormalizer
+
+Qualified name: <code>Meridian.Contracts.DirectLending.RateUnitNormalizer</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:68](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L68).
+
+Converts declared direct-lending rates to fractions using the declared unit only.
+
+```csharp
+public static class RateUnitNormalizer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const decimal MaxAbsoluteFraction = 10m;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:74](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L74) | Absolute bound on any normalized rate. 10 (1,000%) is far outside any loan rate and catches a value declared in the wrong unit (for example 500 declared as Percent instead of bps). |
+| <code>public static RateNormalizationResult Normalize(DeclaredRate? rate, DirectLendingRateField field);</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:76](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L76) |  |
+| <code>public static decimal ToFraction(DeclaredRate rate, DirectLendingRateField field);</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:113](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L113) | Normalizes a value that must be valid; throws when it is not. |
+| <code>public static decimal ToBasisPoints(decimal fraction) =&gt; …;</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:120](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L120) | Expresses a fraction in basis points (the unit RateResetDto.SpreadBps records). |
+
+## RebuildCheckpointDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.RebuildCheckpointDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:482](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L482).
+
+```csharp
+public sealed record RebuildCheckpointDto(string ProjectionName, long LastProcessedPosition, Guid? LastEventId, DateTimeOffset? LastRebuiltAt, string Status, string? Details);
+```
+
+## ReconcileLoanRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ReconcileLoanRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:210](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L210).
+
+```csharp
+public sealed record ReconcileLoanRequest(decimal AmountTolerance, int DateToleranceDays);
+```
+
+## ReconciliationExceptionDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ReconciliationExceptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:239](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L239).
+
+```csharp
+public sealed record ReconciliationExceptionDto(Guid ExceptionId, Guid ReconciliationResultId, string ExceptionType, string Severity, string Status, string? AssignedTo, string? ResolutionNote, DateTimeOffset CreatedAt, DateTimeOffset? ResolvedAt);
+```
+
+## ReconciliationResultDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ReconciliationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:222](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L222).
+
+```csharp
+public sealed record ReconciliationResultDto(Guid ReconciliationResultId, Guid ReconciliationRunId, Guid LoanId, Guid? ProjectedCashFlowId, Guid? CashTransactionId, string MatchStatus, decimal? ExpectedAmount, decimal? ActualAmount, decimal? VarianceAmount, DateOnly? ExpectedDate, DateOnly? ActualDate, string? MatchRule, string? ToleranceJson, IReadOnlyList<string> Notes, DateTimeOffset CreatedAt);
+```
+
+## ReconciliationRunDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ReconciliationRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:214](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L214).
+
+```csharp
+public sealed record ReconciliationRunDto(Guid ReconciliationRunId, Guid LoanId, Guid? ProjectionRunId, DateTimeOffset RequestedAt, DateTimeOffset? CompletedAt, string Status);
+```
+
+## RecordIndexFixingRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.RecordIndexFixingRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs:133](../../../../src/Meridian.Contracts/DirectLending/DirectLendingServicingPolicies.cs#L133).
+
+Records (or revises) one index fixing. A later revision for the same index and date supersedes earlier ones.
+
+```csharp
+public sealed record RecordIndexFixingRequest(string IndexName, DateOnly ObservationDate, DeclaredRate Rate, string? SourceRef, string? RecordedBy = null);
+```
+
+## RefundUnappliedCashRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.RefundUnappliedCashRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:71](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L71).
+
+PRD-115: returns unapplied cash to the borrower (Dr UnappliedCashLiability / Cr Cash).
+
+```csharp
+public sealed record RefundUnappliedCashRequest(decimal Amount, DateOnly EffectiveDate, string ExternalRef);
+```
+
+## RemoveCollateralRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.RemoveCollateralRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:545](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L545).
+
+```csharp
+public sealed record RemoveCollateralRequest(Guid CollateralId, string Reason);
+```
+
 ## ReplayDirectLendingRequest
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ReplayDirectLendingRequest</code>. Kind: `record`.
@@ -599,272 +761,3 @@ Enum declarations:
 | <code>Low = 2</code> | [src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs:32](../../../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs#L32) | Low liquidity - small-cap stocks, less active options, single-stock futures. Trades may be minutes apart during quiet periods. Gap threshold ~600s, expected ~20 events/hour. |
 | <code>VeryLow = 3</code> | [src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs:39](../../../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs#L39) | Very low liquidity - OTC stocks, thinly-traded options, illiquid bonds. Trades may be 10+ minutes apart; wide spreads are normal. Gap threshold ~1800s, expected ~5 events/hour. |
 | <code>Minimal = 4</code> | [src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs:46](../../../../src/Meridian.Contracts/Domain/Enums/LiquidityProfile.cs#L46) | Minimal activity - deep OTC, far out-of-money options, exotic instruments. May have fewer than a handful of trades per day. Gap threshold ~3600s, expected ~1 event/hour. |
-
-## MarketEventTier
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.MarketEventTier</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs#L6).
-
-Processing tier for market events.
-
-```csharp
-public enum MarketEventTier : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Raw = 0</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs#L11) | Raw event from data provider. |
-| <code>Derived = 1</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs#L16) | Derived event from processing pipeline. |
-| <code>Enriched = 2</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs#L21) | Enriched event after canonicalization (symbol resolution, condition code mapping, venue normalization). |
-| <code>Processed = 3</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs:26](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs#L26) | Fully processed event after all pipeline stages. |
-
-## MarketEventType
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.MarketEventType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L6).
-
-Type of market event.
-
-```csharp
-public enum MarketEventType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L11) | Unknown event type. |
-| <code>L2Snapshot = 1</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L16) | Level 2 order book snapshot. |
-| <code>BboQuote = 2</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L21) | Best bid/offer quote. |
-| <code>Trade = 3</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:26](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L26) | Trade execution. |
-| <code>OrderFlow = 4</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:31](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L31) | Order flow statistics. |
-| <code>Heartbeat = 5</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:36](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L36) | Heartbeat message. |
-| <code>ConnectionStatus = 6</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:41](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L41) | Connection status change. |
-| <code>Integrity = 7</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:46](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L46) | Data integrity event. |
-| <code>HistoricalBar = 8</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:51](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L51) | Historical bar data. |
-| <code>HistoricalQuote = 9</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:56](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L56) | Historical quote data. |
-| <code>HistoricalTrade = 10</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:61](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L61) | Historical trade data. |
-| <code>HistoricalAuction = 11</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:66](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L66) | Historical auction data. |
-| <code>AggregateBar = 12</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:71](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L71) | Real-time aggregate bar (OHLCV) from streaming providers. |
-| <code>Quote = 13</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:76](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L76) | Quote update event. |
-| <code>Depth = 14</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:81](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L81) | Order book depth update. |
-| <code>OptionQuote = 15</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:86](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L86) | Option quote with bid/ask, greeks, and implied volatility. |
-| <code>OptionTrade = 16</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:91](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L91) | Option trade execution. |
-| <code>OptionGreeks = 17</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:96](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L96) | Option greeks snapshot (delta, gamma, theta, vega, rho, IV). |
-| <code>OptionChain = 18</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:101](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L101) | Option chain snapshot for an underlying and expiration. |
-| <code>OpenInterest = 19</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:106](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L106) | Open interest update for an option contract. |
-| <code>OrderAdd = 20</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:111](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L111) | New order added to the matching engine&#x27;s order book. |
-| <code>OrderModify = 21</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:116](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L116) | Existing order modified (price, size, or flags changed). |
-| <code>OrderCancel = 22</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:121](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L121) | Existing order cancelled (full or partial removal from the book). |
-| <code>OrderExecute = 23</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:126](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L126) | Resting order executed (full or partial fill against an aggressor). |
-| <code>OrderReplace = 24</code> | [src/Meridian.Contracts/Domain/Enums/MarketEventType.cs:131](../../../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs#L131) | Venue-side order replace where the venue reassigns the order identifier. |
-
-## MarketState
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.MarketState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/MarketState.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/MarketState.cs#L6).
-
-Represents the current state of the market.
-
-```csharp
-public enum MarketState : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Normal = 0</code> | [src/Meridian.Contracts/Domain/Enums/MarketState.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/MarketState.cs#L11) | Market is in normal trading hours. |
-| <code>Closed = 1</code> | [src/Meridian.Contracts/Domain/Enums/MarketState.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/MarketState.cs#L16) | Market is closed. |
-| <code>Halted = 2</code> | [src/Meridian.Contracts/Domain/Enums/MarketState.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/MarketState.cs#L21) | Trading is halted for this security. |
-| <code>Unknown = 3</code> | [src/Meridian.Contracts/Domain/Enums/MarketState.cs:26](../../../../src/Meridian.Contracts/Domain/Enums/MarketState.cs#L26) | Market state is unknown. |
-| <code>PreMarket = 4</code> | [src/Meridian.Contracts/Domain/Enums/MarketState.cs:31](../../../../src/Meridian.Contracts/Domain/Enums/MarketState.cs#L31) | Pre-market trading session. |
-| <code>AfterHours = 5</code> | [src/Meridian.Contracts/Domain/Enums/MarketState.cs:36](../../../../src/Meridian.Contracts/Domain/Enums/MarketState.cs#L36) | After-hours trading session. |
-| <code>Auction = 6</code> | [src/Meridian.Contracts/Domain/Enums/MarketState.cs:41](../../../../src/Meridian.Contracts/Domain/Enums/MarketState.cs#L41) | Market is in auction phase. |
-
-## OptionRight
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.OptionRight</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/OptionRight.cs:9](../../../../src/Meridian.Contracts/Domain/Enums/OptionRight.cs#L9).
-
-Indicates whether an option contract is a call or a put.
-
-```csharp
-public enum OptionRight : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Call = 0</code> | [src/Meridian.Contracts/Domain/Enums/OptionRight.cs:14](../../../../src/Meridian.Contracts/Domain/Enums/OptionRight.cs#L14) | Call option — the right to buy the underlying at the strike price. |
-| <code>Put = 1</code> | [src/Meridian.Contracts/Domain/Enums/OptionRight.cs:19](../../../../src/Meridian.Contracts/Domain/Enums/OptionRight.cs#L19) | Put option — the right to sell the underlying at the strike price. |
-
-## OptionStyle
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.OptionStyle</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/OptionStyle.cs:9](../../../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs#L9).
-
-Exercise style of an option contract.
-
-```csharp
-public enum OptionStyle : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>American = 0</code> | [src/Meridian.Contracts/Domain/Enums/OptionStyle.cs:15](../../../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs#L15) | American-style option — can be exercised at any time before expiration. Most US equity options are American-style. |
-| <code>European = 1</code> | [src/Meridian.Contracts/Domain/Enums/OptionStyle.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/OptionStyle.cs#L21) | European-style option — can only be exercised at expiration. Most index options (SPX, NDX, RUT) are European-style. |
-
-## OrderBookSide
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.OrderBookSide</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs#L6).
-
-Represents which side of the order book a level belongs to.
-
-```csharp
-public enum OrderBookSide : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Bid = 0</code> | [src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs#L11) | Bid side (buy orders). |
-| <code>Ask = 1</code> | [src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/OrderBookSide.cs#L16) | Ask side (sell orders). |
-
-## OrderSide
-
-Qualified name: <code>Meridian.Contracts.Domain.Enums.OrderSide</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Domain/Enums/OrderSide.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/OrderSide.cs#L6).
-
-Represents the side (direction) of an order.
-
-```csharp
-public enum OrderSide : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Domain/Enums/OrderSide.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/OrderSide.cs#L11) | The order side could not be determined. |
-| <code>Buy = 1</code> | [src/Meridian.Contracts/Domain/Enums/OrderSide.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/OrderSide.cs#L16) | A buy order (bid side). |
-| <code>Sell = 2</code> | [src/Meridian.Contracts/Domain/Enums/OrderSide.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/OrderSide.cs#L21) | A sell order (ask side). |
-
-## IMarketEventPayload
-
-Qualified name: <code>Meridian.Contracts.Domain.Events.IMarketEventPayload</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Domain/Events/IMarketEventPayload.cs:6](../../../../src/Meridian.Contracts/Domain/Events/IMarketEventPayload.cs#L6).
-
-Marker interface for strongly-typed market event payloads.
-
-```csharp
-public interface IMarketEventPayload
-```
-
-## MarketEventDto
-
-Qualified name: <code>Meridian.Contracts.Domain.Events.MarketEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:9](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L9).
-
-Top-level container for all market events with timestamp, symbol, type, and payload.
-
-```csharp
-public sealed record MarketEventDto(DateTimeOffset Timestamp, string Symbol, MarketEventType Type, MarketEventPayload Payload, long Sequence = 0, string Source = "IB", byte SchemaVersion = 1, MarketEventTier Tier = MarketEventTier.Raw, string? CanonicalSymbol = null, byte CanonicalizationVersion = 0, string? CanonicalVenue = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string EffectiveSymbol =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:27](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L27) | Returns the effective symbol for downstream consumers: CanonicalSymbol when available, otherwise the raw Symbol. |
-| <code>public static MarketEventDto CreateTrade(DateTimeOffset ts, string symbol, Trade trade, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:32](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L32) | Creates a trade market event. |
-| <code>public static MarketEventDto CreateL2Snapshot(DateTimeOffset ts, string symbol, LOBSnapshot snap, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:38](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L38) | Creates an L2 snapshot market event. |
-| <code>public static MarketEventDto CreateBboQuote(DateTimeOffset ts, string symbol, BboQuotePayload quote, long seq = 0, string source = &quot;ALPACA&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:44](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L44) | Creates a BBO quote market event. |
-| <code>public static MarketEventDto CreateL2SnapshotPayload(DateTimeOffset ts, string symbol, L2SnapshotPayload payload, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:50](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L50) | Creates an L2 snapshot payload market event. |
-| <code>public static MarketEventDto CreateOrderFlow(DateTimeOffset ts, string symbol, OrderFlowStatistics stats, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:56](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L56) | Creates an order flow statistics market event. |
-| <code>public static MarketEventDto CreateIntegrity(DateTimeOffset ts, string symbol, IntegrityEvent integrity, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:62](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L62) | Creates an integrity event. |
-| <code>public static MarketEventDto CreateDepthIntegrity(DateTimeOffset ts, string symbol, DepthIntegrityEvent integrity, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:68](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L68) | Creates a depth integrity event. |
-| <code>public static MarketEventDto CreateHeartbeat(DateTimeOffset ts, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:74](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L74) | Creates a heartbeat market event. |
-| <code>public static MarketEventDto CreateHistoricalBar(DateTimeOffset ts, string symbol, HistoricalBar bar, long seq = 0, string source = &quot;stooq&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:80](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L80) | Creates a historical bar market event. |
-| <code>public static MarketEventDto CreateHistoricalQuote(DateTimeOffset ts, string symbol, HistoricalQuote quote, long seq = 0, string source = &quot;alpaca&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:86](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L86) | Creates a historical quote market event. |
-| <code>public static MarketEventDto CreateHistoricalTrade(DateTimeOffset ts, string symbol, HistoricalTrade trade, long seq = 0, string source = &quot;alpaca&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:92](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L92) | Creates a historical trade market event. |
-| <code>public static MarketEventDto CreateHistoricalAuction(DateTimeOffset ts, string symbol, HistoricalAuction auction, long seq = 0, string source = &quot;alpaca&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:98](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L98) | Creates a historical auction market event. |
-| <code>public static MarketEventDto CreateOptionQuote(DateTimeOffset ts, string symbol, OptionQuote quote, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:104](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L104) | Creates an option quote market event. |
-| <code>public static MarketEventDto CreateOptionTrade(DateTimeOffset ts, string symbol, OptionTrade trade, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:110](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L110) | Creates an option trade market event. |
-| <code>public static MarketEventDto CreateOptionGreeks(DateTimeOffset ts, string symbol, GreeksSnapshot greeks, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:116](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L116) | Creates an option greeks snapshot market event. |
-| <code>public static MarketEventDto CreateOptionChain(DateTimeOffset ts, string underlyingSymbol, OptionChainSnapshot chain, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:122](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L122) | Creates an option chain snapshot market event. |
-| <code>public static MarketEventDto CreateOpenInterest(DateTimeOffset ts, string symbol, OpenInterestUpdate oi, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:128](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L128) | Creates an open interest update market event. |
-| <code>public static MarketEventDto CreateOrderAdd(DateTimeOffset ts, string symbol, OrderAdd order, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:134](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L134) | Creates an order-add market event. |
-| <code>public static MarketEventDto CreateOrderModify(DateTimeOffset ts, string symbol, OrderModify modify, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:140](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L140) | Creates an order-modify market event. |
-| <code>public static MarketEventDto CreateOrderCancel(DateTimeOffset ts, string symbol, OrderCancel cancel, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:146](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L146) | Creates an order-cancel market event. |
-| <code>public static MarketEventDto CreateOrderExecute(DateTimeOffset ts, string symbol, OrderExecute execute, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:152](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L152) | Creates an order-execute market event. |
-| <code>public static MarketEventDto CreateOrderReplace(DateTimeOffset ts, string symbol, OrderReplace replace, long seq = 0, string source = &quot;IB&quot;) =&gt; …;</code> | [src/Meridian.Contracts/Domain/Events/MarketEvent.cs:158](../../../../src/Meridian.Contracts/Domain/Events/MarketEvent.cs#L158) | Creates an order-replace market event. |
-
-## MarketEventPayload
-
-Qualified name: <code>Meridian.Contracts.Domain.Events.MarketEventPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs:38](../../../../src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs#L38).
-
-Discriminated-union base for all market event payloads. Every MarketEventDto carries a non-null payload; heartbeat events use HeartbeatPayload to eliminate the null-payload special case.
-
-```csharp
-public abstract record MarketEventPayload : IMarketEventPayload
-```
-
-## HeartbeatPayload
-
-Qualified name: <code>Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs:44](../../../../src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs#L44).
-
-Payload for heartbeat events. Carries no market data; exists to eliminate the null-payload special case and enable exhaustive pattern matching over all event types.
-
-```csharp
-public sealed record HeartbeatPayload() : MarketEventPayload;
-```
-
-## HistoricalBarDto
-
-Qualified name: <code>Meridian.Contracts.Domain.HistoricalBarDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:248](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L248).
-
-Historical bar data transfer object.
-
-```csharp
-public sealed class HistoricalBarDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;timestamp&quot;)] public DateTimeOffset Timestamp { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:254](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L254) | Gets or sets the bar timestamp. |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:260](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L260) | Gets or sets the symbol for the bar. |
-| <code>[JsonPropertyName(&quot;open&quot;)] public decimal Open { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:266](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L266) | Gets or sets the open price. |
-| <code>[JsonPropertyName(&quot;high&quot;)] public decimal High { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:272](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L272) | Gets or sets the high price. |
-| <code>[JsonPropertyName(&quot;low&quot;)] public decimal Low { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:278](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L278) | Gets or sets the low price. |
-| <code>[JsonPropertyName(&quot;close&quot;)] public decimal Close { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:284](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L284) | Gets or sets the close price. |
-| <code>[JsonPropertyName(&quot;volume&quot;)] public long Volume { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:290](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L290) | Gets or sets the traded volume. |
-| <code>[JsonPropertyName(&quot;vwap&quot;)] public decimal? Vwap { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:296](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L296) | Gets or sets the volume-weighted average price, if available. |
-| <code>[JsonPropertyName(&quot;tradeCount&quot;)] public int? TradeCount { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:302](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L302) | Gets or sets the trade count, if available. |
-| <code>[JsonPropertyName(&quot;interval&quot;)] public string Interval { get; set; } = &quot;Daily&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:308](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L308) | Gets or sets the bar interval label. |
-| <code>[JsonPropertyName(&quot;source&quot;)] public string? Source { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:314](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L314) | Gets or sets the data source identifier. |
-| <code>[JsonPropertyName(&quot;isAdjusted&quot;)] public bool IsAdjusted { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:320](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L320) | Gets or sets a value indicating whether prices are adjusted. |

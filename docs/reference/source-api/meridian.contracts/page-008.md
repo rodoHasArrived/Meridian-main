@@ -6,6 +6,136 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderSetupResult
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderSetupResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderSetupApiModels.cs:21](../../../../src/Meridian.Contracts/Api/ProviderSetupApiModels.cs#L21).
+
+Safe provider setup result. This response never includes raw provider credentials.
+
+```csharp
+public sealed record ProviderSetupResult(bool Success, string? ProviderId, string ProviderName, string Message, string? Error, string? ConnectionId = null, string[]? BindingIds = null, ProviderCredentialStateDto? CredentialState = null, ProviderCredentialSourceDto? CredentialSource = null, string? CredentialReference = null, string? Environment = null, string[]? Warnings = null);
+```
+
+## ProviderStatusResponse
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderStatusResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:129](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L129).
+
+Response containing provider connection status.
+
+```csharp
+public record ProviderStatusResponse(string ProviderId, string Name, string ProviderType, bool? IsConnected, bool IsEnabled, int Priority, int ActiveSubscriptions, DateTimeOffset? LastHeartbeat, string? LifecycleState = null, string? WebSocketState = null, bool? IsReconnecting = null, DateTimeOffset? LastHeartbeatReceivedAt = null, DateTimeOffset? LastMessageReceivedAt = null, DateTimeOffset? LastReconnectAttemptAt = null, int? ReconnectAttempts = null, string? LastFailureKind = null, int? FailedSubscriptions = null, int? RecoveringSubscriptions = null, DateTimeOffset? LastSubscriptionMessageAt = null, string? ConnectionState = null, bool DiagnosticsAvailable = false, IReadOnlyList<ProviderStreamStatusResponse>? Streams = null);
+```
+
+## ProviderStreamStatusResponse
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderStreamStatusResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:119](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L119).
+
+Response containing provider connection status.
+
+```csharp
+public record ProviderStreamStatusResponse(string AssetClass, string Feed, string Entitlement, string LifecycleState, bool IsConnected, bool IsDegraded, string? DegradationReason);
+```
+
+## ProviderTemplateBindingDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateBindingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:25](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L25).
+
+```csharp
+public sealed record ProviderTemplateBindingDto(string Capability, int Priority);
+```
+
+## ProviderTemplateCapabilityDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateCapabilityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:22](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L22).
+
+```csharp
+public sealed record ProviderTemplateCapabilityDto(string Capability, int Version);
+```
+
+## ProviderTemplateImportIssue
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateImportIssue</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:53](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L53).
+
+```csharp
+public sealed record ProviderTemplateImportIssue(string Field, string Code, string Message);
+```
+
+## ProviderTemplateOutput
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateOutput</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:330](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L330).
+
+Unified provider template output for standardized UI consumption. Combines provider catalog metadata with runtime status into a single consistent structure that both Web and desktop can consume without provider-specific conditionals.
+
+```csharp
+public sealed class ProviderTemplateOutput
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;providerId&quot;)] public string ProviderId { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:334](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L334) |  |
+| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:337](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L337) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:340](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L340) |  |
+| <code>[JsonPropertyName(&quot;providerType&quot;)] public string ProviderType { get; init; } = &quot;backfill&quot;;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:343](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L343) |  |
+| <code>[JsonPropertyName(&quot;isEnabled&quot;)] public bool IsEnabled { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:347](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L347) |  |
+| <code>[JsonPropertyName(&quot;isConnected&quot;)] public bool IsConnected { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:350](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L350) |  |
+| <code>[JsonPropertyName(&quot;isHealthy&quot;)] public bool IsHealthy { get; init; } = true;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:353](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L353) |  |
+| <code>[JsonPropertyName(&quot;requiresCredentials&quot;)] public bool RequiresCredentials { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:357](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L357) |  |
+| <code>[JsonPropertyName(&quot;hasValidCredentials&quot;)] public bool HasValidCredentials { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:360](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L360) |  |
+| <code>[JsonPropertyName(&quot;credentialFields&quot;)] public CredentialFieldOutput[] CredentialFields { get; init; } = Array.Empty&lt;CredentialFieldOutput&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:363](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L363) |  |
+| <code>[JsonPropertyName(&quot;capabilities&quot;)] public ProviderCapabilityOutput Capabilities { get; init; } = new ();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:367](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L367) |  |
+| <code>[JsonPropertyName(&quot;notes&quot;)] public string[] Notes { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:371](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L371) |  |
+| <code>[JsonPropertyName(&quot;warnings&quot;)] public string[] Warnings { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:374](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L374) |  |
+| <code>[JsonPropertyName(&quot;rateLimit&quot;)] public ProviderRateLimitOutput? RateLimit { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:378](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L378) |  |
+| <code>[JsonPropertyName(&quot;supportedMarkets&quot;)] public string[] SupportedMarkets { get; init; } = new[] { &quot;US&quot; };</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:382](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L382) |  |
+| <code>[JsonPropertyName(&quot;dataTypes&quot;)] public string[] DataTypes { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:385](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L385) |  |
+| <code>public static ProviderTemplateOutput FromCatalogEntry(ProviderCatalogEntry entry);</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:390](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L390) | Creates a ProviderTemplateOutput from a ProviderCatalogEntry. |
+
+## ProviderTemplateReviewRow
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateReviewRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:30](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L30).
+
+```csharp
+public sealed record ProviderTemplateReviewRow(string Field, string Value);
+```
+
+## ProviderTemplateSetupDraft
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateSetupDraft</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:46](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L46).
+
+```csharp
+public sealed record ProviderTemplateSetupDraft(Guid SetupId, string ProviderKind, string Environment, ProviderCredentialFieldMetadataDto[] CredentialFields);
+```
+
+## ProviderTemplateSetupTestResult
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateSetupTestResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:49](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L49).
+
+```csharp
+public sealed record ProviderTemplateSetupTestResult(bool CanSave, string Detail);
+```
+
 ## ProviderTrustSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderTrustSnapshotDto</code>. Kind: `record`.
@@ -512,233 +642,12 @@ Declared public members:
 | <code>public ProviderCatalogEntry? Get(string providerId) =&gt; …;</code> | [src/Meridian.Contracts/Api/IProviderCatalog.cs:54](../../../../src/Meridian.Contracts/Api/IProviderCatalog.cs#L54) |  |
 | <code>public IReadOnlyList&lt;ProviderCatalogEntry&gt; GetByType(ProviderTypeKind type) =&gt; …;</code> | [src/Meridian.Contracts/Api/IProviderCatalog.cs:57](../../../../src/Meridian.Contracts/Api/IProviderCatalog.cs#L57) |  |
 
-## SecurityMasterActiveImportStatusResponse
+## SavedProviderTemplateConnection
 
-Qualified name: <code>Meridian.Contracts.Api.SecurityMasterActiveImportStatusResponse</code>. Kind: `class`.
+Qualified name: <code>Meridian.Contracts.Api.SavedProviderTemplateConnection</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:29](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L29).
-
-Active Security Master ingest progress.
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:51](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L51).
 
 ```csharp
-public sealed class SecurityMasterActiveImportStatusResponse
+public sealed record SavedProviderTemplateConnection(string ConnectionId, string DisplayName, string ProviderKind);
 ```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;fileExtension&quot;)] public string FileExtension { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:32](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L32) |  |
-| <code>[JsonPropertyName(&quot;total&quot;)] public int Total { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:35](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L35) |  |
-| <code>[JsonPropertyName(&quot;processed&quot;)] public int Processed { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:38](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L38) |  |
-| <code>[JsonPropertyName(&quot;imported&quot;)] public int Imported { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:41](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L41) |  |
-| <code>[JsonPropertyName(&quot;skipped&quot;)] public int Skipped { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:44](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L44) |  |
-| <code>[JsonPropertyName(&quot;failed&quot;)] public int Failed { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:47](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L47) |  |
-| <code>[JsonPropertyName(&quot;startedAtUtc&quot;)] public DateTimeOffset StartedAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:50](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L50) |  |
-| <code>[JsonPropertyName(&quot;updatedAtUtc&quot;)] public DateTimeOffset UpdatedAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:53](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L53) |  |
-
-## SecurityMasterCompletedImportStatusResponse
-
-Qualified name: <code>Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:59](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L59).
-
-Summary of the last completed Security Master ingest.
-
-```csharp
-public sealed class SecurityMasterCompletedImportStatusResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;fileExtension&quot;)] public string FileExtension { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:62](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L62) |  |
-| <code>[JsonPropertyName(&quot;total&quot;)] public int Total { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:65](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L65) |  |
-| <code>[JsonPropertyName(&quot;processed&quot;)] public int Processed { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:68](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L68) |  |
-| <code>[JsonPropertyName(&quot;imported&quot;)] public int Imported { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:71](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L71) |  |
-| <code>[JsonPropertyName(&quot;skipped&quot;)] public int Skipped { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:74](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L74) |  |
-| <code>[JsonPropertyName(&quot;failed&quot;)] public int Failed { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:77](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L77) |  |
-| <code>[JsonPropertyName(&quot;conflictsDetected&quot;)] public int ConflictsDetected { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:80](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L80) |  |
-| <code>[JsonPropertyName(&quot;errorCount&quot;)] public int ErrorCount { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:83](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L83) |  |
-| <code>[JsonPropertyName(&quot;startedAtUtc&quot;)] public DateTimeOffset StartedAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:86](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L86) |  |
-| <code>[JsonPropertyName(&quot;completedAtUtc&quot;)] public DateTimeOffset CompletedAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:89](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L89) |  |
-
-## SecurityMasterIngestStatusResponse
-
-Qualified name: <code>Meridian.Contracts.Api.SecurityMasterIngestStatusResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:8](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L8).
-
-Response payload for Security Master ingest status.
-
-```csharp
-public sealed class SecurityMasterIngestStatusResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;openConflicts&quot;)] public int OpenConflicts { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:11](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L11) |  |
-| <code>[JsonPropertyName(&quot;isImportActive&quot;)] public bool IsImportActive { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:14](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L14) |  |
-| <code>[JsonPropertyName(&quot;activeImport&quot;)] public SecurityMasterActiveImportStatusResponse? ActiveImport { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:17](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L17) |  |
-| <code>[JsonPropertyName(&quot;lastCompleted&quot;)] public SecurityMasterCompletedImportStatusResponse? LastCompleted { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:20](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L20) |  |
-| <code>[JsonPropertyName(&quot;retrievedAtUtc&quot;)] public DateTimeOffset RetrievedAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:23](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L23) |  |
-
-## ServiceHealthResult
-
-Qualified name: <code>Meridian.Contracts.Api.ServiceHealthResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/ClientModels.cs:76](../../../../src/Meridian.Contracts/Api/ClientModels.cs#L76).
-
-Result of a service health check. Used by UI clients to verify connectivity.
-
-```csharp
-public sealed class ServiceHealthResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;isReachable&quot;)] public bool IsReachable { get; init; }</code> | [src/Meridian.Contracts/Api/ClientModels.cs:82](../../../../src/Meridian.Contracts/Api/ClientModels.cs#L82) | Whether the service endpoint is reachable. |
-| <code>[JsonPropertyName(&quot;isConnected&quot;)] public bool IsConnected { get; init; }</code> | [src/Meridian.Contracts/Api/ClientModels.cs:88](../../../../src/Meridian.Contracts/Api/ClientModels.cs#L88) | Whether the service is connected to data providers. |
-| <code>[JsonPropertyName(&quot;latencyMs&quot;)] public float LatencyMs { get; init; }</code> | [src/Meridian.Contracts/Api/ClientModels.cs:94](../../../../src/Meridian.Contracts/Api/ClientModels.cs#L94) | Round-trip latency in milliseconds. |
-| <code>[JsonPropertyName(&quot;statusCode&quot;)] public int StatusCode { get; init; }</code> | [src/Meridian.Contracts/Api/ClientModels.cs:100](../../../../src/Meridian.Contracts/Api/ClientModels.cs#L100) | HTTP status code received (if any). |
-| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; init; }</code> | [src/Meridian.Contracts/Api/ClientModels.cs:106](../../../../src/Meridian.Contracts/Api/ClientModels.cs#L106) | Error message if the health check failed. |
-| <code>public static ServiceHealthResult Healthy(bool isConnected, float latencyMs) =&gt; …;</code> | [src/Meridian.Contracts/Api/ClientModels.cs:111](../../../../src/Meridian.Contracts/Api/ClientModels.cs#L111) | Creates a healthy result. |
-| <code>public static ServiceHealthResult Unhealthy(string errorMessage, float latencyMs = 0) =&gt; …;</code> | [src/Meridian.Contracts/Api/ClientModels.cs:122](../../../../src/Meridian.Contracts/Api/ClientModels.cs#L122) | Creates an unhealthy result with an error. |
-
-## SessionStatsDto
-
-Qualified name: <code>Meridian.Contracts.Api.SessionStatsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/LiveDataModels.cs:33](../../../../src/Meridian.Contracts/Api/LiveDataModels.cs#L33).
-
-Per-symbol intraday session statistics surfaced alongside live quotes so the watchlist and quote screens can render day open / high / low / change without an extra round trip.
-
-```csharp
-public sealed record SessionStatsDto(string SessionDate, decimal Open, decimal High, decimal Low, decimal Last, long Volume, decimal Vwap, long TradeCount, decimal Change, decimal? ChangePercent, DateTimeOffset FirstTradeAt, DateTimeOffset LastTradeAt);
-```
-
-## StatusResponse
-
-Qualified name: <code>Meridian.Contracts.Api.StatusResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/StatusModels.cs:8](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L8).
-
-Status response from the core service.
-
-```csharp
-public sealed class StatusResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;isConnected&quot;)] public bool IsConnected { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:11](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L11) |  |
-| <code>[JsonPropertyName(&quot;timestampUtc&quot;)] public DateTimeOffset TimestampUtc { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:14](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L14) |  |
-| <code>[JsonPropertyName(&quot;uptime&quot;)] public TimeSpan Uptime { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:17](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L17) |  |
-| <code>[JsonPropertyName(&quot;metrics&quot;)] public MetricsData? Metrics { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:20](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L20) |  |
-| <code>[JsonPropertyName(&quot;pipeline&quot;)] public PipelineData? Pipeline { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:23](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L23) |  |
-| <code>[JsonPropertyName(&quot;degradedMode&quot;)] public DegradedModeStatus? DegradedMode { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:30](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L30) | Degraded-mode posture (simulated market data, missing persistence). Null when the host does not evaluate degraded modes; consumers must not treat null as &quot;everything is fine&quot;. |
-
-## StorageAnalytics
-
-Qualified name: <code>Meridian.Contracts.Api.StorageAnalytics</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/StatusModels.cs:393](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L393).
-
-Storage analytics data.
-
-```csharp
-public sealed class StorageAnalytics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;totalSizeBytes&quot;)] public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:396](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L396) |  |
-| <code>[JsonPropertyName(&quot;tradeSizeBytes&quot;)] public long TradeSizeBytes { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:399](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L399) |  |
-| <code>[JsonPropertyName(&quot;depthSizeBytes&quot;)] public long DepthSizeBytes { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:402](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L402) |  |
-| <code>[JsonPropertyName(&quot;historicalSizeBytes&quot;)] public long HistoricalSizeBytes { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:405](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L405) |  |
-| <code>[JsonPropertyName(&quot;totalFileCount&quot;)] public int TotalFileCount { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:408](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L408) |  |
-| <code>[JsonPropertyName(&quot;tradeFileCount&quot;)] public int TradeFileCount { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:411](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L411) |  |
-| <code>[JsonPropertyName(&quot;depthFileCount&quot;)] public int DepthFileCount { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:414](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L414) |  |
-| <code>[JsonPropertyName(&quot;historicalFileCount&quot;)] public int HistoricalFileCount { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:417](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L417) |  |
-| <code>[JsonPropertyName(&quot;lastUpdated&quot;)] public DateTimeOffset LastUpdated { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:420](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L420) |  |
-| <code>[JsonPropertyName(&quot;symbolBreakdown&quot;)] public StorageSymbolBreakdown[]? SymbolBreakdown { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:423](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L423) |  |
-| <code>[JsonPropertyName(&quot;dailyGrowthBytes&quot;)] public long DailyGrowthBytes { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:426](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L426) |  |
-| <code>[JsonPropertyName(&quot;projectedDaysUntilFull&quot;)] public int? ProjectedDaysUntilFull { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:429](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L429) |  |
-
-## StorageProfileResponse
-
-Qualified name: <code>Meridian.Contracts.Api.StorageProfileResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:315](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L315).
-
-Response for setting storage profiles.
-
-```csharp
-public sealed record StorageProfileResponse([property : JsonPropertyName("profile")] string Profile, [property : JsonPropertyName("label")] string Label, [property : JsonPropertyName("description")] string Description);
-```
-
-## StorageSettingsRequest
-
-Qualified name: <code>Meridian.Contracts.Api.StorageSettingsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:15](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L15).
-
-Request to update storage settings.
-
-```csharp
-public record StorageSettingsRequest(string? DataRoot, bool Compress, string? NamingConvention, string? DatePartition, bool IncludeProvider, string? FilePrefix, string? Profile = null);
-```
-
-## StorageSymbolBreakdown
-
-Qualified name: <code>Meridian.Contracts.Api.StorageSymbolBreakdown</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/StatusModels.cs:435](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L435).
-
-Per-symbol storage information for analytics breakdown.
-
-```csharp
-public sealed class StorageSymbolBreakdown
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:438](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L438) |  |
-| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:441](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L441) |  |
-| <code>[JsonPropertyName(&quot;fileCount&quot;)] public int FileCount { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:444](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L444) |  |
-| <code>[JsonPropertyName(&quot;percentOfTotal&quot;)] public float PercentOfTotal { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:447](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L447) |  |
-| <code>[JsonPropertyName(&quot;oldestData&quot;)] public DateTimeOffset? OldestData { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:450](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L450) |  |
-| <code>[JsonPropertyName(&quot;newestData&quot;)] public DateTimeOffset? NewestData { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:453](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L453) |  |
-
-## SymbolBackfillResult
-
-Qualified name: <code>Meridian.Contracts.Api.SymbolBackfillResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/StatusModels.cs:280](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L280).
-
-Per-symbol backfill result.
-
-```csharp
-public sealed class SymbolBackfillResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/StatusModels.cs:283](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L283) |  |
-| <code>[JsonPropertyName(&quot;success&quot;)] public bool Success { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:286](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L286) |  |
-| <code>[JsonPropertyName(&quot;barsDownloaded&quot;)] public int BarsDownloaded { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:289](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L289) |  |
-| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:292](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L292) |  |
-| <code>[JsonPropertyName(&quot;error&quot;)] public string? Error { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:295](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L295) |  |

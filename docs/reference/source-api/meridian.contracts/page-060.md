@@ -6,6 +6,129 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutomatedJournalCapitalAccountReconciliationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalCapitalAccountReconciliationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L25).
+
+Reviewed capital-account tie-out for the NAV and high-water-mark inputs used by one monthly fee-accrual cycle. The scheduler verifies the retained values, variance, confidence, reviewer, source version, and evidence before it can create a draft.
+
+```csharp
+public sealed record AutomatedJournalCapitalAccountReconciliationDto(string ReconciliationId, string PeriodId, string Currency, decimal ReconciledBeginningNav, decimal ReconciledEndingNavBeforeFees, decimal ReconciledHighWaterMark, decimal CapitalAccountOpeningBalance, decimal CapitalAccountEndingBalanceBeforeFees, decimal CapitalAccountHighWaterMark, decimal MaximumVarianceTolerance, decimal ConfidenceScore, bool IsReconciled, string SourceVersion, string ReviewedBy, DateTimeOffset ReviewedAtUtc, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L43) |  |
+
+## AutomatedJournalScheduleStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalScheduleStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L8).
+
+Operator-visible state of scheduled fee-accrual and dividend-capture work.
+
+```csharp
+public enum AutomatedJournalScheduleStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotConfigured = 0</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L10) |  |
+| <code>Scheduled = 1</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L11) |  |
+| <code>Running = 2</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L12) |  |
+| <code>DraftReady = 3</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L13) |  |
+| <code>NeedsInvestigation = 4</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L14) |  |
+| <code>NoDraftRequired = 5</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L15) |  |
+| <code>Blocked = 6</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L16) |  |
+| <code>Failed = 7</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L17) |  |
+
+## AutomatedJournalScheduleStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalScheduleStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L51).
+
+Close-cockpit projection for the explicitly scoped monthly automated-journal work. Counts are schedule-run counts, not posted-journal counts; every produced item remains in the existing manual workbench for human approval and posting.
+
+```csharp
+public sealed record AutomatedJournalScheduleStatusDto(string? FundProfileId, Guid? LedgerBookId, string? PeriodId, int ConfiguredCount, int EnabledCount, int FeeScheduleCount, int DividendScheduleCount, int DraftReadyCount, int NeedsInvestigationCount, int BlockedCount, AutomatedJournalScheduleStateDto State, string Summary, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? Blockers = null, IReadOnlyList<Guid>? JournalEntryIds = null, decimal? MinimumEvidenceConfidence = null, AutomatedJournalEvidenceQualityDto? LowestEvidenceQuality = null, int HumanReviewQueueCount = 0, string? EntityId = null, string? TenantId = null, string? CompanyId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L74) |  |
+| <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L76) |  |
+| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L78) |  |
+
+## BankAccountSnapshot
+
+Qualified name: <code>Meridian.Contracts.Workstation.BankAccountSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:103](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L103).
+
+Banking-focused projection for statement and balance review tabs.
+
+```csharp
+public sealed record BankAccountSnapshot(Guid AccountId, string DisplayName, string AccountCode, string BankName, string Currency, decimal? CurrentBalance, decimal PendingSettlement, DateOnly? LastStatementDate, int StatementLineCount, string? LatestTransactionType, decimal? LatestTransactionAmount);
+```
+
+## BankStatementImportResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BankStatementImportResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L74).
+
+Result returned after a retained bank-statement source file is applied as account evidence.
+
+```csharp
+public sealed record BankStatementImportResultDto(string UploadId, Guid BatchId, Guid AccountId, string AccountCode, string BankName, DateOnly StatementDate, string FileName, long FileSizeBytes, string ImportedBy, DateTimeOffset ImportedAtUtc, string RetainedPath, int LineCount, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status, string NextAction);
+```
+
+## BiasDisclosureDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:280](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L280).
+
+Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
+
+```csharp
+public sealed record BiasDisclosureDto(string FillTiming, string FillConservatism, string DelistingPolicy, string UniverseSource, bool CorporateActionsAdjusted, string MaxSeverity, IReadOnlyList<BiasDisclosureItemDto> Items);
+```
+
+## BiasDisclosureItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:269](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L269).
+
+One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
+
+```csharp
+public sealed record BiasDisclosureItemDto(string Code, string Severity, string Title, string Detail);
+```
+
+## BookOfRecordStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BookOfRecordStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:140](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L140).
+
+Whether a ledger book may act as the book of record (publish, release, hard-close).
+
+```csharp
+public sealed record BookOfRecordStatusDto(Guid LedgerBookId, bool IsBookOfRecord, string? ShadowState, string? ShadowWorkspaceId, string Reason, int? CleanPeriodCount = null, int? RequiredPeriodCount = null, int? UnexplainedDifferenceCount = null);
+```
+
 ## BooksBeforeBrokerReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto</code>. Kind: `record`.
@@ -242,7 +365,7 @@ public sealed record CashFinancingSummary(string Currency, decimal TotalCash, de
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashFlowEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:997](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L997).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:986](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L986).
 
 A single historical cash-flow entry from a strategy run.
 
@@ -274,7 +397,7 @@ public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlo
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashLadderBucketDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1007](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1007).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:996](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L996).
 
 A single time-bucket within a projected cash ladder.
 
@@ -325,7 +448,7 @@ public sealed record ChangeSinglePrincipalDeclarationRequestDto(Guid CommandId, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ClosedLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1189](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1189).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1178](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1178).
 
 Workstation-facing summary of a closed lot for a strategy run.
 
@@ -489,137 +612,4 @@ Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:21](../../../../sr
 
 ```csharp
 public sealed record CreateOnboardingWorkspaceRequestDto(string Name, OnboardingScopeDto Scope, OnboardingCriteriaDto Criteria);
-```
-
-## CrossFundReportingConsolidationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CrossFundReportingConsolidationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:323](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L323).
-
-Cross-fund Reporting consolidation row for aggregated exposures and metrics.
-
-```csharp
-public sealed record CrossFundReportingConsolidationDto(string ConsolidationId, string Label, CrossFundReportingConsolidationScopeDto Scope, string Currency, bool IsReady, int FundCount, int EntityCount, int AccountCount, int RunCount, decimal GrossExposure, decimal NetExposure, decimal LongMarketValue, decimal ShortMarketValue, decimal TotalCash, decimal PendingSettlement, decimal TotalPnl, decimal ShadowNav, decimal ShadowNavVariance, int SourceCount, DateTimeOffset AsOf, string Route, string ReadinessSummary, IReadOnlyList<string> Tags, string? VersionStamp = null);
-```
-
-## CrossFundReportingConsolidationScopeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CrossFundReportingConsolidationScopeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:313](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L313).
-
-```csharp
-public enum CrossFundReportingConsolidationScopeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Company = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:315](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L315) |  |
-| <code>Fund = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:316](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L316) |  |
-| <code>Entity = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:317](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L317) |  |
-
-## DailyValuationBatchLifecycleRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DailyValuationBatchLifecycleRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L54).
-
-One human-governed command that submits, approves, and posts every draft in the latest daily valuation batch. The server derives the batch members from the retained schedule; callers cannot replace the journal-entry set.
-
-```csharp
-public sealed record DailyValuationBatchLifecycleRequestDto(string ScheduleId, string FundProfileId, string Actor, string Notes, IReadOnlyList<string>? EvidenceLinks = null, string? TenantId = null, string? CompanyId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.AutomationAssistant)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L69) |  |
-
-## DailyValuationBatchLifecycleResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DailyValuationBatchLifecycleResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L73).
-
-Result of one governed daily-valuation batch lifecycle command.
-
-```csharp
-public sealed record DailyValuationBatchLifecycleResultDto(string ScheduleId, string BatchCorrelationId, bool IsComplete, IReadOnlyList<Guid> JournalEntryIds, IReadOnlyList<Guid> PostedJournalEntryIds, IReadOnlyList<string>? Blockers = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:81](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L81) |  |
-
-## DailyValuationScheduleStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DailyValuationScheduleStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:7](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L7).
-
-Operator-visible state of a configured daily valuation schedule.
-
-```csharp
-public enum DailyValuationScheduleStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotConfigured = 0</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L9) |  |
-| <code>Scheduled = 1</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L10) |  |
-| <code>Running = 2</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L11) |  |
-| <code>DraftReady = 3</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L12) |  |
-| <code>NoAdjustment = 4</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L13) |  |
-| <code>Blocked = 5</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L14) |  |
-| <code>Failed = 6</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L15) |  |
-| <code>Posted = 7</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L16) |  |
-
-## DailyValuationScheduleStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DailyValuationScheduleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L22).
-
-Shared close-cockpit projection for scheduled daily valuation work.
-
-```csharp
-public sealed record DailyValuationScheduleStatusDto(string? ScheduleId, string? FundProfileId, Guid? LedgerBookId, Guid? PeriodId, bool IsConfigured, bool IsEnabled, DateTimeOffset? NextRunAtUtc, DateTimeOffset? LastRunAtUtc, DailyValuationScheduleStateDto State, string Summary, Guid? JournalEntryId, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string> Blockers, IReadOnlyList<Guid>? JournalEntryIds = null, string? BatchCorrelationId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L46) | Every governed draft in the latest valuation batch. JournalEntryId remains the first-entry compatibility alias for older clients. |
-
-## DataUploadPreviewResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadPreviewResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L53).
-
-Bounded upload preview result. The result retains evidence and validation output only.
-
-```csharp
-public sealed record DataUploadPreviewResultDto(string UploadId, string TemplateId, string TemplateLabel, string FileName, long FileSizeBytes, string ContentType, string UploadedBy, DateTimeOffset UploadedAtUtc, string RetainedPath, int ParsedRowCount, int PreviewRowCount, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyDictionary<string, string>> PreviewRows, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status, string NextAction);
-```
-
-## DataUploadTemplateCatalogDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadTemplateCatalogDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L12).
-
-Upload-template catalog surfaced by the Data workspace before source files are accepted.
-
-```csharp
-public sealed record DataUploadTemplateCatalogDto(IReadOnlyList<DataUploadTemplateDto> Templates, IReadOnlyList<string> AcceptedFileExtensions, int MaxPreviewRows, long MaxFileBytes, string? WorkbookFileName = null, IReadOnlyList<string>? WorkbookAcceptedFileExtensions = null, long WorkbookMaxFileBytes = 0);
 ```

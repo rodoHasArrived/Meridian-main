@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingPrimaryDocumentRendererWithLedgerReportPack
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingPrimaryDocumentRendererWithLedgerReportPack</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:124](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L124).
+
+Extended primary-document contract for renderers that can consume the exact checkpoint-bound ledger report pack supplied by the certified artifact producer. The complete PDF/XLSX pair is returned from one call so callers cannot produce format-dependent accounting presentations.
+
+```csharp
+public interface IReportingPrimaryDocumentRendererWithLedgerReportPack : IReportingPrimaryDocumentRenderer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:127](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L127) |  |
+
 ## IReportingProviderReceiptAuthenticator
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingProviderReceiptAuthenticator</code>. Kind: `interface`.
@@ -1023,23 +1041,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;OnboardingSourceCaptureDto&gt; CaptureOpeningAsync(OnboardingWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs:22](../../../../src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs#L22) |  |
-
-## OpenBreakHistory
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OpenBreakHistory</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:16](../../../../src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs#L16).
-
-Rebuilds the open-break count for recent days from the retained break queue, with no stored snapshots. A break counts as open at a moment when it had been detected and was not yet closed, using CrossScreenCountDefinitions.IsOpenBreak for &quot;closed&quot;. The queue keeps every status, so closed breaks still contribute to the days they were open.
-
-```csharp
-public static class OpenBreakHistory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Basis = &quot;Open breaks at each UTC day end, rebuilt from break detection, resolution and reopen times; today is the live count. Days the retained times cannot establish are left blank.&quot;;</code> | [src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:18](../../../../src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs#L18) |  |
-| <code>public static IReadOnlyList&lt;WorkstationMetricHistoryPointDto&gt; Build(IReadOnlyList&lt;ReconciliationBreakQueueItem&gt; items, DateTimeOffset now, int days = 14);</code> | [src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:25](../../../../src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs#L25) | days points, oldest first. The last point is now&#x27;s live count, so it always equals the headline figure; earlier points are each UTC day&#x27;s end. |
-| <code>public static decimal? CountOpenAt(IReadOnlyList&lt;ReconciliationBreakQueueItem&gt; items, DateTimeOffset moment);</code> | [src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:43](../../../../src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs#L43) | Open breaks just before moment, or null when any break&#x27;s state then is unknown. |

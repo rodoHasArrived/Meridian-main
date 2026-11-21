@@ -6,6 +6,174 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAccrualScheduleOutcomeDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualScheduleOutcomeDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:40](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L40).
+
+```csharp
+public enum IntercompanyAccrualScheduleOutcomeDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Due</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:40](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L40) |  |
+| <code>Drafted</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:40](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L40) |  |
+| <code>AlreadyDrafted</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:40](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L40) |  |
+| <code>Refused</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:40](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L40) |  |
+
+## IntercompanyAccrualScheduleRunDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualScheduleRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:49](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L49).
+
+Due periods of one schedule as of a date; a run lists what it drafted and why anything was refused.
+
+```csharp
+public sealed record IntercompanyAccrualScheduleRunDto(Guid ScheduleId, DateOnly AsOf, bool Executed, IReadOnlyList<IntercompanyAccrualScheduleWindowDto> Windows);
+```
+
+## IntercompanyAccrualScheduleStatusDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualScheduleStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L10).
+
+```csharp
+public enum IntercompanyAccrualScheduleStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Proposed</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L10) |  |
+| <code>Active</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L10) |  |
+| <code>Rejected</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L10) |  |
+| <code>Disabled</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L10) |  |
+
+## IntercompanyAccrualScheduleWindowDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualScheduleWindowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:43](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L43).
+
+One completed schedule period and what a run did, or would do, with it.
+
+```csharp
+public sealed record IntercompanyAccrualScheduleWindowDto(DateOnly AccrualFrom, DateOnly AccrualTo, IntercompanyAccrualScheduleOutcomeDto Outcome, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? DraftId, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? DraftStatus, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Reason);
+```
+
+## IntercompanyBalanceConfirmationActionDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L22).
+
+```csharp
+public enum IntercompanyBalanceConfirmationActionDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Propose</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:24](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L24) |  |
+| <code>Confirm</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:25](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L25) |  |
+| <code>Dispute</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:26](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L26) |  |
+| <code>Resolve</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:27](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L27) |  |
+
+## IntercompanyBalanceConfirmationActionRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:70](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L70).
+
+Confirms, disputes or resolves the exact retained version. ExpectedBalanceDigest is the digest the operator saw; a confirmation is refused if the balances moved since.
+
+```csharp
+public sealed record IntercompanyBalanceConfirmationActionRequest(Guid RequestId, IntercompanyBalanceConfirmationActionDto Action, IntercompanyBalanceConfirmationPartyDto? Party, long ExpectedVersion, string ExpectedBalanceDigest, string? Reason);
+```
+
+## IntercompanyBalanceConfirmationDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:57](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L57).
+
+A per-period reciprocal balance confirmation for one approved accounting profile. Party one and party two follow the profile&#x27;s legal agreement. NetTransactionBalance is the sum of both sides&#x27; signed transaction-currency balances; reciprocal books net to zero.
+
+```csharp
+public sealed record IntercompanyBalanceConfirmationDto(Guid ConfirmationId, string TenantId, string? CompanyId, Guid AccountingArrangementId, Guid IntercompanyAgreementId, DateOnly AsOf, long Version, IntercompanyBalanceConfirmationStatusDto Status, IntercompanyBalanceConfirmationSideDto PartyOne, IntercompanyBalanceConfirmationSideDto PartyTwo, decimal NetTransactionBalance, string BalanceDigest, IReadOnlyList<IntercompanyBalanceConfirmationEventDto> Events);
+```
+
+## IntercompanyBalanceConfirmationEventDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:49](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L49).
+
+One retained step. Each step pins the balance digest it acted on and the request identity that made it, so an identical retry returns the retained result instead of acting twice.
+
+```csharp
+public sealed record IntercompanyBalanceConfirmationEventDto(Guid EventId, Guid RequestId, IntercompanyBalanceConfirmationActionDto Action, IntercompanyBalanceConfirmationPartyDto? Party, string Actor, DateTimeOffset RecordedAt, string BalanceDigest, string? Reason);
+```
+
+## IntercompanyBalanceConfirmationFindingDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationFindingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:86](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L86).
+
+Codes: NotProposed, AwaitingConfirmation, Disputed, BalancesChanged, ResolvedAwaitingProposal, Unavailable.
+
+```csharp
+public sealed record IntercompanyBalanceConfirmationFindingDto(string Code, string Message, Guid AccountingArrangementId, Guid? ConfirmationId);
+```
+
+## IntercompanyBalanceConfirmationJsonContext
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:97](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L97).
+
+```csharp
+public partial class IntercompanyBalanceConfirmationJsonContext : JsonSerializerContext;
+```
+
+## IntercompanyBalanceConfirmationPartyDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationPartyDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:31](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L31).
+
+```csharp
+public enum IntercompanyBalanceConfirmationPartyDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>PartyOne</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:33](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L33) |  |
+| <code>PartyTwo</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:34](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L34) |  |
+
+## IntercompanyBalanceConfirmationSideDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSideDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:41](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L41).
+
+One side&#x27;s posted due-to/due-from balance for the agreement pair at the as-of date, summed from its own book&#x27;s balance schedule rows. Amounts come only from posted journals; nothing is entered by an operator.
+
+```csharp
+public sealed record IntercompanyBalanceConfirmationSideDto(Guid EntityId, Guid LedgerBookId, string TransactionCurrency, decimal TransactionSignedBalance, string FunctionalCurrency, decimal FunctionalSignedBalance, string ScheduleContentHash, IReadOnlyList<Guid> JournalEntryIds);
+```
+
 ## IntercompanyBalanceConfirmationStatusDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationStatusDto</code>. Kind: `enum`.
@@ -440,7 +608,7 @@ public sealed record IntercompanyRefreshPreviewDto(ManualJournalEntryDraftDto Dr
 
 Qualified name: <code>Meridian.Contracts.Ledger.InvestorCapitalStatementDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:813](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L813).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:809](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L809).
 
 ```csharp
 public sealed record InvestorCapitalStatementDto(string StatementId, string FundProfileId, Guid? LedgerBookId, string CapitalAccountId, string? InvestorId, string PeriodId, LedgerDimensionSetDto Dimensions, decimal BeginningCapital, decimal Contributions, decimal Distributions, decimal RealizedGainLoss, decimal EndingCapital, string Currency, AccountingCertificationStateDto CertificationState, IReadOnlyList<string> EvidenceLinks);
@@ -450,7 +618,7 @@ public sealed record InvestorCapitalStatementDto(string StatementId, string Fund
 
 Qualified name: <code>Meridian.Contracts.Ledger.IPrivateCapitalFundEventCommandCenterService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1138](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1138).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1134](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1134).
 
 Builds the command center view for a specific private capital fund event.
 
@@ -462,7 +630,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;PrivateCapitalFundEventCommandCenterDto?&gt; GetCommandCenterAsync(string? fundProfileId, Guid? ledgerBookId, string fundEventId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1140](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1140) |  |
+| <code>Task&lt;PrivateCapitalFundEventCommandCenterDto?&gt; GetCommandCenterAsync(string? fundProfileId, Guid? ledgerBookId, string fundEventId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1136](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1136) |  |
 
 ## JournalEntryLifecycleActionDto
 
@@ -555,180 +723,4 @@ Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1254](../.
 
 ```csharp
 public sealed record JournalEntryReversalDto(Guid OriginalJournalEntryId, Guid ReversalJournalEntryId, string Reason, DateTimeOffset CreatedAtUtc, string CreatedBy);
-```
-
-## JournalEntryTemplateDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.JournalEntryTemplateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:254](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L254).
-
-```csharp
-public sealed record JournalEntryTemplateDto(string TemplateId, string DisplayName, string Description, IReadOnlyList<JournalEntryTemplateLineDto> Lines, bool IsArchived = false, string Version = "v1");
-```
-
-## JournalEntryTemplateLineDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.JournalEntryTemplateLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:246](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L246).
-
-```csharp
-public sealed record JournalEntryTemplateLineDto(string LineId, string AccountPath, AccountingTemplateLineSideDto Side, decimal Amount, string Currency = "USD", string? Description = null);
-```
-
-## LateAdjustmentRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LateAdjustmentRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:296](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L296).
-
-```csharp
-public sealed record LateAdjustmentRequestDto(string RequestId, Guid JournalEntryId, string RequestedBy, DateTimeOffset RequestedAtUtc, decimal Amount, string Currency, string Reason, ManualJournalEntryStatusDto ApprovalState, MaterialityPolicyDto MaterialityPolicy, IReadOnlyList<string>? EvidenceLinks = null, string? DecidedBy = null, DateTimeOffset? DecidedAtUtc = null, string? DecisionNotes = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:311](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L311) |  |
-
-## LedgerAccountingArrangementDimensions
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerAccountingArrangementDimensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerAccountingArrangementDimensions.cs:4](../../../../src/Meridian.Contracts/Ledger/LedgerAccountingArrangementDimensions.cs#L4).
-
-Optional operational accounting provenance, separate from native legal agreement references.
-
-```csharp
-public static class LedgerAccountingArrangementDimensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string AppendSignature(string signature, LedgerDimensionSetDto dimensions, string separator = &quot;&#124;&quot;);</code> | [src/Meridian.Contracts/Ledger/LedgerAccountingArrangementDimensions.cs:7](../../../../src/Meridian.Contracts/Ledger/LedgerAccountingArrangementDimensions.cs#L7) | Preserves existing report and accumulator signatures when operational provenance is absent. |
-
-## LedgerAccountRunningBalanceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerAccountRunningBalanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:389](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L389).
-
-Posting history of one account inside an accounting period, with a running balance in the account&#x27;s normal-balance sign (debit-normal for assets and expenses, credit-normal otherwise). The balance starts at zero at the first posting of the period.
-
-```csharp
-public sealed record LedgerAccountRunningBalanceDto(Guid PeriodId, Guid LedgerBookId, string AccountName, string? AccountType, string? Symbol, string? FinancialAccountId, decimal TotalDebits, decimal TotalCredits, decimal EndingBalance, IReadOnlyList<LedgerAccountRunningBalancePointDto> Points)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;LedgerAccountRunningBalancePointDto&gt; Points { get; init; } = Points??[];</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:401](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L401) |  |
-
-## LedgerAccountRunningBalancePointDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerAccountRunningBalancePointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:374](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L374).
-
-One posting to an account with the account balance after it.
-
-```csharp
-public sealed record LedgerAccountRunningBalancePointDto(Guid JournalEntryId, Guid EntryId, long GlobalSequence, DateTimeOffset Timestamp, string Description, decimal Debit, decimal Credit, decimal Balance);
-```
-
-## LedgerAdjustmentApprovalMetadataDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:84](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L84).
-
-```csharp
-public sealed record LedgerAdjustmentApprovalMetadataDto(string ApprovalId, LedgerAdjustmentApprovalStatusDto Status, string ApprovedBy, DateTimeOffset ApprovedAt, string ReasonCode, string? GovernanceCaseId = null, string? EvidenceLink = null, string? Notes = null);
-```
-
-## LedgerAdjustmentApprovalStatusDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerAdjustmentApprovalStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:57](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L57).
-
-```csharp
-public enum LedgerAdjustmentApprovalStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending = 0</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:59](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L59) |  |
-| <code>Approved = 1</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:60](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L60) |  |
-| <code>Rejected = 2</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:61](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L61) |  |
-| <code>Superseded = 3</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:62](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L62) |  |
-
-## LedgerAgreementDimensions
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerAgreementDimensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs:6](../../../../src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs#L6).
-
-Canonical optional agreement provenance carried by ledger line dimensions.
-
-```csharp
-public static class LedgerAgreementDimensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string AppendSignature(string signature, Guid? agreementId, int? agreementVersion, string separator = &quot;&#124;&quot;);</code> | [src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs:9](../../../../src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs#L9) | Preserves legacy signatures exactly when agreement provenance is absent. |
-| <code>public static Guid? ReadId(IReadOnlyDictionary&lt;string, string&gt;? tags, string prefix = &quot;&quot;);</code> | [src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs:18](../../../../src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs#L18) |  |
-| <code>public static int? ReadVersion(IReadOnlyDictionary&lt;string, string&gt;? tags, string prefix = &quot;&quot;);</code> | [src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs:27](../../../../src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs#L27) |  |
-
-## LedgerBookControlModeDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerBookControlModeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L6).
-
-```csharp
-public enum LedgerBookControlModeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LegacyWarning</code> | [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L6) |  |
-| <code>Enforced</code> | [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L6) |  |
-
-## LedgerBookControlPreflightDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerBookControlPreflightDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:25](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L25).
-
-```csharp
-public sealed record LedgerBookControlPreflightDto(Guid LedgerBookId, long ProfileVersion, string PolicyVersion, IReadOnlyList<LedgerControlDecisionDto> Decisions, string Digest, DateTimeOffset PreparedAtUtc)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool CanActivate =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:33](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L33) |  |
-
-## LedgerBookControlProfileDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerBookControlProfileDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L8).
-
-```csharp
-public sealed record LedgerBookControlProfileDto(Guid LedgerBookId, LedgerBookControlModeDto Mode, long Version, string PolicyVersion, DateTimeOffset CreatedAtUtc, DateTimeOffset? ActivatedAtUtc = null, string? ActivatedBy = null, string? MigrationReceiptId = null);
 ```
