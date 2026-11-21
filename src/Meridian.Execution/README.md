@@ -36,6 +36,8 @@ multipliers, exact remaining lot basis and NAV come from the retained book rathe
 quotes. Variation-margin positions report their actual zero carrying basis separately from
 unsettled value. Currency comes from an explicit ledger policy or authorized book/session binding.
 Observed position ownership alone cannot assign pooled cash to a fund.
+Defensive session projections preserve the durable session's declared account and journal currency;
+legacy sessions without that declaration retain unavailable currency and account evidence.
 
 The admission gate retains a resolved canonical security ID in OMS state. A new successful typed
 strategy-run admission also retains `AccountingRunId` from its authorized root authority. Legacy

@@ -7,6 +7,7 @@ using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Ledger;
 using Microsoft.Extensions.Logging.Abstractions;
+using OrderStatus = Meridian.Execution.Sdk.OrderStatus;
 
 namespace Meridian.Tests.Execution;
 
@@ -25,13 +26,15 @@ public sealed class PaperNativeSnapshotEvidenceTests
     [InlineData("variation")]
     public void EveryFillPrefix_CapturesNativeQuantityBasisAndSameBookMoney(string scenario)
     {
-        var ledger = new Meridian.Ledger.Ledger(LedgerPolicy.Trading("USD"));
+        // Native paper journals keep their legacy shape; the synthetic book separately
+        // declares its read-side currency, as retained native sessions do in production.
+        var ledger = new Meridian.Ledger.Ledger();
         var margin = scenario.StartsWith("margin", StringComparison.Ordinal);
         var portfolio = new PaperTradingPortfolio([
             new(AccountId, "Native account", AccountKind.Brokerage, margin ? 200m : 100000m,
-                margin ? MarginAccountType.RegT : MarginAccountType.Cash),
-            new("foreign-account", "Other account", AccountKind.Brokerage, 7654m)
+                margin ? MarginAccountType.RegT : MarginAccountType.Cash)
         ], ledger);
+        portfolio.BindPositionAccountingEvidenceScope(AccountId, "USD");
         var fills = scenario switch
         {
             "margin" => new[] { (OrderSide.Buy, 5m, 100m), (OrderSide.Sell, 8m, 150m), (OrderSide.Buy, 4m, 170m) },
@@ -75,8 +78,7 @@ public sealed class PaperNativeSnapshotEvidenceTests
             account.AccountingShortMarketValue.Should().BeLessThanOrEqualTo(0m);
             account.AccountingEquity.Should().Be(account.Cash + account.AccountingLongMarketValue
                 + account.AccountingShortMarketValue - account.MarginBalance + account.ShortMarginCollateral);
-            capture.Accounts.Single(item => item.AccountId == "foreign-account").Cash.Should().Be(7654m);
-            capture.CoveredFinancialAccountIds.Should().BeEquivalentTo([AccountId, "foreign-account"]);
+            capture.CoveredFinancialAccountIds.Should().Equal(AccountId);
             capture.AsOf.Should().BeOnOrAfter(fill.Timestamp);
             portfolio.CheckLedgerIntegrity().Should().BeEmpty();
         }
@@ -121,9 +123,23 @@ public sealed class PaperNativeSnapshotEvidenceTests
     }
 
     [Fact]
+    public void RegisteredAccountPartitionsKeepSeparateMoneyWithoutInventingBookCurrency()
+    {
+        var portfolio = new PaperTradingPortfolio([
+            new(AccountId, "Native account", AccountKind.Brokerage, 1000m),
+            new("foreign-account", "Other account", AccountKind.Brokerage, 7654m)
+        ], new Meridian.Ledger.Ledger());
+        var capture = portfolio.CapturePositionAccountingEvidence();
+        capture.CoveredFinancialAccountIds.Should().BeEquivalentTo([AccountId, "foreign-account"]);
+        capture.Accounts.Single(account => account.AccountId == AccountId).Cash.Should().Be(1000m);
+        capture.Accounts.Single(account => account.AccountId == "foreign-account").Cash.Should().Be(7654m);
+        capture.Accounts.Should().OnlyContain(account => account.FunctionalCurrency == null);
+    }
+
+    [Fact]
     public void SharedUnscopedCashAndUnboundCurrencyAreNotAttributedFromPositionOwnership()
     {
-        var unscoped = new PaperTradingPortfolio(1000m, new Meridian.Ledger.Ledger(LedgerPolicy.Trading("USD")));
+        var unscoped = new PaperTradingPortfolio(1000m, new Meridian.Ledger.Ledger());
         unscoped.ApplyFill(Fill(OrderSide.Buy, 1m, 100m), AccountId);
         var capture = unscoped.CapturePositionAccountingEvidence();
         capture.Positions.Single().FinancialAccountId.Should().Be(AccountId);
@@ -139,6 +155,20 @@ public sealed class PaperNativeSnapshotEvidenceTests
     }
 
     [Fact]
+    public async Task LegacySessionProjectionDoesNotInventCurrencyOrAccountCoverage()
+    {
+        await using var service = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance);
+        var session = await service.CreateSessionAsync(new CreatePaperSessionDto("legacy", "Legacy paper", 1000m));
+        await service.RecordFillAsync(session.SessionId, Fill(OrderSide.Buy, 1m, 100m) with
+        { Timestamp = session.CreatedAt.AddSeconds(1) });
+        var capture = service.GetActivePortfolio(session.SessionId)!.CapturePositionAccountingEvidence();
+        capture.Positions.Should().ContainSingle().Which.Currency.Should().BeNull();
+        capture.Positions.Single().MonetaryBasis.Should().BeNull();
+        capture.CoveredFinancialAccountIds.Should().BeEmpty();
+        capture.Accounts.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task NativeSessionRestartPreservesAdmittedIdentityRunUnitsAndExactBasis()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-native-snapshot-" + Guid.NewGuid().ToString("N"));
@@ -151,7 +181,8 @@ public sealed class PaperNativeSnapshotEvidenceTests
             {
                 var session = await service.CreateSessionAsync(new CreatePaperSessionDto("strategy", "Synthetic", 1000m));
                 sessionId = session.SessionId;
-                await service.RecordFillAsync(sessionId, Fill(OrderSide.Buy, .75m, 100.1234m));
+                await service.RecordFillAsync(sessionId, Fill(OrderSide.Buy, .75m, 100.1234m) with
+                { Timestamp = session.CreatedAt.AddSeconds(1) });
                 expected = service.GetActivePortfolio(sessionId)!.CapturePositionAccountingEvidence();
             }
             await using var restarted = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance,
@@ -167,9 +198,14 @@ public sealed class PaperNativeSnapshotEvidenceTests
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
     }
 
-    private static PaperTradingPortfolio ScopedPortfolio() => new(
-        [new AccountDefinition(AccountId, "Native account", AccountKind.Brokerage, 10000m)],
-        new Meridian.Ledger.Ledger(LedgerPolicy.Trading("USD")));
+    private static PaperTradingPortfolio ScopedPortfolio()
+    {
+        var portfolio = new PaperTradingPortfolio(
+            [new AccountDefinition(AccountId, "Native account", AccountKind.Brokerage, 10000m)],
+            new Meridian.Ledger.Ledger());
+        portfolio.BindPositionAccountingEvidenceScope(AccountId, "USD");
+        return portfolio;
+    }
 
     private static ExecutionReport Fill(OrderSide side, decimal quantity, decimal price, int sequence = 0) => new()
     {

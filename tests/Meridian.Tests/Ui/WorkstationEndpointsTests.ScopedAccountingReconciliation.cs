@@ -157,7 +157,7 @@ public sealed partial class WorkstationEndpointsTests
             result.Breaks.Should().Contain(item => item.CheckId == "ledger-summary-missing");
         }
         result.Matches.Should().NotContain(item => item.Measures.Any(measure =>
-            measure.Kind is ReconciliationBreakMeasureKindDto.Quantity or ReconciliationBreakMeasureKindDto.CostBasis));
+            measure.Kind == ReconciliationBreakMeasureKindDto.Quantity || measure.Kind == ReconciliationBreakMeasureKindDto.CostBasis));
     }
 
     private static StrategyRunEntry ScopedAccountingRun(string runId, Guid accountId, Guid securityId, DateTimeOffset cut)

@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Tenancy;
+using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Strategies.Models;
@@ -324,7 +325,7 @@ public sealed class PostedStrategyRunLedgerSourceTests
     }
 
     [Fact]
-    public async Task ExplicitlyRetainedEmptyLedger_RemainsAvailableForANewRun()
+    public async Task PrivateEmptyMetricsLedger_DoesNotAttestPostedRunCoverage()
     {
         var run = Run with { Metrics = Result(new Meridian.Ledger.Ledger()), LedgerReference = "retained-empty-run-ledger" };
         var (store, registry) = Stores([]);
@@ -332,11 +333,47 @@ public sealed class PostedStrategyRunLedgerSourceTests
         var (reads, continuity) = await ReadersAsync(run, source);
 
         (await source.ReadAsync(run, Scope)).Should().BeNull("an empty authorized book cannot attest posted run coverage");
-        (await reads.GetLedgerSnapshotAsync(run.RunId, Scope))!.Journal.Should().BeEmpty();
-        (await reads.GetLedgerSummaryAsync(run.RunId, Scope))!.JournalEntryCount.Should().Be(0);
+        (await reads.GetLedgerSnapshotAsync(run.RunId, Scope)).Should().BeNull();
+        (await reads.GetLedgerSummaryAsync(run.RunId, Scope)).Should().BeNull();
         var detail = await continuity.GetRunContinuityAsync(run.RunId, Scope);
-        detail!.ContinuityStatus.HasLedger.Should().BeTrue("the retained run explicitly supplies an empty ledger");
-        detail.ContinuityStatus.Warnings.Should().NotContain(warning => warning.Code == "missing-ledger");
+        detail!.ContinuityStatus.HasLedger.Should().BeFalse("a retained label cannot establish an authoritative empty run population");
+        detail.ContinuityStatus.Warnings.Should().Contain(warning => warning.Code == "missing-ledger");
+    }
+
+    [Fact]
+    public async Task AuthoritativeEmptyRunCapture_PreservesJournalAvailabilityWithoutInventingAccountStocks()
+    {
+        var account = AccountId.ToString("D");
+        var positions = new Dictionary<string, Position>();
+        var snapshot = new PortfolioSnapshot(At, DateOnly.FromDateTime(At.UtcDateTime), 100m, 0m, 0m, 0m, 100m, 0m,
+            positions, new Dictionary<string, FinancialAccountSnapshot>
+            {
+                [account] = new(account, "Captured account", FinancialAccountKind.Brokerage, "Synthetic",
+                    100m, 0m, 0m, 0m, 100m, positions, new())
+            }, []) { AccountingPositions = [], FunctionalCurrency = "USD" };
+        var run = Run with { Metrics = Result(new Meridian.Ledger.Ledger()) with { Snapshots = [snapshot] } };
+        var source = new CapturedEmptyRunSource(run.RunId, Scope);
+        var (reads, continuity) = await ReadersAsync(run, source);
+
+        (await reads.GetLedgerSnapshotAsync(run.RunId, Scope))!.Journal.Should().BeEmpty();
+        var summary = (await reads.GetLedgerSummaryAsync(run.RunId, Scope))!;
+        summary.JournalEntryCount.Should().Be(0);
+        summary.BalanceComparisonUnavailableReason.Should().NotBeNullOrWhiteSpace();
+        var detail = (await reads.GetRunDetailAsync(run.RunId, Scope))!;
+        detail.Portfolio!.HasRetainedAccountingPositionPopulation.Should().BeTrue();
+        detail.Portfolio.AccountingPositions.Should().BeEmpty();
+        (await continuity.GetRunContinuityAsync(run.RunId, Scope))!.ContinuityStatus.HasLedger.Should().BeTrue();
+
+        var reconciliation = new ReconciliationRunService(reads, new ReconciliationProjectionService(),
+            new InMemoryReconciliationRunRepository());
+        var result = (await reconciliation.RunAsync(new(run.RunId), Scope))!;
+        result.Breaks.Should().HaveCount(2);
+        result.Breaks.Should().OnlyContain(item => (item.CheckId == "cash-balance" || item.CheckId == "net-equity")
+            && item.Category == ReconciliationBreakCategory.ClassificationGap
+            && item.Measures != null && item.Measures.All(measure => measure.Expected == null && measure.Actual == null
+                && measure.Variance == null && measure.UnavailableReason != null));
+        result.Matches.Should().NotContain(item => item.Measures != null && item.Measures.Any(measure =>
+            measure.Kind == ReconciliationBreakMeasureKindDto.Quantity || measure.Kind == ReconciliationBreakMeasureKindDto.CostBasis));
     }
 
     [Fact]
@@ -476,7 +513,7 @@ public sealed class PostedStrategyRunLedgerSourceTests
     }
 
     private static async Task<(StrategyRunReadService Reads, StrategyRunContinuityService Continuity)> ReadersAsync(
-        StrategyRunEntry run, PostedStrategyRunLedgerSource source)
+        StrategyRunEntry run, IStrategyRunLedgerSource source)
     {
         var repository = new StrategyRunStore();
         await repository.RecordRunAsync(run);
@@ -485,6 +522,15 @@ public sealed class PostedStrategyRunLedgerSourceTests
         var reconciliation = new ReconciliationRunService(reads, new ReconciliationProjectionService(),
             new InMemoryReconciliationRunRepository());
         return (reads, new StrategyRunContinuityService(reads, new CashFlowProjectionService(repository), reconciliation));
+    }
+
+    // This source explicitly attests an empty activity population for one resolved run/scope.
+    // The interface's default stock-coverage limitation deliberately remains in force.
+    private sealed class CapturedEmptyRunSource(string runId, StrategyRunReadScope authorizedScope) : IStrategyRunLedgerSource
+    {
+        public Task<IReadOnlyLedger?> ReadAsync(StrategyRunEntry run, StrategyRunReadScope scope, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyLedger?>(run.RunId == runId && scope == authorizedScope
+                ? new Meridian.Ledger.Ledger() : null);
     }
 
     private static BacktestResult Result(IReadOnlyLedger ledger) => new(

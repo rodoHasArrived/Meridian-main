@@ -1245,7 +1245,11 @@ public sealed partial class LiveTradingEngineTests
             var hub = new LiveMarketEventHub();
             var cache = new LiveMarketDataCache();
             var manager = new RecordingOrderManager(101m);
-            await using var engine = CreateEngine(restarted, hub, cache, manager);
+            var portfolio = new PaperTradingPortfolio([
+                new AccountDefinition(fundAccountId.ToString("D"), "Promoted paper account",
+                    Meridian.Execution.Models.AccountKind.Brokerage, 100_000m)
+            ]);
+            await using var engine = CreateEngine(restarted, hub, cache, manager, portfolio: portfolio);
             (await engine.ResumePendingRunsAsync()).Should().Be(1);
             await PublishTradesUntilAsync(hub, cache, "AAPL", 101m, () => !manager.Requests.IsEmpty);
             manager.Requests.Should().ContainSingle().Which.FundAccountId.Should().Be(fundAccountId);
