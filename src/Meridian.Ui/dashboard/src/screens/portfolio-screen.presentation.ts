@@ -1,5 +1,5 @@
-import { formatNumber as formatNumberAmount, formatRatioAsPercent as formatRatioAsPercentAmount, pluralizeCount, formatTimestamp } from "@/lib/format";
-import type { TradingWorkspaceResponse } from "@/types";
+import { formatMoney, formatNumber as formatNumberAmount, formatRatioAsPercent as formatRatioAsPercentAmount, pluralizeCount, formatTimestamp } from "@/lib/format";
+import type { BrokerageHouseholdPosition, TradingWorkspaceResponse } from "@/types";
 import type {
   PortfolioBrokerageAccountOption,
   PortfolioDetailField,
@@ -81,6 +81,22 @@ export function formatRatioAsPercent(value: number): string {
 
 export function formatNumber(value: number): string {
   return formatNumberAmount(value, { maximumFractionDigits: 4 });
+}
+
+export function formatBrokeragePositionAmounts(position: BrokerageHouseholdPosition) {
+  function money(field: string, value: number, decimals: number, signed = false) {
+    const proof = position.amountPassports?.[field];
+    return proof?.origin === "unavailable" ? "—" : formatMoney(proof?.exactValue ?? value, {
+      currency: position.currency?.trim() || null, decimals, signed
+    });
+  }
+  return {
+    quantity: position.amountPassports?.quantity?.origin === "unavailable" ? "—" : formatNumber(position.quantity),
+    averagePrice: money("average-price", position.averageEntryPrice, 2),
+    markPrice: money("mark", position.marketPrice, 2),
+    marketValue: money("market-value", position.marketValue, 0),
+    unrealizedPnl: money("unrealized-pnl", position.unrealizedPnl, 0, true)
+  };
 }
 
 export function formatCountLabel(count: number, noun: string): string {

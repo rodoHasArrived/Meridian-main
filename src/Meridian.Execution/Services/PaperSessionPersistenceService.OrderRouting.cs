@@ -23,6 +23,11 @@ public sealed partial class PaperSessionPersistenceService
         var accountId = authority.AccountGrant?.FundAccountId.ToString("D") ?? PaperTradingPortfolio.DefaultAccountId;
 
         var sessionId = selectedSessionId;
+        if (IsStrategyRunSessionId(sessionId) && (!request.IntentId.HasValue
+            || authority.Origin != OrderCommandOrigin.StrategyRun || authority.RunId is not { } runId
+            || sessionId != authority.SessionId || sessionId != GetStrategyRunSessionId(runId)))
+            throw new InvalidOperationException("The selected paper session requires authority for its strategy run.");
+
         if (string.IsNullOrWhiteSpace(sessionId))
         {
             var session = await CreateSessionAsync(new CreatePaperSessionDto("paper-account", "Paper account")

@@ -18,6 +18,34 @@ Outcome of seeding the demo workspace.
 public sealed record DemoWorkspaceSeedReport(string DemoRoot, string Provenance, DemoTenantProvisioningReport Provisioning, int MarketHistoryTradePrintsSeeded = 0);
 ```
 
+## DesignerBacktestBlockedException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DesignerBacktestBlockedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:260](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L260).
+
+```csharp
+public sealed class DesignerBacktestBlockedException(string message, Exception? cause = null) : Exception(message, cause);
+```
+
+## DesignerBacktestService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DesignerBacktestService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:24](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L24).
+
+Runs the hosted Designer&#x27;s bounded daily-equity replay against retained, exact inputs.
+
+```csharp
+public sealed class DesignerBacktestService(string dataRoot, Func<BacktestRequest, BacktestEngine> engineFactory, IStrategyRepository runs, IEvidenceArtifactStore evidence, StrategyDesignService designs, IOperationalTradingCalendar calendar, ISecurityIdentityQueryService? securities, ISecurityCorporateActionsQueryService? corporateActions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;StrategyRunEntry&gt; RunAsync(StrategyDesignDocument document, StrategyRunRepositoryScope scope, string actor, Guid accountId, DateOnly from, DateOnly to, StrategyRunEvidenceLoop evidenceLoop, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:38](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L38) |  |
+
 ## DesktopLaunchTicketService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DesktopLaunchTicketService</code>. Kind: `class`.
@@ -870,43 +898,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;PrivateCapitalLifecycleRead&gt; ReadAsync(string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default, Func&lt;DateOnly, CancellationToken, Task&lt;IReadOnlySet&lt;string&gt;&gt;&gt;? historicalEntityScope = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:31](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L31) |  |
 | <code>public static PrivateCapitalLifecycleRead Project(PrivateCapitalLifecycleDocumentDto document, string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, IReadOnlyDictionary&lt;DateOnly, IReadOnlySet&lt;string&gt;&gt;? historicalEntityScopes = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:68](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L68) |  |
-
-## FileReconciliationSlaCalendarResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileReconciliationSlaCalendarResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:10](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L10).
-
-One host-lifetime snapshot of operator-declared calendars; named calendars never fall back.
-
-```csharp
-public sealed class FileReconciliationSlaCalendarResolver : IReconciliationSlaCalendarResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string RelativePath = &quot;reconciliation/sla-calendars.json&quot;;</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:12](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L12) |  |
-| <code>public FileReconciliationSlaCalendarResolver(string dataDirectory);</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:16](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L16) |  |
-| <code>public IReconciliationSlaCalendar Resolve(ReconciliationSlaPolicy policy);</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:49](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L49) |  |
-
-## FileReportingReconciliationEvidenceStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileReportingReconciliationEvidenceStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:138](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L138).
-
-Durable local production store. The snapshot is atomically replaced, while individual receipts are append-only and content-immutable by their full scope/source key.
-
-```csharp
-public sealed class FileReportingReconciliationEvidenceStore : JsonFileSnapshotStore<FileReportingReconciliationEvidenceStore.Snapshot>, IReportingReconciliationEvidenceRetentionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileReportingReconciliationEvidenceStore(string snapshotPath) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;A reporting reconciliation evidence snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:147](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L147) |  |
-| <code>public async ValueTask&lt;ReportingReconciliationEvidenceReceipt?&gt; GetExactAsync(string tenantId, string organizationId, string? companyId, string fundId, string ledgerBookId, string accountingPeriodId, string accountingBasis, DateOnly asOfDate, string sourceCheckpointId, string sourceCheckpointHash, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:180](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L180) |  |
-| <code>public async ValueTask&lt;bool&gt; RetainAsync(ReportingReconciliationEvidenceReceipt receipt, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:212](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L212) |  |

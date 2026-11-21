@@ -49,6 +49,9 @@ public sealed class OrderManagementSystemOptions
     /// </summary>
     public bool RequireProductionSafetyDependencies { get; init; }
 
+    /// <summary>Identifies the single account and workspace that own this simulator's shared book.</summary>
+    public PaperOrderIntentScope? PaperIntentScope { get; init; }
+
     public int ValidatedMaxRetainedOrders => MaxRetainedOrders > 0
         ? MaxRetainedOrders
         : DefaultMaxRetainedOrders;
@@ -72,4 +75,17 @@ public sealed class OrderManagementSystemOptions
         && ExecutionSubscriberDrainTimeout != Timeout.InfiniteTimeSpan
             ? ExecutionSubscriberDrainTimeout
             : DefaultExecutionSubscriberDrainTimeout;
+}
+
+public sealed record PaperOrderIntentScope
+{
+    public string TenantId { get; init; } = "";
+    public string CompanyId { get; init; } = "";
+    public Guid FundAccountId { get; init; }
+
+    public bool CanAccess(string? tenantId, string? companyId, Guid accountId) =>
+        accountId != Guid.Empty && accountId == FundAccountId &&
+        !string.IsNullOrWhiteSpace(TenantId) && !string.IsNullOrWhiteSpace(CompanyId) &&
+        string.Equals(TenantId.Trim(), tenantId?.Trim(), StringComparison.Ordinal) &&
+        string.Equals(CompanyId.Trim(), companyId?.Trim(), StringComparison.Ordinal);
 }

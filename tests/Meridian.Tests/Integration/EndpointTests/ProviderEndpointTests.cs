@@ -2,9 +2,9 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Core.IO;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
-using Meridian.Core.IO;
 using Meridian.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -134,9 +134,9 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         json["isAvailable"].GetBoolean().Should().BeTrue("an empty retained period does not mean the history service is unavailable");
         json["history"].ValueKind.Should().Be(JsonValueKind.Array);
         json["history"].GetArrayLength().Should().Be(0);
-        json["timestamp"].GetDateTimeOffset().Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
         json["dailyRollupsAvailable"].GetBoolean().Should().BeTrue();
         json["dailyRollups"].GetArrayLength().Should().Be(0);
+        json["timestamp"].GetDateTimeOffset().Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
         json["message"].GetString().Should().Contain("Recent events are held in memory")
             .And.Contain("last seven UTC dates across host restarts");
     }
@@ -145,13 +145,14 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     public async Task GetRateLimitHistory_ReturnsRetainedQuotaAndActualRotationEvidence()
     {
         var provider = $"history-observed-{Guid.NewGuid():N}";
-        var resetAt = DateTimeOffset.UtcNow.AddMinutes(1);
+        var now = DateTimeOffset.UtcNow;
+        var resetAt = now.AddMinutes(1);
         var history = ProviderRateLimitHistory.ForDataRoot(
             _fixture.Services.GetRequiredService<StorageOptions>().RootPath,
             _fixture.Services.GetRequiredService<IAtomicFileWriter>());
         history.Record(provider,
             new RateLimitStatus(provider, 5, 5, TimeSpan.FromMinutes(1), true,
-                TimeSpan.FromMinutes(1), 1, DateTimeOffset.UtcNow, resetAt),
+                TimeSpan.FromMinutes(1), 1, now, resetAt),
             nextProvider: "stooq", httpStatus: 429);
 
         var response = await _providerReadClient.GetAsync($"/api/providers/{provider}/rate-limit-history?hours=12");
@@ -170,9 +171,11 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         retained.GetProperty("httpStatus").GetInt32().Should().Be(429);
         json["dailyRollupsAvailable"].GetBoolean().Should().BeTrue();
         json["dailyRollups"].GetArrayLength().Should().Be(1);
-        var daily = json["dailyRollups"][0];
-        daily.GetProperty("throttleCount").GetInt64().Should().Be(0);
-        daily.GetProperty("rotationCount").GetInt64().Should().Be(1);
+        var rollup = json["dailyRollups"][0];
+        rollup.GetProperty("dateUtc").Deserialize<DateOnly>().Should().Be(
+            DateOnly.FromDateTime(retained.GetProperty("timestamp").GetDateTimeOffset().UtcDateTime));
+        rollup.GetProperty("throttleCount").GetInt64().Should().Be(0);
+        rollup.GetProperty("rotationCount").GetInt64().Should().Be(1);
     }
 
     #endregion

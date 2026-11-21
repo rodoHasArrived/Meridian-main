@@ -109,7 +109,7 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:459](../
 Typed payload returned by GET /api/workstation/trading. Readiness is TradingOperatorReadinessDto; typed at the endpoint layer to avoid a circular project reference.
 
 ```csharp
-public sealed record WorkstationTradingPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationTradingPositionRow> Positions, IReadOnlyList<WorkstationTradingOrderRow> OpenOrders, IReadOnlyList<WorkstationTradingFillRow> Fills, WorkstationTradingRiskState Risk, WorkstationTradingBrokerageState Brokerage, TradingOperatorReadinessDto Readiness, IReadOnlyList<WorkstationModeComparisonGroup> Comparisons, WorkstationRunDrillInLinks? DrillIn, WorkstationManualOrderEntry? ManualOrderEntry = null);
+public sealed record WorkstationTradingPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationTradingPositionRow> Positions, IReadOnlyList<WorkstationTradingOrderRow> OpenOrders, IReadOnlyList<WorkstationTradingFillRow> Fills, WorkstationTradingRiskState Risk, WorkstationTradingBrokerageState Brokerage, TradingOperatorReadinessDto Readiness, IReadOnlyList<WorkstationModeComparisonGroup> Comparisons, WorkstationRunDrillInLinks? DrillIn, WorkstationManualOrderEntry? ManualOrderEntry = null, string? ScopedPaperOrderIntentKey = null);
 ```
 
 ## WorkstationTradingPositionRow

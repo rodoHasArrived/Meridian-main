@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { XCircle } from "lucide-react";
+import { AlertTriangle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
@@ -21,7 +21,8 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
         {orderTicket.ticketAccountId && (
           <p className="text-xs text-muted-foreground">Paper account <span className="font-mono">{orderTicket.ticketAccountId}</span></p>
         )}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <fieldset disabled={orderTicket.phase === "reconciliation" || orderTicket.phase === "submitting"}
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1">
             <label htmlFor={orderTicket.controls.symbol.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.symbol.label) && "type-label--caps")}>{orderTicket.controls.symbol.label}</label>
             <Input
@@ -104,20 +105,20 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
               />
             </div>
           )}
-        </div>
+        </fieldset>
 
         <p id={orderTicket.requirementId} className="text-xs text-muted-foreground">
           {orderTicket.requirementText}
         </p>
         <span className="sr-only" aria-live="polite">{orderTicket.statusAnnouncement}</span>
 
-        {preview}
+        {orderTicket.phase !== "reconciliation" && preview}
 
         <Checkbox
           id={orderTicket.acknowledgement.id}
           className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
           checked={orderTicket.acknowledgement.checked}
-          disabled={orderTicket.acknowledgement.disabled}
+          disabled={orderTicket.acknowledgement.disabled || orderTicket.phase === "reconciliation"}
           onChange={(event) => orderTicket.setAcknowledged(event.target.checked)}
           aria-describedby={joinDescribedByIds(
             `${orderTicket.acknowledgement.id}-description`,
@@ -145,8 +146,11 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
         )}
 
         {orderTicket.errorText && (
-          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
-            <XCircle className="h-4 w-4 shrink-0" />
+          <div role="alert" className={cn("flex items-center gap-2 rounded-lg border px-4 py-3 text-sm",
+            orderTicket.phase === "reconciliation" ? "border-warning/30 bg-warning/10 text-warning"
+              : "border-danger/30 bg-danger/10 text-danger")}>
+            {orderTicket.phase === "reconciliation" ? <AlertTriangle className="h-4 w-4 shrink-0" />
+              : <XCircle className="h-4 w-4 shrink-0" />}
             {orderTicket.errorText}
           </div>
         )}

@@ -200,7 +200,7 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
   const earlier = related.filter((row) => (row.sourceImportId ?? row.runId) !== sourceRun
     && Date.parse(row.detectedAt) < Date.parse(item.detectedAt));
   const requestedBaseline = comparisonBreakId === undefined ? priorId : comparisonBreakId;
-  const baseline = earlier.find((row) => row.breakId === requestedBaseline);
+  const baseline = earlier.find((row) => row.breakId === requestedBaseline) ?? null;
   const [comparisonProof, setComparisonProof] = useState<{
     item: ReconciliationBreakQueueItem;
     baseline: ReconciliationBreakQueueItem;

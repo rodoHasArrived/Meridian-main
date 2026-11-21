@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackDeliveryStoreOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryStoreOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L17).
+
+```csharp
+public sealed record ReportPackDeliveryStoreOptions(string SnapshotPath);
+```
+
+## ReportPackProvenanceResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackProvenanceResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs#L19).
+
+W9-TRUTH-001: derives the data-provenance mark a report pack must carry from the evidence it cites — the strategy runs behind its figures and the posted valuation entries behind its balances. A pack citing any simulated, seeded, or sample input inherits the strongest non-real provenance of those inputs, so a derived figure can never enter report-pack evidence without the blocking mark. Unknown tokens degrade to &quot;simulated&quot;, never to real.
+
+```csharp
+public static class ReportPackProvenanceResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? ResolveDerivedToken(IReadOnlyList&lt;StrategyRunEntry&gt; runs) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs:21](../../../../src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs#L21) |  |
+| <code>public static string? ResolveDerivedToken(IReadOnlyList&lt;StrategyRunEntry&gt; runs, IReadOnlyList&lt;JournalEntry&gt; valuationEntries);</code> | [src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs#L34) | Derives the pack&#x27;s mark from both evidence lanes. |
+
 ## ReportPackRestatementCandidateResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackRestatementCandidateResolver</code>. Kind: `class`.
@@ -911,23 +940,3 @@ Enum declarations:
 | <code>BreakClosure</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:13](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L13) |  |
 | <code>PaymentRelease</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:14](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L14) |  |
 | <code>OverrideApproval</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:15](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L15) |  |
-
-## SettlementInstruction
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SettlementInstruction</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:37](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L37).
-
-```csharp
-public sealed record SettlementInstruction(string InstructionId, string AccountId, string Currency, decimal GrossAmount, DateOnly TradeDate, DateOnly SettlementDate, DateTimeOffset CutoffAt, string Status);
-```
-
-## SourceAvailabilityWindow
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SourceAvailabilityWindow</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:3](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L3).
-
-```csharp
-public sealed record SourceAvailabilityWindow(string SourceId, TimeOnly StartLocal, TimeOnly EndLocal, bool IsAvailable);
-```

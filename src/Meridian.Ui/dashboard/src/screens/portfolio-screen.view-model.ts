@@ -14,14 +14,14 @@ import {
   multiAssetStatusLabel,
   multiAssetStatusTone
 } from "./portfolio-screen.multi-asset-coverage";
-import { formatCount, formatMoney, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatCount, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
 import { buildHoldingsModel, holdingRowFigures, holdingsTotalLine, type HoldingFigure, type HoldingsTotalLine } from "@/lib/holdings-model";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
   comparisonToneForPnl,
+  formatBrokeragePositionAmounts,
   formatCountLabel,
   formatDateTime,
-  formatNumber,
   formatRatioAsPercent,
   nextBrokerageAccountKey,
   numericPnlTone,
@@ -1707,22 +1707,6 @@ function latestAccountSync(accounts: BrokerageHouseholdAccount[]): string {
     .sort((a, b) => b.getTime() - a.getTime())[0];
 
   return latest ? formatDateTime(latest.toISOString()) : "—";
-}
-
-function formatBrokeragePositionAmounts(position: BrokerageHouseholdPosition) {
-  function money(field: string, value: number, decimals: number, signed = false) {
-    const proof = position.amountPassports?.[field];
-    return proof?.origin === "unavailable" ? "—" : formatMoney(proof?.exactValue ?? value, {
-      currency: position.currency?.trim() || null, decimals, signed
-    });
-  }
-  return {
-    quantity: position.amountPassports?.quantity?.origin === "unavailable" ? "—" : formatNumber(position.quantity),
-    averagePrice: money("average-price", position.averageEntryPrice, 2),
-    markPrice: money("mark", position.marketPrice, 2),
-    marketValue: money("market-value", position.marketValue, 0),
-    unrealizedPnl: money("unrealized-pnl", position.unrealizedPnl, 0, true)
-  };
 }
 
 function toBrokeragePositionRow(

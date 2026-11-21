@@ -134,4 +134,3 @@ function reportWriterDatasetFieldRoleRank(role: string | null | undefined): numb
 
   return 3;
 }
-

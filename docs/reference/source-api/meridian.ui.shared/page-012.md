@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileReconciliationSlaCalendarResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileReconciliationSlaCalendarResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:10](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L10).
+
+One host-lifetime snapshot of operator-declared calendars; named calendars never fall back.
+
+```csharp
+public sealed class FileReconciliationSlaCalendarResolver : IReconciliationSlaCalendarResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string RelativePath = &quot;reconciliation/sla-calendars.json&quot;;</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:12](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L12) |  |
+| <code>public FileReconciliationSlaCalendarResolver(string dataDirectory);</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:16](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L16) |  |
+| <code>public IReconciliationSlaCalendar Resolve(ReconciliationSlaPolicy policy);</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:49](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L49) |  |
+
+## FileReportingReconciliationEvidenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileReportingReconciliationEvidenceStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:138](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L138).
+
+Durable local production store. The snapshot is atomically replaced, while individual receipts are append-only and content-immutable by their full scope/source key.
+
+```csharp
+public sealed class FileReportingReconciliationEvidenceStore : JsonFileSnapshotStore<FileReportingReconciliationEvidenceStore.Snapshot>, IReportingReconciliationEvidenceRetentionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileReportingReconciliationEvidenceStore(string snapshotPath) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;A reporting reconciliation evidence snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:147](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L147) |  |
+| <code>public async ValueTask&lt;ReportingReconciliationEvidenceReceipt?&gt; GetExactAsync(string tenantId, string organizationId, string? companyId, string fundId, string ledgerBookId, string accountingPeriodId, string accountingBasis, DateOnly asOfDate, string sourceCheckpointId, string sourceCheckpointHash, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:180](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L180) |  |
+| <code>public async ValueTask&lt;bool&gt; RetainAsync(ReportingReconciliationEvidenceReceipt receipt, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:212](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L212) |  |
+
 ## Snapshot
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileReportingReconciliationEvidenceStore.Snapshot</code>. Kind: `record`.
@@ -1115,47 +1155,3 @@ Declared public members:
 | <code>ValueTask&lt;IAsyncDisposable&gt; AcquireAsync(BookReceiptScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:12](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L12) |  |
 | <code>Task&lt;IReadOnlyList&lt;BookReceiptRunDto&gt;&gt; ReadAsync(BookReceiptScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L13) |  |
 | <code>Task SaveAsync(BookReceiptRunDto run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L14) |  |
-
-## IBResultQueryService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IBResultQueryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IBResultQueryService.cs:6](../../../../src/Meridian.Ui.Shared/Services/IBResultQueryService.cs#L6).
-
-Shared, tenant-scoped query service for typed, durable IB callback results.
-
-```csharp
-public sealed class IBResultQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IBResultQueryService(IBDurableResultStore store) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/IBResultQueryService.cs:9](../../../../src/Meridian.Ui.Shared/Services/IBResultQueryService.cs#L9) |  |
-| <code>public IReadOnlyList&lt;IBDurableResult&gt; Get(string tenantId, string companyId, string? family, string? accountId, string? modelAccountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/IBResultQueryService.cs:10](../../../../src/Meridian.Ui.Shared/Services/IBResultQueryService.cs#L10) |  |
-
-## ICashSyncOrchestrationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ICashSyncOrchestrationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:82](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L82).
-
-Defines cash synchronization validation, approval, settlement, and liquidity forecasting operations.
-
-```csharp
-public interface ICashSyncOrchestrationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool IsSyncWindowOpen(DateTimeOffset utcNow, RegionalSyncWindow window);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:84](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L84) |  |
-| <code>SyncValidationResult ValidateCompleteness(IEnumerable&lt;SyncAccountSnapshot&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:85](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L85) |  |
-| <code>SyncValidationResult ValidateOutliers(IEnumerable&lt;SyncAccountSnapshot&gt; currentDay, IEnumerable&lt;SyncAccountSnapshot&gt; priorDay, decimal outlierThreshold);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:86](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L86) |  |
-| <code>ApprovalDecision BuildApprovalChain(PaymentInstruction paymentInstruction, ApprovalPolicy policy, string primaryApprover, string secondaryApprover);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:87](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L87) |  |
-| <code>DateOnly ResolveSettlementDate(DateOnly tradeDate, TimeOnly localCutoff, TimeOnly submittedAtLocal, int standardSettlementDays);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:88](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L88) |  |
-| <code>IReadOnlyList&lt;CashForecastPoint&gt; BuildCashLadder(DateOnly startDate, int horizonDays, IEnumerable&lt;PaymentInstruction&gt; payments, IEnumerable&lt;SettlementInstruction&gt; settlements, IEnumerable&lt;CouponEvent&gt; coupons);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:89](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L89) |  |
-| <code>IReadOnlyList&lt;LiquidityWarning&gt; BuildLiquidityWarnings(IEnumerable&lt;CashForecastPoint&gt; ladder, decimal minimumNetThreshold);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:90](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L90) |  |
-| <code>StpTransitionResult AdvanceStpState(string entityId, bool validated, bool approved, string? exceptionReason);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:91](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L91) |  |

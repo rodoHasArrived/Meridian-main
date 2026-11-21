@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MultiAssetCoverageReadService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.MultiAssetCoverageReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:24](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L24).
+
+Builds multi-asset coverage summaries from declared instruments and supporting services.
+
+```csharp
+public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MultiAssetCoverageReadService(ISecurityMasterOperationalReadinessService readinessService, ProviderLedgerReconciliationService? providerLedgerReconciliation = null, FundAccountCloseReadinessService? closeReadiness = null, ISecurityMasterQueryService? securityMasterQuery = null);</code> | [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:31](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L31) |  |
+| <code>public async Task&lt;MultiAssetCoverageSummaryDto&gt; GetCoverageAsync(string? fundAccountId, string? entity, string? assetClass, ReconciliationBreakQueueScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:43](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L43) |  |
+
+## OmsIntegrationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OmsIntegrationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:14](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L14).
+
+Compatibility facade for older tests and hosts. New OMS/EMS API handling lives behind IOmsIntegrationApiHandler and is registered from Meridian.Ui.Services.
+
+```csharp
+public sealed class OmsIntegrationService : IOmsIntegrationApiHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OmsIngestionResult Ingest(OmsInboundMessage message, OmsRequestSignatureInput? signature = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:18](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L18) |  |
+| <code>public IReadOnlyCollection&lt;OmsInboundMessage&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:21](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L21) |  |
+| <code>public IReadOnlyCollection&lt;OmsAdapterDiagnostics&gt; AdapterDiagnostics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:23](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L23) |  |
+| <code>public OmsSyncConflictResult ResolveSyncConflict(OmsSyncRequest request, OmsRequestSignatureInput? signature = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:25](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L25) |  |
+| <code>public IReadOnlyCollection&lt;OmsIntegrationAuditEntry&gt; AuditTrail(int take = 200) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:28](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L28) |  |
+| <code>public OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:30](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L30) |  |
+| <code>public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:33](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L33) |  |
+
 ## OnboardingComparisonSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OnboardingComparisonSource</code>. Kind: `class`.
@@ -932,38 +975,4 @@ Shared, typed snapshot consumed unchanged by browser endpoints and WPF view mode
 
 ```csharp
 public sealed record ProviderDataProjectionSnapshot(IReadOnlyList<ProviderNewsReadModel> News, IReadOnlyList<ProviderScannerReadModel> ScannerResults, IReadOnlyList<ProviderPnlReadModel> PnlStreams, IReadOnlyList<ProviderCalendarReadModel> Calendars, IReadOnlyList<ProviderMarketRuleReadModel> MarketRules, IReadOnlyList<ProviderInstrumentDiscoveryReadModel> Instruments);
-```
-
-## ProviderDataReadModelService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderDataReadModelService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:43](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L43).
-
-Aggregates provider-neutral read interfaces. Rows are de-duplicated by the stable provenance key (ProviderDataProvenance.StableDeduplicationKey), so repeated live snapshots replace older evidence rather than making either workstation show duplicate vendor data.
-
-```csharp
-public sealed class ProviderDataReadModelService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderDataReadModelService(IEnumerable&lt;IProviderDataReadService&gt; providers, IEnumerable&lt;IProviderNewsReadService&gt;? newsProviders = null, IEnumerable&lt;IProviderCalendarReadService&gt;? calendarProviders = null, IEnumerable&lt;IProviderInstrumentDiscoveryReadService&gt;? instrumentProviders = null, IEnumerable&lt;IProviderDataAvailabilityReadService&gt;? availabilityProviders = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:51](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L51) |  |
-| <code>public IReadOnlyList&lt;ProviderDataRequestReadModel&gt; GetRequests() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L69) | Returns only providers whose contract is explicitly unscoped. Tenant/company-aware providers are excluded rather than downgraded to their compatibility read surface. |
-| <code>public IReadOnlyList&lt;ProviderDataRequestReadModel&gt; GetRequests(string tenantId, string companyId);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L76) |  |
-| <code>public async IAsyncEnumerable&lt;ProviderDataProjectionSnapshot&gt; WatchAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:92](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L92) | Emits the initial projection and a refreshed snapshot after any optional provider stream changes. |
-| <code>public async IAsyncEnumerable&lt;ProviderDataProjectionSnapshot&gt; WatchAsync(string tenantId, string companyId, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:113](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L113) | Emits only projection updates owned by the requested tenant and company. Tenant-scoped providers are never consumed through their unscoped watch surface. |
-| <code>public ProviderDataProjectionSnapshot GetProjection() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:147](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L147) |  |
-| <code>public ProviderDataProjectionSnapshot GetProjection(string tenantId, string companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:150](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L150) |  |
-
-## ProviderInstrumentDiscoveryReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderInstrumentDiscoveryReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:27](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L27).
-
-```csharp
-public sealed record ProviderInstrumentDiscoveryReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderInstrumentDiscoveryResult Item);
 ```

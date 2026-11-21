@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingAgingBucketPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:865](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L865).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:866](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L866).
 
 ```csharp
 public sealed record WorkstationAccountingAgingBucketPayload(string Bucket, int Count);
@@ -20,7 +20,7 @@ public sealed record WorkstationAccountingAgingBucketPayload(string Bucket, int 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingAlertPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:882](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L882).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:883](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L883).
 
 ```csharp
 public sealed record WorkstationAccountingAlertPayload(string Tone, string Message);
@@ -30,7 +30,7 @@ public sealed record WorkstationAccountingAlertPayload(string Tone, string Messa
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingCashFlowSummaryPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:833](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L833).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:834](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L834).
 
 ```csharp
 public sealed record WorkstationAccountingCashFlowSummaryPayload(decimal TotalCash, decimal TotalLedgerCash, decimal NetVariance, decimal TotalFinancing, int RunsWithCashSignals, int RunsWithCashVariance, string Tone, string Summary);
@@ -40,7 +40,7 @@ public sealed record WorkstationAccountingCashFlowSummaryPayload(decimal TotalCa
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingControlCenterPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:886](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L886).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:887](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L887).
 
 ```csharp
 public sealed record WorkstationAccountingControlCenterPayload(string CloseReadiness, IReadOnlyList<string> PortfolioFilterOptions, IReadOnlyList<string> AccountFilterOptions, IReadOnlyList<WorkstationAccountingSeverityCountPayload> BlockerSeverityDistribution, IReadOnlyList<WorkstationAccountingAgingBucketPayload> AgingCurves, IReadOnlyList<WorkstationAccountingOwnerWorkloadPayload> OwnerWorkload, int SlaBreachCount, IReadOnlyList<WorkstationAccountingTrendSnapshotPayload> TrendSnapshots, IReadOnlyList<WorkstationAccountingDrillLinkPayload> DrillLinks, IReadOnlyList<WorkstationAccountingAlertPayload> Alerts);
@@ -50,7 +50,7 @@ public sealed record WorkstationAccountingControlCenterPayload(string CloseReadi
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingDrillLinkPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:878](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L878).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:879](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L879).
 
 ```csharp
 public sealed record WorkstationAccountingDrillLinkPayload(string Label, string Href);
@@ -60,7 +60,7 @@ public sealed record WorkstationAccountingDrillLinkPayload(string Label, string 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingOwnerWorkloadPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:869](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L869).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:870](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L870).
 
 ```csharp
 public sealed record WorkstationAccountingOwnerWorkloadPayload(string Owner, int OpenCount);
@@ -70,7 +70,7 @@ public sealed record WorkstationAccountingOwnerWorkloadPayload(string Owner, int
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:947](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L947).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:948](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L948).
 
 Typed payload returned by GET /api/workstation/accounting. The independent reporting route returns the nested WorkstationReportingPayload directly.
 
@@ -82,7 +82,7 @@ public sealed record WorkstationAccountingPayload(IReadOnlyList<WorkstationMetri
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunCashFlowPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:822](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L822).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:823](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L823).
 
 ```csharp
 public sealed record WorkstationAccountingRunCashFlowPayload(decimal CashBalance, decimal LedgerCashBalance, decimal CashVariance, decimal Financing, decimal RealizedPnl, decimal UnrealizedPnl, int JournalEntryCount, string Tone, string Summary);
@@ -92,7 +92,7 @@ public sealed record WorkstationAccountingRunCashFlowPayload(decimal CashBalance
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunGovernancePayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:804](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L804).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:805](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L805).
 
 Accounting run-card governance details linked to strategy evidence.
 
@@ -104,7 +104,7 @@ public sealed record WorkstationAccountingRunGovernancePayload(bool HasAuditTrai
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunReconciliationPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:811](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L811).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:812](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L812).
 
 ```csharp
 public sealed record WorkstationAccountingRunReconciliationPayload(string? ReconciliationRunId, int BreakCount, int OpenBreakCount, int MatchCount, bool HasTimingDrift, int SecurityIssueCount, bool HasSecurityCoverageIssues, string? LastUpdated, string Tone);
@@ -114,7 +114,7 @@ public sealed record WorkstationAccountingRunReconciliationPayload(string? Recon
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:843](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L843).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:844](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L844).
 
 ```csharp
 public sealed record WorkstationAccountingRunRecord(string RunId, string StrategyName, string Mode, string Status, string LastUpdated, string? AuditReference, string? LedgerReference, string? PortfolioId, int BreakCount, int OpenBreakCount, string ReconciliationStatus, WorkstationAccountingRunGovernancePayload Governance, WorkstationSecurityCoveragePayload SecurityCoverage, WorkstationAccountingRunCashFlowPayload CashFlow, WorkstationAccountingRunReconciliationPayload? LatestReconciliation, WorkstationKernelObservabilityPayload? KernelObservability = null);
@@ -124,7 +124,7 @@ public sealed record WorkstationAccountingRunRecord(string RunId, string Strateg
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingSeverityCountPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:861](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L861).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:862](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L862).
 
 ```csharp
 public sealed record WorkstationAccountingSeverityCountPayload(string Severity, int Count);
@@ -134,7 +134,7 @@ public sealed record WorkstationAccountingSeverityCountPayload(string Severity, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingTrendSnapshotPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:873](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L873).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:874](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L874).
 
 ```csharp
 public sealed record WorkstationAccountingTrendSnapshotPayload(string Metric, int Value, string Trend);
@@ -144,7 +144,7 @@ public sealed record WorkstationAccountingTrendSnapshotPayload(string Metric, in
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingWorkspaceSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:478](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L478).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:479](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L479).
 
 Workspace-level summary embedded inside WorkstationAccountingPayload.
 
@@ -240,7 +240,7 @@ public sealed record WorkstationCrossScreenCountsDto(DateTimeOffset AsOf, Workst
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataBackfillRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1158](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1158).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1159](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1159).
 
 Backfill row returned by the Data workspace bootstrap payload.
 
@@ -252,13 +252,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1166](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1166) |  |
+| <code>public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1167](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1167) |  |
 
 ## WorkstationDataExportRecord
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataExportRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1172](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1172).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1173](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1173).
 
 Export row returned by the Data workspace bootstrap payload.
 
@@ -270,7 +270,7 @@ public sealed record WorkstationDataExportRecord(string ExportId, string Profile
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1184](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1184).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1185](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1185).
 
 Typed payload returned by GET /api/workstation/data and GET /api/workstation/data-operations.
 
@@ -282,7 +282,7 @@ public sealed record WorkstationDataPayload(IReadOnlyList<WorkstationMetricCard>
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderDiagnostic</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1114](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1114).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1115](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1115).
 
 Compact provider diagnostic row embedded in the Data workspace provider center.
 
@@ -294,7 +294,7 @@ public sealed record WorkstationDataProviderDiagnostic(string Id, string Label, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1136](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1136).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1137](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1137).
 
 Provider-center row returned by the Data workspace bootstrap payload.
 
@@ -306,13 +306,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Provider =&gt; …;</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1152](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1152) |  |
+| <code>public string Provider =&gt; …;</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1153](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1153) |  |
 
 ## WorkstationDataProviderRoutingSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderRoutingSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1124](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1124).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1125](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1125).
 
 Compact routing summary embedded in a Data workspace provider row.
 
@@ -324,7 +324,7 @@ public sealed record WorkstationDataProviderRoutingSummary(string? ConnectionId,
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationGeneratedReportWriterGridPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:618](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L618).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:619](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L619).
 
 ```csharp
 public sealed record WorkstationGeneratedReportWriterGridPayload(string GridId, string Title, string Kind, string Artifact, int DimensionCount, int MetricCount, int FormulaCount, string? ValidationSummary = null, int? ValidationPassedCount = null, int? ValidationWarningCount = null, int? ValidationFailedCount = null);
@@ -334,7 +334,7 @@ public sealed record WorkstationGeneratedReportWriterGridPayload(string GridId, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelAlertThresholdsPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:908](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L908).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:909](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L909).
 
 ```csharp
 public sealed record WorkstationKernelAlertThresholdsPayload(int MinimumSampleCount, double MinimumShortRate, double ZeroBaselineShortRate, double RelativeMultiplier, double AbsoluteIncrease);
@@ -344,7 +344,7 @@ public sealed record WorkstationKernelAlertThresholdsPayload(int MinimumSampleCo
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelCriticalSeverityRatePayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:915](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L915).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:916](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L916).
 
 ```csharp
 public sealed record WorkstationKernelCriticalSeverityRatePayload(double ShortWindow, double LongWindow, int ShortWindowSamples, int LongWindowSamples, bool JumpAlertActive, int JumpAlertCount, WorkstationKernelAlertThresholdsPayload AlertThresholds);
@@ -354,7 +354,7 @@ public sealed record WorkstationKernelCriticalSeverityRatePayload(double ShortWi
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelDomainPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:924](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L924).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:925](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L925).
 
 ```csharp
 public sealed record WorkstationKernelDomainPayload(string Domain, long Evaluations, double ThroughputPerMinute, WorkstationKernelLatencyPayload LatencyMs, double ReasonCoveragePercent, WorkstationKernelDriftPayload Drift, WorkstationKernelCriticalSeverityRatePayload CriticalSeverityRate, long DeterminismMismatches, DateTimeOffset LastUpdatedUtc);
@@ -364,7 +364,7 @@ public sealed record WorkstationKernelDomainPayload(string Domain, long Evaluati
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelDriftPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:903](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L903).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:904](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L904).
 
 ```csharp
 public sealed record WorkstationKernelDriftPayload(double Score, double Severity, string Methodology);
@@ -374,7 +374,7 @@ public sealed record WorkstationKernelDriftPayload(double Score, double Severity
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelLatencyPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:898](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L898).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:899](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L899).
 
 ```csharp
 public sealed record WorkstationKernelLatencyPayload(double P50, double P95, double P99);
@@ -384,7 +384,7 @@ public sealed record WorkstationKernelLatencyPayload(double P50, double P95, dou
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelObservabilityPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:935](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L935).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:936](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L936).
 
 ```csharp
 public sealed record WorkstationKernelObservabilityPayload(DateTimeOffset? UpdatedAtUtc, bool DeterminismChecksEnabled, int ActiveAlerts, int TotalAlerts, int Alerts, IReadOnlyList<WorkstationKernelDomainPayload> Domains);
