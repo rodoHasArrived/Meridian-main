@@ -22,8 +22,6 @@ carrying/accrual basis. The comparison is market value less retained carrying am
 from posted ledger, realized, tax-cost or total-return P/L. `KnownAt` is refused because projection
 history does not certify historical transaction visibility. Tests: `AssetPositionMarketValuationServiceTests`.
 
-Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
-
 Native intercompany legal rules validate structured declarations without turning them into accrual
 or settlement calculations. The shared preview reuses schedule/day-count/calendar kernels for
 dates only. The separate pure `IntercompanyAccrualPreviewService` (ADR-028) reuses the same schedule

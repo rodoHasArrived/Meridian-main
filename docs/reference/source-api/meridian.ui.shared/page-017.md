@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernedArtifactDescriptor
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernedArtifactDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:64](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L64).
+
+```csharp
+public sealed record ReportingGovernedArtifactDescriptor(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, ReportingDeclaredArtifactKind Kind, bool IsPreview, string DownloadRoute);
+```
+
 ## ReportingGovernedArtifactDownload
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernedArtifactDownload</code>. Kind: `record`.
@@ -899,14 +909,4 @@ Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.RunSnapshots.c
 
 ```csharp
 public sealed partial class ReportPackRunReadService
-```
-
-## ReportPackDistributionPolicy
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackRunReadService.ReportPackDistributionPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs#L55).
-
-```csharp
-public sealed record ReportPackDistributionPolicy(string DistributionId, string Recipient, string RecipientRole, string Channel, string Owner, string Route, TimeSpan ApprovalSla, TimeSpan PublicationSla, TimeSpan DeliverySla, TimeSpan CorrectionSla);
 ```

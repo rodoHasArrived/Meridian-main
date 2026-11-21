@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackDistributionPolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackRunReadService.ReportPackDistributionPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs#L55).
+
+```csharp
+public sealed record ReportPackDistributionPolicy(string DistributionId, string Recipient, string RecipientRole, string Channel, string Owner, string Route, TimeSpan ApprovalSla, TimeSpan PublicationSla, TimeSpan DeliverySla, TimeSpan CorrectionSla);
+```
+
 ## ReportPackSecurityLineIndexEntry
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineIndexEntry</code>. Kind: `record`.
@@ -563,6 +573,25 @@ Credential-free transport readiness exposed to authenticated reporting operators
 public sealed record SecureReportingTransportCapability(string TransportId, string DisplayName, string DeliveryMode, bool IsExternal, bool RequiresDestination, bool UsesGovernedRecipientScope, bool IssuesAccessGrant, bool SupportsProviderReceipts, bool IsConfigured, bool IsInfrastructureReady, string? InfrastructureDisabledReasonCode, bool IsReady, string? DisabledReasonCode);
 ```
 
+## SecurityInstrumentTermsReadService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityInstrumentTermsReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:15](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L15).
+
+Projects retained Security Master terms for inspection without running a codec, upgrading a payload, choosing between aliases or calculating economics. All such decisions stay with their canonical owners. Even unsupported payloads remain available as exact JSON text.
+
+```csharp
+public sealed class SecurityInstrumentTermsReadService(ISecurityMasterQueryService query, ISecurityAssetProfileCatalog? profiles = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;SecurityInstrumentTermsDto?&gt; ReadAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:19](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L19) |  |
+| <code>public static SecurityInstrumentTermsDto Project(SecurityDetailDto detail, SecurityEconomicDefinitionRecord? economic, ISecurityAssetProfileCatalog? profiles, DateTimeOffset retrievedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:32](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L32) |  |
+
 ## SecurityMasterExceptionCaseworkService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionCaseworkService</code>. Kind: `class`.
@@ -856,33 +885,3 @@ Enum declarations:
 | <code>BreakAuditProjected</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1277](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1277) |  |
 | <code>CaseProjected</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1278](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1278) |  |
 | <code>CompletionRetained</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1279](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1279) |  |
-
-## StatementFetchSchedulerService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StatementFetchSchedulerService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:15](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L15).
-
-Minimal scheduled-fetch loop for statement connectors: every minute, runs any enabled fetch schedule that is due (fetch → commit → reconciliation queue). Failures are recorded on the schedule and never crash the loop, and downstream duplicate-key idempotency makes repeated or overlapping runs safe.
-
-```csharp
-public sealed class StatementFetchSchedulerService(IServiceProvider serviceProvider, ILogger<StatementFetchSchedulerService> logger) : BackgroundService
-```
-
-## StatementFetchSchedulerServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StatementFetchSchedulerServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:83](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L83).
-
-Registers the statement fetch scheduler as a shared singleton and hosted service.
-
-```csharp
-public static class StatementFetchSchedulerServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddStatementFetchSchedulerHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:85](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L85) |  |

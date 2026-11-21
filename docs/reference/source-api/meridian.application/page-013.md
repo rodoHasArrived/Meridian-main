@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WizardStepStatus
+
+Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:6](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L6).
+
+Outcome of a single wizard step execution.
+
+```csharp
+public enum WizardStepStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Success</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:9](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L9) | Step completed normally; continue to next step. |
+| <code>Failure</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L12) | Step failed; the wizard should surface an error. |
+| <code>Skip</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:15](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L15) | Step was skipped (condition not met); continue to next step. |
+| <code>Cancelled</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L18) | User or code cancelled; stop the wizard immediately. |
+
 ## WizardSummary
 
 Qualified name: <code>Meridian.Application.Wizard.Core.WizardSummary</code>. Kind: `record`.

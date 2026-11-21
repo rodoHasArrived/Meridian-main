@@ -205,6 +205,24 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecureReportingDistributionEndpoints.c
 public sealed record SecureReportingGrantRevocationResponse(string GrantId, bool Revoked);
 ```
 
+## SecurityInstrumentTermsEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SecurityInstrumentTermsEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityInstrumentTermsEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityInstrumentTermsEndpoints.cs#L15).
+
+Read-only, exact-value instrument terms for browser and desktop clients.
+
+```csharp
+public static class SecurityInstrumentTermsEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapSecurityInstrumentTermsEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SecurityInstrumentTermsEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityInstrumentTermsEndpoints.cs#L17) |  |
+
 ## SecurityMasterEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.SecurityMasterEndpoints</code>. Kind: `class`.
@@ -534,11 +552,11 @@ Declared public members:
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L80) | Maps all UI API endpoints using default JSON serializer options. |
 | <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L94) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:126](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L126) | Maps all UI API endpoints with custom JSON serializer options. |
-| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:330](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L330) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
-| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:349](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L349) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
-| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:355](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L355) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
-| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:362](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L362) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
-| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:371](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L371) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
+| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:331](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L331) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
+| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:350](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L350) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
+| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:356](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L356) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
+| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:363](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L363) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
+| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:372](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L372) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
 
 ## UpdateExecutionCircuitBreakerRequest
 
@@ -627,6 +645,12 @@ public static partial class WorkstationEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ApprovalCollaboration.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ApprovalCollaboration.cs#L18).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AssetMarketValuation.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AssetMarketValuation.cs#L18).
 
 ```csharp
 public static partial class WorkstationEndpoints
@@ -1195,14 +1219,4 @@ Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:1
 
 ```csharp
 public sealed record AccountCashSourceFlow(string FlowId, string VersionId, AccountCashFlowStatus Status, string FlowType, decimal Amount, string Currency, DateOnly? EconomicDate, DateOnly? SettlementDate, DateOnly? CashReceiptDate, Guid? SecurityId = null, Guid? ProjectionRunId = null, string? ProjectionEngineVersion = null, Guid? TermsVersionId = null, string? TermsHash = null, string? SupersedesVersionId = null);
-```
-
-## AccountCashSourceFx
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceFx</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:24](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L24).
-
-```csharp
-public sealed record AccountCashSourceFx(string Currency, string BaseCurrency, DateOnly ConversionDate, decimal BaseUnitsPerCurrencyUnit);
 ```
