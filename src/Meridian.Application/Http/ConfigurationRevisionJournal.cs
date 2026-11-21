@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using Meridian.Application.Composition.Startup;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Integrity;
 using Meridian.Core.IO;
@@ -117,7 +118,7 @@ internal sealed class ConfigurationRevisionJournal(string configPath)
         var paths = record.CollectorPaths.ToHashSet(StringComparer.Ordinal);
         var evidence = entries.Where(entry => paths.Contains(entry.Path))
             .DistinctBy(entry => entry.Path, StringComparer.Ordinal)
-            .Select(entry => new ConfigurationApplyEntry(entry.Path, entry.Kind)).ToArray();
+            .Select(entry => new ConfigurationApplyEntry(entry.Path, entry.Kind, FixedDetail(entry.Detail))).ToArray();
         var acknowledgement = new ConfigurationRuntimeAcknowledgement(
             record.Revision, collectorId, DateTimeOffset.UtcNow, evidence);
         try
@@ -131,6 +132,11 @@ internal sealed class ConfigurationRevisionJournal(string configPath)
                 ex.GetType().Name);
         }
     }
+
+    // Keep fixed operator explanations. Other runtime details may include configuration values.
+    private static string? FixedDetail(string? detail)
+        => detail is SingleSourceProviderConfigApplier.FailoverRestartMessage or SingleSourceProviderConfigApplier.EligibilityOnlyMessage
+            ? detail : null;
 
     internal ConfigurationRuntimeAcknowledgement? ActiveAcknowledgement(ConfigurationRevisionRecord? record)
         => record?.Acknowledgement is { CollectorInstanceId: var id, Entries: not null } acknowledgement

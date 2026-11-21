@@ -14,6 +14,8 @@ public sealed class BacktestStrategyLiveAdapter : LiveStrategyBase, ILiveOrderOu
     private readonly IBacktestStrategy _inner;
     private readonly string _strategyId;
 
+    internal Type ImplementationType => _inner.GetType();
+
     /// <summary>
     /// Creates a live adapter over a backtest strategy.
     /// </summary>

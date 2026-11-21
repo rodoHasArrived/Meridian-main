@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { Route, Routes, useLocation } from "react-router-dom";
@@ -180,6 +180,11 @@ describe("AssetDetailScreen", () => {
     expect(screen.getByText("No corporate actions recorded for this security.")).toBeInTheDocument();
 
     const user = userEvent.setup();
+    const identity = within(screen.getByRole("region", { name: "Instrument identity" }));
+    expect(identity.getByText("Ticker AAPL")).toBeVisible();
+    expect(identity.getByText("sec-aapl")).not.toBeVisible();
+    await user.click(identity.getByText("Technical identity"));
+    expect(identity.getByText("sec-aapl")).toBeVisible();
     await user.click(screen.getByRole("tab", { name: "Passport" }));
     expect(await screen.findByTestId("security-passport-editor")).toBeInTheDocument();
 

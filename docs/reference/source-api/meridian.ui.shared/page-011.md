@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DesktopWorkstationLaunchService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DesktopWorkstationLaunchService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs:8](../../../../src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs#L8).
+
+Issues a desktop launch ticket and attempts to open the desktop workstation.
+
+```csharp
+public sealed class DesktopWorkstationLaunchService(DesktopLaunchTicketService tickets)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool TryLaunch(string username, string hostBaseAddress, string? requestedPage, out string message);</code> | [src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs:15](../../../../src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs#L15) |  |
+
+## DeterministicReportingCertifiedArtifactProducer
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DeterministicReportingCertifiedArtifactProducer</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:59](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L59).
+
+Production deterministic artifact implementation. Every byte is derived from the completed certified manifest and, for a partners-capital primary document, an exact checkpoint-bound canonical ledger presentation. Output uses stable ordering and is emitted exactly as declared according to ReportingRunParametersDto.OutputFormat and the optional evidence/schedule flags.
+
+```csharp
+public sealed class DeterministicReportingCertifiedArtifactProducer : IReportingCertifiedArtifactProducer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string RetainedManifestSchemaVersion = &quot;meridian.reporting.retained-manifest.v1&quot;;</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L61) |  |
+| <code>public DeterministicReportingCertifiedArtifactProducer(IReportingPrimaryDocumentRenderer? primaryRenderer = null, IReportingCertifiedLedgerPresentationSource? ledgerPresentationSource = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:80](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L80) | Constructs the producer with an optional client-grade primary-document renderer and an optional exact canonical-ledger-presentation source. When the renderer is null (dependency-free hosts and the existing byte-exact tests) the built-in plain-text PDF/XLSX rendering is used. A capital-account primary document requires both a presentation-capable renderer and a checkpoint-bound canonical ledger report pack; it never falls back to recalculating partners&#x27; capital from certified display rows. Capital-account PDF, XLSX, and ClientPackage outputs all select bytes from that same canonical pair. Every other artifact (CSV, evidence vault, preview, manifest, grids) is unaffected by this choice. |
+| <code>public async ValueTask&lt;ReportingGovernedArtifactProduction&gt; ProduceAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:88](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L88) |  |
+| <code>public static ReportingRetainedManifestDocument ParseRetainedManifest(ReadOnlySpan&lt;byte&gt; retainedBytes);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:206](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L206) |  |
+
 ## DirectLendingOperationsReadService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DirectLendingOperationsReadService</code>. Kind: `class`.
@@ -887,65 +926,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ReportingLegacyStateInventoryEntry&gt; ListLegacyRunInventory(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:567](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L567) |  |
 | <code>public string ExportLegacyRun(string runId, ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:576](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L576) |  |
 | <code>public async Task&lt;ReportingLegacyArchiveReceipt&gt; ArchiveLegacySnapshotAsync(ReportAccessQueryContext recoveryAuthority, string reason, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:589](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L589) |  |
-
-## FileReportingScheduleStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileReportingScheduleStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:163](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L163).
-
-Persists reporting schedules, execution authority, and legacy schedule recovery evidence.
-
-```csharp
-public sealed partial class FileReportingScheduleStore : IReportingScheduleStore, INonProductionOnlyService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileReportingScheduleStore(ReportingScheduleStoreOptions options, ILogger&lt;FileReportingScheduleStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:182](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L182) |  |
-| <code>public IReadOnlyList&lt;ReportingScheduleRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:195](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L195) |  |
-| <code>public void Save(IReadOnlyList&lt;ReportingScheduleRecordDto&gt; schedules);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:205](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L205) |  |
-| <code>public void Upsert(ReportingScheduleRecordDto schedule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:236](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L236) |  |
-| <code>public void Upsert(ReportingScheduleRecordDto schedule, DateTimeOffset? expectedUpdatedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L239) |  |
-| <code>public bool Delete(string tenantId, string companyId, string scheduleId, DateTimeOffset expectedUpdatedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:303](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L303) |  |
-| <code>public bool HasLegacySchedules(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:337](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L337) |  |
-| <code>public IReadOnlyList&lt;ReportingLegacyStateInventoryEntry&gt; ListLegacyScheduleInventory(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:346](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L346) |  |
-| <code>public string ExportLegacySchedule(string scheduleId, ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:372](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L372) |  |
-| <code>public ReportingLegacyArchiveReceipt ArchiveLegacySnapshot(ReportAccessQueryContext recoveryAuthority, string reason);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:392](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L392) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs#L7).
-
-```csharp
-public sealed partial class FileReportingScheduleStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingScheduleExecutionLease? TryClaimExecution(ReportingScheduleRecordDto schedule, string leaseOwner, DateTimeOffset nowUtc, TimeSpan leaseDuration);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs#L14) |  |
-| <code>public ReportingScheduleExecutionLease? RenewExecutionLease(ReportingScheduleRecordDto schedule, ReportingScheduleExecutionLease lease, DateTimeOffset nowUtc, TimeSpan leaseDuration);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs#L61) |  |
-| <code>public void ReleaseExecutionLease(string tenantId, string companyId, string scheduleId, ReportingScheduleExecutionLease lease);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs:99](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs#L99) |  |
-| <code>public void UpsertClaimedExecution(ReportingScheduleRecordDto schedule, DateTimeOffset expectedUpdatedAtUtc, ReportingScheduleExecutionLease lease);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs:125](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs#L125) |  |
-
-## FileReportingStarterKitStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileReportingStarterKitStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:52](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L52).
-
-Persists tenant and company reporting starter-kit state to disk.
-
-```csharp
-public sealed class FileReportingStarterKitStore : IReportingStarterKitStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileReportingStarterKitStore(ReportingStarterKitStoreOptions options, ILogger&lt;FileReportingStarterKitStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:62](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L62) |  |
-| <code>public ReportingStarterKitStateDto? Load(string tenantId, string companyId);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:71](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L71) |  |
-| <code>public void Save(string tenantId, string companyId, ReportingStarterKitStateDto state);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:89](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L89) |  |

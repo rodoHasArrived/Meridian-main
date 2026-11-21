@@ -17,6 +17,9 @@ public interface IConfigurationRuntimeApplier
     /// <summary>Short name used in logs.</summary>
     string Name { get; }
 
+    /// <summary>Reconciles previously deferred paths when the next save touches this runtime.</summary>
+    bool ReconcilePendingPaths => false;
+
     /// <summary>Whether this applier owns the flattened setting path (for example <c>DataSources.FailoverRules.0.FailoverThreshold</c>).</summary>
     bool Handles(string path);
 

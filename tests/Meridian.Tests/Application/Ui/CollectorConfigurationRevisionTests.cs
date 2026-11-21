@@ -91,7 +91,13 @@ public sealed class CollectorConfigurationRevisionTests : IDisposable
         await using var runtime = new CollectorConfigurationRuntime(
             store, new ThresholdApplier(), store.LoadRequired(), Log.Logger, CancellationToken.None);
 
-        var responses = await Task.WhenAll(SaveThresholdAsync(store, 4), SaveThresholdAsync(secondStore, 5));
+        var directSave = SaveThresholdAsync(store, 4);
+        var checkedSave = secondStore.UpdateRequiredCheckedWithChangeStatusAsync(async (config, _) =>
+        {
+            await Task.Yield();
+            return (WithThreshold(config, 5), 5);
+        }, CancellationToken.None);
+        var responses = new[] { await directSave, (await checkedSave).Status };
 
         responses.Select(status => status.Revision!.Id).Should().OnlyHaveUniqueItems();
         responses.Select(status => status.Revision!.ContentHash).Should().OnlyHaveUniqueItems();
@@ -101,6 +107,24 @@ public sealed class CollectorConfigurationRevisionTests : IDisposable
         var current = store.GetChangeStatus();
         responses.Should().ContainSingle(status => status.Revision == current.Revision);
         current.Revision!.ContentHash.Should().Be(Sha256Digest.Compute(await File.ReadAllBytesAsync(store.ConfigPath)));
+    }
+
+    [Fact]
+    public async Task LeasedProviderOwnershipSaveRetainsPendingCollectorChanges()
+    {
+        var store = await CreateStoreAsync();
+        var initialSave = await SaveThresholdAsync(store, 2);
+        await store.UpdateRequiredWithLeaseAsync((config, _) => Task.FromResult((config with
+        {
+            ProviderConnections = new ProviderConnectionsConfig { OwnershipRequiredProviders = ["alpaca"] }
+        }, true)), CancellationToken.None);
+
+        var persisted = new ConfigStore(store.ConfigPath).GetChangeStatus();
+        persisted.Revision.Should().NotBeNull().And.NotBe(initialSave.Revision);
+        persisted.Revision!.ContentHash.Should().Be(Sha256Digest.Compute(await File.ReadAllBytesAsync(store.ConfigPath)));
+        persisted.RuntimeState.Should().Be(ConfigurationRuntimeState.Unknown);
+        persisted.CollectorAcknowledgement.Should().BeNull();
+        persisted.PendingChanges.Should().Contain(change => change.Path == ThresholdPath);
     }
 
     [Theory]

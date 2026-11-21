@@ -37,6 +37,22 @@ const retainedMatch: RetainedStatementCaseEvidence = {
 };
 
 describe("retained reconciliation case evidence", () => {
+  it("keeps source identifiers inspectable and groups missing comparison context", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter><ReconciliationCaseEvidence item={{ ...item, lineage: undefined,
+      sourceImportId: undefined, runId: "run-42", evidenceLinks: ["journal:je-cash-1"],
+      fundAccountId: undefined, ledgerBookId: undefined, accountingPeriodId: undefined,
+      sourceSystem: undefined, asOfDate: undefined }} /></MemoryRouter>);
+
+    expect(screen.getByText("1 linked record")).toBeVisible();
+    expect(screen.getByText("Comparison context unavailable: fund account, ledger book, accounting period, as-of date, source.")).toBeVisible();
+    expect(screen.getByText("run-42")).not.toBeVisible();
+    expect(screen.getByText("journal:je-cash-1")).not.toBeVisible();
+    await user.click(screen.getByText("Evidence identifiers"));
+    expect(screen.getByText("run-42")).toBeVisible();
+    expect(screen.getByText("journal:je-cash-1")).toBeVisible();
+  });
+
   it("renders candidate price, basis and signed decimal evidence at exactly the retained precision", async () => {
     const user = userEvent.setup();
     const candidate = { ...item, statementEvidence: retainedMatch };

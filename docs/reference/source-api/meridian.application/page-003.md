@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ServiceCompositionRoot
+
+Qualified name: <code>Meridian.Application.Composition.ServiceCompositionRoot</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:30](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L30).
+
+Centralizes all shared service registration for the application. This composition root is consumed by HostStartup, HostBuilder, and the extracted startup orchestration layer so every host mode builds from the same graph.
+
+```csharp
+public static class ServiceCompositionRoot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddMarketDataServices(this IServiceCollection services, CompositionOptions? options = null);</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:74](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L74) | Registers all core services required by any host type. This is the minimum set of services needed for the application to function. |
+
 ## ApplicationLifecycleCoordinator
 
 Qualified name: <code>Meridian.Application.Composition.Startup.ApplicationLifecycleCoordinator</code>. Kind: `class`.
@@ -292,14 +310,14 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const string PipeEnvironmentVariable = &quot;MDC_LIFECYCLE_PIPE&quot;;</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:15](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L15) |  |
-| <code>public LifecycleSupervisorBridgeHostedService(IRuntimeLifecycleControlPlane lifecycle, ILogger&lt;LifecycleSupervisorBridgeHostedService&gt; log);</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:22](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L22) |  |
-| <code>public override void Dispose();</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:56](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L56) |  |
+| <code>public LifecycleSupervisorBridgeHostedService(IRuntimeLifecycleControlPlane lifecycle, RuntimeSupervisorConnection connection, ILogger&lt;LifecycleSupervisorBridgeHostedService&gt; log);</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:23](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L23) |  |
+| <code>public override void Dispose();</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:59](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L59) |  |
 
 ## BackfillModeRunner
 
 Qualified name: <code>Meridian.Application.Composition.Startup.ModeRunners.BackfillModeRunner</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs:18](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs#L18).
+Source: [src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs:21](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs#L21).
 
 Runs the historical data backfill operation. Fully self-contained: creates its own host, pipeline, and status writer so it can be invoked directly without caller-side setup.
 
@@ -311,8 +329,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BackfillModeRunner(ILogger log) : this(log, static (deployment, configPath, ct) =&gt; HostStartupFactory.CreateForBackfillAsync(deployment, configPath, ct), static host =&gt; host.CreateBackfillProviders(), static (host, providers) =&gt; host.CreateCompositeBackfillProvider(providers));</code> | [src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs:25](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs#L25) |  |
-| <code>public async Task&lt;int&gt; RunAsync(StartupContext ctx, CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs:55](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs#L55) | Executes the backfill from a resolved startup context. Creates the pipeline host, recovers WAL, runs the backfill providers, and writes status. |
+| <code>public BackfillModeRunner(ILogger log) : this(log, static (deployment, configPath, ct) =&gt; HostStartupFactory.CreateForBackfillAsync(deployment, configPath, ct));</code> | [src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs:29](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs#L29) |  |
+| <code>public async Task&lt;int&gt; RunAsync(StartupContext ctx, CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs:58](../../../../src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs#L58) | Executes the backfill from a resolved startup context. Creates the pipeline host, recovers WAL, runs the backfill providers, and writes status. |
 
 ## CollectorModeRunner
 
@@ -477,6 +495,24 @@ Declared public members:
 | <code>public RuntimeShutdownSequence(IRuntimeLifecycleControlPlane lifecycle, ILifecycleReceiptStore receiptStore, IEnumerable&lt;IRuntimeShutdownParticipant&gt; participants, RuntimeShutdownOptions options, ILogger&lt;RuntimeShutdownSequence&gt; logger);</code> | [src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:45](../../../../src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs#L45) |  |
 | <code>public async ValueTask&lt;LifecycleShutdownReceiptDto&gt; ExecuteAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs:63](../../../../src/Meridian.Application/Composition/Startup/RuntimeShutdownSequence.cs#L63) |  |
 
+## RuntimeSupervisorConnection
+
+Qualified name: <code>Meridian.Application.Composition.Startup.RuntimeSupervisorConnection</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:191](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L191).
+
+Evidence of a live, acknowledged registration with the owning supervisor.
+
+```csharp
+public sealed class RuntimeSupervisorConnection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsConfirmed =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs:195](../../../../src/Meridian.Application/Composition/Startup/LifecycleSupervisorBridgeHostedService.cs#L195) |  |
+
 ## SharedStartupBootstrapper
 
 Qualified name: <code>Meridian.Application.Composition.Startup.SharedStartupBootstrapper</code>. Kind: `class`.
@@ -636,6 +672,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>public StartupOrchestrator(ILogger log, DashboardServerFactory dashboardServerFactory);</code> | [src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs:32](../../../../src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs#L32) |  |
 | <code>public async Task&lt;int&gt; RunAsync(StartupContext ctx);</code> | [src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs:42](../../../../src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs#L42) | Runs the full startup sequence using the supplied ctx. |
+
+## StreamingProviderActivation
+
+Qualified name: <code>Meridian.Application.Composition.Startup.StreamingProviderActivation</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs:10](../../../../src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs#L10).
+
+Collector-owned streaming evidence shared with the dashboard&#x27;s separate container.
+
+```csharp
+public sealed class StreamingProviderActivation : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;ProviderActivationEntry&gt; Read(string configPath) =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs:39](../../../../src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs#L39) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs:61](../../../../src/Meridian.Application/Composition/Startup/StreamingProviderActivation.cs#L61) |  |
 
 ## StartupRefusedException
 
@@ -982,53 +1037,3 @@ Declared public members:
 | <code>public static PipelineOptions Default { get; } = new () { HealingStrictness = ParseStrictness(Environment.GetEnvironmentVariable(&quot;MDC_CONFIG_STRICTNESS&quot;)) };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:498](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L498) | Default options — self-healing and validation enabled, strictness from MDC_CONFIG_STRICTNESS environment variable (defaults to Development). |
 | <code>public static PipelineOptions Strict { get; } = new () { ApplySelfHealing = false, ValidateConfig = true };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:506](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L506) | Options for strict validation without self-healing. |
 | <code>public static PipelineOptions Lenient { get; } = new () { ApplySelfHealing = false, ValidateConfig = false };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:515](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L515) | Options for lenient loading (no validation, no self-healing). |
-
-## SelfHealingFix
-
-Qualified name: <code>Meridian.Application.Config.SelfHealingFix</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:584](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L584).
-
-Describes a single self-healing change that was proposed by ConfigurationPipeline.
-
-```csharp
-public sealed record SelfHealingFix(string Description, SelfHealingSeverity Severity);
-```
-
-## SelfHealingSeverity
-
-Qualified name: <code>Meridian.Application.Config.SelfHealingSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:560](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L560).
-
-Indicates how impactful a self-healing fix is, which determines how it is handled under different SelfHealingStrictness levels.
-
-```csharp
-public enum SelfHealingSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>AutoFix = 0</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:567](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L567) | Safe, cosmetic correction (e.g., clamping an out-of-range value, normalising a format string, resolving credentials from environment variables). Applied silently in all environments. |
-| <code>Warn = 1</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:575](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L575) | Significant behavioural change (e.g., switching the active data provider, adding a default symbol set). Applied with a Warning-level log entry in SelfHealingStrictness.Development; refused with a startup error in SelfHealingStrictness.Production. |
-
-## SelfHealingStrictness
-
-Qualified name: <code>Meridian.Application.Config.SelfHealingStrictness</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:538](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L538).
-
-Controls how self-healing reacts to significant configuration issues.
-
-```csharp
-public enum SelfHealingStrictness : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Development = 0</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:545](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L545) | All self-healing fixes are applied. SelfHealingSeverity.Warn-level changes are applied but logged as Warning. Suitable for local development and CI environments where operator attention is not required for every startup. |
-| <code>Production = 1</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:553](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L553) | Only safe cosmetic fixes (SelfHealingSeverity.AutoFix) are applied silently. SelfHealingSeverity.Warn-level fixes are refused and surfaced as validation errors so that the process cannot start until a human corrects the configuration. Use MDC_CONFIG_STRICTNESS=production to enable. |

@@ -6,6 +6,318 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BackfillThrottleEvent
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillThrottleEvent</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillQuota.cs:26](../../../../src/Meridian.Contracts/Backfill/BackfillQuota.cs#L26).
+
+```csharp
+public sealed record BackfillThrottleEvent(string Provider, string Reason, DateTimeOffset ObservedAt, double? WaitSeconds);
+```
+
+## HistoricalSessionEvidence
+
+Qualified name: <code>Meridian.Contracts.Backfill.HistoricalSessionEvidence</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:44](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L44).
+
+Sources of expected exchange sessions for historical coverage, when available.
+
+```csharp
+public static class HistoricalSessionEvidence
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string UsEquities = &quot;us-equity-sessions-v1&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:46](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L46) |  |
+| <code>public static bool IsUsEquityListing(string? mic) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:48](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L48) |  |
+
+## HistoricalSessionSchedule
+
+Qualified name: <code>Meridian.Contracts.Backfill.HistoricalSessionSchedule</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:52](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L52).
+
+The session dates supported by a positively identified exchange calendar.
+
+```csharp
+public sealed record HistoricalSessionSchedule(string Calendar, IReadOnlyList<DateOnly> Sessions);
+```
+
+## SymbolBackfillProgress
+
+Qualified name: <code>Meridian.Contracts.Backfill.SymbolBackfillProgress</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:255](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L255).
+
+Tracks progress of backfill operation for a single symbol.
+
+```csharp
+public sealed class SymbolBackfillProgress
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:266](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L266) | The symbol being backfilled (e.g., &quot;AAPL&quot;, &quot;SPY&quot;). |
+| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:272](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L272) | Current status of the symbol backfill. Use SymbolBackfillStatus constants. |
+| <code>[JsonPropertyName(&quot;progress&quot;)] public double Progress { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:282](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L282) | Progress percentage (0-100) based on bars downloaded vs expected. |
+| <code>[JsonPropertyName(&quot;barsDownloaded&quot;)] public int BarsDownloaded { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:288](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L288) | Number of bars successfully downloaded for this symbol. |
+| <code>[JsonPropertyName(&quot;expectedBars&quot;)] public int ExpectedBars { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:299](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L299) | Expected number of bars to download for this symbol. May be zero if not known in advance. |
+| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime? StartedAt { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:310](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L310) | UTC timestamp when the symbol backfill started. Null if not yet started. |
+| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:317](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L317) | UTC timestamp when the symbol backfill completed. Null if still in progress. |
+| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:323](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L323) | Error message if the symbol backfill failed. |
+| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:329](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L329) | Name of the provider used for this symbol. |
+| <code>[JsonPropertyName(&quot;retryCount&quot;)] public int RetryCount { get; set; }</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:335](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L335) | Number of retry attempts made for this symbol. |
+| <code>[JsonIgnore] public bool IsComplete =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:345](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L345) | Gets whether the symbol backfill is in a terminal state. |
+| <code>[JsonIgnore] public double CalculatedProgress =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:351](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L351) | Gets the calculated progress percentage based on downloaded vs expected bars. |
+| <code>[JsonIgnore] public TimeSpan? Duration =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:358](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L358) | Gets the duration of the symbol backfill. Null if not started or still in progress. |
+
+## SymbolBackfillStatus
+
+Qualified name: <code>Meridian.Contracts.Backfill.SymbolBackfillStatus</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillProgress.cs:54](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L54).
+
+Symbol backfill status constants. Use these constants to avoid magic strings when setting or comparing symbol status.
+
+```csharp
+public static class SymbolBackfillStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:57](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L57) | Symbol is queued for download. |
+| <code>public const string Downloading = &quot;Downloading&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:60](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L60) | Symbol data is currently being downloaded. |
+| <code>public const string Completed = &quot;Completed&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:63](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L63) | Symbol data has been successfully downloaded. |
+| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:66](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L66) | Symbol download failed after all retries. |
+| <code>public const string Skipped = &quot;Skipped&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:69](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L69) | Symbol was skipped (e.g., data already exists). |
+| <code>public static readonly IReadOnlyList&lt;string&gt; AllStatuses = new[] { Pending, Downloading, Completed, Failed, Skipped };</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:74](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L74) | All valid status values. |
+| <code>public static bool IsTerminal(string status) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:82](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L82) | Checks if the given status represents a terminal state. |
+| <code>public static bool IsValid(string status) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillProgress.cs:88](../../../../src/Meridian.Contracts/Backfill/BackfillProgress.cs#L88) | Checks if the given status is valid. |
+
+## SymbolValidationSignal
+
+Qualified name: <code>Meridian.Contracts.Backfill.SymbolValidationSignal</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:24](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L24).
+
+Shared per-symbol completeness signal produced at the end of a backfill run.
+
+```csharp
+public sealed record SymbolValidationSignal(string Symbol, string Status, long BarsWritten, long? CheckpointBarsWritten, DateOnly? EffectiveFrom, DateOnly? EffectiveTo, string? Reason = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SymbolValidationSignal Pass(string symbol, long barsWritten, DateOnly? from, DateOnly? to) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:35](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L35) | Creates a Pass signal for a symbol that was fetched and returned bars. |
+| <code>public static SymbolValidationSignal PassSkipped(string symbol, long checkpointBarsWritten, DateOnly? coveredThrough) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:42](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L42) | Creates a Pass signal for a symbol that was skipped because its checkpoint fully covered the requested date range. |
+| <code>public static SymbolValidationSignal Warn(string symbol, DateOnly? from, DateOnly? to, string reason) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:47](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L47) | Creates a Warn signal for a symbol fetched without error but returning zero bars. |
+| <code>public static SymbolValidationSignal Fail(string symbol, DateOnly? from, DateOnly? to, string reason) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs:51](../../../../src/Meridian.Contracts/Backfill/SymbolValidationSignal.cs#L51) | Creates a Fail signal for a symbol that threw an exception during fetch. |
+
+## BacktestPreflightCheckResultDto
+
+Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightCheckResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:19](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L19).
+
+```csharp
+public sealed record BacktestPreflightCheckResultDto(string Name, BacktestPreflightCheckStatusDto Status, string Message, string? Remediation = null, IReadOnlyDictionary<string, string>? Details = null);
+```
+
+## BacktestPreflightCheckStatusDto
+
+Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightCheckStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:26](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L26).
+
+```csharp
+public enum BacktestPreflightCheckStatusDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Passed = 0</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:28](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L28) |  |
+| <code>Warning = 1</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:29](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L29) |  |
+| <code>Failed = 2</code> | [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:30](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L30) |  |
+
+## BacktestPreflightReportV2Dto
+
+Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightReportV2Dto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:11](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L11).
+
+```csharp
+public sealed record BacktestPreflightReportV2Dto(bool IsReadyToRun, bool HasWarnings, IReadOnlyList<BacktestPreflightCheckResultDto> Checks, long TotalDurationMs, DateTimeOffset CheckedAt, string? SummaryMessage = null);
+```
+
+## BacktestPreflightRequestDto
+
+Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:3](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L3).
+
+```csharp
+public sealed record BacktestPreflightRequestDto(DateOnly From, DateOnly To, string DataRoot, IReadOnlyList<string>? Symbols = null, string? RequiredExecutionModel = null, IReadOnlyList<string>? RequiredReplayDataTypes = null);
+```
+
+## ApprovePaymentRequest
+
+Qualified name: <code>Meridian.Contracts.Banking.ApprovePaymentRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:68](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L68).
+
+Approve a pending payment request.
+
+```csharp
+public sealed record ApprovePaymentRequest(string? ReviewNotes, string? ReviewedBy, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## BankTransactionDto
+
+Qualified name: <code>Meridian.Contracts.Banking.BankTransactionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:104](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L104).
+
+A single bank-side transaction record. This is distinct from a loan-level CashTransactionDto in the DirectLending module; the two may be reconciled but are not the same object.
+
+```csharp
+public sealed record BankTransactionDto(Guid BankTransactionId, Guid EntityId, string TransactionType, DateOnly EffectiveDate, DateOnly TransactionDate, DateOnly SettlementDate, decimal Amount, string Currency, string? ExternalRef, DateTimeOffset RecordedAt, bool IsVoided, string? RecordedBy = null, Guid? PendingPaymentId = null, string? EvidenceId = null, string? CanonicalInputHash = null);
+```
+
+## BankTransactionSeedRequest
+
+Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:133](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L133).
+
+Request to seed representative bank transactions for one or more entities. When EntityIds is null or empty, all known entities are seeded.
+
+```csharp
+public sealed record BankTransactionSeedRequest(IReadOnlyList<Guid>? EntityIds, int CountPerEntity, DateOnly? FromDate, DateOnly? ToDate);
+```
+
+## BankTransactionSeedResultDto
+
+Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:140](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L140).
+
+Result returned after seeding bank transactions.
+
+```csharp
+public sealed record BankTransactionSeedResultDto(int EntitiesProcessed, int TransactionsSeeded, IReadOnlyList<Guid> ProcessedEntityIds);
+```
+
+## IBankTransactionSource
+
+Qualified name: <code>Meridian.Contracts.Banking.IBankTransactionSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:154](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L154).
+
+Read-only banking data source for cross-domain integrations such as reconciliation. Services outside the Banking module can depend on this narrow interface instead of the full IBankingService.
+
+```csharp
+public interface IBankTransactionSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;BankTransactionDto&gt;&gt; GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:160](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L160) | Return bank transactions. When entityId is provided the result is scoped to that entity; otherwise all transactions are returned. |
+
+## InitiatePaymentRequest
+
+Qualified name: <code>Meridian.Contracts.Banking.InitiatePaymentRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:19](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L19).
+
+Request body to submit a payment for approval before it is applied.
+
+```csharp
+public sealed record InitiatePaymentRequest(decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, string? Currency = null);
+```
+
+## PaymentApprovalStatus
+
+Qualified name: <code>Meridian.Contracts.Banking.PaymentApprovalStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:10](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L10).
+
+Lifecycle status of a payment that is routed through the approval workflow.
+
+```csharp
+public enum PaymentApprovalStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending = 0</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:12](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L12) |  |
+| <code>Approved = 1</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:13](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L13) |  |
+| <code>Rejected = 2</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:14](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L14) |  |
+| <code>Cancelled = 3</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:15](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L15) |  |
+
+## PendingPaymentDto
+
+Qualified name: <code>Meridian.Contracts.Banking.PendingPaymentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:31](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L31).
+
+A payment that is awaiting an approval decision.
+
+```csharp
+public sealed record PendingPaymentDto(Guid PendingPaymentId, Guid EntityId, decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, PaymentApprovalStatus Status, string? ReviewedBy, string? ReviewNotes, DateTimeOffset InitiatedAt, DateTimeOffset? ReviewedAt, string? Currency = null, string? CurrencyRemediatedBy = null, string? CurrencyRemediationReason = null, DateTimeOffset? CurrencyRemediatedAt = null);
+```
+
+## RecordPaymentBankEvidenceRequest
+
+Qualified name: <code>Meridian.Contracts.Banking.RecordPaymentBankEvidenceRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:80](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L80).
+
+Record retained bank-side evidence for an approved Meridian payment intent.
+
+```csharp
+public sealed record RecordPaymentBankEvidenceRequest(string EvidenceType, DateOnly? TransactionDate = null, DateOnly? SettlementDate = null, decimal? Amount = null, string? Currency = null, string? ExternalRef = null, string? RecordedBy = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? EvidenceId = null);
+```
+
+## RejectPaymentRequest
+
+Qualified name: <code>Meridian.Contracts.Banking.RejectPaymentRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:74](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L74).
+
+Reject a pending payment request.
+
+```csharp
+public sealed record RejectPaymentRequest(string Reason, string? ReviewedBy, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## RemediatePaymentCurrencyRequest
+
+Qualified name: <code>Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:61](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L61).
+
+Governed repair request for a legacy Pending payment whose currency was never retained. The command is compare-and-set: it cannot alter economics, replace an existing currency, or repair a payment after a review decision.
+
+```csharp
+public sealed record RemediatePaymentCurrencyRequest(string Currency, string Reason, string? RemediatedBy, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
 ## BusinessDayAdjustment
 
 Qualified name: <code>Meridian.Contracts.Calendars.BusinessDayAdjustment</code>. Kind: `record`.
@@ -469,331 +781,4 @@ Versioned calculation contract. Rates are fractions, prices are clean percentage
 
 ```csharp
 public sealed record ContractualCashFlowContract(DateOnly IssueDate, DateOnly MaturityDate, string Currency, IReadOnlyList<ContractualCashFlowStream> Streams, IReadOnlyList<ContractualExerciseEntry>? Exercises = null, int Version = 1);
-```
-
-## ContractualCashFlowEngine
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowEngine</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:11](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L11).
-
-Deterministic, calculation-only engine. No wall clock, I/O, or ledger effects.
-
-```csharp
-public static partial class ContractualCashFlowEngine
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Hash(ContractualCashFlowContract contract) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:16](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L16) |  |
-| <code>public static string Hash(ContractualCashFlowRequest request) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:17](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L17) |  |
-| <code>public static string Hash(ContractualCashFlowEvidence evidence) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:18](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L18) |  |
-| <code>public static string Hash(ContractualCashFlowInputDigest digest) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:19](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L19) |  |
-| <code>public static string Hash(ContractualCashFlowOutputDigest digest) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:20](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L20) |  |
-| <code>public static string Hash(SecurityTermsDigest digest) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:21](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L21) |  |
-| <code>public static string Hash(CalculationBlockerDigest digest) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:22](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L22) |  |
-| <code>public static ContractualCashFlowResult Calculate(ContractualCashFlowContract contract, ContractualCashFlowRequest request, IBusinessDayCalendarSource? calendars = null, IReadOnlyList&lt;CashFlowCurveSnapshot&gt;? curves = null, string sourceVersion = &quot;explicit-contract-v1&quot;, string? sourceTermsHash = null);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:24](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L24) |  |
-| <code>public static ContractualCashFlowResult Replay(ContractualCashFlowRun run);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:98](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L98) |  |
-| <code>public static bool Verify(ContractualCashFlowRun run);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:105](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L105) |  |
-| <code>public static void Validate(ContractualCashFlowContract contract, ContractualCashFlowRequest request);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:115](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L115) |  |
-| <code>public static void ValidateRequest(ContractualCashFlowRequest request);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs:190](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.cs#L190) |  |
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Exercise.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Exercise.cs#L8).
-
-```csharp
-public static partial class ContractualCashFlowEngine
-```
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Prepayment.cs:5](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Prepayment.cs#L5).
-
-```csharp
-public static partial class ContractualCashFlowEngine
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static decimal PrepaymentFraction(CashFlowPrepaymentAssumption assumption, DateOnly start, DateOnly end);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Prepayment.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Prepayment.cs#L8) | Conditional survival over &#91;start,end), split at month and assumption boundaries. |
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Walk.cs:7](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowEngine.Walk.cs#L7).
-
-```csharp
-public static partial class ContractualCashFlowEngine
-```
-
-## ContractualCashFlowEvent
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowEvent</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:137](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L137).
-
-```csharp
-public sealed record ContractualCashFlowEvent(string EventId, string StreamId, string? PeriodId, DateOnly Date, DateOnly? AccrualStart, DateOnly? AccrualEnd, decimal OpeningBalance, decimal CashInterest, decimal CapitalizedInterest, decimal ScheduledPrincipal, decimal ForecastPrepayment, decimal RedeemedPrincipal, decimal RedemptionPremium, decimal PrepaymentPenalty, decimal ClosingBalance, CashFlowLegDirection Direction)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal NetCash =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:145](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L145) |  |
-
-## ContractualCashFlowEvidence
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:153](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L153).
-
-```csharp
-public sealed record ContractualCashFlowEvidence(string EngineVersion, string MappingVersion, string PrepaymentVersion, string KernelVersion, string InputHash, string OutputHash, string SourceTermsHash, string SourceVersion, bool HasContractOverride, IReadOnlyList<CashFlowCalendarSnapshot> Calendars, IReadOnlyList<CashFlowCurveSnapshot> Curves, IReadOnlyList<string> Warnings);
-```
-
-## ContractualCashFlowInputDigest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowInputDigest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:8](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L8).
-
-Exactly the members the engine hashes as a run&#x27;s input identity, in the retained property order.
-
-```csharp
-public sealed record ContractualCashFlowInputDigest(ContractualCashFlowContract Contract, ContractualCashFlowRequest Request, IReadOnlyList<CashFlowCalendarSnapshot> CalendarEvidence, IReadOnlyList<CashFlowCurveSnapshot> CurveEvidence, string SourceVersion, string SourceTermsHash);
-```
-
-## ContractualCashFlowJsonContext
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:89](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L89).
-
-Source-generated serialization for every contractual cash-flow shape that is hashed or retained. Hash bytes are a compatibility contract with retained packets, so the options here reproduce the web defaults the packets were written with (camelCase names, case-insensitive reads).
-
-```csharp
-public sealed partial class ContractualCashFlowJsonContext : JsonSerializerContext;
-```
-
-## ContractualCashFlowOutputDigest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowOutputDigest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs:17](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs#L17).
-
-Exactly the members the engine hashes as a run&#x27;s output identity, in the retained property order.
-
-```csharp
-public sealed record ContractualCashFlowOutputDigest(IReadOnlyList<ContractualCashFlowEvent> Events, IReadOnlyList<CashFlowExerciseEligibility> Eligibility, IReadOnlyList<CashFlowExerciseCalculation> Calculations, IReadOnlyList<CashFlowCalculationBlocker> Blockers);
-```
-
-## ContractualCashFlowRequest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:108](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L108).
-
-ContractOverride is explicitly hypothetical; it never changes authoritative terms.
-
-```csharp
-public sealed record ContractualCashFlowRequest(DateOnly ValuationDate, DateTimeOffset KnowledgeCutoff, DateOnly? Horizon = null, StructuredCashFlowScenario RateScenario = StructuredCashFlowScenario.Base, IReadOnlyList<SelectedCashFlowExercise>? Exercises = null, IReadOnlyList<CashFlowPrepaymentAssumption>? Prepayments = null, IReadOnlyList<CashFlowCurvePin>? CurvePins = null, ContractualCashFlowContract? ContractOverride = null, string EngineVersion = ContractualCashFlowVersions.Engine);
-```
-
-## ContractualCashFlowResult
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:158](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L158).
-
-```csharp
-public sealed record ContractualCashFlowResult(IReadOnlyList<ContractualCashFlowEvent> Events, IReadOnlyList<CashFlowExerciseEligibility> ExerciseEligibility, IReadOnlyList<CashFlowExerciseCalculation> ExerciseCalculations, IReadOnlyList<CashFlowCalculationBlocker> Blockers, ContractualCashFlowEvidence Evidence)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ContractualCashFlowContract? ResolvedContract { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:165](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L165) |  |
-| <code>public bool IsPostable =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:166](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L166) |  |
-| <code>public bool IsCalculated =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:167](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L167) |  |
-
-## ContractualCashFlowRun
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRun</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:171](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L171).
-
-Complete immutable replay packet; no live term/calendar/curve lookup is needed.
-
-```csharp
-public sealed record ContractualCashFlowRun(Guid RunId, string SubjectKind, Guid SubjectId, DateTimeOffset RecordedAt, ContractualCashFlowContract Contract, ContractualCashFlowRequest Request, ContractualCashFlowResult Result, string Actor = "")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public ContractualCashFlowAttestationContextDto? AttestationContext { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:179](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L179) | Server-stamped review scope for new non-posting draft checks; old packets remain unbound. |
-
-## ContractualCashFlowRunComparer
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:32](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L32).
-
-```csharp
-public static class ContractualCashFlowRunComparer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ContractualCashFlowRunComparison Compare(ContractualCashFlowRun left, ContractualCashFlowRun right);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:34](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L34) |  |
-
-## ContractualCashFlowRunComparison
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:16](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L16).
-
-Pure read comparing two retained runs of the same subject: per-date, per-stream net cash deltas, the symmetric difference of blockers, and whether each retained packet still replays to its own output hash. Nothing is recalculated against current terms; both sides are the retained packets.
-
-```csharp
-public sealed record ContractualCashFlowRunComparison(string SubjectKind, Guid SubjectId, Guid LeftRunId, Guid RightRunId, bool LeftReplayVerified, bool RightReplayVerified, bool SameRequest, string LeftOutputHash, string RightOutputHash, IReadOnlyList<CashFlowDateDelta> CashDeltas, IReadOnlyList<CashFlowBlockerDelta> BlockerDeltas)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal TotalDelta =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:29](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L29) |  |
-
-## ContractualCashFlowStream
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowStream</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:30](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L30).
-
-Explicit periods replace generation for this stream; no contract date is inferred.
-
-```csharp
-public sealed record ContractualCashFlowStream(string StreamId, decimal Principal, int PaymentMonths, [property : JsonConverter(typeof(JsonStringEnumConverter<DayCountConvention>))] DayCountConvention DayCount, decimal? FixedRate, [property : JsonConverter(typeof(JsonStringEnumConverter<CashFlowLegDirection>))] CashFlowLegDirection Direction = CashFlowLegDirection.Receive, bool ExchangesPrincipal = true, ScheduleConventionTerms? Conventions = null, IReadOnlyList<SchedulePeriod>? CouponPeriods = null, IReadOnlyList<StructuredPrincipalScheduleEntry>? PrincipalSchedule = null, IReadOnlyList<StructuredCashFlowNotionalStep>? NotionalSchedule = null, IReadOnlyList<StructuredStepCouponEntry>? RateSteps = null, IReadOnlyList<ContractualCouponAmount>? CouponAmounts = null, string? IndexName = null, decimal SpreadBps = 0m, IReadOnlyList<StructuredCashFlowResetFixing>? Resets = null, decimal? Floor = null, decimal? Cap = null, decimal PikFraction = 0m, CashFlowAmortization Amortization = CashFlowAmortization.Bullet, bool PrepaymentAllowed = false, decimal PrepaymentPenaltyRate = 0m, decimal? OpeningBalance = null, DateOnly? OpeningBalanceDate = null);
-```
-
-## ContractualCashFlowSubjectKinds
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowSubjectKinds</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs:7](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs#L7).
-
-Retained subject kinds for contractual cash-flow runs. These strings are persisted inside replay packets and their storage paths, so they are stable identifiers rather than an enum.
-
-```csharp
-public static class ContractualCashFlowSubjectKinds
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Security = &quot;Security&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs:9](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs#L9) |  |
-| <code>public const string Loan = &quot;Loan&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs:10](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs#L10) |  |
-| <code>public static bool IsSupported(string? kind) =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs:12](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowSubjectKinds.cs#L12) |  |
-
-## ContractualCashFlowVersions
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowVersions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:119](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L119).
-
-```csharp
-public static class ContractualCashFlowVersions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Engine = &quot;contractual-cashflow-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:121](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L121) |  |
-| <code>public const string Mapping = &quot;contractual-cashflow-mapping-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:122](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L122) |  |
-| <code>public const string Prepayment = &quot;survival-cpr-smm-psa-v1&quot;;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:123](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L123) |  |
-
-## ContractualCouponAmount
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCouponAmount</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:56](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L56).
-
-```csharp
-public sealed record ContractualCouponAmount(DateOnly PaymentDate, decimal Amount);
-```
-
-## ContractualExerciseEntry
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualExerciseEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:59](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L59).
-
-Companion to the frozen call/put entry, identified by side and unadjusted start.
-
-```csharp
-public sealed record ContractualExerciseEntry(CashFlowExerciseSide Side, DateOnly StartDate, DateOnly? EndDate, CashFlowExerciseStyle Style, decimal? CleanPrice, string StreamId, int? ExerciseMonths = null, string? PartialRedemption = null, int? MinimumNoticeDays = null, int? MaximumNoticeDays = null, string? NoticeDayType = null, string PriceBasis = "PercentOfPar", decimal? AccretedValue = null, ContractualMakeWholeTerms? MakeWhole = null);
-```
-
-## ContractualMakeWholeTerms
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ContractualMakeWholeTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:75](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L75).
-
-```csharp
-public sealed record ContractualMakeWholeTerms(MakeWholeFormula Formula, string BenchmarkKey, decimal SpreadBps, int CompoundsPerYear, [property : JsonConverter(typeof(JsonStringEnumConverter<DayCountConvention>))] DayCountConvention DayCount, DateOnly? ParCallDate = null, string AccruedInterestTreatment = "CleanFloorAddAccrued");
-```
-
-## CreateContractualCashFlowRunRequest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:189](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L189).
-
-```csharp
-public sealed record CreateContractualCashFlowRunRequest(Guid RunId, ContractualCashFlowRequest Projection);
-```
-
-## ExerciseNoticeApprovalState
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:6](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L6).
-
-```csharp
-public enum ExerciseNoticeApprovalState
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Recorded = 0</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:8](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L8) |  |
-| <code>Approved = 1</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:9](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L9) |  |
-| <code>Rejected = 2</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:10](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L10) |  |
-
-## ExerciseNoticeDecisionRequest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ExerciseNoticeDecisionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:85](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L85).
-
-```csharp
-public sealed record ExerciseNoticeDecisionRequest(bool Approve, string? Reason = null);
-```
-
-## ExerciseNoticeVerification
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ExerciseNoticeVerification</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:87](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L87).
-
-```csharp
-public sealed record ExerciseNoticeVerification(bool Verified, string Reason, BondExerciseNoticeDto? Notice = null);
 ```

@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackSecurityLineIndexEntry
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineIndexEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L10).
+
+One report pack&#x27;s contribution to a security in the security→report-line index: which report (and the fund/state it is in) references SecurityId, and on which report lines.
+
+```csharp
+public sealed record ReportPackSecurityLineIndexEntry(Guid SecurityId, Guid ReportId, string FundProfileId, ReportPackWorkflowStateDto State, IReadOnlyList<string> LineKeys);
+```
+
+## ReportPackSecurityLineMatcher
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineMatcher</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L13).
+
+Shared &quot;does this report line reference a security&quot; matcher for the report-pack restatement path. Extracted so the candidate resolver (ReportPackRestatementCandidateResolver) and the durable security→report-line index (IReportPackSecurityLineIndex) agree on exactly one membership rule: a report-line provenance entry references a security when its SecurityMasterId or SecurityDefinitionId parses to the security id, or when it carries a security-kind source whose SourceId parses to the security id.
+
+```csharp
+public static class ReportPackSecurityLineMatcher
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool LineReferencesSecurity(ReportPackLineProvenanceDto line, Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L16) | True when line ties a report line to securityId. |
+| <code>public static bool RecordReferencesSecurity(ReportPackWorkflowRecordDto record, Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L25) | True when record has any retained provenance line referencing the security. |
+| <code>public static IEnumerable&lt;Guid&gt; ReferencedSecurityIds(ReportPackLineProvenanceDto line);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L37) | The distinct security ids a single provenance line contributes — the reverse of LineReferencesSecurity: for any returned id s, LineReferencesSecurity(line, s) is true, and vice versa. Used to build the security→report-line index. |
+
 ## ReportPackValidationContext
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackValidationContext</code>. Kind: `record`.
@@ -157,7 +189,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactContent</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L10).
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L11).
 
 ```csharp
 public sealed record ReportWriterGridArtifactContent(string FileName, string ContentType, byte[] Content);
@@ -167,7 +199,7 @@ public sealed record ReportWriterGridArtifactContent(string FileName, string Con
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L18).
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L19).
 
 Renders report-writer grids and produces their downloadable artifact content.
 
@@ -179,9 +211,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportWriterGridArtifactService(IReportingOrchestrationService orchestrationService, GovernedReportingTemplateCatalog? governedTemplateCatalog = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L28) |  |
-| <code>public ReportWriterGridRenderDto GetGrid(string runId, string gridId, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L36) |  |
-| <code>public ReportWriterGridArtifactContent GetArtifact(string runId, string gridId, string? format, JsonSerializerOptions jsonOptions, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L50) |  |
+| <code>public ReportWriterGridArtifactService(IReportingOrchestrationService orchestrationService, GovernedReportingTemplateCatalog? governedTemplateCatalog = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:29](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L29) |  |
+| <code>public ReportWriterGridRenderDto GetGrid(string runId, string gridId, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L37) |  |
+| <code>public ReportWriterGridArtifactContent GetArtifact(string runId, string gridId, string? format, JsonSerializerOptions jsonOptions, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:51](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L51) |  |
 
 ## RiskRuleConfigDto
 
@@ -854,41 +886,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddStatementFetchSchedulerHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:85](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L85) |  |
-
-## StatementReconciliationCaseworkHandoffException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationCaseworkHandoffException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:32](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L32).
-
-Carries a coded failure from statement reconciliation casework handoff.
-
-```csharp
-public sealed class StatementReconciliationCaseworkHandoffException(string code, string message, Exception? innerException = null) : InvalidOperationException(message, innerException)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Code { get; } = code;</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:37](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L37) |  |
-
-## StatementReconciliationCaseworkHandoffService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationCaseworkHandoffService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:45](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L45).
-
-Synchronizes terminal governed queue casework back to its statement-owned break/case and then attaches the same evidence to the matching Operations Continuity workflow. It deliberately does not post, approve, close, release, or otherwise advance an accounting gate.
-
-```csharp
-public sealed class StatementReconciliationCaseworkHandoffService : IStatementReconciliationCaseworkHandoffService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementReconciliationCaseworkHandoffService(IReconciliationBreakQueueRepository queueRepository, IReconciliationBreakStore? statementBreakStore = null, IReconciliationCaseStore? statementCaseStore = null, IStatementRunWorkflowService? statementRuns = null, IOperationsContinuityWorkflowService? operationsContinuity = null, ILedgerJournalStore? ledgerJournalStore = null, IStatementCaseworkCommitStore? sourceCommitStore = null, IStatementCaseworkCommitFaultInjector? sourceCommitFaultInjector = null);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:57](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L57) |  |
-| <code>public async Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyAsync(ReconciliationBreakQueueScope scope, ReconciliationCaseworkCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:79](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L79) |  |
-| <code>public async Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkAsync(ReconciliationBreakQueueScope scope, ReconciliationBulkCaseworkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:110](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L110) |  |

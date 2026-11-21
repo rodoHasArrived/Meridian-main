@@ -414,6 +414,10 @@ describe("App", () => {
     const origin = within(await screen.findByRole("region", { name: "Originating record" }));
     expect(origin.getByText("Instrument from Portfolio")).toBeVisible();
     expect(origin.getByText("Example Equity")).toBeVisible();
+    origin.getAllByText("security-a").forEach((element) => expect(element).not.toBeVisible());
+    const technicalIdentity = origin.getByText("Technical identity");
+    await user.click(technicalIdentity);
+    expect(within(technicalIdentity.closest("details")!).getByText("security-a")).toBeVisible();
     expect(origin.getByText("Identity on file")).toBeVisible();
     expect(origin.getByText("2026-10-28")).toBeVisible();
     expect(origin.getByRole("link", { name: "Return to Portfolio" })).toHaveAttribute("href", context.origin);

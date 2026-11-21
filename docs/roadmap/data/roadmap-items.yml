@@ -3125,6 +3125,12 @@ items:
         path: docs/product/meridian-design-document.md
       - type: reference
         path: docs/development/policies/promotion-policy-matrix.md
+      - type: source
+        path: src/Meridian.Strategies/Artifacts/StrategyArtifactRegistry.cs
+      - type: source
+        path: src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs
+      - type: test
+        path: tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs
     last_reviewed: 2026-10-30
 
   - id: W13-OMS-001
@@ -3173,6 +3179,12 @@ items:
         path: docs/product/meridian-design-document.md
       - type: reference
         path: docs/product/implementation-todo-list.md
+      - type: reference
+        path: docs/domain/strategy-order-execution.md
+      - type: test
+        path: tests/Meridian.Tests/Execution/OrderAuthorityPaperRehearsalTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs
     last_reviewed: 2026-10-30
   - id: W14-ATTEST-001
     title: Single-principal attestation for governed approvals in the single-operator envelope

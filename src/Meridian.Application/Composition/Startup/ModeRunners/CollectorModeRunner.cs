@@ -99,7 +99,10 @@ public sealed class CollectorModeRunner
         ConnectionHealthMonitor? healthMonitor = null;
         StreamingFailoverService? failoverService = null;
         ProviderConfigReconciler? providerReconciler = null;
+        FailoverAwareMarketDataClient? failoverClient = null;
         IMarketDataClient dataClient;
+        var providerMap = new Dictionary<string, IMarketDataClient>(StringComparer.OrdinalIgnoreCase);
+        var startupFailures = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var gapSources = new List<IReconnectionGapSource>();
 
         if (useFailover)
@@ -107,8 +110,6 @@ public sealed class CollectorModeRunner
             _log.Information("Streaming failover enabled with {RuleCount} rules", failoverRules.Length);
 
             healthMonitor = new ConnectionHealthMonitor();
-            var providerMap = new Dictionary<string, IMarketDataClient>(StringComparer.OrdinalIgnoreCase);
-            FailoverAwareMarketDataClient? failoverClient = null;
             try
             {
                 failoverService = new StreamingFailoverService(healthMonitor);
@@ -142,8 +143,9 @@ public sealed class CollectorModeRunner
                             providerId,
                             providerKind);
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
                     {
+                        startupFailures.Add(providerId);
                         _log.Warning(
                             ex,
                             "Failed to create streaming client for provider {ProviderId}; skipping",
@@ -210,6 +212,14 @@ public sealed class CollectorModeRunner
         await using var liveRuntime = PublishLiveRuntime(hostStartup, ctx.ConfigPath, ctx.Config,
             failoverService, providerReconciler, ct);
         await using var dataClientDisposable = dataClient;
+        if (failoverClient is null)
+        {
+            var providerId = ProviderIdentity.NormalizeId(ctx.Config.DataSource.ToString());
+            providerMap[providerId] = dataClient;
+            startupFailures.Remove(providerId);
+        }
+        using var activation = new StreamingProviderActivation(ctx.ConfigPath, providerMap, startupFailures,
+            failoverClient, failoverService);
 
         // The failover wrapper is not itself a gap source; its inner clients were captured
         // above. In single-provider (or failover-fallback) mode the client is captured here.
@@ -254,6 +264,7 @@ public sealed class CollectorModeRunner
             using var connectTimeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             connectTimeoutCts.CancelAfter(TimeSpan.FromSeconds(30));
             await dataClient.ConnectAsync(connectTimeoutCts.Token);
+            activation.MarkConnected();
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -262,6 +273,7 @@ public sealed class CollectorModeRunner
         }
         catch (OperationCanceledException)
         {
+            activation.MarkConnectionFailed();
             _log.Error(
                 "Connection to {DataSource} timed out after 30 seconds. " +
                 "Check network connectivity, firewall rules, and provider credentials. " +
@@ -271,6 +283,7 @@ public sealed class CollectorModeRunner
         }
         catch (Exception ex)
         {
+            activation.MarkConnectionFailed();
             var errorCode = ErrorCodeExtensions.FromException(ex);
             if (errorCode == ErrorCode.Unknown)
                 errorCode = ErrorCode.ConnectionFailed;
@@ -333,10 +346,10 @@ public sealed class CollectorModeRunner
                         }
                     }
 
-                    liveRuntime.Configuration?.SignalReload();
+                    liveRuntime.Configuration.SignalReload();
                 }, ex => _log.Error(ex, "Configuration watcher error"));
 
-                liveRuntime.Configuration?.SignalReload();
+                liveRuntime.Configuration.SignalReload();
                 _log.Information("Watching {ConfigPath} for subscription and provider changes", ctx.ConfigPath);
             }
 
@@ -442,15 +455,19 @@ public sealed class CollectorModeRunner
         ProviderConfigReconciler? reconciler,
         CancellationToken lifetime)
     {
+        var store = new ConfigStore(configPath);
         if (failoverService is null || reconciler is null)
-            return new LiveRuntimeRegistration(null, null, null, null);
+        {
+            var singleSource = new CollectorConfigurationRuntime(store, new SingleSourceProviderConfigApplier(), startup, _log, lifetime);
+            return new LiveRuntimeRegistration(null, null, singleSource, null);
+        }
 
         var registry = hostStartup.GetService<StreamingFailoverRegistry>() ?? StreamingFailoverRegistry.Process;
         registry.Service = failoverService;
         if (!ReferenceEquals(registry, StreamingFailoverRegistry.Process))
             StreamingFailoverRegistry.Process.Service = failoverService;
 
-        var configuration = new CollectorConfigurationRuntime(new ConfigStore(configPath), reconciler, startup, _log, lifetime);
+        var configuration = new CollectorConfigurationRuntime(store, reconciler, startup, _log, lifetime);
         _log.Information("Provider and failover settings saved to {ConfigPath} now apply to the running collector", configPath);
         return new LiveRuntimeRegistration(registry, failoverService, configuration, reconciler);
     }
@@ -458,15 +475,14 @@ public sealed class CollectorModeRunner
     private sealed class LiveRuntimeRegistration(
         StreamingFailoverRegistry? registry,
         StreamingFailoverService? service,
-        CollectorConfigurationRuntime? configuration,
+        CollectorConfigurationRuntime configuration,
         ProviderConfigReconciler? reconciler) : IAsyncDisposable
     {
-        public CollectorConfigurationRuntime? Configuration { get; } = configuration;
+        public CollectorConfigurationRuntime Configuration { get; } = configuration;
 
         public async ValueTask DisposeAsync()
         {
-            if (Configuration is not null)
-                await Configuration.DisposeAsync().ConfigureAwait(false);
+            await Configuration.DisposeAsync().ConfigureAwait(false);
             if (registry is not null && ReferenceEquals(registry.Service, service))
                 registry.Service = null;
             if (ReferenceEquals(StreamingFailoverRegistry.Process.Service, service) && service is not null)

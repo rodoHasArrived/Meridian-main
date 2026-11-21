@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementToReportWorkflowService
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportWorkflowService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:35](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L35).
+
+Source- and binary-compatible adapter over the single statement reconciliation report workflow. It retains the old public API and wire links without owning storage, orchestration, or rendering.
+
+```csharp
+public sealed class StatementToReportWorkflowService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementToReportWorkflowService(IStatementImportCommitService imports, IStatementImportEvidenceRetainer evidence, IStatementRunWorkflowService statementRuns, string dataRoot, ILogger&lt;StatementToReportWorkflowService&gt;? logger = null) : this(new StatementReconciliationReportWorkflowService(imports, evidence, statementRuns, dataRoot));</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:39](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L39) |  |
+| <code>public async Task&lt;StatementToReportWorkflowExecution&gt; StartAsync(StatementToReportStartCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:59](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L59) |  |
+| <code>public async Task&lt;StatementToReportWorkflowDto?&gt; GetAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:75](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L75) |  |
+| <code>public async Task&lt;StatementToReportWorkflowExecution?&gt; ResumeAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:85](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L85) |  |
+| <code>public async Task&lt;StatementToReportArtifactDownload?&gt; DownloadArtifactAsync(string workflowId, string artifactId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:99](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L99) |  |
+
+## StrategyRunEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StrategyRunEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L17).
+
+Adds strategy-run provenance and supporting execution evidence to an evidence graph.
+
+```csharp
+public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L23) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:28](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L28) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L30) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:33](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L33) |  |
+
 ## TradingReadinessEvidenceContributor
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.TradingReadinessEvidenceContributor</code>. Kind: `class`.
@@ -940,33 +983,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool IsReadyDuplicate =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:90](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L90) |  |
-
-## AutomatedJournalEventProduction
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEventProduction</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:17](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L17).
-
-Events produced for automated journal intake plus the skips that need attention.
-
-```csharp
-public sealed record AutomatedJournalEventProduction(IReadOnlyList<AutomatedJournalEvent> Events, IReadOnlyList<AutomatedJournalEventProductionSkip> Skipped, IReadOnlyDictionary<string, AutomatedJournalEvidenceAssessmentDto>? EvidenceAssessments = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyDictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt; EvidenceAssessments { get; init; } = EvidenceAssessments?? new Dictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:22](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L22) |  |
-
-## AutomatedJournalEventProductionSkip
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEventProductionSkip</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:12](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L12).
-
-One position an automated producer could not turn into an event, with the reason.
-
-```csharp
-public sealed record AutomatedJournalEventProductionSkip(string Subject, string Reason);
-```

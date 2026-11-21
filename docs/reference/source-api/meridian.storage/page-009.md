@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQueryRequest
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:331](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L331).
+
+Request body for the data query endpoint.
+
+```csharp
+public sealed record DataQueryRequest(string? Sql);
+```
+
 ## DataQueryResult
 
 Qualified name: <code>Meridian.Storage.Query.DataQueryResult</code>. Kind: `record`.
@@ -921,29 +933,3 @@ Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsSt
 ```csharp
 public sealed record CorporateActionCalendarReadSet(IReadOnlyList<CorporateActionSourceProposalDto> Proposals, IReadOnlyList<CorporateActionProcessingCaseDto> Cases, IReadOnlyList<CorporateActionEvidenceDto> Evidence);
 ```
-
-## CorporateActionCashDividendPostingLease
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionCashDividendPostingLease</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:13](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L13).
-
-Server-created, invocation-bound authority for one exact native candidate. Its internal constructor and sealed type prevent HTTP inputs from manufacturing a posting capability.
-
-```csharp
-public sealed class CorporateActionCashDividendPostingLease
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionCashDividendAttestationDto Attestation { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:44](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L44) |  |
-| <code>public CorporateActionCaseAccountingProjectionDto Projection { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:45](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L45) |  |
-| <code>public CashDividendAttestationDeclarationDto Declaration { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:46](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L46) |  |
-| <code>public async Task EnsureCurrentAsync(string actor, Guid ledgerBookId, Guid periodId, string draftedCandidateFingerprint, string postingIntentHash, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:50](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L50) | Checks the exact candidate and rereads native authority within the held transaction. |
-| <code>public Task EnsureCanonicalInstrumentAsync(string? symbol, Guid securityId, long expectedSecurityVersion, DateTimeOffset accountingTimestamp, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:80](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L80) |  |
-| <code>public async Task AppendJournalAsync(ITransactionalLedgerJournalStore store, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:92](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L92) |  |
-| <code>public async Task&lt;LedgerJournalEntryRecord?&gt; GetJournalAsync(ITransactionalLedgerJournalStore store, Guid journalEntryId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:101](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L101) |  |
-| <code>public async Task&lt;AssetAccountingEventAppendResult&gt; AppendSpineAsync(ITransactionalAssetAccountingEventProjectionStore store, AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:113](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L113) |  |
-| <code>public Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestSpineAsync(ITransactionalAssetAccountingEventProjectionStore store, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:126](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L126) |  |

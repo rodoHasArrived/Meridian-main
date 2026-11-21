@@ -1,0 +1,34 @@
+<UserControl x:Class="Meridian.Wpf.Controls.ProviderActivationPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.AutomationId="ProviderActivationPanel">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="ActivationVisibility" />
+    </UserControl.Resources>
+    <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16">
+        <StackPanel>
+            <TextBlock Text="Provider activation" Style="{StaticResource CardHeaderStyle}" />
+            <TextBlock Text="{Binding Message}" Style="{StaticResource CardDescriptionStyle}"
+                       TextWrapping="Wrap" Margin="0,4,0,8" AutomationProperties.LiveSetting="Polite" />
+            <WrapPanel>
+                <Button Content="Refresh activation" Command="{Binding RefreshCommand}"
+                        Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
+                <Button Content="Restart host" Command="{Binding RequestRestartCommand}"
+                        Visibility="{Binding CanRestart, Converter={StaticResource ActivationVisibility}}"
+                        Style="{StaticResource SecondaryButtonStyle}" />
+            </WrapPanel>
+            <StackPanel Margin="0,10,0,0" Visibility="{Binding IsConfirming, Converter={StaticResource ActivationVisibility}}">
+                <TextBlock Text="Restarting briefly interrupts every workstation connected to this host. Review the pending paths before continuing."
+                           TextWrapping="Wrap" Style="{StaticResource CardDescriptionStyle}" />
+                <ScrollViewer MaxHeight="120" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding PendingPaths}" />
+                </ScrollViewer>
+                <WrapPanel Margin="0,8,0,0">
+                    <Button Content="Confirm restart" Command="{Binding ConfirmRestartCommand}"
+                            Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,0" />
+                    <Button Content="Cancel" Command="{Binding CancelRestartCommand}" Style="{StaticResource GhostButtonStyle}" />
+                </WrapPanel>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

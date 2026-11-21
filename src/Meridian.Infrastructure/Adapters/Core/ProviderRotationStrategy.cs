@@ -58,7 +58,8 @@ internal sealed class ProviderRotationStrategy
             if (_rateLimitTracker.IsApproachingLimit(p.Name, _approachingThreshold))
                 return 100 + (int)(_rateLimitTracker.GetStatus(p.Name)?.UsagePercent ?? 0);
 
-            return p.Priority;
+            // The route has already been sorted by its captured priority and preferences.
+            return 0;
         });
     }
 

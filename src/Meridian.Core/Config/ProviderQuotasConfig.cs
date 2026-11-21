@@ -11,8 +11,8 @@ public sealed record ProviderQuotasConfig(
 /// NoDailyLimit explicitly declares an account without a daily credit cap.
 /// </summary>
 public sealed record TwelveDataQuotaConfig(
-    int CreditsPerMinute = 8,
-    int DailyCredits = 800,
+    int CreditsPerMinute = BackfillProviderCatalog.TwelveDataPerMinute,
+    int DailyCredits = BackfillProviderCatalog.TwelveDataBasicDailyCredits,
     bool FundamentalsEntitled = false,
     bool NoDailyLimit = false);
 
@@ -21,6 +21,6 @@ public sealed record TwelveDataQuotaConfig(
 /// window because the vendor publishes no reset boundary. NoDailyLimit declares an uncapped account.
 /// </summary>
 public sealed record AlphaVantageQuotaConfig(
-    int RequestsPerMinute = 5,
-    int DailyRequests = 25,
+    int RequestsPerMinute = BackfillProviderCatalog.AlphaVantagePerMinute,
+    int DailyRequests = BackfillProviderCatalog.AlphaVantageFreeDailyRequests,
     bool NoDailyLimit = false);

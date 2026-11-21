@@ -6,6 +6,7 @@ import type { EquityCurveSummary, LedgerJournalLine, LedgerSummary, LedgerTrialB
 import { EXECUTION_API_ENDPOINTS, PROMOTION_API_ENDPOINTS, REPLAY_API_ENDPOINTS, executionManualOverrideClearEndpoint, executionOrderCancelEndpoint, executionPositionCloseEndpoint, executionSessionCloseEndpoint, riskRuleConfigEndpoint, riskRuleStatusEndpoint, portfolioRunCashFlowsEndpoint, promotionEvaluateEndpoint, replayFilesEndpoint, replaySessionActionEndpoint, strategyActionEndpoint, workstationRunAttributionEndpoint, workstationRunCompareEndpoint, workstationRunContinuityEndpoint, workstationRunDiffEndpoint, workstationRunEquityCurveEndpoint, workstationRunFillsEndpoint, workstationRunHistoryEndpoint, workstationRunLedgerEndpoint, workstationRunLedgerJournalEndpoint, workstationRunLedgerTrialBalanceEndpoint, workstationRunReconciliationEndpoint, workstationRunReconciliationHistoryEndpoint, workstationRunReviewPacketEndpoint, workstationRunSweepsEndpoint, workstationRunTimelineEndpoint, RISK_API_ENDPOINTS, type LedgerJournalQueryOptions, type LedgerTrialBalanceQueryOptions } from "@/lib/workstation-endpoints";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { getJson, postJson, putJson } from "@/lib/api/http-client";
+import { promotionLiveAuthorizationRevokeEndpoint } from "@/lib/workstation-endpoints";
 
 // --- Promotion workflow ---
 
@@ -23,6 +24,12 @@ export function rejectPromotion(request: RejectPromotionRequest) {
 
 export function getPromotionHistory() {
   return getJson<PromotionRecord[]>(PROMOTION_API_ENDPOINTS.history);
+}
+
+export function revokeLiveAuthorization(authorizationId: string, reason: string) {
+  return postJson<{ authorizationId: string; actor: string; reason: string; revokedAt: string }>(
+    promotionLiveAuthorizationRevokeEndpoint(authorizationId), { reason }
+  );
 }
 
 // --- Order management ---
