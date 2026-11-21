@@ -455,3 +455,6 @@ variance, tolerance and unavailable reasons. Portfolio unrealized P&L is removed
 with historical-cost net assets. Valued journals without canonical historical cost support are
 reported as unavailable rather than compared directly with portfolio acquisition cost; the existing
 three-way reconciliation lane supplies atomic canonical lot evidence for its supported books.
+An absent account scope, differing identities, currency, native convention or economic cutoff
+suppresses both operands and the variance in the single-unit measure. Per-source evidence retains
+its original dimensions. Missing coverage cannot appear as a successful native comparison.

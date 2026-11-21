@@ -30,15 +30,20 @@ public sealed class StrategyAccountingEvidenceTests
             new Dictionary<string, (SecurityLotUnitKind, decimal)> { ["TEST"] = (unit, 1m) })
         { SecurityIdentity = _ => Guid.Parse("d368cf50-af0b-4fb4-a8d4-8ba467b9e3b4") };
         var fill = new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "TEST", quantity, (decimal)price, 0m, at.AddHours(1));
+        var fills = new List<FillEvent> { fill };
         portfolio.ProcessFill(fill);
         if (scenario == "split")
             portfolio.ApplyAssetEvent(new(at.AddHours(2), "TEST", AssetEventType.Split, PositionFactor: 2m, ReferencePrice: 50m));
         if (scenario == "cross")
-            portfolio.ProcessFill(new(Guid.NewGuid(), Guid.NewGuid(), "TEST", -15, 110m, 0m, at.AddHours(2)));
+        {
+            var crossingFill = new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "TEST", -15, 110m, 0m, at.AddHours(2));
+            portfolio.ProcessFill(crossingFill);
+            fills.Add(crossingFill);
+        }
         portfolio.UpdateLastPrice("TEST", (decimal)mark);
         var snapshot = portfolio.TakeSnapshot(at.AddHours(20), day);
-        var result = new BacktestResult(request, new HashSet<string> { "TEST" }, [snapshot], snapshot.DayCashFlows, [fill],
-            BacktestMetricsEngine.Compute([snapshot], snapshot.DayCashFlows, [fill], request), ledger, TimeSpan.Zero, 1);
+        var result = new BacktestResult(request, new HashSet<string> { "TEST" }, [snapshot], snapshot.DayCashFlows, fills,
+            BacktestMetricsEngine.Compute([snapshot], snapshot.DayCashFlows, fills, request), ledger, TimeSpan.Zero, 1);
         var entry = StrategyRunEntry.Start("accounting", "Accounting test", RunType.Backtest) with
         { RunId = "accounting-" + scenario, Metrics = result, EndedAt = at.AddYears(1) };
         var store = new StrategyRunStore();

@@ -11,6 +11,13 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui.Shared
 
+Reconciliation queues expose a monetary total only when every break supplies one comparable typed
+money measure in the same retained currency. Quantity-only, legacy, mixed-currency and unverified
+account rows retain counts and an unavailable explanation instead of a dollar total. The nullable
+`ComparableBreakAmountTotal`, `BreakAmountCurrency` and `BreakAmountUnavailableReason` fields carry
+this distinction; the legacy scalar is only a compatibility field. Ledger-impact previews are
+omitted when this comparison evidence is unavailable.
+
 The book receipt queue composes approved historical positions, accepted Asset Operations schedules,
 canonical statement cash and retained reconciliation/journal links. Expected, received and posted
 amounts stay separate; missing account/provider coverage remains incomplete. Explicit capture commands

@@ -22,6 +22,8 @@ public sealed partial class ReconciliationProjectionService
             var problem = expectedRows.Length > 1 || actualRows.Length > 1
                 ? "Position scope has multiple rows without aggregation authority."
                 : e is null || a is null ? "An exact account and position counterpart is unavailable."
+                : string.IsNullOrWhiteSpace(e.FinancialAccountId) || string.IsNullOrWhiteSpace(a.FinancialAccountId)
+                    ? "Exact financial-account scope is unavailable."
                 : e.SecurityId is null || e.SecurityId == Guid.Empty || a.SecurityId is null || a.SecurityId == Guid.Empty || e.SecurityId != a.SecurityId ? "Canonical security identities are missing or disagree."
                 : e.Currency is null || a.Currency is null || !string.Equals(e.Currency, a.Currency, StringComparison.OrdinalIgnoreCase)
                     ? "Functional currencies are missing or disagree; no FX translation was requested."
@@ -34,16 +36,20 @@ public sealed partial class ReconciliationProjectionService
             Add(ReconciliationBreakMeasureKindDto.Quantity, e?.Quantity, a?.Quantity, Math.Abs(request.QuantityTolerance),
                 e?.QuantityUnit is { } unit ? $"{unit} (multiplier {e.Multiplier})" : a?.QuantityUnit ?? "unknown",
                 unitProblem ?? (e?.Quantity is null ? e?.CoverageFailure : null)
-                    ?? (a?.Quantity is null ? a?.CoverageFailure : null));
+                    ?? (a?.Quantity is null ? a?.CoverageFailure : null), unitProblem is not null);
             Add(ReconciliationBreakMeasureKindDto.CostBasis, e?.MonetaryBasis, a?.MonetaryBasis,
                 Math.Abs(request.BasisAmountTolerance), e?.Currency ?? a?.Currency ?? "unknown",
-                problem ?? (e?.MonetaryBasis is null ? e?.CoverageFailure : null)
-                    ?? (a?.MonetaryBasis is null ? a?.CoverageFailure : null));
+                unitProblem ?? (e?.MonetaryBasis is null ? e?.CoverageFailure : null)
+                    ?? (a?.MonetaryBasis is null ? a?.CoverageFailure : null), unitProblem is not null);
 
             void Add(ReconciliationBreakMeasureKindDto kind, decimal? expectedValue, decimal? actualValue,
-                decimal tolerance, string unit, string? unavailable)
+                decimal tolerance, string unit, string? unavailable, bool incomparable)
             {
                 unavailable ??= expectedValue is null || actualValue is null ? "The exact retained measurement is unavailable." : null;
+                // The shared measure has one unit. Different scopes, currencies or cutoffs cannot
+                // honestly be rendered as two amounts in that unit, even with a warning attached.
+                if (incomparable)
+                    expectedValue = actualValue = null;
                 var variance = expectedValue.HasValue && actualValue.HasValue ? actualValue.Value - expectedValue.Value : (decimal?)null;
                 results.Add(new($"position-{kind}:{Uri.EscapeDataString(key)}", $"{representative.Symbol} {kind} [{representative.FinancialAccountId ?? "unscoped"}]",
                     representative.FinancialAccountId, new(kind, expectedValue, actualValue, variance, tolerance, unit, unavailable),
