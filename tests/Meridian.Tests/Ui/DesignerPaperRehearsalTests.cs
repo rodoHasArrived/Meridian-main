@@ -281,7 +281,7 @@ public sealed class DesignerPaperRehearsalTests
         nativeReceipt.Positions.Should().ContainSingle().Which.StrategyRunId.Should().Be(paper.RunId);
 
         var paperObservationContext = new PaperRunOrderContext(Tenant, Company, AccountId,
-            new StrategyOrderAuthority(paper.StrategyId, paper.RunId, outcome.StrategyVersionSha256!,
+            new ExecutionSdk.StrategyOrderAuthority(paper.StrategyId, paper.RunId, outcome.StrategyVersionSha256!,
                 paper.AuditReference!, sessionId), sessions);
         var quoteCache = new LiveCache();
         var quoteSource = new DesignerPaperPortfolioState(paperObservationContext, quoteCache);
