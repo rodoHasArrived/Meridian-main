@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Integrity;
@@ -63,7 +64,9 @@ public sealed partial class AccountingSystemIntegrationService
         "UnscopedExternalGlExportControlEvidence",
         "LiveExternalPostingProviderEnabled",
         "LiveExternalPostingRetainedPackageEnabled",
-        "MissingGeneratedExternalGlExportLines"
+        "MissingGeneratedExternalGlExportLines",
+        "ExternalGlReviewedMappingChanged",
+        "ExternalGlReviewedMappingUnpinned"
     ];
 
     private readonly IReadOnlyList<IAccountingSystemProvider> _providers;
@@ -73,6 +76,7 @@ public sealed partial class AccountingSystemIntegrationService
     private readonly ConcurrentDictionary<string, ScopedExternalGlMappingProfile> _mappingProfiles = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, ExternalGlExportPackageDto> _exportPackages = new(StringComparer.OrdinalIgnoreCase);
     private readonly AccountingSystemIntegrationStateStore? _stateStore;
+    private readonly object _memoryStateGate = new();
     private const string ImportsCollection = "latest-imports";
     private const string MappingProfilesCollection = "mapping-profiles";
     private const string ExportPackagesCollection = "export-packages";
@@ -103,13 +107,58 @@ public sealed partial class AccountingSystemIntegrationService
     /// the record lives for the process lifetime only.
     /// </summary>
     private Task RetainAsync<T>(
-        string collection, ConcurrentDictionary<string, T> rows, string key, T value, CancellationToken ct)
+        string collection, ConcurrentDictionary<string, T> rows, string key, T value, CancellationToken ct,
+        AccountingSystemStateExpectation? expected = null,
+        IReadOnlyList<AccountingSystemStateDependency>? dependencies = null)
     {
         if (_stateStore is not null)
-            return _stateStore.RetainAsync(collection, rows, key, value, JsonOptions, ct);
-
-        rows[key] = value;
+            return _stateStore.RetainAsync(collection, rows, key, value, JsonOptions, ct, expected, dependencies);
+        lock (_memoryStateGate)
+        {
+            if (expected is not null && !AccountingSystemIntegrationStateStore.Same(expected,
+                    AccountingSystemIntegrationStateStore.Capture(rows, key, JsonOptions)))
+                throw new InvalidOperationException("External GL review state changed; reload before retrying this update.");
+            foreach (var dependency in dependencies ?? [])
+                if (!AccountingSystemIntegrationStateStore.Same(dependency.Expected, CaptureLocalDependency(dependency.Collection, dependency.Key)))
+                    throw new InvalidOperationException("External GL review dependency changed; prepare a new review package.");
+            rows[key] = value;
+        }
         return Task.CompletedTask;
+    }
+
+    private void RefreshRetainedState()
+    {
+        _stateStore?.Refresh(ImportsCollection, _latestImports, JsonOptions);
+        _stateStore?.Refresh(MappingProfilesCollection, _mappingProfiles, JsonOptions);
+        _stateStore?.Refresh(ExportPackagesCollection, _exportPackages, JsonOptions);
+    }
+
+    private AccountingSystemStateExpectation CaptureLocalDependency(string collection, string key) => collection switch
+    {
+        ImportsCollection => AccountingSystemIntegrationStateStore.Capture(_latestImports, key, JsonOptions),
+        MappingProfilesCollection => AccountingSystemIntegrationStateStore.Capture(_mappingProfiles, key, JsonOptions),
+        ExportPackagesCollection => AccountingSystemIntegrationStateStore.Capture(_exportPackages, key, JsonOptions),
+        _ => throw new ArgumentException("Unknown external GL review dependency.", nameof(collection))
+    };
+
+    private AccountingSystemStateDependency[] CaptureReviewDependencies(ExternalGlExportPackageDto package,
+        ScopedExternalGlMappingProfile? mapping, AccountingSystemReconciliationSummaryDto? usedReconciliation = null)
+    {
+        var importKey = ImportKey(package.ProviderId, package.FundProfileId, package.LedgerBookId, package.TenantId, package.CompanyId);
+        if (usedReconciliation is not null && _latestImports.TryGetValue(importKey, out var retainedImport)
+            && (retainedImport.Summary.ImportId != usedReconciliation.ImportId
+                || retainedImport.Summary.ContentHash != usedReconciliation.ImportContentHash))
+            throw new InvalidOperationException("External GL review import changed during preparation; retry using the current retained source.");
+        var dependencies = new List<AccountingSystemStateDependency>
+        {
+            new(ImportsCollection, importKey, CaptureLocalDependency(ImportsCollection, importKey))
+        };
+        if (mapping is not null)
+            dependencies.Add(new(MappingProfilesCollection,
+                MappingProfileKey(mapping.ProviderId, mapping.FundProfileId, mapping.LedgerBookId,
+                    mapping.Profile.ProfileId, mapping.TenantId, mapping.CompanyId),
+                new(JsonSerializer.Serialize(mapping, JsonOptions))));
+        return dependencies.ToArray();
     }
 
     public async Task<IReadOnlyList<AccountingSystemProviderDto>> ListProvidersAsync(CancellationToken ct = default)
@@ -146,6 +195,7 @@ public sealed partial class AccountingSystemIntegrationService
         string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
+        RefreshRetainedState();
         var normalizedProviderId = string.IsNullOrWhiteSpace(providerId) ? null : NormalizeProviderId(providerId);
         var normalizedFundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? null : NormalizeFundProfileId(fundProfileId);
         var normalizedTenantId = NormalizeOptional(tenantId);
@@ -169,6 +219,7 @@ public sealed partial class AccountingSystemIntegrationService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        RefreshRetainedState();
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Profile);
 
@@ -249,6 +300,7 @@ public sealed partial class AccountingSystemIntegrationService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        RefreshRetainedState();
         ArgumentNullException.ThrowIfNull(request);
 
         EnsureHumanOrigin(request.ActionOrigin, "retain external GL export review packages");
@@ -336,8 +388,13 @@ public sealed partial class AccountingSystemIntegrationService
             safeguardIssueCodes,
             tenantId,
             companyId,
-            reconciliationSnapshotHash);
-        await RetainAsync(ExportPackagesCollection, _exportPackages, package.ExportPackageId, package, ct).ConfigureAwait(false);
+            reconciliationSnapshotHash)
+        {
+            MappingContentHash = mappingProfile is null ? null : GetOnboardingMappingVersion(mappingProfile.Profile)
+        };
+        var dependencies = CaptureReviewDependencies(package, mappingProfile, reconciliation);
+        await RetainAsync(ExportPackagesCollection, _exportPackages, package.ExportPackageId, package, ct,
+            dependencies: dependencies).ConfigureAwait(false);
         return package;
     }
 
@@ -346,6 +403,7 @@ public sealed partial class AccountingSystemIntegrationService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        RefreshRetainedState();
         ArgumentNullException.ThrowIfNull(request);
         EnsureHumanOrigin(request.ActionOrigin, "certify external GL export packages");
         var exportPackageId = RequireText(request.ExportPackageId, "ExportPackageId");
@@ -368,6 +426,11 @@ public sealed partial class AccountingSystemIntegrationService
         {
             return null;
         }
+
+        var expectedPackage = new AccountingSystemStateExpectation(JsonSerializer.Serialize(package, JsonOptions));
+        var reviewedMapping = ResolveMappingProfile(package.ProviderId, package.FundProfileId, package.LedgerBookId,
+            package.MappingProfileId, package.TenantId, package.CompanyId);
+        var reviewDependencies = CaptureReviewDependencies(package, reviewedMapping);
 
         if (!HasExportCertificationEvidenceWithProvenance(package, evidenceLinks))
         {
@@ -436,7 +499,8 @@ public sealed partial class AccountingSystemIntegrationService
                 package.ReconciliationSafeguardIssueCodes,
                 certification.State)
         };
-        await RetainAsync(ExportPackagesCollection, _exportPackages, certified.ExportPackageId, certified, ct).ConfigureAwait(false);
+        await RetainAsync(ExportPackagesCollection, _exportPackages, certified.ExportPackageId, certified, ct,
+            expectedPackage, reviewDependencies).ConfigureAwait(false);
         return certified;
     }
 
@@ -447,6 +511,7 @@ public sealed partial class AccountingSystemIntegrationService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        RefreshRetainedState();
         var normalizedExportPackageId = RequireText(exportPackageId, nameof(exportPackageId));
         if (!TryGetExportPackage(normalizedExportPackageId, tenantId, companyId, out var package))
         {
@@ -467,6 +532,7 @@ public sealed partial class AccountingSystemIntegrationService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        RefreshRetainedState();
         var normalizedProviderId = string.IsNullOrWhiteSpace(providerId) ? null : NormalizeProviderId(providerId);
         var normalizedFundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? null : NormalizeFundProfileId(fundProfileId);
         var normalizedTenantId = NormalizeOptional(tenantId);
@@ -491,6 +557,7 @@ public sealed partial class AccountingSystemIntegrationService
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        RefreshRetainedState();
         request ??= new AccountingSystemImportRequestDto();
         var provider = await ResolveProviderAsync(request.ProviderId, ct).ConfigureAwait(false);
         var detail = await provider.ImportAsync(request, ct).ConfigureAwait(false);
@@ -526,6 +593,7 @@ public sealed partial class AccountingSystemIntegrationService
         string? companyId = null)
     {
         ct.ThrowIfCancellationRequested();
+        RefreshRetainedState();
         var normalizedProviderId = await ResolveProviderIdAsync(providerId, ct).ConfigureAwait(false);
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
         var normalizedTenantId = NormalizeOptional(tenantId);
@@ -554,6 +622,7 @@ public sealed partial class AccountingSystemIntegrationService
         string? tenantId = null,
         string? companyId = null)
     {
+        RefreshRetainedState();
         var normalizedTenantId = NormalizeOptional(tenantId);
         var normalizedCompanyId = NormalizeOptional(companyId);
         var scopedCandidates = _mappingProfiles.Values
@@ -649,6 +718,19 @@ public sealed partial class AccountingSystemIntegrationService
             package.ReconciliationId,
             package.ReconciliationSnapshotHash,
             currentReconciliationSnapshotHash);
+        if (package.MappingProfileId is not null && package.MappingContentHash is null
+            && package.Certification?.State != AccountingCertificationStateDto.Certified)
+            issues = [.. issues, new AccountingConfigurationValidationIssueDto("ExternalGlReviewedMappingUnpinned",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "This historical review package does not retain the mapping contents it reviewed.", package.MappingProfileId,
+                "Prepare a new review package before certification; historical records remain unchanged.")];
+        var mappingDrift = package.MappingContentHash is not null && (mappingProfile is null ||
+            !string.Equals(package.MappingContentHash, GetOnboardingMappingVersion(mappingProfile.Profile), StringComparison.Ordinal));
+        if (mappingDrift)
+            issues = [.. issues, new AccountingConfigurationValidationIssueDto("ExternalGlReviewedMappingChanged",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "The retained mapping changed after this export package was prepared.", package.MappingProfileId,
+                "Prepare a new review package using the current certified mapping.")];
         return [.. issues, .. await ValidateProviderExportAsync(package.ProviderId, package.FundProfileId,
             package.LedgerBookId, package.PeriodStart, package.PeriodEnd, generatedLines, package.EvidenceLinks,
             package.TenantId, package.CompanyId, ct).ConfigureAwait(false)];
@@ -1111,6 +1193,12 @@ public sealed partial class AccountingSystemIntegrationService
                 validationIssues
             },
             JsonOptions);
+        if (package.MappingContentHash is { } retainedMappingHash)
+        {
+            var fields = JsonNode.Parse(payload)!.AsObject();
+            fields["mappingContentHash"] = retainedMappingHash;
+            payload = fields.ToJsonString(JsonOptions);
+        }
         var contentHash = ComputeExportPackageHash(
             package,
             certificationState,
@@ -1268,6 +1356,10 @@ public sealed partial class AccountingSystemIntegrationService
                 .ThenBy(static issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
                 .Select(static issue => $"{issue.Code}:{issue.Severity}:{issue.TargetId}:{issue.Message}:{issue.SuggestedAction}")),
             string.Join(",", evidenceLinks.Order(StringComparer.OrdinalIgnoreCase)));
+        // Historical v1 manifests have no mapping pin. Preserve their exact hash preimage;
+        // only new pinned review packages extend the attested material.
+        if (package.MappingContentHash is { } mappingHash)
+            payload += "|mapping-content-hash:" + mappingHash;
         return Sha256Digest.ComputeUtf8(payload);
     }
 
