@@ -1,4 +1,4 @@
-import { apiGetJson, type ApiRequestOptions } from "@/lib/api";
+import { apiGetJson, apiPostBlob, type ApiRequestOptions } from "@/lib/api";
 import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import {
   WORKSTATION_API_ENDPOINTS,
@@ -43,6 +43,11 @@ export function getLedgerPeriodPnlSummary(periodId: string) {
 
 export function getLedgerPeriodJournalEntries(periodId: string) {
   return apiGetJson<LedgerPostedJournalEntry[]>(ledgerPeriodJournalEntriesEndpoint(periodId));
+}
+
+/** Complete, balanced journals for the selected period; table search/column filters do not apply. */
+export function exportLedgerPeriodJournalCsv(periodId: string, options: ApiRequestOptions = {}) {
+  return apiPostBlob(routeWithParam(UI_API_ROUTES.LedgerPeriodJournalExport, "periodId", periodId), { format: "csv" }, options);
 }
 
 export interface LedgerAccountRunningBalanceQuery {

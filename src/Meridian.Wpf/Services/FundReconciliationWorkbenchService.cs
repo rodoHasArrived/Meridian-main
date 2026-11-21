@@ -512,20 +512,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             ?? detail.Summary.RunId;
         var lastUpdated = detail.Summary.CreatedAt;
         var exceptionRows = detail.Breaks
-            .Select(breakItem => new FundReconciliationCheckDetailRow(
-                RowKey: breakItem.CheckId,
-                CheckLabel: breakItem.Label,
-                CategoryLabel: Humanize(breakItem.Category),
-                StatusLabel: Humanize(breakItem.Status),
-                StatusIcon: GetBreakStatusIcon(breakItem.Status),
-                SourceLabel: breakItem.MissingSource,
-                ExpectedAmountText: FormatCurrency(breakItem.ExpectedAmount, baseCurrency),
-                ActualAmountText: FormatCurrency(breakItem.ActualAmount, baseCurrency),
-                VarianceText: FormatCurrency(Math.Abs(breakItem.Variance), baseCurrency),
-                Reason: breakItem.Reason,
-                ExpectedAsOfText: FormatTimestamp(breakItem.ExpectedAsOf),
-                ActualAsOfText: FormatTimestamp(breakItem.ActualAsOf),
-                IsHighlighted: focusBreak?.BreakId.EndsWith($":{breakItem.CheckId}", StringComparison.OrdinalIgnoreCase) == true))
+            .SelectMany(breakItem => MapStrategyBreakMeasures(breakItem, baseCurrency,
+                focusBreak?.BreakId.EndsWith($":{breakItem.CheckId}", StringComparison.OrdinalIgnoreCase) == true))
             .ToArray();
         var allChecks = detail.Matches
             .Select(match => new FundReconciliationCheckDetailRow(
@@ -683,6 +671,50 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             AllCheckRows: allRows,
             SecurityCoverageRows: [],
             AuditRows: auditRows);
+    }
+
+    internal static IReadOnlyList<FundReconciliationCheckDetailRow> MapStrategyBreakMeasures(
+        ReconciliationBreakDto item, string baseCurrency, bool highlighted = false)
+    {
+        FundReconciliationCheckDetailRow BuildRow(string key, string label, string expected,
+            string actual, string variance, string reason, string tolerance = "Not retained") => new(
+            RowKey: key,
+            CheckLabel: label,
+            CategoryLabel: Humanize(item.Category),
+            StatusLabel: Humanize(item.Status),
+            StatusIcon: GetBreakStatusIcon(item.Status),
+            SourceLabel: item.MissingSource,
+            ExpectedAmountText: expected,
+            ActualAmountText: actual,
+            VarianceText: variance,
+            Reason: reason,
+            ExpectedAsOfText: FormatTimestamp(item.ExpectedAsOf),
+            ActualAsOfText: FormatTimestamp(item.ActualAsOf),
+            IsHighlighted: highlighted,
+            ToleranceText: tolerance);
+
+        if (item.Measures is not { Count: > 0 })
+            return [BuildRow(item.CheckId, item.Label, FormatCurrency(item.ExpectedAmount, baseCurrency),
+                FormatCurrency(item.ActualAmount, baseCurrency),
+                FormatCurrency(Math.Abs(item.Variance), baseCurrency), item.Reason)];
+
+        return item.Measures.Select(measure =>
+        {
+            var label = measure.Kind switch
+            {
+                ReconciliationBreakMeasureKindDto.Quantity => "Quantity",
+                ReconciliationBreakMeasureKindDto.CostBasis => "Cost basis",
+                _ => "Value"
+            };
+            string FormatMeasure(decimal? value) => value.HasValue
+                ? $"{value.Value.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)} {measure.Unit}".TrimEnd()
+                : "Unavailable";
+            var reason = string.IsNullOrWhiteSpace(measure.UnavailableReason)
+                ? item.Reason : $"{item.Reason} {measure.UnavailableReason}";
+            return BuildRow($"{item.CheckId}:{measure.Kind}", $"{item.Label} · {label}",
+                FormatMeasure(measure.Expected), FormatMeasure(measure.Actual),
+                FormatMeasure(measure.Variance), reason, FormatMeasure(measure.Tolerance));
+        }).ToArray();
     }
 
     private static FundReconciliationCheckDetailRow MapAccountResult(AccountReconciliationResultDto result, string baseCurrency)

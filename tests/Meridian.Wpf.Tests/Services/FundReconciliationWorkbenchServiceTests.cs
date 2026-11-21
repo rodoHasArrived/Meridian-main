@@ -435,6 +435,35 @@ public sealed class FundReconciliationWorkbenchServiceTests
         return new WorkbenchContext(service, fundAccountService, accountId);
     }
 
+    [Fact]
+    public void StrategyMeasures_PreserveQuantityBasisUnitsToleranceAndUnavailableEvidence()
+    {
+        var item = BuildStrategyDetail("run-typed").Breaks[0] with
+        {
+            Measures =
+            [
+                new(ReconciliationBreakMeasureKindDto.Quantity, 12.5m, 10m, -2.5m, 0.0001m, "shares"),
+                new(ReconciliationBreakMeasureKindDto.CostBasis, 1250m, null, null, 0.01m, "USD",
+                    "Canonical lot basis was not retained.")
+            ]
+        };
+
+        var rows = FundReconciliationWorkbenchService.MapStrategyBreakMeasures(item, "EUR", highlighted: true);
+
+        rows.Should().HaveCount(2);
+        rows[0].CheckLabel.Should().EndWith("Quantity");
+        rows[0].ExpectedAmountText.Should().Be("12.5 shares");
+        rows[0].VarianceText.Should().Be("-2.5 shares");
+        rows[0].ToleranceText.Should().Be("0.0001 shares");
+        rows[0].IsHighlighted.Should().BeTrue();
+        rows[1].CheckLabel.Should().EndWith("Cost basis");
+        rows[1].ExpectedAmountText.Should().Be("1250 USD");
+        rows[1].ActualAmountText.Should().Be("Unavailable");
+        rows[1].VarianceText.Should().Be("Unavailable");
+        rows[1].Reason.Should().Contain("Canonical lot basis was not retained.");
+        rows[1].ExpectedAsOfText.Should().NotBeNullOrWhiteSpace();
+    }
+
     private static Guid ToFundId(string fundProfileId)
         => new(MD5.HashData(Encoding.UTF8.GetBytes(fundProfileId.Trim())));
 

@@ -1506,6 +1506,7 @@ export interface StrategyRunDetail {
 }
 
 export interface StrategyRunReplayProvenance {
+  dataQualityWarnings?: import("./market-data-input-evidence").MarketDataQualityWarning[] | null;
   sourceMix: StrategyRunReplaySourceCount[];
   revisions: StrategyRunReplayRevision[];
   sourceMixHash?: string | null;

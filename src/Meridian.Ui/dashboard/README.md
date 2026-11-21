@@ -76,6 +76,19 @@ history and a preview of what the draft would have flagged over the last 30 days
 with its provider-call cost shown first. Focused coverage:
 `data-quality-watch.cross-provider-policy.test.tsx`.
 
+## Posted journals and retained input quality
+
+Ledger Explorer offers **Download journal CSV** for the selected book period through the shared
+`POST /api/ledger/periods/{periodId}/journal-export` route. The download preserves the server artifact;
+its complete-period scope is independent of the table's filters. A changed book or period aborts a
+pending download, and authorization or storage failures remain visible for retry.
+
+Strategy run **Replay data sources** shows retained repaired, gap-filled, low-quality and unknown
+input warnings with affected-fill counts and expandable source assessments. Missing assessment
+coverage remains distinct from an assessed run without warnings. Focused coverage lives in
+`PostedJournalCsvButton.test.tsx`, `ledger-journal-export.test.ts` and
+`strategy-screen.replay-provenance.test.tsx`; these tests use synthetic responses.
+
 ## Fixed-income workflow access
 
 Asset detail and selected bond holdings link to the existing Security Master analytics and

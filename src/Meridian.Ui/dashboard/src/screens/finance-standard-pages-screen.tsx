@@ -42,6 +42,7 @@ import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
 import { useAccountingPostedLedgerViewModel, type PostedLedgerJournalLine } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { AccountingPeriodComparison } from "@/screens/accounting-period-comparison";
 import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
+import { PostedJournalCsvButton } from "@/components/accounting/PostedJournalCsvButton";
 import { ConsolidationPanel } from "@/screens/accounting-screen.consolidation-panel";
 import { EntityOperationsPanel } from "@/screens/accounting-screen.entity-operations";
 import { FactorPaydownPanel } from "@/screens/accounting-screen.factor-paydown-panel";
@@ -690,6 +691,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                   : `${pluralizeCount(filteredRows.length, "posted entry", { plural: "posted entries" })}${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.${filteredRows.length > 0 ? " Select a posting amount to open its proof." : ""}`}
             </p>
             <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
+            <PostedJournalCsvButton periodId={postedLedger.selectedPeriod?.periodId ?? null} bookId={postedLedger.selectedBook?.ledgerBookId ?? null} />
             <SectionDescription descriptionKey="accounting:ledger-explorer" label="About Ledger Explorer">
               Search journal activity by account, amount, journal ID, source, security, or entity.
             </SectionDescription>

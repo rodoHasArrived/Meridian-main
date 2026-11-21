@@ -208,7 +208,8 @@ public sealed record FundReconciliationCheckDetailRow(
     string Reason,
     string ExpectedAsOfText,
     string ActualAsOfText,
-    bool IsHighlighted = false);
+    bool IsHighlighted = false,
+    string ToleranceText = "Not retained");
 
 public sealed record FundReconciliationSecurityCoverageRow(
     string Source,

@@ -6,10 +6,18 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-21
 ---
 
 # src/Meridian.Wpf
+
+Posted Ledger offers a complete-period journal CSV download over the shared journal-export route.
+The returned bytes are saved without local accounting conversion, and superseded book/period reads
+cannot open a save dialog. Strategy run replay evidence shows retained data-quality warnings,
+affected-fill counts and source assessments; missing assessment coverage stays explicitly unknown.
+Strategy reconciliation detail preserves typed quantity and cost-basis units, tolerances, as-of
+values and unavailable reasons in its existing check rows. Focused view-model/service tests cover
+these projections and stale downloads; native rendering and save dialogs require Windows.
 
 Provider Accounting exposes host quota settings for Twelve Data and Alpha Vantage, adapter-managed
 FRED limits, and seven UTC days of retained throttling and rotation totals. Saved and running quotas
