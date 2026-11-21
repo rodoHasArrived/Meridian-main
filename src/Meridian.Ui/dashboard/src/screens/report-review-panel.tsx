@@ -5,6 +5,7 @@ import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
 import { Button } from "@/components/ui/button";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { getReportRunReview, type ReportRunReview, type ReportReviewChange, type ReportReviewLine } from "@/lib/report-run-review-api";
 import { parseExactDecimal } from "@/lib/exact-financial-value";
 import { workstationRouteWithQuery } from "@/lib/workspace";
@@ -35,11 +36,17 @@ export function ReportReviewPanel({ runId, version, onReview }: {
         : !review ? <p role="status">Loading retained review evidence…</p>
         : <>
           <div className="grid gap-2 text-sm md:grid-cols-2">
-            <p>Current run <span className="font-mono">{review.runId}</span> · version {review.version}</p>
-            {review.baselineRunId ? <p>Prior approved run <Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: review.baselineRunId })}>{review.baselineRunId}</Link> · version {review.baselineVersion}</p>
+            <p>Current run · version {review.version}</p>
+            {review.baselineRunId ? <p><Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: review.baselineRunId })}>Prior approved run</Link> · version {review.baselineVersion}</p>
               : <p>No prior approved comparable run.</p>}
             <p className="md:col-span-2">Period {review.periodId} · Presentation currency {review.currency ?? "Not recorded"} · Accounting basis {review.accountingBasis ?? "Not recorded"}</p>
           </div>
+          <TechnicalDetails label="Retained review identities"><dl className="grid gap-2 text-sm">
+            <div><dt>Current run</dt><dd className="break-all font-mono">{review.runId}</dd></div>
+            {review.baselineRunId ? <div><dt>Prior approved run</dt><dd className="break-all font-mono">{review.baselineRunId}</dd></div> : null}
+            <div><dt>Review receipt</dt><dd className="break-all font-mono">{review.reviewId}</dd></div>
+            <div><dt>Snapshot</dt><dd className="break-all font-mono">{review.snapshotHash}</dd></div>
+          </dl></TechnicalDetails>
           <p>{review.materialChangeCount === null
             ? review.materialityOutcome === "MaterialException" ? "Material changes require review · assessment incomplete" : "Materiality not assessed"
             : `${review.materialChangeCount} material line change${review.materialChangeCount === 1 ? "" : "s"}`}</p>

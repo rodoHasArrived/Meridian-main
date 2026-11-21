@@ -16,6 +16,9 @@ operator identifiers remain visible. Cash Ladder keeps its engine version in Pro
 Reconciliation case evidence retains exact source, scope, and policy IDs in Evidence identifiers
 and groups missing comparison context into one explicit notice. Screenshot readiness checks
 exercise the current Match Workbench's retained case evidence.
+Financial value groups show missing condition evidence once while keeping each value's condition,
+reason and matching Amount passport accessible. Known conditions keep their own labels. Instrument
+positions identify their source, and raw case, report-run and mark-policy IDs remain in technical details.
 
 Data → Backfills previews the historical adapter's quota, observed budget, and expected cost.
 The same dialog queues, schedules, or previews a provider administrator-approved equivalent.

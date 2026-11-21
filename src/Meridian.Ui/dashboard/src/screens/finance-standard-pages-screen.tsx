@@ -113,6 +113,12 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
     : null;
   const hasPreviewSubject = Boolean(run || selectedTemplate);
   const reportName = readString(run, "reportName", selectedTemplate?.name ?? (runTemplateId || "No report selected"));
+  const runOptionLabel = (candidate: Record<string, unknown>) => {
+    const templateId = readString(candidate, "templateId", "");
+    const template = templates.find((item) => item.id === templateId || item.templateName === templateId);
+    const name = readString(candidate, "reportName", template?.name ?? "Report run");
+    return `${name} · ${presentStatusLabel(readString(candidate, "status", "Status not recorded"))}`;
+  };
   const runId = readString(run, "runId", "No run selected");
   const templateId = selectedTemplate?.id ?? "";
   const runStatus = readString(run, "status", "Draft");
@@ -155,13 +161,17 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
           setSearchParams(next);
         }}>
           <option value="">Choose a report run</option>
-          {requestedRunId && !run ? <option value={requestedRunId}>{requestedRunId} — unavailable</option> : null}
+          {requestedRunId && !run ? <option value={requestedRunId}>Requested report run — unavailable</option> : null}
           {runs.map((candidate) => {
             const id = readString(candidate, "runId", "");
-            return <option key={id} value={id}>{readString(candidate, "reportName", id)} · {id}</option>;
+            return <option key={id} value={id}>{runOptionLabel(candidate)}</option>;
           })}
         </Select>
       </FormRow>
+      <TechnicalDetails label="Report run identifiers">
+        <dl className="grid gap-2 text-xs">{runs.map((candidate) => <div key={readString(candidate, "runId", "")}><dt>{runOptionLabel(candidate)}</dt><dd className="break-all font-mono">{readString(candidate, "runId", "Not recorded")}</dd></div>)}</dl>
+        {requestedRunId && !run ? <p className="break-all font-mono text-xs">{requestedRunId}</p> : null}
+      </TechnicalDetails>
       {requestedRunId && !run ? <StatusBanner tone="warning" title="Requested run unavailable" detail={<Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: requestedRunId })}>Open the exact retained run outside the loaded register</Link>} /> : null}
       <OperationalTrustSummary
         source={{ value: run ? "Retained report run" : selectedTemplate ? "Approved template" : "No report selected", tone: hasPreviewSubject ? "ready" : "unknown" }}
@@ -958,7 +968,7 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
               setSearchParams(next);
             }}>
               {!selectedBreak ? <option value="">Select a case</option> : null}
-              {breaks.map((item) => <option key={item.breakId} value={item.breakId}>{item.reason || item.strategyName} · {item.breakId}</option>)}
+              {breaks.map((item) => <option key={item.breakId} value={item.breakId}>{item.reason || item.strategyName || "Reconciliation case"} · {presentStatusLabel(item.status)}</option>)}
             </Select>
           </FormRow>
           {selectedBreak ? (

@@ -3,6 +3,8 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as governanceApi from "@/lib/reporting-governance-api";
 import { getReportAmountBindings } from "@/lib/report-amount-proof-api";
+import { getReportRunReview } from "@/lib/report-run-review-api";
+import { getIncomeComparisonCandidates } from "@/lib/reporting-income-comparison-api";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { renderWithRouter } from "@/test/render";
 import type {
@@ -29,6 +31,11 @@ vi.mock("@/lib/reporting-governance-api", () => ({
   validateGovernedReportingRun: vi.fn()
 }));
 vi.mock("@/lib/report-amount-proof-api", () => ({ getReportAmountBindings: vi.fn() }));
+vi.mock("@/lib/report-run-review-api", () => ({ getReportRunReview: vi.fn() }));
+vi.mock("@/lib/reporting-income-comparison-api", () => ({
+  getIncomeComparisonCandidates: vi.fn(), getIncomeComparison: vi.fn(),
+  createIncomeComparison: vi.fn(), getIncomeContributionSupport: vi.fn()
+}));
 
 const draftRun = buildRun();
 const seriesHistory: ReportingGovernanceSeriesHistory = {
@@ -65,12 +72,39 @@ describe("ReportRunGovernanceScreen", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getReportAmountBindings).mockResolvedValue([]);
+    vi.mocked(getIncomeComparisonCandidates).mockResolvedValue([]);
+    vi.mocked(getReportRunReview).mockResolvedValue({
+      reviewId: "a".repeat(64), runId: draftRun.runId, version: draftRun.version,
+      snapshotHash: "b".repeat(64), periodId: draftRun.scope.periodId, currency: "USD",
+      accountingBasis: "Gaap", baselineRunId: null, baselineVersion: null,
+      parameters: [], sourceChanges: [], lines: [], materialityOutcome: "NotAssessed",
+      materialChangeCount: null, unavailableReasons: []
+    });
     vi.mocked(governanceApi.getGovernedReportingRun).mockResolvedValue(draftRun);
     vi.mocked(governanceApi.getGovernedReportingSeriesHistory).mockResolvedValue(seriesHistory);
     vi.mocked(governanceApi.getSecureReportingDeliveryHistory).mockResolvedValue([]);
     vi.mocked(governanceApi.getSecureReportingAccessGrantHistory).mockResolvedValue([]);
     vi.mocked(governanceApi.getSecureReportingTransportCapabilities).mockResolvedValue(distributionCapabilities);
     vi.mocked(governanceApi.validateGovernedReportingRun).mockResolvedValue(draftRun);
+  });
+
+  it("retains independent review and income panel identities across parent updates", async () => {
+    const errors = vi.spyOn(console, "error");
+    try {
+      renderGovernance();
+      await screen.findByText("Materiality not assessed");
+      await waitFor(() => expect(getIncomeComparisonCandidates).toHaveBeenCalledTimes(1));
+      fireEvent.change(screen.getByRole("textbox", { name: "Approval decision note" }), {
+        target: { value: "Review retained amounts before approval." }
+      });
+      expect(screen.getByRole("textbox", { name: "Approval decision note" })).toHaveValue("Review retained amounts before approval.");
+      expect(screen.getByText("Materiality not assessed")).toBeInTheDocument();
+      expect(getReportRunReview).toHaveBeenCalledTimes(1);
+      expect(getIncomeComparisonCandidates).toHaveBeenCalledTimes(1);
+      expect(errors.mock.calls.some((args) => /same key|Maximum update depth/.test(String(args[0])))).toBe(false);
+    } finally {
+      errors.mockRestore();
+    }
   });
 
   it("loads the exact query run and enables only server-authorized lifecycle actions", async () => {

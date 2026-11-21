@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FinancialValue } from "@/components/meridian/financial-value";
+import { FinancialValue, FinancialValueConditionGroup } from "@/components/meridian/financial-value";
 import { caseQueueResidual, measureUnit } from "@/lib/reconciliation-measure-presentation";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { ApiError, describeApiError } from "@/lib/api-errors";
@@ -289,26 +289,30 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
       disabledReason={disabledReason} onClick={() => choose(name)}>{decisionLabels[name]}</Button>
       {disabledReason ? <span id={descriptionId} className="max-w-64 text-xs text-muted-foreground">{disabledReason}</span> : null}</span>;
   };
-  return <section className="case-inspector min-w-0 space-y-4 break-words" aria-label="Case inspector" aria-busy={loading || busy}>
+  return <section className="case-inspector min-w-0 space-y-4 break-words" aria-label="Case inspector" data-case-id={item?.breakId} aria-busy={loading || busy}>
     {loading ? <p role="status">Loading latest case…</p> : null}
     {error ? <div role="alert"><p>{error}</p><Button type="button" variant="outline" onClick={() => setRevision((value) => value + 1)}>Reload case</Button></div> : null}
     {item ? <div className="space-y-4">
       <header><div className="flex flex-wrap items-start justify-between gap-2"><h3 className="text-base font-semibold">{item.reason || item.strategyName}</h3><Badge>{item.status}</Badge></div>
         {item.recommendedAction ? <p className="mt-2 text-sm">{item.recommendedAction}</p> : null}
         <dl className="mt-3 grid gap-2 sm:grid-cols-2"><Fact label="Owner" value={item.assigneeDisplayName ?? item.assignedTo ?? "Unassigned"} />
-          <Fact label="Due" value={item.slaDueAt ?? "Not recorded"} /><Fact label="Case" value={item.breakId} /><Fact label="Version" value={String(item.version ?? "Not recorded")} />
-          <Fact label="Fund account" value={item.fundAccountId ?? "Not recorded"} /><Fact label="Period" value={item.accountingPeriodId ?? "Not recorded"} /></dl></header>
+          <Fact label="Due" value={item.slaDueAt ?? "Not recorded"} /><Fact label="Version" value={String(item.version ?? "Not recorded")} /></dl>
+        <TechnicalDetails label="Case identifiers"><dl className="grid gap-2 text-xs sm:grid-cols-2">
+          <Fact label="Case" value={item.breakId} /><Fact label="Run" value={item.runId} />
+          <Fact label="Fund account" value={item.fundAccountId ?? "Not recorded"} /><Fact label="Period" value={item.accountingPeriodId ?? "Not recorded"} />
+        </dl></TechnicalDetails></header>
       <section aria-label="Comparison" className="rounded border border-border p-3">
         {item.statementEvidence || (item.measures?.length ?? 0) > 1 ? <ReconciliationCaseEvidence item={item} relatedRows={relatedCases} onOpenCase={onOpenCase}
           comparisonBreakId={comparisonBreakId} onComparisonChange={onComparisonChange} /> : <>
         <h4 className="text-sm font-semibold">Disagreement</h4>
         {!hasComparison ? <p className="my-2 text-sm">Comparison unavailable: {missingComparison}</p> : null}
+        <FinancialValueConditionGroup active={[expected, actual, caseResidual(item), caseTolerance(item)].some((value) => parseExactDecimal(value) !== null)} description="The comparison source did not supply data-condition evidence for these values.">
         <dl className="mt-3 grid gap-3 sm:grid-cols-2">
           <ValueFact label="Expected" value={expected} unit={measure?.unit} reason={dataReason} />
           <ValueFact label="Actual" value={actual} unit={measure?.unit} reason={dataReason} />
           <ValueFact label="Residual" value={caseResidual(item)} unit={measure?.unit} reason={dataReason} signed />
           <ValueFact label="Tolerance" value={caseTolerance(item)} unit={measure?.unit} reason={dataReason} />
-        </dl><p className="mt-2 text-xs text-muted-foreground">Basis: Not recorded; the source has not identified the comparison sides or subtraction convention.</p>
+        </dl></FinancialValueConditionGroup><p className="mt-2 text-xs text-muted-foreground">Basis: Not recorded; the source has not identified the comparison sides or subtraction convention.</p>
         {item.breakExplanation?.summary ? <p className="mt-2 text-sm">{item.breakExplanation.summary}</p> : null}
         <TechnicalDetails label="Retained comparison and lineage"><ReconciliationCaseEvidence item={item} relatedRows={relatedCases}
           onOpenCase={onOpenCase} comparisonBreakId={comparisonBreakId} onComparisonChange={onComparisonChange} /></TechnicalDetails>

@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { FinancialValue } from "@/components/meridian/financial-value";
+import { FinancialValue, FinancialValueConditionGroup } from "@/components/meridian/financial-value";
 import { exactDecimalText, parseExactDecimal, sumExactDecimals } from "@/lib/exact-financial-value";
 import { trialBalanceAmountPassport } from "@/lib/trial-balance-amount-passport";
 import type { AccountingTrialBalanceRowViewModel } from "@/screens/accounting-screen.view-model";
@@ -109,6 +109,7 @@ export function TrialBalanceTable({
     : [{ section: null, rows: computedRows }];
 
   return (
+    <FinancialValueConditionGroup active={rows.length > 0} description="The posted source did not supply reconciliation-condition evidence for these balances.">
     <div className="tbl-wrap" tabIndex={0} role="region" aria-label={caption || "Trial balance"}>
       <table className="tbl">
         <thead>
@@ -204,6 +205,7 @@ export function TrialBalanceTable({
         </tfoot>
       </table>
     </div>
+    </FinancialValueConditionGroup>
   );
 }
 

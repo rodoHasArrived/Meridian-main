@@ -96,4 +96,21 @@ describe("InstrumentDossierScreen", () => {
     renderDossier("", { trading });
     expect(await screen.findByText("0.000123 units")).toBeInTheDocument();
   });
+
+  it("names the position source and discloses retained identities without implying value confirmation", async () => {
+    const trading = { positions: [{ symbol: "AAPL", side: "Long", quantity: "10", markPrice: "100", exposure: "1000", currency: "USD",
+      markFreshness: { securityId: id, financialAccountId: "account", status: "Current", policyVersion: "retained-mark-policy-7" } }] } as TradingWorkspaceResponse;
+    renderDossier("", { trading });
+    expect(await screen.findByText("10 units")).toBeInTheDocument();
+    const table = screen.getByRole("table", { name: "Instrument positions by account" });
+    expect(table.closest("[data-position-source]")).toHaveTextContent("Source: Trading account positions");
+    expect(screen.getAllByText(/^Data condition unavailable:/)).toHaveLength(1);
+    expect(screen.getByRole("group", { name: "10 units · Data condition unavailable" })).toBeInTheDocument();
+    expect(screen.getByText("retained-mark-policy-7")).not.toBeVisible();
+    await userEvent.click(screen.getByText("Mark policy", { exact: true }));
+    expect(screen.getByText("retained-mark-policy-7")).toBeVisible();
+    expect(screen.getByText(id)).not.toBeVisible();
+    await userEvent.click(screen.getByText("Technical identity", { exact: true }));
+    expect(screen.getByText(id)).toBeVisible();
+  });
 });

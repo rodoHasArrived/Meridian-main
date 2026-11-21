@@ -350,6 +350,19 @@ describe("finance standard pages", () => {
     expect(await screen.findByRole("button", { name: "Run report" })).toBeDisabled();
   });
 
+  it("labels report choices by retained names while keeping exact run identifiers inspectable", async () => {
+    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview");
+    const selector = screen.getByLabelText("Report run");
+    const option = within(selector).getByRole("option", { name: /Trial Balance Pack/ });
+    expect(option).toHaveValue("run-tb-1");
+    expect(option).not.toHaveTextContent("run-tb-1");
+    expect(screen.getByText("run-tb-1", { exact: true })).not.toBeVisible();
+    await userEvent.click(screen.getByText("Report run identifiers", { exact: true }));
+    expect(screen.getByText("run-tb-1", { exact: true })).toBeVisible();
+    fireEvent.change(selector, { target: { value: "run-tb-1" } });
+    expect(selector).toHaveValue("run-tb-1");
+  });
+
   it("does not substitute reporting-workspace fixtures when run detail has no runId", async () => {
     await renderPage(<ReportRunDetailScreen data={data} />, "/reporting/runs/detail");
 
