@@ -34,7 +34,7 @@ public sealed partial class WorkstationEndpointsTests
                 ResolvedBy: "browser-supplied-actor",
                 ResolutionNote: "Statement evidence reconciled.",
                 OperatorRationale: "Reviewed retained statement and ledger evidence.",
-                ActionOrigin: OperationsActionOriginDto.AutomationSuggestion));
+                ActionOrigin: OperationsActionOriginDto.AutomationSuggestion) { ExpectedVersion = item.Version });
 
         response.StatusCode.Should().Be(
             HttpStatusCode.OK,
@@ -66,7 +66,7 @@ public sealed partial class WorkstationEndpointsTests
                 ReconciliationBreakQueueStatus.Resolved,
                 ResolvedBy: "browser-supplied-actor",
                 ResolutionNote: "Statement evidence reconciled.",
-                OperatorRationale: "Reviewed retained statement and ledger evidence."));
+                OperatorRationale: "Reviewed retained statement and ledger evidence.") { ExpectedVersion = item.Version });
 
         response.StatusCode.Should().Be(
             HttpStatusCode.ServiceUnavailable,
@@ -92,7 +92,7 @@ public sealed partial class WorkstationEndpointsTests
             ReconciliationBreakQueueStatus.Resolved,
             ResolvedBy: "browser-supplied-actor",
             ResolutionNote: "Statement evidence reconciled.",
-            OperatorRationale: "Reviewed retained statement and ledger evidence.");
+            OperatorRationale: "Reviewed retained statement and ledger evidence.") { ExpectedVersion = item.Version };
         var route = UiApiRoutes.ReconciliationBreakResolve.Replace(
             "{breakId}",
             item.BreakId,

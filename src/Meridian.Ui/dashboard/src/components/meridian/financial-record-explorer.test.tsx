@@ -24,7 +24,7 @@ describe("FinancialRecordExplorerShell", () => {
     await user.click(screen.getByRole("row", { name: /revenue income aapl/i }));
 
     const detail = screen.getByRole("dialog", { name: "Revenue proof detail" });
-    const passport = within(detail).getByRole("region", { name: "Revenue Number Passport" });
+    const passport = within(detail).getByRole("region", { name: "Revenue Record passport" });
     expect(passport).toBeInTheDocument();
     [
       "Source",
@@ -498,7 +498,7 @@ describe("FinancialRecordExplorerShell", () => {
     await user.click(screen.getByRole("row", { name: /apple inc.*96%.*ready.*1 projection/i }));
 
     const detail = screen.getByRole("dialog", { name: "Apple Inc. proof detail" });
-    const passport = within(detail).getByRole("region", { name: "Apple Inc. Number Passport" });
+    const passport = within(detail).getByRole("region", { name: "Apple Inc. Record passport" });
     expect(within(passport).getByText("Report Usage")).toBeInTheDocument();
     expect(within(passport).getByText("Review required: no report usage evidence")).toBeInTheDocument();
     expect(within(passport).getByText("Review required: no evidence packet")).toBeInTheDocument();

@@ -27,7 +27,8 @@ export interface LedgerAmountProofEvidence {
 export interface LedgerAmountProof {
   subjectId: string;
   scope: LedgerAmountScope;
-  amount: number;
+  amount: number | string;
+  amountExact?: string;
   currency: string;
   status: EvidenceStatus;
   evidence: LedgerAmountProofEvidence[];
@@ -40,7 +41,7 @@ export interface LedgerAmountSelection {
   ledgerBookId: string;
   periodId: string;
   fundProfileId: string;
-  amount: number;
+  amount: number | string;
   currency: string;
   label: string;
   /** Authenticated retained report scope, in addition to the fund/book/period guard. */

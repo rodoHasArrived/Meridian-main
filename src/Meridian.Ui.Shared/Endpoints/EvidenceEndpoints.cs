@@ -744,7 +744,10 @@ public static class EvidenceEndpoints
             return (null, Results.StatusCode(StatusCodes.Status403Forbidden));
         var subjectId = query["ledgerAmountSubjectId"].ToString();
         var hash = query["expectedContentHash"].ToString();
-        var packet = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
+        var packet = TrialBalanceAmountProvenanceService.IsSubject(subjectId)
+            ? await context.RequestServices.GetRequiredService<TrialBalanceAmountProvenanceService>()
+                .GetPacketAsync(subjectId, scope!, context.RequestAborted).ConfigureAwait(false)
+            : ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
             ? await context.RequestServices.GetRequiredService<ReportLedgerAmountProvenanceService>()
                 .GetPacketAsync(subjectId, scope!, BuildAmountReportAccess(context), context.RequestAborted).ConfigureAwait(false)
             : await context.RequestServices.GetRequiredService<PostedLedgerAmountProvenanceService>()
@@ -755,9 +758,9 @@ public static class EvidenceEndpoints
         if (packet?.LedgerAmount is not { } proof || proof.Status == EvidenceStatusDto.Blocked ||
             proof.SubjectId != subjectId || retainedSource is null)
             return (null, Results.Conflict(Error("ledger-amount-proof-stale", "Retained amount evidence is missing, changed, or outside the selected scope. Refresh the amount proof.")));
-        var retainedSubject = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
+        var retainedSubject = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId) || TrialBalanceAmountProvenanceService.IsSubject(subjectId)
             ? retainedSource.SourceSubjectId : subjectId;
-        var retainedScope = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
+        var retainedScope = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId) || TrialBalanceAmountProvenanceService.IsSubject(subjectId)
             ? retainedSource.SourceScope : scope;
         if (retainedSubject is null || retainedScope is null)
             return (null, Results.Conflict(Error("ledger-amount-proof-stale", "The retained report source binding is unavailable.")));

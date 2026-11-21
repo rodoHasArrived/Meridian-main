@@ -256,6 +256,7 @@ export function DataScreen({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {showImportWorkstream ? <Link className="text-sm text-primary underline" to={{ pathname: WORKSTATION_ROUTE_CATALOG.dataImportStart, search }}>Choose another import type</Link> : null}
           <WorkspaceTabStrip
             label="Data routes"
             tabs={routeTabs}

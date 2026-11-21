@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import type { AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
+import { Select } from "@/components/ui/select";
+import { updateWorkstationSearch } from "@/lib/workstation-close-routing";
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { PanelSurface } from "@/components/ui/panel-surface";
@@ -34,13 +36,18 @@ export function DailyControlTowerScreen({
   refreshing = false
 }: DailyControlTowerScreenProps) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const source = new URLSearchParams(location.search).get("source") ?? "";
+  const sources = [...new Set(model.queueRows.map((row) => row.item.workspaceLabel))].sort();
+  const rows = source ? model.queueRows.filter((row) => row.item.workspaceLabel === source) : model.queueRows;
   // Triage-in-place: the operator can inspect any queue row's evidence without
   // leaving the tower. Falls back to the top-ranked row until one is chosen
   // (or when the chosen row leaves the queue on refresh).
   const [selectedQueueItemId, setSelectedQueueItemId] = useState<string | null>(null);
   const [reviewAllScopes, setReviewAllScopes] = useState(false);
   const selectedQueueRow =
-    model.queueRows.find((row) => row.item.id === selectedQueueItemId) ?? model.queueRows[0] ?? null;
+    rows.find((row) => row.item.id === selectedQueueItemId) ?? rows[0] ?? null;
   const freshnessEvidence = selectedQueueRow?.proofPassportItems.find((item) => item.id === "freshness");
   const freshness = buildTowerFreshness(
     selectedQueueRow?.proof?.timestampIso,
@@ -104,7 +111,7 @@ export function DailyControlTowerScreen({
   return (
     <ScreenLayout
       title="What needs an operator decision now"
-      scope="Daily control tower"
+      scope="Today"
       description="One priority, followed by a ranked finance queue with evidence available in place."
     >
       <ReadinessPanel
@@ -192,6 +199,15 @@ export function DailyControlTowerScreen({
         title="Finance queue"
         summary="Each row carries the evidence needed to move from source issue to downstream output."
       >
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <label htmlFor="today-source" className="text-sm font-medium">Source</label>
+          <Select id="today-source" value={source} className="w-52" onChange={(event) => navigate({ search: updateWorkstationSearch(location.search, "source", event.target.value || null), hash: location.hash })}>
+            <option value="">All workspaces</option>
+            {sources.map((value) => <option key={value} value={value}>{value}</option>)}
+            {source && !sources.includes(source) ? <option value={source}>{source}</option> : null}
+          </Select>
+          <span className="text-xs text-muted-foreground">{rows.length} of {model.queueRows.length} ranked items</span>
+        </div>
         {!queueVisible ? (
           <PanelSurface flat role="region" aria-label="Choose Control Tower scope" className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
             <div>
@@ -209,12 +225,12 @@ export function DailyControlTowerScreen({
               </Button>
             </div>
           </PanelSurface>
-        ) : model.queueRows.length > 0 ? (
+        ) : rows.length > 0 ? (
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
             <DenseDataTable
               tableId="daily-control-tower-queue"
               columns={queueColumns}
-              rows={model.queueRows}
+              rows={rows}
               getRowId={(row) => row.item.id}
               getRowAriaLabel={(row) => `${row.item.label}. ${row.statusLabel}. ${row.item.detail}`}
               getRowSelectAriaLabel={(row) => row.item.label}
@@ -223,7 +239,7 @@ export function DailyControlTowerScreen({
               getRowClassName={() => "align-top"}
               onRowSelect={(row) => setSelectedQueueItemId(row.item.id)}
               selectedRowId={selectedQueueRow?.item.id ?? null}
-              emptyText={model.emptyQueueText}
+              emptyText={source ? `No ranked items match ${source}. Choose All workspaces to see the complete queue.` : model.emptyQueueText}
               ariaLabel="Daily control tower finance queue"
               maxVisibleRows={null}
             />
@@ -269,7 +285,7 @@ export function DailyControlTowerScreen({
           </div>
         ) : (
           <PanelSurface flat role="status" className="p-4 text-sm text-muted-foreground">
-            {model.emptyQueueText}
+            {source ? `No ranked items match ${source}. Choose All workspaces to see the complete queue.` : model.emptyQueueText}
           </PanelSurface>
         )}
       </WorkspaceSection>

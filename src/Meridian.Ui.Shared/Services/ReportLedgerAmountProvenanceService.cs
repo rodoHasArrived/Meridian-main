@@ -169,14 +169,15 @@ public sealed class ReportLedgerAmountProvenanceService(
         return true;
     }
 
-    private static EvidencePacketDto Packet(string subjectId, LedgerAmountScopeDto scope, string label,
+    internal static EvidencePacketDto Packet(string subjectId, LedgerAmountScopeDto scope, string label,
         decimal amount, string currency, IReadOnlyList<LedgerAmountProofEvidenceDto> evidence,
         IReadOnlyList<EvidenceNodeDto> nodes, IReadOnlyList<string> warnings,
         IReadOnlyList<EvidenceEdgeDto>? sourceEdges = null)
     {
         var status = warnings.Count == 0 ? EvidenceStatusDto.Ready : EvidenceStatusDto.Blocked;
         var subject = new EvidenceSubjectDto(subjectId, EvidenceSubjectResolver.LedgerAmountKind,
-            label, "Reporting", null, "ReportRunGovernance", scope.LedgerBookId);
+            label, TrialBalanceAmountProvenanceService.IsSubject(subjectId) ? "Accounting" : "Reporting", null,
+            TrialBalanceAmountProvenanceService.IsSubject(subjectId) ? "AccountingTrialBalance" : "ReportRunGovernance", scope.LedgerBookId);
         var ids = evidence.Select(item => item.EvidenceId).ToArray();
         string[] missing = status == EvidenceStatusDto.Ready ? [] : ["retained-report-amount-support"];
         var completeness = new EvidenceCompletenessDto(status == EvidenceStatusDto.Ready ? 100 : 0, status,
@@ -195,9 +196,9 @@ public sealed class ReportLedgerAmountProvenanceService(
                 [new(EvidenceProofChainLayerKindDto.Source, "Verified retained sources", status,
                     completeness.Score, sourceIds, sourceIds, sourceIds, [], missing, ["source-document"],
                     "Every contributing line requires exact retained accounting scope and verified source bytes."),
-                 new(EvidenceProofChainLayerKindDto.Ledger, "Report snapshot journal lines", status,
+                 new(EvidenceProofChainLayerKindDto.Ledger, "Retained aggregate journal lines", status,
                     completeness.Score, ledgerIds, ledgerIds, ledgerIds, [], missing, ["ledger-record"],
-                    "The amount reproduces from the retained report population, including prior-period balances.")],
+                    "The amount reproduces from its exact retained journal population.")],
                 status == EvidenceStatusDto.Ready ? "Verified retained evidence supports this generated amount." : "Generated amount proof is blocked.")
         };
     }

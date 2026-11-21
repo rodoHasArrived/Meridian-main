@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -76,6 +77,7 @@ public static partial class WorkstationEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         MapStatementReconciliationReportEndpoints(group, jsonOptions);
+        MapStatementImportReviewEndpoints(group, jsonOptions);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.ReconciliationStatementConnectors), (
             HttpContext context,
@@ -227,8 +229,32 @@ public static partial class WorkstationEndpoints
                 return problem;
             }
 
-            var preview = await importService.PreviewAsync(document!, connectorId, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(preview, jsonOptions);
+            try
+            {
+                var intakeAuthority = context.RequestServices.GetService<IStatementReconciliationIntakeAuthority>();
+                if (intakeAuthority is null)
+                    return Results.Json(await importService.PreviewAsync(document!, connectorId, context.RequestAborted).ConfigureAwait(false), jsonOptions);
+                var accountingScope = await intakeAuthority.ResolveAccountingScopeAsync(
+                    new StatementReconciliationIntakeScopeRequest(tenant.TenantId, tenant.CompanyId, scope.FundAccountId,
+                        scope.ExternalAccountId, scope.SourceInstitution, scope.PeriodStart, scope.PeriodEnd, scope.AccountingScope),
+                    context.RequestAborted).ConfigureAwait(false);
+                var reviewRequest = new StatementImportCommitRequest(document!, connectorId, scope.SourceKind,
+                    scope.SourceInstitution, scope.FundAccountId, scope.ExternalAccountId, scope.PeriodStart, scope.PeriodEnd,
+                    scope.ToleranceProfileId, ResolveCurrentActor(context))
+                {
+                    AccountingScope = accountingScope, TenantId = tenant.TenantId, CompanyId = tenant.CompanyId,
+                    AllowAcceptAsBreak = context.RequestServices.GetService<StatementReconciliationReportWorkflowService>()?.SupportsReviewedRowCases == true
+                };
+                return Results.Json(await importService.PreviewReviewAsync(reviewRequest, context.RequestAborted).ConfigureAwait(false), jsonOptions);
+            }
+            catch (Exception ex) when (ex is InvalidDataException or NotSupportedException)
+            {
+                return MissingDataUploadPayload("statement", ex.Message);
+            }
+            catch (StatementReconciliationIntakeAuthorityException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
         })
         .WithName("PreviewStatementImport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)
         .Produces<StatementImportPreviewDto>(200)
@@ -241,7 +267,8 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             HttpRequest request,
             [FromServices] StatementReconciliationReportWorkflowService? workflowService,
-            [FromServices] IStatementReconciliationIntakeAuthority? intakeAuthority) =>
+            [FromServices] IStatementReconciliationIntakeAuthority? intakeAuthority,
+            [FromServices] StatementImportService? importService) =>
         {
             if (!HasReconciliationMutationPermission(context))
             {
@@ -289,22 +316,30 @@ public static partial class WorkstationEndpoints
 
             try
             {
+                var importRequest = new StatementImportCommitRequest(document!, connectorId, scope.SourceKind,
+                    scope.SourceInstitution, scope.FundAccountId, scope.ExternalAccountId, scope.PeriodStart, scope.PeriodEnd,
+                    scope.ToleranceProfileId, currentUser)
+                {
+                    AccountingScope = scope.AccountingScope,
+                    ReviewId = form["reviewId"].FirstOrDefault()?.Trim(),
+                    RowDispositions = StatementImportService.ParseRowDispositions(form["rowDispositions"].FirstOrDefault() ?? string.Empty),
+                    TenantId = tenant.TenantId,
+                    CompanyId = tenant.CompanyId,
+                    AllowAcceptAsBreak = workflowService.SupportsReviewedRowCases
+                };
+                if (!string.IsNullOrWhiteSpace(importRequest.ReviewId))
+                {
+                    if (importService is null) return StatementConnectorsNotRegistered();
+                    var verifiedScope = await intakeAuthority.ResolveAccountingScopeAsync(
+                        new StatementReconciliationIntakeScopeRequest(tenant.TenantId, tenant.CompanyId, scope.FundAccountId,
+                            scope.ExternalAccountId, scope.SourceInstitution, scope.PeriodStart, scope.PeriodEnd, scope.AccountingScope),
+                        context.RequestAborted).ConfigureAwait(false);
+                    importRequest = importRequest with { AccountingScope = verifiedScope };
+                    await importService.ValidateReviewedCommitAsync(importRequest, context.RequestAborted).ConfigureAwait(false);
+                }
                 var execution = await workflowService.StartAsync(
                         new StatementReconciliationReportStartCommand(
-                            new StatementImportCommitRequest(
-                                document!,
-                                connectorId,
-                                scope.SourceKind,
-                                scope.SourceInstitution,
-                                scope.FundAccountId,
-                                scope.ExternalAccountId,
-                                scope.PeriodStart,
-                                scope.PeriodEnd,
-                                scope.ToleranceProfileId,
-                                currentUser)
-                            {
-                                AccountingScope = scope.AccountingScope
-                            },
+                            importRequest,
                             tenant.TenantId,
                             tenant.CompanyId),
                         context.RequestAborted)
@@ -337,7 +372,7 @@ public static partial class WorkstationEndpoints
                     },
                     jsonOptions);
             }
-            catch (Exception ex) when (ex is InvalidDataException or NotSupportedException)
+            catch (Exception ex) when (ex is InvalidDataException or NotSupportedException or JsonException)
             {
                 return MissingDataUploadPayload("statement", ex.Message);
             }
@@ -352,6 +387,10 @@ public static partial class WorkstationEndpoints
                         StringComparison.Ordinal)
                         ? StatusCodes.Status503ServiceUnavailable
                         : StatusCodes.Status409Conflict);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
             }
         })
         .WithName("CommitStatementImport").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster)

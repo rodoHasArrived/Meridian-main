@@ -19,10 +19,11 @@ export function NumberPassport(props: {
     : buildNumberPassportItems(props.explorer, props.record);
   const title = "proof" in props ? props.title : props.record.title;
   const Heading = "proof" in props ? "h3" : "h4";
+  const passportLabel = "proof" in props ? "Amount passport" : "Record passport";
 
   return (
-    <section className="rounded-md border border-border/70 bg-secondary/15 p-3" aria-label={`${title} Number Passport`}>
-      <Heading className="text-xs font-semibold uppercase text-muted-foreground">Number Passport</Heading>
+    <section className="rounded-md border border-border/70 bg-secondary/15 p-3" aria-label={`${title} ${passportLabel}`}>
+      <Heading className="text-xs font-semibold uppercase text-muted-foreground">{passportLabel}</Heading>
       <dl className="mt-2 grid gap-2">
         {items.map((item) => (
           <div key={item.label} className="rounded-md border border-border/60 bg-background/60 px-3 py-2">
@@ -108,8 +109,10 @@ export function buildLedgerAmountPassportItems(proof: LedgerAmountProof): Number
   return [
     { label: "Source", value: proof.subjectId, detail: proof.subjectId.startsWith("report:")
       ? "Generated report amount bound to its retained ledger population."
-      : "Immutable posted journal line and debit or credit side." },
-    { label: "Amount", value: `${proof.amount} ${proof.currency}`, detail: "Selected amount from the shared evidence payload." },
+      : proof.subjectId.startsWith("trial-balance:")
+        ? "Net account balance bound to an exact immutable journal sequence boundary and population digest."
+        : "Immutable posted journal line and debit or credit side." },
+    { label: "Amount", value: `${proof.amountExact ?? proof.amount} ${proof.currency}`, detail: "Selected amount from the shared evidence payload." },
     { label: "Tenant", value: scope.tenantId, detail: "Authenticated evidence scope." },
     { label: "Company", value: scope.companyId, detail: "Authenticated evidence scope." },
     { label: "Fund", value: scope.fundProfileId, detail: "Exact retained fund identity." },

@@ -33,6 +33,8 @@ import {
   validateGovernedReportingRun
 } from "@/lib/reporting-governance-api";
 import { secureReportingArtifactDownloadPath } from "@/lib/reporting-governance-routes";
+import { ReportReviewPanel } from "@/screens/report-review-panel";
+import type { ReportRunReview } from "@/lib/report-run-review-api";
 import { ReportingIncomeComparisonPanel } from "@/screens/reporting-income-comparison";
 import { ReportingRetainedAmountsPanel } from "@/screens/reporting-retained-amounts";
 import { projectParameterEntries } from "@/screens/report-run-governance-parameters";
@@ -207,6 +209,7 @@ export function ReportRunGovernanceScreen() {
 
   useEffect(() => () => mutationControllerRef.current?.abort(), []);
 
+  const [review, setReview] = useState<ReportRunReview | null>(null);
   const run = loadState.run;
   const releaseArtifacts = run?.release?.artifacts ?? [];
   const clientPackageArtifactGate = resolveClientPackageArtifactGate(run);
@@ -282,10 +285,10 @@ export function ReportRunGovernanceScreen() {
   };
 
   const onApprove = () => {
-    if (!run || !approveDecision.allowed || !approvalNote.trim()) return;
+    if (!run || !approveDecision.allowed || !approvalNote.trim() || review?.runId !== run.runId || review.version !== run.version) return;
     void runMutation(
       "Approve report run",
-      (signal) => approveGovernedReportingRun(run.runId, run.version, approvalNote.trim(), { signal }),
+      (signal) => approveGovernedReportingRun(run.runId, run.version, approvalNote.trim(), { signal }, review.reviewId),
       "The independent approval and decision note were retained."
     );
   };
@@ -492,8 +495,11 @@ export function ReportRunGovernanceScreen() {
         />
       ) : null}
 
+      <ReportReviewPanel key={run.runId} runId={run.runId} version={run.version} onReview={setReview} />
+
       <LifecyclePanel
         run={run}
+        review={review?.runId === run.runId && review.version === run.version ? review : null}
         approvalNote={approvalNote}
         onApprovalNoteChange={setApprovalNote}
         decisions={{ validateDecision, submitDecision, approveDecision, releaseDecision }}
@@ -632,6 +638,7 @@ function RunHeader({
 
 function LifecyclePanel({
   run,
+  review,
   approvalNote,
   onApprovalNoteChange,
   decisions,
@@ -642,6 +649,7 @@ function LifecyclePanel({
   onRelease
 }: {
   run: GovernedReportingRun;
+  review: ReportRunReview | null;
   approvalNote: string;
   onApprovalNoteChange: (value: string) => void;
   decisions: {
@@ -656,9 +664,8 @@ function LifecyclePanel({
   onApprove: () => void;
   onRelease: () => void;
 }) {
-  const approvalReason = !approvalNote.trim()
-    ? "Enter an approval decision note."
-    : decisions.approveDecision.reason;
+  const approvalReason = !review ? "Load the retained review evidence before approving."
+    : !approvalNote.trim() ? "Enter an approval decision note." : decisions.approveDecision.reason;
 
   return (
     <Card className="panel-surface">
@@ -724,11 +731,11 @@ function LifecyclePanel({
             <Button
               type="button"
               size="sm"
-              disabled={busy || !decisions.approveDecision.allowed || !approvalNote.trim()}
+              disabled={busy || !decisions.approveDecision.allowed || !approvalNote.trim() || !review}
               disabledReason={busy ? "Another reporting command is running." : approvalReason}
               onClick={onApprove}
             >
-              Approve independently
+              {review?.materialChangeCount === null || !review ? "Approve independently · materiality not assessed" : `Approve ${review.materialChangeCount} material line change${review.materialChangeCount === 1 ? "" : "s"}`}
             </Button>
           </div>
         </div>

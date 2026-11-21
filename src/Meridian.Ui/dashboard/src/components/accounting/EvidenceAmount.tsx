@@ -56,13 +56,14 @@ export function EvidenceAmount({ subject, ...amount }: AmountCellProps & { subje
       <AmountCell {...amount} />
     </button>
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent aria-label="Amount evidence">
+      <SheetContent aria-label="Amount passport">
         <SheetHeader>
-          <SheetTitle>Amount evidence</SheetTitle>
-          <SheetDescription>Retained source, reconciliation, approval, and audit evidence for this entry. Completeness reflects the evidence service.</SheetDescription>
+          <SheetTitle>Amount passport</SheetTitle>
+          <SheetDescription>Record evidence for this entry. This record-level packet does not certify a specific amount. Completeness reflects the evidence service.</SheetDescription>
           <SheetCloseButton onClick={() => setOpen(false)} />
         </SheetHeader>
         <SheetBody>
+          <h3 className="mb-2 text-sm font-semibold">Record evidence</h3>
           <p className="mb-3"><AmountCell {...amount} /></p>
           {!current ? <p role="status">Loading retained evidence…</p> : null}
           {current?.error ? <p role="alert">{current.error}</p> : null}

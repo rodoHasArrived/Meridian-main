@@ -8,7 +8,11 @@
 .reconciliation-queue-toolbar select { min-width: 0; height: 2.25rem; padding: .25rem .5rem; border: 1px solid var(--ws-border); background: var(--ws-surface); color: inherit; border-radius: 2px; }
 .reconciliation-queue-toolbar select:focus-visible { outline: 2px solid var(--ws-accent, currentColor); outline-offset: 2px; }
 .reconciliation-queue-scroll { max-height: min(65dvh, 44rem); overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
-.reconciliation-queue-scroll table { min-width: 48rem; }
+.reconciliation-queue-scroll table { min-width: 0; width: 100%; table-layout: fixed; }
+.reconciliation-queue-scroll table th, .reconciliation-queue-scroll table td { white-space: normal; overflow-wrap: anywhere; }
+.reconciliation-queue-scroll table .reconciliation-bulk-selection-column { width: 2.25rem; padding-inline: .5rem; }
+.reconciliation-queue-scroll table th:last-child { width: 6rem; }
+.reconciliation-queue-scroll table td:last-child > span { white-space: normal; overflow-wrap: anywhere; }
 .reconciliation-detail-toggle, .reconciliation-back-to-queue { display: none; }
 @media (max-width: 1199px) {
   .reconciliation-workbench-shell .workspace-workbench-shell-layout--with-inspector { grid-template-columns: minmax(0, 1fr); }

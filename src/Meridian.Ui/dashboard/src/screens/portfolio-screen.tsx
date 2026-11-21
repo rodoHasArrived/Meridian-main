@@ -6,6 +6,8 @@ import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldChec
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
+import { FinancialValue } from "@/components/meridian/financial-value";
+import { parseExactDecimal, readLegacyFinancialText } from "@/lib/exact-financial-value";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -47,6 +49,7 @@ import { usePortfolioPositionsTable } from "@/hooks/use-portfolio-positions-tabl
 import { PortfolioPositionsToolbar } from "@/screens/portfolio-positions-toolbar";
 import { readinessToneToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { instrumentDossierRoute } from "@/lib/instrument-dossier-route";
 import {
   buildPortfolioExplorerPresentation,
   resolveBrokerageAccountFilterKeyCommand,
@@ -105,13 +108,32 @@ const cashFlowBorderClass = {
   danger: "border-danger/30"
 } as const;
 
+function HoldingValue({ text, exact, row, quantity = false, markDependent = false }: {
+  text: string; exact?: string | null; row: PortfolioPositionRow; quantity?: boolean; markDependent?: boolean;
+}) {
+  const legacy = readLegacyFinancialText(text);
+  const value = exact ?? legacy.value;
+  const hasAssessment = row.markFreshness.policyVersion !== "Unavailable";
+  return <FinancialValue value={value} currency={quantity ? undefined : row.currency ?? undefined}
+    unit={quantity ? undefined : row.currency ? undefined : legacy.unit}
+    decimals={quantity ? Math.min(28, parseExactDecimal(value)?.scale ?? 0) : undefined}
+    condition={markDependent && hasAssessment ? row.markFreshness.reviewRequired ? "review-required" : "provisional" : "unavailable"}
+    reason={markDependent ? row.markFreshness.reason : "The source has not supplied a confirmed data condition or an exact amount proof binding."}
+    freshness={markDependent ? `Observed ${row.markFreshness.observedOn}` : undefined} />;
+}
+
+function InstrumentSymbolLink({ securityId, symbol }: { securityId?: string | null; symbol: string }) {
+  const location = useLocation();
+  return securityId ? <Link className="font-mono font-semibold text-foreground underline decoration-dotted underline-offset-4" to={instrumentDossierRoute(securityId, location.search)} aria-label={`Open instrument dossier for ${symbol}`} onClick={(event) => event.stopPropagation()}>{symbol}</Link> : <span className="font-mono font-semibold text-foreground">{symbol}</span>;
+}
+
 const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
   { id: "mark-readiness", label: "Mark readiness", sortable: true, render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
   {
     id: "symbol",
     label: "Symbol",
     sortable: true,
-    render: (row) => <span className="font-mono font-semibold text-foreground">{row.symbol}</span>
+    render: (row) => <InstrumentSymbolLink securityId={row.securityId} symbol={row.symbol} />
   },
   {
     id: "side",
@@ -123,31 +145,31 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
     id: "quantity",
     label: "Qty",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.quantity}</span>
+    render: (row) => <HoldingValue text={row.quantity} row={row} quantity />
   },
   {
     id: "average",
     label: "Avg",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.avgPrice}</span>
+    render: (row) => <HoldingValue text={row.avgPrice} exact={row.averagePriceExact} row={row} />
   },
   {
     id: "mark",
     label: "Recorded mark",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
+    render: (row) => <HoldingValue text={row.markPrice} exact={row.markPriceExact} row={row} markDependent />
   },
   {
     id: "unrealized-pnl",
     label: "Unrealized P&L",
     align: "right",
-    render: (row) => <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.unrealizedPnl}</span>
+    render: (row) => <span className={pnlToneClass[row.pnlTone]}><HoldingValue text={row.unrealizedPnl} exact={row.unrealizedPnlExact} row={row} markDependent /></span>
   },
   {
     id: "exposure",
     label: "Exposure",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.exposure}</span>
+    render: (row) => <HoldingValue text={row.exposure} exact={row.exposureExact} row={row} markDependent />
   }
 ];
 
@@ -1227,6 +1249,7 @@ export function PortfolioScreen({
                   </Badge>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
+                  {vm.selectedPosition.securityId ? <Button asChild size="sm" variant="outline"><Link to={instrumentDossierRoute(vm.selectedPosition.securityId, location.search)}>Open instrument dossier</Link></Button> : null}
                   <Button asChild size="sm" variant="outline">
                     <Link
                       to={workstationRouteWithQuery("portfolioAssetDetail", {
@@ -1264,7 +1287,7 @@ export function PortfolioScreen({
           </DenseRowDetailPanel>
         )}>
 
-          <Card className="panel-surface min-w-0">
+          <Card className="panel-surface min-w-0 overflow-x-auto">
             <CardHeader className="px-3 py-2">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>

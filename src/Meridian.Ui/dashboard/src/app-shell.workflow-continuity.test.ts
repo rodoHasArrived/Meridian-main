@@ -6,7 +6,7 @@ import {
 
 describe("workflow continuity route resolution", () => {
   it.each([
-    ["/", "Daily Control Tower", "Today"],
+    ["/", "Today", "Today"],
     ["/trading", "Trading Controls", "Trading cockpit"],
     ["/portfolio", "Trading Controls", "Exposure"],
     ["/strategy", "Research To Paper", "Run library"]
@@ -54,7 +54,7 @@ describe("workflow continuity route resolution", () => {
     const resolution = resolveWorkflowContinuityRoute("/reporting/report-packs", "");
 
     expect(resolution.mode).toBe("matched");
-    expect(resolution.trail?.title).toBe("Daily Control Tower");
+    expect(resolution.trail?.title).toBe("Today");
     expect(resolution.trail?.steps[resolution.activeStepIndex ?? -1]).toMatchObject({
       label: "Reports",
       href: "/reporting/report-packs"

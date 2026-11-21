@@ -21,11 +21,15 @@ import type {
   useReconciliationResolveDialogViewModel
 } from "./accounting-screen.view-model";
 import type { ReconciliationQueueStatus, ReconciliationQueueSort } from "./reconciliation-view-state";
+import { CaseVariance } from "./case-inspector";
+import { ReconciliationBulkDecisions } from "./reconciliation-bulk-decisions";
 import "@/styles/reconciliation-workbench.css";
 
 type ReconciliationViewModel = ReturnType<typeof useAccountingReconciliationViewModel>;
 type Reconciliation = Pick<ReconciliationViewModel,
   | "rows"
+  | "caseRecords"
+  | "applyCaseUpdate"
   | "selectedBreakId"
   | "selectedDetail"
   | "selectBreak"
@@ -69,40 +73,35 @@ const reconciliationBreakColumns: DenseDataTableColumn<ReconciliationBreakRowVie
       </span>
     )
   },
-  { id: "category", label: "Case", render: (row) => <span className="text-foreground">{row.financeLabel}</span> },
   {
     id: "variance",
     label: "Variance",
     align: "right",
     render: (row) => (
-      <span
-        className={cn(
-          "font-mono tabular-nums",
-          row.varianceTone === "success" ? "text-success" : row.varianceTone === "danger" ? "text-danger" : "text-foreground"
-        )}
-      >
-        {row.varianceLabel}
+      <span className="font-mono tabular-nums text-foreground">
+        <CaseVariance item={row} />
       </span>
     )
   },
   { id: "owner", label: "Owner", render: (row) => <span className="font-mono text-muted-foreground">{row.ownerLabel}</span> },
-  { id: "updated", label: "Updated", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedAtLabel}</span> },
-  { id: "source", label: "Source observation", render: (row) => <span className="block"><span className="block">{sourceObservationLabel(row.lineage)}</span><span className="block text-muted-foreground">{sourceObservationAge(row.lineage)}</span></span> },
   { id: "status", label: "Case status", render: (row) => <Badge variant={row.statusBadgeVariant}>{row.status}</Badge> }
 ];
 
-export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice }: {
+export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, caseInspector }: {
   reconciliation: Reconciliation;
   resolveDialog: ResolveDialog;
   runSelector?: ReactNode;
   controls: ReconciliationQueueControls;
   selectionNotice?: string | null;
+  caseInspector?: ReactNode;
 }) {
   const location = useLocation();
   const queueRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const pendingQueueScroll = useRef<number | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [bulkSelection, setBulkSelection] = useState<string[]>([]);
+  const selectedCases = (reconciliation.caseRecords ?? []).filter((item) => bulkSelection.includes(item.breakId));
   const selectedRow = reconciliation.rows.find((row) => row.breakId === reconciliation.selectedBreakId) ?? null;
   const activeResolveBreak = resolveDialog.active
     ? reconciliation.rows.find((row) => row.breakId === resolveDialog.active?.breakId) ?? null : null;
@@ -215,7 +214,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
     ) {
       setDetailOpen(true);
     }
-    if (event.key === "Escape" && detailOpen && target.closest(".reconciliation-inspector")) {
+    if (event.key === "Escape" && detailOpen && target.closest(".reconciliation-inspector") && !target.closest("form")) {
       event.preventDefault();
       event.stopPropagation();
       returnToQueue();
@@ -253,6 +252,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             <Button type="button" variant="outline" className="reconciliation-back-to-queue" onClick={returnToQueue}>
               Back to break queue
             </Button>
+            {caseInspector ?? <>
             <div className="row-detail-panel">
               {reconciliation.selectedDetail ? (
                 <EntitySummary
@@ -370,6 +370,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 </div>
               </form>
             ) : null}
+            </>}
           </DenseRowDetailPanel>
         )}
       >
@@ -454,9 +455,17 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
               </Button>
             </div>
             {selectedOutsideFilter ? <p role="status" className="text-sm text-muted-foreground">The selected break is outside these filters. Its evidence remains in the inspector.</p> : null}
+            {reconciliation.caseRecords ? <ReconciliationBulkDecisions cases={selectedCases} onChanged={reconciliation.applyCaseUpdate} /> : null}
             <div ref={queueRef} className="reconciliation-queue-scroll" onScroll={rememberQueueScroll}>
               <DenseDataTable
-                columns={reconciliationBreakColumns}
+                columns={reconciliation.caseRecords ? [{
+                  id: "bulk-selection", label: "", srLabel: "Select for bulk decisions", className: "reconciliation-bulk-selection-column", render: (row: ReconciliationBreakRowViewModel) => (
+                    <input type="checkbox" aria-label={`Include ${row.strategyName} in bulk decisions`}
+                      checked={bulkSelection.includes(row.breakId)}
+                      onClick={(event) => event.stopPropagation()}
+                      onChange={(event) => setBulkSelection((current) => event.target.checked ? [...current, row.breakId] : current.filter((id) => id !== row.breakId))} />
+                  )
+                }, ...reconciliationBreakColumns] : reconciliationBreakColumns}
                 rows={visibleRows}
                 getRowId={(item) => item.breakId}
                 getRowAriaLabel={(item) => item.rowAriaLabel}

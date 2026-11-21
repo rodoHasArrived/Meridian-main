@@ -715,6 +715,8 @@ public static class WorkstationServiceCollectionExtensions
             // Retained comparisons require both the durable artifact store and governance graph.
             // Local hosts still start without Reporting authority; readiness-gated routes stay unavailable.
             services.TryAddSingleton<ReportingIncomeComparisonService>();
+            services.TryAddSingleton<IReportingReviewMaterialityPolicyProvider, ConfiguredReportingReviewMaterialityPolicyProvider>();
+            services.TryAddSingleton<ReportingRunReviewService>();
             services.TryAddSingleton<PostgresReportingReleaseConsistencyGate>(sp =>
                 new PostgresReportingReleaseConsistencyGate(
                     sp.GetRequiredService<ReportingArtifactStoreOptions>()));

@@ -3100,6 +3100,7 @@ export function previewStatementImport(request: StatementImportPreviewRequest, o
   formData.append("fundAccountId", request.fundAccountId);
   formData.append("periodStart", request.periodStart);
   formData.append("periodEnd", request.periodEnd);
+  appendOptionalStatementFormField(formData, "toleranceProfileId", request.toleranceProfileId);
   return postFormData<StatementImportPreview>(STATEMENT_CONNECTOR_API_ENDPOINTS.importPreview, formData, options);
 }
 
@@ -3115,6 +3116,8 @@ export function commitStatementImport(
     periodStart: string;
     periodEnd: string;
     toleranceProfileId?: string | null;
+    reviewId?: string | null;
+    rowDispositions?: import("@/types").StatementImportRowDisposition[];
   },
   options: ApiRequestOptions = {}
 ) {
@@ -3129,6 +3132,8 @@ export function commitStatementImport(
   formData.append("periodStart", request.periodStart);
   formData.append("periodEnd", request.periodEnd);
   appendOptionalStatementFormField(formData, "toleranceProfileId", request.toleranceProfileId);
+  appendOptionalStatementFormField(formData, "reviewId", request.reviewId);
+  if (request.rowDispositions?.length) formData.append("rowDispositions", JSON.stringify(request.rowDispositions));
   return postFormData<StatementImportCommitResult>(STATEMENT_CONNECTOR_API_ENDPOINTS.importCommit, formData, options);
 }
 

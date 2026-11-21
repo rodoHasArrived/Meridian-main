@@ -385,6 +385,11 @@ public static partial class LedgerEndpoints
 
             var dimensionFilter = BuildDimensionReportFilter(context.Request.Query);
             var summary = await service.GetPeriodSummaryAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+            if (summary is not null && context.RequestServices.GetService<TrialBalanceAmountProvenanceService>() is { } provenance)
+            {
+                var actorScope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                summary = summary with { TrialBalance = await provenance.BindAsync(summary, actorScope.TenantId, actorScope.CompanyId, context.RequestAborted).ConfigureAwait(false) };
+            }
             return summary is null
                 ? Results.NotFound(new { error = $"Ledger period '{periodId}' has no closed-period summary." })
                 : Results.Json(ApplyDimensionFilter(summary, dimensionFilter).TrialBalance, jsonOptions);

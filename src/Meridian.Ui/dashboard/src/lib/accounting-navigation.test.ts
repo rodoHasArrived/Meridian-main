@@ -18,8 +18,8 @@ describe("Accounting navigation", () => {
     expect(ACCOUNTING_NAVIGATION_GROUPS.map((group) => (
       [group.label, group.items.map((item) => item.label)]
     ))).toEqual([
-      ["Close", ["Today", "Operations continuity", "Close calendar"]],
-      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
+      ["Close", ["Today", "Close", "Close calendar"]],
+      ["Records", ["Ledger explorer", "Journal entries", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],
       ["Administration", ["Entity setup", "Configure"]]
@@ -38,7 +38,7 @@ describe("Accounting navigation", () => {
       .map((item) => item.label);
 
     expect(activeLabels("/accounting/accounts/detail")).toEqual(["Ledger explorer"]);
-    expect(activeLabels("/accounting/journal-entries/detail")).toEqual(["Adjustments"]);
+    expect(activeLabels("/accounting/journal-entries/detail")).toEqual(["Journal entries"]);
     expect(activeLabels("/accounting/reconciliation/match")).toEqual(["Casework"]);
     expect(activeLabels("/accounting/reconciliation/external-gl")).toEqual(["External GL"]);
     expect(activeLabels("/accounting/approvals/inbox")).toEqual(["Approvals"]);

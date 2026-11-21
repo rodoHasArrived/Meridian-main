@@ -21,6 +21,13 @@ describe("buildAccountingSectionVisibility", () => {
     expect(taskMode.routeLabel).toBe(label);
   });
 
+  it("keeps specialized valuation commands available outside the Close overview", () => {
+    const visibility = visibilityFor("/accounting/workflow");
+    expect(visibility.showWorkflowDetails).toBe(true);
+    expect(visibility.showCloseCockpitLanding).toBe(false);
+    expect(visibility.showLedgerExplorer).toBe(false);
+  });
+
   it("keeps the bare accounting route on the close-cockpit landing", () => {
     const visibility = visibilityFor("/accounting");
     expect(visibility.showCloseCockpitLanding).toBe(true);

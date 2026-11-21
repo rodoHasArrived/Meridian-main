@@ -55,9 +55,9 @@ describe("command palette entity search", () => {
       expect.objectContaining({
         id: "security:sec-aapl",
         label: "Apple Inc.",
-        route: "/accounting/security-master/detail?securityId=sec-aapl",
+        route: "/records/instrument/sec-aapl?tab=positions",
         sourceLabel: "Security",
-        commandLabel: "Open Apple Inc. security detail"
+        commandLabel: "Open Apple Inc. instrument dossier"
       })
     ]);
   });

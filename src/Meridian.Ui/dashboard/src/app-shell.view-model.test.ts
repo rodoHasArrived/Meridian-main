@@ -289,7 +289,7 @@ describe("app shell view model", () => {
     });
   });
 
-  it("treats the root route as the Daily Control Tower shell focus", () => {
+  it("treats the root route as the Today shell focus", () => {
     const state = buildAppShellViewState({
       pathname: "/",
       loading: false,
@@ -299,13 +299,13 @@ describe("app shell view model", () => {
     });
 
     expect(state.routeFocus).toMatchObject({
-      announcement: "Daily Control Tower loaded.",
-      documentTitle: "Daily Control Tower - Meridian",
+      announcement: "Today loaded.",
+      documentTitle: "Today - Meridian",
       fallbackElementId: "workbench-content"
     });
     expect(state.location).toEqual({ kind: "home" });
-    expect(state.workflowContinuity.contextValue).toBe("Daily Control Tower / Today");
-    expect(state.workflowContinuity.title).toBe("Daily Control Tower");
+    expect(state.workflowContinuity.contextValue).toBe("Today / Today");
+    expect(state.workflowContinuity.title).toBe("Today");
     expect(state.workflowContinuity.steps.map((step) => step.label)).toEqual([
       "Today",
       "Exceptions",
@@ -1226,7 +1226,7 @@ describe("app shell view model", () => {
 
   it("maps financial operations close readiness into the Close Support continuity step", () => {
     const state = buildAppShellViewState({
-      pathname: "/accounting/operations-continuity",
+      pathname: "/accounting/close",
       search: "?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
       loading: false,
       error: null,
@@ -1288,7 +1288,7 @@ describe("app shell view model", () => {
       ["close-support", "Current / Close blocked", "review"]
     ]);
     expect(state.workflowContinuity.steps.find((step) => step.id === "close-support")?.href)
-      .toBe("/accounting/operations-continuity?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+      .toBe("/accounting/close?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
   });
 
   it("surfaces reviewed automation guardrails from the financial operations summary", () => {

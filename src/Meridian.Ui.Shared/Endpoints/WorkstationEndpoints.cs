@@ -1890,7 +1890,7 @@ public static partial class WorkstationEndpoints
             }
 
             var items = await GetBreakQueueItemsAsync(repository, queueScope, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(items, jsonOptions);
+            return Results.Json(items.Select(item => ProjectCaseCommandAvailability(item, context)), jsonOptions);
         })
         .WithName("GetReconciliationBreakQueue").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200)
@@ -1910,7 +1910,7 @@ public static partial class WorkstationEndpoints
             }
 
             var item = await repository.GetByIdAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
-            return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
+            return item is null ? Results.NotFound() : Results.Json(ProjectCaseCommandAvailability(item, context), jsonOptions);
         })
         .WithName("GetReconciliationBreakQueueItem").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<ReconciliationBreakQueueItem>(200)
@@ -3502,19 +3502,23 @@ public static partial class WorkstationEndpoints
                 var mark = retainedMark.Price;
                 var hasMark = mark.HasValue && mark.Value > 0m;
                 var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
-                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
-                var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
+                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.ExactQuantity * pos.ContractMultiplier;
+                var liveExposure = Math.Abs(pos.ExactQuantity * effectiveMark * pos.ContractMultiplier);
 
                 return new WorkstationTradingPositionRow(
                     PositionKey: pos.Symbol,
                     Symbol: pos.Symbol,
-                    Side: pos.Quantity >= 0 ? "Long" : "Short",
-                    Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                    Side: pos.ExactQuantity >= 0 ? "Long" : "Short",
+                    Quantity: Math.Abs(pos.ExactQuantity).ToString(CultureInfo.InvariantCulture),
                     AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
                     MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
                     DayPnl: "—",
                     UnrealizedPnl: FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl),
-                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—");
+                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—",
+                    AveragePriceExact: pos.AverageCostBasis.ToString(CultureInfo.InvariantCulture),
+                    MarkPriceExact: hasMark ? effectiveMark.ToString(CultureInfo.InvariantCulture) : null,
+                    UnrealizedPnlExact: (hasMark ? liveUnrealized : pos.UnrealizedPnl).ToString(CultureInfo.InvariantCulture),
+                    ExposureExact: hasMark ? liveExposure.ToString(CultureInfo.InvariantCulture) : null);
             }).ToArray();
         }
         else
@@ -3536,8 +3540,8 @@ public static partial class WorkstationEndpoints
             {
                 var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
                 var px = mark.HasValue && mark.Value > 0m ? mark.Value : pos.AverageCostBasis;
-                grossExposure += Math.Abs(pos.Quantity * px);
-                netExposureValue += pos.Quantity * px;
+                grossExposure += Math.Abs(pos.ExactQuantity * px * pos.ContractMultiplier);
+                netExposureValue += pos.ExactQuantity * px * pos.ContractMultiplier;
             }
             var drawdownPct = portfolio.PortfolioValue > 0m ? totalPnl / portfolio.PortfolioValue : 0m;
             if (drawdownPct < -0.05m)

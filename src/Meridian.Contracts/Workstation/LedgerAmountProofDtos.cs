@@ -35,4 +35,7 @@ public sealed record LedgerAmountProofDto(
     string Currency,
     EvidenceStatusDto Status,
     IReadOnlyList<LedgerAmountProofEvidenceDto> Evidence,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings)
+{
+    public string AmountExact => Amount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}

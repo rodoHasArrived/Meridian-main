@@ -15,6 +15,132 @@ namespace Meridian.Tests.Strategies;
 public sealed class ReconciliationBreakQueueRepositoryTests
 {
     [Fact]
+    public async Task StartReview_checks_supplied_versions_and_preserves_exact_replay_and_legacy_compatibility()
+    {
+        var repo = CreateRepository(out _);
+        var scope = new ReconciliationBreakQueueScope("tenant-reviewed", "company-reviewed");
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { TenantId = scope.TenantId, CompanyId = scope.CompanyId };
+        await repo.CreateIfMissingAsync(scope, item);
+        var current = (await repo.GetByIdAsync(scope, item.BreakId))!;
+        var request = new ReviewReconciliationBreakRequest(item.BreakId, "alice", "alice", "Investigate")
+        {
+            ExpectedVersion = current.Version
+        };
+
+        var stale = await repo.StartReviewAsync(scope, request with { ExpectedVersion = current.Version - 1 });
+        stale.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Conflict);
+        stale.Item!.Status.Should().Be(ReconciliationBreakQueueStatus.Open);
+
+        var reviewed = await repo.StartReviewAsync(scope, request);
+        reviewed.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        (await repo.StartReviewAsync(scope, request)).Should().BeEquivalentTo(reviewed);
+
+        var legacy = CreateItem(ReconciliationBreakQueueStatus.Open) with { BreakId = "legacy-review-compatible" };
+        await repo.CreateIfMissingAsync(legacy);
+        (await repo.StartReviewAsync(new ReviewReconciliationBreakRequest(legacy.BreakId, "alice", "alice", "Legacy review")))
+            .Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+    }
+
+    [Fact]
+    public async Task GuardedResolve_returns_current_record_without_mutation_on_stale_version()
+    {
+        var repo = CreateRepository(out _);
+        var scope = new ReconciliationBreakQueueScope("tenant-reviewed", "company-reviewed");
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            TenantId = scope.TenantId,
+            CompanyId = scope.CompanyId
+        };
+        await repo.CreateIfMissingAsync(scope, item);
+        var review = await repo.StartReviewAsync(scope, new ReviewReconciliationBreakRequest(item.BreakId, "alice", "alice", "Investigate"));
+        var request = new ResolveReconciliationBreakRequest(item.BreakId, ReconciliationBreakQueueStatus.Resolved, "alice", "Evidence reviewed", "Evidence reviewed");
+
+        var stale = await repo.ResolveAsync(scope, request with { ExpectedVersion = review.Item!.Version - 1 });
+
+        stale.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.ConcurrencyConflict);
+        stale.Item!.Version.Should().Be(review.Item.Version);
+        stale.Outcome.State.Should().Be(OperationTerminalState.Blocked);
+        (await repo.GetByIdAsync(scope, item.BreakId))!.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+        (await repo.GetAuditHistoryAsync(item.BreakId)).Should().NotContain(entry => entry.EventType == "Resolved");
+    }
+
+    [Fact]
+    public async Task Bulk_execute_refuses_changes_after_the_reviewed_preview()
+    {
+        var repo = CreateRepository(out _);
+        var scope = new ReconciliationBreakQueueScope("tenant-reviewed", "company-reviewed");
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { TenantId = scope.TenantId, CompanyId = scope.CompanyId };
+        await repo.CreateIfMissingAsync(scope, item);
+        var current = (await repo.GetByIdAsync(scope, item.BreakId))!;
+        var preview = new ReconciliationBulkCaseworkRequest(
+            [item.BreakId], ReconciliationCaseworkAction.Assign, "alice", "reviewed-preview", "reviewed-correlation", "test", "reviewed-preview", true, false, Assignee: "bob")
+        {
+            ExpectedVersions = new Dictionary<string, long> { [item.BreakId] = current.Version }
+        };
+        (await repo.ApplyBulkCaseworkAsync(scope, preview)).Results.Single().WouldSucceed.Should().BeTrue();
+        await repo.ApplyCaseworkCommandAsync(scope, new ReconciliationCaseworkCommand(
+            item.BreakId, ReconciliationCaseworkAction.ChangePriority, "alice", "priority-change", "priority-change", "test", current.Version, Priority: ReconciliationCasePriority.High));
+
+        var execute = await repo.ApplyBulkCaseworkAsync(scope, preview with { CommandId = "reviewed-execute", IdempotencyKey = "reviewed-execute", DryRun = false });
+
+        execute.SucceededCount.Should().Be(0);
+        execute.Results.Single().Error.Should().Contain("version conflict");
+        (await repo.GetByIdAsync(scope, item.BreakId))!.AssignedTo.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ScopedResolve_commits_taxonomy_fields_with_the_guarded_decision()
+    {
+        var repo = CreateRepository(out _);
+        var scope = new ReconciliationBreakQueueScope("tenant-reviewed", "company-reviewed");
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { TenantId = scope.TenantId, CompanyId = scope.CompanyId };
+        await repo.CreateIfMissingAsync(scope, item);
+        var review = await repo.StartReviewAsync(scope, new ReviewReconciliationBreakRequest(item.BreakId, "alice", "alice", "Investigate"));
+        var request = new ResolveReconciliationBreakRequest(item.BreakId, ReconciliationBreakQueueStatus.Resolved, "bob", "evidence: reviewed retained proof", "Evidence reviewed")
+        {
+            ExpectedVersion = review.Item!.Version,
+            RootCauseCode = "BrokerCashTiming",
+            ResolutionCode = "EvidenceAccepted"
+        };
+
+        var result = await repo.ResolveAsync(scope, request);
+
+        result.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        result.Item!.RootCauseCode.Should().Be("BrokerCashTiming");
+        result.Item.ResolutionCode.Should().Be("EvidenceAccepted");
+        (await repo.ResolveAsync(scope, request)).Should().BeEquivalentTo(result,
+            "the exact confirmed decision replays its receipt without a second mutation");
+    }
+
+    [Fact]
+    public async Task ScopedBulk_legacy_unversioned_request_preserves_existing_adapter_behavior()
+    {
+        var repo = CreateRepository(out _);
+        var scope = new ReconciliationBreakQueueScope("tenant-reviewed", "company-reviewed");
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { TenantId = scope.TenantId, CompanyId = scope.CompanyId };
+        await repo.CreateIfMissingAsync(scope, item);
+        var request = new ReconciliationBulkCaseworkRequest(
+            [item.BreakId], ReconciliationCaseworkAction.Assign, "alice", "missing-versions", "missing-versions", "test", "missing-versions", false, false, Assignee: "bob");
+
+        var result = await repo.ApplyBulkCaseworkAsync(scope, request);
+
+        result.SucceededCount.Should().Be(1);
+        (await repo.GetByIdAsync(scope, item.BreakId))!.AssignedTo.Should().Be("bob");
+    }
+
+    [Fact]
+    public void Permitted_commands_share_lifecycle_and_role_guards()
+    {
+        var item = CreateItem(ReconciliationBreakQueueStatus.Resolved) with { LifecycleState = ReconciliationCaseLifecycleState.Resolved, ResolvedBy = "alice" };
+        FileReconciliationBreakQueueRepository.GetPermittedCommands(item, "alice", true, true, false)
+            .Single(command => command.Action == "SignOff").Enabled.Should().BeFalse();
+        FileReconciliationBreakQueueRepository.GetPermittedCommands(item, "bob", false, true, false)
+            .Should().OnlyContain(command => !command.Enabled && command.DisabledReason!.Contains("permission"));
+        FileReconciliationBreakQueueRepository.GetPermittedCommands(item, "bob", true, true, false)
+            .Single(command => command.Action == "SignOff").Enabled.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task ResolveAsync_rejects_transition_preconditions_and_failure_modes()
     {
         var repo = CreateRepository(out _);

@@ -19,7 +19,7 @@ import {
   validateManualJournalEntryDraft,
   type ManualJournalEntryWorkbenchQuery,
 } from "@/lib/api";
-import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
+import { describeApiError, isApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
   formatCurrency,
   formatCurrencyWithCode,
@@ -38,6 +38,7 @@ import type {
   ManualJournalEntryWorkbenchServices,
   ManualJournalEntryWorkbenchViewModel,
   ManualJournalLineValidationBadge,
+  ManualJournalLifecycleConflict,
   ManualJournalPaymentIntentWorkflowRowViewModel,
   ManualJournalPrivateCapitalAccountRowViewModel,
   ManualJournalPrivateCapitalActivityViewModel,
@@ -85,6 +86,23 @@ const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchSer
 
 const MANUAL_JOURNAL_AUTOSAVE_DELAY_MS = 1_200;
 
+function journalConflictChanges(before: ManualJournalEntryDraft, after: ManualJournalEntryDraft): ManualJournalLifecycleConflict["changes"] {
+  const fields: Array<[string, unknown, unknown]> = [
+    ["Version", before.version, after.version], ["Status", before.status, after.status],
+    ["Entity", before.entityId, after.entityId], ["Book", before.ledgerBookId, after.ledgerBookId],
+    ["Period", before.periodId, after.periodId], ["Currency", before.currency, after.currency],
+    ["Accounting date", before.accountingDate, after.accountingDate], ["Memo", before.memo, after.memo],
+    ["Total debits", `${before.totalDebits} ${before.currency}`, `${after.totalDebits} ${after.currency}`],
+    ["Total credits", `${before.totalCredits} ${before.currency}`, `${after.totalCredits} ${after.currency}`]
+  ];
+  const ids = new Set([...before.lines.map((line) => line.lineId), ...after.lines.map((line) => line.lineId)]);
+  const describeLine = (line: ManualJournalEntryLine | undefined) => line
+    ? `${line.side} ${line.amount} ${line.currency} · ${line.accountPath || "Account not recorded"} · ${line.description ?? ""}` : "Not recorded";
+  for (const id of ids) fields.push([`Line ${id}`, describeLine(before.lines.find((line) => line.lineId === id)), describeLine(after.lines.find((line) => line.lineId === id))]);
+  return fields.filter(([, previous, current]) => previous !== current)
+    .map(([label, previous, current]) => ({ label, before: previous == null ? "Not recorded" : String(previous), after: current == null ? "Not recorded" : String(current) }));
+}
+
 export function useManualJournalEntryWorkbenchViewModel(
   active: boolean,
   services: ManualJournalEntryWorkbenchServices = defaultManualJournalEntryWorkbenchServices,
@@ -108,6 +126,13 @@ export function useManualJournalEntryWorkbenchViewModel(
   const [attachmentDraft, setAttachmentDraft] = useState<ManualJournalEvidenceAttachmentDraft>(() => createManualJournalAttachmentDraft());
   const [lifecycleBusyAction, setLifecycleBusyAction] = useState<JournalEntryLifecycleAction | null>(null);
   const [lifecycleStatusText, setLifecycleStatusText] = useState<string | null>(null);
+  const [lifecycleConflict, setLifecycleConflict] = useState<ManualJournalLifecycleConflict | null>(null);
+  const lifecycleRequest = useRef(0);
+  const lifecycleSending = useRef(false);
+  const activeRef = useRef(active);
+  activeRef.current = active;
+  const sessionRef = useRef(sessionIdentity);
+  sessionRef.current = sessionIdentity;
   const [lifecycleCorrectionDrafts, setLifecycleCorrectionDrafts] = useState<ManualJournalEntryDraft[]>([]);
   const [validatedDraftSignature, setValidatedDraftSignature] = useState<string | null>(null);
   const [savedDraftSignature, setSavedDraftSignature] = useState<string | null>(null);
@@ -125,6 +150,15 @@ export function useManualJournalEntryWorkbenchViewModel(
   const savedSignatureRef = useRef(savedDraftSignature);
   savedSignatureRef.current = savedDraftSignature;
   const [loadedQueryKey, setLoadedQueryKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    lifecycleRequest.current += 1;
+    lifecycleSending.current = false;
+    setLifecycleBusyAction(null);
+    setLifecycleConflict(null);
+    setLifecycleStatusText(null);
+    return () => { lifecycleRequest.current += 1; lifecycleSending.current = false; };
+  }, [active, queryKey, sessionIdentity, draft.journalEntryId]);
 
   const openRetainedDraft = useCallback((selected: ManualJournalEntryDraft, exactRecovery = false) => {
     const recovered = readManualJournalRecoverySnapshot(selected, exactRecovery);
@@ -498,7 +532,8 @@ export function useManualJournalEntryWorkbenchViewModel(
     candidate: ManualJournalEntryDraft,
     cause: "manual" | "autosave"
   ) => {
-    if (candidate.assetAccountingDraft || saveBusyRef.current || !isManualJournalEditable(candidate.status)) {
+    if (candidate.assetAccountingDraft || saveBusyRef.current || !isManualJournalEditable(candidate.status)
+      || lifecycleConflict && !lifecycleConflict.reviewedLatest) {
       return;
     }
 
@@ -558,7 +593,7 @@ export function useManualJournalEntryWorkbenchViewModel(
       saveBusyRef.current = false;
       setSaveBusy(false);
     }
-  }, [applyServerDraft, query.ledgerBookId, queryKey, services]);
+  }, [applyServerDraft, lifecycleConflict, query.ledgerBookId, queryKey, services]);
 
   const save = useCallback(async () => {
     await persistDraft(draftRef.current, "manual");
@@ -638,7 +673,8 @@ export function useManualJournalEntryWorkbenchViewModel(
     }
   }, [applyServerDraft, assetWorkflow.pendingAction, assetWorkflow.hasPendingPost, draft, query.ledgerBookId, services, validatedDraftSignature]);
 
-  const applyLifecycleAction = useCallback<ManualJournalEntryWorkbenchViewModel["applyLifecycleAction"]>(async (action) => {
+  const applyLifecycleAction = useCallback<ManualJournalEntryWorkbenchViewModel["applyLifecycleAction"]>(async (action, reason) => {
+    if (!activeRef.current || queryKeyRef.current !== queryKey || sessionRef.current !== sessionIdentity) return;
     if (draft.assetAccountingDraft && (action === "Approve" || action === "Post")) {
       const blocked = assetWorkflow.blockedReason(action);
       if (blocked) { setLifecycleStatusText(blocked); return; }
@@ -649,37 +685,97 @@ export function useManualJournalEntryWorkbenchViewModel(
       setLifecycleStatusText(ASSET_REVIEW_ONLY_REASON);
       return;
     }
-    if (lifecycleBusyAction) {
+    if (lifecycleSending.current || lifecycleConflict && !lifecycleConflict.reviewedLatest) {
       return;
     }
 
     const draftForAction = withManualJournalTotals(draft);
+    const requestId = ++lifecycleRequest.current;
+    const signature = buildManualJournalEditableSignature(draftForAction);
+    const notes = reason?.trim() ? reason : lifecycleActionNotes(action, draftForAction);
+    const sameContext = () => activeRef.current && requestId === lifecycleRequest.current
+      && queryKeyRef.current === queryKey && sessionRef.current === sessionIdentity
+      && draftRef.current.journalEntryId === draftForAction.journalEntryId
+      && draftRef.current.fundProfileId === draftForAction.fundProfileId
+      && draftRef.current.ledgerBookId === draftForAction.ledgerBookId
+      && draftRef.current.periodId === draftForAction.periodId;
+    lifecycleSending.current = true;
     setLifecycleBusyAction(action);
     setLifecycleStatusText(null);
+    setLifecycleConflict(null);
     setError(null);
     try {
-      applyLifecycleResult(await services.applyLifecycleAction({
+      const result = await services.applyLifecycleAction({
         journalEntryId: draftForAction.journalEntryId,
         fundProfileId: draftForAction.fundProfileId,
         action,
         actor: "browser-user",
         version: draftForAction.version,
-        notes: lifecycleActionNotes(action, draftForAction),
+        notes,
         correlationId: `manual-je-${action.toLowerCase()}`,
         evidenceLinks: draftForAction.evidenceLinks ?? [],
         actionOrigin: "HumanOperator",
         periodIsLocked: action === "LockAfterClose",
         rebookLines: action === "Rebook" ? draftForAction.lines : [],
         ledgerBookId: draftForAction.ledgerBookId ?? query.ledgerBookId ?? null
-      }));
+      });
+      if (!sameContext()) return;
+      if (result.journalEntry.journalEntryId !== draftForAction.journalEntryId
+        || result.journalEntry.fundProfileId !== draftForAction.fundProfileId
+        || result.journalEntry.ledgerBookId !== draftForAction.ledgerBookId || result.journalEntry.periodId !== draftForAction.periodId)
+        throw new Error("The lifecycle result does not match the selected journal scope. Refresh before continuing.");
+      if (draftRef.current.version !== draftForAction.version || buildManualJournalEditableSignature(draftRef.current) !== signature) {
+        setValidatedDraftSignature(null);
+        setLifecycleConflict({ action, notes, before: draftForAction, latest: result.journalEntry, loading: false,
+          reviewedLatest: false, unavailableReason: null, changes: journalConflictChanges(draftForAction, result.journalEntry) });
+        setLifecycleStatusText(`${action} completed, but your local draft changed. Review the returned record before continuing. Your local changes are retained.`);
+        return;
+      }
+      applyLifecycleResult(result);
     } catch (err) {
+      if (!sameContext()) return;
       const errorDisplay = describeApiError(err, `Manual journal entry lifecycle action ${action} failed.`);
       setError(errorDisplay);
       setLifecycleStatusText(errorDisplay.summary);
+      if (isApiError(err) && err.status === 409) {
+        setValidatedDraftSignature(null);
+        setLifecycleConflict({ action, notes, before: draftForAction, latest: null, loading: true,
+          unavailableReason: null, reviewedLatest: false, changes: [] });
+        try {
+          const next = await services.getWorkbench({ fundProfileId: draftForAction.fundProfileId,
+            ledgerBookId: draftForAction.ledgerBookId ?? query.ledgerBookId ?? null,
+            journalEntryId: draftForAction.journalEntryId, periodId: draftForAction.periodId });
+          if (!sameContext()) return;
+          const matches = next.drafts.filter((item) => item.journalEntryId === draftForAction.journalEntryId
+            && item.fundProfileId === draftForAction.fundProfileId && item.ledgerBookId === draftForAction.ledgerBookId
+            && item.periodId === draftForAction.periodId && item.version >= draftForAction.version);
+          if (next.fundProfileId !== draftForAction.fundProfileId || next.ledgerBookId !== draftForAction.ledgerBookId || matches.length !== 1)
+            throw new Error("The latest journal is unavailable in the original scope.", { cause: err });
+          setLifecycleConflict({ action, notes, before: draftForAction, latest: matches[0], loading: false,
+            unavailableReason: null, reviewedLatest: false, changes: journalConflictChanges(draftForAction, matches[0]) });
+        } catch {
+          if (!sameContext()) return;
+          setLifecycleConflict({ action, notes, before: draftForAction, latest: null, loading: false,
+            unavailableReason: "The latest record could not be read in this scope. Your draft and decision notes are retained; no command was retried.", reviewedLatest: false, changes: [] });
+        }
+      }
     } finally {
-      setLifecycleBusyAction(null);
+      if (requestId === lifecycleRequest.current) { lifecycleSending.current = false; setLifecycleBusyAction(null); }
     }
-  }, [applyLifecycleResult, assetWorkflow, draft, lifecycleBusyAction, query.ledgerBookId, services]);
+  }, [applyLifecycleResult, assetWorkflow, draft, lifecycleConflict, query.ledgerBookId, queryKey, services, sessionIdentity]);
+
+  const reviewLatestLifecycleDraft = useCallback(() => {
+    if (!lifecycleConflict?.latest || lifecycleConflict.loading || lifecycleConflict.reviewedLatest) return;
+    applyServerDraft(lifecycleConflict.latest);
+    setLifecycleConflict({ ...lifecycleConflict, reviewedLatest: true });
+    setError(null);
+    setLifecycleStatusText("Latest journal loaded. Validation is required again; review and confirm a new decision. The submitted snapshot and exact notes remain in the comparison.");
+  }, [applyServerDraft, lifecycleConflict]);
+  const discardLifecycleConflict = useCallback(() => {
+    setLifecycleConflict(null);
+    setError(null);
+    setLifecycleStatusText("Decision discarded. The currently displayed draft has not been replaced and no command was retried.");
+  }, []);
 
   const validationIssues = draft.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
     id: `${issue.code}-${index}`,
@@ -752,7 +848,9 @@ export function useManualJournalEntryWorkbenchViewModel(
     () => buildManualJournalPrivateCapitalActivityView(workbench?.privateCapitalActivity ?? null),
     [workbench?.privateCapitalActivity]
   );
-  const lifecycleCommands = buildManualJournalLifecycleCommands(balancedDraft, lifecycleBusyAction ?? assetWorkflow.busyAction, assetWorkflow);
+  const lifecycleCommands = buildManualJournalLifecycleCommands(balancedDraft, lifecycleBusyAction ?? assetWorkflow.busyAction, assetWorkflow)
+    .map((command) => lifecycleConflict && !lifecycleConflict.reviewedLatest
+      ? { ...command, disabledReason: "Review the latest journal or discard the conflicting decision first." } : command);
   const lifecycleTransitions = (balancedDraft.lifecycleTransitions ?? []).slice().reverse().map(formatManualJournalLifecycleTransition);
   const lifecycleCorrectionRows = lifecycleCorrectionDrafts.map(formatManualJournalLifecycleCorrection);
   const lifecycleChecklist = buildManualJournalLifecycleChecklist(
@@ -808,6 +906,9 @@ export function useManualJournalEntryWorkbenchViewModel(
     lifecycleTransitions,
     lifecycleCorrectionRows,
     lifecycleStatusText: assetWorkflow.statusText ?? lifecycleStatusText,
+    lifecycleConflict,
+    reviewLatestLifecycleDraft,
+    discardLifecycleConflict,
     lifecycleBusyAction: lifecycleBusyAction ?? assetWorkflow.busyAction,
     saveBusy,
     validateBusy,

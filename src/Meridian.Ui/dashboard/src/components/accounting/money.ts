@@ -7,6 +7,8 @@
 // Intl-based formatters in `lib/format.ts` instead. A rounding/negative-display policy
 // change must be applied to whichever of the two conventions it targets, knowingly.
 
+import { currencyMinorUnits, formatExactDecimal, parseExactDecimal, readLegacyFinancialText } from "@/lib/exact-financial-value";
+
 /** Options accepted by {@link formatMoney}. */
 export interface FormatMoneyOptions {
   /** Currency code (USD, EUR, GBP, JPY, CHF…). Omit for a bare number. */
@@ -63,18 +65,16 @@ export function toNumber(value: number | string | null | undefined): number {
  * Non-finite input passes through: `null`/`undefined` → `""`, everything else → its string form.
  */
 export function formatMoney(value: number | string | null | undefined, opts: FormatMoneyOptions = {}): string {
-  const { currency, decimals = 2, parens = false, zeroDash = false, signed = false } = opts;
-  const num = toNumber(value);
-  if (!Number.isFinite(num)) return value == null ? "" : String(value);
-  if (zeroDash && num === 0) return "—";
+  const { currency, decimals = currencyMinorUnits(currency), parens = false, zeroDash = false, signed = false } = opts;
+  const exactValue = typeof value === "string" && !parseExactDecimal(value) ? readLegacyFinancialText(value).value : value;
+  const parsed = parseExactDecimal(exactValue);
+  if (!parsed) return value == null ? "" : String(value);
+  if (zeroDash && parsed.coefficient === 0n) return "—";
   const sym = currencySymbol(currency);
-  const mag = Math.abs(num).toLocaleString("en-US", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
-  });
-  const neg = num < 0;
+  const mag = formatExactDecimal(exactValue, { decimals })!.replace(/^−/, "");
+  const neg = parsed.coefficient < 0n;
   if (neg && parens) return `(${sym}${mag})`;
-  const sign = neg ? "−" : signed && num > 0 ? "+" : "";
+  const sign = neg ? "−" : signed && parsed.coefficient > 0n ? "+" : "";
   return `${sign}${sym}${mag}`;
 }
 

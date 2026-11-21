@@ -10,9 +10,9 @@
     {
       "id": "W00A",
       "name": "web-daily-control-tower",
-      "path": "/",
-      "docLabel": "Daily Control Tower",
-      "waitForText": "Daily Control Tower Workstation",
+      "path": "/today",
+      "docLabel": "Today",
+      "waitForText": "Today Workstation",
       "requiredApiRoutes": [
         "/api/workstation/first-run/",
         "/api/demo/mode",
@@ -23,7 +23,7 @@
       "waitForTexts": [
         "What needs an operator decision now",
         "Finance queue",
-        "Daily Control Tower"
+        "Today"
       ]
     },
     {
@@ -94,8 +94,8 @@
     {
       "id": "W01D",
       "name": "web-operator-readiness-console",
-      "path": "/trading/readiness",
-      "docLabel": "Operator Readiness Console",
+      "path": "/today?view=readiness",
+      "docLabel": "Today \u2014 Operational readiness",
       "waitForText": "Operator Readiness Console",
       "requiredApiRoutes": [
         "/api/workstation/trading/readiness",
@@ -229,15 +229,31 @@
       "name": "web-accounting-workspace",
       "path": "/accounting",
       "docLabel": "Accounting \u2014 Ledger",
-      "waitForText": "Close Cockpit",
+      "waitForText": "Accounting today",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
         "/api/accounting-system/import/latest",
-        "/api/accounting-system/reconciliation/latest"
+        "/api/accounting-system/reconciliation/latest",
+        "/api/workstation/reconciliation/break-queue/run-42%3Acash",
+        "/api/workstation/reconciliation/break-queue/run-42%3Acash/audit"
       ],
       "waitForTexts": [
-        "Accounting case workbench"
+        "Accounting case workbench",
+        "Disagreement",
+        "Timeline and discussion",
+        "Open Close hub",
+        "Valuation and period operations"
+      ],
+      "waitForSelectors": [
+        "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
+        "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
+        "[aria-label=\"Case inspector\"] dd:has-text(\"run-42:cash\")"
+      ],
+      "waitForAbsentTexts": [
+        "Failed to parse URL",
+        "Loading latest case\u2026",
+        "Reload case"
       ]
     },
     {
@@ -251,7 +267,9 @@
         "/api/workstation/reconciliation/break-queue",
         "/api/accounting-system/providers",
         "/api/accounting-system/import/latest",
-        "/api/accounting-system/reconciliation/latest"
+        "/api/accounting-system/reconciliation/latest",
+        "/api/workstation/reconciliation/break-queue/run-42%3Acash",
+        "/api/workstation/reconciliation/break-queue/run-42%3Acash/audit"
       ],
       "waitForTexts": [
         "Reconciliation run",
@@ -261,10 +279,15 @@
       "waitForSelectors": [
         "select:has(option[value=\"run-42\"]:checked)",
         "#reconciliation-break-queue tr[data-dense-row-id=\"run-42:cash\"][aria-selected=\"true\"]",
-        "#reconciliation-break-detail-panel [aria-label=\"Reconciliation break detail for run-42:cash\"]"
+        "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
+        "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
+        "[aria-label=\"Case inspector\"] dd:has-text(\"run-42:cash\")"
       ],
       "waitForAbsentTexts": [
-        "Loading reconciliation break queue..."
+        "Loading reconciliation break queue...",
+        "Failed to parse URL",
+        "Loading latest case\u2026",
+        "Reload case"
       ]
     },
     {
@@ -392,9 +415,9 @@
     {
       "id": "W03G",
       "name": "web-accounting-operations-continuity",
-      "path": "/accounting/operations-continuity",
-      "docLabel": "Accounting \u2014 Operations Continuity",
-      "waitForText": "Operations continuity",
+      "path": "/accounting/close",
+      "docLabel": "Accounting \u2014 Close",
+      "waitForText": "Valuation and period operations",
       "requiredApiRoutes": [
         "/api/workstation/accounting",
         "/api/accounting-system/providers",
@@ -406,16 +429,23 @@
         "/api/workstation/operations/financial-operations-command-center"
       ],
       "waitForTexts": [
-        "1 operations continuity workflows loaded.",
-        "Workflows",
-        "Ledger Posting Draft",
-        "Journal validation is still required.",
-        "3/7 lanes ready across 1 close workflow."
+        "Board",
+        "Blockers",
+        "Checklist",
+        "Approvals",
+        "Evidence",
+        "3/7 lanes ready across 1 close workflow.",
+        "Balanced journal preview must be validated before posting."
       ],
       "waitForAbsentTexts": [
         "Selected workflow detail failed to load:",
         "Private-capital close cockpit unavailable",
         "Private-capital close evidence is unavailable."
+      ],
+      "waitForSelectors": [
+        "[role=\"tab\"][data-tab-id=\"board\"][aria-selected=\"true\"]",
+        "#operations-continuity-workflow-detail",
+        "tr[aria-selected=\"true\"]"
       ]
     },
     {
@@ -472,17 +502,28 @@
     {
       "id": "W03I2",
       "name": "web-accounting-reconciliation-match",
-      "path": "/accounting/reconciliation/match",
+      "path": "/accounting/reconciliation/match?reconciliationBreak=run-42%3Acash",
       "docLabel": "Accounting \u2014 Reconciliation Match",
       "waitForText": "Reconciliation Match Workbench",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/workstation/accounting",
+        "/api/workstation/reconciliation/break-queue/run-42%3Acash",
+        "/api/workstation/reconciliation/break-queue/run-42%3Acash/audit"
       ],
       "waitForTexts": [
-        "Open breaks",
-        "Open reconciliation casework",
-        "Review retained evidence",
-        "Record match decision"
+        "Disagreement",
+        "Resolve",
+        "Timeline and discussion"
+      ],
+      "waitForSelectors": [
+        "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
+        "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
+        "[aria-label=\"Case inspector\"] dd:has-text(\"run-42:cash\")"
+      ],
+      "waitForAbsentTexts": [
+        "Failed to parse URL",
+        "Loading latest case\u2026",
+        "Reload case"
       ]
     },
     {
@@ -806,14 +847,39 @@
       "name": "web-reporting-preview-validation",
       "path": "/reporting/preview",
       "docLabel": "Reporting \u2014 Preview Validation",
-      "waitForText": "Report Preview & Validation",
+      "waitForText": "No report selected",
       "requiredApiRoutes": [
         "/api/workstation/reporting"
       ],
       "waitForTexts": [
-        "Validation Issues",
-        "Changes Since Prior Run",
-        "Evidence"
+        "No report selected",
+        "Choose an exact retained run to preview its evidence."
+      ],
+      "waitForSelectors": [
+        "#report-preview-run"
+      ]
+    },
+    {
+      "id": "W04I1A",
+      "name": "web-reporting-exact-run-review",
+      "path": "/reporting/preview?runId=report-run-investor-202605&tab=changes",
+      "docLabel": "Reporting \u2014 Exact Run Review (seeded)",
+      "waitForText": "Changes since prior approved run",
+      "requiredApiRoutes": [
+        "/api/workstation/reporting",
+        "/api/fund-structure/reporting/runs/report-run-investor-202605/review"
+      ],
+      "waitForTexts": [
+        "report-run-investor-202605",
+        "No prior approved comparable run.",
+        "Materiality not assessed"
+      ],
+      "waitForSelectors": [
+        "#tab-panel-changes:not([hidden])"
+      ],
+      "waitForAbsentTexts": [
+        "Loading retained review evidence",
+        "Review evidence unavailable"
       ]
     },
     {
@@ -1432,6 +1498,251 @@
         "Advanced integration and runtime evidence are isolated on this route.",
         "Back to provider overview"
       ]
+    },
+    {
+      "id": "W06I1",
+      "name": "web-import-start",
+      "path": "/data/import/start",
+      "docLabel": "Import \u2014 Choose source",
+      "waitForText": "Choose what you are bringing into Meridian.",
+      "requiredApiRoutes": [
+        "/api/workstation/data"
+      ],
+      "waitForTexts": [
+        "Onboarding workbook",
+        "Bank or custodian statement",
+        "Import workbook",
+        "Import statement"
+      ]
+    },
+    {
+      "id": "W00B",
+      "name": "web-today-root-alias",
+      "path": "/",
+      "docLabel": "Today \u2014 Compatible root",
+      "waitForText": "Today Workstation",
+      "requiredApiRoutes": [
+        "/api/workstation/first-run/",
+        "/api/demo/mode",
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflow-summary"
+      ],
+      "waitForTexts": [
+        "What needs an operator decision now",
+        "Finance queue",
+        "Today"
+      ]
+    },
+    {
+      "id": "W03G1",
+      "name": "web-close-retained-evidence",
+      "path": "/accounting/close?closeTab=evidence&workflowId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+      "docLabel": "Accounting \u2014 Close retained evidence",
+      "waitForText": "Open monthly close lane.",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest",
+        "/api/workstation/operations/continuity",
+        "/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "/api/workstation/operations/continuity/approval-policy-matrix",
+        "/api/workstation/operations/financial-operations-command-center"
+      ],
+      "waitForTexts": [
+        "Timeline",
+        "Open monthly close lane.",
+        "Accounting record evidence"
+      ],
+      "waitForAbsentTexts": [
+        "Selected workflow detail failed to load:",
+        "Private-capital close cockpit unavailable",
+        "Private-capital close evidence is unavailable."
+      ],
+      "waitForSelectors": [
+        "[role=\"tab\"][data-tab-id=\"evidence\"][aria-selected=\"true\"]",
+        "tr[aria-selected=\"true\"]"
+      ]
+    },
+    {
+      "id": "W03G2",
+      "name": "web-close-legacy-redirect",
+      "path": "/accounting/operations-continuity?workflowId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6&closeTab=board#operations-continuity-workflow-detail",
+      "docLabel": "Accounting \u2014 Legacy continuity redirect retains selection",
+      "waitForText": "Valuation and period operations",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest",
+        "/api/workstation/operations/continuity",
+        "/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "/api/workstation/operations/continuity/approval-policy-matrix",
+        "/api/workstation/operations/financial-operations-command-center"
+      ],
+      "waitForTexts": [
+        "Board",
+        "Blockers",
+        "Checklist",
+        "Approvals",
+        "Evidence",
+        "3/7 lanes ready across 1 close workflow.",
+        "Balanced journal preview must be validated before posting."
+      ],
+      "waitForAbsentTexts": [
+        "Selected workflow detail failed to load:",
+        "Private-capital close cockpit unavailable",
+        "Private-capital close evidence is unavailable."
+      ],
+      "waitForSelectors": [
+        "[role=\"tab\"][data-tab-id=\"board\"][aria-selected=\"true\"]",
+        "#operations-continuity-workflow-detail",
+        "tr[aria-selected=\"true\"]"
+      ],
+      "expectedRedirectPath": "/accounting/close?workflowId=79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6&closeTab=board#operations-continuity-workflow-detail"
+    },
+    {
+      "id": "W01D1",
+      "name": "web-readiness-legacy-diagnostics-redirect",
+      "path": "/trading/readiness?fundAccountId=rh-fund-roth&provider=alpaca#diagnostic-endpoints",
+      "docLabel": "Readiness \u2014 Legacy diagnostics redirect retains scope",
+      "waitForText": "Diagnostics",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#diagnostic-endpoints"
+      ],
+      "waitForTexts": [
+        "Exceptions requiring attention"
+      ],
+      "expectedRedirectPath": "/settings/diagnostics?fundAccountId=rh-fund-roth&provider=alpaca#diagnostic-endpoints"
+    },
+    {
+      "id": "W02D1",
+      "name": "web-instrument-dossier",
+      "path": "/records/instrument/sec-dev-001?fundAccountId=rh-fund-roth&tab=positions",
+      "docLabel": "Portfolio \u2014 Instrument dossier",
+      "waitForText": "Apple Inc.",
+      "requiredApiRoutes": [
+        "/api/workstation/portfolio",
+        "/api/workstation/security-master/securities/sec-dev-001",
+        "/api/portfolio/household"
+      ],
+      "waitForTexts": [
+        "Positions by account",
+        "sec-dev-001",
+        "alpaca-roth",
+        "38 units"
+      ],
+      "waitForSelectors": [
+        "[role=\"tab\"][data-tab-id=\"positions\"][aria-selected=\"true\"]",
+        "[role=\"tabpanel\"]:not([hidden]) tbody tr:has-text(\"alpaca-roth\")"
+      ],
+      "waitForAbsentTexts": [
+        "Loading instrument dossier\u2026",
+        "Instrument unavailable",
+        "No identity-linked positions were found"
+      ]
+    },
+    {
+      "id": "W03P",
+      "name": "web-valuation-period-operations",
+      "path": "/accounting/workflow",
+      "docLabel": "Accounting \u2014 Valuation and period operations",
+      "waitForText": "Valuation and period operations",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest",
+        "/api/workstation/operations/continuity",
+        "/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "/api/workstation/operations/continuity/approval-policy-matrix",
+        "/api/workstation/operations/financial-operations-command-center"
+      ],
+      "waitForTexts": [
+        "Accounting workflow",
+        "CFO / Controller close command center",
+        "Close and report package certification"
+      ],
+      "waitForSelectors": [
+        "#close-command-center",
+        "#accounting-close-report-package"
+      ]
+    },
+    {
+      "id": "W03G3",
+      "name": "web-close-legacy-route",
+      "path": "/accounting/operations-continuity",
+      "docLabel": "Accounting \u2014 Legacy continuity route",
+      "waitForText": "Valuation and period operations",
+      "requiredApiRoutes": [
+        "/api/workstation/accounting",
+        "/api/accounting-system/providers",
+        "/api/accounting-system/import/latest",
+        "/api/accounting-system/reconciliation/latest",
+        "/api/workstation/operations/continuity",
+        "/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6",
+        "/api/workstation/operations/continuity/approval-policy-matrix",
+        "/api/workstation/operations/financial-operations-command-center"
+      ],
+      "waitForTexts": [
+        "Board",
+        "Blockers",
+        "Checklist",
+        "Approvals",
+        "Evidence",
+        "3/7 lanes ready across 1 close workflow.",
+        "Balanced journal preview must be validated before posting."
+      ],
+      "waitForAbsentTexts": [
+        "Selected workflow detail failed to load:",
+        "Private-capital close cockpit unavailable",
+        "Private-capital close evidence is unavailable."
+      ],
+      "waitForSelectors": [
+        "[role=\"tab\"][data-tab-id=\"board\"][aria-selected=\"true\"]",
+        "#operations-continuity-workflow-detail",
+        "tr[aria-selected=\"true\"]"
+      ],
+      "expectedRedirectPath": "/accounting/close"
+    },
+    {
+      "id": "W01D2",
+      "name": "web-readiness-legacy-route",
+      "path": "/trading/readiness",
+      "docLabel": "Readiness \u2014 Legacy route",
+      "waitForText": "Diagnostics",
+      "requiredApiRoutes": [
+        "/api/workstation/session",
+        "/api/status",
+        "/api/workstation/workflows",
+        "/api/workstation/workflows/presets",
+        "/api/workstation/settings/feature-capabilities",
+        "/api/providers/connections",
+        "/api/provider-routing/connections",
+        "/api/provider-routing/bindings",
+        "/api/provider-routing/trust-snapshots",
+        "/api/brokerage-connections/alpaca/status"
+      ],
+      "waitForSelectors": [
+        "#diagnostic-endpoints"
+      ],
+      "waitForTexts": [
+        "Exceptions requiring attention"
+      ],
+      "expectedRedirectPath": "/settings/diagnostics"
     }
   ]
 }

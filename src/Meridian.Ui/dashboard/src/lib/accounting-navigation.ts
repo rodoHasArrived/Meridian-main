@@ -44,9 +44,10 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
         match: "exact"
       },
       {
-        id: "operations-continuity",
-        label: "Operations continuity",
-        route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity
+        id: "close-hub",
+        label: "Close",
+        route: WORKSTATION_ROUTE_CATALOG.accountingClose,
+        activeRoutes: [{ route: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity }]
       },
       {
         id: "close-calendar",
@@ -70,7 +71,7 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
       },
       {
         id: "adjustments",
-        label: "Adjustments",
+        label: "Journal entries",
         route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries
       },
       {

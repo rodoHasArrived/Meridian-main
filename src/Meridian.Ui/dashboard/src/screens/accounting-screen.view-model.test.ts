@@ -875,7 +875,7 @@ describe("accounting-screen view model", () => {
 
     expect(buildAccountingTaskMode("/accounting")).toMatchObject({
       id: "close-cockpit",
-      label: "Close Cockpit",
+      label: "Accounting today",
       href: "/accounting",
       workstream: "ledger"
     });
@@ -893,7 +893,7 @@ describe("accounting-screen view model", () => {
     });
     expect(buildAccountingTaskMode("/accounting/journal-entries")).toMatchObject({
       id: "journal-entry",
-      label: "Journal Entry",
+      label: "Journal entries",
       href: "/accounting/journal-entries",
       workstream: "journal-entries"
     });

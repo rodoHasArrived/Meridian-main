@@ -162,6 +162,61 @@ governed artifact package, approval, release, or delivery receipt. Only a separa
 readiness-approved run enters this module's certification and governance lifecycle, followed by the
 shared client-document renderer and secure distribution after independent release.
 
+## Run review evidence
+
+`ReportingRunReviewEngine` reuses `ReportSnapshotDiffEngine` to compare retained report lines,
+normalized parameters, and certified ledger fields against the latest earlier approved or released
+revision of the same series, scope, period/as-of, book, basis, and currency. Missing retained grids,
+source rows, ambiguous identities, and absent baselines remain explicit unavailable states. Numeric
+cells retain decimal strings; percentage variance uses the absolute prior value and remains absent
+when the prior is zero or missing.
+
+UI Shared exposes `GET /api/fund-structure/reporting/runs/{runId}/review`. Browser approval sends
+its `reviewEvidenceId` with the existing optimistic version. The server recomputes the basis,
+rejects drift, retains and verifies the content-addressed envelope, and records its identity in the
+approval decision/audit note. `GET .../{runId}/review/{reviewId}` replays retained evidence under
+both runs' current access controls, independently of current source-manifest availability. The
+optional request member preserves legacy client compatibility; browser approval requires the
+review evidence. Existing clients that omit it retain the established approval contract.
+
+Materiality policy is server-owned through `IReportingReviewMaterialityPolicyProvider`. The
+registered configuration adapter reads the admin-controlled `MERIDIAN_REPORTING_REVIEW_POLICIES`
+JSON array from the existing host configuration (or process environment for legacy composition).
+Hosts can replace that DI interface with a durable policy registry. No policy or tolerance is
+seeded. Each policy requires an id/version, exact tenant/organization/company/fund/book/period
+scope, template id/version, currency, and explicit monetary grid/column identities. Each metric
+can provide `absoluteVariance` and/or `relativeVariancePercent` as decimal strings; null means
+that dimension is not assessed. Relative tolerance uses the absolute prior amount and requires
+a nonzero numeric prior. Threshold equality stays within tolerance (`>` marks a breach), using
+exact decimal coefficients for relative comparison without division rounding. Unknown or missing
+inputs, uncovered monetary measures, incomplete line comparisons and unconfigured policies keep
+the total material-change count null. Known breaches remain visible even when assessment is partial.
+
+A configured policy has this shape; administrators supply their approved thresholds rather than
+copying an application default:
+
+```json
+[{
+  "policyId": "<admin-issued-policy-id>", "version": "<immutable-version>",
+  "scope": {
+    "tenantId": "<tenant>", "organizationId": "<organization>", "companyId": "<company>",
+    "fundId": "<fund>", "bookId": "<book-guid>", "periodId": "<period-guid>"
+  },
+  "templateId": "<template>", "templateVersion": "<template-version>", "currency": "<ISO-code>",
+  "metrics": [{ "gridId": "<grid>", "column": "<monetary-measure>",
+    "absoluteVariance": null, "relativeVariancePercent": null }]
+}]
+```
+
+Publish a new policy version when changing its approved thresholds. Review evidence retains the
+full policy, including exact thresholds and version, in its content hash. At command admission, approval recomputes that
+basis, rejects changed policy evidence, and names the admitted policy/version in the retained
+decision receipt. A configuration reload after admission applies to subsequent commands; deployments
+requiring atomic policy changes at commit should replace the provider with a transactional authority.
+Browser defaults are never promoted to authoritative thresholds. Passport bindings for individual
+arbitrary report-writer cells and general nonledger source revision attribution remain separate
+capabilities. Run/snapshot evidence is exposed without inventing cell-level proof or causal explanations.
+
 ## Diagrams
 
 `DIA-ASSURANCE-LOOP`

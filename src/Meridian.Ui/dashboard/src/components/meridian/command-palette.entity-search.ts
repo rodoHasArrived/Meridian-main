@@ -5,6 +5,7 @@ import {
   type ApiRequestOptions
 } from "@/lib/api";
 import { WORKSTATION_ROUTE_CATALOG, appendRouteQuery } from "@/lib/workspace";
+import { instrumentDossierRoute } from "@/lib/instrument-dossier-route";
 import type { SecurityMasterEntry, SymbolRecord } from "@/types";
 import type { CommandPaletteEntityItem } from "@/components/meridian/command-palette.view-model";
 
@@ -129,13 +130,11 @@ function buildSecurityEntityItem(entry: SecurityMasterEntry): CommandPaletteEnti
     id: `security:${entry.securityId}`,
     label: entry.displayName,
     description: `${assetClass} - ${identifier} - ${entry.status}`,
-    route: appendRouteQuery(WORKSTATION_ROUTE_CATALOG.accountingAssetDetail, {
-      securityId: entry.securityId
-    }),
+    route: instrumentDossierRoute(entry.securityId),
     sourceLabel: "Security",
     statusLabel: entry.status,
-    commandLabel: `Open ${entry.displayName} security detail`,
-    ariaLabel: `Open security ${entry.displayName} in Security Master detail`
+    commandLabel: `Open ${entry.displayName} instrument dossier`,
+    ariaLabel: `Open security ${entry.displayName} in instrument dossier`
   };
 }
 

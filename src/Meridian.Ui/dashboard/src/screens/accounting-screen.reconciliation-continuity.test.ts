@@ -41,6 +41,19 @@ function services(): AccountingReconciliationServices {
 }
 
 describe("reconciliation selection continuity", () => {
+  it("ignores inspector or bulk outcomes retained from a prior operating scope", async () => {
+    const api = services();
+    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "reconciliation", api, null, null,
+      selection(scope)), { initialProps: { scope: "scope-a" } });
+    await waitFor(() => expect(result.current.rows).toHaveLength(1));
+    const applyOldScopeOutcome = result.current.applyCaseUpdate;
+    vi.mocked(api.getBreakQueue).mockResolvedValue([{ ...item, breakId: "break-b" }]);
+    rerender({ scope: "scope-b" });
+    await waitFor(() => expect(result.current.rows[0]?.breakId).toBe("break-b"));
+    act(() => applyOldScopeOutcome({ ...item, assignedTo: "old-scope-owner" }));
+    expect(result.current.rows.map((row) => row.breakId)).toEqual(["break-b"]);
+  });
+
   it.each(["assign", "resolve"] as const)("retains a committed %s response when operators return to its run", async (command) => {
     const api = services();
     let completeAction!: (value: ReconciliationCaseworkOperationResult) => void;

@@ -1895,6 +1895,17 @@ export interface CapitalAccountWorkbenchViewModel {
   refresh: () => Promise<void>;
 }
 
+export interface ManualJournalLifecycleConflict {
+  action: JournalEntryLifecycleAction;
+  notes: string;
+  before: ManualJournalEntryDraft;
+  latest: ManualJournalEntryDraft | null;
+  loading: boolean;
+  unavailableReason: string | null;
+  reviewedLatest: boolean;
+  changes: Array<{ label: string; before: string; after: string }>;
+}
+
 export interface ManualJournalEntryWorkbenchViewModel {
   assetWorkflow?: AssetAccountingWorkflowViewModel;
   title: string;
@@ -1928,6 +1939,9 @@ export interface ManualJournalEntryWorkbenchViewModel {
   lifecycleTransitions: ManualJournalLifecycleTransitionViewModel[];
   lifecycleCorrectionRows: ManualJournalLifecycleCorrectionViewModel[];
   lifecycleStatusText: string | null;
+  lifecycleConflict?: ManualJournalLifecycleConflict | null;
+  reviewLatestLifecycleDraft?: () => void;
+  discardLifecycleConflict?: () => void;
   lifecycleBusyAction: JournalEntryLifecycleAction | null;
   saveBusy: boolean; validateBusy: boolean; submitBusy: boolean;
   attachEvidenceBusy: boolean;
@@ -1952,7 +1966,7 @@ export interface ManualJournalEntryWorkbenchViewModel {
   updateAttachmentDraft: (patch: Partial<ManualJournalEvidenceAttachmentDraft>) => void;
   addAttachment: () => Promise<void>;
   removeAttachment: (attachmentId: string) => void;
-  applyLifecycleAction: (action: JournalEntryLifecycleAction) => Promise<void>;
+  applyLifecycleAction: (action: JournalEntryLifecycleAction, reason?: string) => Promise<void>;
   save: () => Promise<void>;
   validate: () => Promise<void>;
   submit: () => Promise<void>;
@@ -2227,6 +2241,7 @@ export interface AccountingTrialBalanceBasisOption {
 }
 
 export interface AccountingTrialBalanceRowViewModel extends LedgerTrialBalanceLine {
+  currency?: string | null;
   rowId: string;
   accountLabel: string;
   accountTypeLabel: string;
@@ -4095,6 +4110,7 @@ export function useAccountingReconciliationViewModel(
     try {
       const operation = await services.reviewBreak({
         breakId,
+        expectedVersion: breakQueue.find((item) => item.breakId === breakId)?.version,
         ...(operatorIdentity ? { assignedTo: operatorIdentity, reviewedBy: operatorIdentity } : {})
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
@@ -4106,7 +4122,7 @@ export function useAccountingReconciliationViewModel(
     } finally {
       if (activeScopeRef.current === requestScope && actionContextRef.current.revision === requestActionContext) setBreakAction(null);
     }
-  }, [actionContextRevision, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
+  }, [actionContextRevision, breakQueue, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
 
   const resolveBreak = useCallback(async (
     breakId: string,
@@ -4138,7 +4154,8 @@ export function useAccountingReconciliationViewModel(
         status,
         ...(operatorIdentity ? { resolvedBy: operatorIdentity } : {}),
         resolutionNote: trimmedRationale,
-        operatorRationale: trimmedRationale
+        operatorRationale: trimmedRationale,
+        expectedVersion: breakQueue.find((item) => item.breakId === breakId)?.version
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
       // A committed result remains authoritative for this queue when the operator changes runs.
@@ -4150,7 +4167,12 @@ export function useAccountingReconciliationViewModel(
     } finally {
       if (activeScopeRef.current === requestScope && actionContextRef.current.revision === requestActionContext) setBreakAction(null);
     }
-  }, [actionContextRevision, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
+  }, [actionContextRevision, breakQueue, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
+
+  const applyCaseUpdate = useCallback((item: ReconciliationBreakQueueItem) => {
+    if (activeScopeRef.current !== scopeRevision) return;
+    setBreakQueue((current) => replaceBreakQueueItem(current, item));
+  }, [scopeRevision]);
 
   useEffect(() => {
     if (!selectionState?.replaceSelection || workstream !== "reconciliation"
@@ -4364,6 +4386,8 @@ export function useAccountingReconciliationViewModel(
 
   return {
     reconciliationQueue,
+    caseRecords: scopedBreakQueue,
+    applyCaseUpdate,
     selectionNotice: selectedBreakId && (!selectionState || breakQueueReadScope === scopeRevision) && !breakQueueLoading && !breakQueueError && !scopedBreakQueue.some((item) => item.breakId === selectedBreakId)
       ? "The selected break is no longer available in this queue. Select another break to continue."
       : selectedRunId && !statementRunsLoading && !statementRunsError && !reconciliationQueue.some((item) => item.runId === selectedRunId) && !statementRuns.some((item) => item.runId === selectedRunId)
@@ -5384,6 +5408,7 @@ function buildTrialBalanceRow(
   return {
     ...line,
     rowId,
+    currency,
     accountLabel,
     accountTypeLabel,
     basisLabel,

@@ -17,7 +17,7 @@ export function buildRouteFocusState(
   hash: string,
   activeWorkspace: WorkspaceSummary
 ): AppShellRouteFocusState {
-  const workspaceTitle = pathname === "/" ? "Daily Control Tower" : `${activeWorkspace.label} Workstation`;
+  const workspaceTitle = pathname === "/" || pathname === "/today" ? "Today" : `${activeWorkspace.label} Workstation`;
   const targetElementId = normalizeHashTarget(hash);
   const targetLabel = targetElementId ? formatHashTargetLabel(targetElementId) : null;
 
@@ -33,7 +33,7 @@ export function buildRouteFocusState(
 }
 
 function routeFocusSearch(pathname: string, search: string): string {
-  const normalizedPath = pathname.replace(/\/$/, "").toLowerCase();
+  const normalizedPath = pathname.replace(/\/$/, "").toLowerCase() || "/";
   const isReporting = normalizedPath === WORKSTATION_ROUTE_CATALOG.reporting;
   const isPortfolio = normalizedPath === WORKSTATION_ROUTE_CATALOG.portfolio;
   const isReconciliation = normalizedPath === WORKSTATION_ROUTE_CATALOG.accountingReconciliation
@@ -44,12 +44,16 @@ function routeFocusSearch(pathname: string, search: string): string {
       ? ["dataJob", "dataTask"]
       : normalizedPath === WORKSTATION_ROUTE_CATALOG.settings
         ? ["settingsTask"] : [];
-  if (!isReporting && !isPortfolio && !isReconciliation && taskKeys.length === 0) return search;
+  const isCloseHub = normalizedPath === "/accounting/close";
+  const isToday = normalizedPath === "/today" || normalizedPath === "/";
+  if (!isReporting && !isPortfolio && !isReconciliation && !isCloseHub && !isToday && taskKeys.length === 0) return search;
 
   // Queue selection, search, and table controls stay in their current workbench.
   // Treating screen-local URL state as navigation would steal the control/row focus.
   const params = new URLSearchParams(search);
-  if (taskKeys.length > 0) {
+  if (isCloseHub || isToday) {
+    for (const key of isCloseHub ? ["closeTab", "workflowId", "reconciliationBreak"] : ["source", "view"]) params.delete(key);
+  } else if (taskKeys.length > 0) {
     for (const key of taskKeys) {
       params.delete(key);
       params.delete(`${key}Search`);

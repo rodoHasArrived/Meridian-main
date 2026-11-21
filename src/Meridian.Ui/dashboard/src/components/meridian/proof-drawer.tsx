@@ -7,6 +7,7 @@ import { NumberPassport } from "@/components/meridian/number-passport";
 import { hasExactRetainedSource, isCurrentRetainedEvidence } from "@/components/meridian/ledger-amount-proof-validation";
 import { getLedgerAmountProof } from "@/lib/ledger-amount-proof-api";
 import { cn } from "@/lib/utils";
+import { equalExactDecimals } from "@/lib/exact-financial-value";
 import type { LedgerAmountProof, LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import type {
   FinancialRecordExplorerDto,
@@ -20,7 +21,7 @@ export function LedgerAmountProofDrawer({ selection, onClose }: {
   onClose: () => void;
 }) {
   return (
-    <Drawer open={selection !== null} onClose={onClose} title={selection ? `${selection.label} proof detail` : "Amount proof detail"} className="max-w-[32rem]">
+    <Drawer open={selection !== null} onClose={onClose} title={selection ? `${selection.label} Amount passport` : "Amount passport"} className="max-w-[32rem]">
       <DrawerBody>{selection ? <LedgerAmountProofContent selection={selection} /> : null}</DrawerBody>
     </Drawer>
   );
@@ -45,14 +46,14 @@ function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelect
       if (!proof || packet.completeness.status !== proof.status || packet.subject.subjectKind !== "ledger-amount" || packet.subject.subjectId !== requested.subjectId ||
         proof.subjectId !== requested.subjectId || scope?.ledgerBookId !== requested.ledgerBookId ||
         scope?.periodId !== requested.periodId || scope?.fundProfileId !== requested.fundProfileId ||
-        (requested.subjectId.startsWith("report:") &&
+        ((requested.subjectId.startsWith("report:") || requested.subjectId.startsWith("trial-balance:")) &&
           (scope?.tenantId !== requested.tenantId || scope?.companyId !== requested.companyId)) ||
-        !scope.tenantId || !scope.companyId || proof.amount !== requested.amount || proof.currency !== requested.currency) {
+        !scope.tenantId || !scope.companyId || !equalExactDecimals(proof.amountExact ?? proof.amount, requested.amount) || proof.currency !== requested.currency) {
         setResult({ key: selectionKey, proof: null, error: "Blocked: evidence identity, amount or scope does not match the selection." });
       } else if (new Set(proof.evidence.map((item) => item.evidenceId)).size !== proof.evidence.length ||
         proof.evidence.some((item) => !item.evidenceId)) {
         setResult({ key: selectionKey, proof: null, error: "Blocked: evidence identifiers are missing or ambiguous." });
-      } else if (requested.subjectId.startsWith("report:") &&
+      } else if ((requested.subjectId.startsWith("report:") || requested.subjectId.startsWith("trial-balance:")) &&
         (!requested.journalEntryIds?.length || !requested.ledgerEntryIds?.length || proof.evidence.some((item) => {
           if (item.kind === "ledger-record") return false;
           const parts = item.sourceSubjectId?.split(":");
@@ -92,7 +93,7 @@ function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelect
             <p className="text-xs text-muted-foreground">{item.kind} · {item.sourceSystem} · {item.retainedAt}</p>
             <p className="break-all font-mono text-xs">{item.evidenceId}</p>
             {item.contentHash ? <p className="break-all font-mono text-xs">{item.contentHash}</p> : null}
-            {proof.subjectId.startsWith("report:") && item.sourceScope && item.sourceSubjectId ? (
+            {(proof.subjectId.startsWith("report:") || proof.subjectId.startsWith("trial-balance:")) && item.sourceScope && item.sourceSubjectId ? (
               <dl className="mt-2 space-y-1 text-xs">
                 <div><dt className="text-muted-foreground">Original posting</dt><dd className="break-all font-mono">{item.sourceSubjectId}</dd></div>
                 <div><dt className="text-muted-foreground">Source period</dt><dd className="break-all font-mono">{item.sourceScope.periodId}</dd></div>

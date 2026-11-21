@@ -228,7 +228,11 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
   );
 }
 
-function AssetDetailPanel({ securityId }: { securityId: string }) {
+export function AssetDetailPanel({ securityId, embedded = false }: { securityId: string; embedded?: boolean }) {
+  const [scopeParams] = useSearchParams();
+  const dossierParams = new URLSearchParams(scopeParams);
+  dossierParams.delete("securityId");
+  dossierParams.delete("tab");
   const [entry, setEntry] = useState<SecurityMasterEntry | null>(null);
   const [identity, setIdentity] = useState<SecurityIdentityDrillIn | null>(null);
   const [corporateActions, setCorporateActions] = useState<CorporateAction[]>([]);
@@ -316,6 +320,9 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
       actions={
         <>
           <Badge variant={overview.statusTone} dot>{overview.statusLabel}</Badge>
+          {!embedded ? <Button asChild size="sm" variant="outline">
+            <Link to={`/records/instrument/${encodeURIComponent(entry.securityId)}${dossierParams.size ? `?${dossierParams}` : ""}`}>Open instrument dossier</Link>
+          </Button> : null}
           <Button asChild size="sm" variant="outline">
             <Link to={workstationRouteWithQuery("dataQuotes", { symbol: overview.symbol })}>Live quotes</Link>
           </Button>

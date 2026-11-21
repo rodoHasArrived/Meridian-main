@@ -705,6 +705,8 @@ export const UI_API_ROUTES = {
   ReconciliationStatementMappingProfileById: "/api/workstation/reconciliation/statement-mapping-profiles/{profileId}",
   ReconciliationStatementImportPreview: "/api/workstation/reconciliation/statement-imports/preview",
   ReconciliationStatementImportCommit: "/api/workstation/reconciliation/statement-imports/commit",
+  ReconciliationStatementImportReviewRows: "/api/workstation/reconciliation/statement-imports/reviews/{reviewId}/rows",
+  ReconciliationStatementImportReviewOutcomes: "/api/workstation/reconciliation/statement-imports/reviews/{reviewId}/outcomes",
   ReconciliationStatementReconciliationReport: "/api/workstation/reconciliation/statement-reconciliation-report",
   ReconciliationStatementReconciliationReportById: "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}",
   ReconciliationStatementReconciliationReportResume: "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/resume",

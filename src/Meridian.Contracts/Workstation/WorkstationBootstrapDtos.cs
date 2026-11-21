@@ -333,7 +333,12 @@ public sealed record WorkstationTradingPositionRow(
     string DayPnl,
     string UnrealizedPnl,
     string Exposure,
-    MarkFreshnessAssessmentDto? MarkFreshness = null);
+    MarkFreshnessAssessmentDto? MarkFreshness = null,
+    string? AveragePriceExact = null,
+    string? MarkPriceExact = null,
+    string? UnrealizedPnlExact = null,
+    string? ExposureExact = null,
+    string? Currency = null);
 
 /// <summary>
 /// A single open-order row shown in the trading workstation orders table.

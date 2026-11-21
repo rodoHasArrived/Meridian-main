@@ -85,11 +85,12 @@ export function approveGovernedReportingRun(
   runId: string,
   expectedVersion: number,
   decisionNote: string,
-  options: ApiRequestOptions = {}
+  options: ApiRequestOptions = {},
+  reviewEvidenceId?: string
 ) {
   return apiPostJson<unknown>(
     governedReportingTransitionPath(runId, "approve"),
-    { expectedVersion, decisionNote },
+    { expectedVersion, decisionNote, ...(reviewEvidenceId ? { reviewEvidenceId } : {}) },
     options
   ).then(adaptGovernedReportingRunResponse);
 }

@@ -64,6 +64,12 @@ type PortfolioSourceRun = {
 };
 
 export interface PortfolioPositionRow {
+  securityId?: string | null;
+  averagePriceExact?: string | null;
+  markPriceExact?: string | null;
+  unrealizedPnlExact?: string | null;
+  exposureExact?: string | null;
+  currency?: string | null;
   markFreshness: MarkFreshnessPresentation;
   id: string;
   symbol: string;
@@ -307,6 +313,7 @@ interface PortfolioRunContinuityBlocker {
 }
 
 export interface PortfolioPositionDetail {
+  securityId?: string | null;
   id: string;
   title: string;
   subtitle: string;
@@ -668,6 +675,12 @@ export function buildPortfolioScreenViewModel({
       symbol: p.symbol,
       side: p.side,
       quantity: p.quantity,
+      securityId: p.markFreshness?.securityId,
+      averagePriceExact: p.averagePriceExact,
+      markPriceExact: p.markPriceExact,
+      unrealizedPnlExact: p.unrealizedPnlExact,
+      exposureExact: p.exposureExact,
+      currency: p.currency,
       avgPrice: p.averagePrice,
       markFreshness: presentMarkFreshness(p.markFreshness),
       markPrice: p.markPrice,
@@ -2310,6 +2323,7 @@ function buildSelectedPositionDetail(
 
   return {
     id: position.id,
+    securityId: position.securityId,
     title: position.symbol,
     subtitle: `${position.side} · ${position.quantity} shares`,
     ariaLabel: `${position.symbol} holding detail`,

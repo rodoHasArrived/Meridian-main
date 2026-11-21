@@ -180,9 +180,9 @@ describe("CommandPalette", () => {
       "href",
       "/data/quotes?symbol=AAPL"
     );
-    expect(screen.getByLabelText("Open security Apple Inc. in Security Master detail")).toHaveAttribute(
+    expect(screen.getByLabelText("Open security Apple Inc. in instrument dossier")).toHaveAttribute(
       "href",
-      "/accounting/security-master/detail?securityId=sec-aapl"
+      "/records/instrument/sec-aapl?tab=positions"
     );
     expect(screen.getByText("2 entity results")).toBeInTheDocument();
   });

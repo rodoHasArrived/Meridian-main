@@ -90,7 +90,7 @@ export function buildWorkspaceNavViewModel(
   search = "",
   operatingContextScope: AppShellOperatingScopeInput | null = null
 ): WorkspaceNavViewModel {
-  const isHome = pathname === "/";
+  const isHome = pathname === "/" || pathname === "/today";
   const visibleWorkspaces = canonicalizeWorkspaceSummaries(workspaces);
   const currentWorkspace =
     visibleWorkspaces.find((workspace) => isWorkspacePathActive(pathname, workspace.key)) ?? visibleWorkspaces[0];

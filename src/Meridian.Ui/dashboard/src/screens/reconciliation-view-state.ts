@@ -20,7 +20,8 @@ const queryKeys = {
   queueStatus: "reconciliationStatus",
   queueSort: "reconciliationSort"
 } as const;
-const scopeKeys = ["fundAccountId", "symbol", "runId", "provider", "from", "to", "date", "asOf"];
+const scopeKeys = ["fundAccountId", "fundId", "fundProfileId", "entityId", "companyId", "organizationId",
+  "ledgerBookId", "bookId", "periodId", "accountingPeriodId", "symbol", "runId", "provider", "from", "to", "date", "asOf"];
 
 export function readReconciliationViewState(search: string) {
   const params = new URLSearchParams(search);

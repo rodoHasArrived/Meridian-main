@@ -209,7 +209,7 @@ describe("finance standard pages", () => {
   });
 
   it("renders the report preview and validation checkpoint tabs", async () => {
-    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview");
+    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview?runId=run-tb-1");
 
     expect(screen.getByRole("heading", { name: "Report Preview & Validation" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Preview" })).toBeInTheDocument();
@@ -227,7 +227,7 @@ describe("finance standard pages", () => {
       }
     } as unknown as AccountingWorkspaceResponse;
 
-    await renderPage(<ReportPreviewValidationScreen data={readyData} />, "/reporting/preview");
+    await renderPage(<ReportPreviewValidationScreen data={readyData} />, "/reporting/preview?runId=run-tb-1");
 
     expect(screen.getByText("Ready to run")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Run report" })).toHaveAttribute(
@@ -330,6 +330,15 @@ describe("finance standard pages", () => {
     expect(screen.getByRole("link", { name: "Choose report" })).toHaveAttribute("href", "/reporting/library");
   });
 
+  it("requires an explicit preview run instead of selecting the first recent run", async () => {
+    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview");
+    expect(screen.getByLabelText("Report run")).toHaveValue("");
+    expect(screen.queryByText("Open reconciliation break")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Run report" })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Report run"), { target: { value: "run-tb-1" } });
+    expect(await screen.findByRole("button", { name: "Run report" })).toBeDisabled();
+  });
+
   it("does not substitute reporting-workspace fixtures when run detail has no runId", async () => {
     await renderPage(<ReportRunDetailScreen data={data} />, "/reporting/runs/detail");
 
@@ -427,7 +436,7 @@ describe("finance standard pages", () => {
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
     expect(getLedgerAmountProof).not.toHaveBeenCalled();
     fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
-    const drawer = await screen.findByRole("dialog", { name: "Cash debit $500 proof detail" });
+    const drawer = await screen.findByRole("dialog", { name: "Cash debit $500 Amount passport" });
     expect(await within(drawer).findByRole("link", { name: "Open Retained journal line" })).toHaveAttribute("href", proofPacket.ledgerAmount!.evidence[0]!.route);
     expect(getLedgerAmountProof).toHaveBeenCalledWith(expect.objectContaining({
       subjectId: "je-proof:line-proof:debit", ledgerBookId: LEDGER_BOOK_ID, periodId: LEDGER_PERIOD_ID,
@@ -1287,13 +1296,13 @@ describe("finance standard pages", () => {
     expect(screen.queryByLabelText("Search by account, amount, journal ID, source, security, entity")).not.toBeInTheDocument();
   });
 
-  it("renders reconciliation match workbench as a focused clearing queue", async () => {
-    await renderPage(<ReconciliationMatchWorkbenchScreen data={data} />, "/accounting/reconciliation/match");
+  it("renders the shared case inspector in the reconciliation match workbench", async () => {
+    await renderPage(<ReconciliationMatchWorkbenchScreen data={data} />, "/accounting/reconciliation/match?reconciliationBreak=run-42%3Acash");
 
-    expect(screen.getByRole("heading", { name: "Reconciliation Match Workbench" })).toBeInTheDocument();
-    expect(screen.getAllByText("Cash variance needs review").length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute("href", "/accounting/reconciliation");
-    expect(screen.getByRole("button", { name: "Record match decision" })).toBeDisabled();
+    expect(screen.getByRole("heading", { name: "Reconciliation match workbench" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Case" })).toHaveValue("run-42:cash");
+    expect(screen.getByRole("region", { name: "Case inspector" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Record match decision" })).not.toBeInTheDocument();
   });
 
   it("renders close calendar tasks", async () => {

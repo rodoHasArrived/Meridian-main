@@ -50,6 +50,12 @@ after restart even when the retained record contributes a stronger provenance ma
 
 ## Purpose
 
+Browser casework uses reviewed versions for single decisions and per-case bulk previews/execution.
+The repository checks supplied versions while holding its mutation lease and returns the current
+case on conflict. Existing unversioned legacy review/resolve/bulk adapters retain their historical
+behavior; they do not provide stale-review protection. Queue/detail API projections expose command
+form availability from shared lifecycle validation, while every submitted command is revalidated.
+
 Strategies owns strategy lifecycle, run storage, promotion records, strategy read services, and
 strategy-facing reconciliation governance.
 

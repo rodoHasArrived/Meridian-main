@@ -66,7 +66,10 @@ public static partial class WorkstationEndpoints
             // The caller's origin, re-derived at the route handler, rather than a constant. For a
             // human session this is still "HumanOperator", so existing command ids are unchanged;
             // only a non-human origin -- which the gate downstream refuses anyway -- differs (#2673).
-            request.ActionOrigin.ToString());
+            request.ActionOrigin.ToString(),
+            request.ExpectedVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
+            request.RootCauseCode ?? string.Empty,
+            request.ResolutionCode ?? string.Empty);
         var inputHash = Sha256Digest.ComputeUtf8(material);
         var commandId = $"statement-legacy-resolve:{inputHash}";
         var commandBase = current;
@@ -108,13 +111,13 @@ public static partial class WorkstationEndpoints
             CommandId: commandId,
             CorrelationId: $"statement-legacy-resolve:{inputHash[..16]}",
             Source: "workstation-statement-legacy-resolve-adapter",
-            ExpectedVersion: commandBase.Version,
+            ExpectedVersion: request.ExpectedVersion ?? commandBase.Version,
             Reason: request.OperatorRationale,
             Note: request.ResolutionNote,
-            RootCauseCode: dismissed ? "DismissedFalsePositive" : commandBase.RootCauseCode,
+            RootCauseCode: dismissed ? "DismissedFalsePositive" : request.RootCauseCode ?? commandBase.RootCauseCode,
             ResolutionCode: dismissed
                 ? "DismissedFalsePositive"
-                : commandBase.ResolutionCode ?? "LegacyResolved",
+                : request.ResolutionCode ?? commandBase.ResolutionCode ?? "LegacyResolved",
             EvidenceLinks: (commandBase.EvidenceLinks ?? [])
                 .Where(static evidence => !StatementCaseworkHandoffObligation.IsControlMarker(evidence))
                 .ToArray(),

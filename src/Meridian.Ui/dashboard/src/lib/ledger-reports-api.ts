@@ -1,4 +1,4 @@
-import { apiGetJson } from "@/lib/api";
+import { apiGetJson, type ApiRequestOptions } from "@/lib/api";
 import {
   WORKSTATION_API_ENDPOINTS,
   ledgerPeriodJournalEntriesEndpoint,
@@ -20,12 +20,12 @@ import type {
  * ratchet; follows the `reporting-governance-api.ts` domain-module pattern.
  */
 
-export function getLedgerBooks() {
-  return apiGetJson<LedgerBook[]>(WORKSTATION_API_ENDPOINTS.ledgerBooks);
+export function getLedgerBooks(options: ApiRequestOptions = {}) {
+  return apiGetJson<LedgerBook[]>(WORKSTATION_API_ENDPOINTS.ledgerBooks, options);
 }
 
-export function getLedgerPeriods(query: { ledgerBookId?: string | null; status?: string | null } = {}) {
-  return apiGetJson<LedgerPeriod[]>(ledgerPeriodsEndpoint(query));
+export function getLedgerPeriods(query: { ledgerBookId?: string | null; status?: string | null } = {}, options: ApiRequestOptions = {}) {
+  return apiGetJson<LedgerPeriod[]>(ledgerPeriodsEndpoint(query), options);
 }
 
 export function getLedgerPeriodTrialBalance(periodId: string) {
@@ -36,6 +36,6 @@ export function getLedgerPeriodPnlSummary(periodId: string) {
   return apiGetJson<LedgerPeriodPnlSummary>(ledgerPeriodPnlSummaryEndpoint(periodId));
 }
 
-export function getLedgerPeriodJournalEntries(periodId: string) {
-  return apiGetJson<LedgerPostedJournalEntry[]>(ledgerPeriodJournalEntriesEndpoint(periodId));
+export function getLedgerPeriodJournalEntries(periodId: string, query: { instrumentId?: string | null; accountId?: string | null } = {}, options: ApiRequestOptions = {}) {
+  return apiGetJson<LedgerPostedJournalEntry[]>(ledgerPeriodJournalEntriesEndpoint(periodId, query), options);
 }

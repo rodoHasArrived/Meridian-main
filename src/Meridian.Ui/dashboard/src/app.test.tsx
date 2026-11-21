@@ -492,19 +492,19 @@ describe("App", () => {
     expect(screen.getByRole("main", { name: "Reporting workbench" })).toHaveAttribute("aria-busy", "true");
   });
 
-  it("renders the daily control tower on the root route", async () => {
+  it.each(["/", "/today"])("renders Today at %s", async (route) => {
     const user = userEvent.setup();
     mockDailyControlTowerData();
 
-    const { container } = renderWithRouter(<App />, { initialEntries: ["/"] });
+    const { container } = renderWithRouter(<App />, { initialEntries: [route] });
 
     expect(await screen.findByRole(
       "heading",
       { name: "What needs an operator decision now" },
       { timeout: 10_000 }
     )).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Daily Control Tower Workstation" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Today Workstation" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Today continuity" })).toBeInTheDocument();
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
     ["Connectivity", "Scope", "Freshness", "Completeness", "Blocker"].forEach((label) => {
       expect(within(confidence).getByText(label)).toBeInTheDocument();
@@ -538,7 +538,7 @@ describe("App", () => {
     expect(within(evidenceSummary).getByText("Reporting package or evidence")).toBeInTheDocument();
     const accessibilityResults = await axe(container);
     expect(accessibilityResults.violations).toHaveLength(0);
-    await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
+    await waitFor(() => expect(document.title).toBe("Today - Meridian"));
   });
 
   it("redirects the legacy overview route to the daily control tower", async () => {
@@ -547,7 +547,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/overview"] });
 
     await waitFor(() => expect(screen.getByRole("heading", { name: "What needs an operator decision now" })).toBeInTheDocument());
-    await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
+    await waitFor(() => expect(document.title).toBe("Today - Meridian"));
   });
 
   it("hides workflow continuity on an unrecognized route", async () => {
@@ -560,7 +560,7 @@ describe("App", () => {
       { name: "Workbench route not found" },
       { timeout: 10_000 }
     )).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open Daily Control Tower" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "Open Today" })).toHaveAttribute("href", "/");
     expect(container.querySelector(".workflow-continuity-dock")).not.toBeInTheDocument();
   });
 

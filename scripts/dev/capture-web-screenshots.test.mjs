@@ -6,6 +6,8 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import {
+  screenshotRouteMatches,
+  findMissingCaptureRoutePaths,
   captureRouteWithRetries,
   finalizeCaptureRun,
   waitForServer,
@@ -74,7 +76,7 @@ test("a cleanup failure after capture success fails the run after retaining its 
   assert.equal(JSON.parse(await fs.readFile(file, "utf8")).status, "failed");
 });
 
-async function captureWithStub(outputDir, { bytes = 100, strictError = false, closeError = false } = {}) {
+async function captureWithStub(outputDir, { bytes = 100, strictError = false, closeError = false, actualUrl = "http://localhost/workstation/accounting", captureOverrides = {} } = {}) {
   let closed = false;
   const page = new EventEmitter();
   Object.assign(page, {
@@ -84,7 +86,7 @@ async function captureWithStub(outputDir, { bytes = 100, strictError = false, cl
     async waitForSelector() {},
     async waitForLoadState() {},
     async evaluate() { return 100; },
-    url() { return "http://localhost/workstation/accounting"; },
+    url() { return actualUrl; },
     async screenshot({ path: file }) {
       const image = Buffer.alloc(bytes);
       await fs.writeFile(file, image);
@@ -104,7 +106,7 @@ async function captureWithStub(outputDir, { bytes = 100, strictError = false, cl
   });
   const promise = captureRouteWithRetries(
     browser,
-    { id: "W-test", name: "accounting", path: "/accounting" },
+    { id: "W-test", name: "accounting", path: "/accounting", ...captureOverrides },
     createResolver,
     outputDir,
     "http://localhost/workstation",
@@ -188,4 +190,54 @@ test("readiness reports spawn errors and removes its child listeners", async (t)
   await assert.rejects(waitForServer(url, 100, child, []), /Dev server could not start: spawn npm ENOENT/);
   assert.equal(child.listenerCount("exit"), 0);
   assert.equal(child.listenerCount("error"), 0);
+});
+
+
+test("route coverage requires a concrete identity at exact parameter boundaries", () => {
+  const pattern = "/records/instrument/:id";
+  assert.equal(screenshotRouteMatches(pattern, "/records/instrument/sec-dev-001?tab=positions"), true);
+  assert.equal(screenshotRouteMatches(pattern, "/records/instrument/a0000000-0000-0000-0000-000000000001"), true);
+  for (const invalid of ["/records/instrument/:id", "/records/instrument/%3Aid", "/records/instrument/", "/records/instrument", "/records/instrument/sec-1/extra", "/records/instrument/sec-1/", "/records/other/sec-1", "/records/instrument/sec%2Fother", "/records/instrument/sec%5Cother", "/records/instrument/sec%252fother", "/records/instrument/%GG"]) {
+    assert.equal(screenshotRouteMatches(pattern, invalid), false, invalid);
+  }
+  assert.equal(screenshotRouteMatches(pattern + "#evidence", "/records/instrument/sec-dev-001#evidence"), true);
+  assert.equal(screenshotRouteMatches(pattern + "#evidence", "/records/instrument/sec-dev-001"), false);
+  assert.equal(screenshotRouteMatches("/accounting/close", "/accounting/close?closeTab=evidence"), true);
+  assert.equal(screenshotRouteMatches("/accounting/close", "/accounting/closed"), false);
+});
+
+test("global coverage accepts a concrete dossier capture and rejects a literal pattern capture", async (t) => {
+  const directory = await temporaryDirectory(t);
+  const catalog = path.join(directory, "workspace.ts");
+  const app = path.join(directory, "app.tsx");
+  await fs.writeFile(catalog, 'export const WORKSTATION_ROUTE_CATALOG = {\n  dossier: "/records/instrument/:id"\n} as const;');
+  await fs.writeFile(app, '<Route path="/records/instrument/:id" />');
+  assert.deepEqual(await findMissingCaptureRoutePaths([{ path: "/" }, { path: "/records/instrument/sec-dev-001" }], catalog, app), []);
+  assert.deepEqual(await findMissingCaptureRoutePaths([{ path: "/" }, { path: "/records/instrument/:id" }], catalog, app), ["/records/instrument/:id"]);
+  assert.deepEqual(await findMissingCaptureRoutePaths([{ path: "/records/instrument/sec-dev-001" }], catalog, app), ["/"]);
+});
+
+
+for (const [name, actualUrl, expectedError] of [
+  ["query", "http://localhost/workstation/accounting/close?workflowId=another#retained", /lost its retained redirect query/],
+  ["anchor", "http://localhost/workstation/accounting/close?workflowId=workflow-1#another", /lost its retained redirect anchor/]
+]) {
+  test(`redirect capture rejects loss of its declared ${name}`, async (t) => {
+    const directory = await temporaryDirectory(t);
+    const run = await captureWithStub(directory, { actualUrl, captureOverrides: {
+      path: "/accounting/operations-continuity?workflowId=workflow-1#retained",
+      expectedRedirectPath: "/accounting/close?workflowId=workflow-1#retained"
+    } });
+    await assert.rejects(run.promise, expectedError);
+    await assert.rejects(fs.access(path.join(directory, "accounting.png")), { code: "ENOENT" });
+  });
+}
+
+test("redirect capture accepts the exact declared retained query and anchor", async (t) => {
+  const directory = await temporaryDirectory(t);
+  const run = await captureWithStub(directory, {
+    actualUrl: "http://localhost/workstation/accounting/close?workflowId=workflow-1#retained",
+    captureOverrides: { path: "/accounting/operations-continuity?workflowId=workflow-1#retained", expectedRedirectPath: "/accounting/close?workflowId=workflow-1#retained" }
+  });
+  assert.equal((await run.promise).status, "passed");
 });

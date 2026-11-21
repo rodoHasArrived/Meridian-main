@@ -722,6 +722,17 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     Error: "Break was not found.");
             }
 
+            if (request.ExpectedVersion.HasValue && request.ExpectedVersion.Value != item.Version)
+            {
+                return BindTransitionOutcome(
+                    new ReconciliationBreakQueueTransitionResult(
+                        ReconciliationBreakQueueTransitionStatus.Conflict,
+                        item,
+                        "Case version conflict. Review the latest case before confirming.",
+                        ReconciliationBreakQueueTransitionErrorCode.ConcurrencyConflict),
+                    command, inputHash, startedAt);
+            }
+
             if (item.Status != ReconciliationBreakQueueStatus.Open)
             {
                 return new ReconciliationBreakQueueTransitionResult(
@@ -926,6 +937,20 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     Error: "Break was not found.");
             }
 
+            if (request.ExpectedVersion.HasValue
+                && request.ExpectedVersion != item.Version)
+            {
+                return BindTransitionOutcome(
+                    new ReconciliationBreakQueueTransitionResult(
+                        ReconciliationBreakQueueTransitionStatus.Conflict,
+                        item,
+                        request.ExpectedVersion.HasValue
+                            ? "Case version conflict. Review the latest case before confirming."
+                            : "The version reviewed by the operator is required.",
+                        ReconciliationBreakQueueTransitionErrorCode.ConcurrencyConflict),
+                    command, inputHash, startedAt);
+            }
+
             if (item.Status != ReconciliationBreakQueueStatus.InReview)
             {
                 return new ReconciliationBreakQueueTransitionResult(
@@ -933,6 +958,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     Item: item,
                     Error: $"Cannot move break from {item.Status} to {request.Status}.");
             }
+
 
             if (!OperationsOriginGuard.IsHumanOperator(request.ActionOrigin))
             {
@@ -968,6 +994,14 @@ public sealed partial class FileReconciliationBreakQueueRepository :
             }
 
             var now = DateTimeOffset.UtcNow;
+            if (request.ExpectedVersion.HasValue)
+            {
+                var decisionValidation = ValidateCaseworkCommand(item, command);
+                if (decisionValidation is not null)
+                {
+                    return BindTransitionOutcome(decisionValidation, command, inputHash, startedAt);
+                }
+            }
             var approval = _workflowService.Apply(item, new ReconciliationCaseTransitionCommand(request.BreakId, ReconciliationCaseTransitionAction.RequestApproval, request.ResolvedBy, request.OperatorRationale, ["resolution-note"]), now);
             if (approval.Status != ReconciliationBreakQueueTransitionStatus.Success || approval.Item is null)
             {
@@ -982,8 +1016,8 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                 ResolvedBy = request.ResolvedBy,
                 ResolvedAt = now,
                 ResolutionNote = request.ResolutionNote,
-                RootCauseCode = approval.Item.RootCauseCode ?? (request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : null),
-                ResolutionCode = approval.Item.ResolutionCode ?? (request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : "LegacyResolved"),
+                RootCauseCode = request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : request.RootCauseCode ?? approval.Item.RootCauseCode,
+                ResolutionCode = request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : request.ResolutionCode ?? approval.Item.ResolutionCode ?? "LegacyResolved",
                 SignoffStatus = request.Status == ReconciliationBreakQueueStatus.Dismissed ? "dismissed-false-positive" : "ready-for-signoff",
                 Disposition = ReconciliationBreakDispositionDto.Resolved,
                 DispositionReason = request.OperatorRationale,
@@ -1447,7 +1481,9 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     CommandId: $"{bulkActionId}:{breakId}",
                     CorrelationId: request.CorrelationId,
                     Source: request.Source,
-                    ExpectedVersion: item.Version,
+                    ExpectedVersion: request.ExpectedVersions is not null && request.ExpectedVersions.TryGetValue(breakId, out var reviewedVersion)
+                        ? reviewedVersion
+                        : request.ExpectedVersions is null ? item.Version : -1,
                     Reason: request.Reason,
                     Assignee: request.Assignee,
                     Priority: request.Priority,

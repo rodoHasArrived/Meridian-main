@@ -556,6 +556,13 @@ Bond routes expose explicitly dated analytics, bounded reference pages, settleme
 
 ## Purpose
 
+Guarded statement preview/commit routes expose retained, scope-authorized normalized rows and paged
+outcomes. Accepting a valid row as a break keeps it in the import and creates an idempotent,
+row-addressed operator review case after accounting intake authorization. These cases retain the
+operator rationale and source identity, block close/report/delivery, and require normal governed
+casework; acceptance never resolves a discrepancy. Supplemental projections without exact row
+mapping cannot be silently excluded. Review identity and dispositions survive workflow recovery.
+
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser
 and desktop surfaces.
 

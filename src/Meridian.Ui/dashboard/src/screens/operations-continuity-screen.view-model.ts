@@ -2647,9 +2647,9 @@ function buildBreakCaseRows(
       const evidenceCount = breakCase.evidenceLinks.length;
       const evidenceHref = normalizeLocalWorkstationRoute(breakCase.evidenceLinks[0]?.route) ?? null;
       const caseworkHref = workflowId
-        ? workstationRouteWithQuery("accountingExceptions", {
+        ? workstationRouteWithQuery("accountingReconciliation", {
             workflowId,
-            breakId: breakCase.breakId
+            reconciliationBreak: breakCase.breakId
           })
         : null;
       const isReady = breakStatusTone(breakCase.status) === "ready";

@@ -227,7 +227,9 @@ test("reconciliation readiness proves the loaded selected queue row and inspecto
   assert.ok(capture.waitForTexts.includes(selectedBreak.reason));
   assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`option[value="${selectedBreak.runId}"]:checked`)));
   assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`data-dense-row-id="${selectedBreak.breakId}"`) && selector.includes('aria-selected="true"')));
-  assert.ok(capture.waitForSelectors.some((selector) => selector.includes(`Reconciliation break detail for ${selectedBreak.breakId}`)));
+  assert.ok(capture.waitForSelectors.includes('[aria-label="Case inspector"][aria-busy="false"]'));
+  assert.ok(capture.waitForSelectors.some((selector) => selector.includes('[aria-label="Case inspector"]') && selector.includes(selectedBreak.breakId)));
+  assert.ok(capture.waitForSelectors.some((selector) => selector.includes('[aria-label="Case decisions"]') && selector.includes('button:not([disabled])')));
   assert.ok(capture.waitForAbsentTexts.includes("Loading reconciliation break queue..."));
   for (const obsolete of ["Open breaks", "Intraday Vol Carry", "Statement runs", "Reconciliation Casework"]) {
     assert.ok(!capture.waitForTexts.includes(obsolete), `Readiness must not wait for hidden supporting content: ${obsolete}`);

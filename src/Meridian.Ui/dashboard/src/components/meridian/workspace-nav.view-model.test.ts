@@ -37,8 +37,7 @@ describe("workspace nav view model", () => {
       "/trading",
       "/trading/orders",
       "/trading/positions",
-      "/trading/risk",
-      "/trading/readiness"
+      "/trading/risk"
     ]);
   });
 
@@ -142,7 +141,7 @@ describe("workspace nav view model", () => {
 
     expect(accounting?.subItems.map((item) => item.route)).toEqual([
       "/accounting",
-      "/accounting/operations-continuity",
+      "/accounting/close",
       "/accounting/close-calendar",
       "/accounting/ledger",
       "/accounting/journal-entries",
@@ -161,8 +160,8 @@ describe("workspace nav view model", () => {
       group.label,
       group.items.map((item) => item.label)
     ])).toEqual([
-      ["Close", ["Today", "Operations continuity", "Close calendar"]],
-      ["Records", ["Ledger explorer", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
+      ["Close", ["Today", "Close", "Close calendar"]],
+      ["Records", ["Ledger explorer", "Journal entries", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],
       ["Administration", ["Entity setup", "Configure"]]
@@ -174,10 +173,10 @@ describe("workspace nav view model", () => {
       ariaLabel: "Open Today"
     });
     expect(accounting?.subItems[1]).toMatchObject({
-      label: "Operations continuity",
+      label: "Close",
       active: false,
       ariaCurrent: undefined,
-      ariaLabel: "Open Operations continuity"
+      ariaLabel: "Open Close"
     });
     expect(accounting?.subItems[3]).toMatchObject({
       label: "Ledger explorer",
@@ -234,7 +233,7 @@ describe("workspace nav view model", () => {
   it.each([
     ["/accounting/accounts/detail", "Ledger explorer"],
     ["/accounting/reconciliation/match", "Casework"],
-    ["/accounting/journal-entries/detail", "Adjustments"],
+    ["/accounting/journal-entries/detail", "Journal entries"],
     ["/accounting/approvals/inbox", "Approvals"]
   ])("selects one owning Accounting destination for the %s deep link", (pathname, label) => {
     const accounting = buildWorkspaceNavViewModel(pathname)

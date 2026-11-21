@@ -38,7 +38,7 @@ export interface AmountCellProps {
 export function AmountCell({
   value,
   currency,
-  decimals = 2,
+  decimals,
   mode = "plain",
   parens = false,
   zeroDash = false,

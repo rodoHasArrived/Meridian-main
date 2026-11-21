@@ -123,7 +123,7 @@ export function OperatorReadinessConsole({
         className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
       >
         <div className="min-w-0">
-          <div className="eyebrow-label">Trading readiness</div>
+          <div className="eyebrow-label">Operational readiness</div>
           <h2 className="mt-2 font-display text-[1.375rem] font-semibold leading-tight text-foreground">
             {vm.title}
           </h2>

@@ -2792,7 +2792,7 @@
           "createdAt": "2026-07-14T17:05:00Z",
           "startedAt": "2026-07-14T17:06:00Z",
           "completedAt": null,
-          "progressPercent": 88.0,
+          "progressPercent": 88,
           "isResumable": true,
           "attemptCount": 1,
           "maxRetries": 3,
@@ -2820,7 +2820,7 @@
           "createdAt": "2026-07-14T15:10:00Z",
           "startedAt": "2026-07-14T15:12:00Z",
           "completedAt": null,
-          "progressPercent": 34.0,
+          "progressPercent": 34,
           "isResumable": true,
           "attemptCount": 2,
           "maxRetries": 3,
@@ -2853,7 +2853,7 @@
           "createdAt": "2026-07-14T17:45:00Z",
           "startedAt": null,
           "completedAt": null,
-          "progressPercent": 0.0,
+          "progressPercent": 0,
           "isResumable": false,
           "attemptCount": 0,
           "maxRetries": 3,
@@ -2880,7 +2880,7 @@
           "createdAt": "2026-07-14T14:00:00Z",
           "startedAt": "2026-07-14T14:01:00Z",
           "completedAt": "2026-07-14T14:38:00Z",
-          "progressPercent": 100.0,
+          "progressPercent": 100,
           "isResumable": false,
           "attemptCount": 1,
           "maxRetries": 3,
@@ -3096,7 +3096,7 @@
       "warnings": [],
       "accounts": [
         {
-          "fundAccountId": "fixture-roth",
+          "fundAccountId": "rh-fund-roth",
           "providerId": "alpaca",
           "externalAccountId": "alpaca-roth",
           "displayName": "Alpaca Roth IRA",
@@ -3110,11 +3110,45 @@
           "positionCount": 2,
           "cashTransactionCount": 4,
           "warnings": []
+        },
+        {
+          "fundAccountId": "rh-fund-traditional",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-traditional",
+          "displayName": "Alpaca Traditional IRA",
+          "accountKind": "TraditionalIra",
+          "health": "Healthy",
+          "cash": 24000,
+          "equity": 98200,
+          "buyingPower": 24000,
+          "currency": "USD",
+          "syncedAt": "2026-05-07T12:00:00Z",
+          "positionCount": 1,
+          "cashTransactionCount": 2,
+          "warnings": []
+        },
+        {
+          "fundAccountId": "rh-fund-taxable",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-taxable",
+          "displayName": "Alpaca Brokerage",
+          "accountKind": "TaxableBrokerage",
+          "health": "Stale",
+          "cash": 45000,
+          "equity": 110000,
+          "buyingPower": 45000,
+          "currency": "USD",
+          "syncedAt": "2026-05-07T10:30:00Z",
+          "positionCount": 2,
+          "cashTransactionCount": 5,
+          "warnings": [
+            "Brokerage sync is stale."
+          ]
         }
       ],
       "positions": [
         {
-          "fundAccountId": "fixture-roth",
+          "fundAccountId": "rh-fund-roth",
           "providerId": "alpaca",
           "externalAccountId": "alpaca-roth",
           "accountKind": "RothIra",
@@ -3125,9 +3159,62 @@
           "marketValue": 7159.2,
           "unrealizedPnl": 1755.6,
           "assetClass": "equity",
-          "security": null,
+          "security": {
+            "securityId": "sec-dev-001",
+            "displayName": "Apple Inc.",
+            "assetClass": "Equity",
+            "currency": "USD",
+            "status": "Active",
+            "primaryIdentifier": "AAPL",
+            "subType": "Common Stock"
+          },
           "description": "Apple Inc.",
-          "positionId": "fixture-roth-aapl",
+          "positionId": "rh-roth-aapl",
+          "currency": "USD",
+          "markFreshness": {
+            "symbol": "AAPL",
+            "securityId": "sec-dev-001",
+            "financialAccountId": "rh-fund-roth",
+            "valuationDate": "2026-05-07",
+            "observedOn": "2026-05-07",
+            "ageDays": 0,
+            "policyVersion": "screenshot-retained-mark-policy-v1",
+            "status": "Current",
+            "blockReason": null
+          }
+        },
+        {
+          "fundAccountId": "rh-fund-traditional",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-traditional",
+          "accountKind": "TraditionalIra",
+          "symbol": "VTI",
+          "quantity": 120,
+          "averageEntryPrice": 205,
+          "marketPrice": 254.5,
+          "marketValue": 30540,
+          "unrealizedPnl": 5940,
+          "assetClass": "etf",
+          "security": null,
+          "description": "Vanguard Total Stock Market ETF",
+          "positionId": "rh-traditional-vti",
+          "currency": "USD"
+        },
+        {
+          "fundAccountId": "rh-fund-taxable",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-taxable",
+          "accountKind": "TaxableBrokerage",
+          "symbol": "MSFT",
+          "quantity": 16,
+          "averageEntryPrice": 312,
+          "marketPrice": 421.7,
+          "marketValue": 6747.2,
+          "unrealizedPnl": 1755.2,
+          "assetClass": "equity",
+          "security": null,
+          "description": "Microsoft Corporation",
+          "positionId": "rh-taxable-msft",
           "currency": "USD"
         }
       ]
@@ -3688,6 +3775,26 @@
         "notes": "Demo fixture mirroring the built-in canonical CSV mapping profile."
       }
     ],
+    "/api/fund-structure/reporting/runs/report-run-investor-202605/review": {
+      "reviewId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "runId": "report-run-investor-202605",
+      "version": 6,
+      "snapshotHash": "sha256:595c41b11cc11b6a0f6e478b02a8fd945b619bc2160ffcb722da1bc578c35d8f",
+      "periodId": "2026-05",
+      "currency": "USD",
+      "accountingBasis": "Gaap",
+      "baselineRunId": null,
+      "baselineVersion": null,
+      "parameters": [],
+      "sourceChanges": [],
+      "lines": [],
+      "materialityOutcome": "NotAssessed",
+      "materialChangeCount": null,
+      "unavailableReasons": [
+        "Materiality not assessed: no authoritative report/template policy is configured.",
+        "No prior approved comparable run is retained in this series."
+      ]
+    },
     "/api/fund-structure/reporting/runs/report-run-investor-202605": {
       "runId": "report-run-investor-202605",
       "seriesId": "report-series-investor-monthly-statement",
@@ -4637,7 +4744,7 @@
         "recipient": "investor-anchor-lp",
         "recipientKind": "Company",
         "destination": "Secure portal package",
-        "subject": "Investor Monthly Statement \u2014 May 2026",
+        "subject": "Investor Monthly Statement — May 2026",
         "state": "Delivered",
         "attemptCount": 1,
         "maxAttempts": 3,
@@ -4678,7 +4785,7 @@
         "recipient": "investor-anchor-lp",
         "recipientKind": "Company",
         "destination": "statements@anchor-lp.example",
-        "subject": "Investor Monthly Statement \u2014 May 2026",
+        "subject": "Investor Monthly Statement — May 2026",
         "state": "Retrying",
         "attemptCount": 2,
         "maxAttempts": 3,
@@ -4763,7 +4870,7 @@
       "scopeItems": [
         {
           "label": "Ledger source",
-          "value": "Strategy run (simulation) \u2014 not the posted journal",
+          "value": "Strategy run (simulation) — not the posted journal",
           "tone": "Default"
         },
         {
@@ -4827,7 +4934,7 @@
             "recordId": "ledger:run-42:acct-cash",
             "recordType": "ledger-account",
             "title": "Cash",
-            "subtitle": "Asset \u00b7 Strategy run run-42",
+            "subtitle": "Asset · Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Success",
             "fields": [
@@ -4908,7 +5015,7 @@
             "recordId": "ledger:run-42:acct-investments",
             "recordType": "ledger-account",
             "title": "Public Investments",
-            "subtitle": "Asset \u00b7 Strategy run run-42",
+            "subtitle": "Asset · Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Default",
             "fields": [
@@ -4989,7 +5096,7 @@
             "recordId": "ledger:run-42:acct-capital",
             "recordType": "ledger-account",
             "title": "Contributed Capital",
-            "subtitle": "Equity \u00b7 Strategy run run-42",
+            "subtitle": "Equity · Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Default",
             "fields": [
@@ -5047,7 +5154,7 @@
         "recordId": "ledger:run-42:acct-cash",
         "recordType": "ledger-account",
         "title": "Cash",
-        "subtitle": "Asset \u00b7 Strategy run run-42",
+        "subtitle": "Asset · Strategy run run-42",
         "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
         "tone": "Success",
         "fields": [
@@ -6878,6 +6985,52 @@
           }
         ]
       }
-    }
+    },
+    "/api/workstation/reconciliation/break-queue/run-42%3Acash": {
+      "breakId": "run-42:cash",
+      "version": 1,
+      "permittedCommands": [
+        {
+          "action": "Resolve",
+          "enabled": true,
+          "disabledReason": null
+        },
+        {
+          "action": "Assign",
+          "enabled": true,
+          "disabledReason": null
+        },
+        {
+          "action": "Waive",
+          "enabled": true,
+          "disabledReason": null
+        }
+      ],
+      "measures": [
+        {
+          "kind": "Value",
+          "expected": 120000,
+          "actual": 120500,
+          "variance": 500,
+          "tolerance": 1,
+          "unit": "USD"
+        }
+      ],
+      "runId": "run-42",
+      "strategyName": "Paper Index Mean Reversion",
+      "category": "AmountMismatch",
+      "status": "Open",
+      "variance": 500,
+      "reason": "Cash variance over tolerance.",
+      "assignedTo": null,
+      "detectedAt": "2026-01-01T00:00:00Z",
+      "lastUpdatedAt": "2026-01-01T00:00:00Z",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "resolvedBy": null,
+      "resolvedAt": null,
+      "resolutionNote": null
+    },
+    "/api/workstation/reconciliation/break-queue/run-42%3Acash/audit": []
   }
 }

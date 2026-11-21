@@ -1894,3 +1894,51 @@ those retained for other workflows. The seven root workspaces and WPF remain unc
 Focused regression coverage includes `reconciliation-view-state.test.tsx`,
 `accounting-screen.reconciliation-continuity.test.ts`, `accounting-screen.reconciliation-workbench.test.tsx`,
 `app-shell.route-focus.test.ts`, and the existing Accounting, shell and accessibility suites.
+
+## Today and Close destinations
+
+`/today` and the compatible `/` home render the same ranked queue. Source filtering and the
+Queue/Operational readiness view are URL state, preserving the operating scope and anchor.
+Readiness is available from Today; the old `/trading/readiness` bookmark redirects to Settings
+diagnostics, where the retained readiness evidence console is available in a disclosure.
+
+`/accounting/close` groups the shared Operations Continuity read model into Board, Blockers,
+Checklist, Approvals and Evidence. The selected workflow and tab round-trip through the URL.
+The previous continuity route redirects with its complete query and hash. Close publication
+requires a reviewed reason and confirmation; period reopening confirms the entered incident
+metadata. Both retain server version guards. Break cases open the shared case inspector.
+
+The Accounting case landing links to Close instead of repeating its summary panels. Specialized
+valuation schedules, retained batch posting and period commands remain available at
+`/accounting/workflow`; the Close hub links to this workbench with the active context preserved.
+
+## Financial values and guarded decisions
+
+`FinancialValue` accepts exact decimal text (or null), currency/unit, a source-backed condition,
+reason, optional basis/freshness, and an exact scoped amount selection. Missing is distinct from
+zero. Currency minor units follow the shared ledger policy, including JPY and KWD. A value's
+presence never establishes a confirmed condition. Record-level navigation remains an explicitly
+unverified Record passport; eligible immutable amounts open the shared Amount passport drawer.
+Trial-balance rows bind exact contributor identities and a content-addressed immutable journal
+checkpoint. Mutable live Holdings cells have no owner-scoped position/mark checkpoint and do not
+claim amount provenance. They retain exact fractional quantities and derivative multipliers.
+
+`CaseInspector` owns one selected case's read, server-permitted commands, in-place rationale,
+root cause/resolution, timeline, receipt and conflict review. Scope changes discard pending reads
+and decisions; stale outcomes cannot enter another scope. Bulk work binds selected versions to
+preview and confirmation, with expanded per-record results. Legacy unversioned adapters remain
+compatible; the browser supplies guards. Do not add peer one-click mutation buttons elsewhere.
+
+`JournalLifecycleControls` confirms the exact draft with scope and balance impact. Reverse and
+close-lock require entered reasons; cancelling/Escape sends no command and restores focus. An
+edited/refreshed draft requires a fresh review. Existing asset approval/posting restrictions remain.
+
+Statement row decisions bind a retained source/mapping/scope preview. Saving an active mapping
+under the same id refreshes that preview. Pending commits lock source, scope, mapping and row
+choices; exclusions require reasons, and unsupported supplementary projections cannot be excluded.
+Accept-as-break requires the shared case coordinator and creates a retained blocking case. All
+normalized row outcomes are paged and visible, including exclusions and case references. A missing
+physical source line is labelled unavailable rather than inferred from normalized order.
+
+For the coordinated implementation and validation record, see
+[Browser workstation UX implementation](../../../docs/engineering/plans/browser-workstation-ux-roadmap-2026-11.md).

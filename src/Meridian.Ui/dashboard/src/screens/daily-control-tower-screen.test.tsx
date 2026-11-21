@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
+import { useLocation } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
@@ -115,7 +116,24 @@ function renderScreen({
   );
 }
 
+function TowerLocation() {
+  const location = useLocation();
+  return <output data-testid="tower-location">{location.search}{location.hash}</output>;
+}
+
 describe("DailyControlTowerScreen", () => {
+  it("restores and shares the Source filter while retaining scope and anchor", async () => {
+    const user = userEvent.setup();
+    const shell = buildAppShellViewState({ pathname: "/today", search: "?symbol=MSFT", loading: false, error: null, workspaceErrors: {}, payload });
+    renderWithRouter(<><DailyControlTowerScreen viewModel={shell.workflowContinuity} trustStrip={shell.trustStrip} /><TowerLocation /></>, { initialEntries: ["/today?symbol=MSFT&source=Reporting#evidence"] });
+    expect(screen.getByLabelText("Source")).toHaveValue("Reporting");
+    expect(screen.getByRole("row", { name: "Report pack approval waiting" })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: "Brokerage sync failed" })).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByLabelText("Source"), "");
+    expect(screen.getByTestId("tower-location")).toHaveTextContent("?symbol=MSFT#evidence");
+    expect(screen.getByRole("row", { name: "Brokerage sync failed" })).toBeInTheDocument();
+  });
+
   it("renders the ranked finance queue and defaults the evidence pane to the top row", () => {
     renderScreen();
 

@@ -47,8 +47,8 @@ describe("workflow continuity view model route modes", () => {
       mode: "hidden",
       title: "Choose a task",
       routeLabel: "/unknown",
-      nextActionLabel: "Open Daily Control Tower",
-      nextActionAriaLabel: "Open Daily Control Tower to choose a task",
+      nextActionLabel: "Open Today",
+      nextActionAriaLabel: "Open Today to choose a task",
       nextActionHref: "/",
       steps: []
     });
@@ -76,7 +76,7 @@ describe("workflow continuity view model route modes", () => {
 
     expect(viewModel).toMatchObject({
       mode: "matched",
-      title: "Daily Control Tower",
+      title: "Today",
       contextValue: "Reporting / Reports",
       nextActionLabel: "Next: Evidence"
     });

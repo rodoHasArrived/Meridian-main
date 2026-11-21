@@ -78,7 +78,7 @@ export function buildWorkflowContinuityViewModel(
     symbol: operatingContextScope?.symbol ?? operatingContextSymbol
   }, pathname);
   const subjectSymbol = operatingScope.subjectSymbol;
-  const isShellHome = pathname === "/";
+  const isShellHome = pathname === "/" || pathname === "/today";
   const currentRoute = `${pathname}${search}${hash}`;
   const routeResolution = resolveWorkflowContinuityRoute(pathname, hash);
   const trail = routeResolution.trail;
@@ -91,7 +91,7 @@ export function buildWorkflowContinuityViewModel(
   const nextStep = nextIndex === null ? null : steps[nextIndex] ?? activeStep;
   const stepStatuses = steps.map((step) => buildWorkflowContinuityStepStatus(step.id, statusContext));
   const attentionCount = stepStatuses.filter((status) => status.tone === "blocked" || status.tone === "review").length;
-  const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope, pathname === "/");
+  const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope, isShellHome);
   const evidenceTimeline = buildEvidenceTimelineViewModel(statusContext, operatingScope);
   const linkedContext = buildLinkedContextViewModel(statusContext, subjectSymbol, operatingScope);
   const disclosure = buildWorkflowContinuityDisclosureState(statusContext, operatorFocus, evidenceTimeline, linkedContext);
@@ -107,8 +107,8 @@ export function buildWorkflowContinuityViewModel(
     )
     : routeResolution.mode === "choose-task"
       ? `No continuity step is selected for ${activeWorkspace.label}. Choose a task from the local workspace navigation; the current operating scope will be preserved.`
-      : "The requested route is not part of a Meridian workspace. Open the Daily Control Tower to choose a task.";
-  const contextOwnerLabel = isShellHome ? "Daily Control Tower" : activeWorkspace.label;
+      : "The requested route is not part of a Meridian workspace. Open the Today to choose a task.";
+  const contextOwnerLabel = isShellHome ? "Today" : activeWorkspace.label;
   const contextValue = subjectSymbol
     ? `${contextOwnerLabel} / ${subjectSymbol}`
     : operatingScope.hasScope
@@ -120,14 +120,14 @@ export function buildWorkflowContinuityViewModel(
       : `Next: ${nextStep?.label ?? activeWorkspace.label}`
     : routeResolution.mode === "choose-task"
       ? "Choose a task"
-      : "Open Daily Control Tower";
+      : "Open Today";
   const nextActionAriaLabel = routeResolution.mode === "matched"
     ? activeStep && nextStep && activeStep.id === nextStep.id
       ? `Stay on ${activeStep.label}`
       : `Continue workflow to ${nextStep?.label ?? activeWorkspace.label}`
     : routeResolution.mode === "choose-task"
       ? `Choose a task in ${activeWorkspace.label}`
-      : "Open Daily Control Tower to choose a task";
+      : "Open Today to choose a task";
   const nextActionHref = routeResolution.mode === "matched"
     ? nextStep?.href ?? appendOperatingScopeToRoute(workspacePath(activeWorkspace.key), operatingScope)
     : routeResolution.mode === "choose-task"

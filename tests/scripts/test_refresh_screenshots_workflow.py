@@ -2,7 +2,7 @@ import json
 import re
 import unittest
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 import yaml
 
@@ -154,7 +154,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         }
         expected_paths.add("/")
 
-        missing_paths = sorted(expected_paths - captured_paths)
+        missing_paths = sorted(
+            expected for expected in expected_paths
+            if not any(self.screenshot_route_matches(expected, captured) for captured in captured_paths)
+        )
         self.assertEqual([], missing_paths, f"Missing web screenshot routes: {missing_paths}")
 
     def test_web_screenshot_routes_cover_explicit_app_routes(self) -> None:
@@ -183,8 +186,61 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             if "*" not in path and path not in compatibility_redirect_routes
         }
 
-        missing_paths = sorted(explicit_pages - captured_paths)
+        missing_paths = sorted(
+            expected for expected in explicit_pages
+            if not any(self.screenshot_route_matches(expected, captured) for captured in captured_paths)
+        )
         self.assertEqual([], missing_paths, f"Missing explicit app route screenshots: {missing_paths}")
+
+    def test_today_alias_and_legacy_redirect_captures_retain_operating_context(self) -> None:
+        captures = {capture["id"]: capture for capture in self.web_screenshot_routes["captures"]}
+        self.assertEqual("/", captures["W00B"]["path"])
+        self.assertEqual(captures["W00A"]["waitForText"], captures["W00B"]["waitForText"])
+        self.assertIn("Finance queue", captures["W00B"]["waitForTexts"])
+        for capture_id, source, target in (
+            ("W01D1", "/trading/readiness", "/settings/diagnostics"),
+            ("W03G2", "/accounting/operations-continuity", "/accounting/close"),
+        ):
+            with self.subTest(capture=capture_id):
+                capture = captures[capture_id]
+                original = urlsplit(capture["path"])
+                redirected = urlsplit(capture["expectedRedirectPath"])
+                self.assertEqual(source, original.path)
+                self.assertEqual(target, redirected.path)
+                self.assertTrue(original.query, "Compatibility evidence must include an explicit operating scope")
+                self.assertEqual(parse_qs(original.query), parse_qs(redirected.query))
+                self.assertTrue(original.fragment, "Compatibility evidence must include an explicit anchor")
+                self.assertEqual(original.fragment, redirected.fragment)
+
+    def test_instrument_dossier_capture_uses_retained_identity_and_real_position_rows(self) -> None:
+        captures = {capture["id"]: capture for capture in self.web_screenshot_routes["captures"]}
+        capture = captures["W02D1"]
+        path = urlsplit(capture["path"]).path
+        self.assertEqual("/records/instrument/sec-dev-001", path)
+        self.assertTrue(self.screenshot_route_matches("/records/instrument/:id", path))
+        fixtures = self.web_screenshot_fixtures["routes"]
+        security_path = "/api/workstation/security-master/securities/sec-dev-001"
+        household_path = "/api/portfolio/household"
+        self.assertIn(security_path, capture["requiredApiRoutes"])
+        self.assertIn(household_path, capture["requiredApiRoutes"])
+        security = fixtures[security_path]
+        self.assertEqual(path.rsplit("/", 1)[1], security["securityId"])
+        self.assertEqual(security["displayName"], capture["waitForText"])
+        account = parse_qs(urlsplit(capture["path"]).query).get("fundAccountId", [None])[0]
+        linked = [row for row in fixtures[household_path]["positions"]
+                  if (row.get("security") or {}).get("securityId") == security["securityId"]
+                  and (account is None or row["fundAccountId"] == account)]
+        self.assertTrue(linked, "The dossier capture must render a position linked by retained identity")
+        self.assertIn('[role="tab"][data-tab-id="positions"][aria-selected="true"]', capture["waitForSelectors"])
+        self.assertIn("Instrument unavailable", capture["waitForAbsentTexts"])
+        self.assertIn("Loading instrument dossier…", capture["waitForAbsentTexts"])
+
+    def test_period_operations_capture_preserves_governed_command_surfaces(self) -> None:
+        capture = next(c for c in self.web_screenshot_routes["captures"] if c["id"] == "W03P")
+        self.assertEqual("/accounting/workflow", urlsplit(capture["path"]).path)
+        self.assertEqual("Valuation and period operations", capture["waitForText"])
+        self.assertIn("#close-command-center", capture["waitForSelectors"])
+        self.assertIn("#accounting-close-report-package", capture["waitForSelectors"])
 
     def test_first_run_activation_gate_passes_during_capture(self) -> None:
         """The app shell blocks every route behind /api/workstation/first-run/ until it
@@ -355,10 +411,22 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         for field in ("workflowId", "version", "fundAccountId", "periodId", "ledgerBookId"):
             self.assertEqual(summary.get(field), detail.get(field), field)
 
-        # A loaded-list announcement can appear briefly before a detail failure.
-        # Require retained detail content as well as the existing list readiness.
-        self.assertTrue(any(event["rationale"] in capture["waitForTexts"] for event in detail["timeline"]))
-        self.assertIn("Selected workflow detail failed to load:", capture["waitForAbsentTexts"])
+        # Each tab proves its own retained content. Timeline evidence belongs to
+        # Evidence; the Board proves the selected workflow and shared readiness.
+        self.assertEqual("/accounting/close", urlsplit(capture["path"]).path)
+        self.assertEqual("Valuation and period operations", capture["waitForText"])
+        self.assertIn('[role="tab"][data-tab-id="board"][aria-selected="true"]', capture["waitForSelectors"])
+        workflow_selector = 'tr[aria-selected="true"]'
+        self.assertIn(workflow_selector, capture["waitForSelectors"])
+        evidence = next(c for c in self.web_screenshot_routes["captures"] if c["id"] == "W03G1")
+        self.assertEqual("evidence", parse_qs(urlsplit(evidence["path"]).query)["closeTab"][0])
+        self.assertEqual(summary["workflowId"], parse_qs(urlsplit(evidence["path"]).query)["workflowId"][0])
+        self.assertIn(detail_path, evidence["requiredApiRoutes"])
+        self.assertTrue(any(event["rationale"] in evidence["waitForTexts"] for event in detail["timeline"]))
+        self.assertIn('[role="tab"][data-tab-id="evidence"][aria-selected="true"]', evidence["waitForSelectors"])
+        self.assertIn(workflow_selector, evidence["waitForSelectors"])
+        for selected_tab in (capture, evidence):
+            self.assertIn("Selected workflow detail failed to load:", selected_tab["waitForAbsentTexts"])
 
         # The list fixture is also a prefix match. Preserve this sibling's object
         # contract instead of accidentally answering it with the workflow array.
@@ -386,7 +454,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             for capture in self.web_screenshot_routes.get("captures", [])
         }
 
-        self.assertEqual("Close Cockpit", captures["W03"].get("waitForText"))
+        self.assertEqual("Accounting today", captures["W03"].get("waitForText"))
         reconciliation = captures["W03A"]
         self.assertEqual("Reconciliation break queue", reconciliation.get("waitForText"))
         self.assertIn("Reconciliation run", reconciliation.get("waitForTexts", []))
@@ -395,7 +463,9 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             [
                 'select:has(option[value="run-42"]:checked)',
                 '#reconciliation-break-queue tr[data-dense-row-id="run-42:cash"][aria-selected="true"]',
-                '#reconciliation-break-detail-panel [aria-label="Reconciliation break detail for run-42:cash"]',
+                '[aria-label="Case inspector"][aria-busy="false"]',
+                '[aria-label="Case inspector"] [aria-label="Case decisions"] button:not([disabled])',
+                '[aria-label="Case inspector"] dd:has-text("run-42:cash")',
             ],
             reconciliation.get("waitForSelectors"),
             "Reconciliation readiness must prove the loaded run, selected queue row, and corresponding inspector",
@@ -449,16 +519,9 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             for capture in self.web_screenshot_routes.get("captures", [])
         }
 
-        # 77 after retiring W05E (web-strategy-formula-workbench): the Quant Lab Formulas tab is
-        # withdrawn while /strategy/quant-lab?view=formulas stays in UNWIRED_WORKSTATION_ROUTES, so
-        # the capture navigated to a route the screen now canonicalizes away and waited for text
-        # that no longer renders.
-        # 78 after adding W03O (web-accounting-capital-calls) for the new
-        # /accounting/capital-calls issuance screen.
-        # 80 after adding W02F (web-portfolio-loan-book) for the new /portfolio/loan-book
-        # screen, which gives the browser the direct-lending read surface that previously
-        # only the desktop client reached.
-        self.assertEqual(80, len(captures))
+        # The complete catalog includes canonical states, compatibility redirects,
+        # retained report review, instrument investigation and period operations.
+        self.assertEqual(90, len(captures))
         self.assertNotIn("W05E", captures)
         self.assertEqual("/data/import", captures["W06I"].get("path"))
         self.assertEqual("/data/operations", captures["W06J"].get("path"))
@@ -842,6 +905,51 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("context = await browser.newContext();", self.web_screenshot_capture_script)
         self.assertIn("await context.close();", self.web_screenshot_capture_script)
         self.assertNotIn("const page = await browser.newPage();", self.web_screenshot_capture_script)
+
+    @staticmethod
+    def screenshot_route_matches(expected: str, captured: str) -> bool:
+        """A concrete retained record covers exactly one parameterized route shape."""
+        expected_url = urlsplit(expected)
+        captured_url = urlsplit(captured)
+        if expected_url.fragment != captured_url.fragment:
+            return False
+        expected_segments = (expected_url.path or "/").split("/")
+        captured_segments = (captured_url.path or "/").split("/")
+        if len(expected_segments) != len(captured_segments):
+            return False
+        for pattern, actual in zip(expected_segments, captured_segments):
+            if re.fullmatch(r":[A-Za-z_][A-Za-z0-9_]*", pattern):
+                if not actual or re.search(r"%(?![0-9a-fA-F]{2})", actual):
+                    return False
+                try:
+                    decoded = unquote(actual, errors="strict")
+                except UnicodeDecodeError:
+                    return False
+                if (re.fullmatch(r":[A-Za-z_][A-Za-z0-9_]*", decoded)
+                        or re.search(r"[/\\]", decoded)
+                        or re.search(r"%2f|%5c", decoded, re.IGNORECASE)):
+                    return False
+            elif pattern != actual:
+                return False
+        return True
+
+    def test_dynamic_screenshot_coverage_requires_a_concrete_single_record_segment(self) -> None:
+        route = "/records/instrument/:id"
+        self.assertTrue(self.screenshot_route_matches(route, "/records/instrument/sec-dev-001"))
+        self.assertTrue(self.screenshot_route_matches(route, "/records/instrument/sec-dev-001?tab=positions"))
+        self.assertTrue(self.screenshot_route_matches(f"{route}#evidence", "/records/instrument/sec-dev-001#evidence"))
+        for capture in (
+            "/records/instrument/", "/records/instrument", "/records/instrument/:id",
+            "/records/instrument/%3Aid", "/records/instrument/sec-dev-001/other",
+            "/records/instrument/sec-dev-001/", "/records/other/sec-dev-001",
+            "/records/instrument/sec%2Fdev", "/records/instrument/sec%5Cdev",
+            "/records/instrument/sec%252Fdev", "/records/instrument/sec%255Cdev",
+            "/records/instrument/%invalid", "/records/instrument/%FF",
+        ):
+            with self.subTest(capture=capture):
+                self.assertFalse(self.screenshot_route_matches(route, capture))
+        self.assertFalse(self.screenshot_route_matches(f"{route}#evidence", "/records/instrument/sec-dev-001#other"))
+        self.assertFalse(self.screenshot_route_matches("/accounting/close", "/accounting/close/extra"))
 
     @staticmethod
     def screenshot_coverage_path(route_path: str) -> str:

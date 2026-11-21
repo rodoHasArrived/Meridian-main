@@ -30,7 +30,7 @@ type FeaturePurpose = Pick<WorkstationFeatureDefinition, "description" | "keywor
 // existing browse model. Both navigation and search consume those same routes.
 const ACCOUNTING_FEATURE_PURPOSES: Record<string, FeaturePurpose> = {
   today: { description: "Review today's accounting work, close blockers, and next actions.", keywords: ["daily close", "accounting overview"] },
-  "operations-continuity": { description: "Follow the close checklist, handoffs, decisions, and retained evidence.", keywords: ["close workflow", "handoff", "month end"] },
+  "close-hub": { description: "Follow the close checklist, handoffs, decisions, and retained evidence.", keywords: ["close workflow", "handoff", "month end"] },
   "close-calendar": { description: "Review accounting periods, close dates, and upcoming deadlines.", keywords: ["period close", "month end", "deadlines"] },
   ledger: { description: "Explore ledger balances and trial balance, preview group consolidation, and prepare intercompany elimination drafts for review. Open retained disposal tax results from posted journal details.", keywords: ["general ledger", "trial balance", "account balances", "intercompany balances", "intercompany eliminations", "elimination journals", "consolidate entities", "disposal tax", "tax character", "recognized gain or loss", "deferred loss"] },
   adjustments: { description: "Review and prepare journal entries and accounting adjustments.", keywords: ["journal entries", "debits credits", "adjustment"] },
@@ -52,8 +52,7 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
     feature("trading", "Overview", "Review trading activity and the next controlled action.", [], { match: "exact" }),
     feature("tradingOrders", "Orders", "Review trading orders and their execution status.", ["order status", "executions", "fills"]),
     feature("tradingPositions", "Positions", "Inspect trading positions and current exposure.", ["holdings", "open positions"]),
-    feature("tradingRisk", "Risk", "Review trading risk and the limits affecting execution.", ["risk limits", "exposure", "buying power"]),
-    feature("tradingReadiness", "Readiness", "Review paper cockpit blockers, operator work items, and promotion evidence.", ["ready to trade", "trading blockers", "paper trading checks"], { paletteLabel: "Readiness console" })
+    feature("tradingRisk", "Risk", "Review trading risk and the limits affecting execution.", ["risk limits", "exposure", "buying power"])
   ],
   portfolio: [
     feature("portfolio", "Overview", "Review portfolio holdings, exposure, and performance.", [], { match: "exact" }),
@@ -109,6 +108,8 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
 
 /** Existing deep-link views and useful wired routes outside the primary rail. */
 const FEATURE_SHORTCUTS: readonly WorkstationFeatureDefinition[] = [
+  { id: "today", label: "Today", description: "Review the ranked operator queue across workspaces.", keywords: ["daily control tower", "home", "queue"], route: "/today" },
+  { id: "operational-readiness", label: "Operational readiness", description: "Review cross-workspace blockers and next actions in Today.", keywords: ["readiness console", "ready to trade", "trading blockers", "paper trading checks"], route: "/today?view=readiness" },
   { id: "data-watchlist", label: "Watchlist", description: "Add symbols and starter packs from the Market Data desk watchlist view.", keywords: ["watch list", "follow symbols", "add ticker"], route: `${WORKSTATION_ROUTE_CATALOG.dataQuotes}?view=watchlist` },
   { id: "data-alerts", label: "Price alerts", description: "Create local quote-threshold alerts from the Market Data desk alerts view.", keywords: ["price notification", "quote alert", "price threshold"], route: `${WORKSTATION_ROUTE_CATALOG.dataQuotes}?view=alerts` },
   { id: "strategy-formula-workbench", label: "Formula Workbench", description: "Author cell-based strategy formulas from the Quant Lab formulas tab.", keywords: ["strategy formulas"], route: `${WORKSTATION_ROUTE_CATALOG.strategyQuantLab}?view=formulas` },

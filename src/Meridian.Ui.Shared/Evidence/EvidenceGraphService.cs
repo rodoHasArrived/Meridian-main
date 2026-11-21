@@ -18,6 +18,7 @@ public sealed class EvidenceGraphService
     private readonly ILogger<EvidenceGraphService> _logger;
     private readonly PostedLedgerAmountProvenanceService? _postedLedgerAmounts;
     private readonly ReportLedgerAmountProvenanceService? _reportLedgerAmounts;
+    private readonly TrialBalanceAmountProvenanceService? _trialBalanceAmounts;
 
     public EvidenceGraphService(
         EvidenceSubjectResolver subjectResolver,
@@ -27,7 +28,8 @@ public sealed class EvidenceGraphService
         IWorkflowActionCatalog? actionCatalog = null,
         EvidencePacketValidationService? validationService = null,
         PostedLedgerAmountProvenanceService? postedLedgerAmounts = null,
-        ReportLedgerAmountProvenanceService? reportLedgerAmounts = null)
+        ReportLedgerAmountProvenanceService? reportLedgerAmounts = null,
+        TrialBalanceAmountProvenanceService? trialBalanceAmounts = null)
     {
         _subjectResolver = subjectResolver ?? throw new ArgumentNullException(nameof(subjectResolver));
         _templateRegistry = templateRegistry ?? throw new ArgumentNullException(nameof(templateRegistry));
@@ -37,6 +39,7 @@ public sealed class EvidenceGraphService
         _validationService = validationService ?? new EvidencePacketValidationService();
         _postedLedgerAmounts = postedLedgerAmounts;
         _reportLedgerAmounts = reportLedgerAmounts;
+        _trialBalanceAmounts = trialBalanceAmounts;
     }
 
     public Task<IReadOnlyList<EvidenceSubjectDto>> ListSubjectsAsync(CancellationToken ct = default)
@@ -55,6 +58,9 @@ public sealed class EvidenceGraphService
         // Amount proof has one authority. General contributors must never add unrelated cases.
         if (string.Equals(subjectKind, EvidenceSubjectResolver.LedgerAmountKind, StringComparison.OrdinalIgnoreCase))
         {
+            if (TrialBalanceAmountProvenanceService.IsSubject(subjectId))
+                return _trialBalanceAmounts is null || ledgerAmountScope is null ? null
+                    : await _trialBalanceAmounts.GetPacketAsync(subjectId, ledgerAmountScope, ct).ConfigureAwait(false);
             if (ReportLedgerAmountProvenanceService.IsReportSubject(subjectId))
                 return _reportLedgerAmounts is null || ledgerAmountScope is null ? null
                     : await _reportLedgerAmounts.GetPacketAsync(subjectId, ledgerAmountScope, reportAccess, ct).ConfigureAwait(false);

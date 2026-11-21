@@ -653,7 +653,7 @@ describe("accounting-screen reconciliation view model", () => {
     expect(rows[0]).toMatchObject({
       breakId: "run-42:cash",
       actionBusy: true,
-      varianceLabel: "+$500.00",
+      varianceLabel: "+500.00 Unit unavailable",
       varianceTone: "success",
       statusBadgeVariant: "danger",
       ownerLabel: "Unassigned",

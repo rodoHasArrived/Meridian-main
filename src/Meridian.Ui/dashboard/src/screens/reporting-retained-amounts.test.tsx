@@ -47,7 +47,7 @@ describe("retained report amounts", () => {
     expect(screen.getByText(binding.ledgerEntryIds[0]!)).toBeVisible();
     expect((await axe(container)).violations).toEqual([]);
     await user.click(amount);
-    const dialog = await screen.findByRole("dialog", { name: "Cash report balance proof detail" });
+    const dialog = await screen.findByRole("dialog", { name: "Cash report balance Amount passport" });
     await within(dialog).findByRole("link", { name: "Open Retained journal line" });
     expect(getLedgerAmountProof).toHaveBeenCalledWith(selection, { signal: expect.any(AbortSignal) });
     expect(dialog).toHaveTextContent("Generated report amount bound to its retained ledger population.");
