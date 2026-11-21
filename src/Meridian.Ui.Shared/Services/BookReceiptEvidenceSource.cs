@@ -237,7 +237,8 @@ public sealed partial class BookReceiptEvidenceSource(
             {
                 if (window.Start > through)
                     break;
-                if (window.End >= query.AsOfDate) { covered = true; break; }
+                if (window.End >= query.AsOfDate)
+                { covered = true; break; }
                 if (window.End.AddDays(1) > through)
                     through = window.End.AddDays(1);
             }

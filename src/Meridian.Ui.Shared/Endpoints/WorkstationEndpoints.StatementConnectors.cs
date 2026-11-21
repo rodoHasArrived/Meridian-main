@@ -258,7 +258,9 @@ public static partial class WorkstationEndpoints
                     scope.SourceInstitution, scope.FundAccountId, scope.ExternalAccountId, scope.PeriodStart, scope.PeriodEnd,
                     scope.ToleranceProfileId, ResolveCurrentActor(context))
                 {
-                    AccountingScope = accountingScope, TenantId = tenant.TenantId, CompanyId = tenant.CompanyId,
+                    AccountingScope = accountingScope,
+                    TenantId = tenant.TenantId,
+                    CompanyId = tenant.CompanyId,
                     AllowAcceptAsBreak = context.RequestServices.GetService<StatementReconciliationReportWorkflowService>()?.SupportsReviewedRowCases == true
                 };
                 return Results.Json(await importService.PreviewReviewAsync(reviewRequest, context.RequestAborted).ConfigureAwait(false), jsonOptions);
@@ -345,7 +347,8 @@ public static partial class WorkstationEndpoints
                 };
                 if (!string.IsNullOrWhiteSpace(importRequest.ReviewId))
                 {
-                    if (importService is null) return StatementConnectorsNotRegistered();
+                    if (importService is null)
+                        return StatementConnectorsNotRegistered();
                     var verifiedScope = await intakeAuthority.ResolveAccountingScopeAsync(
                         new StatementReconciliationIntakeScopeRequest(tenant.TenantId, tenant.CompanyId, scope.FundAccountId,
                             scope.ExternalAccountId, scope.SourceInstitution, scope.PeriodStart, scope.PeriodEnd, scope.AccountingScope),

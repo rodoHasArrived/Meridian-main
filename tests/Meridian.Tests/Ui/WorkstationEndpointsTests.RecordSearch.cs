@@ -128,7 +128,8 @@ public sealed partial class WorkstationEndpointsTests
         await queue.CreateIfMissingAsync(new ReconciliationBreakQueueScope("other-tenant", "tenant-test"),
             BuildBreakQueueItem("test-cross-tenant-case", null) with
             {
-                TenantId = "other-tenant", FundAccountId = visible.AccountId.ToString("D")
+                TenantId = "other-tenant",
+                FundAccountId = visible.AccountId.ToString("D")
             });
         var client = app.GetTestClient();
 

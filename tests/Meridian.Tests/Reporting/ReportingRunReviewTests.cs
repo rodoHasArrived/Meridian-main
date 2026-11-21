@@ -53,8 +53,11 @@ public sealed class ReportingRunReviewTests
         var prior = Run("prior", 1, GovernedReportingState.Approved);
         var current = Run("current", 2, GovernedReportingState.InReview);
         var manifest = Manifest(current, "10");
-        manifest = manifest with { RenderedReportWriterGrids = [manifest.RenderedReportWriterGrids[0] with {
-            Rows = [manifest.RenderedReportWriterGrids[0].Rows[0], manifest.RenderedReportWriterGrids[0].Rows[0]] }] };
+        manifest = manifest with
+        {
+            RenderedReportWriterGrids = [manifest.RenderedReportWriterGrids[0] with {
+            Rows = [manifest.RenderedReportWriterGrids[0].Rows[0], manifest.RenderedReportWriterGrids[0].Rows[0]] }]
+        };
         var result = ReportingRunReviewEngine.Build(current, manifest, prior, Manifest(prior, "0")).Review;
         result.Lines.Should().BeEmpty();
         result.UnavailableReasons.Should().Contain(r => r.Contains("Duplicate row key"));
@@ -65,7 +68,8 @@ public sealed class ReportingRunReviewTests
     {
         var prior = Run("prior", 1, GovernedReportingState.Approved);
         var current = Run("current", 2, GovernedReportingState.InReview);
-        var pm = Manifest(prior, "1"); var cm = Manifest(current, "2");
+        var pm = Manifest(prior, "1");
+        var cm = Manifest(current, "2");
         ReportingRunReviewEngine.Comparable(current, cm, prior, pm).Should().BeTrue();
         ReportingRunReviewEngine.Comparable(current, cm, prior with { GovernanceState = GovernedReportingState.Draft }, pm).Should().BeFalse();
         ReportingRunReviewEngine.Comparable(current, cm, prior with { Scope = Scope with { CompanyId = "other" } }, pm).Should().BeFalse();
@@ -85,7 +89,8 @@ public sealed class ReportingRunReviewTests
         coordinator.GetSeriesHistoryAsync("series", Caller, Arg.Any<CancellationToken>())
             .Returns(new ReportingGovernanceSeriesHistory("series", [prior, current, draft, approved], []));
         var runs = Substitute.For<IReportingRunStore>();
-        foreach (var run in new[] { prior, current, draft, approved }) runs.GetManifest("tenant", run.RunId).Returns(Manifest(run, run.Revision.ToString()));
+        foreach (var run in new[] { prior, current, draft, approved })
+            runs.GetManifest("tenant", run.RunId).Returns(Manifest(run, run.Revision.ToString()));
         var artifacts = Substitute.For<IReportingArtifactStore>();
         var service = new ReportingRunReviewService(runs, artifacts);
         var review = await service.PrepareAsync(coordinator, "current", Caller);
@@ -206,7 +211,8 @@ public sealed class ReportingRunReviewTests
         result.MaterialityOutcome.Should().Be(outcome);
         result.MaterialChangeCount.Should().Be(count);
         result.MaterialityPolicy!.Version.Should().Be("1");
-        if (currentAmount == "100.00000001") result.Lines.Should().ContainSingle().Which.Delta.Should().Be("0.00000001");
+        if (currentAmount == "100.00000001")
+            result.Lines.Should().ContainSingle().Which.Delta.Should().Be("0.00000001");
     }
 
     [Theory]
@@ -299,7 +305,8 @@ public sealed class ReportingRunReviewTests
             var result = await resolve();
             result!.Metrics[0].AbsoluteVariance.Should().Be(threshold.StartsWith('-') ? 0m : 0.1m);
         }
-        else await resolve.Should().ThrowAsync<InvalidDataException>();
+        else
+            await resolve.Should().ThrowAsync<InvalidDataException>();
     }
 
     [Fact]
@@ -382,9 +389,14 @@ public sealed class ReportingRunReviewTests
         var readiness = new ReportingRunReadinessDto("ready", Now, template, parameters, ReportingRunReadinessStatusDto.Ready,
             true, true, [new("source", "Source", ReportingRunReadinessStatusDto.Ready, "Ready", 0, true, true,
                 EvidenceReferences: ["source-evidence"])], [], Sha256Digest.ComputeUtf8("ready"));
-        var snapshot = run.Snapshot with { SourceCheckpointId = source.CheckpointId, SourceCheckpointHash = sourceHash,
-            ReconciliationCheckpointHash = Sha256Digest.ComputeUtf8("reconciled"), ParametersCanonicalJson = parameterJson,
-            ParametersHash = Sha256Digest.ComputeUtf8(parameterJson) };
+        var snapshot = run.Snapshot with
+        {
+            SourceCheckpointId = source.CheckpointId,
+            SourceCheckpointHash = sourceHash,
+            ReconciliationCheckpointHash = Sha256Digest.ComputeUtf8("reconciled"),
+            ParametersCanonicalJson = parameterJson,
+            ParametersHash = Sha256Digest.ComputeUtf8(parameterJson)
+        };
         var manifest = new ReportingOutputManifest(run.RunId, run.TemplateId, new(2026, 5, 31), ReportingRunStatus.Draft, [], [], 1, ReportingRunTrigger.AdHoc,
             RenderedReportWriterGrids: [new("income", "Income", ReportWriterGridKindDto.Pivot,
                 [new("amount", "Amount", "metric")], [new("coupon", new Dictionary<string, string> { ["amount"] = amount })], [])],

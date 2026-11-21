@@ -170,12 +170,24 @@ public sealed class ExternalGlPostingService(
 
         var sourceFacts = records.Select(row => new
         {
-            row.GlobalSequence, row.PeriodId, row.AccountingBasis, row.AccountingPolicyId, row.AccountingPolicyVersion,
-            row.PostingKind, row.SourceJournalEntryId, row.SourceEventId, row.Entry.JournalEntryId, row.Entry.Timestamp,
+            row.GlobalSequence,
+            row.PeriodId,
+            row.AccountingBasis,
+            row.AccountingPolicyId,
+            row.AccountingPolicyVersion,
+            row.PostingKind,
+            row.SourceJournalEntryId,
+            row.SourceEventId,
+            row.Entry.JournalEntryId,
+            row.Entry.Timestamp,
             row.Entry.Metadata.EffectiveDate,
             Lines = row.Entry.Lines.Select(line => new
             {
-                line.EntryId, line.Account.Name, line.Debit, line.Credit, line.Currency,
+                line.EntryId,
+                line.Account.Name,
+                line.Debit,
+                line.Credit,
+                line.Currency,
                 Dimensions = ReadDimensions(line.Dimensions)
             })
         });
@@ -234,8 +246,14 @@ public sealed class ExternalGlPostingService(
             throw new InvalidOperationException($"Journal {journal.JournalEntryId:D} must be exactly balanced for external posting.");
         // A change in package scope or mapping cannot give the same source journal another identity
         // in one external ledger. Only a governed correction of a definitive rejection advances it.
-        var key = "mdr-" + Digest(new { destination.ProviderId, destination.Environment, destination.ExternalLedgerId,
-            journal.JournalEntryId, supersedes })[..44];
+        var key = "mdr-" + Digest(new
+        {
+            destination.ProviderId,
+            destination.Environment,
+            destination.ExternalLedgerId,
+            journal.JournalEntryId,
+            supersedes
+        })[..44];
         return new(journal.JournalEntryId, record.GlobalSequence, date, currency, key, lines, supersedes, reverses);
     }
 
