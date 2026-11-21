@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityCashFlowBlockerDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityInterestSupport.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityInterestSupport.cs#L4).
+
+A calculation capability refusal, separate from the validity of the retained terms.
+
+```csharp
+public sealed record SecurityCashFlowBlockerDto(string Code, string Reason);
+```
+
+## SecurityCashFlowCalculationReceipt
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowCalculationReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs#L10).
+
+A portable calculation receipt. Callers retain this record alongside their governed evidence; its digest detects accidental changes and is not an authentication or authorization signature. Replay never reloads current security terms, source assignments or market curves.
+
+```csharp
+public sealed record SecurityCashFlowCalculationReceipt(string ModelVersion, SecurityDetailDto Security, SecurityCashFlowSourceDto Source, StructuredCashFlowScenario Scenario, BondCalculationContext Context, IReadOnlyList<SecurityForwardCurve> ForwardCurves, StructuredCashFlowProjectionDto Projection, string ContentSha256);
+```
+
+## SecurityCashFlowSourceDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L79).
+
+Per-security assignment of the authoritative cash flow source.
+
+```csharp
+public sealed record SecurityCashFlowSourceDto(Guid SecurityId, StructuredCashFlowSourceKind SourceKind, DateTimeOffset? LastUpdatedUtc, bool IsClientOverride, string? ClientConfirmedBy, DateTimeOffset? ClientConfirmedAt);
+```
+
 ## SecurityCashFlowTermBinding
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding</code>. Kind: `record`.
@@ -792,62 +828,3 @@ A projected index fixing for a reset date. Rates above 1 are read as percentages
 ```csharp
 public sealed record SecurityForwardCurvePoint(DateOnly Date, decimal Rate);
 ```
-
-## SecurityHistoryRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityHistoryRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L23).
-
-```csharp
-public sealed record SecurityHistoryRequest(Guid SecurityId, int Take = 100);
-```
-
-## SecurityIdentifierDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIdentifierDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L90).
-
-```csharp
-public sealed record SecurityIdentifierDto(SecurityIdentifierKind Kind, string Value, bool IsPrimary, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo = null, string? Provider = null, string? NormalizedValue = null, string? NormalizedProvider = null);
-```
-
-## SecurityIdentifierKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIdentifierKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L6).
-
-```csharp
-public enum SecurityIdentifierKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ticker</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L8) |  |
-| <code>Isin</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L9) |  |
-| <code>Cusip</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L10) |  |
-| <code>Sedol</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L11) |  |
-| <code>Figi</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L12) |  |
-| <code>OccOptionSymbol</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L14) | OCC/OSI listed-option contract symbol such as AAPL240621C00150000. |
-| <code>ProviderSymbol</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L15) |  |
-| <code>InternalCode</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L16) |  |
-| <code>Lei</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L18) | Legal Entity Identifier (ISO 17442) — 20-char alphanumeric; required for OTC derivatives regulatory reporting. |
-| <code>PermId</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L20) | Refinitiv/LSEG PermID — stable cross-asset persistent identifier. |
-| <code>Bbgid</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L22) | Bloomberg Global Identifier (BBGID) — stable across corporate actions; distinct from ticker. |
-| <code>Wkn</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L24) | Wertpapierkennnummer — German/Austrian exchange standard (6 alphanumeric chars). |
-| <code>Valoren</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L26) | Valoren — Swiss SIX exchange security number. |
-| <code>PermTicker</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L28) | Meridian-stable ticker that survives corporate actions (Bloomberg PermTicker convention). |
-| <code>Ric</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L30) | Reuters Instrument Code — used by Refinitiv Eikon / LSEG feeds. |
-| <code>Cik</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L32) | SEC Central Index Key — identifies an EDGAR filer or issuer, not a standalone tradable security. |
-| <code>LoanX</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L37) | IHS Markit LoanX ID — the market-standard identifier for syndicated loans (&quot;LX&quot; followed by six digits). |
-| <code>Clip</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L42) | CUSIP-format loan identifier (CLIP) assigned to syndicated loan facilities and tranches — nine alphanumeric characters. |
-| <code>ListingId</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L47) | Listing identity — a ticker on a specific ISO 10383 market, written TICKER:MIC (for example AAPL:XNAS); see Meridian.Contracts.Domain.ListingId. |
-| <code>Uti</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L53) | Unique Transaction Identifier (ISO 23897) for regulatory derivatives reporting — up to 52 upper-case alphanumeric characters whose first 20 are the generating entity&#x27;s LEI. Names exactly one trade, so it participates in duplicate detection like other canonical kinds. |
-| <code>Upi</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L59) | Unique Product Identifier (ISO 4914), issued by the ANNA Derivatives Service Bureau — 12 characters: &quot;QZ&quot;, nine digits/consonants, and an ISO 7064 MOD 31,30 check character. Names an OTC derivative product, so many contracts legitimately share one value. |
-| <code>MarkitRedEntity</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L64) | IHS Markit RED reference-entity code (RED6) — six alphanumeric characters naming a CDS reference entity. Shared by every contract on that entity. |
-| <code>MarkitRedPair</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L69) | IHS Markit RED pair code (RED9) — nine alphanumeric characters: the six-character entity code plus a three-character reference-obligation suffix. Shared by every contract on that pair. |
-| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L76) | Read-tolerance member: a kind written by a newer node that this node does not recognize. Rows carrying it stay readable (mixed-version rollout) but cannot be written back as-is — the command mapping rejects Unknown so unrecognized kinds are never silently re-persisted. |

@@ -106,12 +106,23 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
     ? runs.find((candidate) => readString(candidate, "runId", "") === requestedRunId) ?? null
     : null;
   const templates = buildTemplateRows(reportingData?.templates ?? []);
+  const runChoices = runs.map((candidate, index) => {
+    const id = readString(candidate, "runId", "");
+    const candidateTemplateId = readString(candidate, "templateId", "");
+    const template = templates.find((row) => row.templateName === candidateTemplateId || row.id === candidateTemplateId);
+    const name = readString(candidate, "reportName", template?.name ?? `Report run ${index + 1}`);
+    const asOfDate = readString(candidate, "asOfDate", "");
+    const status = readString(candidate, "status", "");
+    return { id, label: [name, asOfDate && presentReportingAsOfDate(asOfDate), status && presentReportingStatusLabel(status)].filter(Boolean).join(" · ") };
+  });
+  const runLabelCounts = new Map<string, number>();
+  for (const choice of runChoices) runLabelCounts.set(choice.label, (runLabelCounts.get(choice.label) ?? 0) + 1);
   const runTemplateId = readString(run, "templateId", "");
   const selectedTemplate = runTemplateId
     ? templates.find((candidate) => candidate.templateName === runTemplateId || candidate.id === runTemplateId) ?? null
     : null;
   const hasPreviewSubject = Boolean(run || selectedTemplate);
-  const reportName = readString(run, "reportName", selectedTemplate?.name ?? (runTemplateId || "No report selected"));
+  const reportName = readString(run, "reportName", selectedTemplate?.name ?? (run ? "Report run" : "No report selected"));
   const runId = readString(run, "runId", "No run selected");
   const templateId = selectedTemplate?.id ?? "";
   const runStatus = readString(run, "status", "Draft");
@@ -154,14 +165,12 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
           setSearchParams(next);
         }}>
           <option value="">Choose a report run</option>
-          {requestedRunId && !run ? <option value={requestedRunId}>{requestedRunId} — unavailable</option> : null}
-          {runs.map((candidate) => {
-            const id = readString(candidate, "runId", "");
-            return <option key={id} value={id}>{readString(candidate, "reportName", id)} · {id}</option>;
-          })}
+          {requestedRunId && !run ? <option value={requestedRunId}>Requested run unavailable</option> : null}
+          {runChoices.map((choice, index) => <option key={choice.id} value={choice.id}>{choice.label}{(runLabelCounts.get(choice.label) ?? 0) > 1 ? ` · Retained run ${index + 1}` : ""}</option>)}
         </Select>
       </FormRow>
       {requestedRunId && !run ? <StatusBanner tone="warning" title="Requested run unavailable" detail={<Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: requestedRunId })}>Open the exact retained run outside the loaded register</Link>} /> : null}
+      {requestedRunId && !run ? <TechnicalDetails label="Requested run identifier"><p className="break-all font-mono text-sm">{requestedRunId}</p></TechnicalDetails> : null}
       <OperationalTrustSummary
         source={{ value: run ? "Retained report run" : selectedTemplate ? "Approved template" : "No report selected", tone: hasPreviewSubject ? "ready" : "unknown" }}
         scope={{ value: reportName, detail: run ? presentStatusLabel(runStatus) : "Template preview", tone: hasPreviewSubject ? "ready" : "unknown" }}
@@ -911,6 +920,13 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
   const currentRead = needsQueueRead && queueRead?.navigationKey === navigationKey ? queueRead : null;
   const breaks = currentRead?.rows ? scopeBreaks(currentRead.rows) : workspaceBreaks;
   const selectedBreak = currentRead?.rows ? selectBreak(breaks) : workspaceSelection;
+  const caseChoices = breaks.map((item, index) => {
+    const primaryLabel = item.reason || item.strategyName || `Reconciliation case ${index + 1}`;
+    return { id: item.breakId, label: [primaryLabel, item.strategyName !== primaryLabel ? item.strategyName : "",
+      item.detectedAt && formatAccountingDate(item.detectedAt)].filter(Boolean).join(" · ") };
+  });
+  const caseLabelCounts = new Map<string, number>();
+  for (const choice of caseChoices) caseLabelCounts.set(choice.label, (caseLabelCounts.get(choice.label) ?? 0) + 1);
   const freshness = buildFinanceFreshness(selectedBreak?.lastUpdatedAt);
   const caseworkPath = workstationRouteWithQuery("accountingReconciliation", {
     reconciliationBreak: selectedBreak?.breakId,
@@ -956,7 +972,7 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
               setSearchParams(next);
             }}>
               {!selectedBreak ? <option value="">Select a case</option> : null}
-              {breaks.map((item) => <option key={item.breakId} value={item.breakId}>{item.reason || item.strategyName} · {item.breakId}</option>)}
+              {caseChoices.map((choice, index) => <option key={choice.id} value={choice.id}>{choice.label}{(caseLabelCounts.get(choice.label) ?? 0) > 1 ? ` · Retained case ${index + 1}` : ""}</option>)}
             </Select>
           </FormRow>
           {selectedBreak ? (

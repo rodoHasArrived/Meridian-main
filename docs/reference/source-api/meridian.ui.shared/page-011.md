@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DemoWorkspaceSeedReport
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceSeedReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:418](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L418).
+
+Outcome of seeding the demo workspace.
+
+```csharp
+public sealed record DemoWorkspaceSeedReport(string DemoRoot, string Provenance, DemoTenantProvisioningReport Provisioning, int MarketHistoryTradePrintsSeeded = 0);
+```
+
 ## DesignerBacktestBlockedException
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DesignerBacktestBlockedException</code>. Kind: `class`.
@@ -886,23 +898,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;PrivateCapitalLifecycleRead&gt; ReadAsync(string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default, Func&lt;DateOnly, CancellationToken, Task&lt;IReadOnlySet&lt;string&gt;&gt;&gt;? historicalEntityScope = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:31](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L31) |  |
 | <code>public static PrivateCapitalLifecycleRead Project(PrivateCapitalLifecycleDocumentDto document, string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, IReadOnlyDictionary&lt;DateOnly, IReadOnlySet&lt;string&gt;&gt;? historicalEntityScopes = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:68](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L68) |  |
-
-## FileReconciliationSlaCalendarResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileReconciliationSlaCalendarResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:10](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L10).
-
-One host-lifetime snapshot of operator-declared calendars; named calendars never fall back.
-
-```csharp
-public sealed class FileReconciliationSlaCalendarResolver : IReconciliationSlaCalendarResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string RelativePath = &quot;reconciliation/sla-calendars.json&quot;;</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:12](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L12) |  |
-| <code>public FileReconciliationSlaCalendarResolver(string dataDirectory);</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:16](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L16) |  |
-| <code>public IReconciliationSlaCalendar Resolve(ReconciliationSlaPolicy policy);</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:49](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L49) |  |

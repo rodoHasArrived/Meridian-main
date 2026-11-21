@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { axe } from "jest-axe";
@@ -7,7 +7,8 @@ import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { getSecurityDetail } from "@/lib/api";
 import { getLedgerBooks, getLedgerPeriods, getLedgerPeriodJournalEntries } from "@/lib/ledger-reports-api";
 import { FundAccountScopeSelectionProvider } from "@/lib/operating-scope/scope-picker-context";
-import type { AccountingWorkspaceResponse, LedgerBook, LedgerPeriod, LedgerPostedJournalEntry, SecurityMasterEntry, TradingWorkspaceResponse } from "@/types";
+import type { AccountingWorkspaceResponse, BrokerageHouseholdPortfolio, BrokerageHouseholdPosition, LedgerBook, LedgerPeriod, LedgerPostedJournalEntry, PortfolioWorkspaceResponse, SecurityMasterEntry, TradingWorkspaceResponse } from "@/types";
+import type { AmountPassportReference } from "@/types/amount-passport";
 
 vi.mock("@/lib/api", async () => ({ ...await vi.importActual("@/lib/api"), getSecurityDetail: vi.fn() }));
 vi.mock("@/lib/ledger-reports-api", () => ({ getLedgerBooks: vi.fn(), getLedgerPeriods: vi.fn(), getLedgerPeriodJournalEntries: vi.fn() }));
@@ -15,6 +16,16 @@ vi.mock("@/screens/asset-detail-screen", () => ({ AssetDetailPanel: ({ securityI
 const id = "a0000000-0000-0000-0000-000000000001";
 const otherId = "a0000000-0000-0000-0000-000000000002";
 const security = { securityId: id, displayName: "Apple", status: "Active", classification: { assetClass: "Equity", primaryIdentifierValue: "AAPL" }, economicDefinition: { currency: "USD" } } as SecurityMasterEntry;
+const brokeragePosition: BrokerageHouseholdPosition = {
+  providerId: "Alpaca", fundAccountId: "account", externalAccountId: "Alpaca Roth IRA", accountKind: "RothIra", symbol: "AAPL",
+  quantity: 38, averageEntryPrice: 180, marketPrice: 188.4, marketValue: 7159.2, unrealizedPnl: 319.2, currency: "USD",
+  assetClass: "Equity", description: null, positionId: "position-1",
+  security: { securityId: id, displayName: "Apple", assetClass: "Equity", currency: "USD", status: "Active", primaryIdentifier: "AAPL", subType: null }
+};
+function brokerageHousehold(position: BrokerageHouseholdPosition): BrokerageHouseholdPortfolio {
+  return { providerId: "Alpaca", asOf: "2026-05-07T12:00:00Z", totalCash: 0, totalEquity: 7159.2, totalBuyingPower: 0,
+    currency: "USD", accounts: [], positions: [position], warnings: [] };
+}
 function Location() { return <output aria-label="Current location">{useLocation().search}</output>; }
 function renderDossier(query = "", props = {}) {
   return renderWithRouter(<><Routes><Route path="/records/instrument/:id" element={<InstrumentDossierScreen {...props} />} /></Routes><Location /></>, { initialEntries: [`/records/instrument/${id}${query}`] });
@@ -95,5 +106,63 @@ describe("InstrumentDossierScreen", () => {
     const trading = { positions: [{ symbol: "AAPL", side: "Long", quantity: "0.000123", markPrice: "100", exposure: "0.0123", currency: "USD", markFreshness: { securityId: id, financialAccountId: "account", status: "Current" } }] } as TradingWorkspaceResponse;
     renderDossier("", { trading });
     expect(await screen.findByText("0.000123 units")).toBeInTheDocument();
+  });
+
+  it("names the brokerage source, consolidates unknown conditions and keeps raw identity and policy inspectable", async () => {
+    const brokerage = brokerageHousehold({ ...brokeragePosition,
+      markFreshness: { symbol: "AAPL", securityId: id, financialAccountId: "account", status: "Current", policyVersion: "retained-mark-policy-v1", observedOn: "2026-05-07", valuationDate: "2026-05-07" }
+    });
+    const { container } = renderDossier("?fundAccountId=account&tab=positions", { brokeragePortfolio: brokerage });
+    const table = await screen.findByRole("table", { name: "Instrument positions by account" });
+    expect(table.closest("[data-position-source]")).toHaveAttribute("data-position-source", "brokerage-household");
+    expect(screen.getByText(/Source: Alpaca household/)).toHaveTextContent("Snapshot observed 2026-05-07T12:00:00Z");
+    for (const value of ["38 units", "188.40 USD", "7,159.20 USD"]) expect(within(table).getByText(value)).toBeVisible();
+    const note = screen.getByText("Data condition unavailable for values without supported amount-level source evidence. Original source amounts are shown.");
+    expect(note).toBeVisible();
+    expect(within(table).queryByText("Data condition unavailable", { exact: true })).not.toBeInTheDocument();
+    for (const value of ["38 units", "188.40 USD", "7,159.20 USD"]) {
+      expect(within(table).getByText(value).closest("[aria-describedby]"))
+        .toHaveAttribute("aria-describedby", expect.stringContaining(note.id));
+    }
+    expect(within(table).queryByText("Confirmed")).not.toBeInTheDocument();
+    expect(within(table).queryByRole("button", { name: /Amount passport/ })).not.toBeInTheDocument();
+    expect(screen.getByText(id, { exact: true })).not.toBeVisible();
+    await userEvent.click(screen.getByText("Technical identity", { exact: true }));
+    expect(screen.getByText(id, { exact: true })).toBeVisible();
+    const policy = screen.getByText(/Policy retained-mark-policy-v1/);
+    expect(policy).not.toBeVisible();
+    await userEvent.click(within(table).getByText("Mark evidence", { exact: true }));
+    expect(policy).toBeVisible();
+    expect(policy).toHaveTextContent("observed 2026-05-07 · valuation 2026-05-07");
+    expect((await axe(container)).violations).toHaveLength(0);
+  });
+
+  it("retains supplied stale and estimated amount conditions and scoped passport controls", async () => {
+    const reference = (exactValue: string, currency: string | null, changes: Partial<AmountPassportReference> = {}): AmountPassportReference => ({
+      identity: { subjectKind: "position-valuation", subjectId: `retained:${exactValue}`, asOf: "2026-05-07T12:00:00Z", revision: "retained-revision",
+        scope: { tenantId: "tenant", companyId: "company", accountId: "account", basis: "Brokerage observation" } },
+      currency, exactValue, unit: currency ? "currency" : "units", origin: "sourced", isZero: false, freshness: "current", ...changes
+    });
+    const brokerage = brokerageHousehold({ ...brokeragePosition,
+      amountPassports: { quantity: reference("38", null), mark: reference("188.4", "USD", { freshness: "stale" }),
+        "market-value": reference("7159.2", "USD", { origin: "estimated" }) }
+    });
+    renderDossier("?tab=positions", { brokeragePortfolio: brokerage });
+    const table = await screen.findByRole("table", { name: "Instrument positions by account" });
+    expect(within(table).getByText("Stale", { exact: true })).toBeVisible();
+    expect(within(table).getByText("Estimated", { exact: true })).toBeVisible();
+    expect(within(table).getByRole("button", { name: /188\.40 USD · Stale/ })).toBeInTheDocument();
+    expect(within(table).getByRole("button", { name: /7,159\.20 USD · Estimated/ })).toBeInTheDocument();
+    expect(screen.queryByText(/Data condition unavailable for values/)).not.toBeInTheDocument();
+  });
+
+  it("labels the selected workspace source without inventing a snapshot observation time", async () => {
+    const position = { symbol: "AAPL", side: "Long", quantity: "0.125", markPrice: "100", exposure: "12.5", currency: "USD",
+      markFreshness: { securityId: id, financialAccountId: "account", status: "Current" } };
+    renderDossier("?tab=positions&fundAccountId=account", { portfolio: { positions: [position] } as PortfolioWorkspaceResponse });
+    const table = await screen.findByRole("table", { name: "Instrument positions by account" });
+    expect(table.closest("[data-position-source]")).toHaveAttribute("data-position-source", "live-holdings");
+    expect(screen.getByText(/Source: Portfolio holdings · selected account/)).toHaveTextContent("Snapshot observation time not supplied");
+    expect(within(table).getByText("0.125 units")).toBeInTheDocument();
   });
 });
