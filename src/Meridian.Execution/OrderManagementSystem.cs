@@ -454,6 +454,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 JournalAttemptId = journalAttemptId,
                 Symbol = safeRequest.Symbol,
                 AccountingSecurityId = admission.AccountingSecurityId,
+                AccountingRunId = admission.AccountingRunId,
                 Side = safeRequest.Side,
                 Type = safeRequest.Type,
                 Quantity = safeRequest.Quantity,

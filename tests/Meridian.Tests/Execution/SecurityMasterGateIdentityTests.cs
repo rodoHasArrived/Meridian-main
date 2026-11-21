@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution;
+using Meridian.Execution.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
 using Meridian.Execution.Services;
@@ -30,7 +31,7 @@ public sealed class SecurityMasterGateIdentityTests
     }
 
     [Fact]
-    public async Task AcceptedPaperOrder_RetainsAdmissionIdentityThroughFillDelivery()
+    public async Task LegacyPaperOrder_RetainsSecurityIdentityWithoutAuthorizingItsRunLabel()
     {
         var identity = Guid.NewGuid();
         var security = Substitute.For<ISecurityMasterGate>();
@@ -39,8 +40,9 @@ public sealed class SecurityMasterGateIdentityTests
         await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance,
             options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true },
             costOptions: new Meridian.Execution.PaperMatching.PaperTradingCostOptions { CommissionRate = 0m });
+        var publisher = new AccountingPublisher();
         await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
-            securityMasterGate: security, portfolioState: new PaperTradingPortfolio(10_000m));
+            securityMasterGate: security, portfolioState: new PaperTradingPortfolio(10_000m), tradeEventPublisher: publisher);
         await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
@@ -51,15 +53,66 @@ public sealed class SecurityMasterGateIdentityTests
             Type = OrderType.Market,
             Quantity = .5m,
             StrategyId = "identity-strategy",
-            Metadata = new Dictionary<string, string> { ["runId"] = "admitted-run" }
+            Metadata = new Dictionary<string, string>
+            {
+                ["runId"] = "admitted-run",
+                ["orderOrigin"] = "StrategyRun",
+                ["accountingRunId"] = "admitted-run"
+            }
         });
 
         Assert.True(result.Success);
-        Assert.Equal(identity, Assert.IsType<OrderState>(result.OrderState).AccountingSecurityId);
+        var state = Assert.IsType<OrderState>(result.OrderState);
+        Assert.Equal(identity, state.AccountingSecurityId);
+        Assert.Equal("admitted-run", state.RunId);
+        Assert.Equal(OrderCommandOrigin.Unattributed, state.Origin);
+        Assert.Null(state.AccountingRunId);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         var delivered = await oms.ExecutionReports.ReadAsync(timeout.Token);
         Assert.Equal(identity, delivered.AccountingSecurityId);
-        Assert.Equal("admitted-run", delivered.AccountingRunId);
+        Assert.Null(delivered.AccountingRunId);
+        Assert.Equal("admitted-run", Assert.Single(publisher.Events).RunId);
+        Assert.Null(Assert.Single(publisher.Events).AccountingRunId);
+    }
+
+    [Fact]
+    public async Task TypedStrategyOrder_MintsAccountingRunAfterSuccessfulAdmission()
+    {
+        var identity = Guid.NewGuid();
+        var account = Guid.NewGuid();
+        var security = Substitute.For<ISecurityMasterGate>();
+        security.CheckAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new SecurityMasterGateResult(true) { SecurityId = identity });
+        await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance,
+            options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true },
+            costOptions: new Meridian.Execution.PaperMatching.PaperTradingCostOptions { CommissionRate = 0m });
+        var publisher = new AccountingPublisher();
+        await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+            securityMasterGate: security, portfolioState: new PaperTradingPortfolio(10_000m), tradeEventPublisher: publisher);
+        await oms.StartAsync();
+        var authority = OrderSubmissionAuthority.ForStrategyRun("runtime",
+            new ExecutionAccountGrant(account, "runtime", ExecutionAccountGrantSources.StrategyRun, DateTimeOffset.UtcNow),
+            "authorized-run");
+
+        var result = await oms.SubmitAsync(new OrderSubmitCommand(new OrderRequest
+        {
+            ClientOrderId = "typed-accounting-run",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = .5m,
+            FundAccountId = account,
+            StrategyId = "identity-strategy"
+        }, authority));
+
+        Assert.True(result.Success);
+        var state = Assert.IsType<OrderState>(result.OrderState);
+        Assert.Equal("authorized-run", state.AccountingRunId);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var delivered = await oms.ExecutionReports.ReadAsync(timeout.Token);
+        Assert.Equal(identity, delivered.AccountingSecurityId);
+        Assert.Equal("authorized-run", delivered.AccountingRunId);
+        Assert.Equal("authorized-run", Assert.Single(publisher.Events).AccountingRunId);
     }
 
     [Fact]
@@ -107,7 +160,10 @@ public sealed class SecurityMasterGateIdentityTests
                 Quantity = 1m,
                 LimitPrice = 100m,
                 Status = OrderStatus.Accepted,
-                AccountingSecurityId = identity
+                AccountingSecurityId = identity,
+                Origin = OrderCommandOrigin.StrategyRun,
+                RunId = "retained-run",
+                AccountingRunId = "retained-run"
             };
             var path = Path.Combine(root, "broker-orders.json");
             var store = new FileBrokerageOrderRecoveryStore(path, "synthetic-identity");
@@ -115,13 +171,26 @@ public sealed class SecurityMasterGateIdentityTests
             store.Save(new RetainedBrokerageOrder(state, "broker-1", true));
 
             var restarted = new FileBrokerageOrderRecoveryStore(path, "synthetic-identity");
-            Assert.Equal(identity, Assert.Single(restarted.Load()).State.AccountingSecurityId);
-            var legacy = JsonSerializer.Serialize(state with { AccountingSecurityId = null }, ExecutionJsonContext.Default.OrderState);
+            var retained = Assert.Single(restarted.Load()).State;
+            Assert.Equal(identity, retained.AccountingSecurityId);
+            Assert.Equal("retained-run", retained.AccountingRunId);
+            var legacy = JsonSerializer.Serialize(state with { AccountingSecurityId = null, AccountingRunId = null }, ExecutionJsonContext.Default.OrderState);
             Assert.DoesNotContain("accountingSecurityId", legacy, StringComparison.Ordinal);
+            Assert.DoesNotContain("accountingRunId", legacy, StringComparison.Ordinal);
+            var historical = Assert.IsType<OrderState>(JsonSerializer.Deserialize(legacy, ExecutionJsonContext.Default.OrderState));
+            Assert.Equal(OrderCommandOrigin.StrategyRun, historical.Origin);
+            Assert.Equal("retained-run", historical.RunId);
+            Assert.Null(historical.AccountingRunId);
         }
         finally
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    private sealed class AccountingPublisher : ITradeEventPublisher
+    {
+        public System.Collections.Concurrent.ConcurrentQueue<TradeExecutedEvent> Events { get; } = new();
+        public void Publish(TradeExecutedEvent tradeEvent) => Events.Enqueue(tradeEvent);
     }
 }

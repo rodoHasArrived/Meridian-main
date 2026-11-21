@@ -213,7 +213,11 @@ internal sealed class OrderAdmissionPolicy
 
         return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness, null, resolved)
         {
-            AccountingSecurityId = accountingSecurityId
+            AccountingSecurityId = accountingSecurityId,
+            // Only this successful typed admission can mint accounting ownership. A legacy
+            // runId label, a preview, or an older retained Origin/RunId pair is not proof.
+            AccountingRunId = !observationOnly && rootAuthority.Origin == OrderCommandOrigin.StrategyRun
+                ? rootAuthority.RunId : null
         };
     }
 
@@ -429,6 +433,7 @@ internal sealed record OrderAdmissionDecision(
 {
     public bool IsApproved => Refusal is null;
     public Guid? AccountingSecurityId { get; init; }
+    public string? AccountingRunId { get; init; }
 }
 
 internal sealed record OrderAdmissionRefusal(

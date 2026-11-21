@@ -51,6 +51,7 @@ public sealed partial class OrderManagementSystem
                 AccountingSecurityId = string.IsNullOrWhiteSpace(child.Symbol)
                     || string.Equals(child.Symbol, parent.Symbol, StringComparison.OrdinalIgnoreCase)
                         ? parent.AccountingSecurityId : null,
+                AccountingRunId = parent.AccountingRunId,
                 Side = child.Side,
                 Type = child.Type,
                 Quantity = child.Quantity,

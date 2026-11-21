@@ -119,6 +119,48 @@ public sealed class OrderAdmissionPolicyTests : IDisposable
         Assert.Equal(1, calls.Count(static call => call == "security"));
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task StrategyAccountingRun_IsMintedOnlyAfterTypedAuthoritySucceeds(bool grantMatches, bool escalated)
+    {
+        var calls = new List<string>();
+        var policy = CreatePolicy(new TestGateway(ExecutionMode.Paper, calls), calls);
+        var account = Guid.NewGuid();
+        var grant = new ExecutionAccountGrant(grantMatches ? account : Guid.NewGuid(), "runtime",
+            ExecutionAccountGrantSources.StrategyRun, DateTimeOffset.UtcNow);
+        var authority = OrderSubmissionAuthority.ForStrategyRun("runtime", grant, "authorized-run");
+        if (escalated)
+            authority = OrderSubmissionAuthority.ForEscalationRelease(authority, "approver");
+        var request = Request() with { FundAccountId = account };
+        var prepared = policy.Prepare(OrderAuthorityMetadata.Bind(request, authority), "typed-run-order", authority);
+
+        var result = await policy.EvaluatePreflightAsync(prepared, default);
+
+        Assert.Equal(grantMatches, result.IsApproved);
+        Assert.Equal(grantMatches ? "authorized-run" : null, result.AccountingRunId);
+    }
+
+    [Fact]
+    public async Task StrategyAuthorityPreview_DoesNotMintAccountingOwnership()
+    {
+        var calls = new List<string>();
+        var policy = CreatePolicy(new TestGateway(ExecutionMode.Paper, calls), calls);
+        var account = Guid.NewGuid();
+        var authority = OrderSubmissionAuthority.ForStrategyRun("runtime",
+            new ExecutionAccountGrant(account, "runtime", ExecutionAccountGrantSources.StrategyRun, DateTimeOffset.UtcNow),
+            "authorized-run");
+        var prepared = policy.Prepare(OrderAuthorityMetadata.Bind(Request() with { FundAccountId = account }, authority),
+            "preview-run-order", authority);
+
+        var result = await policy.EvaluatePreflightAsync(prepared, default, observationOnly: true);
+
+        Assert.True(result.IsApproved);
+        Assert.Null(result.AccountingRunId);
+    }
+
     [Fact]
     public async Task ApprovedReadiness_RequiresRetainedEvidence()
     {
