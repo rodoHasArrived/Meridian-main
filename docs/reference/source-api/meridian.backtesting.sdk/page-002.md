@@ -94,16 +94,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public required SecurityLotUnitKind UnitKind { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:40](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L40) | What one unit of Quantity measures. Must be supplied explicitly. |
-| <code>public required decimal Multiplier { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:49](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L49) | Positive contract multiplier scaling one unit to economic exposure. Supply 1 for unscaled units. |
-| <code>public bool IsShort { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:63](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L63) | True when the positive lot quantity represents a short-sale obligation. Kept outside the positional constructor so existing constructor and deconstruction shapes remain valid. |
-| <code>public decimal EntryCommission { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:66](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L66) | Unrelieved acquisition commission, carried separately from securities basis. |
-| <code>public IReadOnlyList&lt;OpenLotBasisComponent&gt; BasisComponents { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:73](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L73) | Exact source-lot contributions when a corporate action combines fractional entitlements into a whole successor share. Empty for ordinary single-source lots. Kept outside the positional constructor so existing constructor and deconstruction shapes remain valid. |
-| <code>public decimal CostBasis() =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:80](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L80) | Exact basis represented by this lot, including synthesized components. |
-| <code>public decimal UnrealizedPnl(decimal currentPrice) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:86](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L86) | Mark-to-market unrealised P&amp;L for this lot at the given price. |
-| <code>public decimal NotionalValue(decimal currentPrice) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:92](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L92) | Current notional value of this lot at the given price. |
-| <code>public TimeSpan Age(DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:99](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L99) | How long the newest basis component has been open as of the given point in time. Using the newest component prevents a mixed-age composite lot from overstating its holding period. |
-| <code>public bool IsLongTerm(DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:105](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L105) | Returns true when the lot has been held for at least 365 days — the IRS long-term capital gains threshold. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? FunctionalCurrency { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:37](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L37) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Guid? SecurityId { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:39](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L39) |  |
+| <code>public required SecurityLotUnitKind UnitKind { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:45](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L45) | What one unit of Quantity measures. Must be supplied explicitly. |
+| <code>public required decimal Multiplier { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:54](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L54) | Positive contract multiplier scaling one unit to economic exposure. Supply 1 for unscaled units. |
+| <code>public bool IsShort { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:68](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L68) | True when the positive lot quantity represents a short-sale obligation. Kept outside the positional constructor so existing constructor and deconstruction shapes remain valid. |
+| <code>public decimal EntryCommission { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:71](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L71) | Unrelieved acquisition commission, carried separately from securities basis. |
+| <code>public IReadOnlyList&lt;OpenLotBasisComponent&gt; BasisComponents { get; init; }</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:78](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L78) | Exact source-lot contributions when a corporate action combines fractional entitlements into a whole successor share. Empty for ordinary single-source lots. Kept outside the positional constructor so existing constructor and deconstruction shapes remain valid. |
+| <code>public decimal CostBasis() =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:85](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L85) | Exact basis represented by this lot, including synthesized components. |
+| <code>public decimal UnrealizedPnl(decimal currentPrice) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:91](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L91) | Mark-to-market unrealised P&amp;L for this lot at the given price. |
+| <code>public decimal NotionalValue(decimal currentPrice) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:97](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L97) | Current notional value of this lot at the given price. |
+| <code>public TimeSpan Age(DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:104](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L104) | How long the newest basis component has been open as of the given point in time. Using the newest component prevents a mixed-age composite lot from overstating its holding period. |
+| <code>public bool IsLongTerm(DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/OpenLot.cs:110](../../../../src/Meridian.Backtesting.Sdk/OpenLot.cs#L110) | Returns true when the lot has been held for at least 365 days — the IRS long-term capital gains threshold. |
 
 ## OpenLotBasisComponent
 
@@ -217,7 +219,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal DividendReceivable { get; init; }</code> | [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:21](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L21) | Earned dividends included in equity but not yet available as cash. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? FunctionalCurrency { get; init; }</code> | [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:21](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L21) | Accounting currency declared by the bound simulation ledger; legacy absence stays unknown. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal DividendReceivable { get; init; }</code> | [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:25](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L25) | Earned dividends included in equity but not yet available as cash. |
 
 ## Position
 

@@ -122,7 +122,7 @@ Declared public members:
 | <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:345](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L345) |  |
 | <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:423](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L423) |  |
 | <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:436](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L436) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:705](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L705) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:708](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L708) |  |
 
 ## SecurityMasterGate
 
@@ -180,7 +180,7 @@ public sealed record PaperFinancingRequest(DateOnly AccrualDate, decimal Amount,
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1431](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1431).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1455](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1455).
 
 Defines one account within a multi-account paper trading session.
 

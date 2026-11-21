@@ -43,7 +43,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Adapters.LiveMarketDataCache</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:13](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L13).
+Source: [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:14](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L14).
 
 Thread-safe last-known market data cache that implements ILiveFeedAdapter. A host-side pump records live pipeline events here so execution-time consumers (strategy contexts, paper fill pricing) can read real-time prices without any provider-specific type crossing the execution boundary.
 
@@ -55,18 +55,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlySet&lt;string&gt; SubscribedSymbols =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:35](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L35) |  |
-| <code>public void Subscribe(string symbol);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:39](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L39) | Marks a symbol as part of the live session universe. |
-| <code>public void RecordTrade(string symbol, Trade trade);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:46](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L46) | Records the most recent trade tick for a symbol. |
-| <code>public void RecordQuote(string symbol, BboQuotePayload quote);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:55](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L55) | Records the most recent best-bid/offer quote for a symbol. |
-| <code>public void RecordOrderBook(string symbol, LOBSnapshot snapshot);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:64](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L64) | Records the most recent Level-2 order book snapshot for a symbol. |
-| <code>public void RecordBar(string symbol, HistoricalBar bar);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:73](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L73) | Records the most recent completed bar for a symbol. |
-| <code>public Trade? GetLastTrade(string symbol) =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:82](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L82) |  |
-| <code>public BboQuotePayload? GetLastQuote(string symbol) =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:85](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L85) |  |
-| <code>public LOBSnapshot? GetLastOrderBook(string symbol) =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:88](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L88) |  |
-| <code>public HistoricalBar? GetLastBar(string symbol) =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:91](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L91) |  |
-| <code>public MarketDataSnapshot GetSnapshot(string symbol);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:97](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L97) | Atomic override of the interface default: all three fields come from one state reference, so the snapshot can never pair a pre-update quote with a post-update trade. |
-| <code>public decimal? GetReferencePrice(string symbol);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:120](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L120) | Returns the best available reference price for a symbol: last trade price first, then best-bid/offer midpoint, or null when no live tick has been observed. |
+| <code>public IReadOnlySet&lt;string&gt; SubscribedSymbols =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:39](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L39) |  |
+| <code>public void Subscribe(string symbol);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:43](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L43) | Marks a symbol as part of the live session universe. |
+| <code>public void RecordTrade(string symbol, Trade trade) =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:50](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L50) | Records the most recent trade tick for a symbol. |
+| <code>public void RecordTrade(string symbol, Trade trade, IReadOnlyList&lt;MarketDataInputEvidence&gt;? evidence);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:53](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L53) |  |
+| <code>public void RecordQuote(string symbol, BboQuotePayload quote) =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:63](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L63) | Records the most recent best-bid/offer quote for a symbol. |
+| <code>public void RecordQuote(string symbol, BboQuotePayload quote, IReadOnlyList&lt;MarketDataInputEvidence&gt;? evidence);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:66](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L66) |  |
+| <code>public void RecordOrderBook(string symbol, LOBSnapshot snapshot);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:76](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L76) | Records the most recent Level-2 order book snapshot for a symbol. |
+| <code>public void RecordBar(string symbol, HistoricalBar bar) =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:85](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L85) | Records the most recent completed bar for a symbol. |
+| <code>public void RecordBar(string symbol, HistoricalBar bar, IReadOnlyList&lt;MarketDataInputEvidence&gt;? evidence);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:88](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L88) |  |
+| <code>public Trade? GetLastTrade(string symbol) =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:98](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L98) |  |
+| <code>public BboQuotePayload? GetLastQuote(string symbol) =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:101](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L101) |  |
+| <code>public LOBSnapshot? GetLastOrderBook(string symbol) =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:104](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L104) |  |
+| <code>public HistoricalBar? GetLastBar(string symbol) =&gt; …;</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:107](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L107) |  |
+| <code>public MarketDataSnapshot GetSnapshot(string symbol);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:113](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L113) | Atomic override of the interface default: all three fields come from one state reference, so the snapshot can never pair a pre-update quote with a post-update trade. |
+| <code>public decimal? GetReferencePrice(string symbol);</code> | [src/Meridian.Execution/Adapters/LiveMarketDataCache.cs:137](../../../../src/Meridian.Execution/Adapters/LiveMarketDataCache.cs#L137) | Returns the best available reference price for a symbol: last trade price first, then best-bid/offer midpoint, or null when no live tick has been observed. |
 
 ## OmsGovernedExecutionOrderGateway
 
@@ -729,19 +732,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SettlementCurrency { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:67](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L67) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMode { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:70](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L70) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;TradeExecutionFee&gt;? Fees { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:73](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L73) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? BrokerActivityId { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:77](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L77) | Exact broker statement activity identity when the source supplied one. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingEvidenceVersion { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:98](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L98) | Accounting-evidence contract used by the producer. Zero identifies historical events; current OMS fills use version one even when their accounting context is unavailable. An absent version-one payload must block posting rather than imply a position direction. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public TradeFillAccountingEvidence? AccountingEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:106](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L106) | Exact opening and closing economics captured while the portfolio applies this fill. A null value does not authorize reconstructing basis or short direction from realized P&amp;L. Historical event JSON and the positional constructor remain unchanged when absent. |
-| <code>public decimal GrossValue =&gt; …;</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:116](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L116) | Gross trade value, always positive. For a face-value fill the clean price is a percentage of par, so the price is scaled to a fraction of par before multiplying — the same convention pre-trade risk uses to measure the order — keeping the booked cash movement equal to the notional the risk gate approved. Otherwise the quoted price is scaled by ContractMultiplier, matching the paper portfolio&#x27;s cash and realized P&amp;L. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Meridian.Contracts.Operations.MarketDataInputEvidence&gt;? MarketDataEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:67](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L67) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SettlementCurrency { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:70](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L70) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMode { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:73](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L73) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;TradeExecutionFee&gt;? Fees { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:76](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L76) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? BrokerActivityId { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:80](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L80) | Exact broker statement activity identity when the source supplied one. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingEvidenceVersion { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:104](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L104) | Accounting-evidence contract used by the producer. Zero identifies historical events; current OMS fills use version one even when their accounting context is unavailable. An absent version-one payload must block posting rather than imply a position direction. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public TradeFillAccountingEvidence? AccountingEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:112](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L112) | Exact opening and closing economics captured while the portfolio applies this fill. A null value does not authorize reconstructing basis or short direction from realized P&amp;L. Historical event JSON and the positional constructor remain unchanged when absent. |
+| <code>public decimal GrossValue =&gt; …;</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:122](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L122) | Gross trade value, always positive. For a face-value fill the clean price is a percentage of par, so the price is scaled to a fraction of par before multiplying — the same convention pre-trade risk uses to measure the order — keeping the booked cash movement equal to the notional the risk gate approved. Otherwise the quoted price is scaled by ContractMultiplier, matching the paper portfolio&#x27;s cash and realized P&amp;L. |
 
 ## TradeExecutionFee
 
 Qualified name: <code>Meridian.Execution.Events.TradeExecutionFee</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Events/TradeExecutedEvent.cs:123](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L123).
+Source: [src/Meridian.Execution/Events/TradeExecutedEvent.cs:129](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L129).
 
 A separately identified source fee; commission is not repeated here.
 
@@ -1039,5 +1043,13 @@ Source: [src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs:62](../../../../s
 A single coherent observation of the last-known market data for one symbol: the fields were read together, so a consumer never sees a quote from before an update paired with a trade from after it.
 
 ```csharp
-public readonly record struct MarketDataSnapshot(BboQuotePayload? Quote, Trade? Trade, HistoricalBar? Bar);
+public readonly record struct MarketDataSnapshot(BboQuotePayload? Quote, Trade? Trade, HistoricalBar? Bar)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;Meridian.Contracts.Operations.MarketDataInputEvidence&gt;? QuoteEvidence { get; init; }</code> | [src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs:67](../../../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs#L67) |  |
+| <code>public IReadOnlyList&lt;Meridian.Contracts.Operations.MarketDataInputEvidence&gt;? TradeEvidence { get; init; }</code> | [src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs:68](../../../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs#L68) |  |
+| <code>public IReadOnlyList&lt;Meridian.Contracts.Operations.MarketDataInputEvidence&gt;? BarEvidence { get; init; }</code> | [src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs:69](../../../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs#L69) |  |

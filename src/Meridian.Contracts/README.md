@@ -11,6 +11,24 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Contracts
 
+`Operations/MarketDataInputEvidence.cs` retains observation-time provider, dataset/checkpoint,
+repair and range-bound quality facts through fills and journal tags. Versioned tags use
+source-generated JSON; missing or invalid assertions remain unassessed. Run warnings count logical
+fills, including acquisition inputs, without inventing a monetary P&L attribution. Optional
+`BackfillBatchReceipt.InputEvidence` travels with the existing sealed receipt and content hash.
+
+Strategy position reconciliation carries signed native quantity, unit/multiplier, retained monetary
+basis, functional currency and canonical security identity separately. Incompatible comparisons
+remain unavailable. `FundReconciliationItem` and `ReconciliationSummary` expose nullable
+`ComparableBreakAmountTotal`, `BreakAmountCurrency` and `BreakAmountUnavailableReason`; consumers
+must use this evidence instead of formatting the legacy scalar as money. Quantity residuals never
+become currency totals. Direct-lending reconciliation retains its as-of date, servicing revision,
+journal identities, currency and single-use payment-allocation evidence. Missing legacy evidence
+does not imply a zero balance or a match.
+
+External-GL export packages optionally pin `MappingContentHash` alongside the mapping version.
+The field is omitted when absent to preserve historical manifest preimages.
+
 `AssetOperations/BookReceiptDtos.cs` shares exact tenant/company/book scope, accepted expectation
 versions, canonical receipt allocations, distinct posted evidence, coverage and immutable daily runs
 across workstation consumers. Monetary values and quantities serialize as decimal strings. Stable

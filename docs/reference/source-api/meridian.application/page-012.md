@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UseCase
+
+Qualified name: <code>Meridian.Application.Services.UseCase</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:965](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L965).
+
+Use case for configuration.
+
+```csharp
+public enum UseCase : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Development</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:967](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L967) |  |
+| <code>Strategy</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:968](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L968) |  |
+| <code>[Obsolete(&quot;Use Strategy. Research is retained only as a compatibility alias.&quot;)] Research = Strategy</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:969](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L969) |  |
+| <code>RealTimeTrading</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:971](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L971) |  |
+| <code>BackfillOnly</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:972](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L972) |  |
+| <code>Production</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:973](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L973) |  |
+
+## ValidationCheck
+
+Qualified name: <code>Meridian.Application.Services.ValidationCheck</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/DryRunService.cs:584](../../../../src/Meridian.Application/Services/DryRunService.cs#L584).
+
+A single validation check.
+
+```csharp
+public sealed class ValidationCheck
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:586](../../../../src/Meridian.Application/Services/DryRunService.cs#L586) |  |
+| <code>public bool Passed { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:587](../../../../src/Meridian.Application/Services/DryRunService.cs#L587) |  |
+| <code>public string Message { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:588](../../../../src/Meridian.Application/Services/DryRunService.cs#L588) |  |
+
 ## ValidationSection
 
 Qualified name: <code>Meridian.Application.Services.ValidationSection</code>. Kind: `class`.
@@ -1042,39 +1085,3 @@ Enum declarations:
 | <code>Failure</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L12) | Step failed; the wizard should surface an error. |
 | <code>Skip</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:15](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L15) | Step was skipped (condition not met); continue to next step. |
 | <code>Cancelled</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L18) | User or code cancelled; stop the wizard immediately. |
-
-## WizardSummary
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardSummary.cs:13](../../../../src/Meridian.Application/Wizard/Core/WizardSummary.cs#L13).
-
-Human-readable summary produced at the end of a completed wizard run.
-
-```csharp
-public sealed record WizardSummary(bool Success, AppConfig? Config, string? ConfigPath, IReadOnlyList<string> ConfiguredItems, IReadOnlyList<string> NextSteps)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WizardSummary Empty { get; } = new (Success : false, Config : null, ConfigPath : null, ConfiguredItems : Array.Empty&lt;string&gt;(), NextSteps : Array.Empty&lt;string&gt;());</code> | [src/Meridian.Application/Wizard/Core/WizardSummary.cs:21](../../../../src/Meridian.Application/Wizard/Core/WizardSummary.cs#L21) | Returns an empty failed summary. |
-
-## WizardTransition
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardTransition</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardTransition.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardTransition.cs#L12).
-
-Declares a conditional edge in the wizard step graph.
-
-```csharp
-public sealed record WizardTransition(WizardStepId From, WizardStepId To, Func<WizardContext, bool>? Condition = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Applies(WizardContext context) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardTransition.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardTransition.cs#L18) | Returns true if this transition applies to the given context. |

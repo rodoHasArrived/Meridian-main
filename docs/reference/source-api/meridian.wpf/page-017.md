@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TrendStatistics
+
+Qualified name: <code>Meridian.Wpf.ViewModels.TrendStatistics</code>. Kind: `struct`.
+
+Source: [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:21](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L21).
+
+```csharp
+public readonly struct TrendStatistics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string AvgText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:23](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L23) |  |
+| <code>public string MinText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:24](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L24) |  |
+| <code>public string MaxText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:25](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L25) |  |
+| <code>public string StdDevText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:26](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L26) |  |
+| <code>public string TrendText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L27) |  |
+| <code>public bool HasData { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:28](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L28) |  |
+| <code>public bool IsTrendPositive { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:29](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L29) |  |
+| <code>public double ScoreChange { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L30) |  |
+
 ## WatchlistPosture
 
 Qualified name: <code>Meridian.Wpf.ViewModels.WatchlistPosture</code>. Kind: `record struct`.
@@ -1171,28 +1194,4 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:38](../../../../src/Meridian.Wpf/Views/
 
 ```csharp
 public partial class DataSamplingPage : Page
-```
-
-## DataSourcesPage
-
-Qualified name: <code>Meridian.Wpf.Views.DataSourcesPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs#L13).
-
-Page for editing host data source settings and reviewing activation.
-
-```csharp
-public partial class DataSourcesPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataSourcesPage(ProviderConfigurationApiClient client, WpfServices.FirstRunService firstRunService, ILogger&lt;DataSourcesViewModel&gt; logger);</code> | [src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs#L18) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:12](../../../../src/Meridian.Wpf/Views/Pages.cs#L12).
-
-```csharp
-public partial class DataSourcesPage : Page
 ```

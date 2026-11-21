@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ShadowNavOverrideDraft
+
+Qualified name: <code>Meridian.Ledger.ShadowNavOverrideDraft</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ShadowNavOverrideDraft.cs:6](../../../../src/Meridian.Ledger/ShadowNavOverrideDraft.cs#L6).
+
+Governance handoff record for a material shadow-NAV variance that needs review.
+
+```csharp
+public sealed record ShadowNavOverrideDraft(Guid OverrideDraftId, DateTimeOffset CreatedAtUtc, string CreatedBy, string Reason, string PolicyId, string? ReviewerGroup, LedgerBookKey ActualLedgerKey, LedgerBookKey ShadowLedgerKey, DateTimeOffset AsOf, decimal ActualNav, decimal ShadowNav, decimal NavVariance, IReadOnlyList<ShadowNavValidationFinding> Findings);
+```
+
+## ShadowNavValidationFinding
+
+Qualified name: <code>Meridian.Ledger.ShadowNavValidationFinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/ShadowNavValidationFinding.cs:6](../../../../src/Meridian.Ledger/ShadowNavValidationFinding.cs#L6).
+
+Account-level variance between the actual ledger and an independent shadow-NAV ledger.
+
+```csharp
+public sealed record ShadowNavValidationFinding(LedgerAccount Account, decimal ActualBalance, decimal ShadowBalance, decimal Variance, decimal AbsoluteVariance, bool RequiresOverride);
+```
+
 ## ShadowNavValidationPolicy
 
 Qualified name: <code>Meridian.Ledger.ShadowNavValidationPolicy</code>. Kind: `record`.
@@ -364,7 +388,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ledger.TradeFillAccountingEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:10](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L10).
+Source: [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:11](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L11).
 
 Immutable per-fill accounting facts captured under the portfolio&#x27;s lot-book lock. A fill crossing zero retains both its closing and opening leg. No monetary basis is reconstructed from an average quote, order side, or realized result.
 
@@ -376,9 +400,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterest { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:27](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L27) | Bond accrued interest that changed hands on this fill, always nonnegative: paid on a purchase, received on a sale. Zero for fills without an accrual (and on every historical record, which omits it). |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterestRelieved { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:35](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L35) | On a sale, the purchased accrued interest receivable relieved for the face sold; the rest of AccruedInterest is coupon income earned while held (negative if the receivable exceeds what was received). Zero on purchases. |
-| <code>[JsonIgnore] public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:38](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L38) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityLotUnitKind? QuantityUnit { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:24](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L24) | Native quantity convention captured by the lot book; absent on older evidence. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? LotMultiplier { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:27](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L27) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterest { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:35](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L35) | Bond accrued interest that changed hands on this fill, always nonnegative: paid on a purchase, received on a sale. Zero for fills without an accrual (and on every historical record, which omits it). |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterestRelieved { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:43](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L43) | On a sale, the purchased accrued interest receivable relieved for the face sold; the rest of AccruedInterest is coupon income earned while held (negative if the receivable exceeds what was received). Zero on purchases. |
+| <code>[JsonIgnore] public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:46](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L46) |  |
 
 ## UnitTransaction
 

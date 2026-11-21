@@ -183,7 +183,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCashMovementInput</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:23](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L23).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:32](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L32).
 
 ```csharp
 public sealed record ReconciliationCashMovementInput(string MovementId, decimal Amount, DateTimeOffset? AsOf, bool IsVoided, string Source, BankTransactionDto? BankTransaction = null);
@@ -243,7 +243,7 @@ public sealed record ReconciliationCloseScopeReopenReceipt(ReconciliationCloseSc
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationExternalStatementInput</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:31](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L31).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:40](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L40).
 
 ```csharp
 public sealed record ReconciliationExternalStatementInput(string StatementRowId, decimal Amount, DateTimeOffset? AsOf, string Source, string? Reference = null);
@@ -304,17 +304,25 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationLedgerInput</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:13](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L13).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:17](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L17).
 
 ```csharp
-public sealed record ReconciliationLedgerInput(DateTimeOffset AsOf, decimal AssetBalance, decimal LiabilityBalance, IReadOnlyList<ReconciliationLedgerLineInput> TrialBalance);
+public sealed record ReconciliationLedgerInput(DateTimeOffset AsOf, decimal AssetBalance, decimal LiabilityBalance, IReadOnlyList<ReconciliationLedgerLineInput> TrialBalance)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasUnresolvedValuation { get; init; }</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:23](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L23) |  |
+| <code>public decimal? HistoricalCostNetAssets { get; init; }</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:24](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L24) |  |
+| <code>public IReadOnlyList&lt;StrategyPositionAccountingEvidence&gt; AccountingPositions { get; init; } = [];</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:25](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L25) |  |
 
 ## ReconciliationLedgerLineInput
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationLedgerLineInput</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:21](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L21).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:30](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L30).
 
 ```csharp
 public sealed record ReconciliationLedgerLineInput(string AccountName, string? Symbol, decimal Balance);
@@ -324,7 +332,7 @@ public sealed record ReconciliationLedgerLineInput(string AccountName, string? S
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationNormalizedInputs</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:38](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L38).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:47](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L47).
 
 ```csharp
 public sealed record ReconciliationNormalizedInputs(ReconciliationPortfolioInput? Portfolio, ReconciliationLedgerInput? Ledger, IReadOnlyList<ReconciliationCashMovementInput> InternalCashMovements, IReadOnlyList<ReconciliationExternalStatementInput> ExternalStatementRows);
@@ -347,14 +355,21 @@ Qualified name: <code>Meridian.Strategies.Services.ReconciliationPortfolioInput<
 Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:7](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L7).
 
 ```csharp
-public sealed record ReconciliationPortfolioInput(DateTimeOffset AsOf, decimal Cash, decimal TotalEquity, IReadOnlyList<ReconciliationPositionInput> Positions);
+public sealed record ReconciliationPortfolioInput(DateTimeOffset AsOf, decimal Cash, decimal TotalEquity, IReadOnlyList<ReconciliationPositionInput> Positions)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal UnrealizedPnl { get; init; }</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:13](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L13) |  |
+| <code>public IReadOnlyList&lt;StrategyPositionAccountingEvidence&gt; AccountingPositions { get; init; } = [];</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:14](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L14) |  |
 
 ## ReconciliationPositionInput
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationPositionInput</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:19](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L19).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:28](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L28).
 
 ```csharp
 public sealed record ReconciliationPositionInput(string Symbol, bool IsShort);
@@ -369,7 +384,7 @@ Source: [src/Meridian.Strategies/Services/ReconciliationProjectionService.cs:7](
 Builds portfolio, ledger, cash, and statement checks from normalized reconciliation inputs.
 
 ```csharp
-public sealed class ReconciliationProjectionService
+public sealed partial class ReconciliationProjectionService
 ```
 
 Declared public members:
@@ -377,6 +392,18 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;PortfolioLedgerCheckDto&gt; BuildChecks(ReconciliationNormalizedInputs inputs);</code> | [src/Meridian.Strategies/Services/ReconciliationProjectionService.cs:9](../../../../src/Meridian.Strategies/Services/ReconciliationProjectionService.cs#L9) |  |
+
+Source: [src/Meridian.Strategies/Services/ReconciliationProjectionService.Positions.cs:5](../../../../src/Meridian.Strategies/Services/ReconciliationProjectionService.Positions.cs#L5).
+
+```csharp
+public sealed partial class ReconciliationProjectionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;StrategyPositionAccountingCheck&gt; BuildPositionChecks(ReconciliationNormalizedInputs inputs, ReconciliationRunRequest request);</code> | [src/Meridian.Strategies/Services/ReconciliationProjectionService.Positions.cs:7](../../../../src/Meridian.Strategies/Services/ReconciliationProjectionService.Positions.cs#L7) |  |
 
 ## ReconciliationRunService
 
@@ -397,9 +424,9 @@ Declared public members:
 | <code>public ReconciliationRunService(StrategyRunReadService runReadService, ReconciliationProjectionService projectionService, IReconciliationRunRepository repository, IBankTransactionSource? bankTransactionSource = null, IStrategyLedgerReconciliationSourceAdapter? ledgerAdapter = null, IStrategyPortfolioReconciliationSourceAdapter? portfolioAdapter = null, IInternalCashReconciliationSourceAdapter? internalCashAdapter = null, IExternalStatementReconciliationSourceAdapter? externalStatementAdapter = null, ISecurityValidationGateService? securityValidationGate = null, ISecurityMasterAccountingEventService? securityMasterAccountingEventService = null, ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter = null) : this(runReadService, projectionService, repository, bankTransactionSource, ledgerAdapter, portfolioAdapter, internalCashAdapter, externalStatementAdapter, securityValidationGate, securityMasterAccountingEventService, securityMasterAccountingEventSourceAdapter, TimeProvider.System);</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:26](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L26) |  |
 | <code>public ReconciliationRunService(StrategyRunReadService runReadService, ReconciliationProjectionService projectionService, IReconciliationRunRepository repository, IBankTransactionSource? bankTransactionSource, IStrategyLedgerReconciliationSourceAdapter? ledgerAdapter, IStrategyPortfolioReconciliationSourceAdapter? portfolioAdapter, IInternalCashReconciliationSourceAdapter? internalCashAdapter, IExternalStatementReconciliationSourceAdapter? externalStatementAdapter, ISecurityValidationGateService? securityValidationGate, ISecurityMasterAccountingEventService? securityMasterAccountingEventService, ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter, TimeProvider timeProvider);</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:54](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L54) |  |
 | <code>public async Task&lt;ReconciliationRunDetail?&gt; RunAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:81](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L81) |  |
-| <code>public Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:212](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L212) |  |
-| <code>public Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:215](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L215) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:218](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L218) |  |
+| <code>public Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:238](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L238) |  |
+| <code>public Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:241](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L241) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:244](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L244) |  |
 
 ## ReconciliationSlaCalculator
 
@@ -755,7 +782,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.StrategyLedgerReconciliationSourceAdapter</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:81](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L81).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:90](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L90).
 
 Maps retained strategy ledger snapshots into reconciliation ledger inputs.
 
@@ -767,4 +794,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReconciliationLedgerInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:83](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L83) |  |
+| <code>public ReconciliationLedgerInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:92](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L92) |  |

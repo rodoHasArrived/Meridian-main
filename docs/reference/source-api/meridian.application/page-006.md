@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DedupReservation
+
+Qualified name: <code>Meridian.Application.Pipeline.DedupReservation</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:68](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L68).
+
+A pending, memory-only claim on an event identity.
+
+```csharp
+public readonly record struct DedupReservation(string Key, long Token)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsHeld =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:71](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L71) | True when this value represents an actual held reservation. |
+
+## DedupReservationResult
+
+Qualified name: <code>Meridian.Application.Pipeline.DedupReservationResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:85](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L85).
+
+Result of an IDedupStore.TryReserveAsync call.
+
+```csharp
+public readonly record struct DedupReservationResult(DedupReservationStatus Status, DedupReservation Reservation)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReserved =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:88](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L88) | The caller holds the reservation and must commit or release it. |
+| <code>public bool IsSuppressed =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:91](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L91) | The event must be suppressed (committed duplicate or pending elsewhere). |
+
 ## DedupReservationStatus
 
 Qualified name: <code>Meridian.Application.Pipeline.DedupReservationStatus</code>. Kind: `enum`.
@@ -995,43 +1032,3 @@ Declared public members:
 | <code>public async Task&lt;ProviderCredentialMigrationReceipt&gt; FinalizeAsync(string providerId, string connectionId, string tenantId, string migrationId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:159](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L159) | Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit. |
 | <code>public static ProviderCredentialScope? ResolveScope(AppConfig config, string providerId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:175](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L175) | Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default. |
 | <code>public static ProviderCredentialScope RequireScope(AppConfig config, string providerId, string connectionId, string tenantId, bool requireEnabled = true);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs:192](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs#L192) |  |
-
-## ProviderSetupService
-
-Qualified name: <code>Meridian.Application.ProviderRouting.ProviderSetupService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:14](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L14).
-
-Configures provider setup requests without persisting raw provider credentials in application config.
-
-```csharp
-public sealed class ProviderSetupService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderSetupService(UI.ConfigStore store, IProviderCredentialStore credentialStore, IProviderSetupRegistry setupRegistry, ProviderCredentialOwnershipPolicy? ownershipPolicy = null, ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:25](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L25) |  |
-| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureForConnectionAsync(ProviderSetupRequest request, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L37) | Configures credentials for an existing connection whose tenant ownership is already retained. |
-| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:86](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L86) |  |
-
-## ProviderTrustScoringService
-
-Qualified name: <code>Meridian.Application.ProviderRouting.ProviderTrustScoringService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:57](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L57).
-
-Calculates trust scores for configured provider connections.
-
-```csharp
-public sealed class ProviderTrustScoringService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderTrustScoringService(UI.ConfigStore store, ProviderSdk.IProviderConnectionHealthSource healthSource);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:65](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L65) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ProviderTrustSnapshotDto&gt;&gt; GetTrustSnapshotsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:71](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L71) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ProviderTrustSnapshotDto&gt;&gt; GetTrustSnapshotsForTenantAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:75](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L75) | Evaluates only connections belonging to the authorized tenant in the captured configuration. |

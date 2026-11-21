@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderSetupService
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderSetupService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:14](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L14).
+
+Configures provider setup requests without persisting raw provider credentials in application config.
+
+```csharp
+public sealed class ProviderSetupService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderSetupService(UI.ConfigStore store, IProviderCredentialStore credentialStore, IProviderSetupRegistry setupRegistry, ProviderCredentialOwnershipPolicy? ownershipPolicy = null, ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:25](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L25) |  |
+| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureForConnectionAsync(ProviderSetupRequest request, string connectionId, string tenantId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:37](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L37) | Configures credentials for an existing connection whose tenant ownership is already retained. |
+| <code>public async Task&lt;ProviderSetupResult&gt; ConfigureAsync(ProviderSetupRequest request, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Application/ProviderRouting/ProviderSetupService.cs:86](../../../../src/Meridian.Application/ProviderRouting/ProviderSetupService.cs#L86) |  |
+
+## ProviderTrustScoringService
+
+Qualified name: <code>Meridian.Application.ProviderRouting.ProviderTrustScoringService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:57](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L57).
+
+Calculates trust scores for configured provider connections.
+
+```csharp
+public sealed class ProviderTrustScoringService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderTrustScoringService(UI.ConfigStore store, ProviderSdk.IProviderConnectionHealthSource healthSource);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:65](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L65) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ProviderTrustSnapshotDto&gt;&gt; GetTrustSnapshotsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:71](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L71) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ProviderTrustSnapshotDto&gt;&gt; GetTrustSnapshotsForTenantAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:75](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L75) | Evaluates only connections belonging to the authorized tenant in the captured configuration. |
+
 ## IInternalLedgerTransactionSource
 
 Qualified name: <code>Meridian.Application.Reconciliation.IInternalLedgerTransactionSource</code>. Kind: `interface`.
@@ -1081,41 +1121,3 @@ Per-provider, per-security coverage, independent of proposal acceptance authorit
 ```csharp
 public sealed record CorporateActionProviderFetchOutcome(string ProviderId, string Ticker, CorporateActionFetchStatus Status, int ActionsFetched, IReadOnlyList<CorporateActionFetchFailure> Failures);
 ```
-
-## CorporateActionScopeFanOutDecision
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionScopeFanOutDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:45](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L45).
-
-The outcome of asking whether a source decision may be applied, and to which exact scope.
-
-```csharp
-public sealed record CorporateActionScopeFanOutDecision(bool IsPermitted, CorporateActionCaseScopeDto? ResolvedScope, CorporateActionScopeFanOutRefusal Refusal, IReadOnlyList<string> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static CorporateActionScopeFanOutDecision Refused(CorporateActionScopeFanOutRefusal refusal, IReadOnlyList&lt;string&gt; blockers) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:52](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L52) | A refusal carrying its reason and the stated blockers. |
-| <code>public static CorporateActionScopeFanOutDecision Refused(CorporateActionScopeFanOutRefusal refusal, string blocker) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:58](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L58) | A refusal carrying its reason and one stated blocker. |
-
-## CorporateActionScopeFanOutGate
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionScopeFanOutGate</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:98](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L98).
-
-Default gate over IAuthoritativeScopeFanOutService. Two conditions must both hold before a decision is applied, and they are separate questions. First, the affected set must be known: a non-authoritative fan-out is a refusal, never an empty affected set. Second, the known set must be applicable in one command: the durable acceptance path opens exactly one case in one serializable transaction, so a fact reaching several scopes cannot be applied without leaving the remainder un-cased. Refusing the multi-scope case is what keeps &quot;apply the decision atomically&quot; true rather than aspirational; lifting it is store work, not endpoint work. A fact reaching a scope the caller does not own is refused for the same reason and one more: the caller may not decide on another tenant&#x27;s behalf, and telling them the scope exists would itself be a cross-tenant disclosure. The refusal states that the fan-out is not confined to the caller&#x27;s own scope without naming the others.
-
-```csharp
-public sealed class CorporateActionScopeFanOutGate : ICorporateActionScopeFanOutGate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionScopeFanOutGate(IAuthoritativeScopeFanOutService fanOut, ContractSecurityMasterQueryService securities);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:118](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L118) |  |
-| <code>public async Task&lt;CorporateActionScopeFanOutDecision&gt; ResolveDecisionScopeAsync(Guid securityId, DateOnly effectiveDate, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs:127](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs#L127) |  |

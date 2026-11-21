@@ -633,7 +633,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.DirectLending.RebuildCheckpointDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:482](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L482).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:497](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L497).
 
 ```csharp
 public sealed record RebuildCheckpointDto(string ProjectionName, long LastProcessedPosition, Guid? LastEventId, DateTimeOffset? LastRebuiltAt, string Status, string? Details);
@@ -653,7 +653,7 @@ public sealed record ReconcileLoanRequest(decimal AmountTolerance, int DateToler
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ReconciliationExceptionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:239](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L239).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:254](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L254).
 
 ```csharp
 public sealed record ReconciliationExceptionDto(Guid ExceptionId, Guid ReconciliationResultId, string ExceptionType, string Severity, string Status, string? AssignedTo, string? ResolutionNote, DateTimeOffset CreatedAt, DateTimeOffset? ResolvedAt);
@@ -663,11 +663,23 @@ public sealed record ReconciliationExceptionDto(Guid ExceptionId, Guid Reconcili
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ReconciliationResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:222](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L222).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:228](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L228).
 
 ```csharp
-public sealed record ReconciliationResultDto(Guid ReconciliationResultId, Guid ReconciliationRunId, Guid LoanId, Guid? ProjectedCashFlowId, Guid? CashTransactionId, string MatchStatus, decimal? ExpectedAmount, decimal? ActualAmount, decimal? VarianceAmount, DateOnly? ExpectedDate, DateOnly? ActualDate, string? MatchRule, string? ToleranceJson, IReadOnlyList<string> Notes, DateTimeOffset CreatedAt);
+public sealed record ReconciliationResultDto(Guid ReconciliationResultId, Guid ReconciliationRunId, Guid LoanId, Guid? ProjectedCashFlowId, Guid? CashTransactionId, string MatchStatus, decimal? ExpectedAmount, decimal? ActualAmount, decimal? VarianceAmount, DateOnly? ExpectedDate, DateOnly? ActualDate, string? MatchRule, string? ToleranceJson, IReadOnlyList<string> Notes, DateTimeOffset CreatedAt)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? MeasurementKind { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:245](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L245) |  |
+| <code>public string? Currency { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:246](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L246) |  |
+| <code>public DateOnly? AsOfDate { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:247](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L247) |  |
+| <code>public Guid? LedgerBookId { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:248](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L248) |  |
+| <code>public long? ServicingRevision { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:249](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L249) |  |
+| <code>public Guid? PaymentAllocationId { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:250](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L250) |  |
+| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = [];</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:251](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L251) |  |
 
 ## ReconciliationRunDto
 
@@ -676,8 +688,17 @@ Qualified name: <code>Meridian.Contracts.DirectLending.ReconciliationRunDto</cod
 Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:214](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L214).
 
 ```csharp
-public sealed record ReconciliationRunDto(Guid ReconciliationRunId, Guid LoanId, Guid? ProjectionRunId, DateTimeOffset RequestedAt, DateTimeOffset? CompletedAt, string Status);
+public sealed record ReconciliationRunDto(Guid ReconciliationRunId, Guid LoanId, Guid? ProjectionRunId, DateTimeOffset RequestedAt, DateTimeOffset? CompletedAt, string Status)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? RequestHash { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:222](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L222) |  |
+| <code>public DateOnly? AsOfDate { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:223](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L223) |  |
+| <code>public decimal? AmountTolerance { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:224](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L224) |  |
+| <code>public int? DateToleranceDays { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:225](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L225) |  |
 
 ## RecordIndexFixingRequest
 

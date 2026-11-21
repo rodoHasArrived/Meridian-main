@@ -105,7 +105,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Wpf.Models.FundReconciliationSecurityCoverageRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:213](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L213).
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:214](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L214).
 
 ```csharp
 public sealed record FundReconciliationSecurityCoverageRow(string Source, string Symbol, string AccountName, string Reason);

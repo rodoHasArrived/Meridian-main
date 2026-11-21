@@ -410,7 +410,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.QualityAlert</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:150](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L150).
+Source: [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:153](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L153).
 
 Quality alert for a symbol below threshold.
 
@@ -487,7 +487,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.QualityMonitorOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:162](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L162).
+Source: [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:165](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L165).
 
 Configuration for quality monitoring.
 
@@ -499,11 +499,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public double AlertThreshold { get; init; } = 0.80;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:165](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L165) | Minimum score threshold for alerts. |
-| <code>public decimal MaxDailyPriceChangePercent { get; init; } = 50m;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:168](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L168) | Maximum price change percent before flagging as suspicious. |
-| <code>public TimeSpan MaxDataAge { get; init; } = TimeSpan.FromDays(2);</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:171](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L171) | Maximum stale data age before flagging. |
-| <code>public decimal PriceDiscrepancyThresholdPercent { get; init; } = 1m;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:174](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L174) | Cross-source price discrepancy threshold (percent). |
-| <code>public int TopIssuesInAlert { get; init; } = 5;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:177](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L177) | Number of issues to include in alert. |
+| <code>public double AlertThreshold { get; init; } = 0.80;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:168](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L168) | Minimum score threshold for alerts. |
+| <code>public decimal MaxDailyPriceChangePercent { get; init; } = 50m;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:171](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L171) | Maximum price change percent before flagging as suspicious. |
+| <code>public TimeSpan MaxDataAge { get; init; } = TimeSpan.FromDays(2);</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:174](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L174) | Maximum stale data age before flagging. |
+| <code>public decimal PriceDiscrepancyThresholdPercent { get; init; } = 1m;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:177](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L177) | Cross-source price discrepancy threshold (percent). |
+| <code>public int TopIssuesInAlert { get; init; } = 5;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:180](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L180) | Number of issues to include in alert. |
 
 ## QualityScore
 
@@ -521,10 +521,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Grade =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:127](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L127) | Get letter grade based on score. |
-| <code>public int CriticalIssues =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:142](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L142) |  |
-| <code>public int ErrorIssues =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:143](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L143) |  |
-| <code>public int WarningIssues =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:144](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L144) |  |
+| <code>public DateOnly? AssessmentFrom { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:124](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L124) |  |
+| <code>public DateOnly? AssessmentTo { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:125](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L125) |  |
+| <code>public double? QualityThreshold { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:126](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L126) |  |
+| <code>public string Grade =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:130](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L130) | Get letter grade based on score. |
+| <code>public int CriticalIssues =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:145](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L145) |  |
+| <code>public int ErrorIssues =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:146](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L146) |  |
+| <code>public int WarningIssues =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:147](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L147) |  |
 
 ## QualitySeverity
 
