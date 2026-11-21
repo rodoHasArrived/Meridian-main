@@ -1,18 +1,18 @@
-import { FileSearch } from "lucide-react";
+import { CaseInspector } from "./case-inspector";
+import { ReportReviewPanel } from "@/screens/report-review-panel";
 import { DueChip } from "@/components/meridian/due-chip";
 import { describeDue, sortByUrgency } from "@/lib/due-urgency";
 import { MonthCalendar, type MonthCalendarItem } from "@/components/meridian/month-calendar";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DesignSystemStatus } from "@/design-system/status";
 import { EntityLink } from "@/components/meridian/entity-inspector";
-import { LedgerAmountProofDrawer } from "@/components/meridian/proof-drawer";
+import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
 import {
   nextDenseSort,
   sortRowsByValue,
   type DenseDataTableSortState
 } from "@/components/meridian/ui-kit-primitives";
-import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { formatCurrency, formatMoney, formatUtcDate, formatUtcMonthYear } from "@/lib/format";
 import { formatNumber, pluralizeCount } from "@/lib/format";
@@ -27,13 +27,15 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { ledgerAccountIdentity, LedgerFundIdentity } from "@/screens/ledger-record-identity";
 import { getOperationsCloseCalendar, getReconciliationBreakQueue, getRunTrialBalance } from "@/lib/api";
 import { narrowRowsWithFundScopeContext, useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
 import {
   normalizeReportingWorkspace,
   type ReportingWorkspacePayload
 } from "@/lib/reporting-workspace";
-import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
 import { formatAccountingDate, formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
@@ -95,21 +97,19 @@ const reportParameterFields = [
 ];
 
 export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenProps) {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const reportingData = normalizeReportingWorkspace(data);
   const reporting = asRecord(reportingData);
   const requestedRunId = searchParams.get("runId") ?? "";
   const runs = readRecordArray(reporting, "recentRuns");
   const run = requestedRunId
     ? runs.find((candidate) => readString(candidate, "runId", "") === requestedRunId) ?? null
-    : runs[0] ?? null;
+    : null;
   const templates = buildTemplateRows(reportingData?.templates ?? []);
   const runTemplateId = readString(run, "templateId", "");
   const selectedTemplate = runTemplateId
     ? templates.find((candidate) => candidate.templateName === runTemplateId || candidate.id === runTemplateId) ?? null
-    : requestedRunId
-      ? null
-      : templates[0] ?? null;
+    : null;
   const hasPreviewSubject = Boolean(run || selectedTemplate);
   const reportName = readString(run, "reportName", selectedTemplate?.name ?? (runTemplateId || "No report selected"));
   const runId = readString(run, "runId", "No run selected");
@@ -147,6 +147,21 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
 
   return (
     <div className="space-y-4">
+      <FormRow label="Report run" labelFor="report-preview-run" hint="Choose an exact retained run to preview its evidence.">
+        <Select id="report-preview-run" value={requestedRunId} onChange={(event) => {
+          const next = new URLSearchParams(searchParams);
+          if (event.target.value) next.set("runId", event.target.value); else next.delete("runId");
+          setSearchParams(next);
+        }}>
+          <option value="">Choose a report run</option>
+          {requestedRunId && !run ? <option value={requestedRunId}>{requestedRunId} — unavailable</option> : null}
+          {runs.map((candidate) => {
+            const id = readString(candidate, "runId", "");
+            return <option key={id} value={id}>{readString(candidate, "reportName", id)} · {id}</option>;
+          })}
+        </Select>
+      </FormRow>
+      {requestedRunId && !run ? <StatusBanner tone="warning" title="Requested run unavailable" detail={<Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: requestedRunId })}>Open the exact retained run outside the loaded register</Link>} /> : null}
       <OperationalTrustSummary
         source={{ value: run ? "Retained report run" : selectedTemplate ? "Approved template" : "No report selected", tone: hasPreviewSubject ? "ready" : "unknown" }}
         scope={{ value: reportName, detail: run ? presentStatusLabel(runStatus) : "Template preview", tone: hasPreviewSubject ? "ready" : "unknown" }}
@@ -218,7 +233,7 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
           />
           <FinanceFact
             label="Validation"
-            value={validationWarnings.length > 0 ? validationWarnings.join(", ") : "No blocking issues"}
+            value={!hasPreviewSubject ? "Choose a report run" : validationWarnings.length > 0 ? validationWarnings.join(", ") : "No validation warnings returned"}
           />
           {run ? (
             <TechnicalDetails label="Run audit details" className="md:col-span-3">
@@ -229,6 +244,12 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
       </Card>
 
       <Tabs
+        value={["preview", "validation", "changes", "evidence", "approval", "output"].includes(searchParams.get("tab") ?? "") ? searchParams.get("tab")! : "preview"}
+        onValueChange={(tab) => {
+          const next = new URLSearchParams(searchParams);
+          next.set("tab", tab);
+          setSearchParams(next);
+        }}
         tabs={[
           { id: "preview", label: "Preview" },
           { id: "validation", label: "Validation Issues" },
@@ -258,13 +279,7 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
           />
         </TabPanel>
         <TabPanel>
-          <FinanceList
-            title="Changes since prior run"
-            items={[
-              "Parameter changes, retained dataset revisions, and report-writer grid changes are reviewed here.",
-              "Use Report Run Detail to compare the run audit trail and generated files."
-            ]}
-          />
+          {run ? <ReportReviewPanel runId={runId} /> : <StatusBanner tone="warning" title="Choose a report run" detail="A comparison requires an exact retained run identity." />}
         </TabPanel>
         <TabPanel>
           <FinanceList
@@ -305,6 +320,10 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
   const [searchParams] = useSearchParams();
   const accountId = searchParams.get("accountId") ?? "";
   const requestedRunId = searchParams.get("runId") ?? data?.reconciliationQueue?.[0]?.runId ?? "";
+  return <AccountDetailPanel key={requestedRunId} accountId={accountId} requestedRunId={requestedRunId} />;
+}
+
+function AccountDetailPanel({ accountId, requestedRunId }: { accountId: string; requestedRunId: string }) {
   const [trialRows, setTrialRows] = useState<LedgerTrialBalanceLine[]>([]);
   const [loading, setLoading] = useState(Boolean(requestedRunId));
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -352,6 +371,11 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
   ].some((value) => value?.toLowerCase() === normalizedAccountId)) ?? (!accountId ? trialRows[0] ?? null : null);
   const accountName = account?.accountName ?? (accountId ? "Account not found" : "No account selected");
   const hasAccountingBasis = Boolean(account?.accountingBasis?.trim());
+  const accountRecord = account ? ledgerAccountIdentity(account, { runId: requestedRunId }) : null;
+  const recordContext = useRecordWorkspaceContext(accountRecord, {
+    accountId: accountId || accountRecord?.id,
+    runId: requestedRunId
+  });
 
   return (
     <div className="space-y-3">
@@ -399,6 +423,7 @@ export function AccountDetailScreen({ data }: FinanceStandardScreenProps) {
           ) : null}
           {account ? (
             <>
+              {accountRecord ? <RecordIdentitySpine record={accountRecord} context={recordContext} /> : null}
               <div className="grid gap-3 md:grid-cols-3">
                 <FinanceFact label="Account" value={account.accountName} />
                 <FinanceFact label="Account type" value={account.accountType} />
@@ -514,7 +539,6 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
 
 /** The Ledger tab's own body, so its requests belong to the tab that renders them. */
 function PostedLedgerJournalTab({ active }: { active: boolean }) {
-  const [selectedAmount, setSelectedAmount] = useState<LedgerAmountSelection | null>(null);
   // Search and sort live in the link (C4), so Copy link, saved views and saved layouts carry them.
   const [tabSearchParams, setTabSearchParams] = useSearchParams();
   const searchText = tabSearchParams.get(LEDGER_SEARCH_PARAM) ?? "";
@@ -555,18 +579,6 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const sourceLedgerContextHref = workstationRouteWithQuery("accountingLedger", {
     ...Object.fromEntries(tabSearchParams), ledgerBookId: selectedBookId, periodId: postedLedger.selectedPeriodId
   });
-  const currentAmount = selectedAmount && active && !loading && !postedLedger.journalErrorText &&
-    (!selectedAmount.ledgerBookId || selectedAmount.ledgerBookId === selectedBookId) &&
-    (!selectedAmount.periodId || selectedAmount.periodId === postedLedger.selectedPeriodId) &&
-    selectedAmount.fundProfileId === selectedFundId && journalLines.some((entry) => entry.postedLines?.some((line) =>
-      selectedAmount.subjectId === `${entry.journalEntryId}:${line.entryId}:debit` ||
-      selectedAmount.subjectId === `${entry.journalEntryId}:${line.entryId}:credit`)) ? selectedAmount : null;
-  // Discard invalid selections as well as hiding their drawer. This tab stays mounted while
-  // inactive, and retaining the selection would reopen its proof when the old scope loads again.
-  if (selectedAmount && !currentAmount) {
-    setSelectedAmount(null);
-  }
-
   // The trial balance on the sibling tab is labelled in the book's base currency; these are the
   // same governed debits and credits, so they carry it too rather than defaulting to dollars.
   const postedMoney = (value: number) => baseCurrency
@@ -615,19 +627,20 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
   function postingAmountCell(row: (typeof ledgerRows)[number], side: "debit" | "credit") {
     const posting = row.posting;
     const value = posting ? posting[side] : side === "debit" ? row.journal.totalDebits : row.journal.totalCredits;
-    // Amounts read as numbers; the proof is a small control beside them, not an underlined link.
-    return posting && value !== 0 ? (
-      // The proof control sits before the amount, so amounts stay flush with the journal totals.
-      <span className="inline-flex items-center justify-end gap-1.5">
-        <button type="button" className="ledger-proof-button inline-flex size-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-          aria-label={`Inspect ${side} ${postedMoney(value)} for ${posting.accountName} in journal ${row.journal.journalEntryId}`}
-          title="Open proof"
-          onClick={() => setSelectedAmount({ subjectId: `${row.journal.journalEntryId}:${posting.entryId}:${side}`, ledgerBookId: row.journal.ledgerBookId ?? "", periodId: row.journal.periodId ?? "", fundProfileId: selectedFundId, amount: value, currency: baseCurrency ?? "", label: `${posting.accountName} ${side} ${postedMoney(value)}` })}>
-          <FileSearch className="size-3.5" aria-hidden="true" />
-        </button>
-        <span>{postedMoney(value)}</span>
-      </span>
-    ) : postedMoney(value);
+    const reference = posting && value !== 0 ? posting.amountPassport : null;
+    const displayValue = reference?.currency
+      ? formatMoney(value, { context: "accounting", currency: reference.currency })
+      : postedMoney(value);
+    return <AmountPassportTrigger
+      ariaLabel={posting && value !== 0 ? `Inspect ${side} ${displayValue} for ${posting.accountName} in journal ${row.journal.journalEntryId}` : undefined}
+      className="ledger-proof-button"
+      selection={{
+        label: posting ? `${posting.accountName} ${side}` : `Journal total ${side}`, displayValue, reference,
+        currency: baseCurrency, unit: "currency", zero: value === 0, origin: posting ? "unavailable" : "calculated",
+        asOf: posting?.timestamp ?? row.journal.timestamp, basis: postedLedger.selectedBook?.accountingBasis,
+        unavailableReason: !posting ? "The journal subtotal has no retained amount address."
+          : value === 0 ? "This side has zero and carries no posting amount." : "The posted line did not supply its complete retained scope and revision."
+      }}>{displayValue}</AmountPassportTrigger>;
   }
 
   if (!active) {
@@ -636,6 +649,13 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
 
   return (
     <div className="space-y-3">
+      {postedLedger.selectedBook ? (
+        <LedgerFundIdentity
+          book={postedLedger.selectedBook}
+          period={postedLedger.selectedPeriod}
+          periodError={Boolean(postedLedger.view.periodSelector.errorText)}
+        />
+      ) : null}
       <Card className="panel-surface">
         <CardHeader className="sr-only">
           <CardTitle>Ledger Explorer</CardTitle>
@@ -764,7 +784,6 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
         </CardContent>
       </Card>
       <AccountingPeriodComparison bookId={selectedBookId} periodId={postedLedger.selectedPeriodId} expectedBasis={postedLedger.selectedBook?.accountingBasis} enabled={postedLedger.periodsSettled} periodOptions={postedLedger.view.periodSelector.options} />
-      <LedgerAmountProofDrawer selection={currentAmount} onClose={() => setSelectedAmount(null)} />
       <nav className="flex flex-wrap gap-3 text-sm" aria-label="Related accounting workflows">
         <Link className="text-foreground underline underline-offset-4" to={scopedAccountingWorkflowPath(WORKSTATION_ROUTE_CATALOG.accountingFactorPaydown, tabSearchParams)}>Prepare factor paydown</Link>
         <Link className="text-foreground underline underline-offset-4" to={scopedAccountingWorkflowPath(WORKSTATION_ROUTE_CATALOG.accountingConsolidation, tabSearchParams)}>Open consolidation</Link>
@@ -839,15 +858,16 @@ export function ConsolidationWorkflowScreen() {
 }
 
 export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScreenProps) {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { key: navigationKey } = useLocation();
   const fundScope = useFundScopeNarrowingContext();
   const fundAccountId = searchParams.get("fundAccountId")?.trim() || searchParams.get("accountId")?.trim() || undefined;
   const caseId = searchParams.get("caseId")?.trim().toLowerCase();
   const runId = searchParams.get("runId")?.trim().toLowerCase();
-  const breakId = searchParams.get("breakId")?.trim().toLowerCase()
+  const breakId = searchParams.get("reconciliationBreak")?.trim().toLowerCase()
+    || searchParams.get("breakId")?.trim().toLowerCase()
     || (caseId?.startsWith("case:") ? caseId.slice("case:".length).trim() : null);
-  const hasCaseAddress = searchParams.has("caseId") || searchParams.has("breakId");
+  const hasCaseAddress = searchParams.has("reconciliationBreak") || searchParams.has("caseId") || searchParams.has("breakId");
   const hasAddress = hasCaseAddress || searchParams.has("runId");
   const canResolveAddress = (!hasCaseAddress || Boolean(breakId)) && (!searchParams.has("runId") || Boolean(runId));
   const scopeBreaks = (rows: ReconciliationBreakQueueItem[]) => {
@@ -891,10 +911,9 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
   const currentRead = needsQueueRead && queueRead?.navigationKey === navigationKey ? queueRead : null;
   const breaks = currentRead?.rows ? scopeBreaks(currentRead.rows) : workspaceBreaks;
   const selectedBreak = currentRead?.rows ? selectBreak(breaks) : workspaceSelection;
-  const breakLabel = selectedBreak ? financeBreakLabel(selectedBreak.category) : "No open break selected";
   const freshness = buildFinanceFreshness(selectedBreak?.lastUpdatedAt);
   const caseworkPath = workstationRouteWithQuery("accountingReconciliation", {
-    reconciliationBreak: hasAddress ? selectedBreak?.breakId : undefined,
+    reconciliationBreak: selectedBreak?.breakId,
     entityId: searchParams.get("entityId"),
     fundId: searchParams.get("fundId"),
     fundAccountId
@@ -914,45 +933,39 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
         scope={{ value: selectedBreak ? "Selected case" : "No case selected", detail: selectedBreak?.strategyName, tone: selectedBreak ? "ready" : "unknown" }}
         freshness={freshness}
         completeness={{ value: selectedBreak ? "Case loaded" : "No case data", tone: selectedBreak ? "review" : "unknown" }}
-        blocker={selectedBreak ? { value: "Open cash variance", detail: selectedBreak.reason, tone: "review" } : undefined}
       />
       <div className="flex flex-wrap gap-2">
         <Button asChild size="sm"><Link to={caseworkPath}>Open reconciliation casework</Link></Button>
-        {selectedBreak ? (
-          <Button asChild size="sm" variant="outline"><Link to={evidenceWorkbenchPath("reconciliation-break", selectedBreak.breakId)}>Review retained evidence</Link></Button>
-        ) : null}
-        <Button type="button" size="sm" variant="outline" disabled disabledReason="Match decisions are recorded from the reconciliation casework route.">Record match decision</Button>
       </div>
       <Card className="panel-surface">
         <CardHeader>
           <CardTitle>Reconciliation Match Workbench</CardTitle>
-          <CardDescription>Clear breaks by matching source records to ledger records with suggested adjustments.</CardDescription>
+          {selectedBreak ? <CardDescription>{financeBreakLabel(selectedBreak.category)}</CardDescription> : null}
         </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
-          <FinanceFact label="Open breaks" value={String(breaks.length)} />
-          <FinanceFact label="Selected break" value={breakLabel} />
-          <FinanceFact label="Status" value={selectedBreak ? presentStatusLabel(selectedBreak.status) : "No case"} />
-          <FinanceFact label="Variance" value={selectedBreak ? formatCurrency(selectedBreak.variance) : "Not supplied"} mono />
-          <FinanceFact label="Owner" value={selectedBreak?.assigneeDisplayName ?? selectedBreak?.assignedTo ?? "Unassigned"} />
-          <FinanceFact label="Next action" value={selectedBreak?.recommendedAction ?? "Review the case before taking action."} />
+        <CardContent className="space-y-4">
+          <FormRow label="Case" labelFor="match-selected-case">
+            <Select id="match-selected-case" value={selectedBreak?.breakId ?? ""} onChange={(event) => {
+              const next = new URLSearchParams(searchParams);
+              const chosen = breaks.find((item) => item.breakId === event.target.value);
+              if (chosen) {
+                next.set("reconciliationBreak", chosen.breakId);
+                next.delete("caseId");
+                next.delete("breakId");
+                if (next.has("runId")) next.set("runId", chosen.sourceImportId ?? chosen.runId);
+              } else next.delete("reconciliationBreak");
+              setSearchParams(next);
+            }}>
+              {!selectedBreak ? <option value="">Select a case</option> : null}
+              {breaks.map((item) => <option key={item.breakId} value={item.breakId}>{item.reason || item.strategyName} · {item.breakId}</option>)}
+            </Select>
+          </FormRow>
+          {selectedBreak ? (
+            <CaseInspector key={selectedBreak.breakId} caseId={selectedBreak.breakId} initialCase={selectedBreak} relatedCases={breaks} />
+          ) : (
+            <StatusBanner role="status" tone="info" title={emptyState.title} detail={emptyState.detail} />
+          )}
         </CardContent>
       </Card>
-      {selectedBreak ? (
-        <TechnicalDetails label="Audit details">
-          <dl className="grid gap-2 md:grid-cols-2">
-            <FinanceFact label="Case ID" value={selectedBreak.breakId} mono />
-            <FinanceFact label="Run ID" value={selectedBreak.runId} mono />
-            <FinanceFact label="Raw category" value={selectedBreak.category} mono />
-            <FinanceFact label="Source system" value={selectedBreak.sourceSystem ?? "Not supplied"} mono />
-            <FinanceFact label="Source reference" value={selectedBreak.sourceReference ?? "Not supplied"} mono />
-            <FinanceFact label="Tolerance profile" value={selectedBreak.toleranceProfileId ?? "Not supplied"} mono />
-            <FinanceFact label="SLA policy" value={selectedBreak.slaPolicyId ?? "Not supplied"} mono />
-          </dl>
-        </TechnicalDetails>
-      ) : (
-        <StatusBanner role="status" tone="info" title={emptyState.title} detail={emptyState.detail} />
-      )}
-
     </div>
   );
 }
@@ -1366,7 +1379,7 @@ function buildReportOutputItems(references: string[], fallback: string): string[
   });
 }
 
-function FinanceFact({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+function FinanceFact({ label, value, mono = false }: { label: string; value: ReactNode; mono?: boolean }) {
   return (
     <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
       <div className="text-xs font-medium text-muted-foreground">{label}</div>

@@ -17,6 +17,7 @@ import {
   buildOperatingScopeFromSearch,
   carryOperatingScopeIntoSearch,
   describeOperatingScopeForRoute,
+  hasExplicitRecordScope,
   operatingScopeDimensionsForRoute,
   readOperatingScopeFromSearch,
   removeOperatingScopeFromSearch,
@@ -48,7 +49,10 @@ import { WorkspaceStatus } from "@/components/meridian/workspace-status";
 import { SectionDescriptionPreferences } from "@/components/ui/section-description";
 import { EntityInspectorProvider } from "@/components/meridian/entity-inspector";
 import { MetricPassportSessionProvider } from "@/components/meridian/metric-passport";
+import { AmountPassportProvider } from "@/components/meridian/amount-passport";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
+import { RecordWorkspaceHandoff } from "@/components/meridian/record-identity-spine";
+import { readRecordWorkspaceContext, withoutRecordWorkspaceContext } from "@/lib/record-workspace-context";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
 import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
 import { isCompanionPaneRoute, openCompanionPane } from "@/lib/companion-pane/pane-window";
@@ -131,6 +135,8 @@ import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 import { FirstRunScreen } from "@/features/first-run/first-run-screen";
 import type { FirstRunStatus } from "@/features/first-run/types";
 import { apiGetJson } from "@/lib/api";
+import { closeWorkspaceRedirect } from "@/lib/workstation-close-routing";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 // Lazy route modules and data-backed panels often mount hash targets after the
@@ -145,7 +151,9 @@ type FirstRunLoadState =
   | { phase: "failed"; status: null };
 
 const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: memo(module.DataScreen) })));
-const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower-screen").then((module) => ({ default: memo(module.DailyControlTowerScreen) })));
+const TodayScreen = lazy(() => import("@/screens/today-screen").then((module) => ({ default: memo(module.TodayScreen) })));
+const ImportStartScreen = lazy(() => import("@/screens/import-start-screen").then((module) => ({ default: module.ImportStartScreen })));
+const InstrumentDossierScreen = lazy(() => import("@/screens/instrument-dossier-screen").then((module) => ({ default: module.InstrumentDossierScreen })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
 const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
@@ -396,21 +404,28 @@ function AppShell({
   const workbenchRef = useRef<HTMLElement | null>(null);
   const previousRouteKeyRef = useRef<string | null>(null);
   const scopeReplacementLocationRef = useRef<string | null>(null);
+  const previousHandoffRouteRef = useRef<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { hash, pathname, search, key: locationKey } = location;
   const activeWorkspace = resolveWorkspaceKeyFromPath(pathname);
   const routeOperatingScope = useMemo(() => readOperatingScopeFromSearch(search), [search]);
+  const recordWorkspaceContext = useMemo(() => readRecordWorkspaceContext(search), [search]);
+  const recordScopedRoute = hasExplicitRecordScope(search) || recordWorkspaceContext !== null;
+  const recordScopedRouteRef = useRef(recordScopedRoute);
+  recordScopedRouteRef.current = recordScopedRoute;
   const operatingScopeInput = useMemo(
-    () => mergeOperatingScopes(storedOperatingScope, routeOperatingScope),
-    [storedOperatingScope, routeOperatingScope]
+    () => recordScopedRoute ? compactOperatingScope(routeOperatingScope) : mergeOperatingScopes(storedOperatingScope, routeOperatingScope),
+    [recordScopedRoute, storedOperatingScope, routeOperatingScope]
   );
   const operatingContextSymbol = operatingScopeInput.symbol ?? null;
   // C1: load the operator's default scope once. It is applied only when this session opened with
   // no scope at all (none in the link, none remembered in this browser) and the operator has not
   // chosen one since, so it never overrides a shared link or the operator's own choice.
   const openedUnscopedRef = useRef<boolean | null>(null);
-  if (openedUnscopedRef.current === null) openedUnscopedRef.current = !hasOperatingScopeValues(operatingScopeInput);
+  if (openedUnscopedRef.current === null) {
+    openedUnscopedRef.current = !recordScopedRoute && !hasOperatingScopeValues(operatingScopeInput);
+  }
   const currentOperatingScopeRef = useRef(operatingScopeInput);
   currentOperatingScopeRef.current = operatingScopeInput;
   useEffect(() => {
@@ -423,6 +438,7 @@ function AppShell({
       setDefaultScope(saved && hasOperatingScopeValues(saved) ? saved : null);
       if (
         openedUnscopedRef.current
+        && !recordScopedRouteRef.current
         && !operatorChoseScopeRef.current
         && !hasOperatingScopeValues(currentOperatingScopeRef.current)
         && saved
@@ -482,6 +498,7 @@ function AppShell({
     refreshStatus,
     portfolioRefreshStatus,
     refresh,
+    refreshWorkspace,
     refreshPortfolio,
     refreshProviderRouting,
     updateFeatureCapability,
@@ -573,6 +590,8 @@ function AppShell({
   );
 
   useEffect(() => {
+    const dismissedHandoff = previousHandoffRouteRef.current === `${pathname}${search}`;
+    previousHandoffRouteRef.current = recordWorkspaceContext ? `${pathname}${withoutRecordWorkspaceContext(search)}` : null;
     // An explicit replacement must not re-import the old route's scope while
     // React Router completes navigation (including partial clears and layout restores).
     if (scopeReplacementLocationRef.current !== null) {
@@ -582,7 +601,8 @@ function AppShell({
       return;
     }
 
-    if (!hasOperatingScopeValues(routeOperatingScope)) {
+    // Record links apply their route filters without replacing the operator's saved scope.
+    if (recordScopedRoute || dismissedHandoff || !hasOperatingScopeValues(routeOperatingScope)) {
       return;
     }
 
@@ -593,15 +613,15 @@ function AppShell({
 
     writeStoredOperatingScope(nextScope);
     setStoredOperatingScope(nextScope);
-  }, [locationKey, routeOperatingScope, storedOperatingScope]);
+  }, [locationKey, pathname, search, recordScopedRoute, recordWorkspaceContext, routeOperatingScope, storedOperatingScope]);
 
   // Scope survives every in-app link (Phase 1, P2 step 1). A plain catalog link drops the query
   // string; screens that read the URL then lost their fund filter while the bar still showed it.
   // Routes render against the scoped location on the first render, so no screen fetches unscoped,
   // and the address bar is brought in line so copied links carry the same scope.
   const scopedSearch = useMemo(
-    () => carryOperatingScopeIntoSearch(pathname, search, storedOperatingScope),
-    [pathname, search, storedOperatingScope]
+    () => recordScopedRoute ? search : carryOperatingScopeIntoSearch(pathname, search, storedOperatingScope),
+    [pathname, recordScopedRoute, search, storedOperatingScope]
   );
   const scopedLocation = useMemo(
     () => (scopedSearch === search ? location : { ...location, search: scopedSearch }),
@@ -868,14 +888,17 @@ function AppShell({
     () => buildHeaderWorkspaceSummary(pathname, shell.activeWorkspace),
     [pathname, shell.activeWorkspace]
   );
-  const routeErrorContext = useMemo<WorkstationRouteErrorContext>(() => ({
-    routeKey: `${pathname}${search}${hash}`,
-    pathname,
-    search,
-    hash,
-    workspaceLabel: shell.activeWorkspace.label,
-    routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace, search)
-  }), [hash, pathname, search, shell.activeWorkspace]);
+  const routeErrorContext = useMemo<WorkstationRouteErrorContext>(() => {
+    const diagnosticSearch = withoutRecordWorkspaceContext(search);
+    return {
+      routeKey: `${pathname}${diagnosticSearch}${hash}`,
+      pathname,
+      search: diagnosticSearch,
+      hash,
+      workspaceLabel: shell.activeWorkspace.label,
+      routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace, search)
+    };
+  }, [hash, pathname, search, shell.activeWorkspace]);
   const dataRouteElement = (
     <DataScreen
       data={data}
@@ -888,6 +911,7 @@ function AppShell({
       providerRoutingRefreshing={providerRoutingRefreshing}
       onProviderSetupConfigured={refreshProviderRouting}
       onProviderRoutingRefresh={refreshProviderRouting}
+      onBackfillCompleted={refreshWorkspace}
     />
   );
   const settingsRouteElement = (
@@ -986,6 +1010,7 @@ function AppShell({
     <ShellStatusSignalsProvider value={shellStatusSignals}>
     <WorkspaceFigureContextProvider value={workspaceFigureContext}>
     <PageTrustProvider registry={pageTrustRegistry}>
+    <AmountPassportProvider enabled={shell.canRenderRoutes} scopeKey={JSON.stringify(operatingScopeInput)} session={session}>
     <KpiProvider models={{ portfolio, trading, overview, strategy, data, accounting, crossScreenCounts }}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
@@ -1054,14 +1079,17 @@ function AppShell({
             overflowActions={<CopyLinkButton operatingScope={operatingScopeInput} />}
             routeKey={shell.routeFocus.routeKey}
             scope={(
-              <OperatingScopeBar
-                operatingScope={shell.workflowContinuity.operatingScope}
-                onEditOperatingScope={openScopePicker}
-                scopeDimensionsInEffect={scopeDimensionsInEffect}
-                valueLabels={scopeBarValueLabels}
-                // Trading works one fund account at a time, so its account step is in the bar.
-                accountPicker={pathname.startsWith("/trading") ? <ScopeBarAccountPicker normalize={normalizeFundAccountGuid} invalidMessage="Trading needs a fund account with a GUID id." /> : undefined}
-              />
+              <>
+                <OperatingScopeBar
+                  operatingScope={shell.workflowContinuity.operatingScope}
+                  onEditOperatingScope={openScopePicker}
+                  scopeDimensionsInEffect={scopeDimensionsInEffect}
+                  valueLabels={scopeBarValueLabels}
+                  // Trading works one fund account at a time, so its account step is in the bar.
+                  accountPicker={pathname.startsWith("/trading") ? <ScopeBarAccountPicker normalize={normalizeFundAccountGuid} invalidMessage="Trading needs a fund account with a GUID id." /> : undefined}
+                />
+                {shell.canRenderRoutes && recordWorkspaceContext ? <RecordWorkspaceHandoff context={recordWorkspaceContext} /> : null}
+              </>
             )}
             breadcrumbItems={breadcrumbItems}
             workspace={headerWorkspace}
@@ -1078,26 +1106,20 @@ function AppShell({
               <RouteErrorBoundary routeKey={routeErrorContext.routeKey} context={routeErrorContext}>
                 <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
                   <Routes location={scopedLocation}>
-                  <Route path="/" element={(
-                    <DailyControlTowerScreen
-                      viewModel={shell.workflowContinuity}
-                      trustStrip={shell.trustStrip}
-                      attention={shell.attention}
-                      triage={triageInbox}
+                  {["/", "/today"].map((route) => <Route key={route} path={route} element={(
+                    <TodayScreen
+                      viewModel={shell.workflowContinuity} trustStrip={shell.trustStrip}
+                      attention={shell.attention} triage={triageInbox}
                       refreshing={loading || refreshStatus.inFlight}
-                    />
-                  )} />
-                  <Route path="/trading/readiness" element={(
-                    <OperatorReadinessConsole
-                      strategy={strategy}
-                      trading={trading}
-                      data={data}
-                      accounting={accounting}
-                      reporting={reporting}
+                      strategy={strategy} trading={trading} data={data} accounting={accounting} reporting={reporting}
                       fundAccountId={operatingScopeInput.fundAccountId}
                     />
-                  )} />
-                  <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
+                  )} />)}
+                  <Route path="/trading/readiness" element={<CloseWorkspaceRedirect />} />
+                  <Route path="/records/instrument/:id" element={<InstrumentDossierScreen portfolio={portfolio} trading={trading} accounting={accounting} brokeragePortfolio={brokeragePortfolio} />} />
+                  <Route path="/trading/*" element={<TradingScreen
+                    key={`${operatingScopeInput.fundAccountId ?? ""}/${trading?.scopedPaperOrderIntentKey ?? ""}`}
+                    data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
                   <Route path="/portfolio/loan-book" element={<LoanBookScreen />} />
                   <Route path="/portfolio/nav" element={<NavComparisonScreen defaultFundProfileId={reporting?.selectedFundProfileId ?? reporting?.fundProfileId ?? null} />} />
@@ -1115,7 +1137,8 @@ function AppShell({
                       refreshStatus={portfolioRefreshStatus}
                     />
                   )} />
-                  <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
+                  <Route path="/accounting/operations-continuity" element={<CloseWorkspaceRedirect />} />
+                  <Route path="/accounting/close" element={<OperationsContinuityScreen closeHub />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
                   <Route path="/accounting/ledger" element={<LedgerExplorerScreen data={accounting} />} />
                   <Route path="/accounting/factor-paydown" element={<FactorPaydownScreen />} />
@@ -1141,11 +1164,12 @@ function AppShell({
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
                   <Route path="/reporting/*" element={<ReportingScreen data={reporting} accounting={accounting} onRefreshLivePortfolioViews={refreshPortfolio} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
-                  <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
+                  <Route path="/strategy/designer" element={<StrategyDesignerScreen fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/run-ledger" element={<StrategyRunLedgerScreen />} />
                   <Route path="/strategy/*" element={<StrategyScreen data={strategy} fundAccountId={operatingScopeInput.fundAccountId} />} />
+                  <Route path="/data/import/start" element={<ImportStartScreen />} />
                   <Route path="/data/quotes" element={<MarketDataScreen />} />
                   <Route path="/data/watchlist" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/alerts" element={<LegacyWorkspaceRedirect />} />
@@ -1156,7 +1180,12 @@ function AppShell({
                     <Route key={route} path={route} element={dataRouteElement} />
                   ))}
                   {SETTINGS_WORKSTATION_SCREEN_ROUTES.map((route) => (
-                    <Route key={route} path={route} element={settingsRouteElement} />
+                    <Route key={route} path={route} element={route === "/settings/diagnostics" ? <>
+                      {settingsRouteElement}
+                      <TechnicalDetails label="Cross-workspace readiness evidence" className="mt-4">
+                        <OperatorReadinessConsole strategy={strategy} trading={trading} data={data} accounting={accounting} reporting={reporting} fundAccountId={operatingScopeInput.fundAccountId} />
+                      </TechnicalDetails>
+                    </> : settingsRouteElement} />
                   ))}
                   {SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS.map((route) => (
                     <Route key={route} path={route} element={settingsRouteElement} />
@@ -1239,6 +1268,7 @@ function AppShell({
       </Sheet>
     </div>
     </KpiProvider>
+    </AmountPassportProvider>
     </PageTrustProvider>
     </WorkspaceFigureContextProvider>
     </ShellStatusSignalsProvider>
@@ -1257,6 +1287,8 @@ function AppShell({
 function resolveWorkspaceKeyFromPath(pathname: string): WorkspaceKey {
   const root = pathname.split("/").filter(Boolean)[0]?.toLowerCase();
   switch (root) {
+    case "records":
+      return "portfolio";
     case "portfolio":
     case "accounting":
     case "reporting":
@@ -1271,7 +1303,7 @@ function resolveWorkspaceKeyFromPath(pathname: string): WorkspaceKey {
 }
 
 function buildHeaderWorkspaceSummary(pathname: string, workspace: WorkspaceSummary): WorkspaceSummary {
-  if (pathname !== "/") {
+  if (pathname !== "/" && pathname !== "/today") {
     return workspace;
   }
 
@@ -1350,7 +1382,7 @@ function buildWorkspaceBreadcrumbItems(
 ): BreadcrumbItem[] {
   // The masthead already says "Meridian", so the trail starts at the workspace and ends in the
   // page name, which the header renders as the page heading.
-  if (pathname === "/") {
+  if (pathname === "/" || pathname === "/today") {
     // The Daily Control Tower is the workstation's front door, named "Today" in the sidebar.
     return [{ label: "Today", current: true }];
   }
@@ -1499,4 +1531,9 @@ function focusElementById(targetElementId: string, fallbackElement: HTMLElement 
   }
 
   return true;
+}
+
+function CloseWorkspaceRedirect() {
+  const location = useLocation();
+  return <Navigate to={closeWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/today"} replace />;
 }

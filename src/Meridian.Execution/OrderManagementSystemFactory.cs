@@ -1,3 +1,4 @@
+using Meridian.Contracts.Operations;
 using Meridian.Execution.Events;
 using Meridian.Execution.Models;
 using Meridian.Execution.OrderManagement;
@@ -90,7 +91,9 @@ public static class OrderManagementSystemFactory
             marketReferences: services.GetService<IOrderMarketReferenceSource>(),
             instrumentCoverage: services.GetService<IOrderInstrumentCoverageSource>(),
             strategyRunAuthority: services.GetService<IStrategyRunAuthoritySource>(),
-            authorityOptions: services.GetService<OrderAuthorityOptions>())
+            authorityOptions: services.GetService<OrderAuthorityOptions>(),
+            orderIntentHistory: services.GetService<IOperationalCaseHistoryStore>(),
+            liveStrategyAuthorization: services.GetService<ILiveStrategyOrderAuthorization>())
         {
             BindNativePaperSessions = hosted && gateway is PaperTradingGateway
                 && portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: false }

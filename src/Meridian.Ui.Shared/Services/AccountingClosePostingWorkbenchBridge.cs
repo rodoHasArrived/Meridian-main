@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
@@ -36,6 +37,7 @@ public sealed class AccountingClosePostingWorkbenchBridge :
     private readonly IReconciliationBreakQueueRepository? _breakQueue;
     private readonly IOperationsContinuityWorkflowService? _operationsWorkflowService;
     private readonly IReportingReleaseConsistencyGate? _releaseConsistencyGate;
+    private readonly IExternalGlConfirmationGate? _externalGl;
 
     public AccountingClosePostingWorkbenchBridge(
         AutomatedJournalIntakeRunner runner,
@@ -68,7 +70,8 @@ public sealed class AccountingClosePostingWorkbenchBridge :
         IFundProfileTenancyRegistry? tenancyRegistry,
         IReconciliationBreakQueueRepository? breakQueue,
         IOperationsContinuityWorkflowService? operationsWorkflowService,
-        IReportingReleaseConsistencyGate? releaseConsistencyGate = null)
+        IReportingReleaseConsistencyGate? releaseConsistencyGate = null,
+        IExternalGlConfirmationGate? externalGl = null)
     {
         _runner = runner ?? throw new ArgumentNullException(nameof(runner));
         _workbench = workbench ?? throw new ArgumentNullException(nameof(workbench));
@@ -79,6 +82,7 @@ public sealed class AccountingClosePostingWorkbenchBridge :
         _breakQueue = breakQueue;
         _operationsWorkflowService = operationsWorkflowService;
         _releaseConsistencyGate = releaseConsistencyGate;
+        _externalGl = externalGl;
     }
 
     internal IReconciliationBreakQueueRepository? BreakQueueAuthority => _breakQueue;
@@ -398,6 +402,9 @@ public sealed class AccountingClosePostingWorkbenchBridge :
         CancellationToken ct,
         LedgerPeriodSummaryDto? summary = null)
     {
+        if (_externalGl is not null)
+            await _externalGl.RequireConfirmationAsync(context.LedgerBookId, period.PeriodId, ct).ConfigureAwait(false);
+
         var completionId = $"hard-close-{period.PeriodId:N}-v{period.Version.ToString(CultureInfo.InvariantCulture)}";
         try
         {

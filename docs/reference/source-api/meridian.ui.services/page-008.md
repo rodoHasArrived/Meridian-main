@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceResult
+
+Qualified name: <code>Meridian.Ui.Services.MaintenanceResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:920](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L920).
+
+Result of a maintenance task execution.
+
+```csharp
+public sealed class MaintenanceResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TaskId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:922](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L922) |  |
+| <code>public string TaskName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:923](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L923) |  |
+| <code>public DateTime StartTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:924](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L924) |  |
+| <code>public DateTime? EndTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:925](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L925) |  |
+| <code>public TimeSpan? Duration { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:926](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L926) |  |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:927](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L927) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:928](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L928) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:929](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L929) |  |
+| <code>public bool IsDryRun { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:930](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L930) |  |
+| <code>public bool WasCancelled { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:931](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L931) |  |
+| <code>public int FilesProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:932](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L932) |  |
+| <code>public int FilesSuccessful { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:933](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L933) |  |
+| <code>public int FilesFailed { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:934](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L934) |  |
+| <code>public long BytesSaved { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:935](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L935) |  |
+
 ## MaintenanceRunOptions
 
 Qualified name: <code>Meridian.Ui.Services.MaintenanceRunOptions</code>. Kind: `class`.
@@ -1158,23 +1189,3 @@ Enum declarations:
 | <code>Zip</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:839](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L839) |  |
 | <code>TarGz</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:840](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L840) |  |
 | <code>SevenZip</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:841](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L841) |  |
-
-## PackageImportOptions
-
-Qualified name: <code>Meridian.Ui.Services.PackageImportOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:887](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L887).
-
-Selects a portable package and controls validation and overwrite behavior during import.
-
-```csharp
-public sealed class PackageImportOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string PackagePath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:889](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L889) |  |
-| <code>public bool ValidateFirst { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:890](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L890) |  |
-| <code>public bool OverwriteExisting { get; set; }</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:891](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L891) |  |

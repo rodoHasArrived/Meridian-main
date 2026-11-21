@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationTableColumnModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationTableColumnModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:252](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L252).
+
+```csharp
+public sealed record WorkstationTableColumnModel(string Header, string BindingPath, double Width = 120, string StringFormat = "");
+```
+
+## WorkstationTableModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationTableModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:261](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L261).
+
+Carries table column definitions, rows, title, and empty-state copy for workstation grids.
+
+```csharp
+public class WorkstationTableModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:263](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L263) |  |
+| <code>public string EmptyTitle { get; init; } = &quot;No rows&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:265](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L265) |  |
+| <code>public string EmptyDetail { get; init; } = &quot;No records are available.&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:267](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L267) |  |
+| <code>public IReadOnlyList&lt;WorkstationTableColumnModel&gt; Columns { get; init; } = Array.Empty&lt;WorkstationTableColumnModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:269](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L269) |  |
+| <code>public IEnumerable Rows { get; init; } = Array.Empty&lt;object&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:271](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L271) |  |
+
+## WorkstationTableModel (generic arity 1)
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationTableModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:277](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L277).
+
+Adds strongly typed row enumeration to the workstation table presentation model.
+
+```csharp
+public sealed class WorkstationTableModel<TRecord>: WorkstationTableModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public new IEnumerable&lt;TRecord&gt; Rows { get; init; } = Array.Empty&lt;TRecord&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:279](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L279) |  |
+| <code>public WorkstationTableModel();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:281](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L281) |  |
+| <code>public WorkstationTableModel(IEnumerable&lt;TRecord&gt; rows, IReadOnlyList&lt;WorkstationTableColumnModel&gt; columns, string title = &quot;&quot;, string emptyTitle = &quot;No rows&quot;, string emptyDetail = &quot;No records are available.&quot;);</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:286](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L286) |  |
+
+## ConnectionStatusIndicatorControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.ConnectionStatusIndicatorControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:110](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L110).
+
+Provides a content surface for connection-status presentation.
+
+```csharp
+public sealed class ConnectionStatusIndicatorControl : ContentControl
+```
+
 ## EmptyStatePanelControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Primitives.EmptyStatePanelControl</code>. Kind: `class`.

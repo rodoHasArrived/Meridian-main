@@ -42,6 +42,14 @@ public sealed class BackfillProviderEditorTests
     }
 
     [Fact]
+    public void Catalog_InitialAlpacaPriorityEditKeepsTheInheritedHostFeed()
+    {
+        var changed = BackfillProviderCatalog.Apply(new(), "alpaca", new(true, 2));
+        changed.Alpaca!.Feed.Should().BeEmpty();
+        changed.Alpaca.Priority.Should().Be(2);
+    }
+
+    [Fact]
     public void Catalog_StarterPresetFeedsRuntimePriorityAndLimit()
     {
         var cfg = BackfillProviderCatalog.Apply(new(), "polygon", new(true, 3, "starter"));

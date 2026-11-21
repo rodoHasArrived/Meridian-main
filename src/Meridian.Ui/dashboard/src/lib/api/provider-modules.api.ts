@@ -50,7 +50,9 @@ export function createProviderModulesApi(
       return postJson<ProviderModuleTestResult>(PROVIDER_MODULE_API.test(moduleId), undefined, options);
     },
     restartProviderHost(options: ApiRequestOptions = {}) {
-      return postJson<{ restarting: boolean; message: string }>(PROVIDER_MODULE_API.restart, undefined, options);
+      return postJson<{ accepted: boolean; operationId: string; operationUri: string }>(
+        PROVIDER_MODULE_API.restart, undefined, options
+      );
     }
   };
 }

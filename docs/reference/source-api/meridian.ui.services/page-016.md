@@ -6,6 +6,134 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ThroughputAnalysisOptions
+
+Qualified name: <code>Meridian.Ui.Services.ThroughputAnalysisOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:501](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L501).
+
+Selects the provider, period, and time-bucket interval for throughput analysis.
+
+```csharp
+public sealed class ThroughputAnalysisOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? Provider { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:503](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L503) |  |
+| <code>public TimeSpan? Period { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:504](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L504) |  |
+| <code>public int IntervalSeconds { get; set; } = 60;</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:505](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L505) |  |
+
+## ThroughputAnalysisResponse
+
+Qualified name: <code>Meridian.Ui.Services.ThroughputAnalysisResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:525](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L525).
+
+Carries API throughput rates, total processed events, and time-bucket measurements.
+
+```csharp
+public sealed class ThroughputAnalysisResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double CurrentThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:527](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L527) |  |
+| <code>public double AverageThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:528](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L528) |  |
+| <code>public double PeakThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:529](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L529) |  |
+| <code>public long TotalEventsProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:530](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L530) |  |
+| <code>public List&lt;ThroughputDataPoint&gt;? Timeline { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:531](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L531) |  |
+
+## ThroughputAnalysisResult
+
+Qualified name: <code>Meridian.Ui.Services.ThroughputAnalysisResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:511](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L511).
+
+Reports throughput-query success, current and peak rates, and the event timeline.
+
+```csharp
+public sealed class ThroughputAnalysisResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:513](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L513) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:514](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L514) |  |
+| <code>public double CurrentThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:515](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L515) |  |
+| <code>public double AverageThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:516](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L516) |  |
+| <code>public double PeakThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:517](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L517) |  |
+| <code>public long TotalEventsProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:518](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L518) |  |
+| <code>public List&lt;ThroughputDataPoint&gt; Timeline { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:519](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L519) |  |
+
+## ThroughputDataPoint
+
+Qualified name: <code>Meridian.Ui.Services.ThroughputDataPoint</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:537](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L537).
+
+Records the event rate and total events at one point in a throughput timeline.
+
+```csharp
+public sealed class ThroughputDataPoint
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:539](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L539) |  |
+| <code>public double EventsPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:540](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L540) |  |
+| <code>public long TotalEvents { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:541](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L541) |  |
+
+## TierConfigResponse
+
+Qualified name: <code>Meridian.Ui.Services.TierConfigResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:152](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L152).
+
+HTTP response payload for tier configuration.
+
+```csharp
+public sealed class TierConfigResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;StorageTierConfig&gt;? Tiers { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:154](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L154) |  |
+| <code>public bool AutoMigrationEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:155](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L155) |  |
+| <code>public string? MigrationSchedule { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:156](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L156) |  |
+
+## TierConfigResult
+
+Qualified name: <code>Meridian.Ui.Services.TierConfigResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:140](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L140).
+
+Result of getting tier configuration.
+
+```csharp
+public sealed class TierConfigResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:142](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L142) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:143](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L143) |  |
+| <code>public List&lt;StorageTierConfig&gt; Tiers { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:144](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L144) |  |
+| <code>public bool AutoMigrationEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:145](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L145) |  |
+| <code>public string? MigrationSchedule { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:146](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L146) |  |
+
 ## TierMigrationApiResult
 
 Qualified name: <code>Meridian.Ui.Services.TierMigrationApiResult</code>. Kind: `class`.
@@ -960,132 +1088,3 @@ Declared public members:
 | <code>public double Height { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:104](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L104) |  |
 | <code>public string? MonitorId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:105](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L105) |  |
 | <code>public bool IsMaximized { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:106](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L106) |  |
-
-## WorkspaceCategory
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:38](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L38).
-
-Persisted workspace category. Numeric values are stable because saved workspace state may contain them. Legacy member names remain as aliases for source and persisted-state compatibility.
-
-```csharp
-public enum WorkspaceCategory : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Strategy = 0</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:40](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L40) |  |
-| <code>Trading</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:41](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L41) |  |
-| <code>Data</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:42](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L42) |  |
-| <code>Accounting</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:43](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L43) |  |
-| <code>Custom</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:44](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L44) |  |
-| <code>[Obsolete(&quot;Use Strategy. Research is retained only as a compatibility alias.&quot;)] Research = Strategy</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:45](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L45) |  |
-| <code>[Obsolete(&quot;Use Data. DataOperations is retained only as a compatibility alias.&quot;)] DataOperations = Data</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:47](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L47) |  |
-| <code>[Obsolete(&quot;Use Accounting. Governance is retained only as a compatibility alias.&quot;)] Governance = Accounting</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:49](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L49) |  |
-
-## WorkspaceCategoryExtensions
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceCategoryExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:56](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L56).
-
-Maps persisted workspace categories to canonical operator-facing workspace names.
-
-```csharp
-public static class WorkspaceCategoryExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string ToDisplayName(this WorkspaceCategory category);</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:58](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L58) |  |
-
-## WorkspaceEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:199](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L199).
-
-Workspace event args.
-
-```csharp
-public sealed class WorkspaceEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspaceTemplate? Workspace { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:201](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L201) |  |
-
-## WorkspaceLayoutPreset
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceLayoutPreset</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:187](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L187).
-
-User-saveable workstation layout preset.
-
-```csharp
-public sealed class WorkspaceLayoutPreset
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string PresetId { get; set; } = Guid.NewGuid().ToString(&quot;N&quot;);</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:189](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L189) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:190](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L190) |  |
-| <code>public bool IsBuiltIn { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:191](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L191) |  |
-| <code>public WorkstationLayoutState Layout { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:192](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L192) |  |
-| <code>public DateTime SavedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:193](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L193) |  |
-
-## WorkspacePage
-
-Qualified name: <code>Meridian.Ui.Services.WorkspacePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:74](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L74).
-
-Page within a workspace.
-
-```csharp
-public sealed class WorkspacePage
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string PageTag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:76](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L76) |  |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:77](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L77) |  |
-| <code>public bool IsDefault { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:78](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L78) |  |
-| <code>public double ScrollPosition { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:79](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L79) |  |
-| <code>public Dictionary&lt;string, object&gt; PageState { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:80](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L80) |  |
-
-## WorkspaceQuickAction
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceQuickAction</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:211](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L211).
-
-Named quick action attached to a workspace. Each action carries a target page tag and an optional tone so shells can render it as a contextual button or menu item without requiring a full workflow summary fetch.
-
-```csharp
-public sealed class WorkspaceQuickAction
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ActionId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:214](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L214) | Stable identifier used for deduplication and analytics. |
-| <code>public string Label { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:217](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L217) | Human-readable action label shown in the shell tile. |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:220](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L220) | Description shown as tooltip or secondary text. |
-| <code>public string TargetPageTag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:223](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L223) | Navigation target invoked when the action is activated. |
-| <code>public string Tone { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:226](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L226) | Visual tone: default, primary, success, warning, or danger. |
-| <code>public bool IsEnabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:229](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L229) | When false the action is rendered but not interactive (e.g. locked behind context). |
-| <code>public int Order { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:232](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L232) | Display order within the action list (lower = earlier). |

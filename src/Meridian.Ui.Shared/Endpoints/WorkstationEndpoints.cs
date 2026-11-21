@@ -23,6 +23,7 @@ using Meridian.Execution.Services;
 using Meridian.Instruments.AssetOperations;
 using Meridian.QuantScript.Compilation;
 using Meridian.Storage.Export;
+using Meridian.Storage.Backfill;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Query;
 using Meridian.Storage.Services;
@@ -123,7 +124,9 @@ public static partial class WorkstationEndpoints
         MapExtensibilityEndpoints(group, jsonOptions);
         MapCloseReadinessEndpoints(group, jsonOptions);
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
+        MapRecordSearchEndpoint(group, jsonOptions);
         MapOperatorTriageEndpoints(group, jsonOptions);
+        MapBookReceiptQueueEndpoints(group, jsonOptions);
         MapCloseChecklistHistoryEndpoints(group, jsonOptions);
         MapApprovalCollaborationEndpoints(group, jsonOptions);
         MapWorkstationChartEvidenceEndpoints(group, jsonOptions);
@@ -1486,38 +1489,24 @@ public static partial class WorkstationEndpoints
             .CountProviderHealth(providers.Select(static provider => provider.Status))
             .Healthy;
 
-        // --- Backfills (last known backfill result from status file) ---
-        var lastBackfill = configStore?.TryLoadBackfillStatus();
-        WorkstationDataBackfillRecord[] backfills;
-        if (lastBackfill is not null)
+        var backfillStore = context.RequestServices.GetService<BackfillCoordinator>()?.GetReceiptStore()
+            ?? (configStore is null ? null : new BackfillStatusStore(configStore.GetDataRoot()));
+        var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+        var retained = backfillStore?.ReadRecentRetainedResults(50, tenantId) ?? [];
+        var backfills = retained.Select(BuildRetainedBackfillRow).ToList();
+
+        if (backfillStore?.TryRead() is { ProviderProvenance: null } legacy)
         {
-            var symbolSummary = lastBackfill.Symbols.Length > 0
-                ? string.Join(", ", lastBackfill.Symbols.Take(3)) + (lastBackfill.Symbols.Length > 3 ? " …" : "")
-                : "unknown";
-            var days = (lastBackfill.To != null && lastBackfill.From != null)
-                ? (lastBackfill.To.Value.DayNumber - lastBackfill.From.Value.DayNumber).ToString(CultureInfo.InvariantCulture) + "d"
-                : "—";
-            var age = DateTimeOffset.UtcNow - lastBackfill.CompletedUtc;
-            var updatedAt = age.TotalMinutes < 60
-                ? $"{(int)age.TotalMinutes}m ago"
-                : $"{(int)age.TotalHours}h ago";
-            backfills =
-            [
-                new WorkstationDataBackfillRecord(
-                    JobId: "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
-                    {
-                        lastBackfill.Provider, lastBackfill.CompletedUtc, lastBackfill.From, lastBackfill.To, lastBackfill.Symbols
-                    }))[..16],
-                    Scope: $"{symbolSummary} / {days}",
-                    Provider: lastBackfill.Provider,
-                    Status: lastBackfill.Success ? "Completed" : "Failed",
-                    Progress: lastBackfill.Success ? "100%" : "Error",
-                    UpdatedAt: updatedAt)
-            ];
-        }
-        else
-        {
-            backfills = [];
+            var legacyId = "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
+            {
+                legacy.Provider,
+                legacy.CompletedUtc,
+                legacy.From,
+                legacy.To,
+                legacy.Symbols
+            }))[..16];
+            backfills.Add(BuildBackfillRow(legacyId, legacy.Symbols,
+                legacy.From, legacy.To, legacy.Provider, legacy.Success, legacy.CompletedUtc));
         }
 
         var metrics = new List<WorkstationMetricCard>
@@ -1547,6 +1536,29 @@ public static partial class WorkstationEndpoints
             Exports: [],
             UploadTemplates: BuildDataUploadTemplateCatalog(),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+    }
+
+    private static WorkstationDataBackfillRecord BuildBackfillRow(string id, IReadOnlyList<string> symbols,
+        DateOnly? from, DateOnly? to, string provider, bool success, DateTimeOffset completed)
+    {
+        var symbolSummary = symbols.Count > 0
+            ? string.Join(", ", symbols.Take(3)) + (symbols.Count > 3 ? " …" : "")
+            : "Unknown symbols";
+        var days = from.HasValue && to.HasValue ? $"{to.Value.DayNumber - from.Value.DayNumber + 1}d" : "—";
+        var age = DateTimeOffset.UtcNow - completed;
+        var updatedAt = age.TotalMinutes < 60 ? $"{(int)age.TotalMinutes}m ago" : $"{(int)age.TotalHours}h ago";
+        return new(id, $"{symbolSummary} / {days}", provider, success ? "Completed" : "Failed", success ? "100%" : "Error", updatedAt);
+    }
+
+    internal static WorkstationDataBackfillRecord BuildRetainedBackfillRow(RetainedBackfillResult result)
+    {
+        var receipt = result.Receipt;
+        var providers = receipt.Providers.Where(provider => provider.ResponsesWithData > 0 || provider.StaleResponsesAccepted > 0)
+            .Select(provider => provider.ProviderId).ToArray();
+        var providerLabel = providers.Length > 0 ? string.Join(", ", providers) : receipt.RoutingDecision;
+        return BuildBackfillRow($"BF-{receipt.ReceiptId:N}", receipt.Request.Symbols, receipt.Request.From,
+            receipt.Request.To, providerLabel, result.Success, receipt.CompletedUtc) with
+        { ProviderProvenance = receipt };
     }
 
     /// <summary>
@@ -1677,6 +1689,12 @@ public static partial class WorkstationEndpoints
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
+        if (oms is Meridian.Execution.OrderManagementSystem { ScopedPaperBook: { } paper } &&
+            !await ExecutionEndpoints.CanAccessScopedPaperBookAsync(context, paper, UserPermission.ViewTrades).ConfigureAwait(false))
+        {
+            portfolio = null;
+            oms = null;
+        }
         var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
         var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
         var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();
@@ -1725,19 +1743,23 @@ public static partial class WorkstationEndpoints
                 var mark = retainedMark.Price;
                 var hasMark = mark.HasValue && mark.Value > 0m;
                 var effectiveMark = hasMark ? mark!.Value : pos.AverageCostBasis;
-                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.Quantity;
-                var liveExposure = Math.Abs(pos.Quantity * effectiveMark);
+                var liveUnrealized = (effectiveMark - pos.AverageCostBasis) * pos.ExactQuantity * pos.ContractMultiplier;
+                var liveExposure = Math.Abs(pos.ExactQuantity * effectiveMark * pos.ContractMultiplier);
 
                 return new WorkstationTradingPositionRow(
                     PositionKey: pos.Symbol,
                     Symbol: pos.Symbol,
-                    Side: pos.Quantity >= 0 ? "Long" : "Short",
-                    Quantity: Math.Abs(pos.Quantity).ToString(CultureInfo.InvariantCulture),
+                    Side: pos.ExactQuantity >= 0 ? "Long" : "Short",
+                    Quantity: Math.Abs(pos.ExactQuantity).ToString(CultureInfo.InvariantCulture),
                     AveragePrice: pos.AverageCostBasis.ToString("F2", CultureInfo.InvariantCulture),
                     MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
                     DayPnl: "—",
                     UnrealizedPnl: FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl),
-                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—");
+                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—",
+                    AveragePriceExact: pos.AverageCostBasis.ToString(CultureInfo.InvariantCulture),
+                    MarkPriceExact: hasMark ? effectiveMark.ToString(CultureInfo.InvariantCulture) : null,
+                    UnrealizedPnlExact: (hasMark ? liveUnrealized : pos.UnrealizedPnl).ToString(CultureInfo.InvariantCulture),
+                    ExposureExact: hasMark ? liveExposure.ToString(CultureInfo.InvariantCulture) : null);
             }).ToArray();
         }
         else
@@ -1759,8 +1781,8 @@ public static partial class WorkstationEndpoints
             {
                 var mark = ResolveLiveMark(pos.Symbol, quoteCollector, tradeCollector);
                 var px = mark.HasValue && mark.Value > 0m ? mark.Value : pos.AverageCostBasis;
-                grossExposure += Math.Abs(pos.Quantity * px);
-                netExposureValue += pos.Quantity * px;
+                grossExposure += Math.Abs(pos.ExactQuantity * px * pos.ContractMultiplier);
+                netExposureValue += pos.ExactQuantity * px * pos.ContractMultiplier;
             }
             var drawdownPct = portfolio.PortfolioValue > 0m ? totalPnl / portfolio.PortfolioValue : 0m;
             if (drawdownPct < -0.05m)

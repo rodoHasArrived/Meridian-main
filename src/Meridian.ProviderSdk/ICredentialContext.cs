@@ -15,6 +15,13 @@ public interface ICredentialContext
     /// <summary>The environment bound to the selected credential record, when supplied.</summary>
     string? CredentialEnvironment => null;
 
+    /// <summary>Opaque receipt identity for the scoped provider connection used by this context.</summary>
+    string? ProvenanceConnectionId => null;
+
+    string? ProvenanceTenantId => null;
+
+    string? ProvenanceRuntimeRevision => null;
+
     /// <summary>
     /// Returns the resolved credential value for the given logical <paramref name="name"/>,
     /// or <see langword="null"/> when the credential is not configured.

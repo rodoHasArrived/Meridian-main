@@ -1,5 +1,6 @@
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Credentials;
 using Microsoft.Extensions.Logging;
@@ -40,7 +41,7 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         var bound = await configStore.UpdateRequiredAsync(config =>
         {
             var provider = RequireProvider(providerId);
-            var scope = RequireScope(config, provider, connectionId, tenantId);
+            var scope = RequireHostSelectionScope(config, provider, connectionId, tenantId);
             var section = config.ProviderConnections!;
             var bindings = section.RuntimeCredentials ?? [];
             var existing = bindings.Where(binding => SameProvider(binding.ProviderId, provider)).ToArray();
@@ -96,7 +97,7 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         using (await configStore.AcquireWriteLeaseAsync(ct).ConfigureAwait(false))
         {
             var config = configStore.LoadRequired();
-            var scope = RequireScope(config, provider, connectionId, tenantId);
+            var scope = RequireHostSelectionScope(config, provider, connectionId, tenantId);
             binding = CurrentBinding(config, provider, tenantId)
                 ?? throw new InvalidOperationException("Bind the connection as the host runtime credential before applying it to running instances.");
             if (!string.Equals(binding.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
@@ -108,7 +109,7 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         var outcome = await _applier.ApplyAsync(binding, actor, ct).ConfigureAwait(false);
         using var publicationLease = await configStore.AcquireWriteLeaseAsync(CancellationToken.None).ConfigureAwait(false);
         var current = configStore.LoadRequired();
-        var currentScope = RequireScope(current, provider, connectionId, tenantId);
+        var currentScope = RequireHostSelectionScope(current, provider, connectionId, tenantId);
         if (CurrentBinding(current, provider, tenantId) != binding)
             throw new ProviderCredentialConflictException("Runtime credential selection changed while applying it. Reload the retained connection before retrying.");
         RequireBoundScope(binding, currentScope);
@@ -180,13 +181,25 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         if (ownership.RuntimeBindingCount == 1)
         {
             var binding = (section?.RuntimeCredentials ?? []).Single(binding => SameProvider(binding.ProviderId, provider));
-            var scope = RequireScope(config, provider, binding.ConnectionId, binding.TenantId);
+            var scope = RequireHostSelectionScope(config, provider, binding.ConnectionId, binding.TenantId);
             RequireBoundScope(binding, scope);
             return scope;
         }
         if (ownership.RequiresScopedOwnership)
             throw new InvalidOperationException("An explicit, unambiguous runtime credential connection is required.");
         return null;
+    }
+
+    internal static ProviderCredentialScope RequireHostSelectionScope(AppConfig config, string providerId, string connectionId, string tenantId)
+    {
+        var scope = RequireScope(config, providerId, connectionId, tenantId);
+        var template = config.ProviderConnections!.Connections!.Single(connection => connection.ConnectionId == scope.ConnectionId).SetupTemplate;
+        var capability = ProviderCredentialCatalog.Find(providerId)!.Capability;
+        if (template is not null && (template.AllowedScope != "Tenant" ||
+            capability is ProviderConnectionCapabilityDto.Brokerage or ProviderConnectionCapabilityDto.DataAndBrokerage &&
+            !template.RequestedCapabilities.Any(request => request.Capability == "OrderExecution")))
+            throw new InvalidOperationException("This template's scope or capabilities do not permit a host-wide runtime binding.");
+        return scope;
     }
 
     public static ProviderCredentialScope RequireScope(AppConfig config, string providerId, string connectionId, string tenantId,

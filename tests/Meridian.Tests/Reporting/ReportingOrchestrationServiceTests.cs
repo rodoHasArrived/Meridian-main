@@ -1,4 +1,7 @@
 using System.Collections.Concurrent;
+using System.Globalization;
+using System.Text.Json;
+using ClosedXML.Excel;
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
 using Meridian.Reporting;
@@ -367,6 +370,85 @@ public sealed class ReportingOrchestrationServiceTests
         failed.AttemptCount.Should().Be(2);
         failed.FailureReason.Should().Be("renderer unavailable");
         sut.GetAudit(failed.RunId).Count(e => e.Action == "RunRetry" || e.Action == "RunFailed").Should().Be(2);
+    }
+
+    [Theory]
+    [InlineData(ReportingRunTrigger.AdHoc)]
+    [InlineData(ReportingRunTrigger.Scheduled)]
+    public async Task ExecuteAsync_InvalidMetricRetainsOneTerminalFailureBeforeSectionRendering(ReportingRunTrigger trigger)
+    {
+        var template = new DefaultReportingTemplateCatalog().Get("investor-monthly-statement") with
+        {
+            ReportWriterGrids =
+            [
+                new ReportWriterGridDefinitionDto("holdings", "Holdings", ReportWriterGridKindDto.Pivot,
+                    Metrics: [new("positionValue", "misspelledValue")])
+            ]
+        };
+        var store = new InspectableReportingRunStore();
+        var sut = new ReportingOrchestrationService(new SingleTemplateCatalog(template),
+            new AlwaysFailingRenderer(), () => FixedNow, store);
+        var contract = new ReportingJobContract("invalid-grid", template.TemplateId, new DateOnly(2026, 5, 1),
+            trigger, 3, "alice", FixedNow, DatasetRows: [new Dictionary<string, string> { ["marketValue"] = "0" }]);
+
+        await sut.Awaiting(service => service.ExecuteAsync(contract, CancellationToken.None))
+            .Should().ThrowAsync<ReportWriterMetricValidationException>()
+            .WithMessage("*'holdings' metric 'positionValue' uses field 'misspelledValue'*");
+
+        var failed = store.GetManifest("invalid-grid-20260501");
+        failed.Should().NotBeNull();
+        failed!.Status.Should().Be(ReportingRunStatus.Failed);
+        failed.FailureCode.Should().Be(ReportWriterMetricValidationException.FailureCode);
+        failed.AttemptCount.Should().Be(1);
+        failed.Artifacts.Should().BeEmpty();
+        failed.Sections.Should().BeEmpty();
+        store.GetAudit(failed.RunId).Select(audit => audit.Action).Should().Equal("RunFailed");
+    }
+
+    [Fact]
+    public async Task GridDownloads_RenderWideRetainedPivotWithExactTypedValuesAndAuditSheets()
+    {
+        var template = new DefaultReportingTemplateCatalog().Get("investor-monthly-statement") with
+        {
+            ReportWriterGrids =
+            [
+                new ReportWriterGridDefinitionDto("positions", "Positions by region", ReportWriterGridKindDto.Pivot,
+                    RowFields: ["account"], ColumnFields: ["region"],
+                    Metrics: [new("mv", "marketValue")],
+                    SortBy: "account")
+            ]
+        };
+        var orch = new ReportingOrchestrationService(new SingleTemplateCatalog(template),
+            new DeterministicReportingSectionRenderer(), () => FixedNow);
+        var rows = Enumerable.Range(1, 32).Select(index => (IReadOnlyDictionary<string, string>)new Dictionary<string, string>
+        {
+            ["account"] = index.ToString("D5", CultureInfo.InvariantCulture),
+            ["region"] = FormattableString.Invariant($"Region {(index - 1) % 14 + 1:D2}"),
+            ["marketValue"] = index switch { 1 => "208339893.91", 2 => "-12345678901234567.89", _ => "0" }
+        }).ToArray();
+        var manifest = await orch.ExecuteAsync(new("grid-download", template.TemplateId, new DateOnly(2026, 5, 1),
+            ReportingRunTrigger.AdHoc, 0, "alice", FixedNow, DatasetRows: rows), CancellationToken.None);
+        var service = new ReportWriterGridArtifactService(orch);
+
+        byte[] Download(string format) => service.GetArtifact(manifest.RunId, "positions", format, JsonSerializerOptions.Default).Content;
+
+        var xlsx = Download("xlsx");
+        Download("excel").Should().Equal(xlsx);
+        using var workbook = new XLWorkbook(new MemoryStream(xlsx));
+        var sheet = workbook.Worksheet("ReportWriterGrid");
+        sheet.Cell("A2").GetString().Should().Be("00001");
+        sheet.Cell("B1").GetString().Should().BeEquivalentTo("Region 01 Market value");
+        sheet.Cell("B2").GetDouble().Should().Be(208339893.91);
+        sheet.Cell("B3").IsEmpty().Should().BeTrue();
+        sheet.Cell("C3").GetString().Should().Be("-12,345,678,901,234,567.89");
+        sheet.Cell("D4").GetDouble().Should().Be(0);
+        sheet.LastRowUsed()!.RowNumber().Should().Be(33);
+        workbook.Worksheet("Validation").Column(1).CellsUsed().Should().Contain(cell => cell.GetString() == "xlsx-numeric-precision");
+        workbook.Worksheet("DataDictionary").Cell("A3").GetString().Should().EndWith(":mv");
+
+        var pdf = Download("pdf");
+        pdf.Should().StartWith("%PDF-"u8.ToArray());
+        Download("pdf").Should().Equal(pdf);
     }
 
     [Fact]

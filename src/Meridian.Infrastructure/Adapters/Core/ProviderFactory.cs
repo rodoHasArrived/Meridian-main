@@ -1,4 +1,5 @@
 using Meridian.Core.Config;
+using Meridian.Core.IO;
 using Meridian.Core.Logging;
 using Meridian.Core.Monitoring;
 using Meridian.Domain.Collectors;
@@ -142,6 +143,39 @@ public sealed partial class ProviderFactory
         => CreateProviders<IHistoricalDataProvider>(static p => p.Priority, "backfill");
 
     /// <summary>
+    /// Builds standby historical adapters inside the host's startup credential scope. Runtime
+    /// enablement can then select existing adapters without incorporating pending secrets or pacing.
+    /// </summary>
+    public IReadOnlyList<IHistoricalDataProvider> CreateStandbyBackfillProviders()
+    {
+        var settings = _config.Backfill ?? new BackfillConfig();
+        var configured = settings.Providers ?? new BackfillProvidersConfig();
+        var disabled = BackfillProviderCatalog.Providers
+            .Where(provider => provider.Id != "openfigi" && !BackfillProviderCatalog.Read(configured, provider.Id).Enabled)
+            .Select(provider => ProviderIdentity.NormalizeId(provider.Id))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (disabled.Count == 0)
+            return [];
+
+        var enabledForConstruction = configured with
+        {
+            Alpaca = (configured.Alpaca ?? new()) with { Enabled = true },
+            Yahoo = (configured.Yahoo ?? new()) with { Enabled = true },
+            Nasdaq = (configured.Nasdaq ?? new()) with { Enabled = true },
+            Stooq = (configured.Stooq ?? new()) with { Enabled = true },
+            Tiingo = (configured.Tiingo ?? new()) with { Enabled = true },
+            Polygon = (configured.Polygon ?? new()) with { Enabled = true },
+            AlphaVantage = (configured.AlphaVantage ?? new()) with { Enabled = true },
+            Finnhub = (configured.Finnhub ?? new()) with { Enabled = true },
+            TwelveData = (configured.TwelveData ?? new()) with { Enabled = true }
+        };
+        var standby = new ProviderFactory(_config with { Backfill = settings with { Providers = enabledForConstruction } },
+            _credentialResolver, _log, _symbolResolver, _services, _moduleContexts);
+        return standby.CreateProviders<IHistoricalDataProvider>(static p => p.Priority, "standby backfill",
+            filter: id => disabled.Contains(ProviderIdentity.NormalizeId(id)));
+    }
+
+    /// <summary>
     /// Creates all configured backfill providers, reading their credentials without blocking.
     /// </summary>
     public async Task<IReadOnlyList<IHistoricalDataProvider>> CreateBackfillProvidersAsync(CancellationToken ct = default)
@@ -175,13 +209,14 @@ public sealed partial class ProviderFactory
     private IReadOnlyList<T> CreateProviders<T>(
         Func<T, int> priority,
         string providerKind,
-        bool includeModuleOwned = true)
+        bool includeModuleOwned = true,
+        Func<string, bool>? filter = null)
         where T : class
     {
         var providers = new List<T>();
         foreach (var registration in ProviderCapabilityDescriptorCatalog.Descriptors.SelectMany(d => d.Registrations(includeModuleOwned)))
         {
-            if (registration.Contract != typeof(T) || !IsCapabilityEnabled(registration))
+            if (registration.Contract != typeof(T) || filter?.Invoke(registration.ProviderId) == false || !IsCapabilityEnabled(registration))
                 continue;
 
             try
@@ -256,14 +291,14 @@ public sealed partial class ProviderFactory
         if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
             return null;
 
-        return new AlpacaHistoricalDataProvider(
+        return ProviderRuntimeProvenance.Attach(new AlpacaHistoricalDataProvider(
             keyId: keyId,
             secretKey: secretKey,
             feed: configuredOptions.Feed,
             adjustment: cfg?.Adjustment ?? "all",
             priority: cfg?.Priority ?? 5,
             rateLimitPerMinute: cfg?.RateLimitPerMinute ?? 200,
-            log: _log);
+            log: _log), credentials);
     }
 
     internal IHistoricalDataProvider? CreatePolygonBackfillProvider(PolygonBackfillConfig? cfg)
@@ -323,11 +358,11 @@ public sealed partial class ProviderFactory
         var credentials = CreateCredentialContext<NasdaqDataLinkHistoricalDataProvider>(
             ("NASDAQ_DATA_LINK_API_KEY", cfg?.ApiKey));
         var apiKey = credentials.Get("NASDAQ_DATA_LINK_API_KEY");
-        return new NasdaqDataLinkHistoricalDataProvider(
+        return ProviderRuntimeProvenance.Attach(new NasdaqDataLinkHistoricalDataProvider(
             apiKey: apiKey,
             database: cfg?.Database ?? "WIKI",
             log: _log,
-            runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "nasdaqdatalink"));
+            runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "nasdaqdatalink")), credentials);
     }
 
     internal IHistoricalDataProvider? CreateRobinhoodBackfillProvider(RobinhoodConfig? cfg)
@@ -427,8 +462,13 @@ public sealed partial class ProviderFactory
             providers,
             enableSymbolResolution ? _symbolResolver : null,
             enableCrossValidation: false,
+            enableRateLimitRotation: _config.Backfill?.EnableRateLimitRotation ?? true,
+            rateLimitRotationThreshold: _config.Backfill?.RateLimitRotationThreshold ?? 0.8,
             log: _log,
             validationProfiles: _config.Backfill?.ValidationProfiles,
+            rateLimitHistory: _services?.GetService(typeof(IAtomicFileWriter)) is IAtomicFileWriter writer
+                ? ProviderRateLimitHistory.ForDataRoot(_config.DataRoot, writer)
+                : null,
             crossValidationPolicy: () => CrossProviderTolerancePolicy.FromConfig(_config));
     }
 
@@ -476,8 +516,14 @@ public sealed partial class ProviderFactory
         string credentialName,
         string? configuredValue,
         Func<string, IHistoricalDataProvider> factory)
-        => CreateCredentialGatedProvider<TCredentialSource, IHistoricalDataProvider>(
-            enabled, credentialName, configuredValue, factory);
+    {
+        if (!enabled)
+            return null;
+
+        var context = CreateCredentialContext<TCredentialSource>((credentialName, configuredValue));
+        var credential = context?.Get(credentialName);
+        return string.IsNullOrWhiteSpace(credential) ? null : ProviderRuntimeProvenance.Attach(factory(credential), context!);
+    }
 
     internal ISymbolSearchProvider? CreateCredentialGatedSearchProvider<TCredentialSource>(
         bool enabled,

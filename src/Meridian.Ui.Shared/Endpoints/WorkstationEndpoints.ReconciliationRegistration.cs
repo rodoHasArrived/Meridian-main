@@ -407,7 +407,7 @@ public static partial class WorkstationEndpoints
             }
 
             var items = await GetBreakQueueItemsAsync(repository, queueScope, status, fundAccountId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(items, jsonOptions);
+            return Results.Json(items.Select(item => ProjectCaseCommandAvailability(item, context)), jsonOptions);
         })
         .WithName("GetReconciliationBreakQueue").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<IReadOnlyList<ReconciliationBreakQueueItem>>(200)
@@ -427,7 +427,7 @@ public static partial class WorkstationEndpoints
             }
 
             var item = await repository.GetByIdAsync(queueScope, breakId, context.RequestAborted).ConfigureAwait(false);
-            return item is null ? Results.NotFound() : Results.Json(item, jsonOptions);
+            return item is null ? Results.NotFound() : Results.Json(ProjectCaseCommandAvailability(item, context), jsonOptions);
         })
         .WithName("GetReconciliationBreakQueueItem").RequireAnyPermission(UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
         .Produces<ReconciliationBreakQueueItem>(200)

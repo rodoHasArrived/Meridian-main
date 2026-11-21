@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { SecurityPassportEditorLauncher } from "@/components/meridian/security-passport-editor-launcher";
-import { Badge } from "@/components/ui/badge";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,9 @@ import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { getCorporateActions, getSecurityDetail, getSecurityIdentity, getTradingParameters, searchSecurities } from "@/lib/api";
+import { instrumentDossierRoute } from "@/lib/instrument-dossier-route";
+import { instrumentRecordIdentity } from "@/lib/instrument-record-identity";
+import { appendRecordWorkspaceContext, readRecordWorkspaceContext } from "@/lib/record-workspace-context";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { bondWorkflowRoute, isBondAssetClass, resolveBondWorkflowAction } from "@/lib/fixed-income-navigation";
 import { ContractualCashFlowWorkbench } from "@/components/meridian/contractual-cash-flow-workbench";
@@ -233,7 +236,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
   );
 }
 
-function AssetDetailPanel({ securityId }: { securityId: string }) {
+export function AssetDetailPanel({ securityId, embedded = false }: { securityId: string; embedded?: boolean }) {
   const [searchParams] = useSearchParams();
   const requestedBondAction = resolveBondWorkflowAction(searchParams.get("bondAction"));
   const [entry, setEntry] = useState<SecurityMasterEntry | null>(null);
@@ -242,6 +245,9 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
   const [tradingParameters, setTradingParameters] = useState<TradingParameters | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const record = instrumentRecordIdentity(entry, identity);
+  const recordContext = useRecordWorkspaceContext(record, { securityId, bondAction: requestedBondAction ? "" : null });
+  const inheritedContext = readRecordWorkspaceContext(searchParams.toString());
 
   useEffect(() => {
     let cancelled = false;
@@ -318,10 +324,17 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
   }
 
   const overview = buildAssetDetailOverviewViewState({ entry, identity, corporateActions });
+  const quotes = workstationRouteWithQuery("dataQuotes", { symbol: record?.scope?.symbol });
+  const registry = workstationRouteWithQuery("accountingSecurityMaster", { securityId });
+  const linkedInstrument = inheritedContext?.record.scope?.securityId;
+  const linkedTicker = inheritedContext?.record.scope?.symbol;
+  const navigationContext = inheritedContext && (linkedInstrument === securityId || (!linkedInstrument && linkedTicker && linkedTicker === record?.scope?.symbol))
+    ? inheritedContext : recordContext;
+  const relatedHref = (route: string) => navigationContext ? appendRecordWorkspaceContext(route, navigationContext) ?? route : route;
   const isBond = isBondAssetClass(entry.classification.assetClass);
 
   if (isBond && requestedBondAction) {
-    return <Navigate to={bondWorkflowRoute(entry.securityId, requestedBondAction)} replace />;
+    return <Navigate to={relatedHref(bondWorkflowRoute(entry.securityId, requestedBondAction))} replace />;
   }
 
   return (
@@ -330,19 +343,21 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
       scope={overview.symbol}
       actions={
         <>
-          <Badge variant={overview.statusTone} dot>{overview.statusLabel}</Badge>
+          {!embedded ? <Button asChild size="sm" variant="outline">
+            <Link to={relatedHref(instrumentDossierRoute(entry.securityId, searchParams.toString()))}>Open instrument dossier</Link>
+          </Button> : null}
           <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("dataQuotes", { symbol: overview.symbol })}>Live quotes</Link>
+            <Link to={relatedHref(quotes)}>Live quotes</Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("accountingSecurityMaster", { securityId: entry.securityId })}>Open Security Master</Link>
+            <Link to={relatedHref(registry)}>Open Security Master</Link>
           </Button>
           {isBond ? <>
             <Button asChild size="sm" variant="outline">
-              <Link to={bondWorkflowRoute(entry.securityId, "analytics")}>Bond analytics</Link>
+              <Link to={relatedHref(bondWorkflowRoute(entry.securityId, "analytics"))}>Bond analytics</Link>
             </Button>
             <Button asChild size="sm" variant="outline">
-              <Link to={bondWorkflowRoute(entry.securityId, "migration")}>Convention migration</Link>
+              <Link to={relatedHref(bondWorkflowRoute(entry.securityId, "migration"))}>Convention migration</Link>
             </Button>
           </> : null}
         </>
@@ -352,6 +367,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
         <StatusBanner tone="warning" title="Bond workflow unavailable for this instrument"
           detail={`The selected Security Master record is ${entry.classification.assetClass}. Select a bond to use analytics or convention migration.`} />
       ) : null}
+      {record ? <RecordIdentitySpine record={record} context={recordContext} /> : null}
       <Tabs
         tabs={[
           { id: "overview", label: "Overview" },

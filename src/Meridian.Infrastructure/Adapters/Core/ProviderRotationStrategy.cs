@@ -36,6 +36,8 @@ internal sealed class ProviderRotationStrategy
     /// <summary>Whether rate-limit aware rotation is enabled.</summary>
     public bool Enabled { get; }
 
+    internal double ApproachingThreshold => _approachingThreshold;
+
     /// <summary>
     /// Order a provider set by rate-limit capacity when rotation is enabled: providers with
     /// capacity first, then those approaching their limit, then rate-limited ones last. When
@@ -56,7 +58,8 @@ internal sealed class ProviderRotationStrategy
             if (_rateLimitTracker.IsApproachingLimit(p.Name, _approachingThreshold))
                 return 100 + (int)(_rateLimitTracker.GetStatus(p.Name)?.UsagePercent ?? 0);
 
-            return p.Priority;
+            // The route has already been sorted by its captured priority and preferences.
+            return 0;
         });
     }
 

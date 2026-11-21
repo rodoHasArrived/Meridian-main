@@ -98,6 +98,7 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         services.AddSingleton<IDataQualityPresentationService, DataQualityPresentationService>();
         services.AddTransient<IDataQualityRefreshService, DataQualityRefreshService>();
         services.AddSingleton<IProviderDiagnosticsApiClient, ProviderDiagnosticsApiClient>();
+        services.AddSingleton<ProviderConfigurationApiClient>();
         services.AddTransient<BackfillViewModel>();
         services.AddTransient<ProviderViewModel>();
         services.AddTransient<DataQualityViewModel>();
@@ -107,7 +108,7 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
             sp.GetService<ICanonicalSymbolRegistry>() is { } registry
                 ? new SymbolMappingService(registry)
                 : SymbolMappingService.Instance);
-        services.AddSingleton<ISymbolMappingClient, SymbolMappingServiceClient>();
+        services.AddTransient<ISymbolMappingClient, SymbolMappingApiClient>();
         services.AddTransient<SymbolMappingViewModel>();
         services.AddTransient<SymbolMappingPage>();
         services.AddTransient<WatchlistViewModel>();

@@ -48,6 +48,7 @@ public static class UiApiRoutes
     public const string ConfigEffective = "/api/config/effective";
     public const string ConfigDataSource = "/api/config/datasource";
     public const string ConfigAlpaca = "/api/config/alpaca";
+    public const string ConfigAlpacaFeed = "/api/config/alpaca/feed";
     public const string ConfigStorage = "/api/config/storage";
     public const string ConfigSymbols = "/api/config/symbols";
     public const string ConfigDataSources = "/api/config/datasources";
@@ -60,6 +61,9 @@ public static class UiApiRoutes
     public const string BackfillStatus = "/api/backfill/status";
     public const string BackfillRun = "/api/backfill/run";
     public const string BackfillRunPreview = "/api/backfill/run/preview";
+    public const string BackfillClone = "/api/backfill/receipts/{receiptId:guid}/clone";
+    public const string BackfillReceipts = "/api/backfill/receipts";
+    public const string BackfillReceipt = "/api/backfill/receipts/{receiptId:guid}";
     public const string BackfillProgress = "/api/backfill/progress";
     public const string BackfillHealth = "/api/backfill/health";
     public const string BackfillResolve = "/api/backfill/resolve/{symbol}";
@@ -111,8 +115,15 @@ public static class UiApiRoutes
     public const string ProviderMetrics = "/api/providers/metrics";
     public const string ProviderConfigure = "/api/providers/configure";
     public const string ProviderConnections = "/api/providers/connections";
+    public const string ProviderConnectionTemplates = "/api/provider-routing/templates";
+    public const string ProviderConnectionTemplateExport = "/api/provider-routing/templates/export";
+    public const string ProviderConnectionTemplateImport = "/api/provider-routing/templates/import";
+    public const string ProviderConnectionTemplateSetups = "/api/provider-routing/templates/setups";
+    public const string ProviderConnectionTemplateSetup = "/api/provider-routing/templates/setups/{setupId}";
+    public const string ProviderConnectionTemplateSetupTest = "/api/provider-routing/templates/setups/{setupId}/test";
     public const string ProviderCredentialMutation = "/api/providers/{providerId}/credentials";
     public const string ProviderCredentialVerify = "/api/providers/{providerId}/verify";
+    public const string ProviderCredentialVerifyDraft = "/api/providers/{providerId}/verify-draft";
     public const string ProviderCatalog = "/api/providers/catalog";
     public const string ProviderCatalogById = "/api/providers/catalog/{providerId}";
     public const string ProviderById = "/api/providers/{providerName}";
@@ -120,6 +131,7 @@ public static class UiApiRoutes
     public const string ProviderFailoverTrigger = "/api/providers/failover/trigger";
     public const string ProviderFailoverReset = "/api/providers/failover/reset";
     public const string ProviderRateLimits = "/api/providers/rate-limits";
+    public const string ProviderQuota = "/api/providers/{providerId}/quota";
     public const string ProviderRateLimitHistory = "/api/providers/{providerName}/rate-limit-history";
     public const string ProviderCapabilities = "/api/providers/capabilities";
     public const string ProviderCapabilityMatrix = "/api/providers/capability-matrix";
@@ -157,6 +169,7 @@ public static class UiApiRoutes
     public const string AccountingSystemImportLatest = "/api/accounting-system/import/latest";
     public const string AccountingSystemReconciliationLatest = "/api/accounting-system/reconciliation/latest";
     public const string AccountingSystemMappingProfiles = "/api/accounting-system/mapping-profiles";
+    public const string ExternalGlPosting = "/api/accounting-system/posting/{fundProfileId}/{ledgerBookId:guid}";
     public const string AccountingSystemExportPackages = "/api/accounting-system/export-packages";
     public const string AccountingSystemExportPackageManifest = "/api/accounting-system/export-packages/{exportPackageId}/manifest";
     public const string AccountingSystemExportPackageCertification = "/api/accounting-system/export-packages/certification";
@@ -756,6 +769,7 @@ public static class UiApiRoutes
     public const string PromotionApprove = "/api/promotion/approve";
     public const string PromotionReject = "/api/promotion/reject";
     public const string PromotionHistory = "/api/promotion/history";
+    public const string PromotionLiveAuthorizationRevoke = "/api/promotion/live-authorizations/{id}/revoke";
     public const string PromotionWalkForwardEvidence = "/api/promotion/runs/{runId}/walk-forward-evidence";
 
     // Workstation root and compatibility workspace endpoints
@@ -800,6 +814,9 @@ public static class UiApiRoutes
     public const string WorkstationProviderIntegrationQuarantineReplay = "/api/workstation/provider-integrations/quarantine/replay";
     public const string WorkstationGovernance = "/api/workstation/governance";
     public const string WorkstationAccounting = "/api/workstation/accounting";
+    public const string WorkstationBookReceiptQueue = "/api/workstation/accounting/receipt-queue";
+    public const string WorkstationBookReceiptRuns = "/api/workstation/accounting/receipt-queue/runs";
+    public const string WorkstationBookReceiptRun = "/api/workstation/accounting/receipt-queue/runs/{runId}";
     public const string WorkstationReporting = "/api/workstation/reporting";
     public const string WorkstationReportingStructuredExport = "/api/workstation/reporting/structured-exports/{exportId}";
     public const string WorkstationPortfolio = "/api/workstation/portfolio";
@@ -815,6 +832,7 @@ public static class UiApiRoutes
     // Strategy run comparison and diff endpoints
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
     public const string WorkstationWorkflowLibrary = "/api/workstation/workflows";
+    public const string WorkstationRecordSearch = "/api/workstation/search/records";
     public const string WorkstationWorkflowPresets = "/api/workstation/workflows/presets";
     public const string WorkstationWorkflowPresetById = "/api/workstation/workflows/presets/{presetId}";
     public const string WorkstationWorkflowPresetPin = "/api/workstation/workflows/presets/{presetId}/pin";
@@ -855,6 +873,7 @@ public static class UiApiRoutes
     public const string WorkstationOperatorSurfaceVisit = "/api/workstation/operator/visits/{surface}";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
     public const string WorkstationEvidenceSubjectPacket = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/packet";
+    public const string WorkstationAmountPassport = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/amount-passport";
     public const string WorkstationEvidenceSubjectGraph = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/graph";
     public const string WorkstationEvidenceSubjectValidate = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/validate";
     public const string WorkstationEvidenceSubjectExportManifest = "/api/workstation/evidence/subjects/{subjectKind}/{subjectId}/export-manifest";
@@ -922,6 +941,8 @@ public static class UiApiRoutes
     public const string ReconciliationStatementMappingProfileById = "/api/workstation/reconciliation/statement-mapping-profiles/{profileId}";
     public const string ReconciliationStatementImportPreview = "/api/workstation/reconciliation/statement-imports/preview";
     public const string ReconciliationStatementImportCommit = "/api/workstation/reconciliation/statement-imports/commit";
+    public const string ReconciliationStatementImportReviewRows = "/api/workstation/reconciliation/statement-imports/reviews/{reviewId}/rows";
+    public const string ReconciliationStatementImportReviewOutcomes = "/api/workstation/reconciliation/statement-imports/reviews/{reviewId}/outcomes";
     public const string ReconciliationStatementReconciliationReport = "/api/workstation/reconciliation/statement-reconciliation-report";
     public const string ReconciliationStatementReconciliationReportById = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}";
     public const string ReconciliationStatementReconciliationReportResume = "/api/workstation/reconciliation/statement-reconciliation-report/{workflowId}/resume";

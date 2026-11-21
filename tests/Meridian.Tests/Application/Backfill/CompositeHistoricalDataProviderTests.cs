@@ -682,6 +682,30 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
     }
 
     [Fact]
+    public async Task GetBars_RebindsMappedAliasesAndRetainsActualServingProvider()
+    {
+        var date = new DateOnly(2026, 7, 1);
+        var start = new DateTimeOffset(2026, 7, 1, 14, 30, 0, TimeSpan.Zero);
+        var provider = CreateMockProvider("serving", priority: 1);
+        provider.Setup(p => p.GetDailyBarsAsync("spy.us", date, date, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new HistoricalBar("SPY.US", date, 100, 101, 99, 100, 1_000, "composite")]);
+        var aggregate = provider.As<IHistoricalAggregateBarProvider>();
+        aggregate.SetupGet(p => p.SupportedGranularities).Returns([DataGranularity.Minute1]);
+        aggregate.Setup(p => p.GetAggregateBarsAsync("spy.us", DataGranularity.Minute1, date, date, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new AggregateBar("SPY.US", start, start.AddMinutes(1), 100, 101, 99, 100, 100, Source: "")]);
+        var resolver = new Mock<Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver>();
+        resolver.Setup(r => r.MapSymbolAsync("SPY", "input", "serving", It.IsAny<CancellationToken>()))
+            .ReturnsAsync("spy.us");
+        using var composite = new CompositeHistoricalDataProvider([provider.Object], resolver.Object);
+
+        var daily = await composite.GetDailyBarsAsync("SPY", date, date);
+        var intraday = await composite.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, date, date);
+
+        daily.Should().ContainSingle(bar => bar.Symbol == "SPY" && bar.Source == "serving");
+        intraday.Should().ContainSingle(bar => bar.Symbol == "SPY" && bar.Source == "serving");
+    }
+
+    [Fact]
     public async Task GetDailyBarsAsync_CanonicalResolutionCancellation_PropagatesWithoutCallingProvider()
     {
         var provider = CreateMockProvider("p1", priority: 1);

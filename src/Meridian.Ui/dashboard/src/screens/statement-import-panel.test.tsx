@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
@@ -44,6 +45,7 @@ const profiles: StatementMappingProfile[] = [
 ];
 
 const preview: StatementImportPreview = {
+  reviewId: "review-synthetic-1",
   connectorId: "generic-csv",
   connectorDisplayName: "Generic CSV",
   profileId: "builtin-generic",
@@ -406,4 +408,21 @@ describe("StatementImportPanel", () => {
     await waitFor(() => expect(screen.getByRole("heading", { name: "Remote statement preview and schedule" })).toBeInTheDocument());
     expect(screen.getByRole("table", { name: "Statement fetch schedules" })).toHaveTextContent("alpaca-daily");
   });
+});
+
+
+function ImportLocationProbe() {
+  const location = useLocation();
+  return <output aria-label="Import URL">{location.search}{location.hash}</output>;
+}
+
+it("shares source mode while preserving scope and the current anchor", async () => {
+  const user = userEvent.setup();
+  renderWithRouter(<><StatementImportPanel services={makeServices()} fetchServices={makeFetchServices()} /><ImportLocationProbe /></>, {
+    initialEntries: ["/accounting/statement-import?fundAccountId=FUND-A#review"]
+  });
+  await user.click(screen.getByRole("tab", { name: "Scheduled fetch" }));
+  expect(screen.getByLabelText("Import URL")).toHaveTextContent("fundAccountId=FUND-A&sourceMode=scheduled#review");
+  await user.click(screen.getByRole("tab", { name: "File upload" }));
+  expect(screen.getByLabelText("Import URL")).toHaveTextContent("?fundAccountId=FUND-A#review");
 });

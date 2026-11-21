@@ -1,4 +1,5 @@
 import { QuantCorporateActionControl } from "./quant-lab-corporate-actions";
+import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import {
   AlertCircle,
   CheckCircle2,
@@ -298,6 +299,9 @@ function RunResultPanel({ run, panel, consoleLines, tradeLedger, onTradeSelect }
           ) : null}
           {panel.diagnosticSections.map((section) => (
             <DiagnosticsBlock key={section.id} label={section.label} entries={section.entries} tone={section.tone} />
+          ))}
+          {result.providerProvenanceReceipts?.map((receipt, index) => (
+            <ProviderProvenancePanel key={`${receipt.receiptId}-${index}`} receipt={receipt} />
           ))}
         </CardContent>
       </Card>

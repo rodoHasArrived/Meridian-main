@@ -70,6 +70,7 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
     public override TimeSpan RateLimitDelay => TimeSpan.Zero; // Use the hourly window-based limit.
     public override int MaxRequestsPerWindow => 100; // 100 requests/hour for the undocumented endpoint.
     public override TimeSpan RateLimitWindow => TimeSpan.FromHours(1);
+    protected override bool HasKnownQuota => false; // This endpoint has no published quota.
 
     #endregion
 

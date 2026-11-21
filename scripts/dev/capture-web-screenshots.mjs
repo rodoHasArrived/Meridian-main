@@ -509,7 +509,30 @@ function assertCaptureRouteStateIdentity(captures) {
   }
 }
 
-async function findMissingCaptureRoutePaths(captures, routeCatalogPath, appShellPath) {
+/** A retained concrete capture covers a route pattern only at exact segment boundaries. */
+export function screenshotRouteMatches(pattern, capturePath) {
+  const expected = screenshotCoveragePath(pattern);
+  const actual = screenshotCoveragePath(capturePath);
+  if (!expected || !actual) return false;
+  const expectedUrl = new URL(expected, "http://meridian.local");
+  const actualUrl = new URL(actual, "http://meridian.local");
+  if (expectedUrl.hash !== actualUrl.hash) return false;
+  const expectedSegments = expectedUrl.pathname.split("/");
+  const actualSegments = actualUrl.pathname.split("/");
+  if (expectedSegments.length !== actualSegments.length) return false;
+  return expectedSegments.every((segment, index) => {
+    const value = actualSegments[index];
+    if (!/^:[A-Za-z_][A-Za-z0-9_]*$/.test(segment)) return segment === value;
+    if (!value) return false;
+    try {
+      const decoded = decodeURIComponent(value);
+      return decoded.length > 0 && !decoded.startsWith(":") && !/[\/\\]/.test(decoded)
+        && !/%(?:2f|5c)/i.test(decoded);
+    } catch { return false; }
+  });
+}
+
+export async function findMissingCaptureRoutePaths(captures, routeCatalogPath, appShellPath) {
   const capturedPaths = new Set(
     captures
       .map((capture) => screenshotCoveragePath(capture.path))
@@ -526,7 +549,7 @@ async function findMissingCaptureRoutePaths(captures, routeCatalogPath, appShell
       .filter((routePath) => routePath.length > 0)
   );
   return [...expectedPaths]
-    .filter((routePath) => !capturedPaths.has(routePath))
+    .filter((routePath) => ![...capturedPaths].some((capturedPath) => screenshotRouteMatches(routePath, capturedPath)))
     .sort();
 }
 
@@ -1558,6 +1581,20 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   const actualPath = new URL(actualUrl).pathname;
   if (actualPath !== expectedPath) {
     throw new Error(`Capture ${capture.name} ended on '${actualPath}', expected '${expectedPath}'.`);
+  }
+
+  // A redirect capture may bind a complete retained view. Prove its declared
+  // query and anchor survived rather than accepting the destination page alone.
+  if (typeof capture.expectedRedirectPath === "string") {
+    const expectedRedirect = new URL(toRouteUrl(baseUrl, capture.expectedRedirectPath.trim()));
+    const actualRedirect = new URL(actualUrl);
+    if (expectedRedirect.search) {
+      const expectedQuery = new URLSearchParams(expectedRedirect.search);
+      const actualQuery = new URLSearchParams(actualRedirect.search);
+      expectedQuery.sort(); actualQuery.sort();
+      if (expectedQuery.toString() !== actualQuery.toString()) throw new Error(`Capture ${capture.name} lost its retained redirect query.`);
+    }
+    if (expectedRedirect.hash && expectedRedirect.hash !== actualRedirect.hash) throw new Error(`Capture ${capture.name} lost its retained redirect anchor.`);
   }
 
   const kpis = await collectKpiSnapshots(page);

@@ -2,7 +2,7 @@
 
 **Status:** supporting-generated
 **Owner:** core-team
-**Reviewed:** 2026-11-20
+**Reviewed:** 2026-11-21
 
 This folder stores maintained screenshot references used by documentation and
 workflow evidence.
@@ -12,7 +12,7 @@ screens, and 27 native desktop manual frames. [Capture provenance](capture-manif
 the retained file hashes, source commits, browser paths, native page observations, actual capture
 intervals, and Windows Actions artifact identities. The images use synthetic fixtures. The browser set includes three 1024px variants of existing routes.
 
-The retained browser set has PR-attested source/runtime evidence but no matching local raw capture manifest. The current native catalog is byte-bound to its Windows Actions artifact and logged request/save intervals, but its raw observed-page/frame records were not retained. Manual frames retain their original raw workflow observations. These gaps are explicit in the provenance manifest; retained PNGs alone do not establish route/state acceptance.
+The browser catalog was refreshed locally on 2026-11-21 from `50bef8a8f01e`. [Its original raw capture manifest](provenance/web-2026-11-21-manifest.json) records successful route observations and the capture interval; [a separate same-environment runtime observation](provenance/web-2026-11-21-runtime.json) records installed Playwright and Chromium versions. The current native catalog is byte-bound to its Windows Actions artifact and logged request/save intervals, but its raw observed-page/frame records were not retained. Manual frames retain their original raw workflow observations. These gaps are explicit in the provenance manifest; retained PNGs alone do not establish route/state acceptance.
 
 Generated local screenshot runs should stay under ignored artifact locations
 unless a reviewer explicitly chooses a new screenshot as durable documentation

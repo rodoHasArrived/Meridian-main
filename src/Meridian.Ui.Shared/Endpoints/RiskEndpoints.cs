@@ -84,6 +84,19 @@ public static class RiskEndpoints
 
     private static void MapRiskRoutes(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        group.AddEndpointFilter(async (invocation, next) =>
+        {
+            var context = invocation.HttpContext;
+            if (context.RequestServices.GetService<IOrderManager>() is Meridian.Execution.OrderManagementSystem { ScopedPaperBook: { } paper })
+            {
+                var permission = HttpMethods.IsGet(context.Request.Method)
+                    ? UserPermission.ViewTrades : UserPermission.ManageOrders;
+                if (!await ExecutionEndpoints.CanAccessScopedPaperBookAsync(context, paper, permission).ConfigureAwait(false))
+                    return EndpointHelpers.Forbidden();
+            }
+            return await next(invocation).ConfigureAwait(false);
+        });
+
         // Rule status now carries live book data — aggregate gross exposure across every
         // registered portfolio, and violation reasons that can name traded symbols. Before
         // the portfolio rules landed these routes returned only thresholds and health

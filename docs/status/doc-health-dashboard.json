@@ -1,11 +1,11 @@
 {
-  "total_files": 1292,
+  "total_files": 1300,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:aaf072993ebb5990d3c0f6d4fb10bbb85557bbc5f4c5c49039fb1af0e69fa788",
+  "signal_digest": "sha256:76f493b14e396c6f46fdc12a3c61c64da33665e4cef5d36ddfff3937f5ef703b",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2551,6 +2551,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/financial-value-pattern.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/free-development-tools.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2594,6 +2601,13 @@
     },
     {
       "path": "docs/engineering/plans/browser-workstation-ux-program.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/browser-workstation-ux-roadmap-2026-11.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3231,6 +3245,13 @@
     },
     {
       "path": "docs/operators/bond-workflows.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/book-receipt-queue.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4637,6 +4658,27 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.contracts/page-080.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-081.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-082.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.core/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4862,6 +4904,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.financialoperations/page-009.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.financialoperations/page-010.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5121,6 +5170,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.reporting/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.reporting/page-005.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -472,6 +472,16 @@ public interface IReportingGovernanceTransaction
         string seriesId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Finds candidate identities in one company. The caller must still authorize each retained run.</summary>
+    ValueTask<IReadOnlyList<string>> FindRunIdsAsync(
+        string tenantId,
+        string companyId,
+        string query,
+        int offset,
+        int limit,
+        CancellationToken cancellationToken = default) =>
+        ValueTask.FromResult<IReadOnlyList<string>>([]);
+
     ValueTask AddRunAsync(
         GovernedReportingRun run,
         CancellationToken cancellationToken = default);

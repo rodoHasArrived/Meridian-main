@@ -1350,6 +1350,21 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.brokerageSetupAction).toBeNull();
   });
 
+  it.each([
+    ["EUR", "€18,750", "€188.10"],
+    [null, "18,750", "188.10"]
+  ] as const)("displays the retained denomination for older brokerage positions (%s)", (currency, marketValue, averagePrice) => {
+    const snapshot = {
+      ...brokeragePortfolio,
+      positions: [{ ...brokeragePortfolio.positions[0], currency, marketValue: 18_750.125, averageEntryPrice: 188.1 }]
+    };
+    const vm = buildPortfolioScreenViewModel({
+      trading, strategy, accounting, brokeragePortfolio: snapshot
+    });
+
+    expect(vm.brokeragePositionRows).toMatchObject([{ currency, marketValue, averagePrice }]);
+  });
+
   it("keeps all-account brokerage detail as aggregate view state", () => {
     const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy),
       trading,

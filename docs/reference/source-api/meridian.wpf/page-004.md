@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundReconciliationDetailModel
+
+Qualified name: <code>Meridian.Wpf.Models.FundReconciliationDetailModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:173](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L173).
+
+```csharp
+public sealed record FundReconciliationDetailModel(FundReconciliationSourceType SourceType, string DetailKey, string Title, string Subtitle, string StatusLabel, string CoverageSummary, string LastUpdatedText, Guid? AccountId, Guid ReconciliationRunId, string? RunId, string? FocusBreakId, bool SupportsBreakActions, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, int SecurityIssueCount, string EmptyExceptionsText, string EmptySecurityCoverageText, IReadOnlyList<FundReconciliationCheckDetailRow> ExceptionRows, IReadOnlyList<FundReconciliationCheckDetailRow> AllCheckRows, IReadOnlyList<FundReconciliationSecurityCoverageRow> SecurityCoverageRows, IReadOnlyList<FundReconciliationAuditTrailRow> AuditRows);
+```
+
 ## FundReconciliationQueueView
 
 Qualified name: <code>Meridian.Wpf.Models.FundReconciliationQueueView</code>. Kind: `enum`.
@@ -1010,21 +1020,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BackfillModels.cs:25](../../../../src/Meridian.Wpf/Models/BackfillModels.cs#L25) |  |
 | <code>public string NextRun { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/BackfillModels.cs:26](../../../../src/Meridian.Wpf/Models/BackfillModels.cs#L26) |  |
-
-## ScriptDocumentEntry
-
-Qualified name: <code>Meridian.Wpf.Models.ScriptDocumentEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/QuantScriptModels.cs:12](../../../../src/Meridian.Wpf/Models/QuantScriptModels.cs#L12).
-
-A saved QuantScript document shown in the browser.
-
-```csharp
-public sealed record ScriptDocumentEntry(string Name, string FullPath, QuantScriptDocumentKind Kind)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string KindLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/QuantScriptModels.cs:14](../../../../src/Meridian.Wpf/Models/QuantScriptModels.cs#L14) |  |
