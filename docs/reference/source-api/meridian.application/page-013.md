@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WizardSummary
+
+Qualified name: <code>Meridian.Application.Wizard.Core.WizardSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Wizard/Core/WizardSummary.cs:13](../../../../src/Meridian.Application/Wizard/Core/WizardSummary.cs#L13).
+
+Human-readable summary produced at the end of a completed wizard run.
+
+```csharp
+public sealed record WizardSummary(bool Success, AppConfig? Config, string? ConfigPath, IReadOnlyList<string> ConfiguredItems, IReadOnlyList<string> NextSteps)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WizardSummary Empty { get; } = new (Success : false, Config : null, ConfigPath : null, ConfiguredItems : Array.Empty&lt;string&gt;(), NextSteps : Array.Empty&lt;string&gt;());</code> | [src/Meridian.Application/Wizard/Core/WizardSummary.cs:21](../../../../src/Meridian.Application/Wizard/Core/WizardSummary.cs#L21) | Returns an empty failed summary. |
+
+## WizardTransition
+
+Qualified name: <code>Meridian.Application.Wizard.Core.WizardTransition</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Wizard/Core/WizardTransition.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardTransition.cs#L12).
+
+Declares a conditional edge in the wizard step graph.
+
+```csharp
+public sealed record WizardTransition(WizardStepId From, WizardStepId To, Func<WizardContext, bool>? Condition = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Applies(WizardContext context) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardTransition.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardTransition.cs#L18) | Returns true if this transition applies to the given context. |
+
 ## ProviderDescriptor
 
 Qualified name: <code>Meridian.Application.Wizard.Metadata.ProviderDescriptor</code>. Kind: `record`.

@@ -5,54 +5,48 @@
 
 ## Overall Coverage
 
-**11772 / 11794** items documented (**99.8%**) &mdash; Grade: **A**
+**11817 / 11833** items documented (**99.9%**) &mdash; Grade: **A**
 
 ```text
-[====================] 99.8%
+[====================] 99.9%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 11159 | 11181 | 99.8% | A |
-| API Endpoints | 455 | 455 | 100.0% | A |
+| Public Classes / Interfaces | 11203 | 11219 | 99.9% | A |
+| API Endpoints | 456 | 456 | 100.0% | A |
 | Configuration Options | 147 | 147 | 100.0% | A |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (22 undocumented)
+### Public Classes / Interfaces (16 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
-| `SymbolUniverseRequest` | `src/Meridian.Contracts/Api/DataIngestionContracts.cs:56` |
-| `SymbolUniverseResponse` | `src/Meridian.Contracts/Api/DataIngestionContracts.cs:70` |
-| `StorageSymbolBreakdown` | `src/Meridian.Contracts/Api/StatusModels.cs:435` |
-| `StorageSettingsRequest` | `src/Meridian.Contracts/Api/UiDashboardModels.cs:15` |
-| `SymbolMappingRequest` | `src/Meridian.Contracts/Api/UiDashboardModels.cs:88` |
-| `SymbolMappingResponse` | `src/Meridian.Contracts/Api/UiDashboardModels.cs:221` |
-| `StorageProfileResponse` | `src/Meridian.Contracts/Api/UiDashboardModels.cs:298` |
-| `AccountBalanceHistoryPointDto` | `src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs:4` |
-| `AccountBalanceHistoryDto` | `src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs:7` |
-| `ReportWriterFilterOperatorDto` | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1460` |
-| `ReportWriterChartTypeDto` | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1514` |
-| `ReportWriterChartSeriesDto` | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1530` |
-| `OperationsWorkflowContractMatrix` | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:114` |
-| `StatementReconciliationReportArtifactGenerationDto` | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:235` |
-| `StatementReconciliationCaseDto` | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:206` |
-| `StatementReconciliationCaseCommentThreadDto` | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:229` |
-| `WorkstationModeComparisonRun` | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:115` |
-| `WorkstationPlotToolMomentPayload` | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:280` |
-| `WorkstationPlotToolRegressionPayload` | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:286` |
-| `WorkstationPlotToolSampleRowPayload` | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:290` |
-| `WorkstationPlotToolStatisticsPayload` | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:299` |
-| `ProviderConnectionTemplateEndpoints` | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs:11` |
+| `ProviderTemplateCompatibilityException` | `src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:10` |
+| `ProviderConnectionTemplateService` | `src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:18` |
+| `ProviderConnectionTemplateDto` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:7` |
+| `ProviderTemplateCapabilityDto` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:20` |
+| `ProviderTemplateBindingDto` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:23` |
+| `ProviderConnectionTemplateFile` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:26` |
+| `ProviderTemplateReviewRow` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:29` |
+| `ProviderConnectionTemplateOption` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:31` |
+| `SaveProviderConnectionTemplateRequest` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:39` |
+| `ProviderTemplateSetupDraft` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:45` |
+| `ProviderTemplateSetupTestResult` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:48` |
+| `SavedProviderTemplateConnection` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:50` |
+| `ProviderTemplateImportIssue` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:52` |
+| `OwnedProviderTemplateConfig` | `src/Meridian.Core/Config/ProviderConnectionsConfig.cs:36` |
+| `ProviderTemplateSetupConfig` | `src/Meridian.Core/Config/ProviderConnectionsConfig.cs:40` |
+| `OpenBreakHistory` | `src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:16` |
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 22 undocumented type(s). Add entries to `docs/reference/api-reference.md` for the most important ones.
+1. **Public Classes / Interfaces**: 16 undocumented type(s). Add entries to `docs/reference/api-reference.md` for the most important ones.
 
 ---
 

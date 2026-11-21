@@ -947,7 +947,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1714](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1714).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1717](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1717).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -959,7 +959,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1716](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1716) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1719](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1719) |  |
 
 ## IReportingPrimaryDocumentRenderer
 

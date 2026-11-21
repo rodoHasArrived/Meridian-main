@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NullCorporateActionOperationsService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullCorporateActionOperationsService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:173](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L173).
+
+Rejects corporate-action operations when the operations service is unavailable.
+
+```csharp
+public sealed class NullCorporateActionOperationsService : ICorporateActionOperationsService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;CorporateActionSourceProposalDto&gt; RecordSourceProposalAsync(RecordCorporateActionSourceProposalRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:180](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L180) |  |
+| <code>public Task&lt;CorporateActionSourceProposalDto?&gt; GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:183](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L183) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:186](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L186) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListActionableSourceProposalsAsync(Guid? securityId, int take, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:189](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L189) |  |
+| <code>public Task&lt;CorporateActionDurableInboxDto&gt; GetInboxAsync(CorporateActionCaseScopeDto acceptanceScope, int take, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:192](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L192) |  |
+| <code>public Task&lt;CorporateActionSourceProposalAcceptanceResultDto&gt; AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:195](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L195) |  |
+| <code>public Task&lt;CorporateActionSourceProposalDecisionResultDto&gt; RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:198](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L198) |  |
+| <code>public Task&lt;CorporateActionProcessingCaseDto?&gt; GetCaseAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:201](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L201) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CorporateActionProcessingCaseDto&gt;&gt; ListCasesAsync(string tenantId, string companyId, Guid? securityId, string? state, int take, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:204](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L204) |  |
+| <code>public Task&lt;CorporateActionConflictDto?&gt; GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:207](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L207) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CorporateActionConflictDto&gt;&gt; ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:210](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L210) |  |
+| <code>public Task&lt;CorporateActionEvidenceMutationResultDto&gt; AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:213](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L213) |  |
+| <code>public Task&lt;CorporateActionConflictMutationResultDto&gt; RecordConflictAsync(RecordCorporateActionConflictRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:216](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L216) |  |
+| <code>public Task&lt;CorporateActionConflictResolutionResultDto&gt; ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:219](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L219) |  |
+| <code>public Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:222](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L222) |  |
+| <code>public Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:225](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L225) |  |
+
+## NullDataVendorEntitlementService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullDataVendorEntitlementService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:90](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L90).
+
+Supplies empty entitlement reads and refuses entitlement mutations when storage is unavailable.
+
+```csharp
+public sealed class NullDataVendorEntitlementService : IDataVendorEntitlementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetAllAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:95](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L95) |  |
+| <code>public Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetExpiringAsync(int withinDays, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:98](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L98) |  |
+| <code>public Task&lt;DataVendorEntitlementDto&gt; UpsertAsync(UpsertDataVendorEntitlementRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:102](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L102) |  |
+| <code>public Task DeactivateAsync(Guid entitlementId, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:107](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L107) |  |
+
 ## NullMultiAssetCoverageInvalidator
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullMultiAssetCoverageInvalidator</code>. Kind: `class`.
@@ -989,41 +1043,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityMasterDraftProposalService(ILogger&lt;SecurityMasterDraftProposalService&gt; logger, ISymbolResolver? symbolResolver = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L38) |  |
 | <code>public async Task&lt;SecurityMasterDraftProposalDto&gt; BuildDraftAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L46) |  |
-
-## SecurityMasterGovernanceHostPosture
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceHostPosture</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:101](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L101).
-
-Whether the host is a production composition as Meridian.Application.Composition.ProductionServiceRegistrationPolicy.IsProductionComposition defines it. Registered by Meridian.Application.Composition.SecurityMasterGovernanceServiceCollectionExtensions.AddSecurityMasterGovernanceRequirements.
-
-```csharp
-public sealed record SecurityMasterGovernanceHostPosture(bool IsProductionComposition)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityMasterGovernanceHostPosture NonProduction { get; } = new (false);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:104](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L104) | A host that is not a production composition. |
-| <code>public static SecurityMasterGovernanceHostPosture Production { get; } = new (true);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:107](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L107) | A production composition. |
-
-## SecurityMasterGovernanceProfile
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceProfile</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L7).
-
-The governance profile a deployment declares for the Security Master governed-write surface (SecurityMasterWorkbenchOptions.GovernanceProfile).
-
-```csharp
-public enum SecurityMasterGovernanceProfile
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Standard = 0</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L13) | Each governance requirement follows its own setting; all three default to off. The code default, because the supported local workstation is single-operator. |
-| <code>Institutional = 1</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L19) | Governed term amendments, independent field-edit review and independent profile approval are all in force and cannot be turned off. A production composition always runs this profile. |
