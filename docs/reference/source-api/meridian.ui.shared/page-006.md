@@ -684,7 +684,7 @@ Cross-screen counts (A3): open orders, provider health and open breaks, counted 
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:52](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L52).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:53](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L53).
 
 Endpoints for the desktop workstation API surface.
 
@@ -696,7 +696,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:60](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L60) |  |
+| <code>public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:61](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L61) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs#L12).
 

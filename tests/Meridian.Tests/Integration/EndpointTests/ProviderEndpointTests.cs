@@ -118,9 +118,10 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     }
 
     [Fact]
-    public async Task GetRateLimitHistory_ReportsRecentEventsAndDurableDailyRetention()
+    public async Task GetRateLimitHistory_ReportsRootScopedRecentEventsAndDailyTotals()
     {
         var provider = $"history-empty-{Guid.NewGuid():N}";
+        ProviderRateLimitHistory.Shared.Record(provider, null, httpStatus: 429);
         var response = await _providerReadClient.GetAsync($"/api/providers/{provider}/rate-limit-history?hours=12");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -144,33 +145,33 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         var provider = $"history-observed-{Guid.NewGuid():N}";
         var now = DateTimeOffset.UtcNow;
         var resetAt = now.AddMinutes(1);
+        var status = new RateLimitStatus(provider, 5, 5, TimeSpan.FromMinutes(1), true,
+            TimeSpan.FromMinutes(1), 1, now, resetAt);
         var history = ProviderRateLimitHistory.ForDataRoot(
             _fixture.DataRoot, _fixture.Services.GetRequiredService<IAtomicFileWriter>());
-        history.Record(provider,
-            new RateLimitStatus(provider, 5, 5, TimeSpan.FromMinutes(1), true,
-                TimeSpan.FromMinutes(1), 1, now, resetAt),
-            nextProvider: "stooq", httpStatus: 429);
+        history.Record(provider, status, httpStatus: 429);
+        history.Record(provider, status, nextProvider: "stooq");
 
         var response = await _providerReadClient.GetAsync($"/api/providers/{provider}/rate-limit-history?hours=12");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
         json["isAvailable"].GetBoolean().Should().BeTrue();
-        json["history"].GetArrayLength().Should().Be(1);
-        var retained = json["history"][0];
+        json["history"].GetArrayLength().Should().Be(2);
+        var retained = json["history"].EnumerateArray().Single(entry => entry.GetProperty("eventType").GetString() == "rate-limited");
         retained.GetProperty("requestsUsed").GetInt32().Should().Be(5);
         retained.GetProperty("usageRatio").GetDouble().Should().Be(1);
         retained.GetProperty("wasRateLimited").GetBoolean().Should().BeTrue();
         retained.GetProperty("resetAt").GetDateTimeOffset().Should().Be(resetAt);
-        retained.GetProperty("eventType").GetString().Should().Be("rotated");
-        retained.GetProperty("nextProvider").GetString().Should().Be("stooq");
         retained.GetProperty("httpStatus").GetInt32().Should().Be(429);
+        var rotation = json["history"].EnumerateArray().Single(entry => entry.GetProperty("eventType").GetString() == "rotated");
+        rotation.GetProperty("nextProvider").GetString().Should().Be("stooq");
         json["dailyRollupsAvailable"].GetBoolean().Should().BeTrue();
-        json["dailyRollups"].GetArrayLength().Should().Be(1);
-        var rollup = json["dailyRollups"][0];
-        rollup.GetProperty("dateUtc").Deserialize<DateOnly>().Should().Be(
+        var dailyTotal = json["dailyRollups"].EnumerateArray().Should().ContainSingle().Which;
+        dailyTotal.GetProperty("dateUtc").Deserialize<DateOnly>().Should().Be(
             DateOnly.FromDateTime(retained.GetProperty("timestamp").GetDateTimeOffset().UtcDateTime));
-        rollup.GetProperty("rotationCount").GetInt64().Should().Be(1);
+        dailyTotal.GetProperty("throttleCount").GetInt64().Should().Be(1);
+        dailyTotal.GetProperty("rotationCount").GetInt64().Should().Be(1);
     }
 
     #endregion
