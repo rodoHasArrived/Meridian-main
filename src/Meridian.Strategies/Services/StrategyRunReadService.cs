@@ -284,6 +284,7 @@ public sealed partial class StrategyRunReadService
             BiasDisclosure: MapBiasDisclosure(run.Metrics?.BiasDisclosure))
         {
             ReplayProvenance = BuildReplayProvenance(run),
+            StrategyArtifactId = run.StrategyArtifactId,
             EvidenceLoop = BuildEvidenceLoop(run),
             ProviderProvenance = run.RunType == RunType.Backtest ? run.ProviderProvenance : null,
             AcceptanceChecklist = BuildAcceptanceChecklist(run, promotionLookup, promotionTargetRun, scope)

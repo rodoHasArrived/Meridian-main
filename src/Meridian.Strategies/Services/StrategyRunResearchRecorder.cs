@@ -81,6 +81,8 @@ public sealed class StrategyRunResearchRecorder(
         // Hash the entry we are about to persist rather than a parallel argument list, so the
         // digest is always reproducible by the store from the same retained fields.
         entry = entry with { InputHashSha256 = StrategyRunEntry.ComputeRealismBoundInputHash(entry) };
+        if (descriptor.StrategyArtifactId is { } artifactId)
+            entry = entry.WithStrategyArtifact(artifactId);
 
         try
         {

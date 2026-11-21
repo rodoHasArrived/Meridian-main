@@ -26,6 +26,7 @@ public sealed class PromotionService
     private readonly BrokerageConfiguration? _brokerageConfiguration;
     private readonly IPromotedRunLauncher? _runLauncher;
     private readonly IPromotionTrustEvidenceProvider? _trustEvidenceProvider;
+    private readonly StrategyLiveAuthorizationService? _liveAuthorizations;
 
     public PromotionService(
         IStrategyRepository repository,
@@ -36,7 +37,8 @@ public sealed class PromotionService
         ExecutionAuditTrailService? auditTrail = null,
         BrokerageConfiguration? brokerageConfiguration = null,
         IPromotedRunLauncher? runLauncher = null,
-        IPromotionTrustEvidenceProvider? trustEvidenceProvider = null)
+        IPromotionTrustEvidenceProvider? trustEvidenceProvider = null,
+        StrategyLiveAuthorizationService? liveAuthorizations = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _promoter = promoter ?? throw new ArgumentNullException(nameof(promoter));
@@ -47,6 +49,7 @@ public sealed class PromotionService
         _brokerageConfiguration = brokerageConfiguration;
         _runLauncher = runLauncher;
         _trustEvidenceProvider = trustEvidenceProvider;
+        _liveAuthorizations = liveAuthorizations;
     }
 
     /// <summary>
@@ -242,7 +245,10 @@ public sealed class PromotionService
             RequiresHumanApproval: requiresHumanApproval,
             RequiresManualOverride: requiresManualOverride,
             RequiredManualOverrideKind: requiredManualOverrideKind,
-            BlockingReasons: blockingReasonSet);
+            BlockingReasons: blockingReasonSet)
+        {
+            StrategyArtifactId = run.StrategyArtifactId
+        };
     }
 
     /// <summary>
@@ -329,6 +335,9 @@ public sealed class PromotionService
         }
 
         var targetRunType = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
+        if (targetRunType == RunType.Paper && request.LiveAuthorization is not null)
+            return new(false, null, null, "Live authorization applies only to a reviewed Paper run.");
+
         var existingDecision = await FindExistingDecisionAsync(run, targetRunType, ct).ConfigureAwait(false);
         if (existingDecision is not null)
         {
@@ -345,6 +354,15 @@ public sealed class PromotionService
                     existingDecision,
                     ct)
                 .ConfigureAwait(false);
+        }
+
+        StrategyLiveAuthorization? liveAuthorization = null;
+        if (targetRunType == RunType.Live && _liveAuthorizations is not null)
+        {
+            var grant = await _liveAuthorizations.PrepareGrantAsync(run, request.LiveAuthorization, ct).ConfigureAwait(false);
+            if (grant.Grant is null)
+                return new(false, null, null, grant.Failure ?? "Live authorization could not be established.");
+            liveAuthorization = grant.Grant;
         }
 
         var approvalChecklist = PromotionApprovalChecklist.Normalize(request.ApprovalChecklist);
@@ -576,7 +594,11 @@ public sealed class PromotionService
             approvalChecklist: approvalChecklist,
             evidenceReferences: evidenceReferences,
             manualOverrideId: request.ManualOverrideId,
-            auditReference: auditReference);
+            auditReference: auditReference) with
+        {
+            StrategyArtifactId = run.StrategyArtifactId,
+            LiveAuthorization = liveAuthorization
+        };
         if (!TryValidatePromotionRecord(promotionRecord, out var validationError))
         {
             return new PromotionDecisionResult(
@@ -619,6 +641,8 @@ public sealed class PromotionService
                 Reason: "Promotion decision could not be durably recorded; no target run was created or launched.");
         }
 
+        StrategyRunEntry launchTarget;
+        PromotionDecisionResult decision;
         await using (reservation)
         {
             var promotionRecord = reservation.Record;
@@ -636,6 +660,16 @@ public sealed class PromotionService
                     promotionRecord,
                     "The retained approval has no target run id; no runnable target was created.");
             }
+
+            if (!string.Equals(sourceRun.StrategyArtifactId, promotionRecord.StrategyArtifactId, StringComparison.Ordinal) ||
+                (promotionRecord.TargetRunType == RunType.Live && _liveAuthorizations is not null &&
+                 promotionRecord.LiveAuthorization is null))
+                return CreateDurableApprovalCompletionFailure(promotionRecord,
+                    "This decision lacks authority for the retained artifact. Review a fresh Paper run.");
+
+            if (_liveAuthorizations is not null &&
+                await _liveAuthorizations.GetWithdrawalAsync(promotionRecord, CancellationToken.None).ConfigureAwait(false) is { } withdrawal)
+                return CreateDurableApprovalCompletionFailure(promotionRecord, $"{withdrawal.Reason} Review a fresh Paper run.");
 
             StrategyRunEntry? retainedTarget;
             try
@@ -742,9 +776,8 @@ public sealed class PromotionService
                 promotionRecord.PromotionId,
                 promotedRun.RunId);
 
-            await ActivatePromotedRunAsync(promotedRun, CancellationToken.None).ConfigureAwait(false);
-
-            return new PromotionDecisionResult(
+            launchTarget = promotedRun;
+            decision = new PromotionDecisionResult(
                 Success: true,
                 PromotionId: promotionRecord.PromotionId,
                 NewRunId: promotedRun.RunId,
@@ -754,6 +787,9 @@ public sealed class PromotionService
                 AuditReference: promotionRecord.AuditReference,
                 ApprovedBy: promotionRecord.ApprovedBy);
         }
+
+        await ActivatePromotedRunAsync(launchTarget, CancellationToken.None).ConfigureAwait(false);
+        return decision;
     }
 
     private async Task EnsurePromotionApprovalAuditAsync(
@@ -792,8 +828,9 @@ public sealed class PromotionService
 
     private static StrategyRunEntry CreatePromotedRun(
         StrategyRunEntry sourceRun,
-        StrategyPromotionRecord promotionRecord) =>
-        new(
+        StrategyPromotionRecord promotionRecord)
+    {
+        var target = new StrategyRunEntry(
             RunId: promotionRecord.TargetRunId!,
             StrategyId: sourceRun.StrategyId,
             StrategyName: sourceRun.StrategyName,
@@ -810,7 +847,10 @@ public sealed class PromotionService
             ParentRunId: sourceRun.RunId,
             FundProfileId: sourceRun.FundProfileId,
             FundDisplayName: sourceRun.FundDisplayName,
+            ExecutionRealism: sourceRun.StrategyArtifactId is null ? null : sourceRun.ExecutionRealism,
             FundAccountId: sourceRun.FundAccountId);
+        return promotionRecord.StrategyArtifactId is { } artifactId ? target.WithStrategyArtifact(artifactId) : target;
+    }
 
     private static string? GetRetainedTargetValidationError(
         StrategyRunEntry sourceRun,
@@ -821,6 +861,8 @@ public sealed class PromotionService
             !string.Equals(retainedTarget.ParentRunId, sourceRun.RunId, StringComparison.Ordinal) ||
             !string.Equals(retainedTarget.StrategyId, sourceRun.StrategyId, StringComparison.Ordinal) ||
             retainedTarget.FundAccountId != sourceRun.FundAccountId ||
+            !string.Equals(retainedTarget.StrategyArtifactId, promotionRecord.StrategyArtifactId, StringComparison.Ordinal) ||
+            !string.Equals(sourceRun.StrategyArtifactId, promotionRecord.StrategyArtifactId, StringComparison.Ordinal) ||
             retainedTarget.RunType != promotionRecord.TargetRunType ||
             !string.Equals(retainedTarget.AuditReference, promotionRecord.AuditReference, StringComparison.Ordinal))
         {
@@ -828,6 +870,30 @@ public sealed class PromotionService
         }
 
         return null;
+    }
+
+    public async Task<StrategyPromotionRecord?> FindLiveAuthorizationAsync(
+        string authorizationId, StrategyRunReadScope scope, CancellationToken ct)
+    {
+        var records = await _promotionRecordStore.LoadAllAsync(ct).ConfigureAwait(false);
+        var promotion = records.FirstOrDefault(record => record.PromotionId == authorizationId &&
+            record.TargetRunType == RunType.Live && record.LiveAuthorization is not null);
+        return promotion is not null && await FindRunAsync(promotion.SourceRunId, scope, ct).ConfigureAwait(false) is not null
+            ? promotion : null;
+    }
+
+    public Task<StrategyLiveAuthorizationRevocation> RevokeLiveAuthorizationAsync(
+        StrategyPromotionRecord promotion, string actor, string reason, CancellationToken ct) =>
+        (_liveAuthorizations ?? throw new InvalidOperationException("Live authorization is unavailable."))
+        .RevokeAsync(promotion, actor, reason, ct);
+
+    public async Task<(bool TargetsLive, Guid? FundAccountId)> GetPromotionAuthorityScopeAsync(
+        string runId, StrategyRunReadScope scope, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(runId))
+            return (false, null);
+        var run = await FindRunAsync(runId, scope, ct).ConfigureAwait(false);
+        return (run?.RunType == RunType.Paper, run?.FundAccountId);
     }
 
     private static PromotionDecisionResult CreateDurableApprovalCompletionFailure(
@@ -1440,13 +1506,34 @@ public sealed class PromotionService
         var sourceRuns = await _repository.GetRunsByIdsAsync(sourceRunIds, ct).ConfigureAwait(false);
         var sourceRunsById = sourceRuns.ToDictionary(static run => run.RunId, StringComparer.Ordinal);
 
-        return records
+        var visible = records
             .Where(record => IsPromotionRecordVisible(
                 record,
                 scope,
                 sourceRunsById.GetValueOrDefault(record.SourceRunId)))
             .OrderByDescending(static record => record.PromotedAt)
             .ToArray();
+        if (_liveAuthorizations is null)
+            return visible;
+
+        for (var index = 0; index < visible.Length; index++)
+        {
+            var record = visible[index];
+            if (record.TargetRunType != RunType.Live || record.Decision != PromotionDecisionKinds.Approved)
+                continue;
+            StrategyLiveAuthorizationStatus status;
+            try
+            {
+                status = await _liveAuthorizations.DescribeAsync(record, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+            {
+                _logger.LogWarning(ex, "Live authorization {PromotionId} could not be verified.", record.PromotionId);
+                status = new("Blocked", "The retained live authorization could not be verified.");
+            }
+            visible[index] = record with { LiveAuthorizationStatus = status };
+        }
+        return visible;
     }
 
     private static bool IsPromotionRecordVisible(
@@ -1574,6 +1661,20 @@ public sealed class PromotionService
         }
 
         var isApproved = string.Equals(record.Decision, PromotionDecisionKinds.Approved, StringComparison.OrdinalIgnoreCase);
+        if (record.LiveAuthorization is { } grant &&
+            (!isApproved || record.SourceRunType != RunType.Paper || record.TargetRunType != RunType.Live ||
+             !Meridian.Strategies.Artifacts.StrategyArtifact.IsValidId(record.StrategyArtifactId) ||
+             grant.FundAccountId == Guid.Empty || string.IsNullOrWhiteSpace(grant.GatewayId) ||
+             grant.BrokerScope is not { Length: 64 } || grant.BrokerScope.AsSpan().IndexOfAnyExcept("0123456789abcdef") >= 0 ||
+             grant.Currency != "USD" || grant.MaxOrderNotional <= 0m || grant.ExpiresAt <= record.PromotedAt ||
+             grant.AllowedSymbols is not { Count: > 0 } ||
+             !grant.AllowedSymbols.SequenceEqual(grant.AllowedSymbols
+                 .Where(symbol => !string.IsNullOrWhiteSpace(symbol))
+                 .Select(symbol => symbol.Trim().ToUpperInvariant()).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))))
+        {
+            validationError = "The live authorization does not bind a valid reviewed Paper-to-Live mandate.";
+            return false;
+        }
         var isRejected = string.Equals(record.Decision, PromotionDecisionKinds.Rejected, StringComparison.OrdinalIgnoreCase);
         if (!isApproved && !isRejected)
         {
@@ -1641,6 +1742,8 @@ public sealed record PromotionEvaluationResult(
     string? RequiredManualOverrideKind = null,
     IReadOnlyList<string>? BlockingReasons = null)
 {
+    public string? StrategyArtifactId { get; init; }
+
     public static PromotionEvaluationResult NotFound(string runId) => new(
         RunId: runId, StrategyId: null, StrategyName: null,
         SourceMode: null, TargetMode: null, IsEligible: false,
@@ -1662,7 +1765,10 @@ public sealed record PromotionApprovalRequest(
     string? ApprovalReason = null,
     string[]? ApprovalChecklist = null,
     string[]? EvidenceReferences = null,
-    string? ManualOverrideId = null);
+    string? ManualOverrideId = null)
+{
+    public StrategyLiveAuthorizationRequest? LiveAuthorization { get; init; }
+}
 
 /// <summary>Request to reject a strategy promotion.</summary>
 public sealed record PromotionRejectionRequest(

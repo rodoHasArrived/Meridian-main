@@ -23,7 +23,10 @@ public sealed record ResearchRunDescriptor(
     string? CorrelationId = null,
     string? DatasetReference = null,
     IReadOnlyDictionary<string, string>? ParameterSet = null,
-    ExecutionRealismDescriptor? ExecutionRealism = null);
+    ExecutionRealismDescriptor? ExecutionRealism = null)
+{
+    public string? StrategyArtifactId { get; init; }
+}
 
 /// <summary>
 /// Records research-originated backtests into the shared strategy-run store so that work done in a

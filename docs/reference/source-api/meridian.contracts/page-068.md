@@ -642,7 +642,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ParameterDiff</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:891](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L891).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:893](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L893).
 
 A single parameter change between two runs.
 

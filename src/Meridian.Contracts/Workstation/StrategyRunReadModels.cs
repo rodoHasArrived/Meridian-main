@@ -468,6 +468,8 @@ public sealed record StrategyRunDetail(
     IReadOnlyList<StrategyRunGovernanceHook>? GovernanceHooks = null,
     BiasDisclosureDto? BiasDisclosure = null)
 {
+    public string? StrategyArtifactId { get; init; }
+
     private IReadOnlyList<StrategyRunAcceptanceChecklistItemDto> _acceptanceChecklist = [];
 
     /// <summary>Observed replay sources and verified backfill revisions from a completed run.</summary>

@@ -182,12 +182,16 @@ public static partial class ExecutionEndpoints
                 return brokerAccountFailure;
             }
 
-            if (request.FundAccountId is { } fundAccountId
-                && await RequireExecutionFundAccountAccessAsync(
-                    fundAccountId,
-                    UserPermission.ManageOrders,
-                    context,
-                    jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
+            if (request.FundAccountId is not { } ticketAccount || ticketAccount == Guid.Empty)
+                return Results.BadRequest(new OrderResult
+                {
+                    Success = false,
+                    OrderId = request.ClientOrderId ?? "blocked",
+                    ErrorMessage = "Select a fund account before submitting a Paper ticket."
+                });
+
+            if (await RequireExecutionFundAccountAccessAsync(
+                ticketAccount, UserPermission.ManageOrders, context, jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
             {
                 return accountScopeFailure;
             }
@@ -204,7 +208,7 @@ public static partial class ExecutionEndpoints
 
                 await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
                 var selection = paperSessionId.Trim();
-                var expectedAccount = request.FundAccountId?.ToString("D") ?? PaperTradingPortfolio.DefaultAccountId;
+                var expectedAccount = ticketAccount.ToString("D");
                 if (!string.Equals(persistence.GetSessionAccountId(selection), expectedAccount, StringComparison.OrdinalIgnoreCase))
                     return EndpointHelpers.Forbidden();
 
@@ -230,13 +234,8 @@ public static partial class ExecutionEndpoints
 
             // The account check above verified this operator for the named account, which is the
             // grant the typed authority carries into the OMS.
-            var ticketAuthority = normalizedRequest.FundAccountId is { } grantedAccount
-                ? OrderSubmissionAuthority.ForOperatorTicket(
-                    actor,
-                    HttpPrincipalAccountGrant(grantedAccount, actor),
-                    ticketCorrelationId,
-                    approvedPaperSessionId)
-                : null;
+            var ticketAuthority = OrderSubmissionAuthority.ForOperatorTicket(
+                actor, HttpPrincipalAccountGrant(ticketAccount, actor), ticketCorrelationId, approvedPaperSessionId);
 
             OrderResult result;
             try
