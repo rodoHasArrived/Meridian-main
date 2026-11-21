@@ -393,11 +393,21 @@ public sealed class AutomatedTradeFillAccountingService(
             tags["execution.fee.currency"] = "USD";
             tags["execution.fee.kind"] = fill.Fees!.Single(fee => fee.FeeId == activity[4..]).Kind;
         }
-        var entry = new JournalEntry(id, fill.OccurredAt, source, lines, new JournalEntryMetadata(ActivityType: source,
+        var metadata = new JournalEntryMetadata(ActivityType: source,
             Symbol: fill.Symbol, SecurityId: securityId, FillId: fill.FillId, FinancialAccountId: fill.FinancialAccountId,
             LedgerBook: book.LedgerBookId.ToString("D"), EffectiveDate: date, IdempotencyKey: key,
             StrategyId: string.IsNullOrWhiteSpace(fill.StrategyId) ? null : fill.StrategyId.Trim(),
-            Tags: tags));
+            Tags: tags);
+        if (source == "execution.trade-fill")
+        {
+            var securities = amounts.Single(line => line.Account.Symbol is not null && line.Account.AccountType == LedgerAccountType.Asset);
+            var cash = amounts.Single(line => line.Account.Symbol is null && line.Account.AccountType == LedgerAccountType.Asset);
+            var posting = fill.Side == OrderSide.Buy
+                ? new SecurityTradePosting(SecurityTradePostingKind.OpenLong, fill.FilledQuantity, securities.Debit)
+                : new SecurityTradePosting(SecurityTradePostingKind.CloseLong, fill.FilledQuantity, cash.Debit, securities.Credit);
+            metadata = SecurityTradePositionEvidence.WithPostings(metadata, [posting], SecurityLotUnitKind.Shares, 1m);
+        }
+        var entry = new JournalEntry(id, fill.OccurredAt, source, lines, metadata);
         var command = new AccountingPostingCommandDto(commandId, context.AggregateId, context.PeriodId, date,
             fill.OccurredAt, key, SourceEventId: sourceId, CorrelationId: fill.FillId, ExpectedVersion: context.ExpectedPeriodVersion,
             SourceEventType: source, ApprovalState: AccountingPostingApprovalStateDto.NotRequired,

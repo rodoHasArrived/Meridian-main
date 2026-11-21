@@ -18,6 +18,8 @@ public sealed partial class PaperSessionPersistenceService
             session.FinancialAccountId ?? PaperTradingPortfolio.DefaultAccountId,
             session.StrategyId, session.JournalCurrency!, fills);
         var portfolio = new PaperTradingPortfolio(session.InitialCash, journal.SourceLedger, session.CreatedAt);
+        portfolio.BindPositionAccountingEvidenceScope(
+            session.FinancialAccountId ?? PaperTradingPortfolio.DefaultAccountId, session.JournalCurrency!, session.CreatedAt);
         journal.CaptureOpening(session.InitialCash, session.CreatedAt);
         ReplayInto(portfolio, fills.Select(static fill => fill.Fill).ToArray(), settlements,
             fills.ToDictionary(static fill => fill.FillId, static fill => (fill.AccountingEvidenceVersion, fill.FinancialAccountId)),

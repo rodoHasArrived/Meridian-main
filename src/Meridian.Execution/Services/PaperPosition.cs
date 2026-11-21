@@ -27,6 +27,41 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public string? MarkSource { get; set; }
     /// <summary>Conservative source history for acquisitions still represented by this position.</summary>
     public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? OpeningMarketDataEvidence { get; set; }
+    public Guid? AccountingSecurityId { get; private set; }
+    public string? AccountingRunId { get; private set; }
+    public bool AccountingChronologyKnown { get; private set; }
+    private readonly HashSet<Guid> _accountingFillIds = [];
+    public IReadOnlyCollection<Guid> AccountingFillIds => _accountingFillIds;
+
+    /// <summary>Preserves unknown or mixed attribution until the old exposure is genuinely closed.</summary>
+    public void RetainAccountingIdentity(Guid? securityId, string? runId, Guid fillId,
+        DateTimeOffset occurredAt, bool opensNewHistory)
+    {
+        securityId = securityId is { } id && id != Guid.Empty ? id : null;
+        runId = string.IsNullOrWhiteSpace(runId) ? null : runId.Trim();
+        if (opensNewHistory)
+        {
+            AccountingSecurityId = securityId;
+            AccountingRunId = runId;
+            AccountingChronologyKnown = occurredAt != default;
+            _accountingFillIds.Clear();
+        }
+        else
+        {
+            if (AccountingSecurityId != securityId) AccountingSecurityId = null;
+            if (!string.Equals(AccountingRunId, runId, StringComparison.Ordinal)) AccountingRunId = null;
+            AccountingChronologyKnown &= occurredAt != default;
+        }
+        if (fillId != Guid.Empty) _accountingFillIds.Add(fillId);
+    }
+
+    public void RestoreAccountingIdentity(Guid? securityId, string? runId, IEnumerable<Guid> fillIds)
+    {
+        AccountingSecurityId = securityId is { } id && id != Guid.Empty ? id : null;
+        AccountingRunId = string.IsNullOrWhiteSpace(runId) ? null : runId.Trim();
+        AccountingChronologyKnown = true;
+        foreach (var fillId in fillIds.Where(static id => id != Guid.Empty)) _accountingFillIds.Add(fillId);
+    }
     public decimal OpenCostBasis { get; private set; }
     public long LotVersion { get; private set; }
 

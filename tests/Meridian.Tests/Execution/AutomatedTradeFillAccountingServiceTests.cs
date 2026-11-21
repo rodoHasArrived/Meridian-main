@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
@@ -95,6 +96,11 @@ public sealed class AutomatedTradeFillAccountingServiceTests
         first.Should().HaveCount(3);
         var trade = fixture.Commands.Single();
         trade.AcquisitionLot!.Acquisition!.FunctionalCostBasis.Should().Be(1000m);
+        SecurityTradePositionEvidence.TryRead(trade.Journal.Entry, out var positionEffect, out _).Should().BeTrue();
+        positionEffect!.LongQuantityChange.Should().Be(10m);
+        positionEffect.LongBasisChange.Should().Be(1000m);
+        positionEffect.QuantityUnit.Should().Be(SecurityLotUnitKind.Shares);
+        positionEffect.Multiplier.Should().Be(1m);
         trade.Journal.Entry.Lines.Sum(line => line.Debit).Should().Be(1000m);
         trade.Journal.PostingCommand!.ActionOrigin.Should().Be(OperationsActionOriginDto.AuthorizedSystem);
         trade.Journal.PostingCommand.Provenance.Should().Be(DataProvenance.Simulated);
@@ -109,6 +115,7 @@ public sealed class AutomatedTradeFillAccountingServiceTests
             && line.Currency.FxRateToFunctional == 1m && line.Account.FinancialAccountId == "account-1");
         trade.RetainedEvidence.Should().OnlyContain(e => RetainedEvidenceIdentityValidator.IsComplete(e));
         first.Skip(1).Should().OnlyContain(entry => !entry.Metadata.Tags!.ContainsKey("quantity"));
+        first.Skip(1).Should().OnlyContain(entry => !entry.Metadata.Tags!.ContainsKey(SecurityTradePositionEvidence.VersionTag));
 
         // A restart and policy/grant revocation cannot cause fresh selection or erase committed receipts.
         ((IAutomatedPostingGrantStore)fixture.Journals).GetAsync(Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -148,6 +155,9 @@ public sealed class AutomatedTradeFillAccountingServiceTests
         var command = fixture.Commands.Last();
         var selection = command.DisposalSelections.Should().ContainSingle().Which;
         selection.ExpectedCostBasis.Should().Be(400m);
+        SecurityTradePositionEvidence.TryRead(command.Journal.Entry, out var positionEffect, out _).Should().BeTrue();
+        positionEffect!.LongQuantityChange.Should().Be(-4m);
+        positionEffect.LongBasisChange.Should().Be(-400m);
         selection.SelectionOrdinal.Should().Be(0);
         command.Journal.Entry.Lines.Single(line => line.Account.AccountType == LedgerAccountType.Revenue).Credit.Should().Be(40m);
         command.ReferenceVersions.Should().Be(new AtomicLotReferenceVersions(1, 1));
@@ -162,6 +172,21 @@ public sealed class AutomatedTradeFillAccountingServiceTests
         var sale = () => fixture.Service.PostAsync(fixture.Fill() with { Side = OrderSide.Sell, RealizedPnl = 0m }, fixture.Context, fixture.SecurityId);
         await sale.Should().ThrowAsync<InvalidOperationException>().WithMessage("*FIFO*");
         fixture.Commands.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RetainedPrePositionEvidenceIntentRecoversWithoutChangingItsJournalOrSealedPlan()
+    {
+        using var fixture = new Fixture();
+        var fill = fixture.Fill();
+        await fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
+        var (path, originalBytes) = fixture.RetainPrePositionEvidenceIntent(fill);
+        var posted = await fixture.CreateService().PostAsync(fill, fixture.Context, fixture.SecurityId);
+        var recovered = await fixture.CreateService().TryRecoverCompletedAsync(fill, fixture.Context);
+        posted.Should().ContainSingle().Which.Metadata.Tags.Should().NotContainKey(SecurityTradePositionEvidence.VersionTag);
+        recovered.Should().ContainSingle().Which.Metadata.Tags.Should().NotContainKey(SecurityTradePositionEvidence.VersionTag);
+        (await File.ReadAllBytesAsync(path)).Should().Equal(originalBytes);
+        fixture.Commands.Should().ContainSingle("an existing pinned acquisition cannot be prepared or appended again");
     }
 
     [Theory]
@@ -376,6 +401,26 @@ public sealed class AutomatedTradeFillAccountingServiceTests
         }
         internal AutomatedTradeFillAccountingService CreateService() => new(_options, _root, Journals, _atomic, _target,
             _accounts, Policies, _securities, _positions);
+        internal (string Path, byte[] Bytes) RetainPrePositionEvidenceIntent(TradeExecutedEvent fill)
+        {
+            var path = Path.Combine(_root, new TradeFillPostingStoreOptions(_root, Context).ScopeStorageKey, $"{fill.FillId:N}.json");
+            var intent = JsonSerializer.Deserialize(File.ReadAllText(path), FillAccountingJsonContext.Default.PreparedFillAccountingIntent)!;
+            var entry = intent.Trade.Journal.Entry;
+            var metadata = entry.Metadata with { Tags = entry.Metadata.Tags!
+                .Where(static item => !item.Key.StartsWith("positionEvidence.", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(static item => item.Key, static item => item.Value, StringComparer.OrdinalIgnoreCase) };
+            var priorWrite = intent.Trade.Journal with { Entry = new JournalEntry(entry.JournalEntryId,
+                entry.Timestamp, entry.Description, entry.Lines, metadata) };
+            var priorTrade = (intent.Trade with { Journal = priorWrite }).WithComputedFingerprint();
+            intent = intent with { Trade = priorTrade, ContentHash = "" };
+            intent = intent with { ContentHash = "sha256:" + Sha256Digest.ComputeUtf8(
+                JsonSerializer.Serialize(intent, FillAccountingJsonContext.Default.PreparedFillAccountingIntent)) };
+            _receipts[priorTrade.MutationBatchId] = _receipts[priorTrade.MutationBatchId] with
+            { CanonicalFingerprint = priorTrade.CanonicalFingerprint, Journal = Record(priorWrite) };
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(intent, FillAccountingJsonContext.Default.PreparedFillAccountingIntent);
+            File.WriteAllBytes(path, bytes);
+            return (path, bytes);
+        }
         internal TradeExecutedEvent Fill() => new(Guid.NewGuid(), "order-1", "TEST", OrderSide.Buy, 10m, 100m, 0m, 0m,
             0m, Time, Grant.FinancialAccountId)
         { SourceMode = "Synthetic", SettlementCurrency = "USD" };

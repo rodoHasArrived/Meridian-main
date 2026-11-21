@@ -17,6 +17,12 @@ advances; consumers retain them through accounting and recovery rather than look
 assessment. The nullable member is omitted when absent, preserving historical report hashes.
 Missing evidence remains unassessed and does not establish clean data or live execution provenance.
 
+`OrderState.AccountingSecurityId` and `ExecutionReport.AccountingSecurityId` retain the accepted
+admission's canonical identity. The OMS stamps the report's `AccountingRunId` from server-owned
+order state before persistence and paper-book mutation; a gateway cannot supply either assertion.
+These nullable fields are omitted when absent, preserving historical payload hashes and fill IDs.
+They describe retained lineage and do not grant execution or posting authority.
+
 `IOrderManager.GetUnitReservingOrders` returns the exposure reservations, except that a pending amendment reserves its larger-quantity outcome rather than its larger-value one, for unit limits.
 
 Order authority (`OrderCommandAuthority.cs`): `OrderSubmissionAuthority` records who or what

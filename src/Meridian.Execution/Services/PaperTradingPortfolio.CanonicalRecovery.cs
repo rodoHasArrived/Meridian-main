@@ -7,7 +7,15 @@ namespace Meridian.Execution.Services;
 public sealed record CanonicalPaperLotRecovery(string LotId, decimal Quantity, decimal UnitCost,
     decimal ExactBasis, DateTimeOffset AcquiredAtUtc, Guid? CanonicalTaxLotRecordId = null);
 public sealed record CanonicalPaperPositionRecovery(string Symbol, IReadOnlyList<CanonicalPaperLotRecovery> Lots,
-    decimal ObservedPrice, DateTimeOffset ObservedAtUtc, string ObservationSource);
+    decimal ObservedPrice, DateTimeOffset ObservedAtUtc, string ObservationSource)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? AccountingSecurityId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountingRunId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Guid>? AccountingFillIds { get; init; }
+}
 
 public sealed partial class PaperTradingPortfolio
 {
@@ -87,6 +95,9 @@ public sealed partial class PaperTradingPortfolio
                         lot.CanonicalTaxLotRecordId ?? throw new InvalidOperationException("Canonical recovery requires exact durable lot identities."));
                     position.AttributeFill(accountId, lot.Quantity, 1m);
                 }
+                position.RestoreAccountingIdentity(restored.AccountingSecurityId, restored.AccountingRunId,
+                    restored.AccountingFillIds ?? []);
+                RetainAccountingEvidenceCutoff(restored.ObservedAtUtc);
                 account.Positions.Add(restored.Symbol, position);
             }
             account.Cash = cash;

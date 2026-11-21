@@ -17,7 +17,7 @@ namespace Meridian.Execution.Services;
 /// Supports both single-account (backward-compatible) and multi-account modes.
 /// Optionally posts double-entry journal entries to a <see cref="Ledger"/> after each fill.
 /// </summary>
-public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
+public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState, IPositionAccountingEvidenceSource
 {
     /// <summary>Key used for the default / backwards-compatible account.</summary>
     public const string DefaultAccountId = "default";
@@ -89,6 +89,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             throw new ArgumentOutOfRangeException(nameof(initialCash), "Initial cash must be non-negative.");
 
         _ledger = ledger;
+        _positionEvidenceCutoff = openingTimestamp;
         _corporateActionAdjuster = corporateActionAdjuster;
         _lotSelectionMethod = lotSelectionMethod;
 
@@ -601,6 +602,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
                 && CanCertifyAccountingOwner(account, previousPosition, ownerAccountId);
             var capture = new FillAccountingCapture();
             var quantityBefore = previousPosition?.Quantity ?? 0m;
+            var hadPreviousExposure = previousPosition is not null &&
+                (previousPosition.Quantity != 0m || previousPosition.HasOwnerExposure);
             var currentInputs = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(report.MarketDataEvidence);
             var closesExisting = quantityBefore != 0m && Math.Sign(quantityBefore) != Math.Sign(signedQty);
             var openingInputs = previousPosition?.OpeningMarketDataEvidence;
@@ -619,6 +622,11 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
 
             if (account.Positions.TryGetValue(report.Symbol, out var remainingPosition))
             {
+                var crossedIntoNewExposure = quantityBefore != 0m && remainingPosition.Quantity != 0m
+                    && Math.Sign(quantityBefore) != Math.Sign(remainingPosition.Quantity);
+                remainingPosition.RetainAccountingIdentity(report.AccountingSecurityId, report.AccountingRunId,
+                    PaperSessionFillRecord.ComputeCanonicalFillId(report), report.Timestamp,
+                    opensNewHistory: !hadPreviousExposure || crossedIntoNewExposure);
                 if (!closesExisting || remainingPosition.Quantity != 0m
                     && Math.Sign(quantityBefore) != Math.Sign(remainingPosition.Quantity))
                 {
@@ -639,6 +647,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
                         || !canCertifyOwnership
                         || (accountingEvidenceVersion == 0 && !variationMargin));
             }
+
+            RetainAccountingEvidenceCutoff(report.Timestamp);
 
             var evidence = new TradeFillAccountingEvidence(
                 Closing: capture.Closing,
@@ -1188,6 +1198,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             pos.LastSettlementPrice = settlementPrice;
             pos.MarketPrice = settlementPrice;
             PostVariationMarginEntry(account, symbol, cashFlow, asOf, $"Daily settlement {symbol} @ {settlementPrice:F4} (variation margin)");
+            RetainAccountingEvidenceCutoff(asOf);
             return cashFlow;
         }
     }

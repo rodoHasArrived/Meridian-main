@@ -148,6 +148,14 @@ public sealed record OrderModification
 /// <summary>Report from the execution gateway about an order event.</summary>
 public sealed record ExecutionReport
 {
+    /// <summary>Canonical identity retained from the accepted order admission; absent on older reports.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? AccountingSecurityId { get; init; }
+
+    /// <summary>Server-owned run identity retained with the fill for native position accounting.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountingRunId { get; init; }
+
     /// <summary>Source and quality snapshot of the observations used to produce this fill.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? MarketDataEvidence { get; init; }
@@ -364,6 +372,10 @@ public sealed record OrderResult
 /// <summary>Current state of an order tracked by the OMS.</summary>
 public sealed record OrderState
 {
+    /// <summary>Canonical identity captured by the successful admission gate, before routing.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? AccountingSecurityId { get; init; }
+
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? StrategyArtifactId { get; init; }
 

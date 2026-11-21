@@ -30,6 +30,22 @@ reconciliation. Fee, financing and collateral journals carry no invented positio
 evidence without a declared unit remains unavailable for quantity proof. The existing canonical
 cash-equity grant and atomic-lot restrictions remain authoritative.
 
+`IPositionAccountingEvidenceSource` captures native positions and account money under the same
+paper-book lock. Its account partitions are declared by the book, and quantities, native units,
+multipliers, exact remaining lot basis and NAV come from the retained book rather than average
+quotes. Variation-margin positions report their actual zero carrying basis separately from
+unsettled value. Currency comes from an explicit ledger policy or authorized book/session binding.
+Observed position ownership alone cannot assign pooled cash to a fund.
+
+The admission gate retains a resolved canonical security ID in OMS state. The fill processor stamps
+that ID and the server-owned run ID before durable retention and portfolio application, replacing
+gateway assertions. Missing or mixed acquisition/relief identity stays unavailable until a genuine
+flat boundary or independent residual opening. Native replay retains those original observations.
+Canonical startup traces retained quantity mutations through the complete current holding cycle;
+partial relief and closed lots cannot erase mixed run ownership. Incomplete history remains unknown.
+Only newly prepared canonical trade journals gain native position-effect tags; retained prepared
+intents and receipts replay unchanged.
+
 Market-data input evidence is captured with the pricing observation and follows the retained
 execution report, accepted-fill WAL and journal metadata. Source snapshots retain provider/event,
 backfill receipt and quality assessment identity without treating an unassessed input as clean.
