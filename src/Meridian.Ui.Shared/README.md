@@ -123,6 +123,11 @@ live coordinator in desktop mode.
 defaults, audit; `ModifyConfig`, rate-limited, reason required when loosening, atomic audit, live
 apply reported through the change status) and `POST /api/quality/cross-provider/preview` (one
 symbol, two non-simulated historical providers, at most 30 days, about two provider calls).
+Preview uses the monitor's symbol-to-asset-class lookup and returns `resolvedAssetClass` with
+the effective tolerances. A missing class uses the base thresholds. The optional `assetClass`
+assertion returns a validation error before provider calls when it differs from the lookup.
+Omitting the draft policy uses the monitor's current policy, or the saved policy on a host
+without the monitor.
 Whole-document saves cannot change `DataQuality.CrossProvider` or its audit.
 Rule deletion requires a JSON body with an operator-supplied `reason` and retains the removed
 provider chain and thresholds atomically. Recreating the rule cannot erase that deletion evidence.
