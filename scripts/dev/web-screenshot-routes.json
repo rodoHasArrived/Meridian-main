@@ -616,10 +616,10 @@
         "/api/workstation/accounting"
       ],
       "waitForTexts": [
-        "Open breaks",
         "Open reconciliation casework",
-        "Review retained evidence",
-        "Record match decision"
+        "Cash variance needs review",
+        "Reported variance",
+        "Review retained evidence"
       ]
     },
     {

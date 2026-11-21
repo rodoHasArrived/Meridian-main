@@ -236,7 +236,6 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
       <p className="text-sm text-foreground">{item.reason}</p>
       {lineage ? <p className="text-sm text-muted-foreground"><strong className="text-foreground">{sourceRunChangeLabel(lineage)}</strong> · Occurrence {lineage.occurrenceNumber} · {sourceObservationAge(lineage)}</p> : null}
       <dl className="reconciliation-case-facts">
-        <CaseFact label="Case ID">{item.breakId}</CaseFact>
         <CaseFact label="Case version">{item.version}</CaseFact>
         <CaseFact label="Case status">{status}</CaseFact>
         <CaseFact label="Owner">{item.assigneeDisplayName ?? item.assignedTo ?? "Unassigned"}</CaseFact>
@@ -264,16 +263,10 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
           </CaseFact></dl>
         </>}
         <dl className="reconciliation-case-facts">
-          <CaseFact label="Fund account">{item.fundAccountId}</CaseFact>
-          <CaseFact label="Ledger book">{item.ledgerBookId}</CaseFact>
-          <CaseFact label="Accounting period">{item.accountingPeriodId}</CaseFact>
           <CaseFact label="As of">{formatAccountingDate(item.asOfDate)}</CaseFact>
-          <CaseFact label="Source">{item.sourceSystem}</CaseFact>
-          <CaseFact label="Source record">{item.sourceReference}</CaseFact>
-          {ledgerEvidence.length > 0 ? <CaseFact label="Ledger evidence">{ledgerEvidence.join(", ")}</CaseFact> : null}
-          <CaseFact label={item.sourceImportId ? "Source import" : "Source run"}>{sourceRun}</CaseFact>
-          <CaseFact label="Tolerance policy">{policy ? `${policy.profileId} · Version ${policy.version}`
-            : item.toleranceProfileId ? `${item.toleranceProfileId} · Version unavailable` : null}</CaseFact>
+          {item.sourceSystem ? <CaseFact label="Source">{item.sourceSystem}</CaseFact> : null}
+          {policy || item.toleranceProfileId ? <CaseFact label="Tolerance policy">{policy ? `${policy.profileId} · Version ${policy.version}`
+            : `${item.toleranceProfileId} · Version unavailable`}</CaseFact> : null}
           {policy ? <CaseFact label="Policy applied as of">{formatAccountingDate(policy.effectiveDate)}</CaseFact> : null}
         </dl>
         {earlier.length > 0 ? <label className="grid gap-1 text-sm">
@@ -325,6 +318,13 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
         </div> : null}
         <TechnicalDetails label="Evidence identifiers">
           <dl className="reconciliation-case-facts">
+            <CaseFact label="Case ID">{item.breakId}</CaseFact>
+            <CaseFact label="Fund account">{item.fundAccountId}</CaseFact>
+            <CaseFact label="Ledger book">{item.ledgerBookId}</CaseFact>
+            <CaseFact label="Accounting period">{item.accountingPeriodId}</CaseFact>
+            <CaseFact label="Source record">{item.sourceReference}</CaseFact>
+            <CaseFact label={item.sourceImportId ? "Source import" : "Source run"}>{sourceRun}</CaseFact>
+            {ledgerEvidence.length > 0 ? <CaseFact label="Ledger evidence">{ledgerEvidence.join(", ")}</CaseFact> : null}
             <CaseFact label="Lineage ID">{lineage?.lineageId}</CaseFact>
             <CaseFact label="Occurrence ID">{lineage?.occurrenceId}</CaseFact>
             <CaseFact label="Latest lineage scope">{lineage?.comparisonScopeId}</CaseFact>
