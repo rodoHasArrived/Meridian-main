@@ -956,13 +956,19 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnecto
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementImportReview.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementImportReview.cs#L13).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconciliationReport.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconciliationReport.cs#L22).
 
 ```csharp
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs#L25).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs#L27).
 
 Strategy Designer and Strategy Engine endpoints for the workstation API surface, split out of the WorkstationEndpoints core partial as a capability group.
 
@@ -1008,7 +1014,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs:16]
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L25).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:29](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L29).
 
 Trading workspace payload composition for the workstation API surface: builds the live trading payload (positions, orders, fills, risk, brokerage, readiness). When neither the execution layer nor the strategy run read service is registered the builder returns null and the route responds 503 — fabricated fixture data is never served as live. The inline trading route lambda and the shared helpers (GetTradingOperatorReadinessAsync, NormalizeOperatorInboxToken, BuildTradingBrokerageNotes, ResolveLiveMark, ResolveRuntimeRiskDescriptorAsync, BuildModeComparisons, BuildRunDrillInLinks, FormatCurrency/FormatPercent) remain in core and are reached across the partial.
 
@@ -1020,7 +1026,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static WorkstationManualOrderEntry? ResolveManualOrderEntry(IExecutionGateway? gateway, BrokerageConfiguration? configuration);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:302](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L302) | Mirrors the OMS&#x27;s routing mode for the active gateway: manual orders are refused live (MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED) and admitted in paper. |
+| <code>public static WorkstationManualOrderEntry? ResolveManualOrderEntry(IExecutionGateway? gateway, BrokerageConfiguration? configuration);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:319](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L319) | Mirrors the OMS&#x27;s routing mode for the active gateway: manual orders are refused live (MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED) and admitted in paper. |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs:8](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs#L8).
 

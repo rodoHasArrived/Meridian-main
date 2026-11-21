@@ -93,7 +93,8 @@ public sealed partial class LiveTradingEngineTests
                 trustEvidenceProvider: new PromotionTrustEvidenceStub(), liveAuthorizations: gate);
             var expiry = now.AddHours(1);
             var request = RehearsalApproval(paper.RunId, RunType.Live, allow.OverrideId)
-                with { LiveAuthorization = new(artifactId, ["AAPL"], 1_200m, "USD", expiry) };
+                with
+            { LiveAuthorization = new(artifactId, ["AAPL"], 1_200m, "USD", expiry) };
             var approval = await promotions.ApproveAsync(request);
             approval.Success.Should().BeTrue(approval.Reason);
             var retained = (await history.LoadAllAsync()).Should().ContainSingle().Subject;

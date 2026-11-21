@@ -239,7 +239,12 @@ public sealed record StrategyRunSummary(
     // PR-02: paper/live-compatible status shapes
     StrategyRunLiveStatus? LiveStatus = null,
     StrategyRunPaperStatus? PaperStatus = null,
-    IReadOnlyDictionary<string, string>? Parameters = null);
+    IReadOnlyDictionary<string, string>? Parameters = null)
+{
+    public string? StrategyVersionSha256 { get; init; }
+    public string? DataProvenanceToken { get; init; }
+    public Guid? FundAccountId { get; init; }
+}
 
 public sealed record StrategySweepObjectiveRanking(
     string RunId,
@@ -659,7 +664,10 @@ public sealed record LedgerTrialBalanceLine(
     [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
     [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
     [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null,
-    LedgerDimensionSetDto? Dimensions = null);
+    LedgerDimensionSetDto? Dimensions = null)
+{
+    public string BalanceExact => Balance.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}
 
 /// <summary>
 /// Shared journal row for workstation audit surfaces.

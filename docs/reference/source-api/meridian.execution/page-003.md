@@ -93,6 +93,25 @@ Declared public members:
 | <code>public decimal FeeBasisPoints { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:47](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L47) | Fee in basis points of fill notional. Default: 0. |
 | <code>public decimal SlippageBasisPoints { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:54](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L54) | Slippage in basis points of fill notional, charged as an explicit cash cost on every fill. The fill price itself stays inside the observed market-data envelope; slippage models execution friction beyond the observed spread. Default: 0. |
 
+## PaperOrderIntentScope
+
+Qualified name: <code>Meridian.Execution.PaperOrderIntentScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/OrderManagementSystemOptions.cs:80](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L80).
+
+```csharp
+public sealed record PaperOrderIntentScope
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TenantId { get; init; } = &quot;&quot;;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:82](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L82) |  |
+| <code>public string CompanyId { get; init; } = &quot;&quot;;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:83](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L83) |  |
+| <code>public Guid FundAccountId { get; init; }</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:84](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L84) |  |
+| <code>public bool CanAccess(string? tenantId, string? companyId, Guid accountId) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:86](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L86) |  |
+
 ## PaperTradingGateway
 
 Qualified name: <code>Meridian.Execution.PaperTradingGateway</code>. Kind: `class`.
@@ -848,14 +867,4 @@ Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:26](../../../../src
 
 ```csharp
 public sealed record JournalOrder(string OrderId, string Scope, Guid AccountId, string Symbol, string Side, string Status, decimal Quantity, decimal FilledQuantity, decimal? AverageFillPrice, string? StrategyId, string? RunId, string? Tag, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, IReadOnlyList<ExecutionJournalEntry> Events, string? AttemptId = null);
-```
-
-## JournalSummary
-
-Qualified name: <code>Meridian.Execution.Services.JournalSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:32](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L32).
-
-```csharp
-public sealed record JournalSummary(int Orders, int Fills, decimal? RealizedPnl, decimal? Commissions, decimal? Fees, decimal? Slippage, string Coverage, string Method = "FIFO operational attribution", decimal? NetRealizedPnl = null, IReadOnlyList<JournalAttribution>? Attributions = null);
 ```

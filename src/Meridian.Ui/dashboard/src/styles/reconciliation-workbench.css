@@ -1,6 +1,8 @@
 .reconciliation-workbench { min-width: 0; display: grid; gap: .75rem; }
 .reconciliation-workbench-shell .workspace-workbench-shell-layout--with-inspector:not(.workspace-workbench-shell-layout--with-context) { grid-template-columns: minmax(17.5rem, 27%) minmax(0, 1fr); }
 .reconciliation-workbench-shell .workspace-workbench-shell-main { min-width: 0; }
+/* Keyboard focus must stay above the sticky "More below" cue. */
+.reconciliation-workbench-shell .workspace-workbench-shell-inspector { scroll-padding-block: .75rem 3.5rem; }
 .reconciliation-inspector { container-type: inline-size; display: grid; gap: .75rem; padding: .75rem; border: 1px solid var(--ws-border); background: var(--ws-surface); border-radius: 2px; overflow-wrap: anywhere; }
 .reconciliation-inspector .detail-rail-fields:empty { display: none; }
 .reconciliation-case-layout, .reconciliation-case-evidence, .reconciliation-case-section, .reconciliation-case-rail { display: grid; min-width: 0; align-content: start; gap: .75rem; }

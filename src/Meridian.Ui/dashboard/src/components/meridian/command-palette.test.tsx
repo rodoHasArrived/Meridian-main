@@ -152,7 +152,7 @@ describe("CommandPalette", () => {
           scope: "Security Master catalog",
           asOfPosture: "Current reference",
           status: "Active",
-          href: "/accounting/security-master/detail?securityId=sec-aapl"
+          href: "/records/instrument/sec-aapl?recordScope=1&tab=positions"
         }],
         isPartial: false
       })
@@ -172,7 +172,7 @@ describe("CommandPalette", () => {
     );
     expect(screen.getByRole("link", { name: "Open Instrument Apple Inc., sec-aapl, Security Master catalog, Current reference, Active" })).toHaveAttribute(
       "href",
-      "/accounting/security-master/detail?securityId=sec-aapl"
+      "/records/instrument/sec-aapl?recordScope=1&tab=positions"
     );
     expect(screen.getByText("Instrument")).toBeInTheDocument();
     expect(screen.getByText("Security Master catalog · Current reference")).toBeInTheDocument();

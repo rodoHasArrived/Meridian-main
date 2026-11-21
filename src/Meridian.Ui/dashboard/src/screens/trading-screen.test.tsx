@@ -1059,7 +1059,7 @@ describe("TradingScreen", () => {
 
   it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen(data, "/trading/orders");
+    await renderTradingScreen(data, "/trading/orders", "53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
     await user.type(screen.getByPlaceholderText("AAPL"), "AAPL");

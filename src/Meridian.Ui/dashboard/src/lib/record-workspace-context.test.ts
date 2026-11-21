@@ -24,6 +24,15 @@ const position: RecordIdentity = {
 };
 
 describe("record workspace context", () => {
+  it("retains a dossier origin and its tab when an instrument opens related work", () => {
+    const instrument: RecordIdentity = { kind: "instrument", id: "sec-aapl", name: "Apple", scope: { securityId: "sec-aapl" } };
+    const context = buildRecordWorkspaceContext(instrument, { pathname: "/records/instrument/sec-aapl", search: "?tab=ledger&ledgerBookId=book-a&periodId=period-a", hash: "" }, {})!;
+    expect(context).not.toBeNull();
+    const related = new URL(appendRecordWorkspaceContext("/accounting/ledger", context)!, "https://meridian.local");
+    expect(readRecordWorkspaceContext(related.search)?.origin).toBe("/records/instrument/sec-aapl?tab=ledger&ledgerBookId=book-a&periodId=period-a");
+    expect(buildRecordWorkspaceContext(instrument, { pathname: "/records/instrument/sec-aapl/../settings", search: "", hash: "" }, {})).toBeNull();
+  });
+
   it("round-trips the origin selection, filters, financial scope and snapshot without reusing foreign run IDs", () => {
     const context = buildRecordWorkspaceContext(position, {
       pathname: "/portfolio",

@@ -4,6 +4,8 @@ using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Documents;
 using Meridian.Identity.Auth;
+using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Live.Designer;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -37,6 +39,7 @@ public static partial class EvidenceEndpoints
             if (subjectKind.EndsWith('.'))
                 return Results.NotFound(Error("evidence-manifest-not-found", "The retained evidence manifest was not found."));
             var retainedKind = subjectKind;
+            var retainedSubjectId = subjectId;
             if (string.Equals(subjectKind, "_vault", StringComparison.OrdinalIgnoreCase))
             {
                 subjectKind = "_vault";
@@ -45,8 +48,10 @@ public static partial class EvidenceEndpoints
                 if (identity is null)
                     return Results.NotFound(Error("evidence-manifest-not-found", "The retained evidence manifest was not found."));
                 retainedKind = identity.SubjectKind;
+                retainedSubjectId = identity.SubjectId;
             }
-            if (!CanReadSubject(retainedKind, context))
+            if (!CanReadSubject(retainedKind, context) ||
+                !await CanReadAccountBoundStrategyEvidenceAsync(retainedKind, retainedSubjectId, context).ConfigureAwait(false))
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
             var manifest = await store
                 .TryOpenManifestAsync(
@@ -87,7 +92,8 @@ public static partial class EvidenceEndpoints
             var trustedScope = ResolveRequiredDocumentScope(context);
             var identity = await store.TryGetVaultIdentityAsync(vaultId, trustedScope.TenantId,
                 trustedScope.CompanyId, context.RequestAborted).ConfigureAwait(false);
-            if (identity is not null && !CanReadSubject(identity.SubjectKind, context))
+            if (identity is not null && (!CanReadSubject(identity.SubjectKind, context) ||
+                !await CanReadAccountBoundStrategyEvidenceAsync(identity.SubjectKind, identity.SubjectId, context).ConfigureAwait(false)))
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
             var (amountGuard, guardError) = await ResolveLedgerAmountManifestGuardAsync(vaultId, context).ConfigureAwait(false);
             if (guardError is not null)
@@ -165,7 +171,8 @@ public static partial class EvidenceEndpoints
             string subjectId,
             HttpContext context) =>
         {
-            if (!CanReadSubject(subjectKind, context, subjectId))
+            if (!CanReadSubject(subjectKind, context, subjectId) ||
+                !await CanReadAccountBoundStrategyEvidenceAsync(subjectKind, subjectId, context).ConfigureAwait(false))
                 return Results.StatusCode(StatusCodes.Status403Forbidden);
             var service = context.RequestServices.GetRequiredService<EvidenceGraphService>();
             if (!service.IsSupportedSubjectKind(subjectKind))
@@ -395,7 +402,13 @@ public static partial class EvidenceEndpoints
                 Scope = trustedScope.CompanyId
             };
             var result = await store.FindByLinkageAsync(scopedRequest, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions);
+            var visible = new List<EvidenceVaultIdentityDto>(result.Count);
+            foreach (var identity in result)
+            {
+                if (await CanReadAccountBoundStrategyEvidenceAsync(identity.SubjectKind, identity.SubjectId, context).ConfigureAwait(false))
+                    visible.Add(identity);
+            }
+            return Results.Json(visible, jsonOptions);
         })
         .WithName("SearchWorkstationEvidenceVault")
         .DeclareNonMutating("Evidence-vault lookup by linkage criteria; the body carries the query because it has several optional fields, and the handler only reads through IEvidenceArtifactStore.FindByLinkageAsync.")
@@ -639,6 +652,8 @@ public static partial class EvidenceEndpoints
         if (string.Equals(subjectKind, EvidenceSubjectResolver.LedgerAmountKind, StringComparison.OrdinalIgnoreCase) &&
             !CanReadSubject(subjectKind, context, subjectId))
             return (null, Results.StatusCode(StatusCodes.Status403Forbidden));
+        if (!await CanReadAccountBoundStrategyEvidenceAsync(subjectKind, subjectId, context).ConfigureAwait(false))
+            return (null, Results.StatusCode(StatusCodes.Status403Forbidden));
         var service = context.RequestServices.GetRequiredService<EvidenceGraphService>();
         if (!service.IsSupportedSubjectKind(subjectKind))
         {
@@ -695,8 +710,35 @@ public static partial class EvidenceEndpoints
                 trustedScope.CompanyId,
                 context.RequestAborted)
             .ConfigureAwait(false);
-        return identity is not null;
+        return identity is not null &&
+            await CanReadAccountBoundStrategyEvidenceAsync(identity.SubjectKind, identity.SubjectId, context).ConfigureAwait(false);
     }
+
+    internal static async Task<bool> CanReadAccountBoundStrategyEvidenceAsync(string subjectKind, string subjectId, HttpContext context)
+    {
+        if (!string.Equals(subjectKind.Trim(), EvidenceSubjectResolver.StrategyRunKind, StringComparison.OrdinalIgnoreCase) ||
+            context.RequestServices.GetService<IStrategyRepository>() is not { } runs)
+            return true;
+
+        var runId = subjectId.Trim().TrimEnd('.');
+        if (runId.Length == 0)
+            return false;
+        var ct = context.RequestAborted;
+        var run = await runs.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+        if (run is null || DesignerStrategyVersion.Read(run) is null)
+            return true;
+
+        var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+        return tenant.HasTenantScope &&
+            string.Equals(run.ParameterSet?.GetValueOrDefault(DesignerStrategyVersion.TenantKey), tenant.TenantId, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(run.ParameterSet?.GetValueOrDefault(DesignerStrategyVersion.CompanyKey), tenant.CompanyId, StringComparison.OrdinalIgnoreCase) &&
+            await CanViewStrategyEvidenceAccountAsync(context, run.FundAccountId, ct).ConfigureAwait(false);
+    }
+
+    internal static Task<bool> CanViewStrategyEvidenceAccountAsync(HttpContext context, Guid? accountId, CancellationToken ct)
+        => accountId.HasValue
+            ? EndpointAuthorization.HasScopedPermissionAsync(context, UserPermission.ViewTrades, AccessScopeKindDto.Account, accountId, ct)
+            : Task.FromResult(false);
 
     private static Guid? ResolveLedgerBookId(HttpContext context)
         => Guid.TryParse(context.Request.Query["ledgerBookId"].FirstOrDefault(), out var ledgerBookId)
@@ -746,7 +788,10 @@ public static partial class EvidenceEndpoints
             return (null, Results.StatusCode(StatusCodes.Status403Forbidden));
         var subjectId = query["ledgerAmountSubjectId"].ToString();
         var hash = query["expectedContentHash"].ToString();
-        var packet = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
+        var packet = TrialBalanceAmountProvenanceService.IsSubject(subjectId)
+            ? await context.RequestServices.GetRequiredService<TrialBalanceAmountProvenanceService>()
+                .GetPacketAsync(subjectId, scope!, context.RequestAborted).ConfigureAwait(false)
+            : ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
             ? await context.RequestServices.GetRequiredService<ReportLedgerAmountProvenanceService>()
                 .GetPacketAsync(subjectId, scope!, BuildAmountReportAccess(context), context.RequestAborted).ConfigureAwait(false)
             : await context.RequestServices.GetRequiredService<PostedLedgerAmountProvenanceService>()
@@ -757,9 +802,9 @@ public static partial class EvidenceEndpoints
         if (packet?.LedgerAmount is not { } proof || proof.Status == EvidenceStatusDto.Blocked ||
             proof.SubjectId != subjectId || retainedSource is null)
             return (null, Results.Conflict(Error("ledger-amount-proof-stale", "Retained amount evidence is missing, changed, or outside the selected scope. Refresh the amount proof.")));
-        var retainedSubject = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
+        var retainedSubject = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId) || TrialBalanceAmountProvenanceService.IsSubject(subjectId)
             ? retainedSource.SourceSubjectId : subjectId;
-        var retainedScope = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId)
+        var retainedScope = ReportLedgerAmountProvenanceService.IsReportSubject(subjectId) || TrialBalanceAmountProvenanceService.IsSubject(subjectId)
             ? retainedSource.SourceScope : scope;
         if (retainedSubject is null || retainedScope is null)
             return (null, Results.Conflict(Error("ledger-amount-proof-stale", "The retained report source binding is unavailable.")));

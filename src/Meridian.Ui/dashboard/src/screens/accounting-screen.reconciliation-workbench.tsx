@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode, type UIEvent } from "react";
+import { cloneElement, isValidElement, useMemo, useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type KeyboardEvent, type MouseEvent, type ReactNode, type UIEvent } from "react";
 import { SinceLastVisitBadge } from "@/components/meridian/since-last-visit-badge";
 import { Link, useLocation } from "react-router-dom";
 import { ThreeWayAccountingPanel } from "./accounting-screen.three-way";
@@ -48,6 +48,7 @@ import { readReconciliationViewState, type ReconciliationQueueStatus, type Recon
 import "@/styles/reconciliation-workbench.css";
 import { Select } from "@/components/ui/select";
 import type { ReconciliationCaseworkCommand } from "@/types";
+import { CaseInspector } from "./case-inspector";
 
 type ReconciliationViewModel = ReturnType<typeof useAccountingReconciliationViewModel>;
 type Reconciliation = Pick<ReconciliationViewModel,
@@ -128,12 +129,13 @@ export function ThreeWayReconciliationWorkbench({ children }: { children: ReactN
   return <>{children}<ThreeWayAccountingPanel /></>;
 }
 
-export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, operatorId, bulkServices, visitServices, lifecycleServices, auditLoader }: {
+export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, caseInspector, operatorId, bulkServices, visitServices, lifecycleServices, auditLoader }: {
   reconciliation: Reconciliation;
   resolveDialog: ResolveDialog;
   runSelector?: ReactNode;
   controls: ReconciliationQueueControls;
   selectionNotice?: string | null;
+  caseInspector?: ReactNode;
   operatorId?: string | null;
   /** Bulk casework services; tests inject fakes. */
   bulkServices?: BulkTriageServices;
@@ -417,7 +419,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
     ) {
       setInspectorOpen(true);
     }
-    if (event.key === "Escape" && target.closest(".reconciliation-inspector") && !target.closest("select, [role='dialog']")) {
+    if (event.key === "Escape" && target.closest(".reconciliation-inspector") && !target.closest("form, select, [role='dialog']")) {
       event.preventDefault();
       event.stopPropagation();
       returnToQueue();
@@ -455,8 +457,8 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             id={reconciliation.detailPanelId}
             ariaLabel={reconciliation.selectedDetail?.ariaLabel ?? "Selected reconciliation break"}
             className="reconciliation-inspector"
-            title={reconciliation.selectedDetail?.title ?? reconciliation.detailEmptyTitle}
-            status={reconciliation.selectedDetail ? <DesignSystemStatus status={reconciliation.selectedDetail.statusLabel}>{reconciliation.selectedDetail.statusLabel}</DesignSystemStatus> : undefined}
+            title={caseInspector ? "Case inspector" : reconciliation.selectedDetail?.title ?? reconciliation.detailEmptyTitle}
+            status={!caseInspector && reconciliation.selectedDetail ? <DesignSystemStatus status={reconciliation.selectedDetail.statusLabel}>{reconciliation.selectedDetail.statusLabel}</DesignSystemStatus> : undefined}
             fields={[]}
           >
             <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Case navigation">
@@ -467,6 +469,8 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 {selectedIndex >= 0 ? <span className="text-xs text-muted-foreground">{selectedIndex + 1} of {visibleRows.length} filtered cases</span> : null}
               </> : null}
             </div>
+            {isValidElement<ComponentProps<typeof CaseInspector>>(caseInspector)
+              ? cloneElement(caseInspector, { operatorId, commandMemory: commandMemory.current }) : caseInspector ?? <>
             {selectedRow ? <div className="reconciliation-case-layout">
               <div className="grid min-w-0 content-start gap-3">
                 <ReconciliationCaseEvidence key={selectedRow.breakId} item={selectedSource ?? selectedRow} relatedRows={reconciliation.lineageRows} onOpenCase={reconciliation.selectBreak}
@@ -584,6 +588,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 <BreakAuditTimeline key={`audit:${selectedRow.breakId}`} breakId={selectedRow.breakId} refreshKey={selectedSource?.version ?? null} load={auditLoader} />
               </section>
             </div> : <p role="status" aria-label={reconciliation.detailEmptyAriaLabel} className="text-sm text-muted-foreground">{reconciliation.detailEmptyText}</p>}
+            </>}
           </DetailRail>
         )}
       >

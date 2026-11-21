@@ -403,7 +403,7 @@ function buildAttention(
 
   const changesRequested = register.filter((row) => row.workflowState === "ChangesRequested").length;
   if (changesRequested > 0) {
-    items.push({ key: "changesRequested", label: pluralize(changesRequested, "changes requested"), count: changesRequested, severity: "action", href: workstationRouteWithQuery("reportingPreviewValidation", {}) });
+    items.push({ key: "changesRequested", label: pluralize(changesRequested, "changes requested"), count: changesRequested, severity: "action", href: workstationRouteWithQuery("reportingPreviewValidation", { runId: changesRequested === 1 ? register.find((row) => row.workflowState === "ChangesRequested")?.runId ?? null : null }) });
   }
 
   const comments = signals.openCommentCount ?? 0;
