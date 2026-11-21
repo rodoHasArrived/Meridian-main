@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashSyncOrchestrationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CashSyncOrchestrationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:97](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L97).
+
+Evaluates regional cash sync windows and produces completeness, approval, settlement, and liquidity results.
+
+```csharp
+public sealed class CashSyncOrchestrationService : ICashSyncOrchestrationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsSyncWindowOpen(DateTimeOffset utcNow, RegionalSyncWindow window);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:99](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L99) |  |
+| <code>public SyncValidationResult ValidateCompleteness(IEnumerable&lt;SyncAccountSnapshot&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:107](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L107) |  |
+| <code>public SyncValidationResult ValidateOutliers(IEnumerable&lt;SyncAccountSnapshot&gt; currentDay, IEnumerable&lt;SyncAccountSnapshot&gt; priorDay, decimal outlierThreshold);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:117](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L117) |  |
+| <code>public ApprovalDecision BuildApprovalChain(PaymentInstruction paymentInstruction, ApprovalPolicy policy, string primaryApprover, string secondaryApprover);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:140](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L140) |  |
+| <code>public DateOnly ResolveSettlementDate(DateOnly tradeDate, TimeOnly localCutoff, TimeOnly submittedAtLocal, int standardSettlementDays);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:162](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L162) |  |
+| <code>public IReadOnlyList&lt;CashForecastPoint&gt; BuildCashLadder(DateOnly startDate, int horizonDays, IEnumerable&lt;PaymentInstruction&gt; payments, IEnumerable&lt;SettlementInstruction&gt; settlements, IEnumerable&lt;CouponEvent&gt; coupons);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:168](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L168) |  |
+| <code>public IReadOnlyList&lt;LiquidityWarning&gt; BuildLiquidityWarnings(IEnumerable&lt;CashForecastPoint&gt; ladder, decimal minimumNetThreshold) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:218](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L218) |  |
+| <code>public StpTransitionResult AdvanceStpState(string entityId, bool validated, bool approved, string? exceptionReason);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:224](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L224) |  |
+
 ## CertifiedReportingRunContext
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CertifiedReportingRunContext</code>. Kind: `record`.
@@ -362,7 +387,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:28](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L28).
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:29](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L29).
 
 Default implementation of ICoveredCallBacktestService. Runs covered-call backtests in-process behind a bounded channel, persists completed runs through IStrategyRepository, and caches full results for quick re-hydration.
 
@@ -374,23 +399,23 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string StrategyId = &quot;covered-call-overwrite&quot;;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L31) | Strategy identifier used when persisting StrategyRunEntry. |
-| <code>public CoveredCallBacktestService(Func&lt;BacktestRequest, BacktestEngine&gt; engineFactory, ICoveredCallChainProviderFactory chainFactory, IStrategyRepository runRepository, IOptionsMonitor&lt;CoveredCallBacktestOptions&gt; options, IMemoryCache resultCache, ILoggerFactory loggerFactory, TimeProvider? timeProvider = null, IEvidenceArtifactStore? evidenceArtifactStore = null);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:88](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L88) |  |
-| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:116](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L116) |  |
-| <code>public async Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:127](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L127) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:159](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L159) |  |
-| <code>public async ValueTask&lt;CoveredCallRunHandle&gt; StartAsync(CoveredCallBacktestRequest request, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:171](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L171) |  |
-| <code>public ValueTask&lt;CoveredCallRunStatusDto?&gt; GetStatusAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:223](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L223) |  |
-| <code>public async ValueTask&lt;CoveredCallRunResult?&gt; GetResultAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:244](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L244) |  |
-| <code>public async ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(CoveredCallRunScope scope, int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:408](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L408) |  |
-| <code>public ValueTask CancelAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:490](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L490) |  |
-| <code>public async ValueTask&lt;CoveredCallChainPreview&gt; PreviewChainAsync(CoveredCallChainPreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:514](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L514) |  |
+| <code>public const string StrategyId = &quot;covered-call-overwrite&quot;;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:32](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L32) | Strategy identifier used when persisting StrategyRunEntry. |
+| <code>public CoveredCallBacktestService(Func&lt;BacktestRequest, BacktestEngine&gt; engineFactory, ICoveredCallChainProviderFactory chainFactory, IStrategyRepository runRepository, IOptionsMonitor&lt;CoveredCallBacktestOptions&gt; options, IMemoryCache resultCache, ILoggerFactory loggerFactory, TimeProvider? timeProvider = null, IEvidenceArtifactStore? evidenceArtifactStore = null, StrategyArtifactRegistry? strategyArtifacts = null);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:90](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L90) |  |
+| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:120](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L120) |  |
+| <code>public async Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:131](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L131) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:163](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L163) |  |
+| <code>public async ValueTask&lt;CoveredCallRunHandle&gt; StartAsync(CoveredCallBacktestRequest request, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:175](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L175) |  |
+| <code>public ValueTask&lt;CoveredCallRunStatusDto?&gt; GetStatusAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:227](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L227) |  |
+| <code>public async ValueTask&lt;CoveredCallRunResult?&gt; GetResultAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:248](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L248) |  |
+| <code>public async ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(CoveredCallRunScope scope, int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:412](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L412) |  |
+| <code>public ValueTask CancelAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:494](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L494) |  |
+| <code>public async ValueTask&lt;CoveredCallChainPreview&gt; PreviewChainAsync(CoveredCallChainPreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:518](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L518) |  |
 
 ## Start
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService.CoveredCallCommand.Start</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1155](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1155).
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1181](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1181).
 
 ```csharp
 public sealed record Start(string RunId) : CoveredCallCommand(RunId);
@@ -899,24 +924,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool TryLaunch(string username, string hostBaseAddress, string? requestedPage, out string message);</code> | [src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs:15](../../../../src/Meridian.Ui.Shared/Services/DesktopWorkstationLaunchService.cs#L15) |  |
-
-## DeterministicReportingCertifiedArtifactProducer
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DeterministicReportingCertifiedArtifactProducer</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:59](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L59).
-
-Production deterministic artifact implementation. Every byte is derived from the completed certified manifest and, for a partners-capital primary document, an exact checkpoint-bound canonical ledger presentation. Output uses stable ordering and is emitted exactly as declared according to ReportingRunParametersDto.OutputFormat and the optional evidence/schedule flags.
-
-```csharp
-public sealed class DeterministicReportingCertifiedArtifactProducer : IReportingCertifiedArtifactProducer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string RetainedManifestSchemaVersion = &quot;meridian.reporting.retained-manifest.v1&quot;;</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L61) |  |
-| <code>public DeterministicReportingCertifiedArtifactProducer(IReportingPrimaryDocumentRenderer? primaryRenderer = null, IReportingCertifiedLedgerPresentationSource? ledgerPresentationSource = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:80](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L80) | Constructs the producer with an optional client-grade primary-document renderer and an optional exact canonical-ledger-presentation source. When the renderer is null (dependency-free hosts and the existing byte-exact tests) the built-in plain-text PDF/XLSX rendering is used. A capital-account primary document requires both a presentation-capable renderer and a checkpoint-bound canonical ledger report pack; it never falls back to recalculating partners&#x27; capital from certified display rows. Capital-account PDF, XLSX, and ClientPackage outputs all select bytes from that same canonical pair. Every other artifact (CSV, evidence vault, preview, manifest, grids) is unaffected by this choice. |
-| <code>public async ValueTask&lt;ReportingGovernedArtifactProduction&gt; ProduceAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:88](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L88) |  |
-| <code>public static ReportingRetainedManifestDocument ParseRetainedManifest(ReadOnlySpan&lt;byte&gt; retainedBytes);</code> | [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:206](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L206) |  |

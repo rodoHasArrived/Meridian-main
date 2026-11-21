@@ -534,11 +534,11 @@ public sealed class StrategyRunStore : IStrategyRepository
         var v2InputHash = ComputeV2InputHash(entry);
         var legacyInputHash = ComputeLegacyInputHash(entry);
         var realismBoundInputHash = ComputeRealismBoundInputHash(entry);
-        if (entry.FundAccountId == Guid.Empty || (entry.FundAccountId.HasValue &&
+        if (entry.FundAccountId == Guid.Empty || ((entry.FundAccountId.HasValue || entry.StrategyArtifactId is not null) &&
             !string.Equals(entry.InputHashSha256, canonicalInputHash, StringComparison.OrdinalIgnoreCase)))
         {
             throw new InvalidDataException(
-                $"Strategy run history sequence {record.Sequence} retained an input hash that does not bind its fund account.");
+                $"Strategy run history sequence {record.Sequence} retained an input hash that does not bind its account or strategy artifact.");
         }
         if (!string.Equals(
                 entry.InputHashSha256,
@@ -902,11 +902,11 @@ public sealed class StrategyRunStore : IStrategyRepository
         {
             throw new ArgumentException("Strategy run fund account must not be empty.", nameof(entry));
         }
-        if (entry.FundAccountId.HasValue &&
+        if ((entry.FundAccountId.HasValue || entry.StrategyArtifactId is not null) &&
             !string.IsNullOrWhiteSpace(entry.InputHashSha256) &&
             !string.Equals(entry.InputHashSha256, inputHash, StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentException("Strategy run input hash does not bind its fund account.", nameof(entry));
+            throw new ArgumentException("Strategy run input hash does not bind its account or strategy artifact.", nameof(entry));
         }
         var matchesRealismBound =
             string.Equals(entry.InputHashSha256, realismBoundInputHash, StringComparison.OrdinalIgnoreCase);
@@ -1180,6 +1180,7 @@ public sealed class StrategyRunStore : IStrategyRepository
             !string.Equals(previous.AuditReference, current.AuditReference, StringComparison.Ordinal) ||
             !string.Equals(previous.FundProfileId, current.FundProfileId, StringComparison.Ordinal) ||
             previous.FundAccountId != current.FundAccountId ||
+            !string.Equals(previous.StrategyArtifactId, current.StrategyArtifactId, StringComparison.Ordinal) ||
             !EvidenceLoopEquals(previous, current);
         var inputHashChanged = !string.Equals(
             previous.InputHashSha256,
@@ -1330,6 +1331,9 @@ public sealed class StrategyRunStore : IStrategyRepository
 
     private static string ComputeCanonicalInputHash(StrategyRunEntry entry)
     {
+        if (entry.StrategyArtifactId is not null)
+            return StrategyRunEntry.ComputeArtifactBoundInputHash(entry);
+
         if (entry.FundAccountId.HasValue)
         {
             return StrategyRunEntry.ComputeAccountBoundInputHash(entry);

@@ -18,6 +18,9 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
   return (
     <CardContent id={orderTicket.formId} className="border-b border-border/60 pb-6">
       <form onSubmit={(event) => { event.preventDefault(); void orderTicket.submitOrder(); }} className="space-y-4" aria-describedby={orderTicket.requirementId}>
+        {orderTicket.ticketAccountId && (
+          <p className="text-xs text-muted-foreground">Paper account <span className="font-mono">{orderTicket.ticketAccountId}</span></p>
+        )}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1">
             <label htmlFor={orderTicket.controls.symbol.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.symbol.label) && "type-label--caps")}>{orderTicket.controls.symbol.label}</label>

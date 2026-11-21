@@ -5,6 +5,7 @@ using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Artifacts;
 
 namespace Meridian.Strategies.Models;
 
@@ -99,6 +100,14 @@ public sealed record StrategyRunEntry(
     ExecutionRealismDescriptor? ExecutionRealism = null,
     Guid? FundAccountId = null)
 {
+    public string? StrategyArtifactId { get; init; }
+
+    public StrategyRunEntry WithStrategyArtifact(string artifactId)
+    {
+        var bound = this with { StrategyArtifactId = artifactId };
+        return bound with { InputHashSha256 = ComputeArtifactBoundInputHash(bound) };
+    }
+
     public IReadOnlyList<string> OperatorAcceptanceCriteria { get; init; } =
         OperatorAcceptanceCriteria ?? [];
 
@@ -753,6 +762,19 @@ public sealed record StrategyRunEntry(
         AppendCanonical(builder, "meridian.strategy-run-input.v5");
         AppendCanonical(builder, ComputeRealismBoundInputHash(entry));
         AppendCanonical(builder, entry.FundAccountId?.ToString("D"));
+        return Sha256Digest.ComputeUtf8(builder.ToString());
+    }
+
+    public static string ComputeArtifactBoundInputHash(StrategyRunEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        if (!StrategyArtifact.IsValidId(entry.StrategyArtifactId))
+            throw new ArgumentException("The run references an invalid strategy artifact ID.", nameof(entry));
+
+        var builder = new StringBuilder();
+        AppendCanonical(builder, "meridian.strategy-run-input.v6");
+        AppendCanonical(builder, ComputeAccountBoundInputHash(entry));
+        AppendCanonical(builder, entry.StrategyArtifactId);
         return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 

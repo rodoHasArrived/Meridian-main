@@ -25,6 +25,8 @@ internal sealed class OrderAdmissionPolicy
     private readonly IOrderMarketReferenceSource? _marketReferences;
     private readonly IOrderInstrumentCoverageSource? _instrumentCoverage;
     private readonly TimeProvider _clock;
+    private readonly ILiveStrategyOrderAuthorization? _liveStrategyAuthorization;
+    private readonly bool _requireLiveStrategyAuthorization;
 
     internal OrderAdmissionPolicy(
         IExecutionGateway gateway,
@@ -39,7 +41,9 @@ internal sealed class OrderAdmissionPolicy
         IOrderInstrumentCoverageSource? instrumentCoverage = null,
         TimeProvider? clock = null,
         IStrategyRunAuthoritySource? runAuthority = null,
-        OrderAuthorityOptions? authorityOptions = null)
+        OrderAuthorityOptions? authorityOptions = null,
+        ILiveStrategyOrderAuthorization? liveStrategyAuthorization = null,
+        bool requireLiveStrategyAuthorization = false)
     {
         ArgumentNullException.ThrowIfNull(gateway);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -55,6 +59,8 @@ internal sealed class OrderAdmissionPolicy
         _marketReferences = marketReferences;
         _instrumentCoverage = instrumentCoverage;
         _clock = clock ?? TimeProvider.System;
+        _liveStrategyAuthorization = liveStrategyAuthorization;
+        _requireLiveStrategyAuthorization = requireLiveStrategyAuthorization;
         _authority = new OrderAuthorityResolver(
             _executionMode, liveReadinessGate, runAuthority, authorityOptions, _clock, securityMasterGate);
     }
@@ -143,6 +149,17 @@ internal sealed class OrderAdmissionPolicy
 
         var usesFaceValue = resolved.Sizing is OrderSizing.FaceValuePercentageOfPar;
         var riskRequest = resolved.ToRiskRequest();
+        var rootAuthority = OrderAuthorityResolver.Root(prepared.Authority);
+        if (_executionMode == ExecutionMode.Paper && rootAuthority.Origin == OrderCommandOrigin.OperatorTicket &&
+            (_instrumentCoverage is not null || _requireLiveStrategyAuthorization) &&
+            (_gateway is not PaperTradingGateway ||
+             safeRequest.Type is not (OrderType.Market or OrderType.Limit) ||
+             safeRequest.TimeInForce != TimeInForce.Day ||
+             resolved.Sizing is not OrderSizing.Quantity ||
+             !await RequiresMarketReferenceAsync(safeRequest, ct).ConfigureAwait(false)))
+            return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, null,
+                new OrderAdmissionRefusal("Paper tickets support single-leg USD equities in shares with Day Market or Limit orders.",
+                    "paper ticket coverage", "PAPER_TICKET_UNSUPPORTED"));
         if (safeRequest.SessionIntent == OrderSessionIntent.QueueNextSession && _gateway is PaperTradingGateway)
             return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, null,
                 new OrderAdmissionRefusal("The local paper simulator does not support next-session queuing.",
@@ -165,6 +182,15 @@ internal sealed class OrderAdmissionPolicy
         var readiness = authority.Readiness;
         if (!authority.IsApproved)
             return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, readiness, authority.Refusal);
+
+        if (UsesLiveStrategyAuthorization && !observationOnly)
+        {
+            await using var authorization = await AcquireLiveStrategyAuthorizationAsync(
+                riskRequest, rootAuthority.RunId, rootAuthority.StrategyArtifactId, resolved, ct).ConfigureAwait(false);
+            if (authorization.Refusal is { } reason)
+                return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, readiness,
+                    new OrderAdmissionRefusal(reason, "order authority", "LIVE_AUTHORIZATION_REFUSED"));
+        }
 
         var controlDecision = _operatorControls?.EvaluateOrder(prepared.ControlRequest, _portfolioState, prepared.RunId, observationOnly);
         if (controlDecision is { IsApproved: false })
@@ -200,6 +226,61 @@ internal sealed class OrderAdmissionPolicy
     internal Task<OrderAdmissionRefusal?> EvaluateDispatchAuthorityAsync(PreparedOrderAdmission prepared, CancellationToken ct) =>
         _authority.EvaluateDispatchAsync(prepared, ct);
 
+    internal bool UsesLiveStrategyAuthorization => _executionMode == ExecutionMode.Live &&
+        (_liveStrategyAuthorization is not null || _requireLiveStrategyAuthorization);
+
+    internal async Task<LiveStrategyOrderAuthorizationLease> AcquireLiveStrategyAuthorizationAsync(
+        OrderRequest request, string? runId, string? artifactId, GatewayResolvedOrder? resolved, CancellationToken ct)
+    {
+        if (!UsesLiveStrategyAuthorization)
+            return new(null);
+        if (_liveStrategyAuthorization is null || string.IsNullOrWhiteSpace(runId) || string.IsNullOrWhiteSpace(artifactId))
+            return new("Live dispatch requires authorization for the exact retained strategy artifact.");
+
+        try
+        {
+            if (!await RequiresMarketReferenceAsync(request, ct).ConfigureAwait(false))
+                return new("Live authorization requires measurable USD equity order notional.");
+
+            return await _liveStrategyAuthorization.AcquireAsync(runId, artifactId, request.FundAccountId,
+                request.Symbol, () => MeasureLiveNotional(request, resolved), ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            _logger.LogWarning(ex, "Live strategy authorization verification failed for run {RunId}.", runId);
+            return new("The live strategy authorization could not be verified.");
+        }
+    }
+
+    private decimal? MeasureLiveNotional(OrderRequest request, GatewayResolvedOrder? resolved)
+    {
+        var reference = _marketReferences?.GetReference(request.Symbol, request.Side);
+        if (!IsFreshReference(reference))
+            return null;
+
+        var routed = resolved?.Sizing as OrderSizing.BrokerNotional;
+        if (routed is not null)
+            return routed.Amount;
+
+        var priced = resolved is null
+            ? OrderRiskSizingPolicy.ResolveBrokerageOrderNotional(request)
+            : OrderRiskSizingPolicy.ResolveBrokerageOrderNotional(resolved);
+        var marked = request.Quantity * reference!.Price;
+        return priced.HasValue ? Math.Max(priced.Value, marked) : marked;
+    }
+
+    internal async Task<OrderAdmissionRefusal?> EvaluateReplacementAuthorityAsync(
+        OrderState original, OrderRequest replacement, CancellationToken ct)
+    {
+        if (!UsesLiveStrategyAuthorization || original.RunId is not { } runId ||
+            original.FundAccountId is not { } account)
+            return null;
+        const string actor = "strategy-runtime";
+        var grant = new ExecutionAccountGrant(account, actor, ExecutionAccountGrantSources.StrategyRun, _clock.GetUtcNow());
+        var authority = OrderSubmissionAuthority.ForStrategyRun(actor, grant, runId, original.StrategyArtifactId);
+        return await EvaluateDispatchAuthorityAsync(Prepare(replacement, original.OrderId, authority), ct).ConfigureAwait(false);
+    }
+
     internal static OrderAdmissionRefusal ControlRefusal(ExecutionControlDecision decision, string source) =>
         new(decision.RejectReason, source, decision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
             OrderAuditMetadata.BuildOrderRejectedByControlAuditMetadata(decision));
@@ -229,9 +310,14 @@ internal sealed class OrderAdmissionPolicy
     private OrderAdmissionRefusal? EvaluateMarketReference(OrderRequest request)
     {
         var reference = _marketReferences?.GetReference(request.Symbol, request.Side);
+        return IsFreshReference(reference) ? null :
+            new("A fresh executable-side equity quote is required before routing.", "market reference", "REFERENCE_UNAVAILABLE");
+    }
+
+    private bool IsFreshReference(OrderMarketReference? reference)
+    {
         var now = _clock.GetUtcNow();
-        return reference is null || reference.Price <= 0m || reference.ObservedAt > now || now - reference.ObservedAt >= TimeSpan.FromSeconds(30)
-            ? new("A fresh executable-side equity quote is required before routing.", "market reference", "REFERENCE_UNAVAILABLE") : null;
+        return reference is { Price: > 0m } && reference.ObservedAt <= now && now - reference.ObservedAt < TimeSpan.FromSeconds(30);
     }
 
     private async Task<OrderCheck?> EvaluateSessionCoreAsync(OrderRequest request, CancellationToken ct) =>

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsContinuityReconciliationBridge
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperationsContinuityReconciliationBridge</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:28](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L28).
+
+Connects reconciliation execution and retained break evidence to Operations Continuity transitions.
+
+```csharp
+public sealed class OperationsContinuityReconciliationBridge : IOperationsContinuityReconciliationBridge
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperationsContinuityReconciliationBridge(IOperationsContinuityWorkflowService workflowService, IReconciliationRunService? reconciliationRunService = null, IReconciliationBreakQueueRepository? breakQueueRepository = null, IReconciliationApiService? statementReconciliation = null);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:76](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L76) |  |
+| <code>public async Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:88](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L88) |  |
+| <code>public async Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:95](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L95) |  |
+
 ## OperationsReportPackAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OperationsReportPackAuthority</code>. Kind: `class`.
@@ -899,43 +919,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ProviderLedgerDailyReconciliationWorker(IServiceScopeFactory scopes, ProviderLedgerDailyReconciliationOptions options, TimeProvider clock, ILogger&lt;ProviderLedgerDailyReconciliationWorker&gt; logger) : this(options, clock, logger, async(target, operationId, ct) =&gt;{ using var scope = scopes.CreateScope(); return await RunTargetAsync(scope.ServiceProvider, target, operationId, ct); }, async(now, ct) =&gt;{ using var scope = scopes.CreateScope(); return await PaperSessionDailyReconciliation.RunAsync(scope.ServiceProvider, now, logger, ct); });</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:36](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L36) |  |
-
-## ProviderLedgerReconciliationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderLedgerReconciliationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.CorporateActions.cs:26](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.CorporateActions.cs#L26).
-
-```csharp
-public sealed partial class ProviderLedgerReconciliationService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs:31](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs#L31).
-
-Compares the latest provider account projection with Meridian&#x27;s internal account ledger snapshot.
-
-```csharp
-public sealed partial class ProviderLedgerReconciliationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderLedgerReconciliationService(BrokeragePortfolioSyncService brokerageSync, IFundAccountService fundAccountService, BrokeragePortfolioSyncOptions options, ILogger&lt;ProviderLedgerReconciliationService&gt; logger, ISecurityReferenceLookup? securityReferenceLookup = null, ISecurityValidationGateService? securityValidationGate = null, ICapabilityRouter? capabilityRouter = null, IReconciliationBreakQueueRepository? breakQueueRepository = null, IOperatorOverridesStore? operatorOverridesStore = null, ISecurityMasterConflictService? securityMasterConflictService = null, ILedgerBookService? ledgerBookService = null, IFundProfileTenancyRegistry? fundProfileTenancyRegistry = null, ILedgerJournalStore? postedJournalStore = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs:57](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs#L57) |  |
-| <code>public async Task&lt;ProviderLedgerReconciliationDetailDto&gt; RunAsync(Guid accountId, ProviderLedgerReconciliationRequestDto? request = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs:87](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs#L87) |  |
-| <code>public async Task&lt;ProviderLedgerReconciliationDetailDto&gt; RunAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, ProviderLedgerReconciliationRequestDto? request = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs:99](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs#L99) |  |
-| <code>public async Task&lt;ProviderLedgerReconciliationDetailDto?&gt; GetLatestAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs:766](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs#L766) |  |
-| <code>public async Task&lt;ProviderLedgerReconciliationDetailDto?&gt; GetLatestAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs:782](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs#L782) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.Outcomes.cs:27](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.Outcomes.cs#L27).
-
-```csharp
-public sealed partial class ProviderLedgerReconciliationService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.SecurityCoverage.cs:26](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.SecurityCoverage.cs#L26).
-
-```csharp
-public sealed partial class ProviderLedgerReconciliationService
-```

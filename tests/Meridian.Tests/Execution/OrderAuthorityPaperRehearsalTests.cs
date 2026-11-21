@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Execution;
 using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -78,6 +79,47 @@ public sealed class OrderAuthorityPaperRehearsalTests : IDisposable
         _oms.GetCompletedOrders().Select(order => order.Origin)
             .Should().Contain(new OrderCommandOrigin?[] { OrderCommandOrigin.OperatorTicket, OrderCommandOrigin.KillSwitch },
                 "refused orders keep their origin in the completed feed");
+    }
+
+    [Fact]
+    public async Task PaperTicketClaim_IdenticalRetriesShareOneDispatchAndSurviveRestart()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "paper-ticket", Guid.NewGuid().ToString("N"));
+        var request = Order("paper-ticket-restart");
+        OrderSubmitCommand Ticket(string correlation, OrderRequest? terms = null, string actor = "operator") =>
+            new(terms ?? request, OrderSubmissionAuthority.ForOperatorTicket(actor,
+                new(FundAccount, actor, ExecutionAccountGrantSources.HttpPrincipal, DateTimeOffset.UtcNow), correlation));
+
+        try
+        {
+            await using (var journal = new ExecutionJournal(root))
+            await using (var oms = new OrderManagementSystem(new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+                NullLogger<OrderManagementSystem>.Instance, journal: journal))
+            {
+                await oms.StartAsync();
+                var results = await Task.WhenAll(Enumerable.Range(0, 12)
+                    .Select(index => oms.SubmitAsync(Ticket($"request-{index}"))));
+                results.Should().OnlyContain(result => result.Success || result.RequiresOrderReconciliation);
+                (await journal.ReadAsync(FundAccount)).Should().ContainSingle(entry => entry.Kind == "Dispatch");
+            }
+
+            await using var restartedJournal = new ExecutionJournal(root);
+            await using var restored = new OrderManagementSystem(new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+                NullLogger<OrderManagementSystem>.Instance, journal: restartedJournal);
+            await restored.StartAsync();
+            var receipt = await restored.SubmitAsync(Ticket("retried-after-restart"));
+            receipt.Success.Should().BeTrue(receipt.ErrorMessage);
+            receipt.OrderState!.OrderId.Should().Be(request.ClientOrderId);
+            (await restored.SubmitAsync(Ticket("changed", request with { Quantity = 2m }))).Success.Should().BeFalse();
+            (await restored.SubmitAsync(Ticket("wrong-actor", actor: "different-operator"))).Success.Should().BeFalse();
+            (await restored.PlaceOrderAsync(request)).Success.Should().BeFalse();
+            (await restartedJournal.ReadAsync(FundAccount)).Should().ContainSingle(entry => entry.Kind == "Dispatch");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
     }
 
     // Limit orders far below the market rest, so routed orders stay on the working-order book.

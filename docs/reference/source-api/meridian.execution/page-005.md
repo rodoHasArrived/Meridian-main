@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TaxLotAccountingMethod
+
+Qualified name: <code>Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs:8](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs#L8).
+
+The cost-basis identification method used when relieving (closing) tax lots. The chosen method affects the timing and magnitude of realized gains or losses, which has material tax implications.
+
+```csharp
+public enum TaxLotAccountingMethod
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Fifo</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs:14](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs#L14) | First In, First Out — the oldest lots are relieved first. Most common default for equity positions. |
+| <code>Lifo</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs:20](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs#L20) | Last In, First Out — the most recently opened lots are relieved first. May produce lower short-term gains in a rising market. |
+| <code>Hifo</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs:26](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs#L26) | Highest In, First Out — lots with the highest cost basis are relieved first. Minimizes current-period realized gains (maximizes tax deferral in rising markets). |
+| <code>SpecificId</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs:32](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs#L32) | Specific lot identification — the caller designates exact lot IDs to relieve. Offers the most control but requires explicit lot selection at trade time. |
+
+## TaxLotReliefResult
+
+Qualified name: <code>Meridian.Execution.TaxLotAccounting.TaxLotReliefResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:37](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L37).
+
+The aggregate result of relieving one or more tax lots to fill a closing order.
+
+```csharp
+public sealed record TaxLotReliefResult(IReadOnlyList<RelievedLot> RelievedLots, IReadOnlyList<TaxLot> RemainingLots)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal TotalRealizedPnl =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:42](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L42) | Total realized P&amp;L across all relieved lots. |
+| <code>public long TotalRelievedQuantity =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:45](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L45) | Total number of shares/contracts relieved. |
+
 ## TaxLotSelectors
 
 Qualified name: <code>Meridian.Execution.TaxLotAccounting.TaxLotSelectors</code>. Kind: `class`.

@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Artifacts;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 
@@ -17,6 +18,7 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
     private readonly IStrategyRepository _repository;
     private readonly ILogger<BacktestStudioRunOrchestrator> _logger;
     private readonly IReadOnlyDictionary<StrategyRunEngine, IBacktestStudioEngine> _engines;
+    private readonly StrategyArtifactRegistry? _artifacts;
     private readonly ConcurrentDictionary<string, BacktestStudioRunHandle> _runHandles = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, Task> _monitorTasks = new(StringComparer.Ordinal);
     private readonly CancellationTokenSource _shutdown = new();
@@ -24,13 +26,15 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
     public BacktestStudioRunOrchestrator(
         IStrategyRepository repository,
         IEnumerable<IBacktestStudioEngine> engines,
-        ILogger<BacktestStudioRunOrchestrator> logger)
+        ILogger<BacktestStudioRunOrchestrator> logger,
+        StrategyArtifactRegistry? artifacts = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         ArgumentNullException.ThrowIfNull(engines);
 
         _engines = engines.ToDictionary(static engine => engine.Engine);
+        _artifacts = artifacts;
     }
 
     /// <summary>
@@ -56,6 +60,13 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
         }
 
         var engine = ResolveEngine(request.Engine);
+        string? artifactId = null;
+        if (_artifacts is not null && request.Strategy is { } strategy)
+        {
+            var artifact = StrategyArtifact.FromCode(request.StrategyId, strategy,
+                request.Parameters ?? new Dictionary<string, string>(), request.NativeRequest, request.DatasetReference);
+            artifactId = await _artifacts.RetainAsync(artifact, ct).ConfigureAwait(false);
+        }
         var handle = await engine.StartAsync(request, ct).ConfigureAwait(false);
 
         var entry = StrategyRunEntry.StartWithEvidence(
@@ -79,6 +90,8 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
             SweepObjective = request.SweepObjective
         };
 
+        if (artifactId is not null)
+            entry = entry.WithStrategyArtifact(artifactId);
         await _repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
         _runHandles[handle.RunId] = handle;
 

@@ -500,18 +500,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; OperatorAcceptanceCriteria { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:171](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L171) |  |
-| <code>public IReadOnlyList&lt;string&gt; RetainedEvidenceReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:177](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L177) |  |
-| <code>public IReadOnlyList&lt;string&gt; AccountingRecordReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:183](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L183) |  |
-| <code>public IReadOnlyList&lt;string&gt; ApprovalReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:189](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L189) |  |
-| <code>public IReadOnlyList&lt;string&gt; PaperValidationReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:195](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L195) |  |
-| <code>public IReadOnlyList&lt;string&gt; GovernedReportReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:201](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L201) |  |
+| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:164](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L164) |  |
+| <code>public IReadOnlyList&lt;string&gt; OperatorAcceptanceCriteria { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:173](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L173) |  |
+| <code>public IReadOnlyList&lt;string&gt; RetainedEvidenceReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:179](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L179) |  |
+| <code>public IReadOnlyList&lt;string&gt; AccountingRecordReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:185](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L185) |  |
+| <code>public IReadOnlyList&lt;string&gt; ApprovalReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:191](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L191) |  |
+| <code>public IReadOnlyList&lt;string&gt; PaperValidationReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L197) |  |
+| <code>public IReadOnlyList&lt;string&gt; GovernedReportReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:203](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L203) |  |
 
 ## StrategyDesignRunBacktestResponse
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:213](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L213).
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:215](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L215).
 
 Backtest execution response returned by the Strategy Builder route. BiasDisclosure carries the engine&#x27;s honest-assumptions report for the captured run (null when the runner did not capture an engine-level result).
 
@@ -615,7 +616,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunArtifactCompleteness</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:697](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L697).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:699](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L699).
 
 Completeness indicator for run artifacts used by comparison workflows.
 
@@ -627,7 +628,7 @@ public sealed record StrategyRunArtifactCompleteness(bool HasPortfolio, bool Has
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunCashFlowDigest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1049](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1049).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1051](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1051).
 
 Compact cash-flow digest attached to a continuity drill-in.
 
@@ -639,7 +640,7 @@ public sealed record StrategyRunCashFlowDigest(DateTimeOffset AsOf, string Curre
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunComparison</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:670](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L670).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:672](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L672).
 
 Comparison row used when reviewing multiple runs side by side.
 
@@ -651,5 +652,5 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:689](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L689) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:691](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L691) |  |
+| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:691](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L691) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:693](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L693) |  |

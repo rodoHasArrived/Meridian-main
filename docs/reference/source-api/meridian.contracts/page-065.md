@@ -159,7 +159,7 @@ public sealed record LedgerImpactPreviewDto(int DraftEntryCount, decimal NetDebi
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerJournalLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:650](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L650).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:652](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L652).
 
 Shared journal row for workstation audit surfaces.
 
@@ -191,7 +191,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:601](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L601).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:603](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L603).
 
 Shared ledger rollup for workstation Accounting and audit surfaces.
 
@@ -203,7 +203,7 @@ public sealed record LedgerSummary(string LedgerReference, string RunId, DateTim
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerTrialBalanceLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:629](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L629).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:631](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L631).
 
 Shared trial-balance row for workstation ledger views.
 
@@ -319,7 +319,7 @@ public sealed record MeridianAssuranceScoreDto(int Score, EvidenceStatusDto Stat
 
 Qualified name: <code>Meridian.Contracts.Workstation.MetricsDiff</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:876](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L876).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:878](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L878).
 
 High-level metrics delta between two runs.
 

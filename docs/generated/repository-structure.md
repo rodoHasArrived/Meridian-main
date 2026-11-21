@@ -6766,6 +6766,7 @@ Meridian-main
 │   │   │   ├── BrokerOrderSweep.cs
 │   │   │   ├── ExecutionFailureState.cs
 │   │   │   ├── ExecutionReportHub.cs
+│   │   │   ├── ILiveStrategyOrderAuthorization.cs
 │   │   │   ├── OrderAdmissionPolicy.cs
 │   │   │   ├── OrderAmendmentBook.cs
 │   │   │   ├── OrderApprovalReservations.cs
@@ -8839,6 +8840,9 @@ Meridian-main
 │   │   ├── Meridian.Storage.Accounting.csproj
 │   │   └── README.md
 │   ├── Meridian.Strategies
+│   │   ├── Artifacts
+│   │   │   ├── StrategyArtifact.cs
+│   │   │   └── StrategyArtifactRegistry.cs
 │   │   ├── Interfaces
 │   │   │   ├── ILiveStrategy.cs
 │   │   │   ├── IPromotedRunLauncher.cs
@@ -8882,7 +8886,8 @@ Meridian-main
 │   │   ├── Promotions
 │   │   │   ├── BacktestToLivePromoter.cs
 │   │   │   ├── PromotionApprovalChecklist.cs
-│   │   │   └── PromotionRecordService.cs
+│   │   │   ├── PromotionRecordService.cs
+│   │   │   └── StrategyLiveAuthorization.cs
 │   │   ├── Serialization
 │   │   │   ├── FSharpInteropJsonContext.cs
 │   │   │   ├── PromotionRecordJsonContext.cs
@@ -8928,6 +8933,7 @@ Meridian-main
 │   │   │   ├── StrategyEngineRegistry.cs
 │   │   │   ├── StrategyEngineValidationService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
+│   │   │   ├── StrategyLiveAuthorizationService.cs
 │   │   │   ├── StrategyRunAuthoritySource.cs
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   ├── StrategyRunReadService.AttributionComparison.cs
@@ -14982,6 +14988,7 @@ Meridian-main
 │   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── LiveTradingEngineTests.FinancingCoverage.cs
+│   │   │   ├── LiveTradingEngineTests.GovernedRehearsal.cs
 │   │   │   ├── LiveTradingEngineTests.PromotionLedgerPosting.cs
 │   │   │   ├── LiveTradingEngineTests.StopFillDrain.cs
 │   │   │   ├── MovingAverageParityTests.cs
@@ -14999,6 +15006,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAccountingEventSourceRateUnitTests.cs
 │   │   │   ├── ShadowBookValuationServiceTests.cs
 │   │   │   ├── StoppedRunPromotionTests.cs
+│   │   │   ├── StrategyArtifactAndLiveAuthorizationTests.cs
 │   │   │   ├── StrategyDesignRepositoryTests.cs
 │   │   │   ├── StrategyDesignServiceTests.cs
 │   │   │   ├── StrategyEngineValidationServiceTests.cs

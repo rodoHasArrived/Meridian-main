@@ -615,7 +615,7 @@ public sealed record CashFinancingSummary(string Currency, decimal TotalCash, de
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashFlowEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:963](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L963).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:965](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L965).
 
 A single historical cash-flow entry from a strategy run.
 

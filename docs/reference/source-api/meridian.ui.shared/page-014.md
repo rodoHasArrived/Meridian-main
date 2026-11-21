@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingProviderReceiptAuthenticator
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingProviderReceiptAuthenticator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L20).
+
+Authenticates provider callbacks before reporting delivery receipts are retained.
+
+```csharp
+public interface IReportingProviderReceiptAuthenticator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;bool&gt; AuthenticateAsync(ReportingProviderReceiptAuthenticationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L22) |  |
+
 ## IReportingRecipientDestinationResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingRecipientDestinationResolver</code>. Kind: `interface`.
@@ -1025,23 +1043,3 @@ Declared public members:
 | <code>public const string Basis = &quot;Open breaks at each UTC day end, rebuilt from break detection, resolution and reopen times; today is the live count. Days the retained times cannot establish are left blank.&quot;;</code> | [src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:18](../../../../src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs#L18) |  |
 | <code>public static IReadOnlyList&lt;WorkstationMetricHistoryPointDto&gt; Build(IReadOnlyList&lt;ReconciliationBreakQueueItem&gt; items, DateTimeOffset now, int days = 14);</code> | [src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:25](../../../../src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs#L25) | days points, oldest first. The last point is now&#x27;s live count, so it always equals the headline figure; earlier points are each UTC day&#x27;s end. |
 | <code>public static decimal? CountOpenAt(IReadOnlyList&lt;ReconciliationBreakQueueItem&gt; items, DateTimeOffset moment);</code> | [src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:43](../../../../src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs#L43) | Open breaks just before moment, or null when any break&#x27;s state then is unknown. |
-
-## OperationsContinuityReconciliationBridge
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OperationsContinuityReconciliationBridge</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:28](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L28).
-
-Connects reconciliation execution and retained break evidence to Operations Continuity transitions.
-
-```csharp
-public sealed class OperationsContinuityReconciliationBridge : IOperationsContinuityReconciliationBridge
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationsContinuityReconciliationBridge(IOperationsContinuityWorkflowService workflowService, IReconciliationRunService? reconciliationRunService = null, IReconciliationBreakQueueRepository? breakQueueRepository = null, IReconciliationApiService? statementReconciliation = null);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:76](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L76) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:88](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L88) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:95](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L95) |  |

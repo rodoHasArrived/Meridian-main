@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Identity.Auth;
+using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
@@ -61,10 +62,17 @@ public static class PromotionEndpoints
                 return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 
             var normalizedRequest = request with { ApprovedBy = actor };
+            var scope = ResolveStrategyRunScope(context);
+            var authorityScope = await service.GetPromotionAuthorityScopeAsync(request.RunId, scope, context.RequestAborted)
+                .ConfigureAwait(false);
+            if (authorityScope.TargetsLive &&
+                (!IsHumanReviewer(context) || authorityScope.FundAccountId is not { } account ||
+                 !await CanAuthorizeAccountAsync(context, account).ConfigureAwait(false)))
+                return EndpointHelpers.Forbidden();
 
             var result = await service.ApproveAsync(
                     normalizedRequest,
-                    ResolveStrategyRunScope(context),
+                    scope,
                     context.RequestAborted)
                 .ConfigureAwait(false);
 
@@ -80,6 +88,38 @@ public static class PromotionEndpoints
         .Produces(501)
         .RequireWorkstationTenantCompanyScope()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        group.MapPost("/live-authorizations/{id}/revoke", async (
+            string id, RevokeStrategyLiveAuthorizationRequest request, HttpContext context) =>
+        {
+            if (TryAuthorizePromotionMutation(context, jsonOptions) is { } failure)
+                return failure;
+            if (!IsHumanReviewer(context) || !EndpointAuthorization.TryResolveActor(context, out var actor))
+                return EndpointHelpers.Forbidden();
+            if (string.IsNullOrWhiteSpace(request.Reason))
+                return Results.BadRequest(new { error = "Enter the reason for revocation." });
+
+            var service = context.RequestServices.GetService<PromotionService>();
+            if (service is null)
+                return Results.Problem("Promotion service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            var scope = ResolveStrategyRunScope(context);
+            var promotion = await service.FindLiveAuthorizationAsync(id, scope, context.RequestAborted).ConfigureAwait(false);
+            if (promotion?.LiveAuthorization is not { } authorization)
+                return Results.NotFound();
+            if (!await CanAuthorizeAccountAsync(context, authorization.FundAccountId).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
+
+            var receipt = await service.RevokeLiveAuthorizationAsync(promotion, actor, request.Reason, context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(receipt, jsonOptions);
+        })
+        .WithName("RevokeStrategyLiveAuthorization").RequirePermission(UserPermission.ManageStrategies)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .Produces<StrategyLiveAuthorizationRevocation>(200)
+        .Produces(400)
+        .Produces(403)
+        .Produces(404);
 
         group.MapPost("/reject", async (PromotionRejectionRequest request, HttpContext context) =>
         {
@@ -210,4 +250,13 @@ public static class PromotionEndpoints
 
     private static bool HasPromotionMutationPermission(HttpContext context)
         => EndpointAuthorization.HasPermission(context, UserPermission.ManageStrategies);
+
+    private static bool IsHumanReviewer(HttpContext context) =>
+        EndpointAuthorization.DeriveActionOriginFromPrincipal(context) == OperationsActionOriginDto.HumanOperator;
+
+    private static Task<bool> CanAuthorizeAccountAsync(HttpContext context, Guid account) =>
+        EndpointAuthorization.HasScopedPermissionAsync(context, UserPermission.ExecuteTrades,
+            AccessScopeKindDto.Account, account, context.RequestAborted);
 }
+
+public sealed record RevokeStrategyLiveAuthorizationRequest(string Reason);

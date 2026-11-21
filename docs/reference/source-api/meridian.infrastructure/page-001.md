@@ -40,7 +40,7 @@ Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:4
 Alpaca brokerage gateway for live order execution via the Alpaca Trading API. Uses REST API for order management and a bounded channel for execution report streaming.
 
 ```csharp
-public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageAccountIdentity, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IGuardedOrderModificationGateway, IBrokerageConnectionState, IBrokerageAccountIdentity, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
 ```
 
 Declared public members:
@@ -80,7 +80,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs#L66) |  |
-| <code>public async Task&lt;ExecutionReport&gt; ModifyOrderAsync(OrderCancellationIdentifier identifier, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs#L71) |  |
+| <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(OrderCancellationIdentifier identifier, OrderModification modification, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs#L71) |  |
 
 Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs:6](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs#L6).
 
