@@ -64,6 +64,14 @@ public sealed record BackfillBatchRevision(int SchemaVersion, BackfillBatchRecei
 {
     private const int CurrentVersion = 1;
 
+    /// <summary>Binds optional source quality facts before rows are stamped with this content address.</summary>
+    public BackfillBatchRevision WithInputEvidence(Meridian.Contracts.Operations.MarketDataInputEvidence input)
+    {
+        var frozen = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze([input])![0];
+        var receipt = Receipt with { InputEvidence = frozen, RevisionId = string.Empty };
+        return this with { Receipt = receipt with { RevisionId = Address(receipt) } };
+    }
+
     public static BackfillBatchRevision Create(
         string provider, string? servingProvider, string feed, string instrument, string granularity,
         DateOnly? from, DateOnly? to, string? calendar, IReadOnlyList<DateOnly>? expected,

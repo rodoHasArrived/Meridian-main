@@ -65,6 +65,7 @@ public sealed class HistoricalBackfillService : IDisposable
 
     /// <summary>Calendar evidence for instruments whose listing is known to the host.</summary>
     public Func<string, DateOnly, DateOnly, CancellationToken, Task<HistoricalSessionSchedule?>>? ResolveSessionsAsync { get; init; }
+    public Func<string, MarketDataInputEvidence?>? CaptureInputEvidence { get; init; }
 
     internal BackfillRoutingAdmission? DirectRoutingAdmission { get; init; }
     internal Action<BackfillRoutingAttempt>? CaptureRoutingAttempt { get; init; }
@@ -487,6 +488,16 @@ public sealed class HistoricalBackfillService : IDisposable
                                 batch = BackfillBatchRevision.Create(provider.Name, servingProvider, coverageFeed, symbol,
                                     request.Granularity.ToUiValue(), from, to, schedule?.Calendar, expected,
                                     observed.Keys, batchRows.Select(static row => BackfillBatchRevision.HashRow(row.Event)));
+                                var sourceEvidence = CaptureInputEvidence?.Invoke(symbol);
+                                if (!string.IsNullOrWhiteSpace(request.GapRepairReference))
+                                    sourceEvidence = (sourceEvidence ?? new MarketDataInputEvidence()) with
+                                    { Repaired = true, GapFilled = true, RepairReceiptId = request.GapRepairReference };
+                                if (sourceEvidence is not null)
+                                    batch = batch.WithInputEvidence(sourceEvidence with
+                                    {
+                                        ProviderId = string.IsNullOrWhiteSpace(servingProvider) ? null : ProviderProvenanceLabels.ProviderId(servingProvider),
+                                        DatasetId = coverageFeed
+                                    });
                                 receipt = (await _checkpointStore.Batches.ReadAsync(batch.Receipt.RevisionId, ct).ConfigureAwait(false))?.Receipt;
                             }
 

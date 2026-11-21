@@ -11,6 +11,12 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Application
 
+Reconnection and automatic gap remediation stamp an opaque repair-operation reference onto their
+backfill request. The historical writer binds that purpose and the assessment known at ingestion
+to its existing flushed batch receipt. Ordinary backfills do not infer historical repair status.
+The live market-event tap captures the same assessment snapshot with the feed-cache update so paper
+fills never attach a quality score fetched later during accounting.
+
 Loan reconciliation now consumes eligible nonvoid incoming receipts and their retained allocations
 once, by currency and due date. Current durable and synthetic allocation aliases share a matcher;
 PRD-115 principal prepayments, prepaid interest and unapplied cash retain their explained dispositions,

@@ -1,5 +1,6 @@
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Interfaces;
+using Meridian.Contracts.Operations;
 
 namespace Meridian.Execution.PaperMatching;
 
@@ -11,6 +12,8 @@ namespace Meridian.Execution.PaperMatching;
 /// </summary>
 public readonly record struct PaperMarketObservation
 {
+    /// <summary>Conservative input population for the price envelope and execution-cost model.</summary>
+    public IReadOnlyList<MarketDataInputEvidence>? MarketDataEvidence { get; init; }
     /// <summary>Best observed bid price, when a quote has been seen.</summary>
     public decimal? BidPrice { get; init; }
 
@@ -112,15 +115,20 @@ public readonly record struct PaperMarketObservation
     /// <summary>Projects one coherent feed snapshot into an observation.</summary>
     internal static PaperMarketObservation FromSnapshot(in MarketDataSnapshot snapshot)
     {
+        var evidence = new List<MarketDataInputEvidence>();
         decimal? bid = null;
         decimal? ask = null;
         if (snapshot.Quote is { } quote)
         {
             bid = Positive(quote.BidPrice);
             ask = Positive(quote.AskPrice);
+            if (bid is not null || ask is not null)
+                evidence.AddRange(snapshot.QuoteEvidence ?? [new(EventReference: $"quote:{quote.SequenceNumber}", ObservedAt: quote.Timestamp)]);
         }
 
         decimal? lastTrade = snapshot.Trade is { } trade ? Positive(trade.Price) : null;
+        if (lastTrade is not null && snapshot.Trade is { } observedTrade)
+            evidence.AddRange(snapshot.TradeEvidence ?? [new(EventReference: $"trade:{observedTrade.SequenceNumber}", ObservedAt: observedTrade.Timestamp)]);
 
         decimal? barLow = null;
         decimal? barHigh = null;
@@ -130,6 +138,9 @@ public readonly record struct PaperMarketObservation
             barLow = Positive(bar.Low);
             barHigh = Positive(bar.High);
             barClose = Positive(bar.Close);
+            if (barLow is not null || barHigh is not null || barClose is not null)
+                evidence.AddRange(snapshot.BarEvidence ?? [new(ProviderId: bar.Source,
+                    EventReference: $"bar:{bar.SequenceNumber}", ObservedAt: bar.ToTimestampUtc())]);
         }
 
         return new PaperMarketObservation
@@ -139,7 +150,8 @@ public readonly record struct PaperMarketObservation
             LastTradePrice = lastTrade,
             BarLow = barLow,
             BarHigh = barHigh,
-            BarClose = barClose
+            BarClose = barClose,
+            MarketDataEvidence = MarketDataInputEvidenceTags.Freeze(evidence)
         };
     }
 

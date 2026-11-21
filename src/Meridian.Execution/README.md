@@ -11,6 +11,16 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Execution
 
+Paper matching retains the source/quality snapshot alongside the coherent quote, trade and bar
+observation. A filled report freezes those inputs before the cache can advance; freshness filtering
+excludes discarded inputs. Range assessments retain their observation window, calculation time and
+threshold, and an assessment outside that window remains unassessed. Missing or malformed optional
+quality facts do not prevent an executed fill reaching its durable handoff.
+Canonical authorized fill accounting retains source evidence, strategy identity and run identity on
+trade and cost journals and in its existing prepared intent. Exact recovery returns those retained
+snapshots; it never looks up newer quality data or rewrites posted journals. This does not expand the
+synthetic long USD cash-equity canonical posting whitelist.
+
 `PaperSessionPersistenceService.GetSessionFillHistory` exposes cloned retained execution reports for order investigation without rebuilding portfolio/ledger views. Consumers initialize retained sessions before reading and keep canonical report identity, source event time, cumulative-versus-last quantity and price basis explicit; completed-order workspace summaries are not individual fills.
 
 Failed execution probes use bounded, single-line diagnostic fields, including provider error text.

@@ -11,6 +11,10 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Infrastructure
 
+`DataQualityMonitor` retains the date range and alert threshold with each cached symbol assessment.
+`GetCachedInputEvidence` snapshots the assessment already known when an observation is captured;
+it does not assess a historical fill later or claim that a symbol/range score is a per-row score.
+
 Host backfill routing retains throttle and rotation counts by provider and UTC date beneath
 `DataRoot/_meta`. It writes the last seven UTC dates atomically and keeps recent individual
 observations in memory. Durable history records route observations independently of the shared

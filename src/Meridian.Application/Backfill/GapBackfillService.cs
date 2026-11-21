@@ -222,7 +222,11 @@ public sealed class GapBackfillService
                 Symbols: symbols,
                 From: DateOnly.FromDateTime(gap.DisconnectedAt.UtcDateTime),
                 To: DateOnly.FromDateTime(gap.ReconnectedAt.UtcDateTime),
-                Granularity: _recoveryGranularity);
+                Granularity: _recoveryGranularity)
+            {
+                GapRepairReference = Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(
+                    $"reconnection:{gap.ProviderName}:{gap.DisconnectedAt.UtcTicks}:{gap.ReconnectedAt.UtcTicks}")
+            };
 
             _log.Information(
                 "Enqueuing gap backfill request for {SymbolCount} symbols from {From} to {To} " +

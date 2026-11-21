@@ -501,7 +501,11 @@ public sealed record StrategyRunReplayProvenanceDto(
     IReadOnlyList<StrategyRunReplaySourceCountDto> SourceMix,
     IReadOnlyList<StrategyRunReplayRevisionDto> Revisions,
     string? SourceMixHash,
-    string? CompletedInputHashSha256);
+    string? CompletedInputHashSha256)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Meridian.Contracts.Operations.MarketDataQualityWarningDto>? DataQualityWarnings { get; init; }
+}
 
 public sealed record StrategyRunReplaySourceCountDto(string Symbol, string Source, long Bars);
 

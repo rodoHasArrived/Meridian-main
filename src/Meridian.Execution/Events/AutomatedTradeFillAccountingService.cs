@@ -374,6 +374,10 @@ public sealed class AutomatedTradeFillAccountingService(
             ["securityMasterProvenance"] = $"security-master:{securityId:N};server-resolved:true;status:{security.Status};version:{security.Version}",
             ["securityMasterLineage"] = $"{fill.Symbol}:{securityId:N}:ledger-map:execution:{fill.Symbol}:{securityId:N}:book-position:{position.PositionId:N}:version:{position.Version}:chart-revision:{options.Grant!.MappingRevision}:sm-approval:security-master-active:{securityId:N}:security-status:{security.Status}"
         };
+        if (!string.IsNullOrWhiteSpace(fill.RunId))
+            tags[TradeFillCashFlowReplayCompatibility.StrategyRunIdTag] = fill.RunId.Trim();
+        if (fill.MarketDataEvidence is not null)
+            foreach (var pair in MarketDataInputEvidenceTags.Create(fill.MarketDataEvidence)) tags[pair.Key] = pair.Value;
         if (source == "execution.trade-fill")
         {
             tags["execution.cash-account"] = amounts.Single(line => line.Account.Symbol is null && line.Account.AccountType == LedgerAccountType.Asset).Account.Name;
@@ -392,6 +396,7 @@ public sealed class AutomatedTradeFillAccountingService(
         var entry = new JournalEntry(id, fill.OccurredAt, source, lines, new JournalEntryMetadata(ActivityType: source,
             Symbol: fill.Symbol, SecurityId: securityId, FillId: fill.FillId, FinancialAccountId: fill.FinancialAccountId,
             LedgerBook: book.LedgerBookId.ToString("D"), EffectiveDate: date, IdempotencyKey: key,
+            StrategyId: string.IsNullOrWhiteSpace(fill.StrategyId) ? null : fill.StrategyId.Trim(),
             Tags: tags));
         var command = new AccountingPostingCommandDto(commandId, context.AggregateId, context.PeriodId, date,
             fill.OccurredAt, key, SourceEventId: sourceId, CorrelationId: fill.FillId, ExpectedVersion: context.ExpectedPeriodVersion,
@@ -427,6 +432,10 @@ public sealed class AutomatedTradeFillAccountingService(
                 || accounting.Opening is { } opening && (opening.BorrowedAmount != 0m || opening.LoanRepaid != 0m)
                 || accounting.Closing is { } closing && (closing.BorrowedAmount != 0m || closing.LoanRepaid != 0m)))
             throw new InvalidOperationException("Canonical fill accounting does not support missing current evidence, short collateral, financing or variation margin.");
+        if (fill.AccountingEvidence is { } native &&
+            (native.QuantityUnit.HasValue != native.LotMultiplier.HasValue
+                || native.QuantityUnit is { } unit && (unit != SecurityLotUnitKind.Shares || native.LotMultiplier != 1m)))
+            throw new InvalidOperationException("Canonical fill accounting requires paired native share units and multiplier one.");
         var fees = fill.Fees ?? [];
         if (fees.Any(fee => string.IsNullOrWhiteSpace(fee.FeeId) || string.IsNullOrWhiteSpace(fee.Kind) || fee.Amount <= 0m || fee.Currency != "USD")
             || fees.Select(fee => fee.FeeId).Distinct(StringComparer.Ordinal).Count() != fees.Count)

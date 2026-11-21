@@ -18,6 +18,75 @@ namespace Meridian.Tests.Execution;
 public sealed class AutomatedTradeFillAccountingServiceTests
 {
     [Fact]
+    public async Task Canonical_fill_retains_source_quality_snapshot_on_every_journal_and_recovery()
+    {
+        using var fixture = new Fixture();
+        var source = new MarketDataInputEvidence(ProviderId: "alpaca", EventReference: "trade:1",
+            ObservedAt: fixture.Time, DatasetId: "historical-feed", BackfillRevisionId: "retained-revision",
+            Repaired: true, GapFilled: true, RepairReceiptId: "retained-repair", QualityScore: .3,
+            QualityAssessedAt: fixture.Time, QualityThreshold: .9,
+            AssessmentFrom: DateOnly.FromDateTime(fixture.Time.UtcDateTime), AssessmentTo: DateOnly.FromDateTime(fixture.Time.UtcDateTime));
+        var fill = fixture.Fill() with { MarketDataEvidence = [source], Commission = 1m };
+        var first = await fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
+        foreach (var entry in first)
+            MarketDataInputEvidenceTags.Read(entry.Metadata.Tags).Should().Equal(source);
+
+        var recovered = await fixture.CreateService().TryRecoverCompletedAsync(fill with
+        { MarketDataEvidence = new[] { source } }, fixture.Context);
+        recovered!.Select(entry => entry.JournalEntryId).Should().Equal(first.Select(entry => entry.JournalEntryId));
+        var changed = () => fixture.CreateService().PostAsync(fill with
+        { MarketDataEvidence = [source with { QualityScore = .99 }] }, fixture.Context, fixture.SecurityId);
+        await changed.Should().ThrowAsync<InvalidDataException>().WithMessage("*conflicts*");
+        MarketDataInputEvidenceTags.Read(first[0].Metadata.Tags)[0].QualityScore.Should().Be(.3);
+    }
+
+    [Theory]
+    [InlineData("Contracts", 1)]
+    [InlineData("Shares", 100)]
+    [InlineData(null, 1)]
+    [InlineData("Shares", null)]
+    public async Task Canonical_whitelist_refuses_conflicting_or_partial_native_unit_evidence(string? unit, int? multiplier)
+    {
+        using var fixture = new Fixture();
+        var fill = fixture.Fill() with
+        {
+            AccountingEvidenceVersion = 1,
+            AccountingEvidence = new TradeFillAccountingEvidence(Opening: new SecurityTradePosting(
+                SecurityTradePostingKind.OpenLong, 10m, 1000m))
+            {
+                QuantityUnit = unit is null ? null : Enum.Parse<SecurityLotUnitKind>(unit),
+                LotMultiplier = multiplier is { } value ? value : null
+            }
+        };
+        var attempt = () => fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
+        await attempt.Should().ThrowAsync<InvalidOperationException>().WithMessage("*paired native share units*");
+        fixture.Commands.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Canonical_trade_and_cost_journals_retain_strategy_run_lineage_after_restart()
+    {
+        using var fixture = new Fixture();
+        var fill = fixture.Fill() with
+        {
+            StrategyId = "strategy-source", RunId = "run-source", Commission = 1m,
+            Fees = [new("source-fee", "Regulatory", 0.25m, "USD")]
+        };
+        var entries = await fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
+        entries.Should().OnlyContain(entry => entry.Metadata.StrategyId == "strategy-source"
+            && entry.Metadata.Tags![LedgerQuery.StrategyRunIdTag] == "run-source");
+
+        var recovered = await fixture.CreateService().TryRecoverCompletedAsync(fill, fixture.Context);
+        recovered.Should().NotBeNull();
+        recovered!.Select(entry => entry.JournalEntryId).Should().Equal(entries.Select(entry => entry.JournalEntryId));
+        recovered.Should().OnlyContain(entry => entry.Metadata.StrategyId == "strategy-source"
+            && entry.Metadata.Tags![LedgerQuery.StrategyRunIdTag] == "run-source");
+        var conflictingRun = () => fixture.CreateService().PostAsync(fill with { RunId = "different-run" },
+            fixture.Context, fixture.SecurityId);
+        await conflictingRun.Should().ThrowAsync<InvalidDataException>().WithMessage("*conflicts*");
+    }
+
+    [Fact]
     public async Task Buy_retains_currency_lot_and_fees_and_restart_reuses_prepared_intent()
     {
         using var fixture = new Fixture();

@@ -121,6 +121,9 @@ public sealed record QualityScore(
     DateTimeOffset CalculatedAt
 )
 {
+    public DateOnly? AssessmentFrom { get; init; }
+    public DateOnly? AssessmentTo { get; init; }
+    public double? QualityThreshold { get; init; }
     /// <summary>
     /// Get letter grade based on score.
     /// </summary>
@@ -244,7 +247,7 @@ public sealed class DataQualityMonitor
             Dimensions: dimensions.ToArray(),
             Issues: issues,
             CalculatedAt: DateTimeOffset.UtcNow
-        );
+        ) { AssessmentFrom = start, AssessmentTo = end, QualityThreshold = _options.AlertThreshold };
 
         // Cache the score
         _scoreCache[symbol] = score;
@@ -301,6 +304,12 @@ public sealed class DataQualityMonitor
     {
         return _scoreCache.TryGetValue(symbol, out var score) ? score : null;
     }
+
+    /// <summary>Captures the assessment already known at observation time; never performs a later lookup while posting.</summary>
+    public Meridian.Contracts.Operations.MarketDataInputEvidence? GetCachedInputEvidence(string symbol)
+        => GetCachedScore(symbol) is { } score ? new(QualityScore: score.OverallScore,
+            QualityAssessedAt: score.CalculatedAt, AssessmentFrom: score.AssessmentFrom,
+            AssessmentTo: score.AssessmentTo, QualityThreshold: score.QualityThreshold) : null;
 
     /// <summary>
     /// Get all cached quality scores.
