@@ -1299,7 +1299,7 @@ describe("app shell view model", () => {
       ["close-support", "Current / Close blocked", "review"]
     ]);
     expect(state.workflowContinuity.steps.find((step) => step.id === "close-support")?.href)
-      .toBe("/accounting/operations-continuity?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+      .toBe("/accounting/close?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
   });
 
   it("surfaces reviewed automation guardrails from the financial operations summary", () => {
@@ -1751,5 +1751,15 @@ describe("app shell view model", () => {
       active: true,
       ariaLabel: "Open Alpaca paper provider setup"
     });
+  });
+});
+
+
+describe("Today alias", () => {
+  it("uses the same home attention model as the root", () => {
+    const state = buildAppShellViewState({ pathname: "/today", loading: false, error: null, workspaceErrors: {}, payload: sessionPayload });
+    expect(state.location).toEqual({ kind: "home" });
+    expect(state.routeFocus.documentTitle).toBe("Today - Meridian");
+    expect(state.workflowContinuity.contextValue).toBe("Today");
   });
 });

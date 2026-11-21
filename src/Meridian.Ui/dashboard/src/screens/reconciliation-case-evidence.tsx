@@ -15,6 +15,7 @@ import { lifecycleStateLabel } from "./reconciliation-break-lifecycle";
 import { isStatementHandoffMarker } from "./reconciliation-casework-command";
 import { originalComparisonScope, sourceObservationAge, sourceRunChangeLabel } from "./reconciliation-source-observation";
 import "@/styles/reconciliation-workbench.css";
+import { caseMeasureAmount } from "./reconciliation-case-values";
 
 const MEASURE_LABELS: Record<ReconciliationBreakMeasure["kind"], string> = {
   Value: "Value",
@@ -29,9 +30,10 @@ function displayAmount(value: string | number | null, signed = false): string {
   return `${sign}${formatExactMagnitude(decimal, decimal.scale).text}`;
 }
 
-function retainedResidual(measure: ReconciliationBreakMeasure): number | null {
-  if (measure.unavailableReason || !Number.isFinite(measure.actual) || !Number.isFinite(measure.expected)) return null;
-  return Number.isFinite(measure.variance) ? measure.variance : null;
+function retainedResidual(measure: ReconciliationBreakMeasure): string | number | null {
+  if (measure.unavailableReason || !parseExactDecimal(caseMeasureAmount(measure, "actual")) || !parseExactDecimal(caseMeasureAmount(measure, "expected"))) return null;
+  const residual = caseMeasureAmount(measure, "variance");
+  return parseExactDecimal(residual) ? residual : null;
 }
 
 function measureUnit(unit: string): string {
@@ -48,10 +50,10 @@ export function caseQueueResidual(item: ReconciliationBreakQueueItem): { amount:
   const measures = item.measures ?? [];
   const reported = measures.filter((measure) => retainedResidual(measure) != null);
   if (reported.length > 1) return { amount: "Multiple", unit: null };
-  if (reported.length === 1) return { amount: displayAmount(reported[0].variance, true), unit: measureUnit(reported[0].unit) };
+  if (reported.length === 1) return { amount: displayAmount(caseMeasureAmount(reported[0], "variance"), true), unit: measureUnit(reported[0].unit) };
   return measures.length > 0
     ? { amount: "Unavailable", unit: null }
-    : { amount: displayAmount(item.variance, true), unit: "Unit unavailable" };
+    : { amount: displayAmount(item.varianceExact ?? item.variance, true), unit: "Unit unavailable" };
 }
 
 function CaseFact({ label, children }: { label: string; children?: ReactNode }) {
@@ -153,12 +155,12 @@ function StatementMatchComparison({ evidence, prior, grouped = false }: {
 function compareColumns(statement: boolean, prior: ReconciliationBreakQueueItem | null, asOf?: string | null): DenseDataTableColumn<ReconciliationBreakMeasure>[] {
   const columns: DenseDataTableColumn<ReconciliationBreakMeasure>[] = [
     { id: "measure", label: "Measure", rowHeader: true, render: (measure) => <>{MEASURE_LABELS[measure.kind]}<span className="block text-xs font-normal text-muted-foreground">{measureUnit(measure.unit)}</span></> },
-    { id: "observed", label: statement ? "Statement" : "Observed", numeric: true, render: (measure) => displayAmount(measure.actual) },
-    { id: "expected", label: statement ? "Ledger" : "Expected", numeric: true, render: (measure) => displayAmount(measure.expected) },
+    { id: "observed", label: statement ? "Statement" : "Observed", numeric: true, render: (measure) => displayAmount(caseMeasureAmount(measure, "actual")) },
+    { id: "expected", label: statement ? "Ledger" : "Expected", numeric: true, render: (measure) => displayAmount(caseMeasureAmount(measure, "expected")) },
     { id: "residual", label: "Residual", numeric: true, render: (measure) => <>
       <ResidualAmount label={`${MEASURE_LABELS[measure.kind]} residual`} unit={measureUnit(measure.unit)} value={retainedResidual(measure)}
         asOf={asOf} basis={statement ? "Statement minus ledger" : "Observed minus expected"} />
-      {measure.tolerance != null ? <span className="block text-xs font-normal text-muted-foreground">Tolerance {displayAmount(measure.tolerance)}</span> : null}
+      {caseMeasureAmount(measure, "tolerance") != null ? <span className="block text-xs font-normal text-muted-foreground">Tolerance {displayAmount(caseMeasureAmount(measure, "tolerance"))}</span> : null}
     </> }
   ];
   if (prior) {
@@ -256,7 +258,7 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
           {(statementEvidence?.match.residuals.length ?? measures.length) > 0 ? <p className="text-xs text-muted-foreground">Residual = {statement ? "statement − ledger" : "observed − expected"}</p> : null}
         </div>
         {statementEvidence ? <StatementMatchComparison evidence={statementEvidence} prior={comparable ? baseline?.statementEvidence : null} /> : measures.length > 0 ? <>
-          <DenseDataTable columns={compareColumns(statement, comparable && baseline ? baseline : null, item.asOfDate)} rows={measures}
+          <DenseDataTable columns={compareColumns(statement, comparable ? baseline ?? null : null, item.asOfDate)} rows={measures}
             getRowId={(measure) => `${measure.kind}:${measure.unit}:${measures.indexOf(measure)}`} ariaLabel="Retained residual components"
             emptyText="No retained residual components."
             caption="The retained residual is the observed amount minus the expected amount in the supplied unit." />

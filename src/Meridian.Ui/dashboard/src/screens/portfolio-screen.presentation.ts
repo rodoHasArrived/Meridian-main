@@ -16,6 +16,12 @@ export function pnlTone(value: string): "success" | "danger" | "default" {
   return "default";
 }
 
+export function numericPnlTone(value: number): "success" | "danger" | "default" {
+  if (value > 0) return "success";
+  if (value < 0) return "danger";
+  return "default";
+}
+
 export function pnlFieldTone(value: string): PortfolioDetailField["tone"] {
   const tone = pnlTone(value);
   if (tone === "success") return "success";

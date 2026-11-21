@@ -2,10 +2,13 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { AmountPassportProvider, AmountPassportTrigger } from "./amount-passport";
+// Exercise the real rail without making navigation assertions depend on cold Vite chunk transforms.
+import "./amount-passport-drawer";
 import { amountPassportHref, getAmountPassport, readAmountPassportLink } from "@/lib/amount-passport-api";
 import { ApiError } from "@/lib/api-errors";
 import { createAmountPassport, passportIdentity } from "@/test/amount-passport-fixtures";
 import { TestMemoryRouter } from "@/test/render";
+import { useLocation, useNavigate } from "react-router-dom";
 
 vi.mock("@/lib/amount-passport-api", async (importOriginal) => ({
   ...await importOriginal<typeof import("@/lib/amount-passport-api")>(), getAmountPassport: vi.fn()
@@ -13,6 +16,30 @@ vi.mock("@/lib/amount-passport-api", async (importOriginal) => ({
 
 describe("Amount passport rail", () => {
   beforeEach(() => vi.resetAllMocks());
+
+  it.each([false, true])("discards the selected passport when the dossier tab changes within the same route and scope (incoming hash: %s)", async (incomingHash) => {
+    const proof = createAmountPassport();
+    vi.mocked(getAmountPassport).mockResolvedValue(proof);
+    function SwitchTab() {
+      const navigate = useNavigate();
+      const location = useLocation();
+      return <button type="button" onClick={() => { void navigate({ search: "?tab=ledger", hash: location.hash }); }}>Ledger tab</button>;
+    }
+    const hash = incomingHash ? new URL(amountPassportHref(proof.reference.identity), "https://meridian.invalid").hash : "";
+    render(<TestMemoryRouter initialEntries={[`/records/instrument/security-1?tab=positions${hash}`]}>
+      <AmountPassportProvider enabled scopeKey="same-book-period" session="operator">
+        <SwitchTab />
+        <AmountPassportTrigger selection={{ label: "Position source", reference: proof.reference }} />
+      </AmountPassportProvider>
+    </TestMemoryRouter>);
+    const tab = screen.getByRole("button", { name: "Ledger tab" });
+    if (!incomingHash) await userEvent.click(screen.getByRole("button", { name: /Inspect Position source/ }));
+    expect(await screen.findByRole("heading", { name: proof.label })).toBeVisible();
+    fireEvent.click(tab);
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Amount passport" })).not.toBeInTheDocument());
+    expect(screen.queryByText(proof.exactValue!)).not.toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledOnce();
+  });
 
   it("opens by keyboard, copies a reusable address, preserves the work surface and compares a second period", async () => {
     const before = createAmountPassport();

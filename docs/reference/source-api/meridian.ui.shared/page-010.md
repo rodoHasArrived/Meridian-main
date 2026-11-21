@@ -295,6 +295,25 @@ Declared public members:
 | <code>public IReadOnlyCollection&lt;string&gt; ConfiguredTransportIds =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:237](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L237) |  |
 | <code>public ValueTask&lt;string?&gt; ResolveDestinationAsync(ReportingRecipientDestinationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L239) |  |
 
+## ConfiguredReportingReviewMaterialityPolicyProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ConfiguredReportingReviewMaterialityPolicyProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs:14](../../../../src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs#L14).
+
+Admin-owned host configuration seam. Empty configuration provides no policy; never falls back to browser defaults. Hosts may replace this DI interface with a durable policy registry.
+
+```csharp
+public sealed class ConfiguredReportingReviewMaterialityPolicyProvider(CompositionConfiguration configuration) : IReportingReviewMaterialityPolicyProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConfigurationKey = &quot;MERIDIAN_REPORTING_REVIEW_POLICIES&quot;;</code> | [src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs:17](../../../../src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs#L17) |  |
+| <code>public ValueTask&lt;ReportingReviewMaterialityPolicy?&gt; ResolveAsync(ReportingOperationalScope scope, string templateId, string templateVersion, string currency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs:41](../../../../src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs#L41) |  |
+
 ## ConsolidationWorkbenchService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ConsolidationWorkbenchService</code>. Kind: `class`.
@@ -909,23 +928,3 @@ Outcome of seeding the demo workspace.
 ```csharp
 public sealed record DemoWorkspaceSeedReport(string DemoRoot, string Provenance, DemoTenantProvisioningReport Provisioning, int MarketHistoryTradePrintsSeeded = 0);
 ```
-
-## DesktopLaunchTicketService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DesktopLaunchTicketService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:12](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L12).
-
-Issues short-lived, single-use launch claims so the desktop workstation never trusts browser-selected identity or navigation state directly from process arguments.
-
-```csharp
-public sealed class DesktopLaunchTicketService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DesktopLaunchTicketService(TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:18](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L18) |  |
-| <code>public string Issue(string username, string page);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:23](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L23) |  |
-| <code>public DesktopLaunchTicketRedemptionDto? Redeem(IPAddress? remoteAddress, string token);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:35](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L35) |  |

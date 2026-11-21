@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { useState, type ReactNode } from "react";
 import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import {
@@ -35,6 +35,8 @@ import { requirePresent } from "@/test/fixtures";
 import { FundScopeNarrowingProvider, type FundScopeNarrowingContextValue } from "@/lib/operating-scope/fund-scope-context";
 import { collectScopeStructureOptions, UNAVAILABLE_SCOPE_STRUCTURE } from "@/lib/operating-scope/structure-options";
 import { sharedCloseDecision } from "./operations-continuity-screen.close-test-fixtures";
+
+vi.mock("@/screens/case-inspector", () => ({ CaseInspector: ({ caseId }: { caseId: string }) => <div>Case inspector {caseId}</div> }));
 
 vi.mock("@/lib/api", () => ({
   acknowledgeOperationsContinuityChecklistTask: vi.fn(),
@@ -1064,7 +1066,30 @@ const closeCalendar: OperationsCloseCalendar = {
   ]
 };
 
+function CurrentCloseLocation() {
+  const location = useLocation();
+  return <output data-testid="close-location">{location.pathname}{location.search}{location.hash}</output>;
+}
+
 describe("OperationsContinuityScreen", () => {
+  it("keeps Close tab and workflow selection shareable without dropping scope or anchors", async () => {
+    const user = userEvent.setup();
+    render(<MemoryRouter initialEntries={["/accounting/close?periodId=2026-05&fundAccountId=fund-1#manifest"]}>
+      <OperationsContinuityScreen closeHub /><CurrentCloseLocation />
+    </MemoryRouter>);
+    expect(await screen.findByRole("heading", { name: "Close", level: 2 })).toBeInTheDocument();
+    expect(screen.queryByRole("table", { name: "Operations continuity blockers" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "Blockers" }));
+    expect(await screen.findByRole("table", { name: "Operations continuity blockers" })).toBeInTheDocument();
+    expect(screen.queryByRole("table", { name: "Operations continuity close checklist" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "Checklist" }));
+    expect(await screen.findByRole("table", { name: "Operations continuity close checklist" })).toBeInTheDocument();
+    expect(screen.getByTestId("close-location")).toHaveTextContent("periodId=2026-05&fundAccountId=fund-1&closeTab=checklist#manifest");
+    await user.click(await screen.findByRole("row", { name: /open 2026-05 operations continuity workflow/i }));
+    expect(screen.getByTestId("close-location")).toHaveTextContent(`workflowId=${workflowId}`);
+    expect(screen.getByTestId("close-location")).toHaveTextContent("#manifest");
+  });
+
   it("renders workflow list, detail gates, blockers, timeline, and enabled next action", async () => {
     renderScreen();
 
@@ -1126,7 +1151,7 @@ describe("OperationsContinuityScreen", () => {
     expect(within(breakCases).getByText("Resolution command ready")).toBeInTheDocument();
     expect(within(breakCases).getByText("Expected workflow version 4")).toBeInTheDocument();
     expect(within(breakCases).getByRole("link", { name: "Open exception casework for break recon-break-42" }))
-      .toHaveAttribute("href", `/accounting/exceptions?workflowId=${workflowId}&breakId=recon-break-42`);
+      .toHaveAttribute("href", `/accounting/reconciliation?workflowId=${workflowId}&reconciliationBreak=recon-break-42`);
     const reconciliationLaneCoverage = screen.getByRole("table", { name: "Operations continuity reconciliation lane coverage" });
     expect(within(reconciliationLaneCoverage).getByText("Cash reconciliation")).toBeInTheDocument();
     expect(within(reconciliationLaneCoverage).getByText("Position reconciliation")).toBeInTheDocument();
@@ -1672,6 +1697,7 @@ describe("OperationsContinuityScreen", () => {
 
     const commandSpine = await screen.findByRole("table", { name: "Financial Operations command spine" });
     await user.click(await within(commandSpine).findByRole("button", { name: "Publish close package for 2026-05" }));
+    await confirmPublication(user);
 
     await waitFor(() => {
       expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(
@@ -1679,7 +1705,7 @@ describe("OperationsContinuityScreen", () => {
         expect.objectContaining({
           expectedVersion: 4,
           actor: "browser-operator",
-          rationale: "Published Produce Evidence close package from Operations Continuity command spine.",
+          rationale: "Reviewed retained close evidence.",
           reportPackId: "report-pack-2026-05",
           correlationId: "browser-close-package:produce-evidence",
           evidenceLinks: expect.arrayContaining([reportPackEvidence]),
@@ -1717,7 +1743,9 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    await user.click(await screen.findByRole("button", { name: "Publish close package for 2026-05" }));
+    const commandSpine = await screen.findByRole("table", { name: "Financial Operations command spine" });
+    await user.click(await within(commandSpine).findByRole("button", { name: "Publish close package for 2026-05" }, { timeout: 3000 }));
+    await confirmPublication(user);
 
     const alert = await screen.findByRole("alert");
     expect(within(alert).getByText("Close package publication version conflict.")).toBeInTheDocument();
@@ -1752,7 +1780,7 @@ describe("OperationsContinuityScreen", () => {
 
     const user = userEvent.setup();
     renderScreen();
-    const publish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
+    const publish = await findClosePublishButton();
     await waitFor(() => expect(publish).toBeDisabled());
     await user.click(publish);
     expect(closeOperationsContinuityWorkflow).not.toHaveBeenCalled();
@@ -1767,9 +1795,10 @@ describe("OperationsContinuityScreen", () => {
     expect(screen.queryByRole("button", { name: "Publish close package for 2026-05" })).not.toBeInTheDocument();
 
     completeDetail(repairedDetail);
-    const repairedPublish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
+    const repairedPublish = await findClosePublishButton();
     await waitFor(() => expect(repairedPublish).toBeEnabled());
     await user.click(repairedPublish);
+    await confirmPublication(user);
     await waitFor(() => expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.objectContaining({
       expectedVersion: repairedVersion,
       evidenceLinks: expect.arrayContaining([repairedEvidence]),
@@ -1796,7 +1825,7 @@ describe("OperationsContinuityScreen", () => {
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(projected));
     const user = userEvent.setup();
     renderScreen();
-    const publish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
+    const publish = await findClosePublishButton();
     await waitFor(() => expect(getFinancialOperationsCommandCenter).toHaveBeenCalledTimes(1));
     expect(publish).toBeDisabled();
     expect(screen.getAllByText("Close evidence no longer matches this workflow. Refresh workflows before publishing a close package.").length).toBeGreaterThan(0);
@@ -1806,9 +1835,10 @@ describe("OperationsContinuityScreen", () => {
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(repairedDetail);
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(repairedDetail));
     await user.click(screen.getByRole("button", { name: "Header refresh" }));
-    const repairedPublish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
+    const repairedPublish = await findClosePublishButton();
     await waitFor(() => expect(repairedPublish).toBeEnabled());
     await user.click(repairedPublish);
+    await confirmPublication(user);
     await waitFor(() => expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.objectContaining({
       expectedVersion: 4, reportPackId: "report-pack-2026-05", evidenceLinks: expect.arrayContaining([repairedEvidence])
     })));
@@ -1843,7 +1873,7 @@ describe("OperationsContinuityScreen", () => {
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(staleResponse === "shared decision" ? oldDetail : repairedDetail));
     const user = userEvent.setup();
     renderScreen();
-    const publish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
+    const publish = await findClosePublishButton();
     await waitFor(() => expect(getFinancialOperationsCommandCenter).toHaveBeenCalledTimes(1));
     expect(publish).toBeDisabled();
     expect(screen.getAllByText("Close evidence no longer matches this workflow. Refresh workflows before publishing a close package.").length).toBeGreaterThan(0);
@@ -1860,6 +1890,7 @@ describe("OperationsContinuityScreen", () => {
     await user.click(screen.getByRole("button", { name: "Header refresh" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Publish close package for 2026-05" })).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "Publish close package for 2026-05" }));
+    await confirmPublication(user);
     await waitFor(() => expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.objectContaining({
       expectedVersion: 4,
       evidenceLinks: expect.arrayContaining([retainedEvidence]),
@@ -1901,6 +1932,8 @@ describe("OperationsContinuityScreen", () => {
       target: { value: "Ledger and report package will be regenerated with retained evidence." }
     });
     await user.click(reopen);
+    expect(reopenOperationsContinuityWorkflow).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Confirm reopen" }));
 
     await waitFor(() => {
       expect(reopenOperationsContinuityWorkflow).toHaveBeenCalledWith(
@@ -2551,4 +2584,18 @@ function createAcknowledgedCloseTask(
     acknowledgedAtUtc,
     acknowledgedBy: owner
   };
+}
+
+async function confirmPublication(user: ReturnType<typeof userEvent.setup>) {
+  const dialog = await screen.findByRole("dialog", { name: "Confirm close publication" });
+  expect(closeOperationsContinuityWorkflow).not.toHaveBeenCalled();
+  expect(within(dialog).getByRole("button", { name: "Confirm publication" })).toBeDisabled();
+  await user.type(within(dialog).getByLabelText("Reason"), "Reviewed retained close evidence.");
+  await user.click(within(dialog).getByRole("button", { name: "Confirm publication" }));
+}
+
+
+async function findClosePublishButton() {
+  const table = await screen.findByRole("table", { name: "Financial Operations command spine" });
+  return within(table).findByRole("button", { name: "Publish close package for 2026-05" }, { timeout: 3000 });
 }

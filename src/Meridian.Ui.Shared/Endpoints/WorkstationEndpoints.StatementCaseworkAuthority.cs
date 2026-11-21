@@ -67,6 +67,19 @@ public static partial class WorkstationEndpoints
             // human session this is still "HumanOperator", so existing command ids are unchanged;
             // only a non-human origin -- which the gate downstream refuses anyway -- differs (#2673).
             request.ActionOrigin.ToString());
+        // Existing statement handoff markers and receipts retain the exact v1 hash. Adding even
+        // empty optional fields changes that identity and strands a pending legacy replay.
+        // Guarded requests use a separate schema so all new decision inputs remain bound.
+        if (request.ExpectedVersion.HasValue || request.RootCauseCode is not null || request.ResolutionCode is not null)
+        {
+            material = $"meridian.workstation.statement-legacy-resolve.v2\n{JsonSerializer.Serialize(new
+            {
+                LegacyInputHash = Sha256Digest.ComputeUtf8(material),
+                request.ExpectedVersion,
+                request.RootCauseCode,
+                request.ResolutionCode
+            }, ReconciliationAuditJsonOptions)}";
+        }
         var inputHash = Sha256Digest.ComputeUtf8(material);
         var commandId = $"statement-legacy-resolve:{inputHash}";
         var commandBase = current;
@@ -108,13 +121,13 @@ public static partial class WorkstationEndpoints
             CommandId: commandId,
             CorrelationId: $"statement-legacy-resolve:{inputHash[..16]}",
             Source: "workstation-statement-legacy-resolve-adapter",
-            ExpectedVersion: commandBase.Version,
+            ExpectedVersion: request.ExpectedVersion ?? commandBase.Version,
             Reason: request.OperatorRationale,
             Note: request.ResolutionNote,
-            RootCauseCode: dismissed ? "DismissedFalsePositive" : commandBase.RootCauseCode,
+            RootCauseCode: dismissed ? "DismissedFalsePositive" : request.RootCauseCode ?? commandBase.RootCauseCode,
             ResolutionCode: dismissed
                 ? "DismissedFalsePositive"
-                : commandBase.ResolutionCode ?? "LegacyResolved",
+                : request.ResolutionCode ?? commandBase.ResolutionCode ?? "LegacyResolved",
             EvidenceLinks: (commandBase.EvidenceLinks ?? [])
                 .Where(static evidence => !StatementCaseworkHandoffObligation.IsControlMarker(evidence))
                 .ToArray(),

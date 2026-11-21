@@ -6,6 +6,81 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackRunReadService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackRunReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Access.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Access.cs#L9).
+
+```csharp
+public sealed partial class ReportPackRunReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs#L6).
+
+```csharp
+public sealed partial class ReportPackRunReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;WorkstationReportingPayload&gt; BuildPayloadAsync(ReportAccessQueryContext? accessContext, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs:8](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs#L8) |  |
+| <code>public async Task&lt;WorkstationReportingHistoryPayload&gt; BuildCanonicalHistoryAsync(ReportAccessQueryContext? accessContext, int limit = 25, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs:53](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs#L53) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L16).
+
+Builds report-pack run projections and reporting datasets from retained runs and workflow records.
+
+```csharp
+public sealed partial class ReportPackRunReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportPackRunReadService(IReportingTemplateCatalog templateCatalog, IReportingRunStore? runStore = null, ReportPackWorkflowService? workflowService = null, ReportTemplateRegistryService? templateRegistry = null, ReportPackDeliveryService? deliveryService = null, ReportingScheduleService? scheduleService = null, ReportingStarterKitService? starterKitService = null, IReportingDeliveryStore? canonicalDeliveryStore = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:158](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L158) |  |
+| <code>public WorkstationReportingPayload BuildPayload(int recentRunLimit = DefaultRecentRunLimit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:178](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L178) |  |
+| <code>public WorkstationReportingPayload BuildPayload(ReportAccessQueryContext? accessContext, int recentRunLimit = DefaultRecentRunLimit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:181](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L181) |  |
+| <code>public static WorkstationReportingPayload BuildFallbackPayload() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:321](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L321) |  |
+| <code>public StructuredReportingExportPayloadDto GetStructuredReportingExport(string exportId, ReportAccessQueryContext? accessContext = null, int recentRunLimit = DefaultRecentRunLimit);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:324](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L324) |  |
+| <code>public IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildReportWriterDatasetRows(ReportAccessQueryContext? accessContext = null, int recentRunLimit = DefaultRecentRunLimit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:356](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L356) |  |
+| <code>public static ReportPackDistributionPolicy ResolveDistributionPolicy(string distributionId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:370](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L370) |  |
+| <code>public static WorkstationReportPackDistributionPayload[] BuildDistributionRecords(IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; workflowRecords, IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt;? deliveryAttempts = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:1675](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L1675) |  |
+| <code>public static ReportingScheduleDeliveryPlanDto[] BuildScheduleDeliveryPlans(IReadOnlyList&lt;ReportingScheduleRecordDto&gt; schedules, IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt;? deliveryAttempts = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:1716](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L1716) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs:5](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs#L5).
+
+```csharp
+public sealed partial class ReportPackRunReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.ReportedPeriods.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.ReportedPeriods.cs#L9).
+
+Which retained report versions count as reported figures, and the previous reported period the portfolio P&amp;L slices compare with.
+
+```csharp
+public sealed partial class ReportPackRunReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.RunSnapshots.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.RunSnapshots.cs#L6).
+
+```csharp
+public sealed partial class ReportPackRunReadService
+```
+
+## ReportPackDistributionPolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackRunReadService.ReportPackDistributionPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs#L55).
+
+```csharp
+public sealed record ReportPackDistributionPolicy(string DistributionId, string Recipient, string RecipientRole, string Channel, string Owner, string Route, TimeSpan ApprovalSla, TimeSpan PublicationSla, TimeSpan DeliverySla, TimeSpan CorrectionSla);
+```
+
 ## ReportPackSecurityLineIndexEntry
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineIndexEntry</code>. Kind: `record`.
@@ -856,33 +931,3 @@ Enum declarations:
 | <code>BreakAuditProjected</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1277](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1277) |  |
 | <code>CaseProjected</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1278](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1278) |  |
 | <code>CompletionRetained</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1279](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1279) |  |
-
-## StatementFetchSchedulerService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StatementFetchSchedulerService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:15](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L15).
-
-Minimal scheduled-fetch loop for statement connectors: every minute, runs any enabled fetch schedule that is due (fetch → commit → reconciliation queue). Failures are recorded on the schedule and never crash the loop, and downstream duplicate-key idempotency makes repeated or overlapping runs safe.
-
-```csharp
-public sealed class StatementFetchSchedulerService(IServiceProvider serviceProvider, ILogger<StatementFetchSchedulerService> logger) : BackgroundService
-```
-
-## StatementFetchSchedulerServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StatementFetchSchedulerServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:83](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L83).
-
-Registers the statement fetch scheduler as a shared singleton and hosted service.
-
-```csharp
-public static class StatementFetchSchedulerServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddStatementFetchSchedulerHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:85](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L85) |  |

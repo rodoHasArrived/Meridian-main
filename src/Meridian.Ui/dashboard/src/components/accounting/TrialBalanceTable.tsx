@@ -1,6 +1,7 @@
 import { Fragment } from "react";
-import { AmountCell } from "./AmountCell";
-import { toNumber } from "./money";
+import { FinancialValue } from "@/components/meridian/financial-value";
+import { exactDecimalText, parseExactDecimal, sumExactDecimals } from "@/lib/exact-financial-value";
+import { trialBalanceAmountPassport } from "@/lib/trial-balance-amount-passport";
 import type { AccountingTrialBalanceRowViewModel } from "@/screens/accounting-screen.view-model";
 
 export interface TrialBalanceTableProps {
@@ -62,18 +63,28 @@ function normalSide(row: AccountingTrialBalanceRowViewModel): "debit" | "credit"
   return /liab|equity|capital|revenue|income|gain/.test(value) ? "credit" : "debit";
 }
 
-function debitCredit(row: AccountingTrialBalanceRowViewModel): { debit: number; credit: number } {
-  const balance = toNumber(row.balance);
-  if (!Number.isFinite(balance) || balance === 0) {
-    return { debit: 0, credit: 0 };
-  }
+function debitCredit(row: AccountingTrialBalanceRowViewModel): { debit: string | null; credit: string | null } {
+  const balance = parseExactDecimal(row.balanceExact ?? row.balance);
+  if (!balance) return { debit: null, credit: null };
+  const side = balance.coefficient >= 0n ? normalSide(row) : normalSide(row) === "debit" ? "credit" : "debit";
+  const magnitude = exactDecimalText({ ...balance, coefficient: balance.coefficient < 0n ? -balance.coefficient : balance.coefficient });
+  return side === "debit" ? { debit: magnitude, credit: "0" } : { debit: "0", credit: magnitude };
+}
 
-  const side = balance >= 0
-    ? normalSide(row)
-    : normalSide(row) === "debit" ? "credit" : "debit";
-  return side === "debit"
-    ? { debit: Math.abs(balance), credit: 0 }
-    : { debit: 0, credit: Math.abs(balance) };
+function sumSide(rows: Array<{ debit: string | null; credit: string | null }>, side: "debit" | "credit"): string | null {
+  const values = rows.map((row) => row[side]);
+  return values.some((value) => value === null) ? null : sumExactDecimals(values as string[]);
+}
+
+const conditionReason = "Posted account balance; the source has not supplied a reconciled data condition.";
+
+function BalanceSide({ row, value, currency, side }: { row: AccountingTrialBalanceRowViewModel; value: string | null; currency?: string; side: "debit" | "credit" }) {
+  const source = row.balanceExact ?? row.balance;
+  const active = parseExactDecimal(value)?.coefficient !== 0n || parseExactDecimal(source)?.coefficient === 0n;
+  const passport = active ? trialBalanceAmountPassport(row) : null;
+  return <FinancialValue value={passport ? source : value} absolute currency={currency}
+    passport={passport} condition="unavailable" reason={conditionReason}
+    basis={`Net account balance shown on the ${side} side; the passport retains its original sign.`} />;
 }
 
 export function TrialBalanceTable({
@@ -86,9 +97,10 @@ export function TrialBalanceTable({
 }: TrialBalanceTableProps) {
   inject();
   const computedRows = rows.map((row) => ({ row, ...debitCredit(row), section: sectionOf(row) }));
-  const totalDebits = computedRows.reduce((sum, row) => sum + row.debit, 0);
-  const totalCredits = computedRows.reduce((sum, row) => sum + row.credit, 0);
-  const balanced = Math.abs(totalDebits - totalCredits) < 0.005;
+  const totalDebits = sumSide(computedRows, "debit");
+  const totalCredits = sumSide(computedRows, "credit");
+  const variance = totalDebits !== null && totalCredits !== null ? sumExactDecimals([totalDebits, totalCredits.startsWith("-") ? totalCredits.slice(1) : `-${totalCredits}`]) : null;
+  const balanced = variance !== null && parseExactDecimal(variance)?.coefficient === 0n;
   const groups = grouped
     ? SECTIONS.map((section) => ({
         section,
@@ -146,10 +158,10 @@ export function TrialBalanceTable({
                     <td className="tbl__code">{row.accountTypeLabel}</td>
                     <td className="tbl__code">{row.basisLabel}</td>
                     <td className="tbl--r">
-                      <AmountCell value={debit} currency={currency} zeroDash />
+                      <BalanceSide row={row} value={debit} currency={currency} side="debit" />
                     </td>
                     <td className="tbl--r">
-                      <AmountCell value={credit} currency={currency} zeroDash />
+                      <BalanceSide row={row} value={credit} currency={currency} side="credit" />
                     </td>
                     <td className="tbl--r">{row.entryCountLabel}</td>
                   </tr>
@@ -159,10 +171,10 @@ export function TrialBalanceTable({
                 <tr className="tbl__sub">
                   <td colSpan={3}>{group.section} subtotal</td>
                   <td className="tbl--r">
-                    <AmountCell value={group.rows.reduce((sum, row) => sum + row.debit, 0)} currency={currency} zeroDash mode="muted" />
+                    <FinancialValue value={sumSide(group.rows, "debit")} currency={currency} condition="unavailable" reason={conditionReason} />
                   </td>
                   <td className="tbl--r">
-                    <AmountCell value={group.rows.reduce((sum, row) => sum + row.credit, 0)} currency={currency} zeroDash mode="muted" />
+                    <FinancialValue value={sumSide(group.rows, "credit")} currency={currency} condition="unavailable" reason={conditionReason} />
                   </td>
                   <td />
                 </tr>
@@ -177,15 +189,15 @@ export function TrialBalanceTable({
               {!balanced ? (
                 <span className="tbl__foot-note text-danger">
                   out of balance by{" "}
-                  <AmountCell value={totalDebits - totalCredits} currency={currency} mode="pnl" parens />
+                  <FinancialValue value={variance} currency={currency} decimals={Math.max(2, parseExactDecimal(variance)?.scale ?? 2)} condition="unavailable" reason={conditionReason} signed />
                 </span>
               ) : null}
             </td>
             <td className="tbl--r">
-              <AmountCell value={totalDebits} currency={currency} strong />
+              <FinancialValue value={totalDebits} currency={currency} condition="unavailable" reason={conditionReason} />
             </td>
             <td className="tbl--r">
-              <AmountCell value={totalCredits} currency={currency} strong />
+              <FinancialValue value={totalCredits} currency={currency} condition="unavailable" reason={conditionReason} />
             </td>
             <td />
           </tr>

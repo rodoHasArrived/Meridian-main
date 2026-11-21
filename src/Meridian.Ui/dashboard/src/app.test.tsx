@@ -719,7 +719,7 @@ describe("App", () => {
     expect(screen.getByRole("main", { name: "Reporting workbench" })).toHaveAttribute("aria-busy", "true");
   });
 
-  it("renders the daily control tower on the root route", async () => {
+  it.each(["/", "/today"])("renders the shared Today queue at %s", async (route) => {
     const user = userEvent.setup();
     mockDailyControlTowerData();
     // Load the shared operator inbox too, so both sources render in Today's one queue grid.
@@ -728,7 +728,7 @@ describe("App", () => {
       ? Promise.resolve(loadedOperatorInbox) as ReturnType<typeof apiGetJson>
       : defaultApiGetJson(path, ...rest));
 
-    const { container } = renderWithRouter(<App />, { initialEntries: ["/"] });
+    const { container } = renderWithRouter(<App />, { initialEntries: [route] });
 
     expect(await screen.findByRole(
       "heading",

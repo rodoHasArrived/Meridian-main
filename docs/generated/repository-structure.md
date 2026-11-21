@@ -1838,6 +1838,7 @@ Meridian-main
 │   │   ├── plans
 │   │   │   ├── bond-capability-expansion.md
 │   │   │   ├── browser-workstation-ux-program.md
+│   │   │   ├── browser-workstation-ux-roadmap-2026-11.md
 │   │   │   ├── carta-inspired-capital-lifecycle.md
 │   │   │   ├── desktop-workstation-screen-blueprint.checklist.json
 │   │   │   ├── desktop-workstation-screen-blueprint.md
@@ -1860,6 +1861,7 @@ Meridian-main
 │   │   ├── docs-regeneration-automation-design.md
 │   │   ├── etl-execution-ownership.md
 │   │   ├── execution-workflows.md
+│   │   ├── financial-value-pattern.md
 │   │   ├── free-development-tools.md
 │   │   ├── generated-merge-recovery.md
 │   │   ├── generated-output-delivery.md
@@ -2195,7 +2197,8 @@ Meridian-main
 │   │   │   │   ├── page-078.md
 │   │   │   │   ├── page-079.md
 │   │   │   │   ├── page-080.md
-│   │   │   │   └── page-081.md
+│   │   │   │   ├── page-081.md
+│   │   │   │   └── page-082.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -2236,7 +2239,8 @@ Meridian-main
 │   │   │   │   ├── page-006.md
 │   │   │   │   ├── page-007.md
 │   │   │   │   ├── page-008.md
-│   │   │   │   └── page-009.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   └── page-010.md
 │   │   │   ├── meridian.fsharp
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.ibapi.smokestub
@@ -2286,7 +2290,8 @@ Meridian-main
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
 │   │   │   │   ├── page-003.md
-│   │   │   │   └── page-004.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   └── page-005.md
 │   │   │   ├── meridian.reporting.readmodels
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.risk
@@ -7139,6 +7144,7 @@ Meridian-main
 │   │   │   │   ├── StatementFetchScheduleRunner.cs
 │   │   │   │   ├── StatementFetchScheduleStore.cs
 │   │   │   │   ├── StatementImportService.cs
+│   │   │   │   ├── StatementImportService.Review.cs
 │   │   │   │   ├── StatementIngressLimits.cs
 │   │   │   │   ├── StatementMappingExecutionEvidence.cs
 │   │   │   │   ├── StatementMappingProfileCatalog.cs
@@ -8105,6 +8111,8 @@ Meridian-main
 │   │   ├── ReportingReconciliationEvidenceContracts.cs
 │   │   ├── ReportingReleaseConsistencyGate.cs
 │   │   ├── ReportingRetainedLedgerPopulationValidation.cs
+│   │   ├── ReportingReviewMateriality.cs
+│   │   ├── ReportingRunReview.cs
 │   │   ├── ReportingSchedulePeriodPlanner.cs
 │   │   ├── ReportingStarterKitCatalog.cs
 │   │   ├── ReportingTemplateRegistryService.cs
@@ -9306,6 +9314,8 @@ Meridian-main
 │   │   │   │   │   │   ├── financial-record-explorer.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.view-state.test.ts
 │   │   │   │   │   │   ├── financial-record-explorer.view-state.ts
+│   │   │   │   │   │   ├── financial-value.test.tsx
+│   │   │   │   │   │   ├── financial-value.tsx
 │   │   │   │   │   │   ├── historical-chart.test.tsx
 │   │   │   │   │   │   ├── historical-chart.tsx
 │   │   │   │   │   │   ├── historical-chart.view-model.test.ts
@@ -9899,6 +9909,8 @@ Meridian-main
 │   │   │   │   │   ├── due-urgency.test.ts
 │   │   │   │   │   ├── due-urgency.ts
 │   │   │   │   │   ├── exact-decimal.ts
+│   │   │   │   │   ├── exact-financial-value.test.ts
+│   │   │   │   │   ├── exact-financial-value.ts
 │   │   │   │   │   ├── failover-api.ts
 │   │   │   │   │   ├── fixed-income-capabilities.test.ts
 │   │   │   │   │   ├── fixed-income-capabilities.ts
@@ -9916,6 +9928,7 @@ Meridian-main
 │   │   │   │   │   ├── identifiers.ts
 │   │   │   │   │   ├── income-movement-waterfall.test.ts
 │   │   │   │   │   ├── income-movement-waterfall.ts
+│   │   │   │   │   ├── instrument-dossier-route.ts
 │   │   │   │   │   ├── instrument-record-identity.ts
 │   │   │   │   │   ├── internal-copy.test.ts
 │   │   │   │   │   ├── internal-copy.ts
@@ -9992,6 +10005,8 @@ Meridian-main
 │   │   │   │   │   ├── report-change-since-review.ts
 │   │   │   │   │   ├── report-health.test.ts
 │   │   │   │   │   ├── report-health.ts
+│   │   │   │   │   ├── report-run-review-api.test.ts
+│   │   │   │   │   ├── report-run-review-api.ts
 │   │   │   │   │   ├── report-run-stream.test.ts
 │   │   │   │   │   ├── report-run-stream.ts
 │   │   │   │   │   ├── report-writer-grid-diff.test.ts
@@ -10066,6 +10081,7 @@ Meridian-main
 │   │   │   │   │   ├── time-zone.ts
 │   │   │   │   │   ├── time.test.ts
 │   │   │   │   │   ├── time.ts
+│   │   │   │   │   ├── trial-balance-amount-passport.ts
 │   │   │   │   │   ├── use-period-comparison.ts
 │   │   │   │   │   ├── use-queue-keyboard.test.tsx
 │   │   │   │   │   ├── use-queue-keyboard.ts
@@ -10080,6 +10096,8 @@ Meridian-main
 │   │   │   │   │   ├── workspace-figure-context.tsx
 │   │   │   │   │   ├── workspace.test.ts
 │   │   │   │   │   ├── workspace.ts
+│   │   │   │   │   ├── workstation-close-routing.test.ts
+│   │   │   │   │   ├── workstation-close-routing.ts
 │   │   │   │   │   ├── workstation-endpoints.test.ts
 │   │   │   │   │   ├── workstation-endpoints.ts
 │   │   │   │   │   ├── workstation-features.ts
@@ -10144,6 +10162,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.close-cockpit.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.close-cockpit.view-model.ts
 │   │   │   │   │   ├── accounting-screen.close-command-center.view-model.ts
+│   │   │   │   │   ├── accounting-screen.close-landing.tsx
 │   │   │   │   │   ├── accounting-screen.close-scope.ts
 │   │   │   │   │   ├── accounting-screen.close-sources.test.ts
 │   │   │   │   │   ├── accounting-screen.close-sources.ts
@@ -10248,6 +10267,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.reconciliation.tie-out.test.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.ts
+│   │   │   │   │   ├── accounting-screen.route-context.ts
 │   │   │   │   │   ├── accounting-screen.security-master-detail-panels.tsx
 │   │   │   │   │   ├── accounting-screen.security-master-panels.tsx
 │   │   │   │   │   ├── accounting-screen.security-master-presenters.ts
@@ -10283,6 +10303,8 @@ Meridian-main
 │   │   │   │   │   ├── capital-call-issuance-screen.view-model.test.ts
 │   │   │   │   │   ├── capital-call-issuance-screen.view-model.ts
 │   │   │   │   │   ├── capital-call-notice-action.tsx
+│   │   │   │   │   ├── case-inspector.test.tsx
+│   │   │   │   │   ├── case-inspector.tsx
 │   │   │   │   │   ├── cash-ladder-screen.comparison.tsx
 │   │   │   │   │   ├── cash-ladder-screen.projection-evidence.tsx
 │   │   │   │   │   ├── cash-ladder-screen.test.tsx
@@ -10414,14 +10436,21 @@ Meridian-main
 │   │   │   │   │   ├── family-ownership-graph.tsx
 │   │   │   │   │   ├── finance-standard-pages-screen.test.tsx
 │   │   │   │   │   ├── finance-standard-pages-screen.tsx
+│   │   │   │   │   ├── import-start-screen.tsx
 │   │   │   │   │   ├── income-receipt-queue-panel.test.tsx
 │   │   │   │   │   ├── income-receipt-queue-panel.tsx
 │   │   │   │   │   ├── income-receipt-queue.details.tsx
+│   │   │   │   │   ├── instrument-dossier-screen.test.tsx
+│   │   │   │   │   ├── instrument-dossier-screen.tsx
+│   │   │   │   │   ├── instrument-dossier.view-model.test.ts
+│   │   │   │   │   ├── instrument-dossier.view-model.ts
 │   │   │   │   │   ├── journal-entry-detail-screen.test.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.view-model.ts
 │   │   │   │   │   ├── journal-entry-tax-results.test.tsx
 │   │   │   │   │   ├── journal-entry-tax-results.tsx
+│   │   │   │   │   ├── journal-lifecycle-controls.test.tsx
+│   │   │   │   │   ├── journal-lifecycle-controls.tsx
 │   │   │   │   │   ├── ledger-record-identity.tsx
 │   │   │   │   │   ├── live-quotes-screen.quick-trade.ts
 │   │   │   │   │   ├── live-quotes-screen.test.tsx
@@ -10447,6 +10476,7 @@ Meridian-main
 │   │   │   │   │   ├── market-data-screen.tsx
 │   │   │   │   │   ├── nav-comparison-screen.tsx
 │   │   │   │   │   ├── operations-continuity-reviewed-automation.view-model.ts
+│   │   │   │   │   ├── operations-continuity-screen.checklist-columns.tsx
 │   │   │   │   │   ├── operations-continuity-screen.close-test-fixtures.ts
 │   │   │   │   │   ├── operations-continuity-screen.command-state.ts
 │   │   │   │   │   ├── operations-continuity-screen.date-format.ts
@@ -10515,6 +10545,7 @@ Meridian-main
 │   │   │   │   │   ├── reconciliation-bulk-triage.ts
 │   │   │   │   │   ├── reconciliation-case-evidence.test.tsx
 │   │   │   │   │   ├── reconciliation-case-evidence.tsx
+│   │   │   │   │   ├── reconciliation-case-values.ts
 │   │   │   │   │   ├── reconciliation-casework-command.ts
 │   │   │   │   │   ├── reconciliation-casework-outcome.ts
 │   │   │   │   │   ├── reconciliation-run-picker.test.tsx
@@ -10524,6 +10555,8 @@ Meridian-main
 │   │   │   │   │   ├── reconciliation-view-state.ts
 │   │   │   │   │   ├── report-library-screen.test.tsx
 │   │   │   │   │   ├── report-library-screen.tsx
+│   │   │   │   │   ├── report-review-panel.test.tsx
+│   │   │   │   │   ├── report-review-panel.tsx
 │   │   │   │   │   ├── report-run-governance-client-package.ts
 │   │   │   │   │   ├── report-run-governance-parameters.ts
 │   │   │   │   │   ├── report-run-governance-screen.test.tsx
@@ -10622,6 +10655,8 @@ Meridian-main
 │   │   │   │   │   ├── statement-import-panel.view-model.test.ts
 │   │   │   │   │   ├── statement-import-panel.view-model.ts
 │   │   │   │   │   ├── statement-import-preview.tsx
+│   │   │   │   │   ├── statement-import-rows.test.tsx
+│   │   │   │   │   ├── statement-import-rows.tsx
 │   │   │   │   │   ├── statement-import-screen.test.tsx
 │   │   │   │   │   ├── statement-import-screen.tsx
 │   │   │   │   │   ├── strategy-designer-backtest.test.ts
@@ -10658,6 +10693,7 @@ Meridian-main
 │   │   │   │   │   ├── strategy-screen.workflow-continuity.ts
 │   │   │   │   │   ├── tax-parcel-composition.test.tsx
 │   │   │   │   │   ├── tax-parcel-composition.tsx
+│   │   │   │   │   ├── today-screen.tsx
 │   │   │   │   │   ├── trading-screen.a11y.test.tsx
 │   │   │   │   │   ├── trading-screen.acceptance-panel.tsx
 │   │   │   │   │   ├── trading-screen.audit-trail.test.tsx
@@ -10706,6 +10742,7 @@ Meridian-main
 │   │   │   │   │   ├── trial-balance-screen.tsx
 │   │   │   │   │   ├── trial-balance-screen.view-model.test.ts
 │   │   │   │   │   ├── trial-balance-screen.view-model.ts
+│   │   │   │   │   ├── use-case-command-recovery.ts
 │   │   │   │   │   ├── w4-acceptance-parity.test.ts
 │   │   │   │   │   ├── watchlist-screen.a11y.test.tsx
 │   │   │   │   │   ├── watchlist-screen.row-actions.test.tsx
@@ -10718,6 +10755,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.css
 │   │   │   │   │   ├── app-shell.css
 │   │   │   │   │   ├── breakpoints.test.ts
+│   │   │   │   │   ├── case-inspector.css
 │   │   │   │   │   ├── chart-evidence.css
 │   │   │   │   │   ├── command-palette.css
 │   │   │   │   │   ├── companion-pane.css
@@ -10739,6 +10777,7 @@ Meridian-main
 │   │   │   │   ├── test
 │   │   │   │   │   ├── fixtures
 │   │   │   │   │   │   ├── loan-portfolio.host.json
+│   │   │   │   │   │   ├── manual-journal-workbench.json
 │   │   │   │   │   │   ├── quant-run-response.json
 │   │   │   │   │   │   └── security-asset-term-form-parity.json
 │   │   │   │   │   ├── amount-passport-fixtures.ts
@@ -11316,6 +11355,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.Session.cs
 │   │   │   ├── WorkstationEndpoints.StatementCaseworkAuthority.cs
 │   │   │   ├── WorkstationEndpoints.StatementConnectors.cs
+│   │   │   ├── WorkstationEndpoints.StatementImportReview.cs
 │   │   │   ├── WorkstationEndpoints.StatementReconciliationReport.cs
 │   │   │   ├── WorkstationEndpoints.Strategy.cs
 │   │   │   ├── WorkstationEndpoints.StrategyBriefing.cs
@@ -11363,6 +11403,7 @@ Meridian-main
 │   │   │   ├── StatementReconciliationReportWorkflowService.Authority.cs
 │   │   │   ├── StatementReconciliationReportWorkflowService.cs
 │   │   │   ├── StatementReconciliationReportWorkflowService.Reconciliation.cs
+│   │   │   ├── StatementReconciliationReportWorkflowService.RowCases.cs
 │   │   │   ├── StatementToReportWorkflowService.Compatibility.cs
 │   │   │   └── StrategyRunEvidenceContributor.cs
 │   │   ├── Extensibility
@@ -11466,6 +11507,7 @@ Meridian-main
 │   │   │   ├── CloseReadinessSubjectSource.cs
 │   │   │   ├── CollateralExposureService.cs
 │   │   │   ├── ConfigStore.cs
+│   │   │   ├── ConfiguredReportingReviewMaterialityPolicyProvider.cs
 │   │   │   ├── ConsolidationChartValidation.cs
 │   │   │   ├── ConsolidationWorkbenchService.cs
 │   │   │   ├── CorporateActionCashDividendReconciliationSupport.cs
@@ -11666,6 +11708,7 @@ Meridian-main
 │   │   │   ├── ReportingRunCommandService.cs
 │   │   │   ├── ReportingRunCommandService.Operations.cs
 │   │   │   ├── ReportingRunReadinessService.cs
+│   │   │   ├── ReportingRunReviewService.cs
 │   │   │   ├── ReportingRunStore.cs
 │   │   │   ├── ReportingScheduleHostedService.cs
 │   │   │   ├── ReportingSchedulePeriodResolver.cs
@@ -11744,6 +11787,7 @@ Meridian-main
 │   │   │   ├── TradingOperatorReadinessService.BrokerageRecovery.cs
 │   │   │   ├── TradingOperatorReadinessService.cs
 │   │   │   ├── TradingOperatorReadinessService.Strategy.cs
+│   │   │   ├── TrialBalanceAmountProvenanceService.cs
 │   │   │   ├── UiConfigurationSaveGuard.cs
 │   │   │   ├── WorkstationKpiDefinitions.cs
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
@@ -14416,6 +14460,7 @@ Meridian-main
 │   │   │   ├── ReportingGovernanceCanonicalValidationTests.cs
 │   │   │   ├── ReportingIncomeComparisonSerializationTests.cs
 │   │   │   ├── ReportingOrchestrationServiceTests.cs
+│   │   │   ├── ReportingRunReviewTests.cs
 │   │   │   ├── ReportingSchedulePeriodPlannerTests.cs
 │   │   │   ├── ReportingSecureDistributionAuthorizationTests.cs
 │   │   │   ├── ReportingSecureDistributionTests.cs
@@ -15290,6 +15335,7 @@ Meridian-main
 │   │   │   ├── FileOnboardingWorkspaceStoreTests.cs
 │   │   │   ├── FinancialRecordExplorerAgreementFilterTests.cs
 │   │   │   ├── FinancialRecordExplorerTermsObligationsDetailTests.cs
+│   │   │   ├── FinancialValueReadContractTests.cs
 │   │   │   ├── FirstRunEndpointsTests.cs
 │   │   │   ├── FirstRunExperienceServiceTests.cs
 │   │   │   ├── FixedIncomeHttpPrecisionTests.cs
@@ -15522,6 +15568,7 @@ Meridian-main
 │   │   │   ├── TradingOperatorLiveOrderReadinessGateTests.cs
 │   │   │   ├── TradingOperatorReadinessAggregationTests.cs
 │   │   │   ├── TradingOperatorReadinessServiceTests.cs
+│   │   │   ├── TrialBalanceAmountProvenanceTests.cs
 │   │   │   ├── UiConfigurationSaveGuardTests.cs
 │   │   │   ├── UiServerLoggingTests.cs
 │   │   │   ├── Wave2OperatorInboxAcceptanceTests.cs
@@ -15564,6 +15611,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.FactorPaydownWorkbench.cs
 │   │   │   ├── WorkstationEndpointsTests.FeatureCapabilities.cs
 │   │   │   ├── WorkstationEndpointsTests.GeneralLedgerExport.cs
+│   │   │   ├── WorkstationEndpointsTests.HoldingsValuation.cs
 │   │   │   ├── WorkstationEndpointsTests.IBResults.cs
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs
 │   │   │   ├── WorkstationEndpointsTests.JournalAutomation.cs

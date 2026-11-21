@@ -24,6 +24,7 @@ import {
   formatNumber,
   formatRatioAsPercent,
   nextBrokerageAccountKey,
+  numericPnlTone,
   pnlFieldTone,
   pnlTone,
   riskFieldTone,
@@ -72,6 +73,11 @@ type PortfolioSourceRun = {
 };
 
 export interface PortfolioPositionRow {
+  securityId?: string | null;
+  averagePriceExact?: string | null;
+  markPriceExact?: string | null;
+  unrealizedPnlExact?: string | null;
+  exposureExact?: string | null;
   /** Display values from the shared holdings model; the `*Figure` fields carry reason and staleness. */
   marketValue: string;
   marketValueFigure: HoldingFigure;
@@ -329,6 +335,7 @@ interface PortfolioRunContinuityBlocker {
 }
 
 export interface PortfolioPositionDetail {
+  securityId?: string | null;
   id: string;
   record: RecordIdentity;
   linkedRef: string;
@@ -706,6 +713,11 @@ export function buildPortfolioScreenViewModel({
       symbol: p.symbol,
       side: p.side,
       quantity: p.quantity,
+      securityId: p.markFreshness?.securityId,
+      averagePriceExact: p.averagePriceExact,
+      markPriceExact: p.markPriceExact,
+      unrealizedPnlExact: p.unrealizedPnlExact,
+      exposureExact: p.exposureExact,
       avgPrice: p.averagePrice,
       ...holdingRowFigures(holding),
       markFreshness: presentMarkFreshness(p.markFreshness),
@@ -2307,12 +2319,6 @@ function distinctNormalizedValues(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))].sort();
 }
 
-function numericPnlTone(value: number): "success" | "danger" | "default" {
-  if (value > 0) return "success";
-  if (value < 0) return "danger";
-  return "default";
-}
-
 function modeBadgeVariant(mode: string): "paper" | "live" | "outline" {
   if (mode === "paper") return "paper";
   if (mode === "live") return "live";
@@ -2333,6 +2339,7 @@ function buildSelectedPositionDetail(
 
   return {
     id: position.id,
+    securityId: position.securityId,
     record,
     linkedRef,
     title: position.symbol,

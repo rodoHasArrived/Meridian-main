@@ -53,7 +53,7 @@ describe("TrialBalanceTable", () => {
     expect(screen.getByText("Liabilities")).toBeInTheDocument();
     expect(screen.getAllByText("Equity").length).toBeGreaterThan(0);
     expect(screen.getByText("Payables").closest("tr")).toHaveAttribute("aria-selected", "true");
-    expect(screen.getAllByText("$100.00").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("100.00 USD").length).toBeGreaterThan(0);
   });
 
   it("flags out-of-balance totals", () => {

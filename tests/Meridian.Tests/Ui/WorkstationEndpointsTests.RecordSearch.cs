@@ -60,7 +60,7 @@ public sealed partial class WorkstationEndpointsTests
         exact.RecordType.Should().Be("Instrument");
         exact.Status.Should().Be("Inactive");
         exact.AsOfPosture.Should().Be("Current reference");
-        exact.Href.Should().Be($"/accounting/security-master/detail?recordScope=1&securityId={exactId:D}");
+        exact.Href.Should().Be($"/records/instrument/{exactId:D}?recordScope=1&tab=positions");
         await security.Received().SearchAsync(Arg.Is<SecuritySearchRequest>(request => request.PrefixOnly && !request.ActiveOnly),
             Arg.Any<CancellationToken>());
     }
