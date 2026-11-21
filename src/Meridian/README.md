@@ -11,6 +11,13 @@ last_reviewed: 2026-11-17
 
 # src/Meridian
 
+The live market-event tap snapshots the cached data-quality assessment when updating each trade,
+quote or historical-bar observation used by paper matching. Provider/event identity, assessment
+window, calculation time and threshold follow that observation; posting never retrieves a newer
+assessment. Out-of-window or missing assessments remain unassessed. Historical live observations
+retain their backfill revision reference without claiming repair status from a receipt that may
+still await publication. This metadata does not expand execution or posting authority.
+
 Enabled trade-fill ledger composition also supplies the scope-bound paper financing source
 outbox and governed posting target. The human administrator assessment route uses that same
 book/period authority; absent scope binding or unresolved source delivery fails closed.

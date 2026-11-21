@@ -11,6 +11,12 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Execution.Sdk
 
+`ExecutionReport.MarketDataEvidence` optionally carries the source and quality snapshots of the
+observations used to produce a fill. Producers freeze these snapshots before the observation cache
+advances; consumers retain them through accounting and recovery rather than looking up a later
+assessment. The nullable member is omitted when absent, preserving historical report hashes.
+Missing evidence remains unassessed and does not establish clean data or live execution provenance.
+
 `IOrderManager.GetUnitReservingOrders` returns the exposure reservations, except that a pending amendment reserves its larger-quantity outcome rather than its larger-value one, for unit limits.
 
 Order authority (`OrderCommandAuthority.cs`): `OrderSubmissionAuthority` records who or what
