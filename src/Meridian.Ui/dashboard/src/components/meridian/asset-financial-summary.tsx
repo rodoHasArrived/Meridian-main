@@ -2,6 +2,7 @@ import { useEffect, useId, useState } from "react";
 import { AssetMarketValuation } from "./asset-market-valuation";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { getAssetOperations, getLiveQuotesSnapshot } from "@/lib/api";
 import { workstationRouteWithQuery } from "@/lib/workspace";
 import type { AssetOperationsDetail, BookPosition, QuotesSnapshotItem } from "@/types";
@@ -181,9 +182,9 @@ export function AssetFinancialSummary({
                 className="min-h-9 rounded-[2px] border border-border bg-background px-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               >
                 <option value="">Select a book position</option>
-                {positions.map((position) => (
+                {positions.map((position, index) => (
                   <option key={position.positionId} value={position.positionId}>
-                    {positionLabel(position)}
+                    Position {index + 1} · {positionLabel(position)}
                   </option>
                 ))}
               </select>
@@ -205,8 +206,7 @@ export function AssetFinancialSummary({
                     />
                   </dl>
                   <p className="break-words text-xs text-muted-foreground">
-                    As of {validState.asOfDate} · Asset operations · State {validState.economicStateId} · Version{" "}
-                    {validState.version}
+                    As of {validState.asOfDate} · Asset operations · Version {validState.version}
                     {validState.sourceEvent ? ` · Source ${validState.sourceEvent.sourceDomain}` : ""}
                   </p>
                 </>
@@ -215,6 +215,26 @@ export function AssetFinancialSummary({
                   A matching {currency} economic state is unavailable. Holdings amounts are withheld.
                 </p>
               )}
+              <TechnicalDetails label="Position and valuation identifiers">
+                <dl className="grid gap-2 text-xs sm:grid-cols-2">
+                  <div>
+                    <dt className="text-muted-foreground">Book ID</dt>
+                    <dd className="break-all font-mono">{selected.bookContext.ledgerBookId}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Account ID</dt>
+                    <dd className="break-all font-mono">{selected.primaryAccountId ?? "Not supplied"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Position ID</dt>
+                    <dd className="break-all font-mono">{selected.positionId}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Economic-state ID</dt>
+                    <dd className="break-all font-mono">{validState?.economicStateId ?? "Unavailable"}</dd>
+                  </div>
+                </dl>
+              </TechnicalDetails>
               {validState ? (
                 selected.primaryAccountId ? (
                   <AssetMarketValuation
@@ -291,7 +311,7 @@ export function AssetFinancialSummary({
 }
 
 function positionLabel(position: BookPosition) {
-  return `${position.bookContext.displayName} (${position.bookContext.ledgerBookId}) · ${position.bookContext.accountingBasis} · Account ${position.primaryAccountId ?? "not supplied"} · ${position.positionId}`;
+  return `${position.bookContext.displayName} · ${position.bookContext.accountingBasis} · ${position.primaryAccountId ? "Account-scoped holding" : "Account unavailable"}`;
 }
 
 function Metric({ label, value }: { label: string; value: string }) {

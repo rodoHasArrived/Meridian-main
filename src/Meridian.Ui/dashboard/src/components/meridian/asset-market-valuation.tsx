@@ -99,7 +99,7 @@ export function AssetMarketValuation({
           </dl>
           <p className="text-xs text-muted-foreground">{current.result.unrealizedPnlBasis}</p>
           {current.result.blockers.length ? (
-            <ul className="space-y-1 text-xs text-warning" aria-label="Valuation blockers">
+            <ul className="space-y-1 text-xs text-foreground" aria-label="Valuation blockers">
               {current.result.blockers.map((blocker, index) => (
                 <li key={`${blocker.code}-${index}`}>
                   <span className="font-semibold">{blocker.code}:</span> {blocker.reason}

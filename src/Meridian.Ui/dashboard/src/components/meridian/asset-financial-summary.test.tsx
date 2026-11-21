@@ -123,8 +123,11 @@ beforeEach(() => {
 it("shows retained book amounts and distinguishes symbol quotes from valuations", async () => {
   const { container } = renderSummary();
   expect(await screen.findByText("1,234.5")).toBeInTheDocument();
-  expect(screen.getByText(/GAAP book \(book-1\).*Account account-1/)).toBeInTheDocument();
-  expect(screen.getByText(/State state-1 · Version 2/)).toHaveTextContent("As of 2026-11-20");
+  expect(screen.getByText(/GAAP book.*Account-scoped holding/)).toBeInTheDocument();
+  await userEvent.click(screen.getByText("Position and valuation identifiers"));
+  expect(screen.getByText("book-1")).toBeVisible();
+  expect(screen.getByText("account-1")).toBeVisible();
+  expect(screen.getByText(/Asset operations · Version 2/)).toHaveTextContent("As of 2026-11-20");
   expect(screen.getByText("140.6")).toBeInTheDocument();
   expect(screen.getByText(/quote currency is not supplied/)).toBeInTheDocument();
   expect(screen.getByRole("region", { name: "Market valuation" })).toHaveTextContent("state-1");

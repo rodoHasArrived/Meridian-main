@@ -19,8 +19,27 @@ type TermsState =
   | { request: string; status: "ready"; terms: Terms };
 
 const importantKeys: Record<string, string[]> = {
-  bond: ["couponType", "couponRate", "maturity", "maturityDate", "paymentFrequency", "dayCount", "dayCountConvention", "par", "faceValue"],
-  equity: ["classification", "shareClass", "votingRightsCat", "exchange", "exchangeCode", "dividendCurrency", "votingRights", "sharesOutstanding"],
+  bond: [
+    "couponType",
+    "couponRate",
+    "maturity",
+    "maturityDate",
+    "paymentFrequency",
+    "dayCount",
+    "dayCountConvention",
+    "par",
+    "faceValue"
+  ],
+  equity: [
+    "classification",
+    "shareClass",
+    "votingRightsCat",
+    "exchange",
+    "exchangeCode",
+    "dividendCurrency",
+    "votingRights",
+    "sharesOutstanding"
+  ],
   option: [
     "underlyingId",
     "underlyingSecurityId",
@@ -48,7 +67,20 @@ const importantKeys: Record<string, string[]> = {
     "settlementType"
   ],
   swap: ["notional", "notionalAmount", "effectiveDate", "maturityDate", "fixedRate", "floatingRateIndex"],
-  loan: ["borrower", "maturity", "currentCouponRate", "referenceIndex", "spreadBps", "principal", "principalAmount", "interestRate", "maturityDate", "paymentFrequency", "dayCount", "dayCountConvention"],
+  loan: [
+    "borrower",
+    "maturity",
+    "currentCouponRate",
+    "referenceIndex",
+    "spreadBps",
+    "principal",
+    "principalAmount",
+    "interestRate",
+    "maturityDate",
+    "paymentFrequency",
+    "dayCount",
+    "dayCountConvention"
+  ],
   mortgagebackedsecurity: ["poolFactor", "currentFactor", "couponRate", "maturityDate", "paymentFrequency"],
   cash: ["accountType", "interestRate", "dayCountConvention"]
 };
@@ -121,7 +153,7 @@ function FieldValue({ field }: { field: SecurityInstrumentTermField }) {
         <span
           className={
             field.state === "Invalid" || field.state === "Ambiguous"
-              ? "font-semibold text-warning"
+              ? "font-semibold text-foreground"
               : "text-muted-foreground"
           }
         >
