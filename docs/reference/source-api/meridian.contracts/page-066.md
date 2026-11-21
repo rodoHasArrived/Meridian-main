@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MarginCertificationResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MarginCertificationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L84).
+
+```csharp
+public sealed record MarginCertificationResultDto(string ProviderId = default !, string AccountId = default !, DateTimeOffset AsOf = default, string EvidencePath = default !, string CertifiedBy = default !, DateTimeOffset CertifiedAtUtc = default, string Note = default !, string Status = default !);
+```
+
+## MarginControlAccountDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MarginControlAccountDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L4).
+
+Provider-reported margin side by side with a non-authoritative Meridian estimate.
+
+```csharp
+public sealed record MarginControlAccountDto(string ProviderId = default !, string AccountId = default !, DateTimeOffset AsOf = default, string SnapshotPhase = default !, string CertificationState = default !, string Currency = default !, string MarginRegime = default !, decimal Cash = default, decimal Equity = default, decimal BuyingPower = default, decimal? ProviderInitialMargin = null, decimal? ProviderMaintenanceMargin = null, decimal? ProviderExcessLiquidity = null, decimal? ProviderMarginLoan = null, string ShadowModelName = default !, decimal? ShadowInitialMargin = null, decimal? ShadowMaintenanceMargin = null, decimal? ShadowExcessLiquidity = null, decimal? MaintenanceVariance = null, string RiskLevel = default !, bool? ActivityComplete = null, IReadOnlyList<string> Restrictions = default !, IReadOnlyList<MarginPositionContributionDto> PositionContributions = default !, int OptionLifecycleEventCount = default, int BorrowPositionCount = default, int TaxLotCount = default, string EvidencePath = default !, string? CertifiedBy = null, DateTimeOffset? CertifiedAtUtc = null, string? CertificationNote = null);
+```
+
+## MarginControlAlertDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MarginControlAlertDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L57).
+
+```csharp
+public sealed record MarginControlAlertDto(string Severity = default !, string ProviderId = default !, string AccountId = default !, string Code = default !, string Message = default !, string SuggestedAction = default !);
+```
+
+## MarginControlCenterDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MarginControlCenterDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L65).
+
+```csharp
+public sealed record MarginControlCenterDto(DateTimeOffset GeneratedAtUtc = default, IReadOnlyList<MarginControlAccountDto> Accounts = default !, IReadOnlyList<MarginControlPrimeSummaryDto> PrimeSummaries = default !, IReadOnlyList<MarginControlAlertDto> Alerts = default !, int ProviderCount = default, int AccountCount = default, int ProvisionalAccountCount = default, int EndOfDayCertificationCandidateCount = default, string AuthorityNote = default !, string NextAction = default !);
+```
+
 ## MarginControlPrimeSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.MarginControlPrimeSummaryDto</code>. Kind: `record`.
@@ -62,7 +104,7 @@ public sealed record MeridianAssuranceScoreDto(int Score, EvidenceStatusDto Stat
 
 Qualified name: <code>Meridian.Contracts.Workstation.MetricsDiff</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:907](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L907).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:924](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L924).
 
 High-level metrics delta between two runs.
 
@@ -568,48 +610,4 @@ Content is copied into the run. A hash alone is not a reproducible source snapsh
 
 ```csharp
 public sealed record OnboardingSourceSnapshotDto(string SnapshotId, string SourceKind, string SourceId, string Version, string ContentHash, DateTimeOffset CapturedAtUtc, DateOnly AsOfDate, string MappingVersion, string PayloadJson, IReadOnlyList<string> EvidenceIds);
-```
-
-## OnboardingWorkspaceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingWorkspaceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:125](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L125).
-
-```csharp
-public sealed record OnboardingWorkspaceDto(string WorkspaceId, string Name, string OwnerId, OnboardingScopeDto Scope, int Version, int DataRevision, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, OnboardingCriteriaDto Criteria, IReadOnlyList<OnboardingCriteriaRevisionDto> CriteriaHistory, IReadOnlyList<OnboardingComparisonDto> Comparisons, IReadOnlyList<OnboardingDifferenceDto> CurrentDifferences, IReadOnlyList<OnboardingDifferenceAssignmentDto> Assignments, IReadOnlyList<OnboardingReviewDto> Reviews, IReadOnlyList<OnboardingReadinessPacketDto> Packets, OnboardingReadinessDto Readiness, string AuthorityPosture, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] OnboardingShadowDesignationDto? ShadowDesignation = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingDifferenceExplanationDto>? Explanations = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingParallelRunCertificateDto>? Certificates = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ShadowBookPromotionDecisionDto? Promotion = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingShadowAuditEntryDto>? ShadowAudit = null);
-```
-
-## OpenLotSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.OpenLotSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1173](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1173).
-
-Workstation-facing summary of a single open lot for a strategy run.
-
-```csharp
-public sealed record OpenLotSummary(Guid LotId, string Symbol, long Quantity, decimal EntryPrice, DateTimeOffset OpenedAt, decimal CurrentUnrealizedPnl, bool IsLongTerm, string? AccountId = null);
-```
-
-## OperatingScopeValuesDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatingScopeValuesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L9).
-
-The operating-scope dimensions the workstation carries across workspaces, as the browser&#x27;s operating-scope URL parameters and the WPF scope selector name them. Every value is optional. EntityId and FundId (the fund-structure legal entity and fund ids) were added after the original eight and sit last, so positional construction is unchanged.
-
-```csharp
-public sealed record OperatingScopeValuesDto(string? Symbol = null, string? FundAccountId = null, string? RunId = null, string? Provider = null, string? From = null, string? To = null, string? Date = null, string? AsOf = null, string? EntityId = null, string? FundId = null);
-```
-
-## OperationsAccountingRecordEvidenceCategoryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsAccountingRecordEvidenceCategoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1163](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1163).
-
-```csharp
-public sealed record OperationsAccountingRecordEvidenceCategoryDto(string Key, string Label, bool IsComplete, string Status, string? RouteHint, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredEvidence = null);
 ```

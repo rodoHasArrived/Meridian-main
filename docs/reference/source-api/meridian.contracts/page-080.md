@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationAccountingPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:948](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L948).
+
+Typed payload returned by GET /api/workstation/accounting. The independent reporting route returns the nested WorkstationReportingPayload directly.
+
+```csharp
+public sealed record WorkstationAccountingPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationAccountingRunRecord> ReconciliationQueue, IReadOnlyList<ReconciliationBreakQueueItem> BreakQueue, WorkstationAccountingWorkspaceSummary Workspace, WorkstationAccountingCashFlowSummaryPayload CashFlow, WorkstationReportingPayload Reporting, WorkstationAccountingControlCenterPayload ControlCenter, WorkstationKernelObservabilityPayload KernelObservability, ManualJournalEntryWorkbenchDto? ManualJournalWorkbench = null);
+```
+
+## WorkstationAccountingRunCashFlowPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunCashFlowPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:823](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L823).
+
+```csharp
+public sealed record WorkstationAccountingRunCashFlowPayload(decimal CashBalance, decimal LedgerCashBalance, decimal CashVariance, decimal Financing, decimal RealizedPnl, decimal UnrealizedPnl, int JournalEntryCount, string Tone, string Summary);
+```
+
+## WorkstationAccountingRunGovernancePayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunGovernancePayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:805](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L805).
+
+Accounting run-card governance details linked to strategy evidence.
+
+```csharp
+public sealed record WorkstationAccountingRunGovernancePayload(bool HasAuditTrail, bool HasPortfolio, bool HasLedger, string? DatasetReference, string? FeedReference);
+```
+
+## WorkstationAccountingRunReconciliationPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunReconciliationPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:812](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L812).
+
+```csharp
+public sealed record WorkstationAccountingRunReconciliationPayload(string? ReconciliationRunId, int BreakCount, int OpenBreakCount, int MatchCount, bool HasTimingDrift, int SecurityIssueCount, bool HasSecurityCoverageIssues, string? LastUpdated, string Tone);
+```
+
+## WorkstationAccountingRunRecord
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:844](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L844).
+
+```csharp
+public sealed record WorkstationAccountingRunRecord(string RunId, string StrategyName, string Mode, string Status, string LastUpdated, string? AuditReference, string? LedgerReference, string? PortfolioId, int BreakCount, int OpenBreakCount, string ReconciliationStatus, WorkstationAccountingRunGovernancePayload Governance, WorkstationSecurityCoveragePayload SecurityCoverage, WorkstationAccountingRunCashFlowPayload CashFlow, WorkstationAccountingRunReconciliationPayload? LatestReconciliation, WorkstationKernelObservabilityPayload? KernelObservability = null);
+```
+
+## WorkstationAccountingSeverityCountPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingSeverityCountPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:862](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L862).
+
+```csharp
+public sealed record WorkstationAccountingSeverityCountPayload(string Severity, int Count);
+```
+
 ## WorkstationAccountingTrendSnapshotPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingTrendSnapshotPayload</code>. Kind: `record`.
@@ -506,72 +570,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:251](../
 
 ```csharp
 public sealed record WorkstationPlotToolWorkspacePayload(string Eyebrow, string Title, string Description, string StatusBadgeLabel, string StatusBadgeVariant, string Expression, IReadOnlyList<string> ToolbarPills, IReadOnlyList<string> MetaItems, string XAxisLabel, string YAxisLabel, IReadOnlyList<WorkstationPlotToolTickPayload> XTicks, IReadOnlyList<WorkstationPlotToolTickPayload> YTicks, IReadOnlyList<WorkstationPlotToolPointPayload> Points, IReadOnlyList<WorkstationPlotToolSummaryItemPayload> StudySummary, IReadOnlyList<WorkstationPlotToolLegendItemPayload> LegendItems, WorkstationPlotToolFocusPointPayload FocusPoint, IReadOnlyList<WorkstationPlotToolSignalCardPayload> SignalCards, string ConsoleTitle, string ConsoleBody, string OverlayTitle, IReadOnlyList<string> OverlayItems);
-```
-
-## WorkstationPortfolioPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPortfolioPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:986](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L986).
-
-Unified payload returned by GET /api/workstation/portfolio. Aggregates paper positions, brokerage wiring state, run-linked equity, and cash-flow summary so the Portfolio workspace needs a single request.
-
-```csharp
-public sealed record WorkstationPortfolioPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationTradingPositionRow> Positions, WorkstationTradingRiskState Risk, WorkstationTradingBrokerageState Brokerage, IReadOnlyList<WorkstationPortfolioRunRow> Runs, WorkstationAccountingCashFlowSummaryPayload? CashFlow);
-```
-
-## WorkstationPortfolioRunRow
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPortfolioRunRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:967](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L967).
-
-A single run linked to the portfolio view — lightweight digest for the portfolio run-linked equity panel.
-
-```csharp
-public sealed record WorkstationPortfolioRunRow(string RunId, string StrategyName, string Engine, string Mode, string Status, string Pnl, string Sharpe, string Dataset, string Window, string LastUpdated, string Notes, string? PromotionState);
-```
-
-## WorkstationPortfolioSummaryPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPortfolioSummaryPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1003](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1003).
-
-```csharp
-public sealed record WorkstationPortfolioSummaryPayload(string FundAccountId, string StrategyId, string Entity, IReadOnlyList<WorkstationMetricCard> ConsolidatedCards, IReadOnlyList<WorkstationTradingPositionRow> Positions, WorkstationTradingRiskState Risk, WorkstationPortfolioSummaryTelemetry Telemetry, IReadOnlyDictionary<string, string> DrillThroughRoutes);
-```
-
-## WorkstationPortfolioSummaryTelemetry
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:996](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L996).
-
-```csharp
-public sealed record WorkstationPortfolioSummaryTelemetry(long RefreshLatencyMs, int PayloadSizeBytes, bool IsStale, string? StaleReason, string AsOfUtc);
-```
-
-## WorkstationProviderHealthCount
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationProviderHealthCount</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs#L19).
-
-Healthy providers out of every provider the Data workspace lists.
-
-```csharp
-public sealed record WorkstationProviderHealthCount(int Healthy, int Total, string Definition);
-```
-
-## WorkstationRecordSearchHit
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRecordSearchHit</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs#L4).
-
-A navigation projection of an authorized record. Financial values stay in the detail view.
-
-```csharp
-public sealed record WorkstationRecordSearchHit(string RecordType, string RecordId, string Label, string Scope, string AsOfPosture, string Status, string Href);
 ```

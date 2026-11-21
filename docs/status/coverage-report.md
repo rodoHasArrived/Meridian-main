@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**11884 / 11889** items documented (**100.0%**) &mdash; Grade: **A**
+**11889 / 11889** items documented (**100.0%**) &mdash; Grade: **A**
 
 ```text
 [====================] 100.0%
@@ -15,27 +15,15 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 11268 | 11273 | 100.0% | A |
+| Public Classes / Interfaces | 11273 | 11273 | 100.0% | A |
 | API Endpoints | 458 | 458 | 100.0% | A |
 | Configuration Options | 147 | 147 | 100.0% | A |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
-## Undocumented Items
-
-### Public Classes / Interfaces (5 undocumented)
-
-| Item | Location |
-| ------ | ---------- |
-| `IngestionOperationsSummaryDto` | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:10` |
-| `IngestionOperationRowDto` | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:20` |
-| `ReconciliationMonetaryTotal` | `src/Meridian.Contracts/Workstation/ReconciliationMonetaryTotal.cs:4` |
-| `StrategyPositionAccountingCheck` | `src/Meridian.Strategies/Services/ReconciliationProjectionService.Positions.cs:65` |
-| `StrategyPositionAccountingProjector` | `src/Meridian.Strategies/Services/StrategyPositionAccountingProjector.cs:9` |
-
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 5 undocumented type(s). Add entries to `docs/reference/api-reference.md` for the most important ones.
+1. All categories are fully documented. Great job!
 
 ---
 
