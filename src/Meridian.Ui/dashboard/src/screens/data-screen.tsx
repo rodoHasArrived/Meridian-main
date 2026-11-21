@@ -326,6 +326,7 @@ function DataScreenContent({
 
   return (
     <div className="workspace-screen data-workspace-screen">
+      {showImportWorkstream ? <Link className="text-sm text-primary underline" to={{ pathname: "/data/import/start", search }}>Choose another import type</Link> : null}
       {/* Route heading first; workspace-wide metrics follow. The sidebar is the only
           sub-route navigation (no in-page tab strip). */}
       <section

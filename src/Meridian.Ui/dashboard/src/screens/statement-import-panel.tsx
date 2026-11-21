@@ -1,6 +1,7 @@
+import { StatementImportRows, StatementImportOutcomes } from "./statement-import-rows";
 import { ArrowRight, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +31,15 @@ export interface StatementImportPanelProps extends UseStatementImportPanelOption
 
 export function StatementImportPanel(options: StatementImportPanelProps = {}) {
   const viewModel = useStatementImportPanelViewModel(options);
-  const [sourceMode, setSourceMode] = useState("file");
+  const [search] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const sourceMode = search.get("sourceMode") === "scheduled" ? "scheduled" : "file";
+  const setSourceMode = (mode: string) => {
+    const next = new URLSearchParams(search);
+    if (mode === "file") next.delete("sourceMode"); else next.set("sourceMode", "scheduled");
+    navigate({ pathname: location.pathname, search: next.toString(), hash: location.hash });
+  };
 
   return (
     <section className="flex flex-col gap-4" aria-label="Import statement">
@@ -42,6 +51,7 @@ export function StatementImportPanel(options: StatementImportPanelProps = {}) {
         </p>
       </PanelSurface>
 
+      <Link className="text-sm text-primary underline" to={{ pathname: "/data/import/start", search: search.toString() }}>Choose another import type</Link>
       <h2 className="sr-only">Statement import workflow</h2>
       {viewModel.loadError ? (
         <ErrorBanner title="Statement connector library failed to load" error={viewModel.loadError} />
@@ -56,6 +66,8 @@ export function StatementImportPanel(options: StatementImportPanelProps = {}) {
         ]}
       >
         <TabPanel>
+          {viewModel.commitBusy ? <p role="status">Committing the reviewed import. Source, scope, mapping, and row decisions are locked until the result is known.</p> : null}
+          <fieldset disabled={viewModel.commitBusy} className="min-w-0"><legend className="sr-only">Reviewed statement import</legend>
           <div className="flex flex-col gap-4">
             <SourceSection viewModel={viewModel} />
             {viewModel.previewError ? (
@@ -68,9 +80,11 @@ export function StatementImportPanel(options: StatementImportPanelProps = {}) {
                 onSelectKind={viewModel.selectKind}
               />
             ) : null}
+            {viewModel.preview ? <StatementImportRows key={viewModel.preview.reviewId ?? "legacy"} preview={viewModel.preview} decisions={viewModel.rowDispositions} onChange={viewModel.setRowDisposition} disabled={viewModel.commitBusy || viewModel.previewBusy} /> : null}
             <ProfileEditorSection viewModel={viewModel} />
             <CommitSection viewModel={viewModel} />
           </div>
+          </fieldset>
         </TabPanel>
         <TabPanel>
           {sourceMode === "scheduled" && viewModel.loading ? (
@@ -561,6 +575,7 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
           title="Duplicate statement detected"
           detail={`This statement was already imported as run ${result.runId}. No new records were committed. ${result.nextAction}`}
         />
+        <StatementImportOutcomes key={result.reviewId ?? result.runId} result={result} />
         <TrustedCloseHandoff result={result} />
         <CommitResultActions result={result} />
       </PanelSurface>
@@ -597,6 +612,7 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
           ))}
         </ul>
       ) : null}
+      <StatementImportOutcomes key={result.reviewId ?? result.runId} result={result} />
       <CommitCaseLinks result={result} />
       <TrustedCloseHandoff result={result} />
       <CommitResultActions result={result} />

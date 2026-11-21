@@ -11,6 +11,7 @@ import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { getCorporateActions, getSecurityDetail, getSecurityIdentity, getTradingParameters, searchSecurities } from "@/lib/api";
+import { instrumentDossierRoute } from "@/lib/instrument-dossier-route";
 import { instrumentRecordIdentity } from "@/lib/instrument-record-identity";
 import { appendRecordWorkspaceContext, readRecordWorkspaceContext } from "@/lib/record-workspace-context";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
@@ -235,7 +236,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
   );
 }
 
-function AssetDetailPanel({ securityId }: { securityId: string }) {
+export function AssetDetailPanel({ securityId, embedded = false }: { securityId: string; embedded?: boolean }) {
   const [searchParams] = useSearchParams();
   const requestedBondAction = resolveBondWorkflowAction(searchParams.get("bondAction"));
   const [entry, setEntry] = useState<SecurityMasterEntry | null>(null);
@@ -342,6 +343,9 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
       scope={overview.symbol}
       actions={
         <>
+          {!embedded ? <Button asChild size="sm" variant="outline">
+            <Link to={relatedHref(instrumentDossierRoute(entry.securityId, searchParams.toString()))}>Open instrument dossier</Link>
+          </Button> : null}
           <Button asChild size="sm" variant="outline">
             <Link to={relatedHref(quotes)}>Live quotes</Link>
           </Button>

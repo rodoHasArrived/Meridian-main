@@ -176,7 +176,7 @@ describe("Reconciliation workbench", () => {
     unmount();
     renderWorkbench(undefined, { ...services, readResult }, offlineVisits, scoped);
     await user.click(within(bulkBar()).getByRole("button", { name: "Check batch outcome" }));
-    await user.click(await within(bulkBar()).findByText("Retained batch queue result"));
+    expect(await within(bulkBar()).findByRole("region", { name: "Retained batch queue result" })).toBeVisible();
     expect(within(bulkBar()).getByRole("list", { name: "Per-case batch results" })).toHaveTextContent("cash-1 · Recorded · Open");
     expect(readResult).toHaveBeenCalledExactlyOnceWith(services.execute.mock.calls[0][0].commandId);
     expect(services.execute).toHaveBeenCalledOnce();
@@ -199,11 +199,12 @@ describe("Reconciliation workbench", () => {
     const user = userEvent.setup();
     const services = fakeBulkServices();
     services.execute.mockRejectedValueOnce(new Error("Statement handoff interrupted"));
-    const readResult = vi.fn(async (): Promise<ReconciliationBulkCaseworkResult> => {
+    const readResult = vi.fn(async () => {
       const result = bulkResult(services.execute.mock.calls[0][0], () => true);
-      return { ...result, results: result.results.map((entry) => ({ ...entry,
-        item: entry.item ? { ...entry.item, sourceType: "statement", evidenceLinks: ["urn:meridian:statement-casework-handoff:pending:fixture"] } : entry.item
-      })) };
+      return { ...result, results: result.results.map((entry) => {
+        if (!entry.item) throw new Error("The retained fixture result must include its case.");
+        return { ...entry, item: { ...entry.item, sourceType: "statement", evidenceLinks: ["urn:meridian:statement-casework-handoff:pending:fixture"] } };
+      }) };
     });
     renderWorkbench(undefined, { ...services, readResult });
     await user.click(within(queueRows()[0]).getByRole("checkbox"));

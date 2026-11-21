@@ -956,6 +956,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnecto
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementImportReview.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementImportReview.cs#L13).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconciliationReport.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconciliationReport.cs#L22).
 
 ```csharp
@@ -1020,7 +1026,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static WorkstationManualOrderEntry? ResolveManualOrderEntry(IExecutionGateway? gateway, BrokerageConfiguration? configuration);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:302](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L302) | Mirrors the OMS&#x27;s routing mode for the active gateway: manual orders are refused live (MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED) and admitted in paper. |
+| <code>public static WorkstationManualOrderEntry? ResolveManualOrderEntry(IExecutionGateway? gateway, BrokerageConfiguration? configuration);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:306](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L306) | Mirrors the OMS&#x27;s routing mode for the active gateway: manual orders are refused live (MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED) and admitted in paper. |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs:8](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs#L8).
 

@@ -88,7 +88,29 @@ public sealed record StatementRecordPreviewDto(
     string? ProviderActivityCode = null,
     string? RelatedTransactionId = null,
     string? OrderId = null,
-    string? Description = null);
+    string? Description = null)
+{
+    public string? QuantityExact { get; init; }
+    public string? PriceExact { get; init; }
+    public string? CashAmountExact { get; init; }
+}
+
+public sealed record StatementImportReviewRowDto(
+    string RowId, int NormalizedIndex, int? SourceRowNumber, StatementRecordPreviewDto Record,
+    IReadOnlyList<StatementImportIssueDto> Issues, bool CanExclude, string? ExclusionDisabledReason,
+    bool CanAcceptAsBreak = false);
+
+public sealed record StatementImportRowDispositionDto(string RowId, string Disposition, string Reason);
+
+public sealed record StatementImportRowOutcomeDto(
+    string RowId, int NormalizedIndex, string Disposition, string? Reason, string Status,
+    string? RunId, IReadOnlyList<string> CaseIds);
+
+public sealed record StatementImportReviewRowsPageDto(
+    IReadOnlyList<StatementImportReviewRowDto> Rows, int TotalRows, int Offset, int Limit);
+
+public sealed record StatementImportRowOutcomesPageDto(
+    IReadOnlyList<StatementImportRowOutcomeDto> RowOutcomes, int TotalRows, int Offset, int Limit);
 
 /// <summary>Provider-reported margin and restriction evidence shown before import.</summary>
 public sealed record StatementAccountSnapshotPreviewDto(
@@ -161,6 +183,10 @@ public sealed record StatementImportPreviewDto(
     public IReadOnlyList<StatementActivityCompletenessDto>? ActivityCompleteness { get; init; } = [];
     public int? TaxLotCount { get; init; }
     public int? BorrowPositionCount { get; init; }
+    public string? ReviewId { get; init; }
+    public IReadOnlyList<StatementImportReviewRowDto> Rows { get; init; } = [];
+    public int TotalRows { get; init; }
+    public string? RowsRoute { get; init; }
 }
 
 public sealed record StatementImportCommitResultDto(
@@ -188,6 +214,10 @@ public sealed record StatementImportCommitResultDto(
     public string? StatementReconciliationReportStatusRoute { get; init; }
     public Guid? OperationsWorkflowId { get; init; }
     public StatementReconciliationAccountingScopeDto? AccountingScope { get; init; }
+    public string? ReviewId { get; init; }
+    public IReadOnlyList<StatementImportRowOutcomeDto> RowOutcomes { get; init; } = [];
+    public string? OutcomesRoute { get; init; }
+    public int TotalRows { get; init; }
 }
 
 /// <summary>

@@ -125,6 +125,14 @@ describe("reconciliation URL view state", () => {
     expect(result.current.view.queueStatus).toBe("Open");
   });
 
+  it.each(["fundProfileId", "entityId", "companyId"])("clears the reviewed case when %s changes", async (field) => {
+    const { result } = renderHook(useHarness, { wrapper });
+    act(() => result.current.navigate(`${result.current.location.pathname}${result.current.location.search}&${field}=new-scope`));
+    await waitFor(() => expect(result.current.view.selectedBreakId).toBeNull());
+    expect(result.current.location.search).toContain(`${field}=new-scope`);
+    expect(result.current.location.search).not.toContain("reconciliationBreak");
+  });
+
   it("allows Back to restore a different scope and its matching explicit selection", async () => {
     const { result } = renderHook(useHarness, { wrapper });
     act(() => result.current.navigate("/accounting/reconciliation?fundAccountId=fund-b&reconciliationRun=run-b&reconciliationBreak=break-b"));

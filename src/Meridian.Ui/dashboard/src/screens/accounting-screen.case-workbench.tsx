@@ -1,3 +1,8 @@
+import { CaseInspector } from "./case-inspector";
+import type { useAccountingReconciliationViewModel, useReconciliationResolveDialogViewModel } from "./accounting-screen.view-model";
+import type { useReconciliationViewState } from "./reconciliation-view-state";
+import type { ReconciliationCaseworkCommand } from "@/types";
+import { useRef, type ReactNode } from "react";
 // Accounting case workbench panel, extracted from accounting-screen.tsx.
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +18,7 @@ import { SinceLastVisitBadge } from "@/components/meridian/since-last-visit-badg
 import { classifySinceLastVisit } from "@/lib/since-last-visit";
 
 interface AccountingCaseWorkbenchProps {
+  caseInspector?: ReactNode;
   breakRows: ReconciliationBreakRowViewModel[];
   /** The break queue's last-visit baseline, so casework marks the same new and updated breaks (UX Phase E). */
   visitBaseline?: string | null;
@@ -28,6 +34,7 @@ interface AccountingCaseWorkbenchProps {
 
 export function AccountingCaseWorkbench({
   breakRows,
+  caseInspector,
   visitBaseline = null,
   selectedBreakId,
   selectedBreakDetail,
@@ -39,7 +46,7 @@ export function AccountingCaseWorkbench({
   onDismissBreak
 }: AccountingCaseWorkbenchProps) {
   const selectedBreak = breakRows.find((row) => row.breakId === selectedBreakId) ?? breakRows[0] ?? null;
-  const selectedBlocker = closeCommandCenter?.blockerRows[0] ?? null;
+  const selectedBlocker = caseInspector ? null : closeCommandCenter?.blockerRows[0] ?? null;
   const queueEmpty = breakRows.length === 0 && !selectedBlocker;
   const dueWorkCount = closeCommandCenter?.blockerRows.length ?? 0;
 
@@ -76,7 +83,7 @@ export function AccountingCaseWorkbench({
               </div>
             ) : (
               <div role="list" aria-label="Accounting case queue rows" className="grid gap-2">
-                {breakRows.slice(0, 6).map((row) => (
+                {breakRows.map((row) => (
                   <div role="listitem" key={row.breakId} className="grid">
                   <button
                     type="button"
@@ -111,6 +118,7 @@ export function AccountingCaseWorkbench({
           </CardContent>
         </Card>
 
+        {caseInspector ? <Card className="panel-surface-strong min-w-0 lg:col-span-2" role="region" aria-label="Selected accounting case"><CardContent className="p-4">{caseInspector}</CardContent></Card> : <>
         <Card className="panel-surface-strong" role="region" aria-label="Selected accounting case">
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -216,7 +224,52 @@ export function AccountingCaseWorkbench({
             </TechnicalDetails>
           </CardContent>
         </Card>
+        </>}
       </div>
     </section>
+  );
+}
+
+/** Shared inspector wiring for the cockpit, retaining its last-visit marks and close context. */
+export function AccountingCaseWorkbenchSection({ reconciliation, controls: reconciliationViewState, resolveDialog,
+  closeCommandCenter, visitBaseline, operatorId }: {
+  reconciliation: ReturnType<typeof useAccountingReconciliationViewModel>;
+  controls: ReturnType<typeof useReconciliationViewState>;
+  resolveDialog: ReturnType<typeof useReconciliationResolveDialogViewModel>;
+  closeCommandCenter: CloseCommandCenterViewState | null;
+  visitBaseline?: string | null;
+  operatorId?: string | null;
+}) {
+  const commandMemory = useRef(new Map<string, ReconciliationCaseworkCommand>());
+  const actor = useRef(operatorId);
+  if (actor.current !== operatorId) { commandMemory.current.clear(); actor.current = operatorId; }
+  return (
+          <AccountingCaseWorkbench
+            breakRows={reconciliation.rows}
+            visitBaseline={visitBaseline}
+            caseInspector={<CaseInspector key={reconciliationViewState.selectedBreakId ?? reconciliation.selectedBreakId}
+              operatorId={operatorId} commandMemory={commandMemory.current}
+              caseId={reconciliationViewState.selectedBreakId ?? reconciliation.selectedBreakId}
+              initialCase={reconciliation.sourceRows.find((item) => item.breakId === (reconciliationViewState.selectedBreakId ?? reconciliation.selectedBreakId))}
+              onChanged={reconciliation.applyCaseworkUpdate} relatedCases={reconciliation.lineageRows}
+              onOpenCase={(breakId) => { reconciliation.selectBreak(breakId); reconciliationViewState.selectBreak(breakId); }} />}
+            selectedBreakId={reconciliationViewState.selectedBreakId ?? reconciliation.selectedBreakId}
+            selectedBreakDetail={reconciliation.selectedDetail}
+            closeCommandCenter={closeCommandCenter}
+            detailActions={reconciliation.detailActions}
+            onSelectBreak={(breakId) => { reconciliation.selectBreak(breakId); reconciliationViewState.selectBreak(breakId); }}
+            onAssignBreak={(breakId) => {
+              reconciliation.selectBreak(breakId);
+              void reconciliation.assignBreak(breakId);
+            }}
+            onResolveBreak={(breakId) => {
+              reconciliation.selectBreak(breakId);
+              resolveDialog.open(breakId, "Resolved");
+            }}
+            onDismissBreak={(breakId) => {
+              reconciliation.selectBreak(breakId);
+              resolveDialog.open(breakId, "Dismissed");
+            }}
+          />
   );
 }
