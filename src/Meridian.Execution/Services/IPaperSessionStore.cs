@@ -1,9 +1,12 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Integrity;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
+using Meridian.Execution.Events;
+using Meridian.Ledger;
 
 namespace Meridian.Execution.Services;
 
@@ -24,7 +27,21 @@ public sealed record PersistedSessionRecord(
     bool IsActive,
     List<string> Symbols,
     string? MatchingModelVersion = null,
-    string? CostModelVersion = null);
+    string? CostModelVersion = null,
+    TradeFillLedgerPostingContext? AccountingContext = null,
+    string? FinancialAccountId = null)
+{
+    /// <summary>Zero denotes a legacy session with a replaceable journal snapshot.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int JournalSchemaVersion { get; init; }
+
+    /// <summary>Currency of the simulated book, retained at creation.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? JournalCurrency { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool IsAccountDefault { get; init; }
+}
 
 /// <summary>
 /// Lightweight serialisation DTO for a <see cref="Meridian.Ledger.LedgerAccount"/>.
@@ -45,7 +62,20 @@ public sealed record PersistedLedgerLineDto(
     PersistedLedgerAccountDto Account,
     decimal Debit,
     decimal Credit,
-    string Description);
+    string Description)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerEntryCurrency? Currency { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerLineDimensionSet? Dimensions { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Memo { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerAccountChartReference? ChartAccount { get; init; }
+}
 
 /// <summary>
 /// Lightweight serialisation DTO for a complete journal entry plus its optional audit metadata.
@@ -61,7 +91,14 @@ public sealed record PersistedJournalEntryDto(
     Guid? SecurityId = null,
     Guid? OrderId = null,
     string? LedgerView = null,
-    string? StrategyId = null);
+    string? StrategyId = null)
+{
+    /// <summary>
+    /// Complete posting provenance, including cash-flow groups bound to the original persisted
+    /// line identities. Legacy records omit this property and retain their scalar metadata.
+    /// </summary>
+    public Meridian.Ledger.JournalEntryMetadata? Metadata { get; init; }
+}
 
 /// <summary>
 /// Versioned durable envelope for one paper-session fill.  <see cref="FillId"/> is the
@@ -79,6 +116,30 @@ public sealed record PaperSessionFillRecord(
 {
     /// <summary>Current on-disk envelope schema.</summary>
     public const int CurrentSchemaVersion = 1;
+
+    /// <summary>
+    /// Version of exact accounting evidence retained when this fill was captured. Zero means
+    /// opening authority is unknown, including historical records and unverified current fills.
+    /// This is independent of the live event schema and does not change its canonical report hash.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int AccountingEvidenceVersion { get; init; }
+
+    /// <summary>Accounting owner retained with captured evidence; absent in historical records.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? FinancialAccountId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? StrategyId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? RunId { get; init; }
+
+    internal bool HasSameAccountingProvenance(PaperSessionFillRecord other)
+        => AccountingEvidenceVersion == other.AccountingEvidenceVersion
+           && string.Equals(FinancialAccountId, other.FinancialAccountId, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(StrategyId, other.StrategyId, StringComparison.Ordinal)
+           && string.Equals(RunId, other.RunId, StringComparison.Ordinal);
 
     /// <summary>Creates a validated current-version envelope for <paramref name="fill"/>.</summary>
     public static PaperSessionFillRecord Create(
@@ -157,6 +218,11 @@ public sealed record PaperSessionFillRecord(
     /// <summary>Validates the envelope version, identity, and canonical content hash.</summary>
     public PaperSessionFillRecord Validate()
     {
+        if (AccountingEvidenceVersion is not (0 or 1))
+            throw new InvalidDataException($"Unsupported retained accounting evidence version {AccountingEvidenceVersion}.");
+        if (FinancialAccountId is not null && (string.IsNullOrWhiteSpace(FinancialAccountId)
+                || !string.Equals(FinancialAccountId, FinancialAccountId.Trim(), StringComparison.Ordinal)))
+            throw new InvalidDataException("A retained financial account must be non-empty and normalized.");
         if (SchemaVersion != CurrentSchemaVersion)
         {
             throw new InvalidDataException(
@@ -208,12 +274,93 @@ public sealed record PaperSessionFillAppendResult(
     string? ExistingCanonicalHash = null);
 
 /// <summary>
+/// One durable daily variation-margin settlement of a paper futures position. Its identity is the
+/// account, symbol and trading date, so a position settles at most once per trading day; replay
+/// applies it at <see cref="SettledAt"/> among the session's fills.
+/// </summary>
+/// <param name="SchemaVersion">Record schema version.</param>
+/// <param name="AccountId">The portfolio account holding the position.</param>
+/// <param name="Symbol">The futures symbol.</param>
+/// <param name="TradingDate">The trading day being settled.</param>
+/// <param name="SettlementPrice">The per-unit price the position is settled to.</param>
+/// <param name="SettledAt">When the settlement takes effect, ordered against fill timestamps.</param>
+public sealed record PaperSessionSettlementRecord(
+    int SchemaVersion,
+    string AccountId,
+    string Symbol,
+    DateOnly TradingDate,
+    decimal SettlementPrice,
+    DateTimeOffset SettledAt)
+{
+    /// <summary>The schema version written by this build.</summary>
+    public const int CurrentSchemaVersion = 1;
+
+    /// <summary>Creates a current-schema settlement record.</summary>
+    public static PaperSessionSettlementRecord Create(
+        string accountId,
+        string symbol,
+        DateOnly tradingDate,
+        decimal settlementPrice,
+        DateTimeOffset settledAt)
+    {
+        var record = new PaperSessionSettlementRecord(
+            CurrentSchemaVersion, accountId, symbol, tradingDate, settlementPrice, settledAt);
+        record.Validate();
+        return record;
+    }
+
+    /// <summary>The once-per-trading-day identity: account, normalized symbol and date.</summary>
+    public string Key => string.Create(
+        System.Globalization.CultureInfo.InvariantCulture,
+        $"{AccountId}|{Symbol.Trim().ToUpperInvariant()}|{TradingDate:yyyy-MM-dd}");
+
+    /// <summary>Throws <see cref="InvalidDataException"/> when the record cannot be applied.</summary>
+    public void Validate()
+    {
+        if (SchemaVersion != CurrentSchemaVersion)
+            throw new InvalidDataException($"Unsupported paper-session settlement schema version {SchemaVersion}.");
+        if (string.IsNullOrWhiteSpace(AccountId))
+            throw new InvalidDataException("A paper-session settlement requires an account.");
+        if (string.IsNullOrWhiteSpace(Symbol))
+            throw new InvalidDataException("A paper-session settlement requires a symbol.");
+        if (SettlementPrice <= 0m)
+            throw new InvalidDataException($"Paper-session settlement for '{Symbol}' has a non-positive price {SettlementPrice}.");
+    }
+}
+
+/// <summary>Outcome of an idempotent durable settlement append.</summary>
+public enum PaperSessionSettlementAppendStatus
+{
+    /// <summary>The settlement was appended.</summary>
+    Added = 0,
+
+    /// <summary>The same settlement (key and price) was already recorded.</summary>
+    ExistingSame = 1,
+
+    /// <summary>The key was already settled at a different price.</summary>
+    Conflict = 2
+}
+
+/// <summary>
 /// Storage abstraction for paper trading session persistence.
 /// Implementations may store session data in-memory, on the local file system,
 /// or in any other durable backend.
 /// </summary>
 public interface IPaperSessionStore
 {
+    /// <summary>Whether newly created sessions can use append-only effect journals.</summary>
+    bool SupportsJournalBatches => false;
+
+    /// <summary>Appends one immutable batch or recovers an identical receipt.</summary>
+    Task<PaperSessionJournalReceipt> AppendJournalBatchAsync(
+        PaperSessionJournalBatch batch, CancellationToken ct = default)
+        => throw new NotSupportedException("This paper-session store does not support durable journal batches.");
+
+    /// <summary>Loads all verified journal receipts for a session.</summary>
+    Task<IReadOnlyList<PaperSessionJournalReceipt>> LoadJournalBatchesAsync(
+        string sessionId, CancellationToken ct = default)
+        => throw new NotSupportedException("This paper-session store does not support durable journal batches.");
+
     /// <summary>Creates or replaces the session metadata record.</summary>
     Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default);
 
@@ -285,6 +432,28 @@ public interface IPaperSessionStore
 
     /// <summary>Returns the order-state history for <paramref name="sessionId"/>, in order.</summary>
     Task<IReadOnlyList<OrderState>> LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Durably appends a daily variation-margin settlement unless its key (account, symbol,
+    /// trading date) is already recorded. Implementations must serialize concurrent appends and
+    /// must not complete until the record is crash-durable. The default fails closed, so a store
+    /// that cannot persist settlements never lets one reach the portfolio.
+    /// </summary>
+    Task<PaperSessionSettlementAppendStatus> TryAppendSettlementAsync(
+        string sessionId,
+        PaperSessionSettlementRecord record,
+        CancellationToken ct = default)
+        => throw new NotSupportedException(
+            $"Paper-session store '{GetType().FullName}' does not persist variation-margin settlements.");
+
+    /// <summary>
+    /// Returns the recorded variation-margin settlements for <paramref name="sessionId"/>, in
+    /// append order. The default returns none, which is exact for stores that cannot append them.
+    /// </summary>
+    Task<IReadOnlyList<PaperSessionSettlementRecord>> LoadSettlementsAsync(
+        string sessionId,
+        CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<PaperSessionSettlementRecord>>([]);
 
     /// <summary>
     /// Returns the persisted ledger journal entries for <paramref name="sessionId"/>.

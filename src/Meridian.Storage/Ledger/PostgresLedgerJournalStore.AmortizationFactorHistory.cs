@@ -6,13 +6,17 @@ namespace Meridian.Storage.Ledger;
 public sealed partial class PostgresLedgerJournalStore
 {
     private static LedgerTaxLotRecord ValidateAmortizationPaydownReceipt(
-        LedgerTaxLotRecord cursor, DateOnly asOfDate, AtomicTaxLotJournalResult? receipt)
+        LedgerTaxLotRecord cursor, DateOnly asOfDate, AtomicTaxLotJournalResult? receipt,
+        bool requireScheduledPrincipal = false)
     {
         LedgerValidationException Unproved() => new("Remaining-face amortization requires the exact immutable paydown receipt and complete prior basis history.");
         if (receipt is not { MutationKind: AtomicTaxLotMutationKind.FactorPaydown, FactorPaydown: { } inputs }
             || receipt.MutationBatchId != cursor.BasisAdjustment!.MutationBatchId
             || inputs.EconomicEvent.EffectiveDate > asOfDate)
             throw Unproved();
+        if (requireScheduledPrincipal
+            && inputs.ScheduledPrincipal is not { ModelVersion: BondIncomeScheduledPrincipal.ModelVersion })
+            throw new LedgerValidationException("Adopted bond income requires a retained scheduled-principal receipt; legacy paydown treatment cannot establish its carrying history.");
         var matches = receipt.Mutations.Where(item => item.TaxLotRecordId == cursor.TaxLotRecordId).ToArray();
         if (matches.Length != 1 || matches[0].LotBefore is not { } before)
             throw Unproved();

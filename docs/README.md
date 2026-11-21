@@ -94,7 +94,8 @@ Archive rather than delete when a document has historical value, stale evidence,
   links still consume specific paths. Their indexes identify why each retained file remains.
 - `docs/status/` is a supporting automation-owned lane, not a hand-authored roadmap source. Use
   `docs/product/` for stakeholder interpretation and `docs/roadmap/data/*.yml` for durable status.
-- Current archive buckets are [plans](../archive/docs/plans/README.md) and
+- The [archive index](../archive/docs/README.md) lists the current buckets:
+  [adr](../archive/docs/adr/README.md), [plans](../archive/docs/plans/README.md), and
   [summaries](../archive/docs/summaries/README.md). New archive batches may recreate other buckets;
   each bucket needs its own index.
 - High-traffic archived material should keep a short redirect stub at the old path until all active links move to the replacement.

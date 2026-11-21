@@ -8,7 +8,7 @@ namespace Meridian.Ui.Shared.Services;
 /// <summary>
 /// Runs reporting requests after readiness checks and retains their output and audit evidence.
 /// </summary>
-public sealed class ReportingRunCommandService
+public sealed partial class ReportingRunCommandService
 {
     private readonly IReportingOrchestrationService _orchestrationService;
     private readonly IReportingTemplateCatalog _templateCatalog;
@@ -18,6 +18,7 @@ public sealed class ReportingRunCommandService
     private readonly ReportingRunCertificationService _certificationService;
     private readonly IReportingGovernanceEndpointCoordinator? _governanceCoordinator;
     private readonly IReportingDeploymentReadinessService? _deploymentReadinessService;
+    private readonly IReportingRunStore? _runStore;
 
     public ReportingRunCommandService(
         IReportingOrchestrationService orchestrationService,
@@ -27,7 +28,8 @@ public sealed class ReportingRunCommandService
         ReportingRunReadinessService? readinessService = null,
         ReportingRunCertificationService? certificationService = null,
         IReportingGovernanceEndpointCoordinator? governanceCoordinator = null,
-        IReportingDeploymentReadinessService? deploymentReadinessService = null)
+        IReportingDeploymentReadinessService? deploymentReadinessService = null,
+        IReportingRunStore? runStore = null)
     {
         _orchestrationService = orchestrationService ?? throw new ArgumentNullException(nameof(orchestrationService));
         _templateCatalog = templateCatalog ?? throw new ArgumentNullException(nameof(templateCatalog));
@@ -39,37 +41,47 @@ public sealed class ReportingRunCommandService
         _certificationService = certificationService ?? new ReportingRunCertificationService();
         _governanceCoordinator = governanceCoordinator;
         _deploymentReadinessService = deploymentReadinessService;
+        _runStore = runStore;
     }
 
-    public async Task<ReportingRunResultDto> RunAsync(
+    public Task<ReportingRunResultDto> RunAsync(
         ReportingRunRequestDto request,
         string fallbackActor,
         CancellationToken cancellationToken = default) =>
-        await RunAsync(request, fallbackActor, accessContext: null, cancellationToken).ConfigureAwait(false);
+        RunAsync(request, fallbackActor, accessContext: null, cancellationToken);
 
-    public async Task<ReportingRunResultDto> RunAsync(
+    public Task<ReportingRunResultDto> RunAsync(
         ReportingRunRequestDto request,
         string fallbackActor,
         ReportAccessQueryContext? accessContext,
         CancellationToken cancellationToken = default) =>
-        await RunAsync(
+        RunAsync(
             request,
             fallbackActor,
             accessContext,
             governanceCaller: null,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
 
     /// <summary>
     /// Executes and immediately reconciles a tenant-bound run into the canonical governed Draft.
     /// The method does not return a successful strict-mode result until exact artifacts have been
     /// retained and the governance aggregate is Succeeded/Draft.
     /// </summary>
-    public async Task<ReportingRunResultDto> RunAsync(
+    public Task<ReportingRunResultDto> RunAsync(
         ReportingRunRequestDto request,
         string fallbackActor,
         ReportAccessQueryContext? accessContext,
         ReportingGovernanceCallerContext? governanceCaller,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        RunCoreAsync(request, fallbackActor, accessContext, governanceCaller, null, cancellationToken);
+
+    private async Task<ReportingRunResultDto> RunCoreAsync(
+        ReportingRunRequestDto request,
+        string fallbackActor,
+        ReportAccessQueryContext? accessContext,
+        ReportingGovernanceCallerContext? governanceCaller,
+        ReportingRunOperation? operation,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.TemplateId);
@@ -106,6 +118,10 @@ public sealed class ReportingRunCommandService
             ValidateGovernanceCaller(accessContext!, governanceCaller, fallbackActor);
         }
 
+        if (operation is not null && await TryRecoverOperationAsync(templateId, operation, fallbackActor,
+                accessContext!, governanceCaller!, cancellationToken).ConfigureAwait(false) is { } recovered)
+            return recovered;
+
         var readiness = await _readinessService
             .AssessAsync(request, accessContext, cancellationToken)
             .ConfigureAwait(false);
@@ -124,11 +140,11 @@ public sealed class ReportingRunCommandService
 
         var asOfDate = effectiveReadiness.ResolvedParameters.AsOfDate;
         var actor = fallbackActor.Trim();
-        var jobId = governed
+        var jobId = operation?.RunId ?? (governed
             ? BuildDefaultJobId($"{accessContext!.TenantId}-{templateId}", requestedAtUtc)
             : string.IsNullOrWhiteSpace(request.JobId)
             ? BuildDefaultJobId(templateId, requestedAtUtc)
-            : request.JobId.Trim();
+            : request.JobId.Trim());
         var datasetRows = certified?.DatasetRows ?? ResolveDatasetRows(request, template, accessContext);
         var datasetSourceEvidence = certified is null
             ? ResolveDatasetSourceEvidence(request, template)
@@ -157,8 +173,17 @@ public sealed class ReportingRunCommandService
                 OperationalScope: certified?.OperationalScope,
                 ImmutableAccessScope: certified?.AccessScope,
                 CertifiedSnapshot: certified?.Snapshot,
-                AuthoritativeSource: certified?.AuthoritativeSource),
+                AuthoritativeSource: certified?.AuthoritativeSource)
+            {
+                DurableOperationId = operation?.RunId,
+                OperationRequestHash = operation?.RequestHash
+            },
             cancellationToken).ConfigureAwait(false);
+
+        if (operation is not null)
+            return await TryRecoverOperationAsync(templateId, operation, fallbackActor, accessContext!,
+                governanceCaller!, cancellationToken).ConfigureAwait(false)
+                ?? throw new ReportingGovernancePersistenceException("The completed operation has no durable reporting manifest.");
 
         if (governed)
         {

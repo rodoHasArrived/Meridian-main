@@ -10,6 +10,23 @@ namespace Meridian.Execution.OrderManagement;
 /// </summary>
 internal static class OrderAuditMetadata
 {
+    /// <summary>
+    /// Adds the authority a lifecycle command (such as a kill-switch cancellation) ran under to
+    /// its audit metadata.
+    /// </summary>
+    internal static IReadOnlyDictionary<string, string> WithCommandAuthority(
+        IReadOnlyDictionary<string, string>? metadata,
+        OrderSubmissionAuthority authority)
+    {
+        var merged = metadata is null
+            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase);
+        merged["commandOrigin"] = authority.Origin.ToString();
+        merged["commandActor"] = authority.Actor;
+        merged["commandCorrelationId"] = authority.CorrelationId;
+        return merged;
+    }
+
     internal static IReadOnlyDictionary<string, string>? BuildOrderLifecycleAuditMetadata(
         OrderState? state,
         ExecutionReport? report)
@@ -77,9 +94,21 @@ internal static class OrderAuditMetadata
 
     internal static IReadOnlyDictionary<string, string>? BuildOrderSubmittedAuditMetadata(
         ExecutionControlDecision? operatorControlDecision,
-        LiveOrderReadinessDecision? liveOrderReadinessDecision)
+        LiveOrderReadinessDecision? liveOrderReadinessDecision,
+        OrderSubmissionAuthorityRecord? authority = null)
     {
         var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (authority is not null)
+        {
+            metadata["orderOrigin"] = authority.Origin.ToString();
+            if (authority.GrantFundAccountId is { } grantedAccount)
+                metadata["accountGrant"] = grantedAccount.ToString();
+            if (authority.GrantSource is { } grantSource)
+                metadata["accountGrantSource"] = grantSource;
+            if (authority.ReleasedFrom is { } parked)
+                metadata["releasedFromOrigin"] = parked.Origin.ToString();
+        }
+
         if (!string.IsNullOrWhiteSpace(operatorControlDecision?.AppliedManualOverrideId))
         {
             metadata["manualOverrideId"] = operatorControlDecision.AppliedManualOverrideId;

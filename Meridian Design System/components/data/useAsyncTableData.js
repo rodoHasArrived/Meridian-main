@@ -49,7 +49,7 @@ export function useAsyncTableData(fetchPage, {
   // Reload from offset 0 whenever query/sort change (query debounced).
   React.useEffect(() => {
     const t = setTimeout(() => { offsetRef.current = 0; run(false); }, debounceMs);
-    return () => clearTimeout(t);
+    return () => { clearTimeout(t); ++reqIdRef.current; abortRef.current?.abort(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, sort]);
 

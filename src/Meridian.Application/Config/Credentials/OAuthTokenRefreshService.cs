@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.DataIntegration.Credentials;
+using Meridian.Application.ProviderRouting;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -23,6 +24,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     private readonly string _tokenPersistencePath;
     private readonly IOAuthTokenVault _vault;
     private readonly ProviderCredentialScope? _ownershipScope;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private readonly object _initializationSync = new();
     private readonly object _lifecycleSync = new();
@@ -31,6 +33,12 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
 
     private CancellationTokenSource? _cts;
     private Task? _refreshLoop;
+
+    /// <summary>First delay before retrying a failed start-up; doubles up to <see cref="MaxInitializationRetryDelay"/>.</summary>
+    internal TimeSpan InitializationRetryDelay { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Upper bound on the start-up retry delay.</summary>
+    internal TimeSpan MaxInitializationRetryDelay { get; set; } = TimeSpan.FromMinutes(15);
 
     // Events for monitoring
     public event Action<string, OAuthToken>? OnTokenRefreshed;
@@ -43,11 +51,13 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
         HttpClient? httpClient = null,
         ILogger? logger = null,
         IOAuthTokenVault? vault = null,
-        ProviderCredentialScope? ownershipScope = null)
+        ProviderCredentialScope? ownershipScope = null,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         _log = logger ?? LoggingSetup.ForContext<OAuthTokenRefreshService>();
         _vault = vault ?? new FileProviderCredentialStore(dataRoot);
         _ownershipScope = ownershipScope;
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
         if (_ownershipScope is not null && _vault is not IScopedOAuthTokenVault)
             throw new InvalidOperationException("Configured OAuth vault does not support scoped ownership.");
         _config = config ?? new CredentialExpirationConfig();
@@ -58,12 +68,19 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     /// <summary>Loads and migrates retained tokens asynchronously before synchronous token inspection.</summary>
     public Task InitializeAsync(CancellationToken ct = default)
     {
+        RequireOwnedRuntime();
         lock (_initializationSync)
         {
             if (_initialization is null || _initialization.IsFaulted || _initialization.IsCanceled)
                 _initialization = LoadPersistedTokensAsync();
             return _initialization.WaitAsync(ct);
         }
+    }
+
+    private void RequireOwnedRuntime()
+    {
+        if (_ownershipPolicy.RequireExplicitOwnership && _ownershipScope is null)
+            throw new ProviderCredentialOwnershipRequiredException();
     }
 
     private void RequireInitialized()
@@ -88,6 +105,7 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
     /// </summary>
     public void Start()
     {
+        RequireOwnedRuntime();
         lock (_lifecycleSync)
         {
             if (_stopping is not null || _refreshLoop is { IsCompleted: false })
@@ -257,16 +275,33 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
 
     private async Task RefreshLoopAsync(CancellationToken ct)
     {
-        try
+        // A failed start-up (vault briefly unavailable, transient I/O) must not end the loop for
+        // good: without a retry, tokens would silently stop refreshing until the process restarts.
+        var retryDelay = InitializationRetryDelay;
+        while (true)
         {
-            await InitializeAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await InitializeAsync(ct).ConfigureAwait(false);
+                break;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
+            catch (Exception ex)
+            {
+                _log.Error(
+                    "OAuth token refresh initialization failed ({FailureType}); retrying in {RetryDelay}",
+                    ex.GetType().Name, retryDelay);
+            }
+
+            try
+            {
+                await Task.Delay(retryDelay, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
+
+            retryDelay = TimeSpan.FromTicks(Math.Min(retryDelay.Ticks * 2, MaxInitializationRetryDelay.Ticks));
         }
-        catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
-        catch (Exception ex)
-        {
-            _log.Error("OAuth token refresh initialization failed ({FailureType}); initialization can be retried", ex.GetType().Name);
-            return;
-        }
+
         while (!ct.IsCancellationRequested)
         {
             try
@@ -350,6 +385,18 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
                 return new OAuthRefreshResult(false, Error: $"No token stored for provider: {providerName}");
             if (!currentToken.CanRefresh)
                 return new OAuthRefreshResult(false, Error: "Token cannot be refreshed (no refresh token or refresh token expired)");
+            // Ownership boundary: a token this runtime caches but the vault no longer retains under this
+            // ownership (transferred to an owned connection, rolled back to provider-wide, or removed) must not
+            // be rotated remotely, because rotation would invalidate the refresh token its real owner holds.
+            var retained = await ReadOwnedTokensAsync(ct).ConfigureAwait(false);
+            if (!retained.ContainsKey(providerName))
+            {
+                _tokens.TryRemove(providerName, out _);
+                const string transferred = "Token ownership changed: the vault no longer retains this token under this runtime's ownership, so it was evicted without a remote refresh.";
+                _log.Warning("OAuth token for {Provider} is no longer retained under this ownership; evicted without refreshing", providerName);
+                OnRefreshFailed?.Invoke(providerName, transferred);
+                return new OAuthRefreshResult(false, Error: transferred, RefreshedAt: DateTimeOffset.UtcNow);
+            }
             // Build refresh request
             var tokenEndpoint = providerConfig.TokenEndpoint;
             if (string.IsNullOrEmpty(tokenEndpoint))
@@ -421,6 +468,16 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
                 auditDeferred = true;
                 _log.Warning("OAuth token refresh for {Provider} committed but its audit record is deferred to {PendingAuditPath}",
                     providerName, deferred.PendingAuditPath);
+            }
+            catch (ProviderCredentialConflictException)
+            {
+                // Ownership moved between the retention check and the commit; the vault refused to republish
+                // the token under this ownership, so this runtime stops holding it.
+                _tokens.TryRemove(providerName, out _);
+                const string conflict = "Token ownership changed during refresh; the vault refused the provider-wide save and the token was evicted.";
+                _log.Warning("OAuth token refresh for {Provider} was refused by the vault because its ownership changed", providerName);
+                OnRefreshFailed?.Invoke(providerName, conflict);
+                return new OAuthRefreshResult(false, Error: conflict, RefreshedAt: DateTimeOffset.UtcNow);
             }
 
             OnTokenRefreshed?.Invoke(providerName, newToken);

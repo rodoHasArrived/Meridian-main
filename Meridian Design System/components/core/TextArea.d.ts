@@ -1,3 +1,4 @@
+import type React from "react";
 /** Multi-line text field — same paper/border/focus treatment as Input, vertically resizable. */
 export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   /** Small-caps label rendered above the field. Omit both label and error to render a bare `<textarea>`. */
@@ -7,4 +8,4 @@ export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   /** @default 4 */
   rows?: number;
 }
-export declare function TextArea(props: TextAreaProps): JSX.Element;
+export declare function TextArea(props: TextAreaProps): React.JSX.Element;

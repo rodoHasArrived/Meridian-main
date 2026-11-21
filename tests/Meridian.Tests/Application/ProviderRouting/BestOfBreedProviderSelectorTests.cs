@@ -71,6 +71,8 @@ public sealed class BestOfBreedProviderSelectorTests : IDisposable
 
         result.SelectedDecision.Should().NotBeNull();
         result.SelectedDecision!.ConnectionId.Should().Be("auto-route");
+        result.IsSuccess.Should().BeTrue("an earlier manual candidate must not gate the selected automatic route");
+        result.RequiresManualApproval.Should().BeFalse();
         result.Candidates.Should().Contain(c => c.ConnectionId == "manual-route" && c.PolicyGateScore == 0);
     }
 

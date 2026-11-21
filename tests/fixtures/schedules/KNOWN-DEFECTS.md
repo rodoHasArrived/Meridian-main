@@ -24,6 +24,14 @@ dotnet test tests/Meridian.FundStructure.Tests -c Release /p:EnableWindowsTarget
 `T0` below is the first day of the month after the test runs (UTC). The Security Master service
 reads the wall clock for its as-of date, so its pins anchor on `T0` rather than a fixed date.
 
+**Review D10, slice 4 (2026-11-04).** The Security Master engine no longer infers a coupon unit from
+its magnitude (SCH-DEF-003's heuristic is retired): an undeclared Bond, CertificateOfDeposit, Swap,
+DirectLoan, Repo or StructuredCredit rate blocks the projection. The undeclared-walk pins for
+SCH-DEF-001, SCH-DEF-004 and SCH-DEF-010 therefore run on a Deposit row whose `interestRate` declares
+Fraction (`SecurityRateFieldUnits`), with the same walk and the same amounts (`interestRate` 0.05 for
+coupon 5). SCH-DEF-003's undeclared pin now asserts the block
+(`ScheduleCharacterization_UndeclaredBondCoupon_IsBlockedNotReadByMagnitude_SCH_DEF_003`).
+
 | ID | Location | Current behavior (pinned) | Target behavior | Owning increment | Pinned by |
 |----|----------|---------------------------|-----------------|------------------|-----------|
 | SCH-DEF-001 | `src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs` (`LegacyCouponPaymentsPerYear`), the one cadence reader `SecurityMasterCashFlowService` and `AssetOperationsReadService` share since increment 3 merged their two private copies | `AtMaturity` has no months-per-period, so the cadence reader falls through to its default of 1 payment a year. Security Master: issue `T0`, maturity `T0`+36M, par 1000, coupon 5, 30/360 projects 3 rows at `T0`+12M, +24M and +36M, each with interest 50.0000, and principal 1000 on the last. Asset operations: issue 2026-01-15, maturity 2029-01-15, 5%, par 100, 30/360 projects coupons of 5.0000 on 2027-01-15, 2028-01-15 and 2029-01-15 | One Term period. Security Master: one row at `T0`+36M with interest 150.0000. Asset operations: one coupon of 15.0000 | 5 (Security Master engine) and 6 (asset operations), for declaring records only; undeclared records wait on the default-flip decision. Target reached for declaring records in the Security Master engine (increment 5a; reachable through a write path from 5b-2), pinned by the declared twins in the declared-conventions partial of `SecurityMasterCashFlowServiceTests`; the undeclared pins are unchanged. | `SecurityMasterCashFlowServiceTests` (schedule characterization partial), `AssetOperationsBondScheduleCharacterizationTests` |
@@ -37,6 +45,7 @@ reads the wall clock for its as-of date, so its pins anchor on `T0` rather than 
 | SCH-DEF-009 | `src/Meridian.Instruments/AssetOperations/PortfolioCashLadderEngine.cs` (`SelectEarlyCallDates`) | The early-call probe reads `callDate`, then `mandatoryPutDate`, then `preRefundDate`. A bond with a mandatory put date inside the window and no call date is redeemed at par on that date as if called, and later rows are dropped | Separate issuer-call and put scenarios driven by declared call and put schedules | 8, for declared schedules. The scalar fallback for undeclared bonds stays pinned pending the decision on mandatory put and pre-refund dates | `PortfolioCashLadderScheduleCharacterizationTests` |
 | SCH-DEF-010 | `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs` (`BuildPaymentPeriods`) and `src/Meridian.Instruments/AssetOperations/AssetOperationsProjectionBuilder.LegacyBond.cs` (`BuildBondProjectedCashFlows`) | The walk evaluates the grid date that closes the schedule. When that date lies past 9999-12-31, which happens for a far-dated or perpetual-sentinel maturity off the grid, the month arithmetic throws and the projection fails. Security Master, issue-anchored: issue `T0`, maturity 9999-12-31, quarterly: `GetProjectionAsync` throws `ArgumentOutOfRangeException`. Asset operations, compounded from the previous period: issue 9999-01-31, maturity 9999-12-31, monthly drifts to the 28th, so the closing period starts on 9999-12-28 and `GetOperationsAsync` throws `ArgumentOutOfRangeException`, with or without a bond reference (the issue-anchored walk lands on maturity for these dates and does not throw). The kernel itself closes such a schedule at maturity; both wirings re-evaluate the closing date to keep the legacy failure, asset operations at the start of the closing period so an earlier period's failure still comes first | The projection returns a bounded schedule or is blocked with a reason; it never throws | 5 (declared mode) and 6 (asset operations), for declaring records; undeclared records wait on the default-flip decision. Target reached for declaring records in the Security Master engine (increment 5a; reachable through a write path from 5b-2), pinned by the declared twins in the declared-conventions partial of `SecurityMasterCashFlowServiceTests`; the undeclared pins are unchanged. | `SecurityMasterCashFlowServiceTests` (schedule characterization partial); `AssetOperationsBondScheduleCharacterizationTests`; `LegacyOracleFidelityTests` (end-of-range theories) |
 | SCH-DEF-011 | `src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs` (`NextMonthlyDate`, `NextQuarterDate`, `NextFrequencyDate`, `AdvanceAfter`) and `src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs` (`RollProjectedScheduleDates`) | A date step with no representable result past 9999-12-31 throws `ArgumentOutOfRangeException` instead of stopping. Obligation timeline: `BuildProjectedObligationEvents` throws for a bond as of 9999-12-01 (the next month start), a custom asset as of 9999-10-01 (the next quarter start) and an annual floating direct loan as of 9999-01-01 (one payment step); the as-of comes from data, so `GetOperationsAsync` fails with it. Fund-structure forecast: as of 9999-12-20 with 10 forecast days, a weekly rule from 9999-12-25 steps past the range before the window stops it, and `GetCashFlowViewAsync` throws. The step is evaluated even on the forecast's 256th date, whose successor is never used | The step stops at the end of the date range: the timeline omits an event that has no representable date, and the forecast returns the dates inside the window. Neither throws | None assigned | `AssetObligationProjectionServiceTests`; `Meridian.FundStructure.Tests` (schedule characterization partial); `LegacyOracleFidelityTests` (end-of-range sweep and theory) |
+| SCH-DEF-012 | `src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs` (`AddFixedIncomeObligations`) | The obligation timeline raises one `CallPutReview` event from the first of `callDate`, `mandatoryPutDate` and `preRefundDate` that the terms payload carries, the same probe order as SCH-DEF-009. As of 2026-05-31: a bond with only `mandatoryPutDate` 2027-03-15 gets a `CallPutReview` on 2027-03-15; with `mandatoryPutDate` 2027-03-15 and `preRefundDate` 2027-05-15 it gets one review on 2027-03-15 and none for the pre-refunding; adding `callDate` 2027-07-15 moves the single review to 2027-07-15 and drops the earlier mandatory put; a `callDate` already past (2026-01-15) raises no review at all, although the mandatory put is still ahead | Separate issuer-call, put and pre-refunding events, each on its own date, driven by declared call and put schedules | 8a, for bonds that declare a call or put schedule: target reached for them (see "Declared exercise events on the obligation timeline" below). The scalar probe for bonds that declare none stays pinned pending the decision on mandatory put and pre-refund dates, as for SCH-DEF-009 | `AssetObligationProjectionServiceTests`; `AssetObligationTimelineGoldenTests` (whole-timeline golden) |
 
 ## Bond calculation cutover
 
@@ -65,3 +74,50 @@ fixed redemption prices and retains coupon entitlement. `BondConsistencyTests` c
 including off-coupon accrued cash, partial principal repayment and unsupported exercise refusal.
 SCH-DEF-009 remains pinned for undeclared records and explicit historical ladder v1 replay; the
 legacy scalar mandatory-put/pre-refund probe is not used for declared bond scenarios.
+
+## Declared exercise events on the obligation timeline
+
+A Bond whose row decodes a `callSchedule` or `putSchedule` with at least one entry that is not unset
+(stamped terms version 3 or later; the shared `SecurityVersionedTerms.Decoding` predicate and the
+write rules' `IsUnsetScheduleEntry`) takes its option events from
+`BondExerciseNoticeWatch.EvaluateToMaturity`: `IssuerCallExercise` and `HolderPutExercise` on each
+remaining exercise date, with `IssuerCallNoticeDeadline` and `HolderPutNoticeDeadline` where the entry
+states notice bounds. The scalar probe is not consulted for such a bond, so SCH-DEF-012 does not apply
+to it, and a schedule that cannot be resolved is a typed blocked outcome with no option event and no
+scalar fallback. Its timeline is stamped `asset-terms-obligations-timeline-declared-v1`.
+`AssetObligationDeclaredExerciseTimelineTests` covers these paths.
+
+Rows recovered from economic terms (ADR-027 stage 1) are declaring rows and are blocked today, because
+their recovered conventions are null or partial; `AssetObligationRecoveredExerciseTimelineTests` pins
+that.
+
+SCH-DEF-012 remains pinned for every other record: bonds that declare no schedule or only unset entries, rows stamped below
+3 (a stray schedule is not decoded), published projections (their timeline is derived from the
+published terms), CertificateOfDeposit and StructuredCredit. `AssetObligationTimelineGoldenTests`
+freezes their whole serialized detail.
+
+## Declared call and put rows in the Security Master schedule book
+
+The workbench schedule book and its next lifecycle date read the same declared outcome as the
+obligation timeline for a Bond that declares a schedule (increment 8b): `Call` and `Put` rows on each
+remaining exercise date, `CallNoticeDeadline` and `PutNoticeDeadline` rows where the entry states
+notice bounds, and for a blocked schedule the blocker's code and reason in the summary texts with no
+call or put row and no scalar fallback. This was never a registered defect, so no row above changes:
+the book's scalar read of `call.firstCallDate` stays in force, byte for byte, for bonds that declare
+no schedule or only unset entries, rows stamped below 3, CertificateOfDeposit and StructuredCredit.
+
+`golden/security-master-schedule-book.json` holds the serialized schedule summary and schedule book of
+13 records, compared by `SecurityMasterWorkbenchScheduleBookGoldenTests` with exact equality. It was
+committed at the behaviour before increment 8b; the increment changed the four declaring bonds and
+none of the nine other cases. A missing or mismatched fixture writes
+`security-master-schedule-book.received.json` to the test output and fails; it never skips.
+`SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests` covers the declared paths, including that
+the book and the timeline list the same dates for one record resolved at one evaluation date (a
+published projection, a blocked projection run and a fault while resolving are the exceptions ADR-025
+records).
+
+One behaviour of the scalar read is recorded here and not registered as a defect: for a record on the
+scalar path the next lifecycle date is the earliest of the next corporate action, the first call date
+and the maturity, and the last two are not checked against today, so it can name a past call date
+(`bond/undeclared/past-scalar-call` in the golden). Declared rows do not have it: an elapsed notice
+deadline is never the next lifecycle date.

@@ -1,3 +1,4 @@
+using Meridian.TestSupport;
 using Xunit;
 
 namespace Meridian.Tests.Storage.FundAccounts;
@@ -21,7 +22,7 @@ public sealed class FundAccountDatabaseFactAttribute : FactAttribute
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ConnectionStringVariable)))
+        if (!string.IsNullOrWhiteSpace(PostgresTestServer.ResolveExternalConnectionString(ConnectionStringVariable)))
         {
             return;
         }

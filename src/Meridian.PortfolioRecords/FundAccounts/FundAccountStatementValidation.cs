@@ -8,6 +8,15 @@ internal static class FundAccountStatementValidation
     internal static void Validate(IngestCustodianStatementRequest request)
     {
         ArgumentNullException.ThrowIfNull(request.Lines);
+        if (request.BatchId == Guid.Empty || request.AccountId == Guid.Empty || request.AsOfDate == default)
+            throw new ArgumentException("Custodian statements require account, batch and date identities.");
+        if (request.Authority is { } authority && (authority.Revision <= 0
+            || string.IsNullOrWhiteSpace(authority.SourceEvidenceId)
+            || string.IsNullOrWhiteSpace(authority.SourceContentSha256)
+            || authority.SourceContentSha256.Length != 64 || authority.SourceContentSha256.Any(c => !Uri.IsHexDigit(c))
+            || authority.SupersedesBatchId == request.BatchId))
+            throw new ArgumentException("Custodian statement authority requires positive revision and retained source evidence/hash.");
+        var identities = new HashSet<Guid>();
         foreach (var line in request.Lines)
         {
             if (line is null || line.AccountId != request.AccountId || line.BatchId != request.BatchId
@@ -16,6 +25,17 @@ internal static class FundAccountStatementValidation
                 throw new ArgumentException(
                     "Every custodian statement line must belong to the requested account, batch, and as-of date.",
                     nameof(request.Lines));
+            }
+            if (line.LineId == Guid.Empty || !identities.Add(line.LineId))
+                throw new ArgumentException("Custodian statement line identities must be nonempty and unique.");
+            if (line.Bond is { } bond)
+            {
+                if (line.SecurityId is null || line.SecurityId == Guid.Empty)
+                    throw new ArgumentException("A normalized bond holding requires resolved Security Master identity.");
+                var normalized = BondHoldingNormalization.Calculate(bond, line.Currency);
+                if (Meridian.Contracts.Ledger.LedgerCurrencyRounding.RoundCurrency(line.MarketValue, line.Currency)
+                    != Meridian.Contracts.Ledger.LedgerCurrencyRounding.RoundCurrency(normalized.Dirty, line.Currency))
+                    throw new ArgumentException("Bond holding market value must use dirty cash value.");
             }
         }
     }

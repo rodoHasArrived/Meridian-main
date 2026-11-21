@@ -178,7 +178,7 @@ class GeneratorContractTests(unittest.TestCase):
     def test_a_document_outside_the_allowlist_is_dropped(self) -> None:
         import tempfile
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             route = "/api/auth/accounts/{username}/password-reset"
             # Both a prose review and a delivery plan that states a contract's field set while
@@ -204,7 +204,7 @@ class GeneratorContractTests(unittest.TestCase):
         # not decidable -- but "is it reference documentation".
         import tempfile
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             route = "/api/fund-structure/reporting/runs/{runId}/stream"
             blueprint = root / "docs/product/report-run-stream-blueprint.md"
@@ -282,7 +282,7 @@ class AutoSyncSectionPreservationTests(_CoverageModuleTestCase):
     """
 
     def test_the_nightly_section_is_carried_over(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             output = Path(temp_dir) / "coverage-report.md"
             output.write_text(
                 "# Old report\n\n<!-- auto-sync:coverage -->\n"
@@ -296,13 +296,13 @@ class AutoSyncSectionPreservationTests(_CoverageModuleTestCase):
             self.assertNotIn("# Old report", section)
 
     def test_no_section_means_nothing_is_appended(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             output = Path(temp_dir) / "coverage-report.md"
             output.write_text("# Old report, no marker\n", encoding="utf-8")
             self.assertEqual("", self.cov._preserved_auto_sync_section(output))
 
     def test_a_missing_output_file_means_nothing_is_appended(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             self.assertEqual(
                 "",
                 self.cov._preserved_auto_sync_section(Path(temp_dir) / "absent.md"),
@@ -452,7 +452,7 @@ class EndpointGroupCompositionTests(_CoverageModuleTestCase):
 
     def _routes(self, source: str, tmp_name: str = "Endpoints.cs") -> list:
         import tempfile
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             (root / "src").mkdir()
             (root / "src" / tmp_name).write_text(source, encoding="utf-8")

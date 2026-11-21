@@ -25,7 +25,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 def classify(files: dict[str, str]) -> dict[str, str]:
     """Run the classifier over a throwaway src/ tree holding exactly these files."""
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         root = Path(temp_dir) / "src"
         for rel, content in files.items():
             path = root / rel

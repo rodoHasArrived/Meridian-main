@@ -3,9 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { axe } from "jest-axe";
 import { InstrumentDossierScreen } from "./instrument-dossier-screen";
-import { renderWithRouter } from "@/test/render";
+import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { getSecurityDetail } from "@/lib/api";
 import { getLedgerBooks, getLedgerPeriods, getLedgerPeriodJournalEntries } from "@/lib/ledger-reports-api";
+import { FundAccountScopeSelectionProvider } from "@/lib/operating-scope/scope-picker-context";
 import type { AccountingWorkspaceResponse, LedgerBook, LedgerPeriod, LedgerPostedJournalEntry, SecurityMasterEntry, TradingWorkspaceResponse } from "@/types";
 
 vi.mock("@/lib/api", async () => ({ ...await vi.importActual("@/lib/api"), getSecurityDetail: vi.fn() }));
@@ -42,7 +43,8 @@ describe("InstrumentDossierScreen", () => {
       { entryId: "other", journalEntryId: "journal", timestamp: "2026-11-01", financialAccountId: "account", accountName: "Other instrument cash", description: "Different identity", debit: 50, credit: 0, dimensions: { instrumentId: otherId } },
       { entryId: "other-account", journalEntryId: "journal", timestamp: "2026-11-01", financialAccountId: "another-account", accountName: "Other account cash", description: "Different account", debit: 50, credit: 0, dimensions: { instrumentId: id } }
     ] }] as LedgerPostedJournalEntry[]);
-    renderDossier("?tab=ledger&ledgerBookId=book&periodId=period&fundAccountId=account");
+    renderDossier("?tab=ledger&ledgerBookId=book&periodId=period&financialAccountId=account");
+    await waitForAsyncEffects();
     expect(await screen.findByText("Identity linked")).toBeInTheDocument();
     expect(screen.queryByText("Different identity")).not.toBeInTheDocument();
     expect(screen.queryByText("Different account")).not.toBeInTheDocument();
@@ -52,8 +54,27 @@ describe("InstrumentDossierScreen", () => {
   it("does not fall back to an unfiltered ledger on failure", async () => {
     vi.mocked(getLedgerPeriodJournalEntries).mockRejectedValue(new Error("Unavailable"));
     renderDossier("?tab=ledger&ledgerBookId=book&periodId=period");
+    await waitForAsyncEffects();
     expect(await screen.findByRole("alert")).toHaveTextContent("No unfiltered fallback");
     expect(getLedgerPeriodJournalEntries).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not treat a brokerage account ID as a ledger financial-account mapping", async () => {
+    renderDossier("?tab=ledger&ledgerBookId=book&periodId=period&fundAccountId=brokerage-account");
+    expect(await screen.findByText(/selected brokerage account is distinct/)).toBeInTheDocument();
+    await waitFor(() => expect(getLedgerPeriods).toHaveBeenCalled());
+    expect(getLedgerPeriodJournalEntries).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "Clear brokerage scope for book-wide review" }));
+    await waitFor(() => expect(getLedgerPeriodJournalEntries).toHaveBeenCalledWith("period", { instrumentId: id }, expect.anything()));
+  });
+
+  it("keeps remembered shell brokerage scope from silently widening the ledger query", async () => {
+    renderWithRouter(<FundAccountScopeSelectionProvider value={{ options: [], select: vi.fn(), scope: { fundAccountId: "remembered-brokerage-account" } }}>
+      <Routes><Route path="/records/instrument/:id" element={<InstrumentDossierScreen />} /></Routes>
+    </FundAccountScopeSelectionProvider>, { initialEntries: [`/records/instrument/${id}?tab=ledger&ledgerBookId=book&periodId=period`] });
+    expect(await screen.findByText(/selected brokerage account is distinct/)).toBeInTheDocument();
+    await waitFor(() => expect(getLedgerPeriods).toHaveBeenCalled());
+    expect(getLedgerPeriodJournalEntries).not.toHaveBeenCalled();
   });
 
   it("opens cases with the existing reconciliation selection and account context", async () => {
@@ -67,7 +88,7 @@ describe("InstrumentDossierScreen", () => {
     const { container } = renderDossier("", { trading });
     expect(await screen.findByText(/1 loaded position\(s\) have no retained instrument identity/)).toBeInTheDocument();
     expect(screen.getByText(/No identity-linked positions/)).toBeInTheDocument();
-    await waitFor(async () => expect((await axe(container)).violations).toHaveLength(0));
+    expect((await axe(container)).violations).toHaveLength(0);
   });
 
   it("preserves fractional quantities rather than applying currency rounding to units", async () => {

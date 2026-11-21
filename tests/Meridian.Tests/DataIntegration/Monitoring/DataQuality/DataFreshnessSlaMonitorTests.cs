@@ -493,41 +493,63 @@ public sealed class DataFreshnessSlaMonitorMarketHoursTests : IDisposable
     [Fact]
     public void IsMarketOpen_ShouldReturnFalse_OnWeekends()
     {
-        // This test validates the logic but actual result depends on current day
-        // We test the behavior by checking the snapshot state
-        _monitor.RecordEvent("AAPL");
-        var snapshot = _monitor.GetSnapshot();
+        // Saturday at 15:00 UTC sits inside the configured session times, so only the weekend
+        // rule can close the market. The clock is fixed so the result no longer depends on today.
+        using var monitor = new DataFreshnessSlaMonitor(
+            new SlaConfig
+            {
+                SkipOutsideMarketHours = true,
+                MarketOpenUtc = new TimeOnly(14, 30),
+                MarketCloseUtc = new TimeOnly(21, 0)
+            },
+            new FixedTimeProvider(new DateTimeOffset(2026, 11, 7, 15, 0, 0, TimeSpan.Zero)));
 
-        // The status should reflect market hours awareness
-        snapshot.IsMarketOpen.Should().Be(_monitor.IsMarketOpen());
+        monitor.IsMarketOpen().Should().BeFalse();
+        monitor.RecordEvent("AAPL");
+        monitor.GetSnapshot().IsMarketOpen.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsMarketOpen_ShouldReturnTrue_DuringWeekdaySession()
+    {
+        using var monitor = new DataFreshnessSlaMonitor(
+            new SlaConfig
+            {
+                SkipOutsideMarketHours = true,
+                MarketOpenUtc = new TimeOnly(14, 30),
+                MarketCloseUtc = new TimeOnly(21, 0)
+            },
+            new FixedTimeProvider(new DateTimeOffset(2026, 11, 4, 15, 0, 0, TimeSpan.Zero)));
+
+        monitor.IsMarketOpen().Should().BeTrue();
     }
 
     [Fact]
     public void GetSymbolStatus_OutsideMarketHours_ShouldShowOutsideMarketHoursState()
     {
-        // Arrange
-        using var monitor = new DataFreshnessSlaMonitor(new SlaConfig
-        {
-            SkipOutsideMarketHours = true,
-            MarketOpenUtc = new TimeOnly(0, 0), // Midnight
-            MarketCloseUtc = new TimeOnly(0, 1)  // One minute after midnight - effectively always closed
-        });
+        // Wednesday 12:00 UTC, after a session that closes at 00:01: deterministically outside
+        // market hours, so the assertion no longer depends on when the test runs.
+        using var monitor = new DataFreshnessSlaMonitor(
+            new SlaConfig
+            {
+                SkipOutsideMarketHours = true,
+                MarketOpenUtc = new TimeOnly(0, 0),
+                MarketCloseUtc = new TimeOnly(0, 1)
+            },
+            new FixedTimeProvider(new DateTimeOffset(2026, 11, 4, 12, 0, 0, TimeSpan.Zero)));
 
         monitor.RecordEvent("AAPL");
 
-        // Allow a moment for potential async operations
-        Thread.Sleep(10);
-
-        // Act
         var status = monitor.GetSymbolStatus("AAPL");
 
-        // Assert - if outside market hours, state should be OutsideMarketHours
-        // NOTE: Actual result depends on current time, so we check the logic is working
+        monitor.IsMarketOpen().Should().BeFalse();
         status.Should().NotBeNull();
-        if (!monitor.IsMarketOpen())
-        {
-            status!.State.Should().Be(SlaState.OutsideMarketHours);
-        }
+        status!.State.Should().Be(SlaState.OutsideMarketHours);
+    }
+
+    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
     }
 
     public void Dispose()

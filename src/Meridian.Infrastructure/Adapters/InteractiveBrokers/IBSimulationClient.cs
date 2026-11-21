@@ -34,6 +34,11 @@ public sealed class IBSimulationClient : IMarketDataClient
     private readonly TimeSpan _autoTickPeriod;
     private readonly ProviderConnectionSupervisor _connectionSupervisor;
     private readonly Random _rng = new();
+
+    // Serialises tick generation with connect, disconnect and dispose. Timer.Change stops future
+    // callbacks but does not wait for one already running, so without this gate a callback that
+    // passed its connected check could still publish after DisconnectAsync had returned.
+    private readonly Lock _tickGate = new();
     private int _nextTickerId = 10_000;
     private bool _connected;
     private bool _disposed;
@@ -150,7 +155,11 @@ public sealed class IBSimulationClient : IMarketDataClient
     {
         ct.ThrowIfCancellationRequested();
         ObjectDisposedException.ThrowIf(_disposed, this);
-        _connected = true;
+        lock (_tickGate)
+        {
+            _connected = true;
+        }
+
         _log.Information("[IB-SIM] Connected in simulation mode. Generating synthetic market data for subscribed symbols");
         _tickTimer?.Change(_autoTickDueTime, _autoTickPeriod);
         return Task.CompletedTask;
@@ -162,7 +171,14 @@ public sealed class IBSimulationClient : IMarketDataClient
     private Task DisconnectTransportAsync(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        _connected = false;
+
+        // Taking the gate waits for an in-flight tick callback to finish, so no event is published
+        // once this method returns.
+        lock (_tickGate)
+        {
+            _connected = false;
+        }
+
         _tickTimer?.Change(Timeout.Infinite, Timeout.Infinite);
         _log.Information("[IB-SIM] Disconnected. Generated ticks for {TradeCount} trade subscriptions, {DepthCount} depth subscriptions",
             _tradeSubs.Count, _depthSubs.Count);
@@ -200,11 +216,16 @@ public sealed class IBSimulationClient : IMarketDataClient
 
     private void GenerateSimulatedTicks(object? state)
     {
-        if (!_connected || _disposed)
+        // Skip rather than queue when the gate is held: either another tick is still publishing, or
+        // a disconnect is in progress and this tick must not run.
+        if (!_tickGate.TryEnter())
             return;
 
         try
         {
+            if (!_connected || _disposed)
+                return;
+
             foreach (var (id, (symbol, _)) in _tradeSubs.ToArray())
             {
                 var basePrice = BasePrices.GetValueOrDefault(symbol, 100m);
@@ -233,14 +254,23 @@ public sealed class IBSimulationClient : IMarketDataClient
         {
             _log.Debug(ex, "[IB-SIM] Error generating simulated ticks");
         }
+        finally
+        {
+            _tickGate.Exit();
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
         if (_disposed)
             return;
-        _disposed = true;
-        _connected = false;
+
+        lock (_tickGate)
+        {
+            _disposed = true;
+            _connected = false;
+        }
+
         _tickTimer?.Change(Timeout.Infinite, Timeout.Infinite);
         _connectionSupervisor.StateChanged -= OnConnectionSupervisorStateChanged;
         _tickTimer?.Dispose();

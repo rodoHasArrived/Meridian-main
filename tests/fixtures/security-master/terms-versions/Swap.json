@@ -65,6 +65,36 @@
           "required": true
         }
       ]
+    },
+    {
+      "termsVersion": 4,
+      "fields": [
+        {
+          "key": "cashFlowContract",
+          "type": "Object",
+          "required": false
+        },
+        {
+          "key": "effectiveDate",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "legs",
+          "type": "Array",
+          "required": true
+        },
+        {
+          "key": "maturityDate",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "rateUnit",
+          "type": "String",
+          "required": false
+        }
+      ]
     }
   ]
 }

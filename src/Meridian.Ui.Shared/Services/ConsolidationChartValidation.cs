@@ -11,6 +11,23 @@ internal static class ConsolidationChartValidation
     {
         var workspace = await configuration.GetWorkspaceAsync(draft.FundProfileId, draft.LedgerBookId,
             ct, draft.TenantId, draft.CompanyId).ConfigureAwait(false);
+        var evidence = ConsolidationService.ReadEvidence(draft.ConsolidationEvidenceJson);
+        if (evidence?.RuleVersion is "w10-v2" or "w10-v3" or "w10-v4")
+        {
+            foreach (var line in draft.Lines)
+            {
+                var binding = evidence.AccountBindings?.SingleOrDefault(x => x.LedgerBookId == draft.LedgerBookId &&
+                    x.ChartAccountNodeId == line.Dimensions?.ChartAccountNodeId &&
+                    x.RevisionId.ToString("D") == line.Dimensions?.AccountBindingRevisionId);
+                var node = binding is null ? null : workspace.ChartOfAccounts.SingleOrDefault(x => x.NodeId == binding.ChartAccountNodeId);
+                if (binding is null || binding.IsArchived || node is null || node.IsArchived ||
+                    node.AccountName != binding.AccountName || node.Path != line.AccountPath || node.Path != binding.AccountPath ||
+                    !string.Equals(node.AccountType, binding.AccountType, StringComparison.OrdinalIgnoreCase) ||
+                    node.IntercompanyRole != binding.Role || node.Symbol is not null || node.FinancialAccountId is not null)
+                    throw new InvalidOperationException("The current elimination chart differs from its reviewed stable role binding; rerun and renew review.");
+            }
+            return;
+        }
         foreach (var line in draft.Lines)
         {
             var expectedType = line.AccountPath switch

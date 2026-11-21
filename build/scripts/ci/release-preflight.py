@@ -2,6 +2,7 @@
 """Validate source identity and monotonically increasing MSIX versions before builds."""
 from __future__ import annotations
 import argparse
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -12,11 +13,27 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 
+spec = importlib.util.spec_from_file_location('release_envelope', Path(__file__).with_name('release-envelope.py'))
+envelope = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(envelope)
+
+
 def package_version(version: str) -> tuple[int, ...]:
     match = re.fullmatch(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?', version)
     if not match:
         raise ValueError(f'Invalid release version: {version}')
     result = tuple(map(int, match.groups())) + (0,)
+    # The first train needs installable increasing RCs and a later stable 0.1.0.
+    # Reserve the final revision for stable; retain all historical version mappings
+    # outside this reviewed envelope (including arbitrary rehearsal suffixes).
+    if result[:3] == (0, 1, 0):
+        if version == '0.1.0':
+            result = result[:3] + (65535,)
+        elif version.startswith('0.1.0-rc.'):
+            rc = re.fullmatch(r'0\.1\.0-rc\.([1-9]\d*)', version)
+            if not rc or int(rc[1]) >= 65535:
+                raise ValueError('The v0.1.0 RC revision must be between 1 and 65534; revision 65535 is reserved for stable.')
+            result = result[:3] + (int(rc[1]),)
     if any(part > 65535 for part in result):
         raise ValueError('MSIX version components must fit in 16 bits.')
     return result
@@ -24,7 +41,7 @@ def package_version(version: str) -> tuple[int, ...]:
 
 def require_increasing(candidate: tuple[int, ...], previous: list[tuple[int, ...]]):
     if any(candidate <= version for version in previous):
-        raise ValueError('MSIX version must strictly increase. RC and stable tags with the same major.minor.patch both map to revision 0 and collide; choose a higher package version.')
+        raise ValueError('MSIX version must strictly increase. Outside the v0.1.0 envelope, RC and stable tags with the same major.minor.patch both map to revision 0 and collide; choose a higher package version.')
 
 
 def msix_version(file: Path) -> str:
@@ -90,6 +107,9 @@ def main():
     require_increasing(candidate, published_versions(os.environ['GITHUB_REPOSITORY']))
     with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
         output.write(f"package_version={'.'.join(map(str, candidate))}\nversion={version}\ncommit={os.environ['GITHUB_SHA']}\n")
+        matrix = envelope.desktop_matrix(version)
+        output.write(f"desktop_matrix={json.dumps({'include': matrix}, separators=(',', ':'))}\n")
+        output.write(f"support_scope={envelope.support_scope(version)}\n")
     print(f'Eligible commit {os.environ["GITHUB_SHA"]}; MSIX version {candidate}; publication={publishing}')
 
 

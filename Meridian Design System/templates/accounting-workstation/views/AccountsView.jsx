@@ -18,15 +18,16 @@ function findNode(nodes, code) {
 
 function AcctAccountsView(props) {
   const { AccountTree, PanelSurface, Eyebrow, KeyValueGrid, Button, Money } =
-    window.MeridianDesignSystem_4f61be;
+    window.MeridianDesignSystem_205d17;
   const [sel, setSel] = useState("1100");
   const coa = props.coa || [];
   const ledger = props.ledger || [];
 
   const node = useMemo(() => findNode(coa, sel) || { code: sel, name: "—", type: "asset" }, [coa, sel]);
+  const base = node.baseCode || node.code;
   const postings = useMemo(
-    () => ledger.filter((r) => r.account.slice(0, 4) === node.code && r.status !== "void"),
-    [ledger, node]
+    () => ledger.filter((r) => r.account.slice(0, 4) === base && r.status !== "void" && (!node.entity || r.entity === node.entity)),
+    [ledger, node, base]
   );
   const lastDate = postings.reduce((m, r) => (r.date > m ? r.date : m), "");
   const isParent = !!(node.children && node.children.length);
@@ -38,6 +39,7 @@ function AcctAccountsView(props) {
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
           <Eyebrow>Chart of accounts</Eyebrow>
+          {props.scopeLine && <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-primary)" }}>{props.scopeLine}</span>}
           <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>
             As of 2026-06-30 · parents roll up children · click a row to inspect
           </span>
@@ -49,23 +51,28 @@ function AcctAccountsView(props) {
       <PanelSurface raised style={{ padding: 14, display: "flex", flexDirection: "column", gap: 12 }}>
         <Eyebrow>Account inspector</Eyebrow>
         <div style={{ font: "600 15px var(--font-display)", color: "var(--text-primary)" }}>
-          {node.code} · {node.name}
+          {base} · {node.name}
         </div>
-        <KeyValueGrid columns={2} items={[
+        <KeyValueGrid columns={2} detail={props.detail || "full"} onReveal={props.onReveal} items={[
           { label: "Type", value: node.type || "—" },
-          { label: "Normal side", value: Money.accountNormalSide(node.type) },
+          { label: "Entity", value: node.entity || props.entityLabel || "—" },
           { label: "Balance", value: Money.formatMoney(balance, { currency: "USD", parens: true }) },
           { label: "Postings · June", value: postings.length ? postings.length + " lines" : "—" },
-          { label: "Last activity", value: lastDate || "—" },
-          { label: "Level", value: isParent ? "roll-up" : "posting" },
+          { label: "Normal side", value: Money.accountNormalSide(node.type), tier: "full" },
+          { label: "Last activity", value: lastDate || "—", tier: "full" },
+          { label: "Level", value: isParent ? "roll-up" : "posting", tier: "full" },
         ]} />
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Button variant="ghost" size="sm" disabled={isParent} style={{ whiteSpace: "nowrap" }}
+            onClick={() => props.onOpenAccount && props.onOpenAccount(base)}>
+            Account sheet
+          </Button>
           <Button variant="ghost" size="sm" disabled={props.locked || isParent} style={{ whiteSpace: "nowrap" }}
-            onClick={() => props.onPostTo && props.onPostTo(node.code + " · " + node.name)}>
+            onClick={() => props.onPostTo && props.onPostTo(base + " · " + node.name)}>
             Post entry
           </Button>
           <Button variant="ghost" size="sm" disabled={!postings.length} style={{ whiteSpace: "nowrap" }}
-            onClick={() => props.onViewLedger && props.onViewLedger(node.code)}>
+            onClick={() => props.onViewLedger && props.onViewLedger(base)}>
             View postings
           </Button>
         </div>

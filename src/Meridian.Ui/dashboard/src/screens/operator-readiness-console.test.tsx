@@ -1,8 +1,9 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, vi } from "vitest";
 import * as api from "@/lib/api";
 import { OperatorReadinessConsole } from "@/screens/operator-readiness-console";
-import { renderWithRouter } from "@/test/render";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
+import { renderWithRouter, TestMemoryRouter } from "@/test/render";
 import type { OperatorInbox, OperatorWorkItem, TradingWorkspaceResponse } from "@/types";
 
 const inbox: OperatorInbox = {
@@ -180,7 +181,7 @@ describe("OperatorReadinessConsole", () => {
 
     expect((await screen.findAllByText("paper-fetch-1")).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Fetched paper strategy").length).toBeGreaterThan(0);
-    expect(screen.queryByText("Awaiting readiness payload")).not.toBeInTheDocument();
+    expect(screen.queryByText("Awaiting readiness data")).not.toBeInTheDocument();
     fireEvent.click(screen.getByText("Technical source health"));
     expect(screen.getByRole("listitem", {
       name: "Trading readiness: Review required. Endpoint /api/workstation/trading/readiness"
@@ -207,7 +208,7 @@ describe("OperatorReadinessConsole", () => {
 
     expect((await screen.findAllByText("Readiness unavailable")).length).toBeGreaterThan(0);
     expect(screen.queryByText("Loading readiness")).not.toBeInTheDocument();
-    expect(screen.queryByText("Awaiting readiness payload")).not.toBeInTheDocument();
+    expect(screen.queryByText("Awaiting readiness data")).not.toBeInTheDocument();
   });
 
   it("keeps legacy trust-gate payloads renderable when newer evidence fields are absent", async () => {
@@ -404,6 +405,23 @@ describe("OperatorReadinessConsole", () => {
     expect(secondRow).toHaveAttribute("aria-expanded", "true");
     expect(within(detail).getByRole("heading", { name: "Second promotion review" })).toBeInTheDocument();
     expect(within(detail).getByRole("link", { name: "Open promotion review: Second promotion review" })).toHaveAttribute("href", "/trading/readiness");
+  });
+
+  it("reloads the inbox on the header refresh without a refresh button of its own", async () => {
+    vi.spyOn(api, "getOperatorInbox").mockResolvedValue(inbox);
+    const console_ = (sequence: number) => (
+      <TestMemoryRouter initialEntries={["/trading/readiness"]}>
+        <GlobalRefreshProvider sequence={sequence}>
+          <OperatorReadinessConsole strategy={null} trading={null} data={null} accounting={null} reporting={null} />
+        </GlobalRefreshProvider>
+      </TestMemoryRouter>
+    );
+    const { rerender } = render(console_(0));
+    await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.queryByText("Loading operator inbox...")).not.toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: /Refresh|Retry/ })).not.toBeInTheDocument();
+    rerender(console_(1));
+    await waitFor(() => expect(api.getOperatorInbox).toHaveBeenCalledTimes(2));
   });
 
   it("lets operators retry a failed inbox load from the console", async () => {

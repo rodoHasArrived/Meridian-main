@@ -1,15 +1,15 @@
 // Report Library — template screen. Mounted by the DC via <x-import>; reads design-system
-// components from the compiled bundle (window.MeridianDesignSystem_4f61be) and the single
+// components from the compiled bundle (window.MeridianDesignSystem_205d17) and the single
 // global React. A plain report catalog answering "what report do I need to run?" — dense
 // table of reports with readiness, a parameter dialog to run one, and a right rail summarizing
 // readiness + recent runs. Advanced/internal fields (template id, manifest path, provenance,
 // distribution job) stay hidden inside each row's details until opened.
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
-  Input, Select, SeverityBadge, EmptyState, ExpandableDataTable, EntitySummary,
+  Input, Select, SeverityBadge, EmptyState, DataGrid, EntitySummary,
   Accordion, Checkbox, Callout, EvidenceLink, Dialog, DialogHeader, DialogBody, DialogFooter,
   ToastProvider,
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState, useMemo } = React;
 
 /* ── screen-level CSS (self-injected once; components inject their own) ── */
@@ -18,23 +18,23 @@ const { useState, useMemo } = React;
   const el = document.createElement("style");
   el.id = "rl-screen-css";
   el.textContent = `
-.rl-chip{display:inline-flex;align-items:center;border:1px solid var(--border,#E4E3DE);
-  background:var(--bg-medium,#EDEAE4);color:var(--text-secondary,#4E5258);font-family:var(--font-data);
+.rl-chip{display:inline-flex;align-items:center;border:1px solid var(--border,#D2CDC3);
+  background:var(--bg-medium,#EBE8E1);color:var(--text-secondary,#535C65);font-family:var(--font-data);
   font-size:10.5px;padding:2px 7px;border-radius:var(--radius-chip,2px);white-space:nowrap;}
-.rl-chip--more{color:var(--text-muted,#5E666F);background:transparent;}
-.rl-fmt{font-family:var(--font-data);font-size:10px;color:var(--text-muted,#5E666F);
-  border:1px solid var(--border,#E4E3DE);padding:1px 5px;border-radius:var(--radius-chip,2px);letter-spacing:.02em;}
+.rl-chip--more{color:var(--text-muted,#606870);background:transparent;}
+.rl-fmt{font-family:var(--font-data);font-size:10px;color:var(--text-muted,#606870);
+  border:1px solid var(--border,#D2CDC3);padding:1px 5px;border-radius:var(--radius-chip,2px);letter-spacing:.02em;}
 .rl-detail-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:20px;}
 .rl-detail-label{font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#5E666F);margin-bottom:5px;}
-.rl-detail-text{font-size:12.5px;line-height:1.55;color:var(--text-secondary,#4E5258);margin:0 0 12px;}
+  letter-spacing:.03em;color:var(--text-muted,#606870);margin-bottom:5px;}
+.rl-detail-text{font-size:12.5px;line-height:1.55;color:var(--text-secondary,#535C65);margin:0 0 12px;}
 .rl-rail-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;
-  border-bottom:1px solid var(--border-divider,#DAD8D3);}
+  border-bottom:1px solid var(--border-divider,#E2DED5);}
 .rl-rail-row:last-child{border-bottom:none;}
 .rl-rail-link{background:none;border:none;padding:0;text-align:left;cursor:pointer;
-  font-family:var(--font-body);font-size:12px;color:var(--text-primary,#22252A);}
-.rl-rail-link:hover{color:var(--accent,#A85436);text-decoration:underline;}
-.rl-rail-time{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted,#5E666F);white-space:nowrap;}
+  font-family:var(--font-body);font-size:12px;color:var(--text-primary,#20252B);}
+.rl-rail-link:hover{color:var(--brand-signal-ink,#944A32);text-decoration:underline;}
+.rl-rail-time{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted,#606870);white-space:nowrap;}
 `;
   document.head.appendChild(el);
 })();
@@ -137,9 +137,9 @@ const REPORTS = [
 const STATUS_LABEL = { ready: "Ready", review: "Needs Review", blocked: "Blocked" };
 const STATUS_DETAIL_DEFAULT = { ready: "Ready to run", review: "Needs review", blocked: "Blocked" };
 const STATUS_COLOR = {
-  ready: "var(--green-dim, #2C5C40)",
-  review: "var(--accent, #A85436)",
-  blocked: "var(--red-dim, #7E332D)",
+  ready: "var(--green-dim, #225840)",
+  review: "var(--accent, #C56343)",
+  blocked: "var(--red-dim, #883832)",
 };
 
 /* ───────────────────────── row detail (hides advanced items) ───────────────────────── */
@@ -304,18 +304,18 @@ function ReportLibraryScreen() {
   const columns = [
     {
       key: "name", label: "Report",
-      render: (r) => (
+      cell: (r) => (
         <div>
           <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>{r.name}</div>
         </div>
       ),
     },
-    { key: "category", label: "Category", render: (r) => <span style={{ color: "var(--text-secondary)" }}>{r.category}</span> },
-    { key: "lastRun", label: "Last run", render: (r) => r.lastRun || "Never run" },
+    { key: "category", label: "Category", cell: (r) => <span style={{ color: "var(--text-secondary)" }}>{r.category}</span> },
+    { key: "lastRun", label: "Last run", cell: (r) => r.lastRun || "Never run" },
     {
       key: "requiredData", label: "Required inputs", sortable: false,
-      render: (r) => (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, whiteSpace: "normal" }}>
+      cell: (r) => (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, whiteSpace: "normal", padding: "4px 0" }}>
           {r.requiredData.slice(0, 2).map((d) => <span key={d} className="rl-chip">{d}</span>)}
           {r.requiredData.length > 2 && <span className="rl-chip rl-chip--more">+{r.requiredData.length - 2}</span>}
         </div>
@@ -323,11 +323,11 @@ function ReportLibraryScreen() {
     },
     {
       key: "status", label: "Readiness", sortable: false,
-      render: (r) => <SeverityBadge status={r.status} label={STATUS_LABEL[r.status]} />,
+      cell: (r) => <SeverityBadge status={r.status} label={STATUS_LABEL[r.status]} />,
     },
     {
       key: "action", label: "", sortable: false,
-      render: (r) => <Button variant="primary" size="sm" onClick={() => setDialogReport(r)}>Set parameters</Button>,
+      cell: (r) => <Button variant="primary" size="sm" onClick={() => setDialogReport(r)}>Set parameters</Button>,
     },
   ];
 
@@ -379,10 +379,10 @@ function ReportLibraryScreen() {
                   </PanelSurface>
                 )
               ) : (
-                <ExpandableDataTable
+                <DataGrid
                   columns={columns}
                   rows={filtered}
-                  expandable={(r) => <ReportDetail report={r} />}
+                  expand={(r) => <ReportDetail report={r} />}
                 />
               )}
             </div>

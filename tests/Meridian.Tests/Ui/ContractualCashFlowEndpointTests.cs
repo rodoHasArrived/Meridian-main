@@ -83,6 +83,36 @@ public sealed class ContractualCashFlowEndpointTests
         await runs.DidNotReceive().SaveAsync(Arg.Any<ContractualCashFlowRun>(), Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task Compare_reads_two_retained_runs_of_the_subject_and_refuses_missing_or_identical_runs()
+    {
+        var id = Guid.NewGuid();
+        var contract = new ContractualCashFlowContract(new DateOnly(2026, 1, 1), new DateOnly(2027, 1, 1), "USD",
+            [new("main", 1000, 3, Meridian.Contracts.SecurityMaster.DayCountConvention.Actual365, 0.10m)]);
+        var left = new ContractualCashFlowRun(Guid.NewGuid(), "Security", id, Request.KnowledgeCutoff, contract, Request, ContractualCashFlowEngine.Calculate(contract, Request));
+        var richer = contract with { Streams = [contract.Streams[0] with { FixedRate = 0.12m }] };
+        var right = new ContractualCashFlowRun(Guid.NewGuid(), "Security", id, Request.KnowledgeCutoff, richer, Request, ContractualCashFlowEngine.Calculate(richer, Request));
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(new SecurityDetailDto(id, "Bond", SecurityStatusDto.Active, "Bond", "USD",
+            JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new { }), [], [], 1, Request.KnowledgeCutoff, null));
+        var runs = Substitute.For<IContractualCashFlowRunStore>();
+        runs.GetAsync("Security", id, left.RunId, Arg.Any<CancellationToken>()).Returns(left);
+        runs.GetAsync("Security", id, right.RunId, Arg.Any<CancellationToken>()).Returns(right);
+        await using var app = await CreateApp(Substitute.For<IContractualCashFlowPreviewService>(), UserPermission.ViewSecurityMaster, query, runs);
+        using var client = app.GetTestClient();
+
+        var response = await client.GetAsync($"/api/security-master/{id}/cashflow-projections/runs/{left.RunId}/compare/{right.RunId}");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var comparison = await response.Content.ReadFromJsonAsync<ContractualCashFlowRunComparison>(Json);
+        comparison!.LeftRunId.Should().Be(left.RunId);
+        comparison.RightRunId.Should().Be(right.RunId);
+        comparison.LeftReplayVerified.Should().BeTrue();
+        comparison.CashDeltas.Should().NotBeEmpty().And.OnlyContain(delta => delta.Delta > 0m);
+
+        (await client.GetAsync($"/api/security-master/{id}/cashflow-projections/runs/{left.RunId}/compare/{Guid.NewGuid()}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await client.GetAsync($"/api/security-master/{id}/cashflow-projections/runs/{left.RunId}/compare/{left.RunId}")).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     private static async Task<WebApplication> CreateApp(IContractualCashFlowPreviewService service, UserPermission permissions,
         ISecurityMasterQueryService? query = null, IContractualCashFlowRunStore? runs = null)
     {

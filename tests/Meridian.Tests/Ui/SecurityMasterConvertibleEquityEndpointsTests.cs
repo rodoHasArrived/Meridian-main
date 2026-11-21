@@ -46,6 +46,10 @@ public sealed class SecurityMasterConvertibleEquityEndpointsTests
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(queryService);
         builder.Services.AddSingleton(service);
+        // The term-amendment routes read the effective governance requirement from this seam, which
+        // every host mapping them composes; unconfigured, it is the Standard profile with the gate off.
+        Meridian.Application.Composition.SecurityMasterGovernanceServiceCollectionExtensions
+            .AddSecurityMasterGovernanceRequirements(builder.Services);
 
         var app = builder.Build();
         app.Use(async (context, next) =>

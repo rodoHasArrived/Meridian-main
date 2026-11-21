@@ -1,7 +1,9 @@
 <Page x:Class="Meridian.Wpf.Views.RunCashFlowPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
+      xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       AutomationProperties.Name="Run Cash Flow">
 
@@ -12,6 +14,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,32">
         <Grid MaxWidth="1260">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -343,6 +346,17 @@
                     </Border>
                 </StackPanel>
             </Grid>
+
+            <StackPanel Grid.Row="3" Margin="0,18,0,0" AutomationProperties.AutomationId="RunCashFlowPortfolioLadderComparison">
+                <Button Content="Vs end of last month"
+                        Command="{Binding LoadPortfolioLadderComparisonCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,0,10"
+                        ToolTip="Compare the portfolio cash ladder today with the ladder rebuilt as of the end of last month."
+                        AutomationProperties.AutomationId="RunCashFlowPortfolioLadderComparisonButton" />
+                <controls:PeriodComparisonPanel DataContext="{Binding PortfolioLadderComparison}" />
+            </StackPanel>
         </Grid>
     </ScrollViewer>
 </Page>

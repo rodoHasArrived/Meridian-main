@@ -17,9 +17,12 @@ public sealed partial class ManualJournalEntryWorkbenchService
     private IManualJournalMutationSession? _mutationSession;
 
     internal static IManualJournalMutationRecoveryStore DefaultMutationRecoveryFor(IManualJournalEntryDraftStore store)
-        => store is FileManualJournalEntryDraftStore fileStore
-            ? new FileManualJournalMutationRecoveryStore(fileStore.MutationRecoveryDirectory)
-            : EphemeralRecoveryStores.GetValue(store, static _ => new InMemoryManualJournalMutationRecoveryStore());
+        => store switch
+        {
+            FileManualJournalEntryDraftStore fileStore => new FileManualJournalMutationRecoveryStore(fileStore.MutationRecoveryDirectory),
+            PostgresManualJournalEntryDraftStore postgresStore => new PostgresManualJournalMutationRecoveryStore(postgresStore.Options),
+            _ => EphemeralRecoveryStores.GetValue(store, static _ => new InMemoryManualJournalMutationRecoveryStore())
+        };
 
     private sealed record MutationCommand(string Key, string RequestHash, string ScopeKey, Guid JournalEntryId, bool OperationIsLifecycle);
 
@@ -74,6 +77,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
         }
         key = command.Key;
         await ValidateConsolidationMutationAsync(operation, fund, journalEntryId,
+            resolved.Tenant, resolved.Company, pendingIntents, retained, ct).ConfigureAwait(false);
+        await ValidateAgreementMutationAsync(operation, fund, journalEntryId,
             resolved.Tenant, resolved.Company, pendingIntents, retained, ct).ConfigureAwait(false);
 
         foreach (var pending in pendingIntents)
@@ -161,6 +166,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var resolved = await ResolveMutationScopeAsync(fund, journalEntryId, tenant, company, pending, ct).ConfigureAwait(false);
         await ValidateConsolidationMutationAsync("recover", fund, journalEntryId,
             resolved.Tenant, resolved.Company, pending, null, ct).ConfigureAwait(false);
+        await ValidateAgreementMutationAsync("recover", fund, journalEntryId,
+            resolved.Tenant, resolved.Company, pending, null, ct).ConfigureAwait(false);
         foreach (var intent in pending.Where(intent => PendingMatchesScope(intent,
                      RecoveryScope(fund, resolved.Tenant, resolved.Company), journalEntryId)))
             if (!await RecoverMutationAsync(intent, session, ct).ConfigureAwait(false))
@@ -217,7 +224,10 @@ public sealed partial class ManualJournalEntryWorkbenchService
             var prior = await _draftStore.GetAsync(draft.FundProfileId, draft.JournalEntryId, ct,
                 draft.TenantId, draft.CompanyId).ConfigureAwait(false);
             if (posting is not null)
+            {
                 await ValidateCurrentConsolidationDraftAsync(prior ?? draft, ct).ConfigureAwait(false);
+                await ValidateCurrentAgreementDraftAsync(prior ?? draft, ct).ConfigureAwait(false);
+            }
             before.Add(prior);
             audits.Add(new AccountingActionAuditEventDto(
                 CreateDeterministicGuid("manual-je-mutation-audit", command.Key, index.ToString(System.Globalization.CultureInfo.InvariantCulture)),

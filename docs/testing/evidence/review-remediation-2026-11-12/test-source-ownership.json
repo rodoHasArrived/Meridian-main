@@ -1,0 +1,53 @@
+{
+  "schema": "meridian.test-source-ownership.v1",
+  "evaluation": "dotnet msbuild -getItem:Compile",
+  "projects": {
+    "main": {
+      "compileFiles": 1557,
+      "duplicateIdentities": 0
+    },
+    "storage": {
+      "compileFiles": 50,
+      "duplicateIdentities": 0,
+      "testCaseSourceOverlapWithMain": 0
+    },
+    "execution": {
+      "compileFiles": 83,
+      "duplicateIdentities": 0,
+      "testCaseSourceOverlapWithMain": 0
+    }
+  },
+  "executionHostCompositionSourcesRetainedInMain": [
+    "RobinhoodHostedSynchronizationTests.cs",
+    "PaperSessionPersistenceServiceTests.cs",
+    "HostedBrokerageGatewayRegistrationTests.cs"
+  ],
+  "captureCommit": "1fe32e6a80c976a5782efe0c2a06093e391cba24",
+  "upstreamSynchronization": {
+    "upstreamCommit": "63e84bb978b5a8b8cffbce3820b6842aa907423f",
+    "evaluation": "dotnet msbuild -getItem:Compile; current merged source ownership",
+    "projects": {
+      "main": {
+        "compileFiles": 1732,
+        "duplicateIdentities": 0
+      },
+      "storage": {
+        "compileFiles": 55,
+        "duplicateIdentities": 0,
+        "testCaseSourceOverlapWithMain": 0
+      },
+      "execution": {
+        "compileFiles": 94,
+        "duplicateIdentities": 0,
+        "testCaseSourceOverlapWithMain": 0
+      }
+    },
+    "executionHostCompositionSourcesRetainedInMain": [
+      "RobinhoodHostedSynchronizationTests.cs",
+      "PaperSessionPersistenceServiceTests.cs",
+      "HostedBrokerageGatewayRegistrationTests.cs",
+      "PaperFuturesSettlementServiceTests.cs"
+    ],
+    "overlapInspection": "Shared files have no Fact/Theory attribute declarations; attribute examples in comments are not test cases."
+  }
+}

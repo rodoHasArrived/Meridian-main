@@ -89,4 +89,15 @@ describe("buildGettingStartedViewModel", () => {
     expect(model.triggerLabel).toBe("Getting started 3/3");
     expect(model.triggerAriaLabel).toContain("every getting-started step is done");
   });
+
+  it("keeps the masthead trigger only while steps remain outstanding", () => {
+    const inProgress = buildGettingStartedViewModel(status());
+    const finished = buildGettingStartedViewModel(status({
+      outcomes: OUTCOMES.map((outcome) => ({ ...outcome, isComplete: true, completedAtUtc: "2026-08-01T10:00:00Z" }))
+    }));
+
+    expect(inProgress.triggerVisible).toBe(true);
+    expect(finished.visible).toBe(true);
+    expect(finished.triggerVisible).toBe(false);
+  });
 });

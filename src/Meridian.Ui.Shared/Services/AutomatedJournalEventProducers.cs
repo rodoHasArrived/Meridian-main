@@ -113,10 +113,12 @@ public sealed class CorporateActionDividendEventProducer
             {
                 // A ticker without a security id is resolved as of the production instant, so the
                 // journal names the security that carried the ticker then.
-                var securityId = representative.SecurityId
-                    ?? (await _securityMaster
+                var resolvedByTicker = representative.SecurityId is null
+                    ? await _securityMaster
                         .GetByIdentifierAsync(SecurityIdentifierKind.Ticker, symbol, provider: null, ct, request.AsOf)
-                        .ConfigureAwait(false))?.SecurityId;
+                        .ConfigureAwait(false)
+                    : null;
+                var securityId = representative.SecurityId ?? resolvedByTicker?.SecurityId;
                 if (securityId is null)
                 {
                     skipped.Add(new AutomatedJournalEventProductionSkip(
@@ -127,18 +129,37 @@ public sealed class CorporateActionDividendEventProducer
                 var actions = await _securityMaster
                     .GetCorporateActionsAsync(securityId.Value, ct)
                     .ConfigureAwait(false);
+                // The amount comes from the typed cash-distribution terms, not the wide per-event
+                // column, so every consumer reads one definition of "amount per unit".
                 var effectiveDividends = CorporateActionEffectiveStateProjector
                     .Project(actions, request.AsOf)
                     .Where(static state => !state.IsCancelled)
-                    .Where(state =>
-                        state.Effective.EventType is CorporateActionEventTypes.Dividend or CorporateActionEventTypes.SpecialDividend &&
-                        state.Effective.DividendPerShare is > 0m &&
-                        state.Effective.ExDate >= request.WindowStart &&
-                        state.Effective.ExDate <= request.WindowEnd);
+                    .Select(static state => (State: state, Terms: CorporateActionTerms.From(state.Effective) as CashDistributionCorporateActionTerms))
+                    .Where(candidate =>
+                        candidate.Terms is { EventType: CorporateActionEventTypes.Dividend or CorporateActionEventTypes.SpecialDividend, PositiveAmountPerUnit: not null } &&
+                        candidate.State.Effective.ExDate >= request.WindowStart &&
+                        candidate.State.Effective.ExDate <= request.WindowEnd)
+                    .ToArray();
+                if (effectiveDividends.Length == 0)
+                    continue;
 
-                foreach (var effectiveState in effectiveDividends)
+                // The held quantity is unitized through the asset-class registry, so a dividend is
+                // paid on economic units and only on lots counted in shares or fund units. An
+                // ID-keyed position reads the record as of the run, like a ticker-resolved one, so a
+                // later reclassification cannot change how a historical dividend is unitized.
+                var security = resolvedByTicker
+                    ?? await _securityMaster.GetByIdAsOfAsync(securityId.Value, request.AsOf, ct).ConfigureAwait(false);
+                if (security is null)
+                {
+                    skipped.Add(new AutomatedJournalEventProductionSkip(
+                        symbol, "The Security Master record is unavailable, so the held quantity cannot be unitized."));
+                    continue;
+                }
+
+                foreach (var (effectiveState, terms) in effectiveDividends)
                 {
                     var dividend = effectiveState.Effective;
+                    var amountPerUnit = terms!.PositiveAmountPerUnit!.Value;
                     var exDateEndUtc = new DateTimeOffset(dividend.ExDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
                     var minimumAsOfUtc = exDateEndUtc.AddDays(-request.MaximumPositionAgeDays);
                     var datedSamples = positionGroup
@@ -188,8 +209,22 @@ public sealed class CorporateActionDividendEventProducer
                     }
 
                     var currencySuffix = dividend.Currency is null ? "" : " " + dividend.Currency;
-                    var amount = decimal.Round(
-                        position.Quantity * dividend.DividendPerShare!.Value, 2, MidpointRounding.AwayFromZero);
+                    if (!LotQuantity.TryFor(security.AssetClass, position.Quantity, security.AssetSpecificTerms, out var holding, out var unitError))
+                    {
+                        skipped.Add(new AutomatedJournalEventProductionSkip(symbol, unitError));
+                        continue;
+                    }
+
+                    if (terms.GrossAmountFor(holding) is not { } grossAmount)
+                    {
+                        skipped.Add(new AutomatedJournalEventProductionSkip(
+                            symbol,
+                            FormattableString.Invariant(
+                                $"Corporate action {dividend.CorpActId:N} pays per unit, but {security.AssetClass} lots are measured in {holding.UnitKind}, which has no per-unit reading.")));
+                        continue;
+                    }
+
+                    var amount = decimal.Round(grossAmount, 2, MidpointRounding.AwayFromZero);
                     if (amount <= 0m)
                     {
                         skipped.Add(new AutomatedJournalEventProductionSkip(
@@ -228,7 +263,7 @@ public sealed class CorporateActionDividendEventProducer
                         new DateTimeOffset(dividend.ExDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
                         FinancialAccountId: position.FinancialAccountId,
                         Description: FormattableString.Invariant(
-                            $"Dividend declared for {symbol}: {position.Quantity} × {dividend.DividendPerShare.Value}{currencySuffix} (ex {dividend.ExDate:yyyy-MM-dd})"),
+                            $"Dividend declared for {symbol}: {holding.EconomicUnits} × {amountPerUnit}{currencySuffix} (ex {dividend.ExDate:yyyy-MM-dd})"),
                         SecurityId: securityId,
                         SourceEventId: dividend.CorpActId.ToString("N"),
                         EffectiveDate: dividend.ExDate,
@@ -315,7 +350,7 @@ public sealed class CorporateActionDividendEventProducer
         else
             confidence += 0.05m;
 
-        if (action.DividendPerShare is > 0m)
+        if (CorporateActionTerms.From(action) is CashDistributionCorporateActionTerms { PositiveAmountPerUnit: not null })
             confidence += 0.10m;
 
         confidence = Math.Min(1m, confidence);

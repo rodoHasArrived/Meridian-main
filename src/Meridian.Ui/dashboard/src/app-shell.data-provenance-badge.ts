@@ -89,6 +89,12 @@ export interface WorkstationDataProvenanceInput {
     enabled?: boolean;
     provenance?: unknown;
   } | null;
+  /**
+   * The first-run workspace is the shipped sample desk. A `real` answer is not honoured over it:
+   * the masthead used to carry this as a separate SAMPLE chip, which could contradict the
+   * provenance label beside it.
+   */
+  sampleWorkspace?: boolean;
 }
 
 /**
@@ -105,7 +111,12 @@ export interface WorkstationDataProvenanceInput {
  * rather than branding a real install SIMULATED because one request failed. Nothing here ever
  * silently claims real data.
  */
-export function resolveWorkstationDataProvenance({
+export function resolveWorkstationDataProvenance(input: WorkstationDataProvenanceInput): DataProvenanceKind {
+  const resolved = resolveProbedDataProvenance(input);
+  return resolved === "real" && input.sampleWorkspace ? "sample" : resolved;
+}
+
+function resolveProbedDataProvenance({
   usingDevelopmentFixtures,
   demoMode
 }: WorkstationDataProvenanceInput): DataProvenanceKind {

@@ -585,7 +585,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
                     JobId = job.JobId,
                     Provider = job.Provider,
                     Status = job.Status.ToString(),
-                    CreatedAt = job.CreatedAt.ToLocalTime().ToString("g"),
+                    CreatedAt = FormatHelpers.FormatDisplayTimestamp(job.CreatedAt),
                     SymbolsSummary = $"{job.CompletedCount}/{job.SymbolCheckpoints.Count} symbols done, {pendingSymbols.Length} remaining",
                     PendingCount = pendingSymbols.Length,
                     TotalBarsDownloaded = job.TotalBarsDownloaded,
@@ -678,7 +678,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
         IsBackfillActive = response.IsActive;
         OverallProgressPercent = Math.Clamp(snapshot.OverallPercentComplete, 0d, 100d);
         OverallProgressText = $"Overall: {snapshot.CompletedSymbols:N0} / {snapshot.TotalSymbols:N0} symbols complete · {OverallProgressPercent:N1}%";
-        ProviderProgressObservedText = $"Observed {snapshot.Timestamp.ToLocalTime():g} · {snapshot.DroppedProviderNotifications:N0} provider notification(s) dropped";
+        ProviderProgressObservedText = $"Observed {FormatHelpers.FormatDisplayTimestamp(snapshot.Timestamp)} · {snapshot.DroppedProviderNotifications:N0} provider notification(s) dropped";
 
         if (response.IsActive)
         {
@@ -729,8 +729,8 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             ? string.Join(", ", status.Symbols)
             : "N/A";
         LastRunBarsWrittenText = status.BarsWritten.ToString("N0");
-        LastRunStartedText = status.StartedUtc?.LocalDateTime.ToString("g") ?? "Unknown";
-        LastRunCompletedText = status.CompletedUtc?.LocalDateTime.ToString("g") ?? "N/A";
+        LastRunStartedText = FormatHelpers.FormatDisplayTimestamp(status.StartedUtc, "Unknown");
+        LastRunCompletedText = FormatHelpers.FormatDisplayTimestamp(status.CompletedUtc, "N/A");
         ApplyBackfillStats(BuildBackfillStats(status));
     }
 
@@ -768,13 +768,13 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
 
         var runWindowText = (status.StartedUtc, status.CompletedUtc) switch
         {
-            ({ } started, { } completed) => $"{started.LocalDateTime:g} to {completed.LocalDateTime:g}",
-            ({ } started, null) => $"Started {started.LocalDateTime:g}",
+            ({ } started, { } completed) => $"{FormatHelpers.FormatDisplayTimestamp(started)} to {FormatHelpers.FormatDisplayTimestamp(completed)}",
+            ({ } started, null) => $"Started {FormatHelpers.FormatDisplayTimestamp(started)}",
             _ => "Window unavailable"
         };
 
         var lastSuccessfulRunText = status.Success
-            ? status.CompletedUtc?.LocalDateTime.ToString("g") ?? "Completed; timestamp unavailable"
+            ? FormatHelpers.FormatDisplayTimestamp(status.CompletedUtc, "Completed; timestamp unavailable")
             : "Latest run failed";
 
         return new BackfillStatsPresentation(
@@ -802,6 +802,14 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             .Where(symbol => !string.IsNullOrWhiteSpace(symbol))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Count() ?? 0;
+    }
+
+    private bool _resumeFromRetainedCoverage;
+
+    public bool ResumeFromRetainedCoverage
+    {
+        get => _resumeFromRetainedCoverage;
+        set => SetProperty(ref _resumeFromRetainedCoverage, value);
     }
 
     public async Task StartBackfillAsync(
@@ -856,7 +864,9 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
                 provider,
                 fromDate,
                 toDate,
-                granularity);
+                granularity,
+                ResumeFromRetainedCoverage,
+                ct: ct);
         }
         catch (OperationCanceledException)
         {
@@ -1062,6 +1072,9 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
     // E1: async void swallows exceptions — the handler delegates to a testable async Task method
     //     that is wrapped in try/catch so poll failures are logged rather than silently lost.
     private async void OnProgressPollTimerTick(object? sender, EventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ProgressPollTimerTickCoreAsync(sender, e), nameof(OnProgressPollTimerTick)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ProgressPollTimerTickCoreAsync(object? sender, EventArgs e)
     {
         await TickPollAsync();
     }
@@ -1154,7 +1167,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             }
             catch (Exception ex)
             {
-                _loggingService.LogError($"Gap scan failed for symbol: {sym}", ex);
+                _loggingService.LogError("Gap scan failed for symbol: {Symbol}", ex, ("Symbol", sym));
             }
         }
 

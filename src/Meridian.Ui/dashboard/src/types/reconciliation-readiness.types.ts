@@ -1,7 +1,7 @@
 /**
  * Reconciliation queue readiness types.
  *
- * Mirrors `Meridian.Ui.Shared.Contracts.Reconciliation.StatementImportContracts`
+ * Mirrors `Meridian.Contracts.Reconciliation.StatementImportContracts`
  * and `Meridian.Contracts.Workstation.ReconciliationDtos`, the contracts behind:
  *
  * - `GET /api/workstation/reconciliation/queue-status`

@@ -6,6 +6,10 @@ namespace Meridian.Application.Composition;
 
 internal static class DirectLendingStartup
 {
+    // Retain the established migration sequence across every host.
+    internal static DatabaseStartupStep StartupStep { get; } =
+        new("direct-lending", ["security-master"], EnsureDatabaseReadyAsync);
+
     // Legacy direct-lending variables remain supported for isolated test databases and
     // controlled migration windows. Production defaults inherit Security Master storage.
     internal const string ConnectionStringVariable = "MERIDIAN_DIRECT_LENDING_CONNECTION_STRING";

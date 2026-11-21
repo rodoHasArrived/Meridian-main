@@ -2,12 +2,14 @@ using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AlphaVantageQuotaConfig = Meridian.Core.Config.AlphaVantageQuotaConfig;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -38,17 +40,27 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
     private readonly IConfiguration _configuration;
     private readonly ICredentialContext? _credentials;
     private readonly ILogger<AlphaVantageCorporateActionProvider> _logger;
+    private readonly RateLimiterRegistry _rateLimiterRegistry;
+    private readonly RequestBudgetConfiguration _quotaBudget;
 
     public AlphaVantageCorporateActionProvider(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<AlphaVantageCorporateActionProvider> logger,
-        ICredentialContext? credentials = null)
+        ICredentialContext? credentials = null,
+        RateLimiterRegistry? rateLimiterRegistry = null,
+        AlphaVantageQuotaConfig? quotaConfig = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _credentials = credentials;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
+        runtimeOptions ??= BackfillProviderRuntimeOptions.FromConfig(
+            configuration.GetSection("Backfill:Providers").Get<Meridian.Core.Config.BackfillProvidersConfig>(), "alphavantage");
+        _quotaBudget = ProviderQuotaBudgets.AlphaVantage(
+            quotaConfig ?? configuration.GetSection("ProviderQuotas:AlphaVantage").Get<AlphaVantageQuotaConfig>(), runtimeOptions);
     }
 
     public string ProviderId => "alphavantage";
@@ -62,6 +74,25 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
         Guid securityId,
         CancellationToken ct = default)
     {
+        var result = await FetchWithOutcomeAsync(ticker, securityId, ct).ConfigureAwait(false);
+        if (result.Failures.FirstOrDefault(failure => failure.Code == "rate-limited") is { } rateLimit)
+        {
+            throw new RateLimitException(
+                "Alpha Vantage corporate-action rate limit exceeded.",
+                provider: ProviderId,
+                symbol: SymbolNormalization.Normalize(ticker),
+                retryAfter: rateLimit.RetryAfter ?? TimeSpan.FromMinutes(1));
+        }
+
+        return result.Actions;
+    }
+
+    /// <inheritdoc />
+    public async Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+        string ticker,
+        Guid securityId,
+        CancellationToken ct = default)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
         ct.ThrowIfCancellationRequested();
 
@@ -70,41 +101,46 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
         {
             _logger.LogDebug(
                 "Alpha Vantage API key not configured; corporate action fetch for {Ticker} skipped.", ticker);
-            return [];
+            return CorporateActionFetchResult.Failed("credentials-missing");
         }
 
         var normalizedSymbol = SymbolNormalization.Normalize(ticker);
         var url =
-            $"/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={Uri.EscapeDataString(normalizedSymbol)}&outputsize=full&apikey={Uri.EscapeDataString(apiKey)}";
+            $"/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={Uri.EscapeDataString(normalizedSymbol)}&outputsize=full";
 
         using var client = _httpClientFactory.CreateClient(HttpClientNames.AlphaVantageHistorical);
         client.BaseAddress ??= new Uri("https://www.alphavantage.co/");
 
         try
         {
-            using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await SendAsync(client, url, ct).ConfigureAwait(false);
+            if (response is null)
+                return CorporateActionFetchResult.Failed("credentials-missing");
             if (response.StatusCode == HttpStatusCode.TooManyRequests)
             {
-                throw CreateRateLimitException(response, normalizedSymbol);
+                var failure = CorporateActionFetchResult.FromHttpFailure(response);
+                return failure with
+                {
+                    Failures = failure.Failures.Select(item => item with
+                    {
+                        RetryAfter = item.RetryAfter ?? TimeSpan.FromMinutes(1),
+                    }).ToArray(),
+                };
             }
 
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
             {
                 _logger.LogDebug(
                     "Alpha Vantage corporate actions returned {StatusCode} for {Ticker}; skipping.",
                     (int)response.StatusCode,
                     ticker);
-                return [];
+                return CorporateActionFetchResult.FromHttpFailure(response);
             }
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             if (IsRateLimitBody(json))
             {
-                throw new RateLimitException(
-                    $"Alpha Vantage corporate-action rate limit exceeded for {normalizedSymbol}.",
-                    provider: ProviderId,
-                    symbol: normalizedSymbol,
-                    retryAfter: TimeSpan.FromMinutes(1));
+                return CorporateActionFetchResult.Failed("rate-limited", retryAfter: TimeSpan.FromMinutes(1));
             }
 
             if (IsErrorBody(json))
@@ -112,7 +148,7 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
                 _logger.LogDebug(
                     "Alpha Vantage corporate actions returned an error body for {Ticker}; skipping.",
                     normalizedSymbol);
-                return [];
+                return CorporateActionFetchResult.Failed("provider-error");
             }
 
             var series = JsonSerializer.Deserialize(
@@ -120,12 +156,11 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
                     AlphaVantageCorporateActionJsonContext.Default.AlphaVantageDailyAdjustedResponse)
                 ?.TimeSeries;
 
-            if (series is null || series.Count == 0)
-            {
-                return [];
-            }
+            if (series is null)
+                return CorporateActionFetchResult.Failed("invalid-payload");
 
             var commands = series
+                .Where(entry => entry.Value is not null)
                 .SelectMany(entry => MapToCommands(entry.Key, entry.Value, securityId))
                 .OrderBy(command => command.ExDate)
                 .ThenBy(command => command.ActionType, StringComparer.Ordinal)
@@ -136,16 +171,43 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
                 commands.Length,
                 ticker);
 
-            return commands;
+            return series.Any(entry => !ProviderDateParsing.TryParseProviderDate(entry.Key, out _) || entry.Value is null
+                || !decimal.TryParse(entry.Value.DividendAmount, NumberStyles.Float, CultureInfo.InvariantCulture, out var dividend)
+                || dividend < 0m || !TryParsePositiveDecimal(entry.Value.SplitCoefficient, out _))
+                ? new CorporateActionFetchResult(commands, CorporateActionFetchStatus.Partial, [new("invalid-record")])
+                : CorporateActionFetchResult.Complete(commands);
         }
-        catch (RateLimitException)
+        catch (RateLimitException ex)
         {
-            throw;
+            return CorporateActionFetchResult.FromException(ex);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "Failed to fetch Alpha Vantage corporate actions for {Ticker}.", ticker);
-            return [];
+            _logger.LogWarning("Failed to fetch Alpha Vantage corporate actions for {Ticker}.", ticker);
+            return CorporateActionFetchResult.FromException(ex);
+        }
+    }
+
+    private async Task<HttpResponseMessage?> SendAsync(HttpClient client, string url, CancellationToken ct)
+    {
+        while (true)
+        {
+            var apiKey = ResolveApiKey();
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return null;
+            var budget = _rateLimiterRegistry.GetOrCreate(ProviderId, apiKey, "api-requests", _quotaBudget);
+            await budget.WaitForSlotAsync(ct).ConfigureAwait(false);
+            if (!string.Equals(apiKey, ResolveApiKey(), StringComparison.Ordinal))
+                continue;
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{url}&apikey={Uri.EscapeDataString(apiKey)}");
+            request.Options.Set(SharedResiliencePolicies.ProviderOwnsRetries, true);
+            var response = await client.SendAsync(request, ct).ConfigureAwait(false);
+            var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response, _rateLimiterRegistry.TimeProvider);
+            if (retryAfter is { } delay)
+                budget.ApplyCooldown(delay);
+            else if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                budget.ApplyCooldown(TimeSpan.FromMinutes(1));
+            return response;
         }
     }
 
@@ -198,24 +260,8 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
             json.Contains("Thank you for using Alpha Vantage", StringComparison.Ordinal);
 
     private static bool IsErrorBody(string json)
-        => json.Contains("\"Error Message\"", StringComparison.Ordinal);
-
-    private RateLimitException CreateRateLimitException(HttpResponseMessage response, string symbol)
-    {
-        var retryAfter = response.Headers.RetryAfter?.Delta;
-        if (retryAfter is null && response.Headers.RetryAfter?.Date is { } retryAt)
-        {
-            var delay = retryAt - DateTimeOffset.UtcNow;
-            if (delay > TimeSpan.Zero)
-                retryAfter = delay;
-        }
-
-        return new RateLimitException(
-            $"Alpha Vantage corporate-action rate limit exceeded for {symbol}.",
-            provider: ProviderId,
-            symbol: symbol,
-            retryAfter: retryAfter ?? TimeSpan.FromMinutes(1));
-    }
+        => json.Contains("\"Error Message\"", StringComparison.Ordinal) ||
+            json.Contains("\"Information\"", StringComparison.Ordinal);
 
     private string? ResolveApiKey()
     {

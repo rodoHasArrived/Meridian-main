@@ -83,6 +83,61 @@ public sealed class PostedLedgerViewModelTests
             ExpenseLines: []);
 
     [Fact]
+    public async Task SelectingATrialBalanceRow_LoadsItsPostingsWithARunningBalance()
+    {
+        var periodId = Guid.NewGuid();
+        var cashDimensions = new LedgerDimensionSetDto(FundId: "alpha-fund", SleeveId: "sleeve-1");
+        var client = new FakeLedgerReportsApiClient
+        {
+            Periods = ApiResponse<List<LedgerPeriodDto>>.Ok([Period(periodId)]),
+            TrialBalance = ApiResponse<List<LedgerPeriodTrialBalanceLineDto>>.Ok(
+                [Line("Cash", 120500m) with { Dimensions = cashDimensions }, Line("Financing payable", -120500m)]),
+            Pnl = ApiResponse<LedgerPeriodPnlSummaryDto>.Ok(Pnl(periodId)),
+            RunningBalance = ApiResponse<LedgerAccountRunningBalanceDto>.Ok(new LedgerAccountRunningBalanceDto(
+                periodId,
+                DefaultBookId,
+                "Cash",
+                "Asset",
+                null,
+                "1000",
+                TotalDebits: 120500m,
+                TotalCredits: 0m,
+                EndingBalance: 120500m,
+                Points:
+                [
+                    new LedgerAccountRunningBalancePointDto(
+                        Guid.NewGuid(), Guid.NewGuid(), 1, DateTimeOffset.Parse("2026-07-03T00:00:00Z"),
+                        "Capital call receipt", 100000m, 0m, 100000m),
+                    new LedgerAccountRunningBalancePointDto(
+                        Guid.NewGuid(), Guid.NewGuid(), 2, DateTimeOffset.Parse("2026-07-20T00:00:00Z"),
+                        "Financing draw", 20500m, 0m, 120500m)
+                ]))
+        };
+
+        using var viewModel = new PostedLedgerViewModel(client);
+        await viewModel.RefreshAsync();
+        var cash = viewModel.TrialBalance.Single(row => row.AccountName == "Cash");
+
+        await viewModel.LoadAccountPostingsAsync(cash);
+        viewModel.AccountPostings.Should().BeEmpty("a response for a row that is not the selection is discarded");
+
+        viewModel.SelectedTrialBalanceRow = cash;
+        await viewModel.LoadAccountPostingsAsync(cash);
+
+        client.RunningBalanceRequests.Should().Contain((periodId, "Cash", null, "1000"));
+        client.RunningBalanceDimensions.Should().OnlyContain(dimensions => ReferenceEquals(dimensions, cashDimensions),
+            "the drill-down is limited to the selected row's dimension set");
+        viewModel.AccountPostings.Select(row => (row.PostedLabel, row.Description)).Should().Equal(
+            ("2026-07-03", "Capital call receipt"),
+            ("2026-07-20", "Financing draw"));
+        viewModel.AccountPostings[0].CreditLabel.Should().BeEmpty();
+        viewModel.AccountPostingsStatusText.Should().StartWith("Cash · 2 postings · ending balance");
+
+        viewModel.SelectedTrialBalanceRow = null;
+        viewModel.AccountPostings.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task RefreshAsync_LoadsTheLatestClosedPeriodAndItsPostedBook()
     {
         var periodId = Guid.NewGuid();
@@ -586,6 +641,22 @@ public sealed class PostedLedgerViewModelTests
 
     private sealed class FakeLedgerReportsApiClient : ILedgerReportsApiClient
     {
+        public ApiResponse<LedgerAccountRunningBalanceDto> RunningBalance { get; set; }
+            = ApiResponse<LedgerAccountRunningBalanceDto>.Fail("not configured", 404);
+
+        public List<(Guid PeriodId, string Account, string? Symbol, string? FinancialAccountId)> RunningBalanceRequests { get; } = [];
+
+        public List<LedgerDimensionSetDto?> RunningBalanceDimensions { get; } = [];
+
+        public Task<ApiResponse<LedgerAccountRunningBalanceDto>> GetAccountRunningBalanceAsync(
+            Guid periodId, string accountName, string? symbol, string? financialAccountId,
+            LedgerDimensionSetDto? dimensions, CancellationToken ct = default)
+        {
+            RunningBalanceDimensions.Add(dimensions);
+            RunningBalanceRequests.Add((periodId, accountName, symbol, financialAccountId));
+            return Task.FromResult(RunningBalance);
+        }
+
         public ApiResponse<List<LedgerPeriodDto>> Periods { get; set; }
             = ApiResponse<List<LedgerPeriodDto>>.Ok([]);
 

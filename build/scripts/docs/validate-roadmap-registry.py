@@ -3,7 +3,12 @@
 
 from __future__ import annotations
 
+import datetime as dt
+import importlib.util
+import json
 from pathlib import Path
+
+from jsonschema import Draft202012Validator
 
 from common import (
     Finding,
@@ -33,6 +38,26 @@ REQUIRED_ITEM_FIELDS = {
 }
 
 
+def _schema_payload(value):
+    """JSON Schema sees ISO strings for YAML's standard date scalars."""
+    if isinstance(value, dict):
+        return {key: _schema_payload(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_schema_payload(item) for item in value]
+    if isinstance(value, (dt.date, dt.datetime)):
+        return value.isoformat()
+    return value
+
+
+def validate_v2_shape(path: Path, data: dict, schema_name: str) -> list[Finding]:
+    schema_path = Path(__file__).resolve().parents[3] / "docs/roadmap/schemas" / schema_name
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    return [Finding("error", repo_path(path), f"{'.'.join(map(str, error.absolute_path)) or '$'}: "
+                    + ("invalid sequence; " if list(error.absolute_path)[-1:] == ["sequence"] else "")
+                    + error.message)
+            for error in Draft202012Validator(schema).iter_errors(_schema_payload(data))]
+
+
 def schema_version(data: dict) -> str:
     schema = data.get("schema", {}) if isinstance(data, dict) else {}
     return f"{schema.get('id', 'unknown')}@{schema.get('version', 'unknown')}"
@@ -46,8 +71,12 @@ def validate_schema_header(path: Path, data: dict, expected_id: str) -> list[Fin
     if schema.get("id") != expected_id:
         findings.append(Finding("error", repo_path(path), f"expected schema id {expected_id}, got {schema.get('id')}"))
     version = str(schema.get("version", ""))
-    if not version.startswith("1."):
+    supported = ("1.", "2.") if expected_id in {"meridian.program-state", "meridian.roadmap-items"} else ("1.",)
+    if not version.startswith(supported):
         findings.append(Finding("error", repo_path(path), f"unsupported schema major version {version}"))
+    if version.startswith("2.") and expected_id in {"meridian.program-state", "meridian.roadmap-items"}:
+        name = "program-state" if expected_id == "meridian.program-state" else "roadmap-items"
+        findings.extend(validate_v2_shape(path, data, f"{name}.v2.schema.json"))
     return findings
 
 
@@ -93,6 +122,11 @@ def validate(root: Path) -> list[Finding]:
         findings.extend(validate_schema_header(path, data, expected_schema))
         loaded[name] = data
 
+    # Do not traverse malformed v2 objects after the schema already identified their errors.
+    # This keeps invalid field types fail-closed instead of raising during reference checks.
+    if any(finding.severity == "error" for finding in findings):
+        return findings
+
     source_ids: set[str] = set()
     if source_modules_path.exists():
         source_data = load_data(source_modules_path)
@@ -109,11 +143,16 @@ def validate(root: Path) -> list[Finding]:
     if roadmap_path.exists():
         roadmap_data = loaded.get("roadmap-items.yml", {})
         items = roadmap_data.get("items", [])
-        _, duplicate_findings = collect_ids(items, "id", roadmap_path)
+        if not isinstance(items, list) or any(not isinstance(item, dict) for item in items):
+            return findings + [Finding("error", repo_path(roadmap_path), "items must be a list of mappings")]
+        item_ids, duplicate_findings = collect_ids(items, "id", roadmap_path)
         findings.extend(duplicate_findings)
+        decision_ids = {entry.get("id") for entry in loaded.get("decision-log.yml", {}).get("decisions", [])}
+        is_v2 = str(roadmap_data.get("schema", {}).get("version", "")).startswith("2.")
         for item in items:
             item_id = item.get("id", "<missing>")
-            missing = sorted(REQUIRED_ITEM_FIELDS - set(item.keys()))
+            required = REQUIRED_ITEM_FIELDS - {"current_summary"} if is_v2 else REQUIRED_ITEM_FIELDS
+            missing = sorted(required - set(item.keys()))
             for field in missing:
                 findings.append(Finding("error", repo_path(roadmap_path), f"{item_id} missing required field {field}"))
             if item.get("status") not in STATUSES:
@@ -152,7 +191,47 @@ def validate(root: Path) -> list[Finding]:
                     f"{item_id} has invalid sequence {item.get('sequence')!r}; expected an integer >= 1",
                 ))
 
+            if is_v2:
+                for decision in item.get("decision_ids", []) if isinstance(item.get("decision_ids"), list) else []:
+                    if decision not in decision_ids:
+                        findings.append(Finding("error", repo_path(roadmap_path), f"{item_id} references unknown decision {decision}"))
+                findings.extend(validate_detail_link(root, roadmap_path, item.get("status_detail"), str(item_id)))
+
+        program_data = loaded.get("program-state.yml", {})
+        if str(program_data.get("schema", {}).get("version", "")).startswith("2."):
+            program = program_data.get("program", {})
+            scope = program.get("active_scope", {}) if isinstance(program, dict) else {}
+            if isinstance(scope, dict):
+                for field in ("roadmap_items", "work_queue"):
+                    values = scope.get(field, [])
+                    for item_id in values if isinstance(values, list) else []:
+                        if item_id not in item_ids:
+                            findings.append(Finding("error", repo_path(data_dir / "program-state.yml"), f"active_scope.{field} references unknown roadmap item {item_id}"))
+                values = scope.get("decision_ids", [])
+                for decision in values if isinstance(values, list) else []:
+                    if decision not in decision_ids:
+                        findings.append(Finding("error", repo_path(data_dir / "program-state.yml"), f"active_scope references unknown decision {decision}"))
+                findings.extend(validate_detail_link(root, data_dir / "program-state.yml", scope.get("status_detail"), "active_scope"))
+
+    readiness = data_dir / "production-readiness.yml"
+    if readiness.exists():
+        script = Path(__file__).with_name("render-production-readiness.py")
+        spec = importlib.util.spec_from_file_location("production_readiness_registry", script)
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        findings.extend(Finding("error", repo_path(readiness), message) for message in module.validate_data(root))
+
     return findings
+
+
+def validate_detail_link(root: Path, source: Path, value, item_id: str) -> list[Finding]:
+    if not isinstance(value, str) or not value.strip():
+        return []  # Shape validation reports the missing/invalid field.
+    target = (root / value).resolve()
+    if not target.is_relative_to(root.resolve()) or not target.is_file():
+        return [Finding("error", repo_path(source), f"{item_id} status_detail must name an existing repository file: {value}")]
+    return []
 
 
 def main() -> int:

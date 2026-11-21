@@ -3241,33 +3241,6 @@ public sealed class EvidenceWorkflowFabricTests
         Directory.Exists(Path.Combine(root, "workstation", "evidence")).Should().BeFalse();
     }
 
-#pragma warning disable CS0618 // Compatibility test intentionally invokes obsolete fail-closed slots.
-    [Fact]
-    public async Task FileEvidenceArtifactStore_ConcreteLegacyUnscopedSlots_FailClosed()
-    {
-        var root = Path.Combine(Path.GetTempPath(), $"evidence-legacy-slots-{Guid.NewGuid():N}");
-        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
-        Func<Task>[] legacyCalls =
-        [
-            () => store.TryOpenManifestAsync("report-pack", "current", "manifest.json"),
-            () => store.TryOpenManifestByVaultIdAsync("ev-000000000000000000000000"),
-            () => store.TryGetVaultIdentityAsync("ev-000000000000000000000000"),
-            () => store.ReviewDocumentAsync(
-                "ev-000000000000000000000000",
-                "document-missing",
-                new EvidenceVaultDocumentReviewRequestDto(
-                    EvidenceDocumentReviewStatusDto.Rejected,
-                    "legacy-reviewer"))
-        ];
-
-        foreach (var legacyCall in legacyCalls)
-        {
-            await legacyCall.Should().ThrowAsync<NotSupportedException>()
-                .WithMessage("*requires an authenticated tenant and company scope*");
-        }
-    }
-#pragma warning restore CS0618
-
     [Fact]
     public async Task FileEvidenceArtifactStore_DuringVaultApiIntake_RetainsCapturedDocumentWithReviewMetadata()
     {

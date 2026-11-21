@@ -50,4 +50,32 @@ public sealed record CloseReadinessProjectionDto(
     bool IsComplete,
     bool IsReadyToClose,
     IReadOnlyList<CloseReadinessContributionDto> Contributors,
-    IReadOnlyList<CloseReadinessBlockerDto> Blockers);
+    IReadOnlyList<CloseReadinessBlockerDto> Blockers)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Ledger.IntercompanyObligationMonitorDto? IntercompanyAdvisories { get; init; }
+}
+
+/// <summary>
+/// The result of an active intercompany confirmation close policy for one close scope: a contributor status
+/// (<c>Ready</c>, <c>Blocked</c> or <c>Unavailable</c>), the records behind it and an operator-readable reason.
+/// </summary>
+public sealed record IntercompanyConfirmationCloseGateResultDto(string Status, IReadOnlyList<string> Records, string Message,
+    Guid PolicyId, long PolicyVersion);
+
+/// <summary>
+/// Opt-in close blocking from reciprocal balance confirmation (ADR-032). Returns null when the scope's book has no
+/// active confirmation close policy, so close readiness is unchanged; otherwise the policy's contributor result.
+/// </summary>
+public interface IIntercompanyConfirmationCloseGate
+{
+    Task<IntercompanyConfirmationCloseGateResultDto?> EvaluateAsync(CloseReadinessScopeDto scope,
+        string? tenantId, string? companyId, CancellationToken ct = default);
+}
+
+/// <summary>Optional context that never participates in the authoritative close decision.</summary>
+public interface IIntercompanyCloseAdvisorySource
+{
+    Task<Meridian.Contracts.Ledger.IntercompanyObligationMonitorDto> GetAsync(CloseReadinessScopeDto scope,
+        string? tenantId, string? companyId, CancellationToken ct = default);
+}

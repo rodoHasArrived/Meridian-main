@@ -99,7 +99,6 @@ run_step "dotnet-test-backtesting" "${BUILDCTL[@]}" test --project tests/Meridia
 run_step "dotnet-test-fsharp" "${BUILDCTL[@]}" test --project tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj "${test_common_args[@]}" --verbosity minimal --logger "trx;LogFileName=test-results-fsharp.trx" --collect "XPlat Code Coverage"
 run_step "dotnet-test-main" "${BUILDCTL[@]}" test --project tests/Meridian.Tests/Meridian.Tests.csproj "${test_common_args[@]}"
 run_step "dotnet-test-ui" "${BUILDCTL[@]}" test --project tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj "${test_common_args[@]}"
-run_step "dotnet-test-mcpserver" "${BUILDCTL[@]}" test --project tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj "${test_common_args[@]}"
 run_step "dotnet-test-directlending" "${BUILDCTL[@]}" test --project tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj "${test_common_args[@]}"
 run_step "dotnet-test-fundstructure" "${BUILDCTL[@]}" test --project tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj "${test_common_args[@]}"
 run_step "dotnet-test-quantscript" "${BUILDCTL[@]}" test --project tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj "${test_common_args[@]}"

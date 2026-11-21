@@ -1,32 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Report · Report Pack — Meridian</title>
 </head>
 <body>
 <x-dc>
-<!-- @template name="Report Pack" description="Printable monthly report pack — cover, performance summary with equity curve, income statement, positions. Letter sheets on screen; Cmd/Ctrl-P paginates via the design-system print layer" -->
+<!-- @template name="Report · Report Pack" description="Printable monthly pack — cover, performance, income statement, positions — with delivery as a tracked instruction (ActionQueue) and a palette that jumps to any sheet or holding." -->
 <helmet>
 <script src="./ds-base.js"></script>
+<script src="../_scaffold/operator-layer.js"></script>
 <meta name="dc-template" content="report-pack">
-<style>html,body{margin:0;padding:0;}</style>
+<style>html,body{margin:0;padding:0;}
+@media screen{.rp-canvas .mds-sheet{max-width:100%;padding-inline:clamp(20px,5vw,68px)}.rp-toolbar{flex-wrap:wrap}}
+</style>
 </helmet>
-<div data-screen-label="Report pack" style="min-height:100vh;background:var(--bg);padding:24px 16px 48px;font-family:var(--font-body);color:var(--text-primary);">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionEnvelopeProvider" actions="{{ actionDecls }}" transport="{{ actionTransport }}" timeout-ms="{{ 4000 }}" on-settled="{{ onActionSettled }}" hint-size="100%,780px">
+<x-import component="ActionBridge" from="../_scaffold/action-bridge.jsx" on-api="{{ onActionApi }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Report pack" hint-size="100%,780px">
+<div data-screen-label="Report pack" role="main" class="rp-canvas" style="min-height:100vh;background:var(--bg);padding:24px 16px 48px;font-family:var(--font-body);color:var(--text-primary);">
 
   <!-- Print toolbar — screen only -->
-  <div class="mds-no-print" style="width:816px;box-sizing:border-box;margin:0 auto 16px;display:flex;align-items:center;gap:12px;">
+  <div class="mds-no-print rp-toolbar" style="width:min(816px,100%);box-sizing:border-box;margin:0 auto 16px;display:flex;align-items:center;gap:12px;">
     <div style="display:flex;flex-direction:column;gap:2px;">
       <span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Report pack</span>
       <span style="font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary);">RP-2026-06 · generated 2026-07-01 06:00:12Z</span>
     </div>
     <div style="flex:1;"></div>
     <span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);">Letter · 4 pages</span>
-    <span style="flex:none;white-space:nowrap;">
-      <x-import component-from-global-scope="MeridianDesignSystem_4f61be.Button" variant="primary" size="sm" on-click="{{ onPrint }}" hint-size="120px,28px">Print / save PDF</x-import>
+    <x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionStateChip" state="{{ deliverState }}" hint-size="70px,18px"></x-import>
+    <span style="flex:none;white-space:nowrap;display:inline-flex;gap:8px;align-items:center;">
+      <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onPrint }}" hint-size="120px,28px">Print / save PDF</x-import>
+      <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ deliverDisabled }}" on-click="{{ onDeliver }}" hint-size="150px,28px">{{ deliverLabel }}</x-import>
     </span>
   </div>
+  <sc-if value="{{ deliverRejected }}" hint-placeholder-val="{{ false }}">
+    <div class="mds-no-print rp-toolbar" style="width:min(816px,100%);box-sizing:border-box;margin:0 auto 16px;">
+      <x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionEnvelope" action="pack.deliver" show-declaration="{{ false }}" hint-size="100%,120px"></x-import>
+    </div>
+  </sc-if>
 
   <!-- ── Sheet 1 · Cover ─────────────────────────────────────────── -->
   <section class="mds-sheet" data-screen-label="Cover">
@@ -85,22 +103,22 @@
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px;">
-      <div style="border:1px solid var(--border);border-left:3px solid var(--accent);padding:10px 12px;">
+      <div style="border:1px solid var(--border);border-left:3px solid var(--brand-signal,#C56343);padding:10px 12px;">
         <div style="font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Net asset value</div>
         <div style="font:700 20px var(--font-data);font-variant-numeric:tabular-nums;color:var(--text-primary);margin-top:2px;">$26.14M</div>
         <div style="font-family:var(--font-data);font-size:10px;color:var(--green-dim);margin-top:2px;">+$418.1k MTD</div>
       </div>
-      <div style="border:1px solid var(--border);border-left:3px solid var(--accent);padding:10px 12px;">
+      <div style="border:1px solid var(--border);border-left:3px solid var(--brand-signal,#C56343);padding:10px 12px;">
         <div style="font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Net return · MTD</div>
         <div style="font:700 20px var(--font-data);font-variant-numeric:tabular-nums;color:var(--text-primary);margin-top:2px;">+1.62%</div>
         <div style="font-family:var(--font-data);font-size:10px;color:var(--text-muted);margin-top:2px;">SPX +0.94%</div>
       </div>
-      <div style="border:1px solid var(--border);border-left:3px solid var(--accent);padding:10px 12px;">
+      <div style="border:1px solid var(--border);border-left:3px solid var(--brand-signal,#C56343);padding:10px 12px;">
         <div style="font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Net return · YTD</div>
         <div style="font:700 20px var(--font-data);font-variant-numeric:tabular-nums;color:var(--text-primary);margin-top:2px;">+9.60%</div>
         <div style="font-family:var(--font-data);font-size:10px;color:var(--text-muted);margin-top:2px;">net of fees</div>
       </div>
-      <div style="border:1px solid var(--border);border-left:3px solid var(--accent);padding:10px 12px;">
+      <div style="border:1px solid var(--border);border-left:3px solid var(--brand-signal,#C56343);padding:10px 12px;">
         <div style="font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Max drawdown · MTD</div>
         <div style="font:700 20px var(--font-data);font-variant-numeric:tabular-nums;color:var(--text-primary);margin-top:2px;">−0.77%</div>
         <div style="font-family:var(--font-data);font-size:10px;color:var(--text-muted);margin-top:2px;">06-11 → 06-16</div>
@@ -110,7 +128,7 @@
     <div class="mds-avoid-break" style="margin-top:20px;">
       <div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);margin-bottom:8px;">Net asset value · June sessions</div>
       <div style="height:250px;">
-        <x-import component-from-global-scope="MeridianDesignSystem_4f61be.EquityCurve" series="{{ eqSeries }}" labels="{{ eqLabels }}" value-fmt="{{ navFmt }}" crosshair-index="{{ eqLast }}" hint-size="100%,250px"></x-import>
+        <x-import component-from-global-scope="MeridianDesignSystem_205d17.EquityCurve" series="{{ eqSeries }}" labels="{{ eqLabels }}" value-fmt="{{ navFmt }}" crosshair-index="{{ eqLast }}" hint-size="100%,250px"></x-import>
       </div>
     </div>
 
@@ -243,17 +261,74 @@
     </div>
   </section>
 </div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionQueue" label="Delivery in flight" hint-size="0px,0px"></x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CommandPalette" commands="{{ paletteCommands }}" group-order="{{ paletteGroups }}" resolve="{{ paletteResolve }}" scope="report-pack" placeholder="{{ palettePlaceholder }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeyBindings }}" sheet-title="Report pack · keyboard shortcuts" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{
-  &quot;benchmark&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Chart&quot; },
-  &quot;watermark&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Output&quot; }
-}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;benchmark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Chart&quot;},&quot;watermark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Output&quot;},&quot;$preview&quot;:{&quot;width&quot;:816,&quot;height&quot;:1056},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
-  componentDidMount() {
-    // Paper is light — force light tokens regardless of OS scheme (print rule in tokens/print.css).
-    document.documentElement.setAttribute("data-theme", "light");
+  // Chrome tweaks — theme and density drive the design system's own token scopes
+  // (<html data-theme>, <body data-theme-density>); environment drives the badge that
+  // ds-base.js guarantees on every surface.
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
   }
+  componentDidUpdate() { this.applyChrome(); }
+  componentDidMount() {
+    this.applyChrome();
+    // Paper is light — force light tokens regardless of OS scheme (print rule in tokens/print.css).
+    document.documentElement.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme("light"):("light")));
+  }
+  state = { delivered: false };
+  toast(k, a, b) { const T = window.MeridianToast; if (T && T[k]) T[k](a, b); }
+  SHEETS = [["Cover", "cover"], ["01 · Performance summary", "performance"], ["02 · Income statement", "income"], ["03 · Positions & exposure", "positions"]];
+  jumpSheet(i) {
+    const el = document.querySelectorAll("section.mds-sheet")[i]; if (!el) return;
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 16, behavior: "smooth" });
+  }
+  // Write path (B-1): delivery is a consequential instruction — 14 recipients, no recall. The
+  // fixture transport lands in ~1.8 s; delivering a pack with the watermark ON is rejected (a
+  // draft-marked pack cannot go to LPs), which the queue keeps on screen with the reason.
+  actionTransport = async (inst) => {
+    await new Promise((r) => setTimeout(r, 1800));
+    if (inst.payload && inst.payload.watermark) return { ok: false, reason: "Pack carries the CONFIDENTIAL draft watermark. Clear the watermark tweak (or approve the draft) before delivery to limited partners." };
+    return { ok: true, id: "DLV-RP-2026-06-" + Math.floor(100 + Math.random() * 900) };
+  };
+  deliver() {
+    if (!this._actions) return;
+    this._actions.submit("pack.deliver", { label: "Deliver pack RP-2026-06 · 14 recipients", idempotencyKey: "DLV-RP-2026-06-v1-" + ((this.props.watermark ?? false) ? "wm" : "clean"), payload: { pack: "RP-2026-06", recipients: 14, watermark: this.props.watermark ?? false } });
+  }
+  operatorLayer() {
+    const L = window.MeridianOperatorLayer;
+    if (!L) return { commands: [], bindings: [], groupOrder: null };
+    return L.build({
+      screenId: "report-pack", sections: [], activeId: null,
+      actions: [
+        { id: "print", label: "Print / save PDF", keys: "ctrl+p", run: () => window.print() },
+        { id: "deliver", label: "Deliver pack to 14 recipients", keys: "shift+enter", keywords: ["send", "distribute", "lp"], run: () => this.deliver() },
+        ...this.SHEETS.map(([label], i) => ({ id: "sheet-" + i, label: "Go to sheet · " + label, group: "Sheets", keys: "g " + (i + 1), run: () => this.jumpSheet(i) })),
+        { id: "top", label: "Back to top", keys: "g t", group: "Sheets", run: () => window.scrollTo({ top: 0, behavior: "smooth" }) },
+      ],
+      objects: [
+        ...this.SHEETS.map(([label, id], i) => ({ type: "sheet", typeLabel: "Sheet", id: "p" + (i + 1), label, keywords: [id, "page " + (i + 1)], open: () => this.jumpSheet(i) })),
+        ...["NVDA", "MSFT", "AAPL", "AVGO", "JPM", "XOM", "UNH", "GS", "LIN", "CAT", "TLT", "GLD"].map((sym) => ({ type: "position", typeLabel: "Position", id: sym, label: sym + " · positions & exposure", keywords: ["holding"], open: () => this.jumpSheet(3) })),
+        { type: "pack", typeLabel: "Pack", id: "RP-2026-06", label: "Monthly report pack · June 2026", keywords: ["report", "lp"], open: () => this.jumpSheet(0) },
+      ],
+      verbs: [{ id: "open", label: "Open", run: (o) => o.open(o) }],
+    });
+  }
+
   renderVals() {
+    this.applyChrome();
+    const layer = this.operatorLayer();
+    const ins = this._actions ? this._actions.instructionFor("pack.deliver") : null;
+    const delivering = ins && ins.state === "inflight";
     // June 2026 sessions — deterministic NAV path ($k): 25,720.0 → 26,138.1 (+1.62%),
     // one −0.77% dip 06-11 → 06-16. Matches the statement figures on sheet 3.
     const days = ["06-01","06-02","06-03","06-04","06-05","06-08","06-09","06-10","06-11","06-12",
@@ -268,12 +343,24 @@ class Component extends DCLogic {
       series.push({ label: "SPX (beta-scaled)", color: "var(--chart-secondary)", points: bench, dashed: true, area: false });
     }
     return {
+      dataState: this.props.dataState ?? "ready",
+      environment: String(this.props.environment ?? "PAPER").toUpperCase(),
+      watermark: this.props.watermark ?? false,
       eqSeries: series,
       eqLabels: labels,
       eqLast: nav.length - 1,
       navFmt: (v) => "$" + (v / 1000).toFixed(2) + "M",
       onPrint: () => window.print(),
-      watermark: this.props.watermark ?? false,
+      paletteCommands: layer.commands, paletteGroups: layer.groupOrder, paletteResolve: layer.resolve, palettePlaceholder: layer.placeholder, hotkeyBindings: layer.bindings,
+      actionDecls: { "pack.deliver": { label: "Deliver report pack", endpoint: "POST /v1/reports/deliver", permission: { required: "report.deliver", held: true, actor: "r.alvarez" }, posture: "confirmed", failureSurface: "Action queue · toolbar" } },
+      actionTransport: this.actionTransport,
+      onActionApi: this._onActionApi || (this._onActionApi = (api) => { this._actions = api; this.forceUpdate(); }),
+      onActionSettled: (r) => { if (r.state === "landed") this.toast("success", "Pack delivered", r.receipt.id + " · 14 recipients · " + r.receipt.latencyMs + " ms"); this.forceUpdate(); },
+      deliverState: ins ? ins.state : "idle",
+      deliverLabel: delivering ? "Delivering…" : ins && ins.state === "landed" ? "Delivered" : "Deliver to 14 recipients",
+      deliverDisabled: !!(delivering || (ins && ins.state === "landed")),
+      deliverRejected: !!(ins && ins.state === "rejected"),
+      onDeliver: () => this.deliver(),
     };
   }
 }

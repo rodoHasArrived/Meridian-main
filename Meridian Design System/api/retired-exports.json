@@ -1,0 +1,17 @@
+{
+  "$schema": "meridian/retired-exports/1",
+  "authored": true,
+  "note": "Exports removed from the public namespace whose source files are still retained in the package for migration. The build compiles the manifest's export list only, so these are never revived. scripts/check_design_system_governance.py reads this file: a retained source export that is neither in the manifest nor listed here fails, and so does a listed name that reappears in the manifest or whose source has gone. Removal notes: docs/UPGRADING.md.",
+  "exports": {
+    "DenseDataTable":      { "source": "components/data/DenseDataTable.jsx",      "removedIn": "4.0",  "replacement": "DataGrid" },
+    "ExpandableDataTable": { "source": "components/data/ExpandableDataTable.jsx", "removedIn": "4.0",  "replacement": "DataGrid" },
+    "FilteredDataTable":   { "source": "components/data/FilteredDataTable.jsx",   "removedIn": "4.0",  "replacement": "DataGrid" },
+    "Modal":               { "source": "components/core/Modal.jsx",               "removedIn": "2.0",  "replacement": "Dialog" },
+    "ModalHeader":         { "source": "components/core/Modal.jsx",               "removedIn": "2.0",  "replacement": "DialogHeader" },
+    "ModalBody":           { "source": "components/core/Modal.jsx",               "removedIn": "2.0",  "replacement": "DialogBody" },
+    "ModalFooter":         { "source": "components/core/Modal.jsx",               "removedIn": "2.0",  "replacement": "DialogFooter" },
+    "ModalForm":           { "source": "components/core/Modal.jsx",               "removedIn": "2.0",  "replacement": "DialogForm" },
+    "Gauge":               { "source": "components/core/Gauge.jsx",               "removedIn": "1.24", "replacement": "ProgressBar" },
+    "LinearGauge":         { "source": "components/core/LinearGauge.jsx",         "removedIn": "1.24", "replacement": "ProgressBar" }
+  }
+}

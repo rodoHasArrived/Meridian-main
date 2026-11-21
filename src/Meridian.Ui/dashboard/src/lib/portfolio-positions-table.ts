@@ -7,14 +7,20 @@ export interface PortfolioPositionsTableState {
     columnId: "symbol" | "side" | "mark-readiness";
     direction: "asc" | "desc";
   } | null;
+  /** Figure columns the operator hid (C4); carried in the view link so saved views restore them. */
+  hiddenColumns: string[];
 }
+
+/** The positions table's hideable figure columns. */
+export const PORTFOLIO_POSITION_HIDEABLE_COLUMNS = ["quantity", "average", "mark", "unrealized-pnl", "exposure"] as const;
 
 export const PORTFOLIO_POSITION_SEARCH_MAX_LENGTH = 120;
 export const DEFAULT_PORTFOLIO_POSITIONS_TABLE_STATE: PortfolioPositionsTableState = {
   search: "",
   side: null,
   readiness: "all",
-  sort: null
+  sort: null,
+  hiddenColumns: []
 };
 
 interface PortfolioPositionTableRow {
@@ -37,7 +43,10 @@ export function normalizePortfolioPositionsTableState(input: unknown): Portfolio
     sort: validColumn && validDirection ? {
       columnId: sort.columnId as NonNullable<PortfolioPositionsTableState["sort"]>["columnId"],
       direction: sort.direction as "asc" | "desc"
-    } : null
+    } : null,
+    hiddenColumns: Array.isArray(source.hiddenColumns)
+      ? PORTFOLIO_POSITION_HIDEABLE_COLUMNS.filter((id) => (source.hiddenColumns as unknown[]).includes(id))
+      : []
   };
 }
 
@@ -67,7 +76,7 @@ export function getPositionSideOptions(rows: readonly Pick<PortfolioPositionTabl
 }
 
 export function hasPortfolioPositionControls(state: PortfolioPositionsTableState): boolean {
-  return state.search !== "" || state.side !== null || state.readiness !== "all" || state.sort !== null;
+  return state.search !== "" || state.side !== null || state.readiness !== "all" || state.sort !== null || state.hiddenColumns.length > 0;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

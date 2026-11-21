@@ -3,6 +3,7 @@
 // A sticky section header (title + summary on the left, optional jump affordance on the
 // right) over a content body. Used to band an operator workspace into labelled,
 // jump-to-able regions that keep their heading pinned while the region scrolls.
+import { SectionDescription } from "@/components/ui/section-description";
 import type { ReactNode } from "react";
 import { injectStyle } from "./inject-style";
 
@@ -10,18 +11,18 @@ const CSS = `
 .mds-wsection{display:grid;gap:12px;scroll-margin-top:12px;min-width:0;}
 .mds-wsection__head{position:sticky;top:0;z-index:15;display:flex;flex-wrap:wrap;align-items:center;
   justify-content:space-between;gap:10px;min-width:0;
-  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-card,2px);background:var(--bg-medium,#EDEAE4);
+  border:1px solid var(--border-color,#D2CDC3);border-radius:var(--radius-card,2px);background:var(--bg-medium,#EBE8E1);
   padding:9px 12px;}
 .mds-wsection__heading{min-width:0;}
-.mds-wsection__title{margin:0;color:var(--text-primary,#22252A);font-size:13px;font-weight:700;line-height:1.2;}
-.mds-wsection__summary{margin:1px 0 0;color:var(--text-muted,#5E666F);font-size:12px;line-height:1.35;}
+.mds-wsection__title{margin:0;color:var(--text-primary,#20252B);font-size:13px;font-weight:700;line-height:1.2;}
+.mds-wsection__summary{margin:1px 0 0;color:var(--text-muted,#606870);font-size:12px;line-height:1.35;}
 .mds-wsection__jump{display:inline-flex;align-items:center;gap:6px;min-height:30px;
-  border:1px solid var(--accent,#A85436);border-radius:var(--radius-chip,2px);
-  background:var(--blue-a10,rgba(168,84,54,.10));color:var(--accent-dim,#8C4429);
-  padding:4px 10px;font-family:var(--font-body);font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;
+  border:1px solid var(--interaction-link,#2A5F96);border-radius:var(--radius-chip,2px);
+  background:var(--blue-a10,rgba(47,100,138,.10));color:var(--interaction-link,#2A5F96);
+  padding:4px 10px;font-family:var(--font-body);font-size:0.75rem;font-weight:700;cursor:pointer;text-decoration:none;
   white-space:nowrap;}
-.mds-wsection__jump:hover{background:var(--bg-active,#F2E3DB);}
-.mds-wsection__jump:focus-visible{outline:var(--focus-ring,2px solid var(--ws-accent,#A85436));outline-offset:2px;}
+.mds-wsection__jump:hover{background:var(--bg-active,#E7EDF2);}
+.mds-wsection__jump:focus-visible{outline:var(--focus-ring,2px solid var(--interaction-focus,#2D6FB3));outline-offset:2px;}
 .mds-wsection__body{display:grid;gap:12px;min-width:0;}
 `;
 
@@ -32,6 +33,8 @@ export interface WorkspaceSectionProps {
   title?: ReactNode;
   /** Muted one-line summary under the title. */
   summary?: ReactNode;
+  /** Opt in only for instructional summaries; financial status stays visible by default. */
+  descriptionKey?: string;
   /** Jump affordance label (omit to hide). */
   jump?: ReactNode;
   /** Jump click handler (button mode). */
@@ -60,6 +63,7 @@ export function WorkspaceSection({
   id,
   title,
   summary,
+  descriptionKey,
   jump,
   onJump,
   jumpHref,
@@ -70,9 +74,9 @@ export function WorkspaceSection({
   return (
     <section id={id} className={`mds-wsection${className ? " " + className : ""}`}>
       <div className="mds-wsection__head">
-        <div className="mds-wsection__heading">
+        <div className="mds-wsection__heading flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           {title && <h3 className="mds-wsection__title">{title}</h3>}
-          {summary && <p className="mds-wsection__summary">{summary}</p>}
+          {summary && (descriptionKey ? <SectionDescription descriptionKey={descriptionKey} label={`About ${typeof title === "string" ? title : "this section"}`}>{summary}</SectionDescription> : <p className="mds-wsection__summary basis-full">{summary}</p>)}
         </div>
         {jump &&
           (jumpHref ? (

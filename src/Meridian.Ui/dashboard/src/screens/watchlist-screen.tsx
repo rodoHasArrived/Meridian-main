@@ -1,4 +1,5 @@
 import { useMemo, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent } from "react";
+import { StatusBadge } from "@/design-system/status";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Activity, AlertCircle, CheckCircle2, EyeOff, Eye, LineChart, Plus, RefreshCw, Settings, Trash2 } from "lucide-react";
 import { marketDataDeskPath } from "@/lib/workspace";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScreenLayout } from "@/components/ui/screen-layout";
-import { MetricSnapshotCard } from "@/components/meridian/metric-card";
+import { SnapshotMetricTile } from "@/components/meridian/snapshot-metric-tile";
 import { PopOutPaneButton } from "@/components/meridian/pop-out-pane-button";
 import { DenseDataTable, type DenseDataTableColumn, ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import { isCompanionPaneRoute } from "@/lib/companion-pane/pane-window";
@@ -19,7 +20,6 @@ import {
   getSymbolsStatistics,
   removeSymbol as removeSymbolApi
 } from "@/lib/api";
-import { cn } from "@/lib/utils";
 import { useActivityLog } from "@/lib/activity-log/store";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import {
@@ -35,6 +35,8 @@ import {
   useWatchlistRowActions,
   WatchlistRowActionsTrigger
 } from "@/screens/watchlist-screen.row-actions";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export function WatchlistScreen() {
   const { record: recordActivity } = useActivityLog();
@@ -119,7 +121,7 @@ export function WatchlistScreen() {
           Symbol watchlist
         </span>
       }
-      scope="Data Lane"
+      scope="Data"
       description="Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes."
       actions={inCompanionPane ? undefined : <PopOutPaneButton paneId="watchlist" />}
     >
@@ -127,7 +129,7 @@ export function WatchlistScreen() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {vm.stats.map((stat) => (
-              <MetricSnapshotCard key={stat.id} {...stat} />
+              <SnapshotMetricTile key={stat.id} {...stat} />
             ))}
           </div>
 
@@ -161,25 +163,12 @@ export function WatchlistScreen() {
               <Plus className="h-4 w-4" aria-hidden="true" />
               <span className="ml-1.5">{vm.addButtonLabel}</span>
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void vm.refresh()}
-              aria-label={vm.refreshButtonAriaLabel}
-              disabled={vm.refreshDisabled}
-              busy={vm.refreshing}
-              busyLabel={vm.refreshButtonLabel}
-            >
-              <RefreshCw className={`h-4 w-4 ${vm.refreshing ? "animate-spin" : ""}`} aria-hidden="true" />
-              <span className="ml-1.5">{vm.refreshButtonLabel}</span>
-            </Button>
           </form>
           <p id={vm.addSymbolField.helperId} className="mt-2 text-xs text-muted-foreground">
             {vm.addSymbolField.helperText}
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2" aria-label={vm.starterPackGroupLabel}>
-            <span className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">{vm.starterPackEyebrow}</span>
+            <span className={cn("text-xs font-semibold tracking-normal text-muted-foreground", usesTrackedCaps(vm.starterPackEyebrow) && "uppercase")}>{vm.starterPackEyebrow}</span>
             {vm.starterPacks.map((pack) => (
               <Button
                 key={pack.id}
@@ -196,7 +185,7 @@ export function WatchlistScreen() {
               >
                 <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>{pack.label}</span>
-                <span className="break-all text-left font-mono text-[11px] font-normal text-muted-foreground">{pack.symbolsLabel}</span>
+                <span className="break-all text-left font-mono text-xs font-normal text-muted-foreground">{pack.symbolsLabel}</span>
               </Button>
             ))}
           </div>
@@ -549,17 +538,14 @@ function buildColumns(
             <span className="ml-1">{row.removeLabel}</span>
           </Button>
           {row.removeStatusLabel ? (
-            <span
+            <StatusBadge
               id={row.removeStatusId ?? undefined}
               role="status"
               aria-live="polite"
-              className={cn(
-                "inline-flex min-h-8 items-center rounded-sm border px-2 font-mono text-[10px] uppercase tracking-[0.12em]",
-                removeStatusToneClass[row.removeStatusTone]
-              )}
-            >
-              {row.removeStatusLabel}
-            </span>
+              status={row.removeStatusTone === "danger" ? "blocked" : "action"}
+              dot={false}
+              label={row.removeStatusLabel}
+            />
           ) : null}
           <WatchlistRowActionsTrigger
             label={`More actions for ${row.symbol}`}
@@ -575,11 +561,6 @@ const lastToneClass = {
   success: "text-success",
   danger: "text-danger",
   default: "text-foreground"
-} as const;
-
-const removeStatusToneClass = {
-  warning: "border-warning/35 bg-warning/10 text-warning",
-  danger: "border-danger/35 bg-danger/10 text-danger"
 } as const;
 
 function WatchlistDetailPanel({
@@ -622,7 +603,7 @@ function WatchlistDetailPanel({
             <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
               {detail.fields.map((field) => (
                 <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
-                  <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                  <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>{field.label}</dt>
                   <dd className={`mt-1 break-words font-mono text-xs ${detailFieldToneClass[field.tone]}`}>
                     {field.value}
                   </dd>

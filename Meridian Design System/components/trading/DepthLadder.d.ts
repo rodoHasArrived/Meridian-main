@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * DepthLadder — classic price ladder (DOM view): bidSize | price | askSize rows around a
  * spread row (absolute + bps). Depth renders as washed green/red horizontal bars behind the
@@ -32,4 +33,4 @@ export interface DepthLadderProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Makes price cells buttons (ticket prefill). */
   onPriceClick?: (price: number, side: "bid" | "ask") => void;
 }
-export declare function DepthLadder(props: DepthLadderProps): JSX.Element;
+export declare function DepthLadder(props: DepthLadderProps): React.JSX.Element;

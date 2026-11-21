@@ -11,7 +11,8 @@ Checks:
 
 Lifecycle fields must appear in opening YAML front matter or title/metadata, not examples
 or document body text. Generated outputs are counted separately using directory,
-automation-registry, or explicit generated-header ownership.
+automation-registry, or explicit generated-header ownership. Registered immutable evidence
+manifests classify individual snapshots without rewriting historical evidence or exempting folders.
 
 Exit codes:
   0 — all checks passed (warnings printed but not fatal)
@@ -28,11 +29,13 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
+import json
 import re
 import sys
 from collections import Counter
 from datetime import date, datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 try:
     import yaml
@@ -84,6 +87,13 @@ TRANSITIONAL_TOP_LEVEL_DIRS = {"operations", "plans"}
 
 # Directories that are exempt from README requirement (meta files at top level)
 README_EXEMPT_FILES = {"README.md", "HELP.md", "DEPENDENCIES.md", "toc.yml"}
+
+# Explicit packet owners, not folder exemptions. Only Markdown entries actually listed in a
+# checksum-verified manifest are immutable evidence; unlisted neighboring documents remain checked.
+IMMUTABLE_EVIDENCE_MANIFESTS = (
+    "testing/evidence/wal-checksum-2026-10-07/manifest.json",
+)
+
 
 # How old (days) before a 'Reviewed' date is considered stale
 STALE_DAYS = 180
@@ -311,6 +321,51 @@ def generated_ownership(md_file: Path, docs_dir: Path, content: str, outputs: se
     return None
 
 
+def immutable_evidence_documents(docs_dir: Path) -> set[Path]:
+    """Verify registered packet manifests and return their exact immutable Markdown files.
+
+    Invalid or changed evidence is an error, never an exemption. A missing packet directory is
+    allowed for small fixture/sparse trees, but an existing packet must retain its manifest.
+    """
+    documents: set[Path] = set()
+    for relative in IMMUTABLE_EVIDENCE_MANIFESTS:
+        manifest_path = docs_dir / relative
+        if not manifest_path.parent.exists():
+            continue
+        try:
+            manifest_bytes = manifest_path.read_bytes()
+            expected = manifest_path.with_suffix(".sha256").read_text(encoding="utf-8").split()[0]
+            if hashlib.sha256(manifest_bytes).hexdigest() != expected:
+                raise ValueError("manifest checksum mismatch")
+            manifest = json.loads(manifest_bytes)
+            entries = manifest["files"]
+            if not isinstance(entries, list):
+                raise ValueError("files must be a list")
+            seen: set[str] = set()
+            root = manifest_path.parent.resolve()
+            for entry in entries:
+                name = entry["path"]
+                if not isinstance(name, str) or not name or name in seen:
+                    raise ValueError("empty, invalid, or duplicate file path")
+                seen.add(name)
+                parts = PurePosixPath(name)
+                if parts.is_absolute() or ".." in parts.parts or "\\" in name:
+                    raise ValueError(f"unsafe file path: {name}")
+                path = root.joinpath(*parts.parts).resolve()
+                if not path.is_relative_to(root):
+                    raise ValueError(f"file escapes packet: {name}")
+                if path.suffix.lower() != ".md":
+                    continue
+                content = path.read_bytes()
+                if (len(content) != entry["bytes"]
+                        or hashlib.sha256(content).hexdigest() != entry["sha256"]):
+                    raise ValueError(f"snapshot checksum/size mismatch: {name}")
+                documents.add(path)
+        except (OSError, ValueError, KeyError, IndexError, TypeError) as exc:
+            raise ValueError(f"Invalid immutable evidence classification at {relative}: {exc}") from exc
+    return documents
+
+
 def check_front_matter(docs_dir: Path, github_actions: bool, strict: bool) -> list[str]:
     """Check lifecycle metadata in all non-hidden top-level docs directories."""
     check_dirs = [d for d in docs_dir.iterdir() if d.is_dir() and not d.name.startswith(".")]
@@ -352,6 +407,8 @@ def check_front_matter_in_dirs(
     issues = []
     today = date.today()
     outputs = automation_outputs(docs_dir.parent)
+    immutable = immutable_evidence_documents(docs_dir)
+    evidence_count = 0
     generated: Counter[str] = Counter()
     checked = 0
     entrypoints = 0
@@ -360,6 +417,9 @@ def check_front_matter_in_dirs(
         for md_file in sorted(subdir.rglob("*.md")):
             if md_file.name.lower() in {r.lower() for r in README_EXEMPT_FILES}:
                 entrypoints += 1
+                continue
+            if md_file.resolve() in immutable:
+                evidence_count += 1
                 continue
             content = md_file.read_text(encoding="utf-8", errors="replace")
             ownership = generated_ownership(md_file, docs_dir, content, outputs)
@@ -401,7 +461,8 @@ def check_front_matter_in_dirs(
 
     print(f"  Lifecycle scope: {checked} hand-authored document(s) checked; "
           f"{sum(generated.values())} generated output(s) excluded; "
-          f"{entrypoints} entrypoint/meta file(s) excluded.")
+          f"{entrypoints} entrypoint/meta file(s) excluded; "
+          f"{evidence_count} immutable evidence snapshot(s) excluded.")
     if generated:
         print("  Generated ownership: " + "; ".join(
             f"{reason}: {count}" for reason, count in sorted(generated.items())
@@ -472,10 +533,14 @@ def main() -> int:
     # ── Check 2: Front-matter lifecycle fields ────────────────────────────
     print("Check 2: Lifecycle front-matter fields (Status, Owner, Reviewed)")
     print("         Note: These are encouraged, not required — warnings only.")
-    if args.top_level:
-        fm_issues = check_front_matter_in_dirs(docs_dir, scoped_dirs, args.github_actions, args.strict)
-    else:
-        fm_issues = check_front_matter(docs_dir, args.github_actions, args.strict)
+    try:
+        if args.top_level:
+            fm_issues = check_front_matter_in_dirs(docs_dir, scoped_dirs, args.github_actions, args.strict)
+        else:
+            fm_issues = check_front_matter(docs_dir, args.github_actions, args.strict)
+    except ValueError as exc:
+        emit("error", "docs/testing/evidence", str(exc), args.github_actions)
+        return 1
     if not fm_issues:
         print("  OK All checked files have lifecycle front matter")
     else:

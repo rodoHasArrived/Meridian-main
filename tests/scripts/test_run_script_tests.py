@@ -65,7 +65,7 @@ class RunScriptTestsTests(unittest.TestCase):
             "reviewBy": "2999-01-01",
             "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine",
         }
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             quarantine = Path(temp_dir) / "quarantine.json"
             quarantine.write_text(json.dumps({
                 "quarantined_modules": {"test_run_script_tests": entry}
@@ -113,7 +113,7 @@ class RunScriptTestsTests(unittest.TestCase):
         self.assertEqual(MODULE.resolve_module_name(proxy), "test_broken_module")
 
     def test_default_workers_run_modules_concurrently_in_separate_processes(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             fixture_dir = Path(temp_dir)
             for name, peer in (("first", "second"), ("second", "first")):
                 source = textwrap.dedent(
@@ -164,7 +164,7 @@ class RunScriptTestsTests(unittest.TestCase):
             )
 
     def test_failures_and_import_errors_do_not_stop_other_modules(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             fixture_dir = Path(temp_dir)
             (fixture_dir / "test_assertion.py").write_text(
                 textwrap.dedent(
@@ -209,7 +209,7 @@ class RunScriptTestsTests(unittest.TestCase):
             )
 
     def test_one_worker_still_uses_a_fresh_process_for_each_module(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             fixture_dir = Path(temp_dir)
             for name in ("first", "second"):
                 (fixture_dir / f"test_{name}.py").write_text(
@@ -241,7 +241,7 @@ class RunScriptTestsTests(unittest.TestCase):
             )
 
     def test_workers_prioritize_repository_packages_after_parent_path_changes(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             fixture_dir = Path(temp_dir)
             repo_root = SCRIPT_PATH.parents[3]
             ai_scripts = repo_root / "build" / "scripts" / "ai"
@@ -302,7 +302,7 @@ class RunScriptTestsTests(unittest.TestCase):
             )
 
     def test_fixture_summary_writes_do_not_pollute_the_job_summary(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             fixture_dir = Path(temp_dir)
             summary_path = fixture_dir / "job-summary.md"
             summary_path.write_text("Existing job evidence.\n", encoding="utf-8")
@@ -340,7 +340,7 @@ class RunScriptTestsTests(unittest.TestCase):
             self.assertNotIn("synthetic fixture summary evidence", summary)
 
     def test_worker_rejects_tests_disappearing_after_parent_discovery(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             fixture_dir = Path(temp_dir)
             (fixture_dir / "test_disappearing.py").write_text(
                 textwrap.dedent(
@@ -379,7 +379,7 @@ class RunScriptTestsTests(unittest.TestCase):
     def test_spawned_modules_keep_repository_imports_ahead_of_ai_test_package(self):
         root = SCRIPT_PATH.parents[3]
         ai_scripts = root / "build/scripts/ai"
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             fixture_dir = Path(temp_dir)
             (fixture_dir / "test_a_pollute.py").write_text(textwrap.dedent(f"""\
                 import sys
@@ -419,7 +419,7 @@ class RunScriptTestsTests(unittest.TestCase):
     def test_worker_entry_repairs_path_order_before_discovering_a_module(self):
         root = SCRIPT_PATH.parents[3]
         module_name = "test_worker_repository_import_fixture"
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             fixture_dir = Path(temp_dir)
             (fixture_dir / f"{module_name}.py").write_text(textwrap.dedent(f"""\
                 import sys
@@ -442,7 +442,7 @@ class RunScriptTestsTests(unittest.TestCase):
             self.assertEqual(result["testsRun"], 1)
 
     def test_worker_import_failure_reports_original_error_without_relaxing_ids(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             fixture_dir = Path(temp_dir)
             (fixture_dir / "test_worker_import.py").write_text(textwrap.dedent("""\
                 import multiprocessing
@@ -466,7 +466,7 @@ class RunScriptTestsTests(unittest.TestCase):
             self.assertIn("failures=0, errors=1, skipped=0.", output)
 
     def test_abrupt_worker_exit_fails_with_a_useful_diagnostic(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             fixture_dir = Path(temp_dir)
             (fixture_dir / "test_crashing.py").write_text(
                 textwrap.dedent(
@@ -496,7 +496,7 @@ class RunScriptTestsTests(unittest.TestCase):
             )
 
     def test_system_exit_in_class_setup_cannot_report_success(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             fixture_dir = Path(temp_dir)
             (fixture_dir / "test_exiting.py").write_text(
                 textwrap.dedent(
@@ -528,7 +528,7 @@ class RunScriptTestsTests(unittest.TestCase):
             )
 
     def test_workers_must_be_positive(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             result = self.run_fixture(Path(temp_dir), "--workers", "0")
 
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)

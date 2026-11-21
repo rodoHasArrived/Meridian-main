@@ -1,8 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import * as directLendingApi from "@/lib/api/direct-lending.api";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { LoanBookScreen } from "@/screens/loan-book-screen";
 import type { LoanPortfolioSummary } from "@/types/direct-lending.types";
 import hostPortfolio from "@/test/fixtures/loan-portfolio.host.json";
@@ -15,8 +17,16 @@ const api = vi.mocked(directLendingApi);
 
 afterEach(() => {
   vi.resetAllMocks();
+  window.history.replaceState(null, "", "/");
 });
 
+function HeaderRefreshHarness() {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button><LoanBookScreen /></GlobalRefreshProvider>;
+}
+
+// The scenario selector lists each facility by name as well, so table assertions exclude its
+// <option> elements with `{ selector: ":not(option)" }`.
 function summary(overrides: Partial<LoanPortfolioSummary> = {}): LoanPortfolioSummary {
   return {
     totalLoans: 2,
@@ -55,11 +65,29 @@ function summary(overrides: Partial<LoanPortfolioSummary> = {}): LoanPortfolioSu
 }
 
 describe("LoanBookScreen", () => {
+  it("filters the facility table by an exact server maturity bucket and preserves scope in the URL", async () => {
+    const first = summary().loans[0];
+    const second = { ...first, loanId: "33333333-3333-3333-3333-333333333333", facilityName: "Separate EUR facility", baseCurrency: "EUR" };
+    window.history.replaceState(null, "", "/portfolio/loan-book?entity=retained-scope#facilities");
+    render(<LoanBookScreen summary={summary({ loans: [first, second], maturityBuckets: [
+      { currency: "USD", year: 2030, quarter: 1, principalOutstanding: "3250000", loanIds: [first.loanId] },
+      { currency: "EUR", year: 2030, quarter: 2, principalOutstanding: "3250000", loanIds: [second.loanId] }
+    ] })} />);
+    await userEvent.click(screen.getByRole("button", { name: /2030 Q1 1 facility/ }));
+    const table = screen.getByRole("table", { name: "Direct lending facilities" });
+    expect(table).toHaveTextContent("Senior Term Facility A");
+    expect(table).not.toHaveTextContent("Separate EUR facility");
+    expect(new URLSearchParams(window.location.search).get("entity")).toBe("retained-scope");
+    expect(new URLSearchParams(window.location.search).get("loanMaturity")).toBe("USD:2030:1");
+    expect(window.location.hash).toBe("#facilities");
+    await userEvent.click(screen.getByRole("button", { name: "Clear maturity filter" }));
+    expect(table).toHaveTextContent("Separate EUR facility");
+  });
   it("renders and refreshes the host-serialized numeric enums and currency buckets", async () => {
     api.getLoanPortfolioSummary.mockResolvedValue(hostPortfolio);
-    render(<LoanBookScreen />);
-    expect(await screen.findByText("Harbour USD")).toBeInTheDocument();
-    expect(screen.getByText("Harbour EUR")).toBeInTheDocument();
+    render(<HeaderRefreshHarness />);
+    expect(await screen.findByText("Harbour USD", { selector: ":not(option)" })).toBeInTheDocument();
+    expect(screen.getByText("Harbour EUR", { selector: ":not(option)" })).toBeInTheDocument();
     expect(screen.getByText("Defaulted", { selector: "span.mds-badge" })).toHaveClass("mds-badge--danger");
     expect(screen.getByRole("group", { name: "Principal outstanding (USD): $100,000.00" })).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Principal outstanding (EUR): €200,000.00" })).toBeInTheDocument();
@@ -67,8 +95,23 @@ describe("LoanBookScreen", () => {
     const refreshed = structuredClone(hostPortfolio);
     refreshed.currencyTotals[1].totalCollateralValue = 600_000;
     api.getLoanPortfolioSummary.mockResolvedValue(refreshed);
-    await userEvent.click(screen.getByRole("button", { name: "Refresh the loan book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Header refresh" }));
     expect(await screen.findByRole("group", { name: "Collateral value (EUR): €600,000.00" })).toBeInTheDocument();
+  });
+
+  it("shows prepaid interest and unapplied cash columns with the host's values (PRD-115)", async () => {
+    const base = summary();
+    api.getLoanPortfolioSummary.mockResolvedValue({
+      ...base,
+      loans: [{ ...base.loans[0], prepaidInterest: 600, unappliedCash: 99_000 }]
+    });
+
+    render(<LoanBookScreen />);
+
+    expect(await screen.findByRole("columnheader", { name: "Prepaid interest" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Unapplied cash" })).toBeInTheDocument();
+    expect(screen.getByText("$600.00")).toBeInTheDocument();
+    expect(screen.getByText("$99,000.00")).toBeInTheDocument();
   });
 
   it("renders the loan book from the portfolio read", async () => {
@@ -76,7 +119,7 @@ describe("LoanBookScreen", () => {
 
     render(<LoanBookScreen />);
 
-    expect(await screen.findByText("Senior Term Facility A")).toBeInTheDocument();
+    expect(await screen.findByText("Senior Term Facility A", { selector: ":not(option)" })).toBeInTheDocument();
     expect(screen.getByText("Harbour Logistics")).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Principal outstanding (USD): $6,400,000.00" })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Direct lending facilities" })).toBeInTheDocument();
@@ -90,6 +133,7 @@ describe("LoanBookScreen", () => {
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("Loan book could not be loaded");
     expect(alert).toHaveTextContent("Direct lending service is unavailable.");
+    expect(screen.getByRole("button", { name: "Retry loading the loan book" })).toBeEnabled();
     // An outage must not render as a portfolio with zero facilities.
     expect(screen.queryByRole("table", { name: "Direct lending facilities" })).not.toBeInTheDocument();
   });
@@ -105,12 +149,31 @@ describe("LoanBookScreen", () => {
   it("re-reads the portfolio when refreshed", async () => {
     api.getLoanPortfolioSummary.mockResolvedValue(summary());
 
-    render(<LoanBookScreen />);
-    await screen.findByText("Senior Term Facility A");
+    render(<HeaderRefreshHarness />);
+    await screen.findByText("Senior Term Facility A", { selector: ":not(option)" });
+    expect(screen.queryByRole("button", { name: /Refresh the loan book|Retry/ })).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("button", { name: "Refresh the loan book" }));
+    await userEvent.click(screen.getByRole("button", { name: "Header refresh" }));
 
     await waitFor(() => expect(api.getLoanPortfolioSummary).toHaveBeenCalledTimes(2));
+  });
+
+  it("names scenario facilities without their identifiers unless two share a name", () => {
+    const [loan] = summary().loans;
+    const { unmount } = render(<LoanBookScreen summary={summary()} />);
+    const options = () => within(screen.getByRole("combobox", { name: "Scenario facility" }))
+      .getAllByRole("option").map((option) => option.textContent);
+
+    expect(options()).toEqual(["Select a facility", "Senior Term Facility A"]);
+    unmount();
+
+    const twinId = "33333333-3333-3333-3333-333333333333";
+    render(<LoanBookScreen summary={summary({ loans: [loan, { ...loan, loanId: twinId }] })} />);
+    expect(options()).toEqual([
+      "Select a facility",
+      `Senior Term Facility A · ${loan.loanId}`,
+      `Senior Term Facility A · ${twinId}`
+    ]);
   });
 
   it("announces the loan book state to assistive technology", async () => {

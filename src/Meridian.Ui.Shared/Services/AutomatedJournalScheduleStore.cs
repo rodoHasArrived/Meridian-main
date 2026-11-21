@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Store;
+using Meridian.Ui.Shared.Serialization;
 using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
@@ -12,7 +13,8 @@ namespace Meridian.Ui.Shared.Services;
 public enum AutomatedJournalScheduleKind
 {
     FeeAccrual = 0,
-    DividendCapture = 1
+    DividendCapture = 1,
+    PeriodEndMarkReversal = 2
 }
 
 /// <summary>Why a durable schedule-history row was appended.</summary>
@@ -103,6 +105,9 @@ public sealed record AutomatedJournalScheduleWorkItem(
     IReadOnlyList<AutomatedJournalPositionSnapshotScope>? PositionSnapshotScopes = null,
     int MaximumPositionAgeDays = 7)
 {
+    /// <summary>Exact one-time source/target reversal intent; immutable once retained.</summary>
+    public PreparePeriodAdjustmentRequest? PeriodAdjustment { get; init; }
+
     public IReadOnlyList<DividendAccrualPosition> Positions { get; init; } = Positions ?? [];
 
     public IReadOnlyList<Guid> JournalEntryIds { get; init; } = JournalEntryIds ?? [];
@@ -250,7 +255,8 @@ public sealed class FileAutomatedJournalScheduleStore :
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
-        WriteIndented = true
+        WriteIndented = true,
+        TypeInfoResolver = AutomatedJournalScheduleJsonContext.Default
     };
 
     public FileAutomatedJournalScheduleStore(string snapshotPath)
@@ -364,6 +370,7 @@ internal static class AutomatedJournalScheduleProjection
         => string.Equals(left.TenantId, right.TenantId, StringComparison.OrdinalIgnoreCase) &&
            string.Equals(left.CompanyId, right.CompanyId, StringComparison.OrdinalIgnoreCase) &&
            left.Kind == right.Kind &&
+           left.PeriodAdjustment == right.PeriodAdjustment &&
            string.Equals(left.FundProfileId, right.FundProfileId, StringComparison.OrdinalIgnoreCase) &&
            left.LedgerBookId == right.LedgerBookId &&
            string.Equals(left.EntityId, right.EntityId, StringComparison.OrdinalIgnoreCase) &&
@@ -394,6 +401,14 @@ internal static class AutomatedJournalScheduleProjection
             throw new ArgumentOutOfRangeException(nameof(item), "Capital-account confidence threshold must be between 0 and 1.");
         if (item.MaximumPositionAgeDays < 0)
             throw new ArgumentOutOfRangeException(nameof(item), "Maximum position age cannot be negative.");
+        if (item.Kind == AutomatedJournalScheduleKind.PeriodEndMarkReversal &&
+            (item.PeriodAdjustment is not { ReversePeriodEndMark: true } adjustment || item.RecurrenceEnabled
+             || adjustment.LedgerBookId != item.LedgerBookId || adjustment.AccountingDate != item.DueDate
+             || item.DueTimeLocal != TimeOnly.MinValue || timeZoneId != "UTC"
+             || item.TenantId is null || item.CompanyId is null))
+            throw new ArgumentException("A mark reversal schedule requires an immutable native source/target intent, exact UTC due date, tenant scope and no recurrence.");
+        if (item.Kind != AutomatedJournalScheduleKind.PeriodEndMarkReversal && item.PeriodAdjustment is not null)
+            throw new ArgumentException("A period adjustment intent is reserved for the mark reversal schedule kind.");
         var periodToken = item.PeriodStart.ToString("yyyy-MM", System.Globalization.CultureInfo.InvariantCulture);
         if (item.RecurrenceEnabled && !periodId.Contains(periodToken, StringComparison.Ordinal))
         {

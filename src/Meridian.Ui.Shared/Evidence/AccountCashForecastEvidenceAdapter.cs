@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Core.Exceptions;
@@ -11,7 +12,9 @@ namespace Meridian.Ui.Shared.Evidence;
 public sealed record AccountCashForecastSourceDocument(
     int SchemaVersion, string Kind, string SourceDomain, string SourceEntityId, long EvidenceVersion,
     string AccountId, string BookId, DateOnly EffectiveDate, AccountCashEvidenceRole Role,
-    AccountCashSourceBalance? Balance = null, AccountCashSourceFlow? Flow = null, AccountCashSourceFx? Fx = null);
+    AccountCashSourceBalance? Balance = null, AccountCashSourceFlow? Flow = null, AccountCashSourceFx? Fx = null,
+    AccountCashSourceAllocation? Allocation = null, AccountCashSourceReceiptRevision? ReceiptRevision = null,
+    AccountCashSourceWatchObservation? WatchObservation = null);
 public sealed record AccountCashSourceBalance(DateOnly AsOfDate, decimal Amount, string Currency, bool IsSettled);
 public sealed record AccountCashSourceFlow(string FlowId, string VersionId, AccountCashFlowStatus Status,
     string FlowType, decimal Amount, string Currency, DateOnly? EconomicDate, DateOnly? SettlementDate,
@@ -19,6 +22,11 @@ public sealed record AccountCashSourceFlow(string FlowId, string VersionId, Acco
     string? ProjectionEngineVersion = null, Guid? TermsVersionId = null, string? TermsHash = null,
     string? SupersedesVersionId = null);
 public sealed record AccountCashSourceFx(string Currency, string BaseCurrency, DateOnly ConversionDate, decimal BaseUnitsPerCurrencyUnit);
+public sealed record AccountCashSourceAllocation(string AllocationId, string ExpectedFlowId, string ActualVersionId,
+    decimal NetAmount, decimal GrossAmount, decimal WithholdingTax, decimal Fees);
+public sealed record AccountCashSourceReceiptRevision(string ExpectedFlowId, DateOnly ReceiptDate);
+public sealed record AccountCashSourceWatchObservation(string ObservationId, Guid SecurityId, string Kind,
+    DateOnly EffectiveDate, string Value, string? Agency, string? SupersedesObservationId);
 
 /// <summary>
 /// Indicates that cash-forecast source evidence could not satisfy its authority requirements.
@@ -36,6 +44,30 @@ public sealed class AccountCashForecastEvidenceAdapter(IEvidenceArtifactStore st
     };
     private static readonly AccountCashForecastSourceJsonContext SourceJson = new(SourceJsonOptions);
 
+    public async Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var sourceRequest = new AccountCashForecastRequestDto(request.RunId, request.Scope,
+            DateOnly.FromDateTime(request.RecordedAtUtc.UtcDateTime), DateOnly.FromDateTime(request.RecordedAtUtc.UtcDateTime),
+            null, null, request.Payments, [], request.RecordedAtUtc)
+        {
+            CalculationVersion = "account-cash-forecast-v2",
+            PaymentAllocations = request.Allocations,
+            ReceiptRevisions = request.ReceiptRevisions
+        };
+        await VerifyAsync(sourceRequest, ct).ConfigureAwait(false);
+        foreach (var observation in request.Observations ?? [])
+        {
+            if (observation is null)
+                throw Failure("Watch observations cannot contain null entries.");
+            var source = await ReadAsync(observation.Provenance, request.Scope, ct).ConfigureAwait(false);
+            var expected = new AccountCashSourceWatchObservation(observation.ObservationId, observation.SecurityId,
+                observation.Kind, observation.EffectiveDate, observation.Value, observation.Agency, observation.SupersedesObservationId);
+            if (source.SchemaVersion != 2 || source.Kind != "watchObservation" || source.WatchObservation != expected)
+                throw Failure("Watch observation differs from independently reviewed source JSON.");
+        }
+    }
+
     public async Task VerifyAsync(AccountCashForecastRequestDto request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -48,6 +80,10 @@ public sealed class AccountCashForecastEvidenceAdapter(IEvidenceArtifactStore st
             await BalanceAsync(opening).ConfigureAwait(false);
         if (request.ClosingCash is { } closing)
             await BalanceAsync(closing).ConfigureAwait(false);
+        foreach (var balance in request.NativeOpeningBalances ?? [])
+            await BalanceAsync(balance ?? throw Failure("Native opening balances cannot contain null entries.")).ConfigureAwait(false);
+        foreach (var balance in request.NativeClosingBalances ?? [])
+            await BalanceAsync(balance ?? throw Failure("Native closing balances cannot contain null entries.")).ConfigureAwait(false);
         foreach (var flow in request.Flows)
         {
             var source = await ReadAsync(flow.Provenance, request.Scope, ct).ConfigureAwait(false);
@@ -64,6 +100,28 @@ public sealed class AccountCashForecastEvidenceAdapter(IEvidenceArtifactStore st
             if (source.Kind != "fx" || source.Fx != new AccountCashSourceFx(fx.Currency, fx.BaseCurrency, fx.ConversionDate, fx.BaseUnitsPerCurrencyUnit)
                 || source.Balance is not null || source.Flow is not null)
                 throw Failure("Submitted FX direction, date or rate differs from the independently reviewed source JSON.");
+        }
+        foreach (var allocation in request.PaymentAllocations ?? [])
+        {
+            if (allocation is null)
+                throw Failure("Payment allocations cannot contain null entries.");
+            if (allocation.WithholdingTax == 0m && allocation.Fees == 0m && allocation.DeductionEvidence is null)
+                continue;
+            var source = await ReadAsync(allocation.DeductionEvidence
+                ?? throw Failure("Retained deduction evidence is required for taxes and fees."), request.Scope, ct).ConfigureAwait(false);
+            var expected = new AccountCashSourceAllocation(allocation.AllocationId, allocation.ExpectedFlowId,
+                allocation.ActualVersionId, allocation.NetAmount, allocation.GrossAmount, allocation.WithholdingTax, allocation.Fees);
+            if (source.SchemaVersion != 2 || source.Kind != "allocation" || source.Allocation != expected)
+                throw Failure("Payment allocation or gross-to-net deductions differ from the independently reviewed source JSON.");
+        }
+        foreach (var revision in request.ReceiptRevisions ?? [])
+        {
+            if (revision is null)
+                throw Failure("Receipt revisions cannot contain null entries.");
+            var source = await ReadAsync(revision.Evidence, request.Scope, ct).ConfigureAwait(false);
+            if (source.SchemaVersion != 2 || source.Kind != "receiptRevision"
+                || source.ReceiptRevision != new AccountCashSourceReceiptRevision(revision.ExpectedFlowId, revision.ReceiptDate))
+                throw Failure("Revised receipt date differs from the independently reviewed source JSON.");
         }
 
         async Task BalanceAsync(AccountSettledCashObservationDto balance)
@@ -131,7 +189,12 @@ public sealed class AccountCashForecastEvidenceAdapter(IEvidenceArtifactStore st
                 ?? throw Failure("Source JSON is empty.");
         }
         catch (JsonException) { throw Failure("Source format is unsupported; strict typed account cash JSON is required."); }
-        if (source.SchemaVersion != 1 || source.AccountId != scope.AccountId || source.BookId != scope.BookId
+        var populatedKinds = (source.Balance is null ? 0 : 1) + (source.Flow is null ? 0 : 1)
+            + (source.Fx is null ? 0 : 1) + (source.Allocation is null ? 0 : 1) + (source.ReceiptRevision is null ? 0 : 1)
+            + (source.WatchObservation is null ? 0 : 1);
+        if (source.SchemaVersion is not (1 or 2) || populatedKinds != 1
+            || source.SchemaVersion == 1 && (source.Allocation is not null || source.ReceiptRevision is not null || source.WatchObservation is not null)
+            || source.AccountId != scope.AccountId || source.BookId != scope.BookId
             || source.SourceDomain != provenance.SourceDomain || source.SourceEntityId != provenance.SourceEntityId
             || evidence.SourceSystem != source.SourceDomain || evidence.SourceReference != source.SourceEntityId
             || source.EvidenceVersion != evidence.EvidenceVersion || source.EffectiveDate != evidence.EffectiveDate

@@ -4,7 +4,7 @@
 const {
   WorkstationTopbar, StatusBar, PanelSurface, Eyebrow, Button, Badge, KeyValueGrid, CandleChart, ChartCard,
   ScatterChart, SegmentedControl, Input, Kbd
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState, useMemo } = React;
 
 // deterministic pseudo scatter sample — spread (bps) vs 3M implied vol (%)

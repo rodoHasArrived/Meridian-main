@@ -1,6 +1,9 @@
 // Meridian Timestamp — enforces the content rule for time: UTC, mono, explicit.
 // "2026-06-09 20:00:00Z" (utc) · "20:00:00Z" (time) · "6m ago" (relative, auto-ticks).
-// The full UTC form is always available on hover via title; renders a semantic <time>.
+// A `locale` prop renders the SAME UTC instant with locale digit order and a 24-hour
+// clock ("09.06.2026, 20:00:00 UTC") — locale never changes the timezone, and the
+// explicit UTC marker stays. The full UTC form is always available on hover via title;
+// renders a semantic <time>.
 import React from "react";
 
 function toDate(v) {
@@ -22,7 +25,18 @@ function relative(d, now) {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-export function Timestamp({ value, format = "utc", tickMs = 1000, style = {}, ...rest }) {
+function localized(d, locale, timeOnly) {
+  const opts = timeOnly
+    ? { hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23", timeZone: "UTC" }
+    : { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23", timeZone: "UTC" };
+  try {
+    return new Intl.DateTimeFormat(locale, opts).format(d) + "\u202FUTC";
+  } catch (e) {
+    return timeOnly ? utcTime(d) : utcFull(d);
+  }
+}
+
+export function Timestamp({ value, format = "utc", locale, tickMs = 1000, style = {}, ...rest }) {
   const d = toDate(value);
   const [, tick] = React.useReducer((n) => n + 1, 0);
   React.useEffect(() => {
@@ -31,7 +45,9 @@ export function Timestamp({ value, format = "utc", tickMs = 1000, style = {}, ..
     return () => clearInterval(t);
   }, [format, tickMs, value]);
   if (!d) return <span {...rest}>—</span>;
-  const text = format === "time" ? utcTime(d) : format === "relative" ? relative(d, Date.now()) : utcFull(d);
+  const text = format === "relative" ? relative(d, Date.now())
+    : locale ? localized(d, locale, format === "time")
+    : format === "time" ? utcTime(d) : utcFull(d);
   return (
     <time
       dateTime={d.toISOString()}

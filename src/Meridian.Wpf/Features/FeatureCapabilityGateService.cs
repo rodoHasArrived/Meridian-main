@@ -16,6 +16,7 @@ public sealed class FeatureCapabilityGateService : IFeatureCapabilityGate, IDisp
     private readonly CapabilityChangeObservable _changes = new();
     private readonly IDisposable? _optionsSubscription;
     private readonly object _sync = new();
+    private readonly SemaphoreSlim _saveGate = new(1, 1);
 
     public FeatureCapabilityGateService(
         IOptionsMonitor<FeatureCapabilityOptions> options,
@@ -60,13 +61,53 @@ public sealed class FeatureCapabilityGateService : IFeatureCapabilityGate, IDisp
 
     public void SetEnabled(string key, bool enabled)
     {
+        var change = ApplyOverride(key, enabled, out var snapshot);
+
+        _configStore.SaveFeatureCapabilityOverridesAsync(snapshot).GetAwaiter().GetResult();
+
+        if (change is not null)
+        {
+            _changes.Publish(change);
+        }
+    }
+
+    public async Task SetEnabledAsync(string key, bool enabled, CancellationToken ct = default)
+    {
+        var change = ApplyOverride(key, enabled, out _);
+
+        // Saves are serialized and each one writes the overrides as they stand when its turn
+        // comes, so rapid toggles cannot leave an older snapshot as the last one on disk. The
+        // write runs on the thread pool: acquiring the configuration file lock can take seconds
+        // and must never be done on the caller's (UI) thread. The awaits deliberately keep the
+        // caller's context so the change notification is published where the caller expects it.
+        await _saveGate.WaitAsync(ct);
+        try
+        {
+            Dictionary<string, bool> latest;
+            lock (_sync)
+            {
+                latest = new Dictionary<string, bool>(_overrides, StringComparer.OrdinalIgnoreCase);
+            }
+
+            await Task.Run(() => _configStore.SaveFeatureCapabilityOverridesAsync(latest, ct), ct);
+        }
+        finally
+        {
+            _saveGate.Release();
+        }
+
+        if (change is not null)
+        {
+            _changes.Publish(change);
+        }
+    }
+
+    private CapabilityChangedEvent? ApplyOverride(string key, bool enabled, out Dictionary<string, bool> snapshot)
+    {
         if (string.IsNullOrWhiteSpace(key))
         {
             throw new ArgumentException("Capability key is required.", nameof(key));
         }
-
-        CapabilityChangedEvent? change = null;
-        Dictionary<string, bool> snapshot;
 
         lock (_sync)
         {
@@ -80,23 +121,14 @@ public sealed class FeatureCapabilityGateService : IFeatureCapabilityGate, IDisp
             var current = IsEnabled(key);
             snapshot = new Dictionary<string, bool>(_overrides, StringComparer.OrdinalIgnoreCase);
 
-            if (previous != current)
-            {
-                change = new CapabilityChangedEvent(key, current);
-            }
-        }
-
-        _configStore.SaveFeatureCapabilityOverridesAsync(snapshot).GetAwaiter().GetResult();
-
-        if (change is not null)
-        {
-            _changes.Publish(change);
+            return previous != current ? new CapabilityChangedEvent(key, current) : null;
         }
     }
 
     public void Dispose()
     {
         _optionsSubscription?.Dispose();
+        _saveGate.Dispose();
         _changes.Complete();
     }
 

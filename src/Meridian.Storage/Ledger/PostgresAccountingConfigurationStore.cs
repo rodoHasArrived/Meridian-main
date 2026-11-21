@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
+using Meridian.Ledger;
 using Npgsql;
 using NpgsqlTypes;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -37,7 +38,10 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         var tenantScopeId = TenantScopeId(tenantId);
         var companyScopeId = CompanyScopeId(companyId);
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        // Read the configuration revision and its children from the same retained edition.
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct).ConfigureAwait(false);
         await using var workspaceCommand = connection.CreateCommand();
+        workspaceCommand.Transaction = transaction;
         workspaceCommand.CommandText =
             $"""
             select tenant_id,
@@ -73,10 +77,11 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         var validationIssues = Deserialize<IReadOnlyList<AccountingConfigurationValidationIssueDto>>(reader.GetString(6)) ?? [];
         await reader.DisposeAsync().ConfigureAwait(false);
 
-        var chart = await LoadChartAsync(connection, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
-        var templates = await LoadTemplatesAsync(connection, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
-        var rules = await LoadRulesAsync(connection, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
-        var testCases = await LoadRuleTestCasesAsync(connection, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
+        var chart = await LoadChartAsync(connection, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct, transaction).ConfigureAwait(false);
+        var templates = await LoadTemplatesAsync(connection, transaction, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
+        var rules = await LoadRulesAsync(connection, transaction, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
+        var testCases = await LoadRuleTestCasesAsync(connection, transaction, tenantScopeId, companyScopeId, normalizedFundProfileId, configurationScopeId, ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
 
         return new AccountingConfigurationWorkspaceDto(
             normalizedFundProfileId,
@@ -102,7 +107,16 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
+        // Native dividend posting holds this book exclusively while rebuilding its exact
+        // promoted rule and account binding. Configuration cannot change before that commit.
+        if (workspace.LedgerBookId is { } bookId)
+            await CashDividendEntitlementLock.AcquireAsync(connection, transaction, bookId, false, ct).ConfigureAwait(false);
         await UpsertWorkspaceAsync(connection, transaction, workspace, ct).ConfigureAwait(false);
+        // The upsert holds the scoped workspace row lock through the chart replacement.
+        var retainedChart = await LoadChartAsync(connection, TenantScopeId(workspace.TenantId),
+            CompanyScopeId(workspace.CompanyId), NormalizeFundProfileId(workspace.FundProfileId),
+            ConfigurationScopeId(workspace.LedgerBookId), ct, transaction).ConfigureAwait(false);
+        LedgerChartCodeAssignments.RequireUnchanged(retainedChart, workspace.ChartOfAccounts);
         await ReplaceChartAsync(connection, transaction, workspace, ct).ConfigureAwait(false);
         await ReplaceTemplatesAsync(connection, transaction, workspace, ct).ConfigureAwait(false);
         await ReplaceRulesAsync(connection, transaction, workspace, ct).ConfigureAwait(false);
@@ -751,12 +765,14 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         string companyScopeId,
         string fundProfileId,
         string configurationScopeId,
-        CancellationToken ct)
+        CancellationToken ct,
+        NpgsqlTransaction? transaction = null)
     {
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
-            select node_id, path, account_name, account_type, parent_path, symbol, financial_account_id, is_archived
+            select node_id, path, account_name, account_type, parent_path, symbol, financial_account_id, is_archived, intercompany_role, account_code
             from {Qualified("accounting_configuration_chart_nodes")}
             where tenant_id = @tenant_id
               and company_id = @company_id
@@ -781,7 +797,11 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 reader.IsDBNull(4) ? null : reader.GetString(4),
                 reader.IsDBNull(5) ? null : reader.GetString(5),
                 reader.IsDBNull(6) ? null : reader.GetString(6),
-                reader.GetBoolean(7)));
+                reader.GetBoolean(7),
+                reader.IsDBNull(8) ? null : Enum.Parse<IntercompanyAccountRoleDto>(reader.GetString(8)))
+            {
+                AccountCode = reader.IsDBNull(9) ? null : reader.GetString(9)
+            });
         }
 
         return nodes;
@@ -789,6 +809,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private async Task<IReadOnlyList<JournalEntryTemplateDto>> LoadTemplatesAsync(
         NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
         string tenantScopeId,
         string companyScopeId,
         string fundProfileId,
@@ -796,6 +817,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             select template_id, display_name, description, lines, is_archived, version
@@ -829,6 +851,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private async Task<IReadOnlyList<PostingRuleDto>> LoadRulesAsync(
         NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
         string tenantScopeId,
         string companyScopeId,
         string fundProfileId,
@@ -836,6 +859,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             select rule_id, display_name, source_event_type, template_id, rule_version, is_archived, description, rule_payload
@@ -877,6 +901,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
     private async Task<IReadOnlyList<AccountingRuleTestCaseDto>> LoadRuleTestCasesAsync(
         NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
         string tenantScopeId,
         string companyScopeId,
         string fundProfileId,
@@ -884,6 +909,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             select test_case_payload
@@ -964,8 +990,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             command.CommandText =
                 $"""
                 insert into {Qualified("accounting_configuration_chart_nodes")} (
-                    tenant_id, company_id, fund_profile_id, configuration_scope_id, node_id, path, account_name, account_type, parent_path, symbol, financial_account_id, is_archived)
-                values (@tenant_id, @company_id, @fund_profile_id, @configuration_scope_id, @node_id, @path, @account_name, @account_type, @parent_path, @symbol, @financial_account_id, @is_archived);
+                    tenant_id, company_id, fund_profile_id, configuration_scope_id, node_id, path, account_name, account_type, parent_path, symbol, financial_account_id, is_archived, intercompany_role, account_code)
+                values (@tenant_id, @company_id, @fund_profile_id, @configuration_scope_id, @node_id, @path, @account_name, @account_type, @parent_path, @symbol, @financial_account_id, @is_archived, @intercompany_role, @account_code);
                 """;
             AddScope(command, workspace);
             command.Parameters.AddWithValue("node_id", node.NodeId);
@@ -976,6 +1002,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             AddTextOrNull(command, "symbol", node.Symbol);
             AddTextOrNull(command, "financial_account_id", node.FinancialAccountId);
             command.Parameters.AddWithValue("is_archived", node.IsArchived);
+            AddTextOrNull(command, "intercompany_role", node.IntercompanyRole?.ToString());
+            AddTextOrNull(command, "account_code", node.AccountCode);
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }

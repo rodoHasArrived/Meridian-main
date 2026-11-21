@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+<title>Investigate · Investment Event Ledger — Meridian</title>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Investigate · Investment Event Ledger" description="One trade resolved into position, journals, income schedule and basis." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="investment-event-ledger">
+<style>html,body{margin:0;padding:0;height:100%;}</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Event chain" hint-size="100%,780px">
+<div data-screen-label="Investment event detail" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px;">
+  <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Event Ledger" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+  <div style="display:flex;flex:1;min-height:0;">
+    <x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="{{ navActive }}" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+    <main style="flex:1;min-width:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;">
+      <h1 style="margin:0;font:600 11px var(--font-body);font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);">Investment event ledger · EVT-2026-08421</h1>
+      <x-import component-from-global-scope="MeridianDesignSystem_205d17.ClaimHeader" heading-level="{{ 2 }}" context="{{ eventContext }}" claim="US Life purchased USD 10,000,000 par of Acme Energy 5.25% 2034 at 98.750 — a 125,000 discount that accretes into book value from settlement." note="Trade May 29, 2026 with Northstar Securities, settling June 2 for 9,951,562.50 including 76,562.50 accrued interest. Illustrative design data; treatment and account mapping come from the configured Meridian rules." states="{{ eventStates }}" hint-size="100%,96px">
+        <x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ basis }}" options="{{ basisOptions }}" on-change="{{ onBasis }}" hint-size="200px,26px"></x-import>
+        <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onPost }}" hint-size="86px,28px" disabled="{{ true }}" title="Posting requires the application ledger transport and permission checks; this event is an unposted example." aria-description="Posting requires the application ledger transport and permission checks; this event is an unposted example.">Post event</x-import>
+      </x-import>
+      <section style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:14px;">
+        <div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);margin-bottom:12px;">Event lifecycle · EVT-2026-08421</div>
+        <x-import component-from-global-scope="MeridianDesignSystem_205d17.LifecycleRibbon" stages="{{ stages }}" selected-id="{{ stage }}" on-select="{{ onStage }}" hint-size="100%,60px"></x-import>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border-divider);">
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.LifecycleLanes" lanes="{{ lanes }}" hint-size="100%,220px"></x-import>
+        </div>
+      </section>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) var(--inspector-width);gap:16px;align-items:start;">
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0;">
+          <section style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:14px;">
+            <div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Panel 1 · Trade and initial recognition</div>
+            <h2 style="font:600 15px var(--font-display);color:var(--text-primary);margin:4px 0 10px;">Investment facts and the journal they generate</h2>
+            <x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" items="{{ facts }}" columns="{{ factColumns }}" hint-size="100%,150px"></x-import>
+            <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border-divider);">
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:8px;">
+                <span style="font-size:12px;font-weight:600;color:var(--text-primary);">Generated purchase journal</span>
+                <span style="font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);">Rule BOND.PURCHASE.STAT.014 · version 8 · statutory · draft</span>
+              </div>
+              <x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" row-key="index" columns="{{ journalColumns }}" rows="{{ journalRows }}" hint-size="100%,150px"></x-import>
+            </div>
+          </section>
+          <section style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:14px;">
+            <div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Panel 2 · Income and book value</div>
+            <h2 style="font:600 15px var(--font-display);color:var(--text-primary);margin:4px 0 3px;">Constant-yield schedule and the balance it rolls</h2>
+            <p style="font-size:12px;line-height:17px;color:var(--text-muted);margin:0 0 12px;max-width:78ch;">Coupon 5.250% on par, effective yield 5.418%. Selecting a period drives the rollforward, the next journal, and the evidence rail.</p>
+            <div style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:start;">
+              <x-import component-from-global-scope="MeridianDesignSystem_205d17.IncomeSchedule" rows="{{ schedule }}" selected-id="{{ period }}" on-select="{{ onPeriod }}" max-height="{{ scheduleHeight }}" hint-size="100%,240px"></x-import>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">Book-value rollforward</div>
+                <x-import component-from-global-scope="MeridianDesignSystem_205d17.RollforwardTrace" opening="{{ opening }}" closing="{{ closing }}" movements="{{ movements }}" currency="USD" hint-size="100%,180px"></x-import>
+              </div>
+            </div>
+          </section>
+          <section style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:14px;">
+            <div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Panel 3 · Classification override</div>
+            <h2 style="font:600 15px var(--font-display);color:var(--text-primary);margin:4px 0 3px;">The selected ledger account disagrees with the Security Master</h2>
+            <p style="font-size:12px;line-height:17px;color:var(--text-muted);margin:0 0 12px;max-width:78ch;">Security Master classifies this instrument as a public corporate bond; the selected account is private placement debt. State the disagreement, its scope, and its consequences before anything is applied.</p>
+            <x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="warning" title="Accounting treatment does not match the security classification" hint-size="100%,64px">Affects the initial investment account, the discount schedule, the effective-yield calculation, future income journals, the position rollforward, regulatory classification, and reconciliation populations.</x-import>
+            <div style="margin-top:12px;">
+              <x-import component-from-global-scope="MeridianDesignSystem_205d17.BasisBridge" bases="{{ bases }}" rows="{{ bridgeRows }}" footer="{{ bridgeFooter }}" hint-size="100%,220px"></x-import>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:14px;">
+              <div style="border:1px solid var(--border);border-radius:2px;padding:10px;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Update the classification</div>
+                <p style="font-size:11.5px;line-height:16px;color:var(--text-muted);margin:0 0 8px;">Corrects the event and the Security Master. Schedules recalculate; downstream positions using the same master record are identified.</p>
+                <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" hint-size="120px,26px" disabled="{{ true }}" title="This example contains one fixed event scope; scope selection requires application records." aria-description="This example contains one fixed event scope; scope selection requires application records.">Choose scope</x-import>
+              </div>
+              <div style="border:1px solid var(--border);border-radius:2px;padding:10px;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Override this event only</div>
+                <p style="font-size:11.5px;line-height:16px;color:var(--text-muted);margin:0 0 8px;">Keeps the master classification. Requires reason, basis, effective date, policy reference, preparer, and approver.</p>
+                <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" hint-size="120px,26px" disabled="{{ true }}" title="Recording an override requires application authorization and an audit instruction." aria-description="Recording an override requires application authorization and an audit instruction.">Record override</x-import>
+              </div>
+              <div style="border:1px solid var(--border);border-radius:2px;padding:10px;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Post a linked adjustment</div>
+                <p style="font-size:11.5px;line-height:16px;color:var(--text-muted);margin:0 0 8px;">Leaves the original event posted and creates a related adjustment journal with explicit effective dates and an audit trail.</p>
+                <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" hint-size="120px,26px" disabled="{{ true }}" title="Creating an adjustment requires an application journal instruction; no journal is posted here." aria-description="Creating an adjustment requires an application journal instruction; no journal is posted here.">Create adjustment</x-import>
+              </div>
+            </div>
+          </section>
+        </div>
+        <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceInspector" eyebrow="Context inspector" value="EVT-2026-08421" caption="Purchase · Acme Energy 5.25% 2034 · statutory" condition="provisional" hint-size="352px,700px">
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceSection" title="Security" fields="{{ securityFields }}" hint-size="100%,140px"></x-import>
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceSection" title="Position / lot" fields="{{ positionFields }}" hint-size="100%,140px"></x-import>
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceSection" title="Accounting" fields="{{ accountingFields }}" hint-size="100%,140px"></x-import>
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceSection" title="Controls" hint-size="100%,150px">
+            <x-import component-from-global-scope="MeridianDesignSystem_205d17.DataConditionLegend" items="{{ controls }}" hint-size="100%,130px"></x-import>
+          </x-import>
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceSection" title="Sources" hint-size="100%,170px">
+            <x-import component-from-global-scope="MeridianDesignSystem_205d17.ProvenanceTrace" steps="{{ sources }}" hint-size="100%,150px"></x-import>
+          </x-import>
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceSection" title="Reporting consequences" fields="{{ reportingFields }}" note="Every destination listed here is regenerated when the treatment changes." hint-size="100%,140px"></x-import>
+        </x-import>
+      </div>
+    </main>
+  </div>
+  <x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1000},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  // Chrome tweaks — theme and density drive the design system's own token scopes
+  // (<html data-theme>, <body data-theme-density>); environment drives the badge that
+  // ds-base.js guarantees on every surface.
+  componentDidMount() { this.applyChrome(); this._untick = window.MeridianWorld && window.MeridianWorld.tick(this); }
+  componentWillUnmount() { this._untick && this._untick(); }
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidUpdate() { this.applyChrome(); }
+
+  state = { basis: "stat", stage: "acct", period: "June 2026" };
+
+  schedule() {
+    const M = window.MeridianDesignSystem_205d17.Money;
+    const labels = ["June 2026", "July 2026", "August 2026", "September 2026", "October 2026", "November 2026"];
+    return M.effectiveYieldSchedule({
+      par: 10000000, cost: 9875000, couponRate: 0.0525, effectiveYield: 0.05418,
+      periods: 6, labels,
+    }).map((r, i) => ({ ...r, id: r.period, state: i === 0 ? "accrued" : "scheduled" }));
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const rows = this.schedule();
+    const row = rows.find((r) => r.id === this.state.period) || rows[0];
+    const money = (v) => window.MeridianDesignSystem_205d17.Money.formatMoney(v, { decimals: 2 });
+
+    return {
+      dataState: this.props.dataState ?? "ready",
+      envLabel: String(this.props.environment ?? "PAPER").toUpperCase(),
+      clockLabel: window.MeridianWorld ? window.MeridianWorld.clock() : "14:32:08 UTC",
+      navActive: "event-ledger",
+      navSections: (window.MeridianAppMap ? window.MeridianAppMap.sections("event-ledger") : []),
+      onNav: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      eventContext: ["Investment accounting", "EVT-2026-08421", "US Life Insurance Company"],
+      eventStates: [
+        { condition: "confirmed", label: "Balanced" },
+        { condition: "provisional", label: "Posting state", detail: "Draft" },
+        { condition: "pending", label: "Custody", detail: "Awaiting Jun 2" },
+        { condition: "overridden", label: "Classification conflict" },
+      ],
+      basis: this.state.basis,
+      basisOptions: [
+        { value: "stat", label: "Statutory" },
+        { value: "gaap", label: "GAAP" },
+        { value: "tax", label: "Tax" },
+      ],
+      onBasis: (v) => this.setState({ basis: v }),
+      stage: this.state.stage,
+      onStage: (id) => this.setState({ stage: id }),
+      stages: [
+        { id: "trade", label: "Trade captured", meta: "May 29", state: "done" },
+        { id: "acct", label: "Accounting generated", meta: "May 29", state: "current" },
+        { id: "settle", label: "Settlement expected", meta: "Jun 2", state: "pending" },
+        { id: "custody", label: "Custody match", meta: "Awaiting", state: "pending" },
+        { id: "income", label: "Income accrual", meta: "From Jun 2", state: "pending" },
+        { id: "value", label: "Valuation", meta: "Jun 30", state: "pending" },
+        { id: "report", label: "Reporting", meta: "June close", state: "pending" },
+      ],
+      lanes: [
+        { label: "Transaction", steps: [{ label: "Trade", state: "done" }, { label: "Settlement", state: "pending" }, { label: "Close", state: "pending" }] },
+        { label: "Position", steps: [{ label: "Create lot", state: "done" }, { label: "Confirm par", state: "pending" }, { label: "Update", state: "pending" }] },
+        { label: "Cash", steps: [{ label: "Payable", state: "done" }, { label: "Cash movement", state: "pending" }, { label: "Reconcile", state: "pending" }] },
+        { label: "Income", steps: [{ label: "Purchased AI", state: "done" }, { label: "Accrual", state: "current" }, { label: "Coupon", state: "pending" }] },
+        { label: "Book value", steps: [{ label: "Cost", state: "done" }, { label: "Accretion", state: "current" }, { label: "Carrying value", state: "pending" }] },
+        { label: "Market value", steps: [{ label: "Initial price", state: "done" }, { label: "Month-end price", state: "pending" }, { label: "Unrealized", state: "pending" }] },
+        { label: "Reporting", steps: [{ label: "Classify", state: "done" }, { label: "Map", state: "pending" }, { label: "Certify", state: "pending" }] },
+      ],
+      factColumns: 4,
+      facts: [
+        { label: "Security", value: "Acme Energy 5.25% 2034" },
+        { label: "CUSIP", value: "00000ABC1" },
+        { label: "Transaction", value: "Purchase" },
+        { label: "Counterparty", value: "Northstar Securities" },
+        { label: "Par amount", value: "10,000,000.00" },
+        { label: "Price", value: "98.750" },
+        { label: "Principal cost", value: "9,875,000.00" },
+        { label: "Accrued interest", value: "76,562.50" },
+        { label: "Fees", value: "0.00" },
+        { label: "Total settlement", value: "9,951,562.50" },
+        { label: "Trade date", value: "2026-05-29" },
+        { label: "Settlement date", value: "2026-06-02" },
+      ],
+      journalColumns: [
+        { key: "account", label: "Account" },
+        { key: "name", label: "Account name" },
+        { key: "debit", label: "Debit (USD)", align: "right" },
+        { key: "credit", label: "Credit (USD)", align: "right" },
+        { key: "basis", label: "Basis" },
+      ],
+      journalRows: [
+        { account: "1420", name: "Investment — corporate bonds", debit: "9,875,000.00", credit: "—", basis: "Statutory" },
+        { account: "1450", name: "Accrued investment income", debit: "76,562.50", credit: "—", basis: "Statutory" },
+        { account: "2120", name: "Investment payable", debit: "—", credit: "9,951,562.50", basis: "Statutory" },
+        { account: "", name: "Total", debit: "9,951,562.50", credit: "9,951,562.50", basis: "Balanced" },
+      ],
+      schedule: rows,
+      scheduleHeight: 236,
+      period: this.state.period,
+      onPeriod: (id) => this.setState({ period: id }),
+      opening: row.openingBook,
+      closing: row.closingBook,
+      movements: [
+        { label: "Discount accretion", value: row.accretion, note: "BOND.INCOME.STAT.021" },
+        { label: "Principal movement", value: 0 },
+        { label: "Other book-value adjustment", value: 0 },
+      ],
+      bases: [
+        { id: "stat", label: "Statutory", meta: "Selected" },
+        { id: "gaap", label: "GAAP", meta: "Configured", reference: true },
+        { id: "tax", label: "Tax", meta: "Configured", reference: true },
+      ],
+      bridgeRows: [
+        { label: "Security classification", values: { stat: "Corporate bond", gaap: "Corporate bond", tax: "Corporate bond" } },
+        { label: "Ledger account", changed: ["stat"], values: { stat: "Private placement debt", gaap: "Corporate bonds", tax: "Tax investments" } },
+        { label: "Yield method", changed: ["stat"], values: { stat: "Overridden", gaap: "Configured", tax: "Configured" } },
+        { label: "Future schedule", changed: ["stat"], values: { stat: "Recalculated", gaap: "Unchanged", tax: "Unchanged" } },
+        { label: "Next-period income", changed: ["stat"], values: { stat: "47,496.18", gaap: "47,562.40", tax: "47,562.40" } },
+        { label: "Future entries affected", values: { stat: "92", gaap: "92", tax: "92" } },
+      ],
+      bridgeFooter: [{ label: "Approval", values: { stat: "Required", gaap: "Not required", tax: "Not required" }, tones: { stat: "exception" } }],
+      securityFields: [
+        { label: "Issuer", value: "Acme Energy Corp." },
+        { label: "CUSIP / ISIN", value: "00000ABC1" },
+        { label: "Instrument", value: "Corporate bond" },
+        { label: "Coupon", value: "5.250% semi-annual" },
+        { label: "Maturity", value: "2034-06-30" },
+        { label: "Currency", value: "USD" },
+      ],
+      positionFields: [
+        { label: "Entity", value: "US Life Insurance Co." },
+        { label: "Portfolio", value: "General Account" },
+        { label: "Lot", value: "LOT-2026-08421" },
+        { label: "Par", value: "10,000,000.00", envelope: {
+          condition: "confirmed", authority: "source",
+          evidence: [{ label: "Trade confirmation", ref: "TC-77821" }],
+          clocks: { trade: "2026-05-12", settlement: "2026-05-14" } } },
+        { label: "Original cost", value: money(9875000), envelope: {
+          condition: "confirmed", authority: "source", detail: "98.750 clean, plus purchased AI",
+          evidence: [{ label: "Trade confirmation", ref: "TC-77821" }],
+          clocks: { trade: "2026-05-12", settlement: "2026-05-14" } } },
+        // Book value is the constant-yield schedule's output for the selected period, and the
+        // period is not closed — so it states itself as provisional, derived, with its clock.
+        { label: "Book value", value: money(row.closingBook), envelope: {
+          condition: "provisional", authority: "derived", detail: "accretion through " + row.period,
+          evidence: [{ label: "Income schedule", ref: "BOND.INCOME.STAT.021" }],
+          clocks: { calculatedAt: "2026-07-01 03:20:00Z" } } },
+      ],
+      accountingFields: [
+        { label: "Basis", value: "Statutory" },
+        { label: "Measurement", value: "Amortized cost" },
+        { label: "Yield method", value: "Constant yield" },
+        { label: "Effective yield", value: "5.418%" },
+        { label: "Posting rule", value: "BOND.PURCHASE.STAT.014" },
+        { label: "Rule version", value: "8" },
+      ],
+      controls: [
+        { label: "Trade-to-custody match", condition: "pending", state: "Expected Jun 2" },
+        { label: "Position-to-subledger", condition: "reconciled" },
+        { label: "Book-value rollforward", condition: "confirmed", state: "Ties" },
+        { label: "Income reconciliation", condition: "pending" },
+        { label: "Price validation", condition: "confirmed" },
+        { label: "General-ledger tie-out", condition: "pending", state: "June close" },
+      ],
+      sources: [
+        { id: "confirm", label: "Trade confirmation", meta: "TC-77821 · Northstar" },
+        { id: "master", label: "Security Master", meta: "Classification v12 · corporate bond" },
+        { id: "pricing", label: "Pricing provider", meta: "PX-05292026 · 11:02 UTC" },
+        { id: "rule", label: "Accounting rule", meta: "BOND.PURCHASE.STAT.014 v8", state: "current" },
+      ],
+      reportingFields: [
+        { label: "Investment schedule", value: "Schedule D Part 1" },
+        { label: "Asset-class rollforward", value: "Corporate bonds" },
+        { label: "Income statement", value: "Net investment income" },
+        { label: "Balance sheet", value: "Long-term investments" },
+        { label: "Regulatory class", value: "NAIC 2", tone: "overridden" },
+      ],
+      statusItems: [
+        { label: "Event", value: "EVT-2026-08421" },
+        { label: "Basis", value: "Statutory" },
+        { label: "Period", value: "May 2026 (M-1)" },
+        { status: "warn", label: "Approval", value: "Required" },
+        { push: true, label: "Evidence", value: "2 of 2 attached" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

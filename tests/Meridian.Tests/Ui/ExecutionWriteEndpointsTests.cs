@@ -43,7 +43,7 @@ namespace Meridian.Tests.Ui;
 /// named operator scenarios that guard against paper-session replay drift and
 /// promotion decisions that are not visibly auditable.
 /// </summary>
-public sealed class ExecutionWriteEndpointsTests
+public sealed partial class ExecutionWriteEndpointsTests
 {
     private const string ApprovedLiveRunId = "run-live-approved";
 
@@ -484,6 +484,136 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task ClosePositionByKey_WhenLotSelectionNamesThePaperReliefMethod_SubmitsOrder()
+    {
+        // The paper book relieves FIFO, so naming FIFO asks for what will happen anyway.
+        await using var app = await CreateAppAsync(services =>
+            RegisterPaperPortfolioOms(services, CreatePaperPortfolioHoldingAapl()));
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                LotSelection: new PositionLotSelection(PositionLotSelectionMethod.Fifo))));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await ReadActionResultAsync(response)).Status.Should().Be("Accepted");
+    }
+
+    [Theory]
+    [InlineData(PositionLotSelectionMethod.Lifo)]
+    [InlineData(PositionLotSelectionMethod.Hifo)]
+    public async Task ClosePositionByKey_WhenLotSelectionDiffersFromPaperRelief_RejectsAndNamesTheAppliedMethod(
+        PositionLotSelectionMethod requested)
+    {
+        // Same book and order path as the accepted FIFO close; only the requested method differs.
+        // Accepting it would relieve FIFO lots while reporting the operator's HIFO/LIFO choice.
+        await using var app = await CreateAppAsync(services =>
+            RegisterPaperPortfolioOms(services, CreatePaperPortfolioHoldingAapl()));
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                LotSelection: new PositionLotSelection(requested))));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain($"Lot selection {requested} cannot be honoured");
+        result.Message.Should().Contain("relieves lots by Fifo");
+    }
+
+    [Fact]
+    public async Task ClosePositionByKey_WhenLotSelectionMatchesANonDefaultPaperRelief_SubmitsOrder()
+    {
+        await using var app = await CreateAppAsync(services =>
+            RegisterPaperPortfolioOms(services, CreatePaperPortfolioHoldingAapl(PositionLotSelectionMethod.Hifo)));
+        var client = app.GetTestClient();
+
+        var matching = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                Quantity: 1m,
+                LotSelection: new PositionLotSelection(PositionLotSelectionMethod.Hifo))));
+        var fifo = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                Quantity: 1m,
+                LotSelection: new PositionLotSelection(PositionLotSelectionMethod.Fifo))));
+
+        matching.StatusCode.Should().Be(HttpStatusCode.OK);
+        fifo.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await ReadActionResultAsync(fifo)).Message.Should().Contain("relieves lots by Hifo");
+    }
+
+    [Theory]
+    [InlineData(PositionLotSelectionMethod.SpecificId, "lot-1")]
+    [InlineData(PositionLotSelectionMethod.SpecificId, null)]
+    [InlineData(PositionLotSelectionMethod.Fifo, "lot-1")]
+    public async Task ClosePositionByKey_WhenASpecificLotIsRequested_Rejects(
+        PositionLotSelectionMethod method,
+        string? specificLotId)
+    {
+        await using var app = await CreateAppAsync(services =>
+            RegisterPaperPortfolioOms(services, CreatePaperPortfolioHoldingAapl()));
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                LotSelection: new PositionLotSelection(method, specificLotId))));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain("A specific lot cannot be closed from the blotter");
+    }
+
+    [Fact]
+    public async Task ClosePositionByKey_WhenBrokerBackedAndLotSelectionSupplied_RejectsAndDoesNotSubmit()
+    {
+        // Even FIFO is refused here: the broker relieves its own lots and the order cannot say otherwise.
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "opt-close",
+                Quantity: 1m,
+                LotSelection: new PositionLotSelection(PositionLotSelectionMethod.Fifo))));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain("Robinhood (test)");
+        result.Message.Should().Contain("broker's own relief method applies");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ClosePositionByKey_WhenTheBookReliefMethodIsUnknown_RejectsLotSelection()
+    {
+        // A portfolio state that is not the paper book exposes no relief method to compare against.
+        await using var app = await CreateAppAsync(services =>
+            RegisterMinimalOms(services, new ExecutionPosition("AAPL", 5, 180m, 10m, 0m)));
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest(
+                "AAPL",
+                LotSelection: new PositionLotSelection(PositionLotSelectionMethod.Fifo))));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = await ReadActionResultAsync(response);
+        result.Status.Should().Be("Rejected");
+        result.Message.Should().Contain("Lot selection Fifo cannot be honoured");
+    }
+
+    [Fact]
     public async Task ClosePositionByKey_WhenUserLacksExecuteTrades_ReturnsForbidden()
     {
         await using var app = await CreateAppAsync(
@@ -524,14 +654,14 @@ public sealed class ExecutionWriteEndpointsTests
     {
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
 
-        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+        await using var app = await CreateAppAsync(services => RegisterPositionActionMappingOms(services, gateway));
 
         var client = app.GetTestClient();
         var response = await client.PostAsync(
             UiApiRoutes.ExecutionPositionActionClose,
             JsonContent(new ExecutionPositionActionRequest("opt-close", Quantity: 1m)));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
         var result = await ReadActionResultAsync(response);
         result.Status.Should().Be("Accepted");
 
@@ -551,6 +681,46 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
     [Fact]
+    public async Task ClosePositionByKey_LiveBroker_WithVerifiedAccount_IsRefusedPendingManualIntentContract()
+    {
+        // A position action is a manual order. Live manual orders need a reviewed manual-intent
+        // authority contract, which does not exist yet, so nothing reaches the broker.
+        var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterBrokerageOms(services, gateway);
+            RegisterFundAccountScope(services, fundAccountId, isAllowed: true);
+        });
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest("opt-close", Quantity: 1m, FundAccountId: fundAccountId)));
+
+        response.StatusCode.Should().NotBe(HttpStatusCode.OK);
+        (await response.Content.ReadAsStringAsync()).Should().Contain("manual-intent");
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ClosePositionByKey_LiveBroker_BrokerReportedRunId_ConfersNoRunAuthority()
+    {
+        // The fixture position carries the approved run id in its broker-reported metadata. Broker
+        // data never authorizes an order: the run id is stripped, and the order is refused live.
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-close"));
+
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var response = await app.GetTestClient().PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest("opt-close", Quantity: 1m)));
+
+        response.StatusCode.Should().NotBe(HttpStatusCode.OK);
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task ClosePositionByKey_WithFundAccountScope_PassesScopeToBrokerOrder()
     {
         var fundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
@@ -558,7 +728,7 @@ public sealed class ExecutionWriteEndpointsTests
 
         await using var app = await CreateAppAsync(services =>
         {
-            RegisterBrokerageOms(services, gateway);
+            RegisterPositionActionMappingOms(services, gateway);
             RegisterFundAccountScope(services, fundAccountId, isAllowed: true);
         });
 
@@ -581,7 +751,7 @@ public sealed class ExecutionWriteEndpointsTests
 
         await using var app = await CreateAppAsync(services =>
         {
-            RegisterBrokerageOms(services, gateway);
+            RegisterPositionActionMappingOms(services, gateway);
             RegisterFundAccountScope(services, fundAccountId, isAllowed: true);
         });
 
@@ -630,7 +800,7 @@ public sealed class ExecutionWriteEndpointsTests
         };
         var gateway = new RecordingBrokerageGateway(position);
 
-        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+        await using var app = await CreateAppAsync(services => RegisterPositionActionMappingOms(services, gateway));
 
         var client = app.GetTestClient();
         var response = await client.PostAsync(
@@ -652,7 +822,7 @@ public sealed class ExecutionWriteEndpointsTests
     {
         var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-upsize"));
 
-        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+        await using var app = await CreateAppAsync(services => RegisterPositionActionMappingOms(services, gateway));
 
         var client = app.GetTestClient();
         var response = await client.PostAsync(
@@ -669,6 +839,92 @@ public sealed class ExecutionWriteEndpointsTests
         request.Metadata.Should().NotBeNull();
         request.Metadata!["position_effect"].Should().Be("open");
         request.Metadata["option_instrument_url"].Should().Be("https://api.robinhood.com/options/instruments/opt-upsize/");
+    }
+
+    [Theory]
+    [InlineData("us_option", null)]
+    [InlineData("OPTION", "close")]
+    public async Task ClosePositionByKey_PositionEffect_IsDecidedByRobinhoodAndMeridianOptionCodesOnly(
+        string assetClass,
+        string? expectedPositionEffect)
+    {
+        // B4 classifies only the Robinhood/Meridian "option" code (ignoring case); an Alpaca
+        // "us_option" position gets no position_effect. Classifying it is a separate change.
+        var position = CreateRobinhoodOptionPosition("opt-b4") with { AssetClass = assetClass };
+        var gateway = new RecordingBrokerageGateway(position);
+
+        await using var app = await CreateAppAsync(services => RegisterPositionActionMappingOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest("opt-b4", Quantity: 1m)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var request = gateway.SubmittedRequests.Should().ContainSingle().Subject;
+        request.Metadata.Should().NotBeNull();
+        if (expectedPositionEffect is null)
+        {
+            request.Metadata!.Should().NotContainKey("position_effect");
+        }
+        else
+        {
+            request.Metadata!["position_effect"].Should().Be(expectedPositionEffect);
+        }
+    }
+
+    [Theory]
+    [InlineData("us_option", null)]
+    [InlineData("OPTION", "open")]
+    public async Task UpsizePositionByKey_PositionEffect_IsDecidedByRobinhoodAndMeridianOptionCodesOnly(
+        string assetClass,
+        string? expectedPositionEffect)
+    {
+        var position = CreateRobinhoodOptionPosition("opt-b4-upsize") with { AssetClass = assetClass };
+        var gateway = new RecordingBrokerageGateway(position);
+
+        await using var app = await CreateAppAsync(services => RegisterPositionActionMappingOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionUpsize,
+            JsonContent(new ExecutionPositionActionRequest("opt-b4-upsize", Quantity: 1m)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        AssertPositionEffect(gateway, expectedPositionEffect);
+    }
+
+    [Theory]
+    [InlineData("us_option", null)]
+    [InlineData("OPTION", "close")]
+    public async Task ClosePositionBySymbol_PositionEffect_IsDecidedByRobinhoodAndMeridianOptionCodesOnly(
+        string assetClass,
+        string? expectedPositionEffect)
+    {
+        var position = CreateRobinhoodOptionPosition("opt-b4-symbol") with { AssetClass = assetClass };
+        var gateway = new RecordingBrokerageGateway(position);
+
+        await using var app = await CreateAppAsync(services => RegisterPositionActionMappingOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync($"/api/execution/positions/{position.Symbol}/close", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        AssertPositionEffect(gateway, expectedPositionEffect);
+    }
+
+    private static void AssertPositionEffect(RecordingBrokerageGateway gateway, string? expectedPositionEffect)
+    {
+        var request = gateway.SubmittedRequests.Should().ContainSingle().Subject;
+        request.Metadata.Should().NotBeNull();
+        if (expectedPositionEffect is null)
+        {
+            request.Metadata!.Should().NotContainKey("position_effect");
+        }
+        else
+        {
+            request.Metadata!["position_effect"].Should().Be(expectedPositionEffect);
+        }
     }
 
     [Fact]
@@ -914,6 +1170,24 @@ public sealed class ExecutionWriteEndpointsTests
             }));
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task PositionActions_WhenActorMissing_RejectBeforeInvalidQuantityAndDoNotSubmit(int quantity)
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-actor"));
+        await using var app = await CreateAppAsync(
+            services => RegisterBrokerageOms(services, gateway), currentUser: null);
+        var client = app.GetTestClient();
+        foreach (var route in new[] { UiApiRoutes.ExecutionPositionActionClose, UiApiRoutes.ExecutionPositionActionUpsize })
+        {
+            var response = await client.PostAsync(route,
+                JsonContent(new ExecutionPositionActionRequest("opt-actor", Quantity: quantity)));
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
         gateway.SubmittedRequests.Should().BeEmpty();
     }
 
@@ -1368,7 +1642,7 @@ public sealed class ExecutionWriteEndpointsTests
             .Where(static endpoint => endpoint.RoutePattern.RawText?.StartsWith("/api/promotion", StringComparison.Ordinal) == true)
             .ToArray();
 
-        promotionEndpoints.Should().HaveCount(5);
+        promotionEndpoints.Should().HaveCount(6);
         promotionEndpoints.Should().OnlyContain(endpoint =>
             endpoint.Metadata.GetMetadata<WorkstationTenantScopeMetadata>() != null);
     }
@@ -1390,6 +1664,9 @@ public sealed class ExecutionWriteEndpointsTests
             "/api/promotion/reject",
             JsonContent(new PromotionRejectionRequest("run-backtest-01", "Not approved.")));
         var history = await client.GetAsync("/api/promotion/history");
+        var revoke = await client.PostAsync(
+            "/api/promotion/live-authorizations/test-authorization/revoke",
+            JsonContent(new RevokeStrategyLiveAuthorizationRequest("Withdraw approval.")));
         var walkForward = await client.PostAsync(
             "/api/promotion/runs/run-backtest-01/walk-forward-evidence",
             JsonContent(new RecordWalkForwardEvidenceRequest(1.0d, 0.05m, 0.8d, 4)));
@@ -1398,6 +1675,7 @@ public sealed class ExecutionWriteEndpointsTests
         approve.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         reject.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         history.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        revoke.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         walkForward.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -1457,6 +1735,28 @@ public sealed class ExecutionWriteEndpointsTests
     }
 
 
+    /// <summary>
+    /// The minimal OMS over a real paper book, with scaffold pricing so a close reaches the gateway
+    /// (see <c>ClosePositionByKey_WithPaperPosition_SubmitsOrder</c>).
+    /// </summary>
+    private static void RegisterPaperPortfolioOms(IServiceCollection services, PaperTradingPortfolio portfolio)
+    {
+        RegisterMinimalOms(services);
+        services.AddSingleton<Meridian.Execution.Models.IPortfolioState>(portfolio);
+        services.AddSingleton(new Meridian.Execution.Adapters.PaperTradingGatewayOptions
+        {
+            AllowScaffoldMarketFills = true
+        });
+    }
+
+    private static PaperTradingPortfolio CreatePaperPortfolioHoldingAapl(
+        PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo)
+    {
+        var portfolio = new PaperTradingPortfolio(100_000m, lotSelectionMethod: lotSelectionMethod);
+        portfolio.ApplyFill(CreateFill("AAPL", 5m, 180m));
+        return portfolio;
+    }
+
     private static void RegisterFundAccountScope(IServiceCollection services, Guid fundAccountId, bool isAllowed)
     {
         services.AddSingleton<IAccountQueryService>(new StubAccountQueryService(fundAccountId));
@@ -1476,6 +1776,20 @@ public sealed class ExecutionWriteEndpointsTests
                 NullLogger<OrderManagementSystem>.Instance,
                 brokerageConfiguration: sp.GetService<BrokerageConfiguration>(),
                 liveOrderReadinessGate: sp.GetService<ILiveOrderReadinessGate>()));
+    }
+
+    /// <summary>
+    /// The broker-backed composition with an order manager that hands the endpoint's order
+    /// straight to the recording gateway. Position-action mapping tests (option metadata,
+    /// position effect, routing-key stripping, account scope) assert what the endpoint builds:
+    /// the real OMS refuses live position actions, because a manual live order needs a reviewed
+    /// manual-intent contract and broker position data never carried run authority. The live
+    /// refusal is asserted separately against the real OMS.
+    /// </summary>
+    private static void RegisterPositionActionMappingOms(IServiceCollection services, RecordingBrokerageGateway gateway)
+    {
+        RegisterBrokerageOms(services, gateway);
+        services.AddSingleton<IOrderManager>(new GatewayForwardingOrderManager(gateway));
     }
 
     private static void RegisterBrokerageOmsWithoutConfiguration(
@@ -1516,7 +1830,8 @@ public sealed class ExecutionWriteEndpointsTests
             }
         };
 
-    private static void RegisterSessionServices(IServiceCollection services, string rootPath)
+    private static void RegisterSessionServices(IServiceCollection services, string rootPath,
+        ExecutionServices.ResolvePaperAccountCurrency? resolveAccountCurrency = null)
     {
         services.AddSingleton(_ => new ExecutionServices.ExecutionAuditTrailService(
             new ExecutionServices.ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
@@ -1527,7 +1842,8 @@ public sealed class ExecutionWriteEndpointsTests
         services.AddSingleton<ExecutionServices.PaperSessionPersistenceService>(sp => new ExecutionServices.PaperSessionPersistenceService(
             NullLogger<ExecutionServices.PaperSessionPersistenceService>.Instance,
             sp.GetRequiredService<ExecutionServices.IPaperSessionStore>(),
-            sp.GetRequiredService<ExecutionServices.ExecutionAuditTrailService>()));
+            sp.GetRequiredService<ExecutionServices.ExecutionAuditTrailService>(),
+            resolveAccountCurrency: resolveAccountCurrency));
     }
 
     private static void RegisterPromotionServices(
@@ -1872,6 +2188,10 @@ file sealed class RecordingOrderManager(params OrderState[] openOrders) : IOrder
     public List<string> CancelledOrderIds { get; } = new();
     public int CancelAllCallCount { get; private set; }
 
+    // Endpoints with a verified account submit under typed authority; record the order the same way.
+    public Task<OrderResult> SubmitAsync(OrderSubmitCommand command, CancellationToken ct = default) =>
+        PlaceOrderAsync(command.Order, ct);
+
     public Task<OrderResult> PlaceOrderAsync(ExecutionOrderRequest request, CancellationToken ct = default) =>
         Task.FromResult(new OrderResult { Success = true, OrderId = request.ClientOrderId ?? "recorded-order" });
 
@@ -2110,4 +2430,40 @@ sealed class StubAccountQueryService(Guid accountId) : IAccountQueryService
 
     public Task<MarginSnapshotDto?> GetLatestMarginSnapshotAsync(Guid accountId, CancellationToken ct = default) =>
         Task.FromResult<MarginSnapshotDto?>(null);
+}
+
+/// <summary>
+/// Forwards each submitted order to the recording gateway without OMS admission, so endpoint
+/// mapping tests observe exactly the order and authority the endpoint built.
+/// </summary>
+file sealed class GatewayForwardingOrderManager(RecordingBrokerageGateway gateway) : IOrderManager
+{
+    public OrderSubmissionAuthority? LastAuthority { get; private set; }
+
+    public async Task<OrderResult> SubmitAsync(OrderSubmitCommand command, CancellationToken ct = default)
+    {
+        LastAuthority = command.Authority;
+        return await PlaceOrderAsync(command.Order, ct);
+    }
+
+    public async Task<OrderResult> PlaceOrderAsync(ExecutionOrderRequest request, CancellationToken ct = default)
+    {
+        await gateway.SubmitOrderAsync(request, ct);
+        return new OrderResult { Success = true, OrderId = request.ClientOrderId };
+    }
+
+    public Task<OrderResult> CancelOrderAsync(string orderId, CancellationToken ct = default) =>
+        throw new NotSupportedException("Position-action mapping tests do not cancel.");
+
+    public Task<OrderResult> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =>
+        throw new NotSupportedException("Position-action mapping tests do not modify.");
+
+    public IReadOnlyList<OrderState> GetOpenOrders() => [];
+
+    public OrderState? GetOrder(string orderId) => null;
+
+    public Task<KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default) =>
+        throw new NotSupportedException("Position-action mapping tests do not sweep.");
+
+    public IReadOnlyList<OrderState> GetCompletedOrders(int take = 20) => [];
 }

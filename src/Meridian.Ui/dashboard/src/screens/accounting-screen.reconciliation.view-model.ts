@@ -1,7 +1,7 @@
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { getRunReviewPacketPath } from "@/lib/api";
 import { formatExactDecimal } from "@/lib/exact-financial-value";
-import { caseMeasure, caseResidual } from "./reconciliation-case-values";
+import { caseResidual, caseResidualUnit } from "./reconciliation-case-values";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
 import {
   evidenceWorkbenchPath,
@@ -10,8 +10,8 @@ import {
   workflowTargetPath,
 } from "@/lib/workspace";
 import {
-  formatCurrency,
-  formatCurrencyForCode,
+  formatAccountingDate,
+  formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
 import { normalizeApiErrorDisplay } from "./accounting-screen.view-model.shared";
@@ -44,6 +44,66 @@ import type {
   ReconciliationBreakQueueItem,
   StatementRunSummary,
 } from "@/types";
+import { formatCount, pluralizeCount, formatCurrency, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import {
+  TIE_OUT_EPSILON,
+  usableAmount,
+  type TieOutCondition,
+} from "@/components/accounting/proof-arithmetic";
+
+/** One open external-GL reconciliation row, listed in the tie-out as identified but not explained. */
+export interface ReconciliationTieOutItemViewModel {
+  id: string;
+  label: string;
+  /** Row variance as the reconciliation reports it (statement less ledger). `null` when unusable. */
+  value: number | null;
+  /** Open breaks are never summed into the explanation. */
+  explained: false;
+  condition: TieOutCondition;
+  conditionLabel: string;
+  evidence?: string;
+}
+
+/** One side of the tie-out. `value` is `null` when the side is not loaded — never zero. */
+export interface ReconciliationTieOutSourceViewModel {
+  label: string;
+  value: number | null;
+  count: number;
+}
+
+/**
+ * Tie-out proof of the comparison summary for a loaded external GL reconciliation. It carries
+ * the same numbers and the same balanced rule as the summary labels, so the proof cannot reach a
+ * different verdict; the fields line up with `TieOutPanel` props.
+ */
+export interface ReconciliationTieOutViewState {
+  title: string;
+  context: string;
+  type: "one-to-one";
+  currency: string;
+  /** "number" when rows span more than one currency, so no single symbol is printed over them. */
+  notation: "currency" | "number";
+  sourceA: ReconciliationTieOutSourceViewModel;
+  sourceB: ReconciliationTieOutSourceViewModel;
+  items: ReconciliationTieOutItemViewModel[];
+  /** Declared from the summary rule: tied needs zero open breaks and a net variance under half a cent. */
+  status: "tied" | "exception";
+  statusNote?: string;
+}
+
+/** The comparison view state with the numbers behind its labels and the tie-out that proves them. */
+export interface ReconciliationComparisonProofViewState extends ReconciliationComparisonViewState {
+  /** Statement-side balance behind `statementBalanceLabel`. `null` when not loaded. */
+  statementBalance: number | null;
+  /** Ledger-side balance behind `ledgerBalanceLabel`. `null` when not loaded. */
+  ledgerBalance: number | null;
+  /** Net variance behind `varianceLabel`. `null` when not loaded. */
+  netVariance: number | null;
+  matchedCount: number;
+  openCount: number;
+  /** Present only for a loaded external GL reconciliation with row detail. */
+  tieOut: ReconciliationTieOutViewState | null;
+}
 
 type StatementRunSummaryWithMetadata = StatementRunSummary & {
   brokerCustodian?: string | null;
@@ -103,7 +163,7 @@ export function buildReconciliationDetailViewState(
     buildReconciliationDetailField("Run status", item.status, "default"),
     buildReconciliationDetailField("Break count", String(item.breakCount), "default"),
     buildReconciliationDetailField("Open breaks", String(item.openBreakCount), openBreakTone),
-    buildReconciliationDetailField("Last updated", item.lastUpdated, "default")
+    buildReconciliationDetailField("Last updated", /^\d{4}-\d{2}-\d{2}/.test(item.lastUpdated) ? formatAccountingDate(item.lastUpdated) : item.lastUpdated, "default")
   ];
 
   return {
@@ -142,6 +202,14 @@ const SYSTEM_RECONCILIATION_TONE: Record<AccountingSystemReconciliationStatus, "
   MissingMeridian: "danger"
 };
 
+const SYSTEM_RECONCILIATION_TIE_OUT_CONDITION: Record<AccountingSystemReconciliationStatus, TieOutCondition> = {
+  Matched: "reconciled",
+  ReviewRequired: "pending",
+  Variance: "exception",
+  MissingExternal: "missing",
+  MissingMeridian: "missing"
+};
+
 function describeSystemReconciliationStatus(status: AccountingSystemReconciliationStatus): string {
   switch (status) {
     case "Matched":
@@ -172,9 +240,83 @@ function buildSystemReconciliationLine(
       .map((part) => part?.trim())
       .filter(Boolean)
       .join(" · "),
-    amountLabel: formatCurrencyForCode(amount, row.currency),
+    amountLabel: formatCurrency(amount, { currency: row.currency, minimumFractionDigits: 0 }),
     statusLabel: describeSystemReconciliationStatus(row.status),
     statusTone: SYSTEM_RECONCILIATION_TONE[row.status]
+  };
+}
+
+function buildSystemReconciliationTieOutItem(
+  row: AccountingSystemReconciliationRow,
+  showCurrency: boolean
+): ReconciliationTieOutItemViewModel {
+  const title = row.accountName || row.accountCode;
+  const evidenceCount = row.evidenceReferences?.length ?? (row.evidenceRef ? 1 : 0);
+  return {
+    id: row.rowId,
+    label: showCurrency && row.currency ? `${title} (${row.currency})` : title,
+    value: usableAmount(row.variance),
+    explained: false,
+    condition: SYSTEM_RECONCILIATION_TIE_OUT_CONDITION[row.status] ?? "exception",
+    conditionLabel: describeSystemReconciliationStatus(row.status),
+    evidence: evidenceCount > 0 ? pluralizeCount(evidenceCount, "evidence reference", { localizeCount: true }) : undefined
+  };
+}
+
+function buildSystemReconciliationTieOut({
+  systemReconciliation,
+  statementHeading,
+  ledgerHeading,
+  statementBalance,
+  ledgerBalance,
+  netVariance,
+  statementLineCount,
+  ledgerLineCount,
+  balanced,
+  currency
+}: {
+  systemReconciliation: AccountingSystemReconciliationSummary;
+  statementHeading: string;
+  ledgerHeading: string;
+  statementBalance: number | null;
+  ledgerBalance: number | null;
+  netVariance: number | null;
+  statementLineCount: number;
+  ledgerLineCount: number;
+  balanced: boolean;
+  currency: string;
+}): ReconciliationTieOutViewState {
+  const rowCurrencies = [...new Set(systemReconciliation.rows.map((row) => row.currency).filter(Boolean))];
+  const mixedCurrencies = rowCurrencies.length > 1;
+  const openCount = systemReconciliation.breakCount;
+  const period = systemReconciliation.periodStart && systemReconciliation.periodEnd
+    ? `${formatDateOnly(systemReconciliation.periodStart)} to ${formatDateOnly(systemReconciliation.periodEnd)}`
+    : null;
+  // Offsetting row-level breaks net to zero. The arithmetic alone would call that tied, so the
+  // declared exception needs its reason on screen.
+  const offsettingBreaks = !balanced && netVariance !== null && Math.abs(netVariance) < TIE_OUT_EPSILON;
+
+  return {
+    title: "Tie-out proof",
+    context: [
+      "External GL reconciliation",
+      period,
+      mixedCurrencies
+        ? `Rows span ${rowCurrencies.join(", ")}; totals are summed as reported, without conversion`
+        : null
+    ].filter(Boolean).join(" · "),
+    type: "one-to-one",
+    currency,
+    notation: mixedCurrencies ? "number" : "currency",
+    sourceA: { label: statementHeading, value: statementBalance, count: statementLineCount },
+    sourceB: { label: ledgerHeading, value: ledgerBalance, count: ledgerLineCount },
+    items: systemReconciliation.rows
+      .filter((row) => row.status !== "Matched")
+      .map((row) => buildSystemReconciliationTieOutItem(row, mixedCurrencies)),
+    status: balanced ? "tied" : "exception",
+    statusNote: offsettingBreaks
+      ? `${pluralizeCount(openCount, "open break", { localizeCount: true })} ${openCount === 1 ? "remains" : "remain"} although the totals net to zero. Offsetting breaks are not a tie-out.`
+      : undefined
   };
 }
 
@@ -268,7 +410,11 @@ export function buildReconciliationComparisonViewState({
   selectedRunId,
   cashFlow,
   systemReconciliation = null
-}: ReconciliationComparisonBuildInput): ReconciliationComparisonViewState {
+}: ReconciliationComparisonBuildInput): ReconciliationComparisonProofViewState {
+  // A successfully loaded summary can contain default zero totals with no cash observations.
+  const cashEvidence = cashFlow && cashFlow.runsWithCashSignals > 0 ? cashFlow : null;
+  const cashStatementBalance = usableAmount(cashEvidence?.totalCash);
+  const cashLedgerBalance = usableAmount(cashEvidence?.totalLedgerCash);
   const fallbackRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0
     ? []
     : fallbackQueue.map((item): StatementRunSummaryWithMetadata => ({
@@ -305,18 +451,18 @@ export function buildReconciliationComparisonViewState({
     const queueMatch = fallbackQueue.find((item) => item.runId === run.runId);
     const ledgerTitle = queueMatch?.strategyName ?? "Meridian ledger";
     const ledgerMeta = [
-      matchCount.toLocaleString() + " matched",
-      openCount > 0 ? openCount.toLocaleString() + " open" : "no open breaks"
+      formatCount(matchCount) + " matched",
+      openCount > 0 ? formatCount(openCount) + " open" : "no open breaks"
     ].join(" · ");
 
     return {
       id: run.runId,
       statementTitle: brokerCustodian,
       statementMeta: `${period} · ${account}`,
-      statementValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalCash) : `${matchCount.toLocaleString()} matched`,
+      statementValue: index === 0 && cashStatementBalance !== null ? formatPrefixedCurrency(cashStatementBalance) : `${formatCount(matchCount)} matched`,
       ledgerTitle,
       ledgerMeta,
-      ledgerValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${openCount.toLocaleString()} open` : "Matched"),
+      ledgerValue: index === 0 && cashLedgerBalance !== null ? formatPrefixedCurrency(cashLedgerBalance) : (openCount > 0 ? `${formatCount(openCount)} open` : "Matched"),
       statusLabel,
       statusTone: rawStatus === "SecurityCoverageOpen"
         ? "danger"
@@ -365,7 +511,14 @@ export function buildReconciliationComparisonViewState({
   let statementBalanceLabel: string;
   let ledgerBalanceLabel: string;
   let varianceLabel: string;
-  let varianceTone: "success" | "warning";
+  let varianceTone: ReconciliationComparisonViewState["varianceTone"];
+  // The numbers behind the labels, kept so the tie-out proves them without re-parsing text.
+  let statementBalanceValue: number | null;
+  let ledgerBalanceValue: number | null;
+  let netVarianceValue: number | null;
+  let tieOut: ReconciliationTieOutViewState | null = null;
+  const statementHeading = hasTransactionLines ? "Custodian statement" : "Statement";
+  const ledgerHeading = hasTransactionLines ? "Internal ledger" : "Ledger";
 
   if (hasTransactionLines && systemReconciliation) {
     const summaryCurrency = systemReconciliation.rows[0]?.currency || "USD";
@@ -377,35 +530,67 @@ export function buildReconciliationComparisonViewState({
     const balanced = systemReconciliation.breakCount === 0 && Math.abs(netVariance) < 0.005;
     matchedCount = systemReconciliation.matchedCount;
     openCount = systemReconciliation.breakCount;
-    statementBalanceLabel = formatCurrencyForCode(statementBalance, summaryCurrency);
-    ledgerBalanceLabel = formatCurrencyForCode(ledgerBalance, summaryCurrency);
+    statementBalanceLabel = formatCurrency(statementBalance, { currency: summaryCurrency, minimumFractionDigits: 0 });
+    ledgerBalanceLabel = formatCurrency(ledgerBalance, { currency: summaryCurrency, minimumFractionDigits: 0 });
     varianceTone = balanced ? "success" : "warning";
     varianceLabel = balanced
       ? "Balanced"
       : Math.abs(netVariance) >= 0.005
-        ? `Out by ${formatCurrencyForCode(Math.abs(netVariance), summaryCurrency)}`
-        : `${openCount.toLocaleString()} open break${openCount === 1 ? "" : "s"}`;
+        ? `Out by ${formatCurrency(Math.abs(netVariance), { currency: summaryCurrency, minimumFractionDigits: 0 })}`
+        : `${formatCount(openCount)} open break${openCount === 1 ? "" : "s"}`;
+    statementBalanceValue = usableAmount(statementBalance);
+    ledgerBalanceValue = usableAmount(ledgerBalance);
+    netVarianceValue = usableAmount(netVariance);
+    tieOut = buildSystemReconciliationTieOut({
+      systemReconciliation,
+      statementHeading,
+      ledgerHeading,
+      statementBalance: statementBalanceValue,
+      ledgerBalance: ledgerBalanceValue,
+      netVariance: netVarianceValue,
+      statementLineCount: statementLines.length,
+      ledgerLineCount: ledgerLines.length,
+      balanced,
+      currency: summaryCurrency
+    });
   } else {
     matchedCount = sourceRows.reduce((total, run) => total + (run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches), 0);
     openCount = sourceRows.reduce((total, run) => total + run.openExceptionCount, 0);
-    statementBalanceLabel = cashFlow ? formatCurrency(cashFlow.totalCash) : "Not loaded";
-    ledgerBalanceLabel = cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : "Not loaded";
-    const variance = cashFlow?.netVariance ?? 0;
-    varianceTone = Math.abs(variance) < 0.005 ? "success" : "warning";
-    varianceLabel = Math.abs(variance) < 0.005 ? "Balanced" : `Out by ${formatCurrency(Math.abs(variance))}`;
+    statementBalanceValue = cashStatementBalance;
+    ledgerBalanceValue = cashLedgerBalance;
+    statementBalanceLabel = cashStatementBalance === null ? "Not loaded" : formatPrefixedCurrency(cashStatementBalance);
+    ledgerBalanceLabel = cashLedgerBalance === null ? "Not loaded" : formatPrefixedCurrency(cashLedgerBalance);
+    netVarianceValue = cashStatementBalance === null || cashLedgerBalance === null
+      ? null
+      : usableAmount(cashEvidence?.netVariance);
+    if (netVarianceValue === null) {
+      varianceTone = "default";
+      varianceLabel = "Can't assess";
+    } else {
+      const magnitude = Math.abs(netVarianceValue);
+      const balanced = magnitude < 0.005;
+      varianceTone = balanced ? "success" : "warning";
+      varianceLabel = balanced ? "Balanced" : `Out by ${formatPrefixedCurrency(magnitude)}`;
+    }
   }
 
   return {
     title: "Cash reconciliation - broker statement vs. ledger",
-    subtitle: cashFlow?.summary ?? "Broker and custodian statements are compared with Meridian ledger balances from shared reconciliation read models.",
-    statementHeading: hasTransactionLines ? "Custodian statement" : "Statement",
-    ledgerHeading: hasTransactionLines ? "Internal ledger" : "Ledger",
-    matchedBadgeLabel: `${matchedCount.toLocaleString()} matched`,
-    openBadgeLabel: `${openCount.toLocaleString()} open`,
+    subtitle: cashFlow?.summary ?? "Broker and custodian statements are compared with Meridian ledger balances from shared reconciliation data.",
+    statementHeading,
+    ledgerHeading,
+    matchedBadgeLabel: `${formatCount(matchedCount)} matched`,
+    openBadgeLabel: `${formatCount(openCount)} open`,
     statementBalanceLabel,
     ledgerBalanceLabel,
     varianceLabel,
     varianceTone,
+    statementBalance: statementBalanceValue,
+    ledgerBalance: ledgerBalanceValue,
+    netVariance: netVarianceValue,
+    matchedCount,
+    openCount,
+    tieOut,
     rows,
     statementLines,
     ledgerLines,
@@ -489,7 +674,7 @@ function buildReconciliationRunDetailTabs(run: StatementRunSummaryWithMetadata |
     { id: "positions", label: "Positions", badgeLabel: run ? matchTotal(run.positionMatches) : null, description: matchDescription("Position match totals supplied by the reconciliation service.", "Position match") },
     { id: "cash", label: "Cash", badgeLabel: run ? matchTotal(run.cashMatches) : null, description: matchDescription("Cash match totals supplied by the reconciliation service.", "Cash match") },
     { id: "transactions", label: "Transactions", badgeLabel: run ? matchTotal(run.transactionMatches) : null, description: matchDescription("Transaction match totals supplied by the reconciliation service.", "Transaction match") },
-    { id: "breaks-cases", label: "Breaks & Cases", badgeLabel: run ? String(run.breakCount ?? openExceptionCount) : null, description: "Break and case counts from reconciliation/casework read models; no case-state logic runs in React." },
+    { id: "breaks-cases", label: "Breaks & Cases", badgeLabel: run ? String(run.breakCount ?? openExceptionCount) : null, description: "Break and case counts from reconciliation/casework data; no case-state logic runs in React." },
     { id: "evidence", label: "Evidence", badgeLabel: run ? matchTotal(matchCount) : null, description: "Evidence packet and imported statement references available for review." }
   ];
 
@@ -515,10 +700,10 @@ export function buildReconciliationQueuePanelViewState(
     description: "Select a run to inspect its active reconciliation detail panel.",
     overviewTitle: "Reconciliation queue",
     overviewDescription: "Open breaks, timing drift, and balanced runs stay visible without leaving Accounting.",
-    overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation workstream to inspect selected run detail.",
+    overviewCaption: "Read-only reconciliation queue summary. Open the reconciliation area to inspect selected run detail.",
     overviewActionHref: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
     overviewActionLabel: "Open reconciliation",
-    overviewActionAriaLabel: "Open Accounting reconciliation workstream",
+    overviewActionAriaLabel: "Open Accounting reconciliation area",
     listLabel: "Reconciliation runs",
     emptyText: "No reconciliation runs are available for this accounting scope.",
     detailPanelId,
@@ -668,7 +853,7 @@ export function buildOperationalExceptionWorkbenchState({
 
   return {
     title: "Operational exception workbench",
-    description: "Unified review for reconciliation breaks, workflow state, comments, audit evidence, and approval handoffs.",
+    description: "One review for reconciliation breaks, workflow state, comments, audit evidence, and approval next steps.",
     metricRows: [
       {
         id: "active-breaks",
@@ -732,12 +917,12 @@ export function buildReconciliationBreakRows(
   selectedBreakId: string | null = null
 ): ReconciliationBreakRowViewModel[] {
   return breakQueue.map((item) => {
-    const measure = caseMeasure(item);
-    const unit = measure?.unit?.trim();
+    const unit = caseResidualUnit(item)?.trim();
     const residual = formatExactDecimal(caseResidual(item), {
       currency: unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined, signed: true
     });
-    const varianceLabel = residual === null ? "Not recorded" : `${residual} ${unit || "Unit unavailable"}`;
+    const varianceLabel = (item.statementEvidence?.match.residuals.length ?? 0) > 1 ? "Multiple"
+      : residual === null ? "Not recorded" : `${residual} ${unit || "Unit unavailable"}`;
     const actionBusy = action?.breakId === item.breakId;
     const assignBusy = actionBusy && action?.command === "assign";
     const resolveBusy = actionBusy && action?.command === "resolve";
@@ -755,8 +940,8 @@ export function buildReconciliationBreakRows(
       varianceLabel,
       varianceTone: item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
       statusBadgeVariant: reconciliationBreakStatusBadgeVariant(item.status),
-      detectedAtLabel: formatDateTimeLabel(item.detectedAt),
-      lastUpdatedAtLabel: formatDateTimeLabel(item.lastUpdatedAt),
+      detectedAtLabel: formatAccountingDate(item.detectedAt),
+      lastUpdatedAtLabel: formatAccountingDate(item.lastUpdatedAt),
       ownerLabel: item.assignedTo ?? "Unassigned",
       rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${varianceLabel}. ${item.reason}`,
       rowSelectAriaLabel: `Inspect reconciliation break ${item.breakId}`,
@@ -822,7 +1007,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Updated", value: row.lastUpdatedAtLabel },
       { label: "Exception route", value: formatReconciliationMetadata(row.exceptionRoute, "Unrouted") },
       { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
-      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatCurrency(row.toleranceBand) },
+      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatPrefixedCurrency(row.toleranceBand) },
       { label: "Priority", value: formatReconciliationMetadata(row.priority, "Normal") },
       { label: "Urgency", value: buildReconciliationExceptionUrgency(row) },
       { label: "SLA tone", value: formatReconciliationMetadata(row.slaBadgeTone, "info") },
@@ -833,7 +1018,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Comparison scope", value: row.lineage?.comparisonScopeId ?? "Not tracked" },
       { label: "Source lineage", value: row.lineage?.lineageId ?? "No stable source identity retained" },
       { label: "Occurrence", value: row.lineage ? `${row.lineage.occurrenceNumber} · ${row.lineage.occurrenceId}` : "Not tracked" },
-      { label: "First observed", value: row.lineage?.firstObservedAt ?? "Not tracked" },
+      { label: "First observed", value: row.lineage?.firstObservedAt ? formatAccountingDate(row.lineage.firstObservedAt) : "Not tracked" },
       { label: "Last observed run", value: row.lineage?.lastObservedRunId ?? "Not tracked" },
       { label: "Source clearing", value: row.lineage?.clearedByRunId ? `Absent from completed run ${row.lineage.clearedByRunId}; casework still requires disposition` : "No clearing established" },
       { label: "Root cause", value: formatReconciliationMetadata(row.rootCauseCode, "Unset") },
@@ -883,13 +1068,13 @@ function formatReconciliationList(values: string[] | null | undefined, fallback:
 function buildReconciliationSlaText(row: Pick<ReconciliationBreakQueueItem, "slaState" | "slaDueAt" | "slaWarningAt" | "slaBreachedAt">): string {
   const state = reconciliationSlaStateLabel(row.slaState);
   if (row.slaBreachedAt) {
-    return `${state}; breached ${formatDateTimeLabel(row.slaBreachedAt)}`;
+    return `${state}; breached ${formatAccountingDate(row.slaBreachedAt)}`;
   }
   if (row.slaDueAt) {
-    return `${state}; due ${formatDateTimeLabel(row.slaDueAt)}`;
+    return `${state}; due ${formatAccountingDate(row.slaDueAt)}`;
   }
   if (row.slaWarningAt) {
-    return `${state}; warning ${formatDateTimeLabel(row.slaWarningAt)}`;
+    return `${state}; warning ${formatAccountingDate(row.slaWarningAt)}`;
   }
   return state;
 }

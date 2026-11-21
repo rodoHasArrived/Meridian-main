@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * EventTimeline — vertical audit trail. Where `DiffView` shows one change, the timeline shows
  * the sequence: who did what, when, with what evidence. Severity-dotted rail, mono UTC
@@ -36,4 +37,4 @@ export interface EventTimelineProps extends React.HTMLAttributes<HTMLDivElement>
   /** Tighter row spacing for rail placements. @default false */
   dense?: boolean;
 }
-export declare function EventTimeline(props: EventTimelineProps): JSX.Element;
+export declare function EventTimeline(props: EventTimelineProps): React.JSX.Element;

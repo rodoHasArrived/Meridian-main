@@ -3,14 +3,41 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { useNavigate } from "react-router-dom";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
+import { meridianWorkspaceIconAssets } from "@/design-system/assets";
 import { renderWithRouter } from "@/test/render";
 
+/** Workspace rows only: the pinned "Today" entry shares the item styling but is not a workspace. */
+const WORKSPACE_ITEM = ".operator-nav-item:not(.operator-nav-today)";
+
 describe("WorkspaceNav", () => {
+  it("renders decorative canonical workspace icons as masks that inherit navigation colors", () => {
+    renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
+
+    const workspaces = document.querySelectorAll<HTMLAnchorElement>(WORKSPACE_ITEM);
+    expect(workspaces).toHaveLength(7);
+    for (const [workspace, asset] of Object.entries(meridianWorkspaceIconAssets)) {
+      const link = [...workspaces].find((item) => item.getAttribute("href") === `/${workspace}`);
+      expect(link, `${workspace} workspace`).toBeDefined();
+      const icon = link!.querySelector<HTMLElement>(".operator-nav-item__asset");
+      expect(icon).toHaveAttribute("aria-hidden", "true");
+      expect(icon!.style.maskImage).toContain(asset);
+      expect(link!.querySelector("img")).toBeNull();
+      expect(link).toHaveAccessibleName(new RegExp(workspace, "i"));
+    }
+    // Decorative icons add neither image announcements nor keyboard stops.
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(document.querySelectorAll(".operator-nav-item__asset[tabindex]")).toHaveLength(0);
+  });
+
   it("keeps the Daily Control Tower outside the seven-workspace active state", () => {
     renderWithRouter(<WorkspaceNav density="compact" />, { initialEntries: ["/"] });
 
-    expect(document.querySelectorAll(".operator-nav-item")).toHaveLength(7);
-    expect(document.querySelectorAll(".operator-nav-item.active")).toHaveLength(0);
+    // The Control Tower is the pinned "Today" entry: a home page, not an eighth workspace.
+    expect(document.querySelectorAll(WORKSPACE_ITEM)).toHaveLength(7);
+    expect(document.querySelectorAll(`${WORKSPACE_ITEM}.active`)).toHaveLength(0);
+    const today = screen.getByRole("link", { name: /^Today, Daily Control Tower, current route/ });
+    expect(today).toHaveAttribute("aria-current", "page");
+    expect(today).toHaveAttribute("href", "/");
     expect(screen.queryByText("Available · Current")).not.toBeInTheDocument();
     expect(screen.queryByRole("group", { name: "Trading pages" })).not.toBeInTheDocument();
   });
@@ -22,7 +49,8 @@ describe("WorkspaceNav", () => {
     expect(rail).toHaveAttribute("data-design-system-component", "NavRail");
     expect(rail).toHaveClass("mds-nav-rail");
     expect(rail).toHaveClass("op-rail");
-    expect(document.querySelectorAll(".operator-nav-item")).toHaveLength(7);
+    expect(document.querySelectorAll(WORKSPACE_ITEM)).toHaveLength(7);
+    expect(document.querySelectorAll(".operator-nav-today")).toHaveLength(1);
     [
       "Trading",
       "Portfolio",
@@ -32,7 +60,10 @@ describe("WorkspaceNav", () => {
       "Data",
       "Settings"
     ].forEach((label) => expect(screen.getByText(label)).toBeInTheDocument());
-    expect(screen.getByText("Available · Current")).toBeInTheDocument();
+    // Product maturity is a tooltip now, not a rail pill.
+    expect(screen.queryByText("Available · Current")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^Trading workspace, current route/ }))
+      .toHaveAttribute("title", "Trading · Available product maturity");
   });
 
   it("announces the current workspace route", () => {
@@ -41,8 +72,9 @@ describe("WorkspaceNav", () => {
     expect(screen.getByRole("navigation", { name: "Workspaces" })).toBeInTheDocument();
     expect(screen.queryByLabelText("Current workspace: Accounting, Available product maturity")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Accounting workspace, active section, Available product maturity")).not.toHaveAttribute("aria-current");
-    expect(screen.getByLabelText("Casework, current page")).toHaveAttribute("aria-current", "page");
-    expect(screen.getByText("Available · Current")).toBeInTheDocument();
+    // The rail lists Accounting's groups; the page itself is marked in the page's section menu.
+    expect(screen.getByLabelText("Reconciliation, current section: 3 pages")).toHaveAttribute("href", "/accounting/statement-import");
+    expect(screen.queryByText("Available · Current")).not.toBeInTheDocument();
     expect(screen.queryByText("Available product maturity")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Canonical route /accounting")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Open command palette with Control K")).not.toBeInTheDocument();
@@ -79,24 +111,60 @@ describe("WorkspaceNav", () => {
     expect(screen.getByLabelText("Open Storage assurance")).toHaveAttribute("href", "/data/assurance");
   });
 
-  it("renders exactly the seven root workspaces and shows maturity pills only in detailed mode", () => {
+  it("renders exactly the seven root workspaces with product maturity in tooltips, not pills", () => {
     const detailed = renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
 
-    const detailedItems = detailed.container.querySelectorAll(".operator-nav-item");
+    const detailedItems = detailed.container.querySelectorAll(WORKSPACE_ITEM);
     expect(detailedItems).toHaveLength(7);
     const labels = Array.from(detailedItems).map((item) => item.querySelector(".font-medium")?.textContent);
     expect(new Set(labels)).toEqual(
       new Set(["Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"])
     );
-    // Detailed rail surfaces the per-workspace product-maturity pill.
-    expect(detailed.container.querySelectorAll(".operator-nav-status").length).toBeGreaterThan(0);
+    // Neither rail shows maturity pills: maturity is in each link's tooltip and accessible name.
+    expect(detailed.container.querySelectorAll(".operator-nav-status")).toHaveLength(0);
 
     detailed.unmount();
 
     const compact = renderWithRouter(<WorkspaceNav density="compact" />, { initialEntries: ["/trading"] });
-    expect(compact.container.querySelectorAll(".operator-nav-item")).toHaveLength(7);
+    expect(compact.container.querySelectorAll(WORKSPACE_ITEM)).toHaveLength(7);
     // Compact rail keeps the same seven workspaces but drops the maturity pills.
     expect(compact.container.querySelectorAll(".operator-nav-status")).toHaveLength(0);
+  });
+
+  it("shows Control Tower attention counts on Today and the owning workspaces", () => {
+    renderWithRouter(
+      <WorkspaceNav density="compact" attention={{ total: 3, byWorkspace: { accounting: 2, data: 1 } }} />,
+      { initialEntries: ["/trading"] }
+    );
+
+    const badgeFor = (link: HTMLElement) => link.parentElement?.querySelector(".operator-nav-count");
+    const today = screen.getByRole("link", { name: /^Open Today, the Daily Control Tower, 3 items need attention/ });
+    const accounting = screen.getByRole("link", { name: /^Open Accounting workspace.*, 2 items need attention/ });
+    const data = screen.getByRole("link", { name: /^Open Data workspace.*, 1 item needs attention/ });
+    expect(badgeFor(today)).toHaveTextContent("3");
+    expect(badgeFor(accounting)).toHaveTextContent("2");
+    expect(badgeFor(data)).toHaveTextContent("1");
+    // Label in Name (WCAG 2.5.3): the badge is a sibling, so each link's visible text is exactly
+    // its label and stays contained in the accessible name.
+    expect(today).toHaveTextContent(/^Today$/);
+    expect(accounting).toHaveTextContent(/^Accounting$/);
+    expect(badgeFor(accounting)).toHaveAttribute("aria-hidden", "true");
+    // The badge lets pointer events through to the link under it, so the link's tooltip names the
+    // badge's unit and where those items are listed; the badge carries no title of its own.
+    expect(today).toHaveAttribute("title", "Today: Daily Control Tower · 3 items in Today's finance queue");
+    expect(accounting).toHaveAttribute(
+      "title",
+      "Accounting · Available product maturity · 2 items from Accounting in Today's finance queue"
+    );
+    expect(data).toHaveAttribute("title", "Data · Available product maturity · 1 item from Data in Today's finance queue");
+    [today, accounting, data].forEach((link) => expect(badgeFor(link)).not.toHaveAttribute("title"));
+    // Today has no expand chevron; its link spans the row so the badge sits over the link.
+    expect(today).toHaveClass("col-span-full");
+    // Workspaces with nothing queued carry no badge and no attention suffix.
+    const portfolio = screen.getByRole("link", { name: /^Open Portfolio workspace/ });
+    expect(badgeFor(portfolio)).toBeNull();
+    expect(portfolio).not.toHaveAccessibleName(/attention/);
+    expect(portfolio).toHaveAttribute("title", "Portfolio · Preview product maturity");
   });
 
   it("expands inactive workspace pages from the rail toggle", async () => {
@@ -110,13 +178,11 @@ describe("WorkspaceNav", () => {
     await user.click(screen.getByRole("button", { name: "Expand Accounting pages" }));
 
     expect(accountingSections).toHaveAttribute("aria-hidden", "false");
-    ["Close", "Records", "Reconciliation", "Review", "Administration"].forEach((label) => {
-      expect(within(accountingSections!).getByRole("group", { name: label })).toBeInTheDocument();
-    });
-    expect(within(accountingSections!).getByLabelText("Open Ledger explorer")).toHaveAttribute("href", "/accounting/ledger");
-    expect(within(accountingSections!).getByLabelText("Open Close calendar")).toHaveAttribute("href", "/accounting/close-calendar");
-    expect(within(accountingSections!).getByLabelText("Open Capital accounts")).toHaveAttribute("href", "/accounting/capital-accounts");
-    expect(within(accountingSections!).getByLabelText("Open Approvals")).toHaveAttribute("href", "/accounting/approvals");
+    // Five group rows, not 17 pages, so the other workspaces stay on screen (UX Phase D).
+    expect(within(accountingSections!).getAllByRole("link").map((link) => link.textContent)).toEqual(["Close", "Records", "Reconciliation", "Review", "Administration"]);
+    expect(within(accountingSections!).getByLabelText("Open Records: 7 pages, starting at Ledger explorer")).toHaveAttribute("href", "/accounting/ledger");
+    expect(within(accountingSections!).getByLabelText("Open Close: 3 pages, starting at Close cockpit")).toHaveAttribute("href", "/accounting");
+    expect(within(accountingSections!).getByLabelText("Open Review: 2 pages, starting at Exceptions")).toHaveAttribute("href", "/accounting/exceptions");
     expect(screen.getByRole("button", { name: "Collapse Accounting pages" })).toHaveAttribute("aria-expanded", "true");
   });
 
@@ -132,16 +198,15 @@ describe("WorkspaceNav", () => {
 
     await user.click(screen.getByRole("button", { name: "Expand Data pages" }));
     await user.click(screen.getByRole("button", { name: "Collapse Accounting pages" }));
-    expect(screen.queryByLabelText("Casework, current page, preserving Account: account-1")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Reconciliation, current section/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Expand Accounting pages" })).toHaveAttribute("aria-expanded", "false");
 
     await user.click(screen.getByRole("button", { name: "Open approval destination" }));
 
     expect(screen.getByRole("button", { name: "Collapse Accounting pages" })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("button", { name: "Collapse Data pages" })).toHaveAttribute("aria-expanded", "true");
-    const current = screen.getByRole("link", { name: /Approvals, current page/ });
-    expect(current).toHaveAttribute("aria-current", "page");
-    expect(current).toHaveAttribute("href", "/accounting/approvals?fundAccountId=account-1");
+    const current = screen.getByRole("link", { name: /Review, current section/ });
+    expect(current).toHaveAttribute("href", "/accounting/exceptions?fundAccountId=account-1");
 
     // A deliberate collapse remains closed until the destination changes again.
     await user.click(screen.getByRole("button", { name: "Collapse Accounting pages" }));
@@ -158,7 +223,7 @@ describe("WorkspaceNav", () => {
     expect(destination).toHaveFocus();
     await user.keyboard("{Enter}");
     expect(screen.getByRole("link", { name: "Ingestion operations, current page" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: /Open Trading workspace/ })).toHaveAttribute("title", "Trading");
+    expect(screen.getByRole("link", { name: /Open Trading workspace/ })).toHaveAttribute("title", "Trading · Available product maturity");
   });
 
 });

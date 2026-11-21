@@ -1,6 +1,6 @@
-import { RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { useToast, type ToastApi } from "@/components/ui/toast";
@@ -14,7 +14,9 @@ import {
 } from "@/screens/data-screen.cell-actions";
 import type { CoverageGapsViewModel } from "@/screens/data-screen.coverage-gaps.view-model";
 import type { DataQualityPanelViewModel } from "@/screens/data-screen.data-quality.view-model";
-import { qualityToneBadgeVariant, resultToneClass } from "@/screens/data-screen.tone-styles";
+import { formatCount, formatNumber, formatTimestamp } from "@/lib/format";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { statusBadgeVariant, statusPanelClass, statusTextClass } from "@/design-system/status-styles";
 
 /** Reveal the provider capability matrix region in response to a contextual "compare" action. */
 function revealCapabilityMatrix(toast: ToastApi, symbol?: string) {
@@ -49,17 +51,7 @@ export function CoverageGapsRegion({ panel }: { panel: CoverageGapsViewModel }) 
               {panel.model ? ` ${panel.model.summary} Last quality run: ${panel.model.runAtLabel}.` : null}
             </CardDescription>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void panel.refresh()}
-            disabled={panel.loading}
-            aria-label="Refresh security master coverage"
-          >
-            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-            <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-          </Button>
+          <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="security master coverage" />
         </CardHeader>
         <CardContent>
           {panel.error ? (
@@ -176,27 +168,17 @@ export function DataQualityRegion({
           <div>
             <CardTitle id="data-quality-title">Data quality</CardTitle>
             <CardDescription>
-              Unified completeness, freshness, gap, and anomaly posture across tracked symbols.
+              Unified completeness, freshness, gap, and anomaly status across tracked symbols.
               {panel.model ? ` ${panel.model.summary}` : null}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {panel.model && (
-              <Badge variant={qualityToneBadgeVariant[panel.model.overallTone]} dot={panel.model.overallTone === "success"}>
+              <Badge variant={statusBadgeVariant(panel.model.overallTone)} dot={panel.model.overallTone === "success"}>
                 {panel.model.overallLabel}
               </Badge>
             )}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => void panel.refresh()}
-              disabled={panel.loading}
-              aria-label="Refresh data quality dashboard"
-            >
-              <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">{panel.loading ? "Refreshing…" : "Refresh"}</span>
-            </Button>
+            <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="data quality dashboard" />
           </div>
         </CardHeader>
         <CardContent>
@@ -211,10 +193,10 @@ export function DataQualityRegion({
                   <div
                     key={card.id}
                     role="listitem"
-                    className={cn("rounded-md border p-3 text-sm", resultToneClass[card.tone])}
+                    className={cn("rounded-md border p-3 text-sm", cn(statusPanelClass(card.tone), statusTextClass(card.tone)))}
                     title={card.detail}
                   >
-                    <div className="text-xs uppercase tracking-wide">{card.label}</div>
+                    <div className={cn("text-xs", usesTrackedCaps(card.label) && "uppercase tracking-wide")}>{card.label}</div>
                     <div className="mt-1 font-mono text-lg font-semibold">{card.value}</div>
                     <div className="mt-1 text-xs opacity-80">{card.detail}</div>
                   </div>
@@ -224,7 +206,7 @@ export function DataQualityRegion({
                 <StatusBanner
                   tone="warning"
                   title="Partial quality evidence"
-                  detail="Missing or stale source signals are shown explicitly and cannot produce a Green posture."
+                  detail="Missing or stale source signals are shown explicitly and cannot produce a Green status."
                 />
               ) : null}
               {panel.model.symbols.length > 0 && (
@@ -237,7 +219,7 @@ export function DataQualityRegion({
                           <summary className="grid cursor-pointer list-none grid-cols-[7rem_7rem_1fr_auto] items-center gap-3 px-3 py-2 hover:bg-muted/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
                             <span className="font-mono font-semibold">{row.symbol}</span>
                             <span className="flex items-center gap-2">
-                              <Badge variant={qualityToneBadgeVariant[row.tone]}>{row.status}</Badge>
+                              <Badge variant={statusBadgeVariant(row.tone)}>{row.status}</Badge>
                               <span className="font-mono">{row.scoreLabel}</span>
                             </span>
                             <span className="text-muted-foreground">
@@ -257,7 +239,7 @@ export function DataQualityRegion({
                                       <span className="text-muted-foreground">({component.availability})</span>
                                       <span className="block text-xs text-muted-foreground">{component.detail}</span>
                                     </span>
-                                    <span className="font-mono">{component.score === null ? "—" : component.score.toFixed(1)}</span>
+                                    <span className="font-mono">{component.score === null ? "—" : formatNumber(component.score, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
                                   </li>
                                 ))}
                               </ul>
@@ -272,7 +254,7 @@ export function DataQualityRegion({
                                     <li key={provider.provider} className="flex justify-between gap-3">
                                       <span className="font-mono">{provider.provider}</span>
                                       <span className="text-muted-foreground">
-                                        {provider.status} · {provider.lastEventAt ? new Date(provider.lastEventAt).toLocaleString() : "unmeasured"}
+                                        {provider.status} · {provider.lastEventAt ? formatTimestamp(new Date(provider.lastEventAt)) : "unmeasured"}
                                       </span>
                                     </li>
                                   ))}
@@ -316,8 +298,8 @@ export function DataQualityRegion({
                                           {" · "}{gap.provider ?? "Default provider"}
                                         </span>
                                         <span className="min-w-0 flex-1 text-muted-foreground">
-                                          {new Date(gap.from).toLocaleString()} – {new Date(gap.to).toLocaleString()} ·{" "}
-                                          {gap.estimatedMissingEvents.toLocaleString()} estimated missing
+                                          {formatTimestamp(new Date(gap.from))} – {formatTimestamp(new Date(gap.to))} ·{" "}
+                                          {formatCount(gap.estimatedMissingEvents)} estimated missing
                                         </span>
                                         <Button
                                           type="button"

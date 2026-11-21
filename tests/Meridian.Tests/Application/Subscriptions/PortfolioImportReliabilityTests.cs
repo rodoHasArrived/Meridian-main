@@ -107,12 +107,12 @@ public sealed class PortfolioImportReliabilityTests : IDisposable
     }
 
     [Fact]
-    public async Task AlpacaImport_PreservesMissingAndMalformedFieldHandling()
+    public async Task AlpacaImport_PreservesMissingOptionalFields()
     {
         using var client = Client((request, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(request.RequestUri!.AbsolutePath.EndsWith("positions", StringComparison.Ordinal)
-                ? """[{"symbol":"AAPL","market_value":"bad","avg_entry_price":null,"unrealized_pl":"bad"}]"""
+                ? """[{"symbol":"AAPL","qty":"0","market_value":"bad","avg_entry_price":null,"unrealized_pl":"bad"}]"""
                 : """{"account_number":"test-account","portfolio_value":"bad"}""")
         }));
 
@@ -125,6 +125,45 @@ public sealed class PortfolioImportReliabilityTests : IDisposable
         result.Portfolio.Positions[0].UnrealizedPnL.Should().BeNull();
         result.Portfolio.TotalValue.Should().BeNull();
         result.Portfolio.CashBalance.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AlpacaImport_MissingQuantityFailsRatherThanInventingZero()
+    {
+        using var client = Client((request, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(request.RequestUri!.AbsolutePath.EndsWith("positions", StringComparison.Ordinal)
+                ? """[{"symbol":"AAPL"}]""" : """{"account_number":"test-account"}""")
+        }));
+        var result = await Service(client).ImportFromAlpacaAsync(new());
+        result.Success.Should().BeFalse();
+        result.Errors.Should().ContainSingle().Which.Should().Contain("quantity");
+    }
+
+    [Fact]
+    public async Task IbImport_FetchesAllPagesAndRetainsAccountCash()
+    {
+        var paths = new List<string>();
+        using var client = Client((request, _) =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            paths.Add(path);
+            var json = path switch
+            {
+                "/v1/api/portfolio/accounts" => """[{"accountId":"test-account"}]""",
+                "/v1/api/portfolio/test-account/positions/0" => """[{"ticker":"AAPL","position":2,"avgCost":100,"currency":"USD","assetClass":"STK"}]""",
+                "/v1/api/portfolio/test-account/positions/1" => """[{"ticker":"MSFT","position":3,"avgCost":200,"currency":"USD","assetClass":"STK"}]""",
+                "/v1/api/portfolio/test-account/positions/2" => "[]",
+                "/v1/api/portfolio/test-account/summary" => """{"cashbalance":{"amount":123.45,"currency":"USD"},"netliquidation":{"amount":923.45,"currency":"USD"}}""",
+                _ => throw new InvalidOperationException(path)
+            };
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(json) });
+        });
+        var result = await Service(client).ImportFromInteractiveBrokersAsync(new(BrokerAccountId: "test-account"));
+        result.Success.Should().BeTrue();
+        result.Portfolio!.Positions.Should().HaveCount(2);
+        result.Portfolio.CashBalance.Should().Be(123.45m);
+        paths.Should().Contain("/v1/api/portfolio/test-account/positions/2");
     }
 
     [Fact]

@@ -1,3 +1,5 @@
+// Accounting configuration panel (rules studio and setup), extracted from accounting-screen.tsx.
+// Configure-workflow building blocks live in accounting-screen.configure-panel.tsx.
 import { BookCheck, Network, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -5,19 +7,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { SectionDescription } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
-import { accountingToolingBadgeVariant, accountingToolingBorderClass, cashFlowTextClass } from "@/screens/accounting-screen.styles";
 import { ChartAccountPathBuilder, ConfigureActivationRail, ConfigureChangePreviewPanel, ConfigureCommandBar, ConfigureProductionReadinessCard, LedgerBookSetupWizard } from "@/screens/accounting-screen.configure-panel";
 import type { AccountingConfigurationViewModel, AccountingRulesStudioPromotionReadinessViewModel } from "@/screens/accounting-screen.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { statusBadgeVariant, statusPanelClass, statusTextClass } from "@/design-system/status-styles";
+import { AutomaticPostingAuthorityPanel } from "./accounting-screen.automation-grant";
 
 export function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationViewModel }) {
   return (
     <section className="workspace-section-band" aria-labelledby="accounting-configure-heading">
       <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Configure</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h3 id="accounting-configure-heading" className="workspace-section-title">{view.title}</h3>
-          <p className="workspace-section-summary">{view.description}</p>
+          <SectionDescription descriptionKey="accounting:configuration-workbench" label={`About ${view.title}`}>
+            {view.description}
+          </SectionDescription>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={view.statusTone === "success" ? "success" : view.statusTone === "danger" ? "danger" : view.statusTone === "warning" ? "warning" : "outline"} dot>
@@ -64,8 +70,8 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
       <div id="configure-section-setup" className="configure-anchor scroll-mt-20 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {view.metricRows.map((metric) => (
           <div key={metric.id} className="panel-surface px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{metric.label}</div>
-            <div className={cn("mt-2 font-mono text-xl font-semibold", cashFlowTextClass(metric.tone))}>{metric.value}</div>
+            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "type-label--caps")}>{metric.label}</div>
+            <div className={cn("mt-2 font-mono text-xl font-semibold", statusTextClass(metric.tone))}>{metric.value}</div>
             <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
           </div>
         ))}
@@ -74,8 +80,8 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
       <div className="grid gap-4 md:grid-cols-2">
         {view.setupReadinessRows.map((row) => (
           <div key={row.id} className="rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{row.label}</div>
-            <div className={cn("mt-2 text-sm font-semibold", cashFlowTextClass(row.tone))}>{row.value}</div>
+            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(row.label) && "type-label--caps")}>{row.label}</div>
+            <div className={cn("mt-2 text-sm font-semibold", statusTextClass(row.tone))}>{row.value}</div>
             <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.detail}</p>
           </div>
         ))}
@@ -116,13 +122,13 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
           ) : (
             <div className="grid gap-3 lg:grid-cols-2" role="region" aria-label="Accounting ledger book catalog">
               {view.ledgerBookRows.map((book) => (
-                <div key={book.id} className={cn("rounded-md border px-4 py-3", accountingToolingBorderClass(book.tone))}>
+                <div key={book.id} className={cn("rounded-md border px-4 py-3", statusPanelClass(book.tone))}>
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{book.title}</div>
-                      <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">{book.id}</div>
+                      <div className={cn("mt-1 text-xs text-muted-foreground", usesTrackedCaps(book.id) && "type-label--caps")}>{book.id}</div>
                     </div>
-                    <Badge variant={accountingToolingBadgeVariant(book.tone)}>{book.statusLabel}</Badge>
+                    <Badge variant={statusBadgeVariant(book.tone)}>{book.statusLabel}</Badge>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{book.description}</p>
                   <dl className="mt-3 grid gap-2 text-xs md:grid-cols-2">
@@ -198,6 +204,14 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
             </FormRow>
           </div>
           <div className="grid gap-3 md:grid-cols-2">
+            <FormRow label="Account code" labelFor="accounting-chart-account-code">
+              <Input
+                id="accounting-chart-account-code"
+                value={view.chartAccountEditor.accountCodeValue}
+                readOnly={view.chartAccountEditor.accountCodeReadOnly}
+                onChange={(event) => view.chartAccountEditor.updateDraft({ accountCode: event.currentTarget.value })}
+              />
+            </FormRow>
             <FormRow label="Parent path" labelFor="accounting-chart-parent-path">
               <Input
                 id="accounting-chart-parent-path"
@@ -482,16 +496,16 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
                     <div className="rounded-lg border border-border/70 bg-secondary/10 p-3" role="region" aria-label="Posting rule promotion readiness">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Promotion readiness</div>
-                        <Badge variant={accountingToolingBadgeVariant(hasPromotionReadinessBlocker(view.selectedRule.promotionReadiness) ? "warning" : "success")}>
+                        <Badge variant={statusBadgeVariant(hasPromotionReadinessBlocker(view.selectedRule.promotionReadiness) ? "warning" : "success")}>
                           {view.selectedRule.promotionReadiness.find((item) => item.id === "activation-gate")?.value ?? "Review"}
                         </Badge>
                       </div>
                       <div className="mt-3 grid gap-2 md:grid-cols-2">
                         {view.selectedRule.promotionReadiness.map((item) => (
-                          <div key={item.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(item.tone))}>
+                          <div key={item.id} className={cn("rounded-md border px-3 py-2 text-sm", statusPanelClass(item.tone))}>
                             <div className="flex flex-wrap items-center justify-between gap-2">
                               <span className="font-semibold text-foreground">{item.label}</span>
-                              <Badge variant={accountingToolingBadgeVariant(item.tone)}>{item.value}</Badge>
+                              <Badge variant={statusBadgeVariant(item.tone)}>{item.value}</Badge>
                             </div>
                             <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
                           </div>
@@ -688,7 +702,7 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle>Validation and audit trail</CardTitle>
-            <CardDescription>Configuration readiness and append-only mutation evidence stay visible before activation.</CardDescription>
+            <CardDescription>Configuration readiness and the append-only change history stay visible before activation.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -711,7 +725,7 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
             </div>
 
             <div className="space-y-2">
-              <div className="eyebrow-label">Recent audit events</div>
+              <div className="eyebrow-label eyebrow-label--sentence">Recent audit events</div>
               {view.auditTrail.length > 0 ? view.auditTrail.map((event) => (
                 <div key={event.id} className="rounded-lg border border-border/70 bg-secondary/25 px-3 py-2 text-sm">
                   <div className="font-semibold text-foreground">{event.title}</div>
@@ -730,6 +744,7 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
         </div>
         <ConfigureActivationRail view={view} />
       </div>
+      <AutomaticPostingAuthorityPanel />
     </section>
   );
 }
@@ -737,7 +752,7 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
 function RulesStudioList({ title, rows }: { title: string; rows: string[] }) {
   return (
     <div>
-      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(title) && "type-label--caps")}>{title}</div>
       <div className="mt-2 space-y-1.5">
         {rows.map((row, index) => (
           <div key={`${title}-${index}-${row}`} className="rounded border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs leading-5 text-muted-foreground">

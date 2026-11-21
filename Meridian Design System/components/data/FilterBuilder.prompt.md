@@ -1,4 +1,4 @@
-Structured field / operator / value query rows, AND-combined — for registry surfaces (security master, run ledgers, report catalogs). Where `FilteredDataTable` does free text + facet chips, FilterBuilder composes explicit predicates. Operators follow the field type: text (contains / is / starts with / is empty), number (= ≠ > ≥ < ≤ between), date (on / before / after / between), enum (is / is not).
+Structured field / operator / value query rows, AND-combined — for registry surfaces (security master, run ledgers, report catalogs). Where `Toolbar` does free text + facet chips, FilterBuilder composes explicit predicates. Operators follow the field type: text (contains / is / starts with / is empty), number (= ≠ > ≥ < ≤ between), date (on / before / after / between), enum (is / is not).
 
 ```jsx
 const FIELDS = [

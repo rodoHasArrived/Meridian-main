@@ -34,7 +34,7 @@ public sealed record UnrelatedRequest(string Actor);
 
 def scan(endpoint_files: dict[str, str], contracts: str = CONTRACT) -> dict:
     """Run the guard over a throwaway tree with these contracts and endpoint files."""
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         root = Path(temp_dir)
         contracts_root = root / "src" / "Meridian.Contracts"
         endpoints_root = root / "src" / "Meridian.Ui.Shared" / "Endpoints"
@@ -50,7 +50,7 @@ def scan(endpoint_files: dict[str, str], contracts: str = CONTRACT) -> dict:
 
 class CheckActionOriginDerivationTests(unittest.TestCase):
     def test_discovers_dto_types_from_contracts(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             root.mkdir(exist_ok=True)
             (root / "Dtos.cs").write_text(CONTRACT, encoding="utf-8")
@@ -178,6 +178,109 @@ app.MapPost("/new", async (BrandNewGovernedRequest request, HttpContext context)
         )
 
         self.assertEqual(found, {"src/Meridian.Ui.Shared/Endpoints/NewEndpoints.cs": [(2, "BrandNewGovernedRequest")]})
+
+    def test_manual_deserialization_without_derivation_is_flagged(self) -> None:
+        """The #3405 shape: the body is bound as a JsonElement, so no parameter names the DTO, and
+        the default HumanOperator origin reaches a human-only gate unless the handler re-derives."""
+        found = scan(
+            {
+                "ThingEndpoints.cs": """
+group.MapPost("/thing/{id:guid}/approve", async (Guid id, JsonElement body, HttpContext context) =>
+{
+    var request = JsonSerializer.Deserialize<CloseThingRequest>(body.GetRawText(), jsonOptions)
+                  ?? new CloseThingRequest(Actor: null);
+    var serverRequest = request with { Actor = currentUser };
+    return await service.CloseAsync(id, serverRequest, context.RequestAborted);
+});
+
+group.MapPost("/thing/{id:guid}/reject", async (Guid id, HttpContext context) =>
+{
+    var request = await context.Request.ReadFromJsonAsync<CloseThingRequest?>(jsonOptions, context.RequestAborted);
+    return await service.CloseAsync(id, request!, context.RequestAborted);
+});
+
+group.MapPost("/thing/{id:guid}/remediate", async (Guid id, JsonElement body, HttpContext context) =>
+{
+    if (!TryDeserialize<Meridian.Contracts.Workstation.CloseThingRequest>(body, out var request))
+        return Results.BadRequest();
+    return await service.CloseAsync(id, request, context.RequestAborted);
+});
+"""
+            }
+        )
+
+        self.assertEqual(
+            found,
+            {
+                "src/Meridian.Ui.Shared/Endpoints/ThingEndpoints.cs": [
+                    (4, "CloseThingRequest"),
+                    (12, "CloseThingRequest"),
+                    (18, "CloseThingRequest"),
+                ]
+            },
+        )
+
+    def test_manual_deserialization_with_derivation_is_not_flagged(self) -> None:
+        found = scan(
+            {
+                "ThingEndpoints.cs": """
+group.MapPost("/thing/{id:guid}/approve", async (Guid id, JsonElement body, HttpContext context) =>
+{
+    var request = JsonSerializer.Deserialize<CloseThingRequest>(body.GetRawText(), jsonOptions)
+                  ?? new CloseThingRequest(Actor: null);
+    var serverRequest = request with
+    {
+        Actor = currentUser,
+        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+    };
+    return await service.CloseAsync(id, serverRequest, context.RequestAborted);
+});
+"""
+            }
+        )
+
+        self.assertEqual(found, {})
+
+    def test_a_neighbouring_handlers_derivation_does_not_cover_manual_deserialization(self) -> None:
+        """The window is the enclosing handler, not a fixed line count, so the next route's
+        derivation cannot vouch for a handler that skipped its own."""
+        found = scan(
+            {
+                "ThingEndpoints.cs": """
+group.MapPost("/thing/approve", async (JsonElement body, HttpContext context) =>
+{
+    var request = JsonSerializer.Deserialize<CloseThingRequest>(body.GetRawText(), jsonOptions);
+    return await service.CloseAsync(request!, context.RequestAborted);
+});
+
+group.MapPost("/thing/reject", async (CloseThingRequest request, HttpContext context) =>
+{
+    var trusted = request with
+    {
+        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+    };
+    return await service.CloseAsync(trusted, context.RequestAborted);
+});
+"""
+            }
+        )
+
+        self.assertEqual(found, {"src/Meridian.Ui.Shared/Endpoints/ThingEndpoints.cs": [(4, "CloseThingRequest")]})
+
+    def test_manual_deserialization_of_an_unrelated_dto_is_out_of_scope(self) -> None:
+        found = scan(
+            {
+                "ThingEndpoints.cs": """
+group.MapPost("/thing", async (JsonElement body, HttpContext context) =>
+{
+    var request = JsonSerializer.Deserialize<UnrelatedRequest>(body.GetRawText(), jsonOptions);
+    return await service.DoAsync(request!, context.RequestAborted);
+});
+"""
+            }
+        )
+
+        self.assertEqual(found, {})
 
     def test_declared_deriving_helpers_really_derive(self) -> None:
         """DERIVING_HELPERS exempts a handler that forwards to one of these, so each must actually

@@ -5,7 +5,7 @@
 **Reviewed:** 2026-07-02  
 **Date:** 2026-07-02
 
-## Problem
+## Context
 
 Reconciliation readiness (W4-RECON-001) shipped the matching engine and queue, but statements
 could only enter it through a hardcoded canonical/sample-broker CSV path with compiled-in mapping

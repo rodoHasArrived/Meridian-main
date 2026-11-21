@@ -18,7 +18,7 @@ from unittest.mock import patch
 
 class TaskContextTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.root = Path(self.temp.name)
         self.addCleanup(self.temp.cleanup)
         self.write("AGENTS.md", "# Instructions\nPreserve audit evidence.\n")
@@ -322,7 +322,7 @@ Unrelated shared guidance update.
                 build_packet(self.root, "Update", [name])
 
     def test_symlink_source_and_output_escapes_rejected(self):
-        with tempfile.TemporaryDirectory() as outside:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as outside:
             external = Path(outside) / "secret.txt"
             external.write_text("private", encoding="utf-8")
             (self.root / "escape").symlink_to(outside, target_is_directory=True)

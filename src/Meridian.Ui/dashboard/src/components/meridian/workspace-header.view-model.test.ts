@@ -20,15 +20,11 @@ describe("workspace header view model", () => {
       refreshing: true
     });
 
-    expect(model.title).toBe("Trading Workstation");
+    expect(model.title).toBe("Trading");
     expect(model.eyebrow).toBe("Workspace");
-    expect(model.badges.map((badge) => badge.id)).toEqual(["workspace-maturity"]);
-    expect(model.badges).toContainEqual({
-      id: "workspace-maturity",
-      label: "Available",
-      variant: "outline",
-      ariaLabel: "Trading product maturity Available"
-    });
+    expect(model.badges).toEqual([]);
+    expect(model.maturityNote).toBe("Product maturity: Available.");
+    expect(model.aboutLabel).toBe("About Trading");
     expect(model.metaItems).toEqual([]);
     expect(model.sessionLabel).toBe("Ops Desk");
     expect(model.sessionRoleLabel).toBe("Operator");
@@ -44,6 +40,18 @@ describe("workspace header view model", () => {
     expect(model.ariaBusy).toBe(true);
   });
 
+  it("uses the page name that ends the breadcrumb as the heading", () => {
+    const model = buildWorkspaceHeaderViewModel({
+      workspace: workspaceForKey("trading"),
+      session,
+      canRefresh: false,
+      pageTitle: "Orders"
+    });
+
+    expect(model.title).toBe("Orders");
+    expect(model.aboutLabel).toBe("About Trading");
+  });
+
   it("keeps pending session and setup status explicit", () => {
     const model = buildWorkspaceHeaderViewModel({
       workspace: workspaceForKey("settings"),
@@ -51,44 +59,21 @@ describe("workspace header view model", () => {
       canRefresh: false
     });
 
-    expect(model.badges.map((badge) => badge.id)).toEqual(["workspace-maturity"]);
+    expect(model.badges).toEqual([]);
     expect(model.metaItems).toEqual([]);
-    expect(model.badges).toContainEqual({
-      id: "workspace-maturity",
-      label: "Setup",
-      variant: "outline",
-      ariaLabel: "Settings product maturity Setup"
-    });
+    expect(model.maturityNote).toBe("Product maturity: Setup.");
     expect(model.sessionLabel).toBe("Loading session");
     expect(model.sessionRoleLabel).toBeNull();
     expect(model.sessionPillAriaLabel).toBe("Session context loading");
     expect(model.refreshAction).toBeNull();
   });
 
-  it("maps the product maturity taxonomy to semantic badge tones", () => {
-    expect(
-      buildWorkspaceHeaderViewModel({
-        workspace: workspaceForKey("portfolio"),
-        session,
-        canRefresh: true
-      }).badges.find((badge) => badge.id === "workspace-maturity")?.variant
-    ).toBe("warning");
-
-    expect(
-      buildWorkspaceHeaderViewModel({
-        workspace: workspaceForKey("settings"),
-        session,
-        canRefresh: true
-      }).badges.find((badge) => badge.id === "workspace-maturity")?.variant
-    ).toBe("outline");
-
-    expect(
-      buildWorkspaceHeaderViewModel({
-        workspace: workspaceForKey("data"),
-        session,
-        canRefresh: true
-      }).badges.find((badge) => badge.id === "workspace-maturity")?.variant
-    ).toBe("outline");
+  it("states each product maturity in the About disclosure instead of a badge", () => {
+    for (const [key, maturity] of [["portfolio", "Preview"], ["settings", "Setup"], ["data", "Available"]] as const) {
+      const model = buildWorkspaceHeaderViewModel({ workspace: workspaceForKey(key), session, canRefresh: true });
+      expect(model.badges).toEqual([]);
+      expect(model.maturityNote).toBe(`Product maturity: ${maturity}.`);
+    }
   });
 
   it("keeps refresh enabled without a disabled reason when data is idle", () => {
@@ -108,4 +93,26 @@ describe("workspace header view model", () => {
     });
     expect(model.ariaBusy).toBe(false);
   });
+});
+
+it.each(["seeded", "simulated", "sample", "unknown"] as const)("does not announce a live environment for %s provenance", (dataProvenance) => {
+  const model = buildWorkspaceHeaderViewModel({
+    workspace: workspaceForKey("trading"),
+    session: { ...session, environment: "live" },
+    dataProvenance,
+    canRefresh: true
+  });
+  expect(model.isLiveEnvironment).toBe(false);
+  expect(model.liveBanner).toBeNull();
+});
+
+it("retains the real-money alarm when real provenance and the live session agree", () => {
+  const model = buildWorkspaceHeaderViewModel({
+    workspace: workspaceForKey("trading"),
+    session: { ...session, environment: "live" },
+    dataProvenance: "real",
+    canRefresh: true
+  });
+  expect(model.isLiveEnvironment).toBe(true);
+  expect(model.liveBanner).toMatchObject({ role: "alert", ariaLive: "assertive", label: "LIVE ENVIRONMENT" });
 });

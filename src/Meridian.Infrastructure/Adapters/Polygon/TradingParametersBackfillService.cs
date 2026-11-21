@@ -214,7 +214,12 @@ public sealed class TradingParametersBackfillService : ITradingParametersBackfil
                 SourceRecordId: $"polygon:{ticker}",
                 Reason: "Automated trading parameters backfill from Polygon.io");
 
-            await _securityMasterService.AmendTermsAsync(amendRequest, ct).ConfigureAwait(false);
+            // Provider-sourced trading parameters amend through the system-ingest path, which the
+            // governed-amendment setting does not block (it governs operator term corrections).
+            await (_securityMasterService is ISecurityMasterAmender systemAmender
+                    ? systemAmender.AmendTermsAsync(amendRequest, ct)
+                    : _securityMasterService.AmendTermsAsync(amendRequest, ct))
+                .ConfigureAwait(false);
 
             _logger.LogInformation("Successfully backfilled trading parameters for {Ticker}: " +
                 "TickSize={TickSize}, LotSize={LotSize}, Currency={Currency}",

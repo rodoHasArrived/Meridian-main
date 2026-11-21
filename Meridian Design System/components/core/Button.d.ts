@@ -1,7 +1,8 @@
+import type React from "react";
 /**
  * Action button — mirrors the desktop `PrimaryButtonStyle` / `GhostButtonStyle` / `LinkButtonStyle`.
- * `primary` is the solid teal-blue institutional action (one per screen); `ghost` is the paper
- * secondary; `danger` resolves to red on hover; `link` is a text-only info action.
+ * `primary` is the solid graphite institutional action; `ghost` is the paper secondary;
+ * `danger` resolves to semantic red; `link` is a text-only interaction-blue action.
  */
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** @default "primary" */
@@ -16,4 +17,4 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   disabled?: boolean;
   children?: React.ReactNode;
 }
-export declare function Button(props: ButtonProps): JSX.Element;
+export declare function Button(props: ButtonProps): React.JSX.Element;

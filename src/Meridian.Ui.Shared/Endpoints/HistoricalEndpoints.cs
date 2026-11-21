@@ -173,48 +173,23 @@ public static class HistoricalEndpoints
     {
         var group = app.MapGroup("").WithTags("Alignment");
 
-        // Create alignment
-        group.MapPost(UiApiRoutes.AlignmentCreate, (AlignmentCreateRequest req) =>
-        {
-            var jobId = Guid.NewGuid().ToString("N")[..12];
-
-            return Results.Json(new
-            {
-                jobId,
-                symbols = req.Symbols ?? Array.Empty<string>(),
-                interval = req.Interval ?? "1min",
-                aggregationMethod = req.AggregationMethod ?? "last",
-                gapStrategy = req.GapStrategy ?? "forward_fill",
-                status = "queued",
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
-        })
+        // No alignment execution service is wired into this host. Keep the routes discoverable,
+        // but never acknowledge a job or estimate output that has not actually been computed.
+        group.MapPost(UiApiRoutes.AlignmentCreate, () => AlignmentUnavailable())
         .WithName("CreateAlignment").RequirePermission(UserPermission.ViewHistoricalData)
-        .Produces(200)
+        .DeclareNonMutating("Reports that alignment execution is unavailable; no job is created or retained.")
+        .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Preview alignment
-        group.MapPost(UiApiRoutes.AlignmentPreview, (AlignmentCreateRequest req) =>
-        {
-            var symbols = req.Symbols ?? Array.Empty<string>();
-            var interval = req.Interval ?? "1min";
-
-            return Results.Json(new
-            {
-                symbols,
-                interval,
-                estimatedOutputRows = symbols.Length * 390, // ~390 minutes in trading day
-                supportedIntervals = new[] { "1sec", "5sec", "30sec", "1min", "5min", "15min", "30min", "1hour", "1day" },
-                supportedAggregations = new[] { "last", "first", "mean", "median", "vwap", "ohlc" },
-                supportedGapStrategies = new[] { "forward_fill", "backward_fill", "interpolate", "null", "skip" },
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
-        })
+        group.MapPost(UiApiRoutes.AlignmentPreview, () => AlignmentUnavailable())
         .WithName("PreviewAlignment").RequirePermission(UserPermission.ViewHistoricalData)
-        .DeclareNonMutating("Computes and returns an alignment preview from the request body; the sibling CreateAlignment route is what persists one.")
-        .Produces(200)
+        .DeclareNonMutating("Reports that alignment preview is unavailable; no preview is computed or retained.")
+        .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
-    private sealed record AlignmentCreateRequest(string[]? Symbols, string? Interval, string? AggregationMethod, string? GapStrategy, DateTime? StartDate, DateTime? EndDate);
+    private static IResult AlignmentUnavailable() => Results.Problem(
+        statusCode: StatusCodes.Status501NotImplemented,
+        title: "Time series alignment is not implemented",
+        detail: "This host has no alignment execution or preview service. No job was created and no output estimate was computed.");
 }

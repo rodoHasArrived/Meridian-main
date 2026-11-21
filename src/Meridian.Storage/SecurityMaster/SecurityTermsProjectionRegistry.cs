@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Meridian.Contracts.SecurityMaster;
 
@@ -261,8 +262,9 @@ internal sealed record SecurityTermsProjectionDescriptor(
 /// boilerplate, and folding them in would trade the duplication for a configuration language.
 /// </para>
 /// <para>
-/// Of the eleven writers that predate this registry, nine now live here. MoneyMarketFund,
-/// CertificateOfDeposit, Deposit and CryptoCurrency moved behind a database-backed parity guard
+/// Of the eleven writers that predate this registry, ten now live here and only Option's remains
+/// hand-written. MoneyMarketFund, CertificateOfDeposit, Deposit and CryptoCurrency moved behind a
+/// database-backed parity guard
 /// (<c>RegistryMigratedProjectionGoldenTests</c>). Equity, FxSpot, Future, Swap and Commodity moved
 /// once <see cref="SecurityTermsProjectionColumn.Derived"/> columns could express what made them
 /// special — common-terms columns, the futures root-symbol fallback and lifecycle state, the FX pair
@@ -283,10 +285,22 @@ internal sealed record SecurityTermsProjectionDescriptor(
 /// (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd, Warrant, InvestmentFund,
 /// PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding, CommitmentGuarantee) as pure
 /// declarations over their terms contract, so every catalog class except the profile-governed
-/// CustomAsset now has a projection — 25 of 26 — and the catalog's <c>ProjectionKind</c> says which
-/// path writes each one. Migration 046 adds the OTC derivative classes (FxForward,
+/// CustomAsset then had a projection — 25 of 26 — and the catalog's <c>ProjectionKind</c> says which
+/// path writes each one. CustomAsset is not a descriptor here: migration 064 gives it a
+/// profile-keyed table (one row per <c>profileFields</c> key) written by a specialized store writer,
+/// because its fields are governed per profile and have no fixed column set. Migration 046 adds the OTC derivative classes (FxForward,
 /// NonDeliverableForward, CreditDefaultSwap) and migration 047 the rate options and linked notes
 /// (Swaption, CapFloor, StructuredNote) as declarative projections from the day they are modeled.
+/// </para>
+/// <para>
+/// Current counts: the catalog holds 32 classes and this registry 30 descriptors — DirectLoan and
+/// StructuredCredit (registry-native), the ten migrated writers, the twelve classes from migration
+/// 044 and the six from 046 and 047. Option (specialized) and CustomAsset (profile-keyed, migration
+/// 064) are the two classes outside it, so every catalog class has a projection. On the read side,
+/// twelve descriptors have a typed <c>I*ReferenceProjectionStore</c>: eleven read through
+/// <see cref="RegistryReferenceProjectionStore{TRow}"/>, and Bond keeps its specialized store for
+/// its joined reads and keyset paging. Every descriptor, including the eighteen with no typed
+/// reader, is also readable as column-to-value data through <see cref="IRegistryProjectionReadService"/>.
 /// </para>
 /// </summary>
 internal static partial class SecurityTermsProjectionRegistry
@@ -389,6 +403,20 @@ internal static partial class SecurityTermsProjectionRegistry
             ?? throw new ArgumentException(
                 $"'{assetClass}' has no SecurityTermsProjectionRegistry descriptor.",
                 nameof(assetClass));
+    }
+
+    /// <summary>
+    /// The descriptor registered for <paramref name="assetClass"/> (canonical name, ordinal match),
+    /// or <see langword="false"/> for a class without one. The non-throwing form of
+    /// <see cref="Require"/>, for read paths that answer "no such projection" instead of failing.
+    /// </summary>
+    internal static bool TryGet(string? assetClass, [NotNullWhen(true)] out SecurityTermsProjectionDescriptor? descriptor)
+    {
+        descriptor = string.IsNullOrWhiteSpace(assetClass)
+            ? null
+            : Descriptors.FirstOrDefault(candidate =>
+                string.Equals(candidate.AssetClass, assetClass, StringComparison.Ordinal));
+        return descriptor is not null;
     }
 
     /// <summary>
@@ -723,8 +751,10 @@ internal static partial class SecurityTermsProjectionRegistry
         // were reachable only by parsing the JSONB blob one security at a time. Each is a pure data
         // declaration over the terms contract — gates on the terms the schema marks Required, nullable
         // columns for the rest, NOT NULL DEFAULT FALSE for the one required flag — with no derived
-        // columns, so the registry's generic writer is the whole implementation. CustomAsset stays
-        // unprojected on purpose: its fields are governed per profile and have no fixed column set.
+        // columns, so the registry's generic writer is the whole implementation. CustomAsset is not
+        // declared here on purpose: its fields are governed per profile and have no fixed column
+        // set, so it projects one row per profile field through a specialized writer instead
+        // (PostgresSecurityMasterStore.CustomAssetProfileFields, migration 064).
         new(
             AssetClass: "CommercialPaper",
             TableName: "commercial_paper_projection",

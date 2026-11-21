@@ -199,7 +199,7 @@ class AdapterReadinessRenderTests(unittest.TestCase):
         )
 
     def test_generation_is_idempotent_and_current_output_passes_check(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root, data = Path(temp), registry()
             self.assertEqual(0, self.invoke(root, data)[0])
             output = root / renderer.OUTPUT
@@ -212,7 +212,7 @@ class AdapterReadinessRenderTests(unittest.TestCase):
             self.assertEqual(modified, output.stat().st_mtime_ns)
 
     def test_check_rejects_missing_output_without_creating_it(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = Path(temp)
             result, _, stderr = self.invoke(root, registry(), "--check")
             self.assertEqual(1, result)
@@ -220,7 +220,7 @@ class AdapterReadinessRenderTests(unittest.TestCase):
             self.assertFalse((root / renderer.OUTPUT).exists())
 
     def test_check_rejects_stale_output_without_overwriting_it(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = Path(temp)
             output = root / renderer.OUTPUT
             output.parent.mkdir(parents=True)
@@ -231,7 +231,7 @@ class AdapterReadinessRenderTests(unittest.TestCase):
             self.assertEqual(b"Previously reviewed matrix\n", output.read_bytes())
 
     def test_registry_validation_failure_preserves_output(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = Path(temp)
             output = root / renderer.OUTPUT
             output.parent.mkdir(parents=True)
@@ -242,7 +242,7 @@ class AdapterReadinessRenderTests(unittest.TestCase):
             self.assertEqual("Retained output\n", output.read_text(encoding="utf-8"))
 
     def test_malformed_input_fails_without_creating_output(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = Path(temp)
             source = root / renderer.REGISTRY
             source.parent.mkdir(parents=True)
@@ -272,7 +272,7 @@ class AdapterReadinessAutomationTests(unittest.TestCase):
             "build/scripts/docs/render-source-docs.py": source_renderer,
         }
         for name, document in documents.items():
-            with self.subTest(document=name), tempfile.TemporaryDirectory() as temp:
+            with self.subTest(document=name), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
                 root = Path(temp)
                 source = root / renderer.REGISTRY
                 source.parent.mkdir(parents=True)

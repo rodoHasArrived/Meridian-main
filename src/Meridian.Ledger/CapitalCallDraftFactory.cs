@@ -67,7 +67,8 @@ public static class CapitalCallDraftFactory
         DateTimeOffset occurredAtUtc,
         string? cashFinancialAccountId = null,
         IReadOnlyList<JournalEvidenceReference>? evidenceReferences = null,
-        string? paymentIntentId = null)
+        string? paymentIntentId = null,
+        string? fundingReceiptId = null)
     {
         ArgumentNullException.ThrowIfNull(commitment);
         var normalizedInstallmentId = RequireId(installmentId, nameof(installmentId));
@@ -76,8 +77,11 @@ public static class CapitalCallDraftFactory
         var cash = string.IsNullOrWhiteSpace(cashFinancialAccountId)
             ? LedgerAccounts.CashAccount(commitment.FundProfileId)
             : LedgerAccounts.CashAccount(cashFinancialAccountId);
-        var idempotencyKey = FormattableString.Invariant(
-            $"capital-call-funding:{commitment.CommitmentId}:{normalizedInstallmentId}");
+        // Existing retained drafts keep their historical identity. Native receipt intake supplies
+        // a stable receipt id so successive partial receipts settle the same call independently.
+        var idempotencyKey = fundingReceiptId is null
+            ? FormattableString.Invariant($"capital-call-funding:{commitment.CommitmentId}:{normalizedInstallmentId}")
+            : FormattableString.Invariant($"capital-call-funding:{commitment.CommitmentId}:{normalizedInstallmentId}:receipt:{Uri.EscapeDataString(RequireId(fundingReceiptId, nameof(fundingReceiptId)).ToLowerInvariant())}");
         var description = FormattableString.Invariant(
             $"Capital call funding {normalizedInstallmentId} from {commitment.InvestorId} ({commitment.Currency} {amount.ToString("0.00", CultureInfo.InvariantCulture)})");
 

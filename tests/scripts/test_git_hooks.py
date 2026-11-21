@@ -14,6 +14,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 HOOK_FILES = (
     ".githooks/pre-commit",
+    ".githooks/post-merge",
     "scripts/dev/install-git-hooks.sh",
     "build/scripts/hooks/install-hooks.sh",
     "build/scripts/hooks/pre-commit",
@@ -28,7 +29,7 @@ class GitHooksTests(unittest.TestCase):
     """Run the real hooks against disposable Git indexes, without a .NET SDK."""
 
     def setUp(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory(prefix="meridian hook tests ")
+        self.temporary = tempfile.TemporaryDirectory(prefix="meridian hook tests ", ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.base = Path(self.temporary.name)
         self.repo = self.base / "ordinary checkout"
@@ -311,6 +312,7 @@ sys.exit(1 if failed else 0)
             with self.subTest(checkout=repo.name, installer=method):
                 # Installation must restore executable permission for actual Git invocation.
                 (repo / ".githooks" / "pre-commit").chmod(0o644)
+                (repo / ".githooks" / "post-merge").chmod(0o644)
                 if method == "make":
                     self._run(["make", "install-hooks"], cwd=repo)
                 else:
@@ -318,6 +320,7 @@ sys.exit(1 if failed else 0)
                 self.assertEqual(self._git("config", "--local", "--get", "core.hooksPath", repo=repo), ".githooks")
                 self.assertEqual(self.global_config.read_bytes(), global_before)
                 self.assertTrue(os.access(repo / ".githooks" / "pre-commit", os.X_OK))
+                self.assertTrue(os.access(repo / ".githooks" / "post-merge", os.X_OK))
                 self.assertFalse((repo / ".git" / "hooks" / "pre-commit").exists())
                 self._write("src/Example.cs", "// GOOD installed hook\n", repo=repo)
                 self._git("add", "src/Example.cs", repo=repo)

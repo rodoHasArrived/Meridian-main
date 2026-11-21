@@ -200,6 +200,50 @@ public sealed class FundEconomicsJournalFactoryTests
 
         return new JournalEntry(JournalEntryId, OccurredAt, draft.Description, lines, draft.Metadata);
     }
+    [Fact]
+    public void PerformanceFee_AlreadyAccrued_DraftsOnlyTheIncrease()
+    {
+        // Cumulative fee 400,000 with 250,000 already payable => accrue 150,000 more.
+        var result = FundEconomicsJournalFactory.BuildPerformanceFeeAccrualDraft(
+            FundId, 12_000_000m, 10_000_000m, 0m, 0.20m, crystallize: false, EffectiveDate, OccurredAt, PeriodId,
+            alreadyAccrued: 250_000m);
+
+        result.PerformanceFee.Should().Be(400_000m);
+        result.PeriodAccrual.Should().Be(150_000m);
+        result.Draft!.IsBalanced.Should().BeTrue();
+        result.Draft.Lines.Should().ContainSingle(line =>
+            line.account == LedgerAccounts.PerformanceFeeExpenseFor(FundId) && line.debit == 150_000m);
+        result.Draft.Lines.Should().ContainSingle(line =>
+            line.account == LedgerAccounts.PerformanceFeePayableFor(FundId) && line.credit == 150_000m);
+    }
+
+    [Fact]
+    public void PerformanceFee_AlreadyAccruedAboveCumulative_DraftsAReversal()
+    {
+        // Value fell back to the mark: the 250,000 accrued earlier is no longer owed.
+        var result = FundEconomicsJournalFactory.BuildPerformanceFeeAccrualDraft(
+            FundId, 10_000_000m, 10_000_000m, 0m, 0.20m, crystallize: false, EffectiveDate, OccurredAt, PeriodId,
+            alreadyAccrued: 250_000m);
+
+        result.PerformanceFee.Should().Be(0m);
+        result.PeriodAccrual.Should().Be(-250_000m);
+        result.Draft!.Lines.Should().ContainSingle(line =>
+            line.account == LedgerAccounts.PerformanceFeePayableFor(FundId) && line.debit == 250_000m);
+        result.Draft.Lines.Should().ContainSingle(line =>
+            line.account == LedgerAccounts.PerformanceFeeExpenseFor(FundId) && line.credit == 250_000m);
+    }
+
+    [Fact]
+    public void PerformanceFee_AlreadyAccruedEqualsCumulative_ProducesNoDraft()
+    {
+        var result = FundEconomicsJournalFactory.BuildPerformanceFeeAccrualDraft(
+            FundId, 12_000_000m, 10_000_000m, 0m, 0.20m, crystallize: false, EffectiveDate, OccurredAt, PeriodId,
+            alreadyAccrued: 400_000m);
+
+        result.Draft.Should().BeNull();
+        result.PeriodAccrual.Should().Be(0m);
+    }
+
 
     private static readonly Guid JournalEntryId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 }

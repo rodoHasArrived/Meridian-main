@@ -18,15 +18,30 @@ Metrics computed:
   - Average documentation file size (in lines)
   - Overall health score (0-100)
 
+Tracked versus volatile output:
+  ``--json-output`` (and the Markdown rendered from it) is committed under
+  ``docs/status/``.  It deliberately omits the line-count fields
+  (``total_lines``, ``average_lines`` and each file's ``line_count``): those
+  change on every Markdown edit, so tracking them made any two PRs that touched
+  Markdown conflict on the dashboard.  The tracked payload instead carries a
+  ``signal_digest`` of its own contents.  Concurrent changes to the tracked
+  signals (for example two PRs that each add a file) therefore still conflict
+  on that line rather than merging cleanly into a wrong total.  The full
+  payload, including line counts, is available through the optional
+  ``--volatile-json-output`` path, which must be untracked (CI writes it under
+  ``artifacts/``).
+
 Usage:
-    python3 generate-health-dashboard.py --output docs/generated/doc-health-dashboard.md
+    python3 generate-health-dashboard.py --output docs/generated/doc-health-dashboard.md --json-output health.json
     python3 generate-health-dashboard.py --json-output health.json --summary
     python3 generate-health-dashboard.py --root /path/to/repo --output report.md --json-output report.json
+    python3 generate-health-dashboard.py --volatile-json-output artifacts/docs/doc-health-line-metrics.json
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -73,6 +88,16 @@ _MD_LINK_PATTERN: re.Pattern[str] = re.compile(
 # Headings: lines starting with one or more '#'.
 _HEADING_PATTERN: re.Pattern[str] = re.compile(r"^\s*#{1,6}\s+\S")
 
+# Fields that change whenever any scanned Markdown file gains or loses a line.
+# They are excluded from the tracked payload (see the module docstring) and are
+# written only to the optional untracked ``--volatile-json-output`` payload.
+VOLATILE_SUMMARY_FIELDS: frozenset[str] = frozenset({"total_lines", "average_lines"})
+VOLATILE_FILE_FIELDS: frozenset[str] = frozenset({"line_count"})
+
+# Digest of every other tracked field. Its line changes exactly when a tracked
+# signal changes, so two branches that change signals differently conflict here.
+SIGNAL_DIGEST_FIELD = "signal_digest"
+
 
 # ---------------------------------------------------------------------------
 # Data models
@@ -115,10 +140,36 @@ class HealthMetrics:
     root_dir: str = ""
 
     def to_dict(self) -> dict:
-        """Serialise to a plain dictionary (JSON-friendly)."""
+        """Serialise every metric, including volatile line counts (JSON-friendly)."""
         data = asdict(self)
         # ``all_files`` already serialises via ``asdict``.
         return data
+
+    def to_tracked_dict(self) -> dict:
+        """Serialise the merge-stable payload committed under ``docs/status/``.
+
+        Line-count fields are removed and ``signal_digest`` is added directly after
+        ``health_score``. When two branches each produce a current dashboard and
+        only one of them changes a tracked signal, the other branch's payload is
+        byte-identical to the merge base. A clean textual merge then takes the
+        changed side as a whole. When both branches change signals differently,
+        their digests differ and the merge conflicts on that line.
+        """
+        full = self.to_dict()
+        stable = {key: value for key, value in full.items() if key not in VOLATILE_SUMMARY_FIELDS}
+        stable["all_files"] = [
+            {key: value for key, value in item.items() if key not in VOLATILE_FILE_FIELDS}
+            for item in full["all_files"]
+        ]
+        canonical = json.dumps(stable, sort_keys=True, separators=(",", ":"), default=str)
+        digest = "sha256:" + hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+        tracked: dict = {}
+        for key, value in stable.items():
+            tracked[key] = value
+            if key == "health_score":
+                tracked[SIGNAL_DIGEST_FIELD] = digest
+        return tracked
 
 
 # ---------------------------------------------------------------------------
@@ -440,9 +491,9 @@ def _score_label(score: int) -> str:
 
 
 def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
+    # Render only tracked fields; the Markdown is committed alongside the tracked JSON.
     metrics = HealthMetrics(
-        **{k: v for k, v in payload.items() if k in {"total_files","total_lines","orphaned_count","no_heading_count","stale_count","todo_count","average_lines","health_score","orphaned_files","no_heading_files","stale_files","scan_time","root_dir"}},
-        all_files=[FileInfo(**item) for item in payload.get("all_files", [])],
+        **{k: v for k, v in payload.items() if k in {"total_files","orphaned_count","no_heading_count","stale_count","todo_count","health_score","orphaned_files","no_heading_files","stale_files","scan_time","root_dir"}},
     )
     lines: list[str] = []
 
@@ -467,8 +518,6 @@ def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
     lines.append("| Metric | Value |")
     lines.append("| -------- | ------- |")
     lines.append(f"| Total documentation files | {metrics.total_files} |")
-    lines.append(f"| Total lines | {metrics.total_lines:,} |")
-    lines.append(f"| Average file size (lines) | {metrics.average_lines} |")
     lines.append(f"| Orphaned files | {metrics.orphaned_count} |")
     lines.append(f"| Files without headings | {metrics.no_heading_count} |")
     lines.append(
@@ -476,6 +525,16 @@ def _render_markdown_body_from_payload(payload: dict) -> str:  # noqa: C901
     )
     lines.append(f"| TODO/FIXME markers | {metrics.todo_count} |")
     lines.append(f"| **Health score** | **{metrics.health_score}/100** |")
+    lines.append("")
+    lines.append(
+        "Line counts (total, average and per file) change on every Markdown edit, so they are not"
+    )
+    lines.append(
+        "tracked here; they still feed the score. Pass `--volatile-json-output` to the generator to"
+    )
+    lines.append(
+        "write them to an untracked path. CI writes `artifacts/docs/doc-health-line-metrics.json`."
+    )
     lines.append("")
 
     # Score breakdown
@@ -605,8 +664,9 @@ def _build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
-            "  %(prog)s --output docs/generated/doc-health-dashboard.md\n"
+            "  %(prog)s --output docs/generated/doc-health-dashboard.md --json-output health.json\n"
             "  %(prog)s --json-output health.json --summary\n"
+            "  %(prog)s --volatile-json-output artifacts/docs/doc-health-line-metrics.json\n"
             "  %(prog)s --root /path/to/repo --output report.md --json-output report.json\n"
         ),
     )
@@ -622,7 +682,20 @@ def _build_parser() -> argparse.ArgumentParser:
         "-j",
         type=Path,
         default=None,
-        help="Path for the JSON metrics output.",
+        help=(
+            "Path for the tracked, merge-stable JSON payload. Line-count fields are omitted; "
+            "see --volatile-json-output."
+        ),
+    )
+    parser.add_argument(
+        "--volatile-json-output",
+        type=Path,
+        default=None,
+        help=(
+            "Optional path for the full JSON payload, including total_lines, average_lines and "
+            "per-file line_count. Use an untracked location such as artifacts/; these values "
+            "change on every Markdown edit."
+        ),
     )
     parser.add_argument(
         "--root",
@@ -681,7 +754,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:  # noqa: C901
         print("Error: missing required markdown evidence input (*.md files).", file=sys.stderr)
         return 1
 
-    payload = metrics.to_dict()
+    payload = metrics.to_tracked_dict()
 
     if args.json_output is not None:
         try:
@@ -689,6 +762,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:  # noqa: C901
             print(f"JSON metrics written to {args.json_output}")
         except OSError as exc:
             print(f"Error writing JSON output: {exc}", file=sys.stderr)
+            return 1
+
+    if args.volatile_json_output is not None:
+        try:
+            write_canonical_json(metrics.to_dict(), args.volatile_json_output)
+            print(f"Volatile JSON metrics written to {args.volatile_json_output}")
+        except OSError as exc:
+            print(f"Error writing volatile JSON output: {exc}", file=sys.stderr)
             return 1
 
     if args.output is not None:
@@ -706,7 +787,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:  # noqa: C901
         print(generate_summary(metrics))
 
     # If no output flags at all, print summary as a courtesy.
-    if args.output is None and args.json_output is None and not args.summary:
+    if (
+        args.output is None
+        and args.json_output is None
+        and args.volatile_json_output is None
+        and not args.summary
+    ):
         print(generate_summary(metrics))
 
     return 0

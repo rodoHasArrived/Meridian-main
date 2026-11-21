@@ -180,7 +180,7 @@ class ValidationMetricsTests(unittest.TestCase):
         self.assertIsNone(report["tasks"]["groups"][0]["repeatedAttemptFeedbackSeconds"])
 
     def test_loader_warns_for_bad_inputs_and_filters_tasks(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             directory = Path(temp)
             (directory / "good.json").write_text(json.dumps(receipt(taskId="selected")))
             (directory / "other.json").write_text(json.dumps(receipt("other", taskId="other")))
@@ -194,7 +194,7 @@ class ValidationMetricsTests(unittest.TestCase):
             self.assertTrue(any("unsupported schemaVersion" in item for item in warnings))
 
     def test_duplicate_run_ids_are_excluded_not_double_counted(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             directory = Path(temp)
             for name in ("first.json", "copy.json"):
                 (directory / name).write_text(json.dumps(receipt()))
@@ -203,7 +203,7 @@ class ValidationMetricsTests(unittest.TestCase):
         self.assertTrue(any("duplicate runId" in item for item in warnings))
 
     def test_command_writes_report_without_modifying_source(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = Path(temp)
             directory = root / ".ai/validation-runs"
             directory.mkdir(parents=True)
@@ -221,14 +221,14 @@ class ValidationMetricsTests(unittest.TestCase):
             self.assertIn("not developer work time", stdout.getvalue())
 
     def test_default_command_prints_json_and_empty_directory_warning(self):
-        with tempfile.TemporaryDirectory() as temp, redirect_stdout(io.StringIO()) as output:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp, redirect_stdout(io.StringIO()) as output:
             self.assertEqual(metrics.cmd_validation_metrics(self.parse(), Path(temp)), 0)
             report = json.loads(output.getvalue())
         self.assertEqual(report["runs"], 0)
         self.assertTrue(report["warnings"])
 
     def test_report_cannot_overwrite_receipt_through_external_hardlink(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = Path(temp)
             directory = root / ".ai/validation-runs"
             directory.mkdir(parents=True)
@@ -245,7 +245,7 @@ class ValidationMetricsTests(unittest.TestCase):
             self.assertEqual(target.read_bytes(), before)
 
     def test_report_cannot_replace_or_create_source_receipts(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             root = Path(temp)
             directory = root / ".ai/validation-runs"
             directory.mkdir(parents=True)

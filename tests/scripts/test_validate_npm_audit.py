@@ -69,7 +69,7 @@ class ValidateNpmAuditTests(unittest.TestCase):
         fail_level: str = "high",
         write_audit: bool = True,
     ) -> int:
-        with tempfile.TemporaryDirectory() as temporary_directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary_directory:
             root = Path(temporary_directory)
             audit_path = root / "npm-audit.json"
             if write_audit:

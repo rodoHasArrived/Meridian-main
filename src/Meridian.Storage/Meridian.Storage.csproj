@@ -40,38 +40,28 @@
     <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
     <ProjectReference Include="..\Meridian.Domain\Meridian.Domain.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
-    <ProjectReference Include="..\Meridian.Ledger\Meridian.Ledger.csproj" />
-    <ProjectReference Include="..\Meridian.Reporting\Meridian.Reporting.csproj" />
     <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="SecurityMaster\Migrations\*.sql">
+    <Content Include="Workstation\Migrations\*.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="AssetOperations\Migrations\*.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="DirectLending\Migrations\*.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Ledger\Migrations\*.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="FundAccounts\Migrations\*.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="FundStructure\Migrations\*.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Banking\Migrations\*.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="MoneyMarket\Migrations\*.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Reporting\Migrations\*.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="AssetOperations/**/*.cs" />
+    <Compile Remove="Banking/**/*.cs" />
+    <Compile Remove="DirectLending/**/*.cs" />
+    <Compile Remove="FundAccounts/**/*.cs" />
+    <Compile Remove="FundStructure/**/*.cs" />
+    <Compile Remove="Ledger/**/*.cs" />
+    <Compile Remove="Export/LedgerJournalExporter.cs" />
+    <Compile Remove="Export/LedgerJournalExportJsonContext.cs" />
+    <Compile Remove="MoneyMarket/**/*.cs" />
+    <Compile Remove="Reporting/**/*.cs" />
+    <Compile Remove="SecurityMaster/**/*.cs" />
+    <Compile Remove="Tenancy/**/*.cs" />
+    <Compile Remove="Operations/**/*.cs" />
   </ItemGroup>
 </Project>

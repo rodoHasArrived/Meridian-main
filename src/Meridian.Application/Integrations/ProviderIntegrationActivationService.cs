@@ -63,10 +63,8 @@ public sealed class ProviderIntegrationActivationService
             ?? throw new KeyNotFoundException($"Provider integration connection '{request.ConnectionId}' was not found.");
         ProviderIntegrationManifestPromotion.ValidateExpected(manifest, request.ExpectedManifestReference);
 
-        var activationManifest = manifest with
+        var reviewedManifest = manifest with
         {
-            ManifestVersion = checked(manifest.ManifestVersion + 1),
-            State = ProviderIntegrationActivationStateDto.Active,
             ApprovedBy = request.ApprovedBy,
             ApprovedAt = request.ApprovedAt,
             ChangeReason = request.ChangeReason ?? manifest.ChangeReason
@@ -77,9 +75,9 @@ public sealed class ProviderIntegrationActivationService
             UpdatedAt = request.ApprovedAt,
             ApprovalEvidenceId = request.ApprovalEvidenceId
         };
-        var readiness = ProviderIntegrationActivationReadinessService.Evaluate(
-            activationManifest,
-            activationConnection);
+        var readiness = await ProviderIntegrationActivationReadinessService.EvaluateRetainedAsync(
+            scopedStore, reviewedManifest, activationConnection, ct,
+            ProviderIntegrationManifestIdentity.Create(manifest)).ConfigureAwait(false);
 
         if (!readiness.IsReady)
         {
@@ -94,6 +92,11 @@ public sealed class ProviderIntegrationActivationService
                 "Provider integration activation is blocked by readiness issues.");
         }
 
+        var activationManifest = reviewedManifest with
+        {
+            ManifestVersion = checked(manifest.ManifestVersion + 1),
+            State = ProviderIntegrationActivationStateDto.Active
+        };
         activationManifest = await ProviderIntegrationManifestPromotion.SelectAvailableVersionAsync(scopedStore, activationManifest, ct).ConfigureAwait(false);
         await ProviderIntegrationManifestPromotion.SaveAsync(
             scopedStore, activationManifest, ProviderIntegrationManifestIdentity.Create(manifest), ct).ConfigureAwait(false);

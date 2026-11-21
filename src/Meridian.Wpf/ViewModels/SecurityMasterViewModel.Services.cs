@@ -93,7 +93,7 @@ internal static class SecurityMasterPrintProjectionService
             EvidenceItems:
             [
                 new SecurityMasterEvidenceItem("Winning source", goldenCopySourceText, SecurityMasterTextHelpers.FirstNonEmpty(snapshot.EconomicDefinition?.WinningSourceReason, "Golden copy rationale")),
-                new SecurityMasterEvidenceItem("Validation summary", BuildValidationSummaryText(snapshot), "Validation report"),
+                new SecurityMasterEvidenceItem("Validation summary", SecurityMasterPresentation.BuildValidationSummaryText(snapshot), "Validation report"),
                 new SecurityMasterEvidenceItem("Identifier coverage", snapshot.IdentifierSummary?.Summary ?? "Identifier summary unavailable.", "Identifier resolution"),
                 new SecurityMasterEvidenceItem("Schedule model", snapshot.ScheduleBook?.Summary ?? snapshot.ScheduleSummary?.Summary ?? "Schedule summary unavailable.", FormatScheduleSourceLabel(snapshot)),
                 new SecurityMasterEvidenceItem("Lot model", snapshot.OpenLotReadModel?.Summary ?? snapshot.LotModel?.Summary ?? "Lot model summary unavailable.", "Lot/open-position guidance"),

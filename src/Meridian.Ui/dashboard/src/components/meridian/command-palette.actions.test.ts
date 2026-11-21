@@ -1,7 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { renderHook } from "@testing-library/react";
 import {
   getCommandPaletteActionsSnapshot,
   registerCommandPaletteActions,
+  useScreenPaletteActions,
   type CommandPaletteActionItem
 } from "@/components/meridian/command-palette.actions";
 
@@ -42,5 +44,33 @@ describe("command palette action registry", () => {
     const second = getCommandPaletteActionsSnapshot();
     expect(second).toBe(first);
     unregister();
+  });
+});
+
+describe("useScreenPaletteActions", () => {
+  it("registers while mounted, calls the latest handler, and unregisters on unmount", async () => {
+    const first = vi.fn();
+    const second = vi.fn();
+    const spec = (run: () => void, disabled = false) => [{
+      id: "hook:refresh", verbLabel: "Refresh", description: "Refresh test", disabled, run
+    }];
+    const { rerender, unmount } = renderHook(({ run, disabled }) => useScreenPaletteActions("test:hook", spec(run, disabled)), {
+      initialProps: { run: first, disabled: false }
+    });
+    const registered = getCommandPaletteActionsSnapshot().find((item) => item.id === "hook:refresh");
+    expect(registered?.disabled).toBe(false);
+
+    rerender({ run: second, disabled: false });
+    // A new closure alone does not re-register, but run still reaches the latest handler.
+    expect(getCommandPaletteActionsSnapshot().find((item) => item.id === "hook:refresh")).toBe(registered);
+    await registered?.run();
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledTimes(1);
+
+    rerender({ run: second, disabled: true });
+    expect(getCommandPaletteActionsSnapshot().find((item) => item.id === "hook:refresh")?.disabled).toBe(true);
+
+    unmount();
+    expect(getCommandPaletteActionsSnapshot().some((item) => item.id === "hook:refresh")).toBe(false);
   });
 });

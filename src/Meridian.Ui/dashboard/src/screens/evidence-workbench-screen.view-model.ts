@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, pluralizeCount } from "@/lib/format";
 import {
   exportEvidenceManifest,
   getEvidencePacket,
@@ -415,6 +415,7 @@ export interface EvidenceVaultDocumentIndexRowViewModel {
 
 export interface EvidenceVaultDocumentDetailViewModel {
   id: string;
+  attestationTarget?: { vaultId: string; documentId: string };
   title: string;
   subtitle: string;
   ariaLabel: string;
@@ -1347,6 +1348,7 @@ function buildVaultDocumentIndexRow(
   ];
   const detail: EvidenceVaultDocumentDetailViewModel = {
     id: `${entry.vaultId}:${document.documentId}:detail`,
+    attestationTarget: { vaultId: entry.vaultId, documentId: document.documentId },
     title: document.fileName,
     subtitle: `${classificationLabel} retained for ${selectedSubjectLabel}`,
     ariaLabel: `Selected Evidence Vault document: ${document.fileName}`,
@@ -2011,7 +2013,7 @@ function buildIntakeResultLabel(result: EvidenceVaultIntakeResponse | null): str
     return null;
   }
 
-  const sizeLabel = `${result.sizeBytes.toLocaleString()} bytes`;
+  const sizeLabel = `${formatCountValue(result.sizeBytes)} bytes`;
   return `Retained ${result.fileName} as ${result.intakeId}; ${sizeLabel}; ${result.contentHashSha256}.`;
 }
 
@@ -2203,11 +2205,11 @@ function formatBytes(value: number) {
 
   const kib = value / 1024;
   if (kib < 1024) {
-    return `${kib.toFixed(kib >= 10 ? 0 : 1)} KiB`;
+    return `${formatDecimal(kib, kib >= 10 ? 0 : 1)} KiB`;
   }
 
   const mib = kib / 1024;
-  return `${mib.toFixed(mib >= 10 ? 0 : 1)} MiB`;
+  return `${formatDecimal(mib, mib >= 10 ? 0 : 1)} MiB`;
 }
 
 function normalizeManifestRoute(value: string): string | null {

@@ -68,6 +68,193 @@ public sealed class SecurityAssetProfileGovernanceServiceTests
         rollback.Lineage.AuditEvents.Should().Contain(audit => audit.ApprovalReference == "AP-003");
     }
 
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task ApproveProfileAsync_SelfApproval_FollowsRequireIndependentProfileApprover(bool requireIndependent, bool expectApproved)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-asset-profiles", Guid.NewGuid().ToString("N"));
+        var options = Substitute.For<Microsoft.Extensions.Options.IOptionsMonitor<SecurityMasterWorkbenchOptions>>();
+        options.CurrentValue.Returns(new SecurityMasterWorkbenchOptions { RequireIndependentProfileApprover = requireIndependent });
+        var service = new SecurityAssetProfileGovernanceService(
+            new StorageOptions { RootPath = dataRoot }, GovernanceRequirementsFor.NonProduction(options));
+        var draft = await service.DraftProfileAsync(
+            CreateDraftRequest("custom-self-approval", fieldLabel: "NAV date"),
+            "Settings-Admin");
+        var approval = new SecurityAssetProfileApprovalRequestDto(
+            "custom-self-approval",
+            draft.Profile.Version,
+            new DateOnly(2026, 6, 1),
+            "AP-SELF",
+            null,
+            "Approve own draft.",
+            "corr-self");
+
+        var act = async () => await service.ApproveProfileAsync(approval, " settings-admin ");
+
+        if (expectApproved)
+        {
+            (await act()).Profile.Status.Should().Be(SecurityAssetProfileStatusDto.Approved);
+        }
+        else
+        {
+            await act.Should().ThrowAsync<ArgumentException>().WithMessage("*someone other than the actor who drafted it*");
+            service.GetAllProfiles().Single(p => p.ProfileId == "custom-self-approval").Status
+                .Should().Be(SecurityAssetProfileStatusDto.Draft);
+        }
+    }
+
+    [Fact]
+    public async Task DraftProfileAsync_RecordsTheDrafter_AndApprovalKeepsIt()
+    {
+        var service = new SecurityAssetProfileGovernanceService();
+        var draft = await service.DraftProfileAsync(CreateDraftRequest("custom-drafter", fieldLabel: "NAV date"), "settings-admin");
+
+        draft.Profile.DraftedBy.Should().Be("settings-admin");
+        var approved = await service.ApproveProfileAsync(Approval("custom-drafter", draft.Profile.Version), "controller");
+
+        approved.Profile.ApprovedBy.Should().Be("controller");
+        approved.Profile.DraftedBy.Should().Be("settings-admin", "maker and checker both stay on the approved version");
+    }
+
+    [Fact]
+    public async Task ApproveProfileAsync_AnyDrafterOfTheVersionCannotApprove_WhenIndependentApprovalIsRequired()
+    {
+        var service = new SecurityAssetProfileGovernanceService(
+            new StorageOptions { RootPath = NewDataRoot() }, IndependentApprover(true));
+        await service.DraftProfileAsync(CreateDraftRequest("custom-two-makers", fieldLabel: "NAV date"), "maker-one");
+        var edited = await service.DraftProfileAsync(CreateDraftRequest("custom-two-makers", fieldLabel: "Latest NAV date"), "maker-two");
+
+        await service.Invoking(s => s.ApproveProfileAsync(Approval("custom-two-makers", edited.Profile.Version), "maker-one"))
+            .Should().ThrowAsync<ArgumentException>("the first maker drafted this version even though another actor edited it last");
+        await service.Invoking(s => s.ApproveProfileAsync(Approval("custom-two-makers", edited.Profile.Version), "maker-two"))
+            .Should().ThrowAsync<ArgumentException>();
+
+        var approved = await service.ApproveProfileAsync(Approval("custom-two-makers", edited.Profile.Version), "controller");
+        approved.Profile.Status.Should().Be(SecurityAssetProfileStatusDto.Approved);
+    }
+
+    [Fact]
+    public async Task ApproveProfileAsync_LegacyDraftWithoutDrafter_FallsBackToItsRecordedAuthor()
+    {
+        // A draft persisted before DraftedBy existed records its author only in ApprovedBy, with no
+        // drafted audit event naming it here. The check uses that author and invents no other maker.
+        var dataRoot = NewDataRoot();
+        var writer = new SecurityAssetProfileGovernanceService(new StorageOptions { RootPath = dataRoot });
+        var draft = await writer.DraftProfileAsync(CreateDraftRequest("custom-legacy-draft", fieldLabel: "NAV date"), "legacy-author");
+        var path = Path.Combine(dataRoot, "governance", "security-asset-profiles.json");
+        var document = System.Text.Json.Nodes.JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        foreach (var profile in document["profiles"]!.AsArray())
+        {
+            profile!.AsObject().Remove("draftedBy");
+        }
+        document["auditEvents"] = new System.Text.Json.Nodes.JsonArray();
+        await File.WriteAllTextAsync(path, document.ToJsonString());
+
+        var reloaded = new SecurityAssetProfileGovernanceService(new StorageOptions { RootPath = dataRoot }, IndependentApprover(true));
+        reloaded.GetAllProfiles().Single(p => p.ProfileId == "custom-legacy-draft").DraftedBy.Should().BeNull();
+
+        await reloaded.Invoking(s => s.ApproveProfileAsync(Approval("custom-legacy-draft", draft.Profile.Version), "legacy-author"))
+            .Should().ThrowAsync<ArgumentException>();
+        var approved = await reloaded.ApproveProfileAsync(Approval("custom-legacy-draft", draft.Profile.Version), "controller");
+        approved.Profile.DraftedBy.Should().BeNull("no maker is invented for a legacy record");
+    }
+
+    private static string NewDataRoot()
+        => Path.Combine(Path.GetTempPath(), "meridian-asset-profiles", Guid.NewGuid().ToString("N"));
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ApproveProfileAsync_InstitutionalProfile_RefusesSelfApproval_WithTheSettingItselfUnset(bool byProductionComposition)
+    {
+        var service = new SecurityAssetProfileGovernanceService(
+            new StorageOptions { RootPath = NewDataRoot() }, GovernanceRequirementsFor.Institutional(byProductionComposition));
+        var draft = await service.DraftProfileAsync(CreateDraftRequest("custom-institutional", fieldLabel: "NAV date"), "settings-admin");
+
+        await service.Invoking(s => s.ApproveProfileAsync(Approval("custom-institutional", draft.Profile.Version), "Settings-Admin"))
+            .Should().ThrowAsync<ArgumentException>().WithMessage("*someone other than the actor who drafted it*");
+        service.GetAllProfiles().Single(p => p.ProfileId == "custom-institutional").Status
+            .Should().Be(SecurityAssetProfileStatusDto.Draft);
+
+        var approved = await service.ApproveProfileAsync(Approval("custom-institutional", draft.Profile.Version), "controller");
+        approved.Profile.Status.Should().Be(SecurityAssetProfileStatusDto.Approved, "an independent approver is not blocked");
+    }
+
+    [Fact]
+    public async Task ApproveProfileAsync_InstitutionalProfile_AReloadTurningTheSettingOff_StillRefusesSelfApproval()
+    {
+        var options = new MutableWorkbenchOptionsMonitor(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional
+        });
+        var service = new SecurityAssetProfileGovernanceService(
+            new StorageOptions { RootPath = NewDataRoot() }, GovernanceRequirementsFor.NonProduction(options));
+        var draft = await service.DraftProfileAsync(CreateDraftRequest("custom-reload", fieldLabel: "NAV date"), "settings-admin");
+
+        options.Set(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional,
+            RequireIndependentProfileApprover = false
+        });
+
+        await service.Invoking(s => s.ApproveProfileAsync(Approval("custom-reload", draft.Profile.Version), "settings-admin"))
+            .Should().ThrowAsync<ArgumentException>("a contradictory reload never relaxes the requirement");
+    }
+
+    [Fact]
+    public async Task ApproveProfileAsync_InstitutionalProfile_AReloadBackToStandard_StillRefusesSelfApproval()
+    {
+        var options = new MutableWorkbenchOptionsMonitor(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional
+        });
+        var service = new SecurityAssetProfileGovernanceService(
+            new StorageOptions { RootPath = NewDataRoot() }, GovernanceRequirementsFor.NonProduction(options));
+        var draft = await service.DraftProfileAsync(CreateDraftRequest("custom-latched", fieldLabel: "NAV date"), "settings-admin");
+
+        options.Set(new SecurityMasterWorkbenchOptions());
+
+        await service.Invoking(s => s.ApproveProfileAsync(Approval("custom-latched", draft.Profile.Version), "settings-admin"))
+            .Should().ThrowAsync<ArgumentException>("the Institutional profile latches until restart");
+    }
+
+    [Fact]
+    public async Task ApproveProfileAsync_InstitutionalProfile_HandlesALegacyDraftAsTheSettingDoes()
+    {
+        // The profile adds no recheck and invents no maker: a draft without DraftedBy is still
+        // compared against its recorded author only.
+        var dataRoot = NewDataRoot();
+        var writer = new SecurityAssetProfileGovernanceService(new StorageOptions { RootPath = dataRoot });
+        var draft = await writer.DraftProfileAsync(CreateDraftRequest("custom-legacy-institutional", fieldLabel: "NAV date"), "legacy-author");
+        var path = Path.Combine(dataRoot, "governance", "security-asset-profiles.json");
+        var document = System.Text.Json.Nodes.JsonNode.Parse(await File.ReadAllTextAsync(path))!.AsObject();
+        foreach (var profile in document["profiles"]!.AsArray())
+        {
+            profile!.AsObject().Remove("draftedBy");
+        }
+        document["auditEvents"] = new System.Text.Json.Nodes.JsonArray();
+        await File.WriteAllTextAsync(path, document.ToJsonString());
+
+        var reloaded = new SecurityAssetProfileGovernanceService(
+            new StorageOptions { RootPath = dataRoot }, GovernanceRequirementsFor.Institutional(byProductionComposition: true));
+
+        await reloaded.Invoking(s => s.ApproveProfileAsync(Approval("custom-legacy-institutional", draft.Profile.Version), "legacy-author"))
+            .Should().ThrowAsync<ArgumentException>();
+        var approved = await reloaded.ApproveProfileAsync(Approval("custom-legacy-institutional", draft.Profile.Version), "controller");
+        approved.Profile.DraftedBy.Should().BeNull("no maker is invented for a legacy record");
+    }
+
+    private static ISecurityMasterGovernanceRequirements IndependentApprover(bool required)
+    {
+        var options = Substitute.For<Microsoft.Extensions.Options.IOptionsMonitor<SecurityMasterWorkbenchOptions>>();
+        options.CurrentValue.Returns(new SecurityMasterWorkbenchOptions { RequireIndependentProfileApprover = required });
+        return GovernanceRequirementsFor.NonProduction(options);
+    }
+
+    internal static SecurityAssetProfileApprovalRequestDto Approval(string profileId, int version)
+        => new(profileId, version, new DateOnly(2026, 6, 1), "AP-IND", null, "Independent approval.", "corr-independent");
+
     [Fact]
     public async Task DraftProfileAsync_RejectsReservedFieldKeys()
     {
@@ -434,7 +621,7 @@ public sealed class SecurityAssetProfileGovernanceServiceTests
             .WithMessage("*security-asset-profiles.json*corrupt*");
     }
 
-    private static SecurityAssetProfileDraftRequestDto CreateDraftRequest(
+    internal static SecurityAssetProfileDraftRequestDto CreateDraftRequest(
         string profileId,
         string fieldKey = "navDate",
         string fieldLabel = "NAV date")

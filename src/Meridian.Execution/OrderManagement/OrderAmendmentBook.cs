@@ -111,7 +111,7 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
             && (report.ReplacesOrderId == pending.OriginalBrokerOrderId || brokerId == pending.CandidateBrokerOrderId);
         if (brokerId == pending.OriginalBrokerOrderId
             && (pending.CandidateBrokerOrderId is not null || pending.CandidateClientOrderId is not null)
-            && IsTerminal(report.OrderStatus)
+            && OrderStatusFacts.IsTerminal(report.OrderStatus)
             && report.ReportType is not ExecutionReportType.ModificationRejected)
             throw new InvalidDataException("A terminal predecessor does not establish the candidate replacement outcome.");
         if (locallyConfirmed && report.ReportType is ExecutionReportType.Modified)
@@ -164,7 +164,7 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
         if (report.ReportType is ExecutionReportType.ModificationPending)
         {
             var status = current.Status;
-            if (!IsTerminal(status) && report.FillPrice is > 0m && report.FilledQuantity > current.FilledQuantity)
+            if (!OrderStatusFacts.IsTerminal(status) && report.FillPrice is > 0m && report.FilledQuantity > current.FilledQuantity)
                 status = report.FilledQuantity >= Math.Max(pending.Original.Quantity, pending.Proposed.Quantity)
                     ? OrderStatus.Filled : OrderStatus.PartiallyFilled;
             report = report with { OrderStatus = status, OrderQuantity = current.Quantity };
@@ -189,8 +189,8 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
         }
         // A late working acknowledgement cannot reopen or resize a terminal order. Its
         // still-possible exposure remains separately reserved until authoritative recovery.
-        if (IsTerminal(current.Status)
-            && (!IsTerminal(report.OrderStatus) || terms.Quantity != current.Quantity))
+        if (OrderStatusFacts.IsTerminal(current.Status)
+            && (!OrderStatusFacts.IsTerminal(report.OrderStatus) || terms.Quantity != current.Quantity))
         {
             report = report with
             {
@@ -204,7 +204,10 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
             ReferenceEquals(terms, pending.Proposed));
     }
 
-    internal IReadOnlyList<OrderState> GetExposureReservations()
+    /// <param name="largestQuantity">
+    /// Reserve the outcome with the larger quantity instead of the larger value, for unit limits.
+    /// </param>
+    internal IReadOnlyList<OrderState> GetExposureReservations(bool largestQuantity = false)
     {
         var reservations = new List<OrderState>();
         foreach (var (id, pending) in _pending)
@@ -215,7 +218,9 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
             // Reserve one real outcome, never independent maxima: 100 shares at $1 amended to
             // 1 share at $100 is $100 either way, not a synthetic 100 shares at $100. Exposure
             // providers multiply quantity by price, so the terms must stay correlated.
-            var outcome = SelectLargerAmendmentOutcome(pending, current);
+            var outcome = largestQuantity
+                ? (pending.Proposed.Quantity > pending.Original.Quantity ? pending.Proposed : pending.Original)
+                : SelectLargerAmendmentOutcome(pending, current);
             if (outcome.Quantity <= current.FilledQuantity)
                 outcome = outcome == pending.Original ? pending.Proposed : pending.Original;
             reservations.Add(current with
@@ -253,8 +258,6 @@ internal sealed class OrderAmendmentBook(IReadOnlyDictionary<string, OrderState>
         return proposed.Value > original.Value ? pending.Proposed : pending.Original;
     }
 
-    private static bool IsTerminal(OrderStatus status) =>
-        status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
 }
 
 /// <summary>

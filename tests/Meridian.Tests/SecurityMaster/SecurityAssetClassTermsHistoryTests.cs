@@ -214,7 +214,7 @@ public sealed class SecurityAssetClassTermsHistoryTests
     {
         var manifest = LoadCommittedManifests().Should().ContainKey("StructuredCredit").WhoseValue;
 
-        manifest.Versions.Select(static version => version.TermsVersion).Should().Equal(1, 2, 3, 4, 5);
+        manifest.Versions.Select(static version => version.TermsVersion).Should().Equal(1, 2, 3, 4, 5, 6);
         manifest.Versions[0].Fields.Select(Describe).Should().Equal(
             "collateralType:String:required",
             "couponOrIndex:String:required",
@@ -259,7 +259,12 @@ public sealed class SecurityAssetClassTermsHistoryTests
 
         // A bond and a certificate of deposit go on to read version 3 (VersionThree_AddsOnlyTheCallAndPutSchedules).
         manifest.Versions.Select(static version => version.TermsVersion)
-            .Should().Equal(assetClass == "Swap" ? new[] { 1, 2, 3 } : new[] { 1, 2, 3, 4 });
+            .Should().Equal(assetClass switch
+            {
+                "Swap" => new[] { 1, 2, 3, 4 },
+                "CertificateOfDeposit" => new[] { 1, 2, 3, 4, 5 },
+                _ => new[] { 1, 2, 3, 4, 5 }
+            });
         var added = manifest.Versions[1].Fields.Select(Describe).Except(manifest.Versions[0].Fields.Select(Describe)).ToArray();
         var removed = manifest.Versions[0].Fields.Select(Describe).Except(manifest.Versions[1].Fields.Select(Describe)).ToArray();
         removed.Should().BeEmpty();
@@ -284,11 +289,29 @@ public sealed class SecurityAssetClassTermsHistoryTests
     {
         var manifest = LoadCommittedManifests().Should().ContainKey(assetClass).WhoseValue;
 
-        manifest.Versions.Select(static version => version.TermsVersion).Should().Equal(1, 2, 3, 4);
+        manifest.Versions.Select(static version => version.TermsVersion)
+            .Should().Equal(1, 2, 3, 4, 5);
         manifest.Versions[2].Fields.Select(Describe).Except(manifest.Versions[1].Fields.Select(Describe))
             .Should().Equal("callSchedule:Array:optional", "putSchedule:Array:optional");
         manifest.Versions[1].Fields.Select(Describe).Except(manifest.Versions[2].Fields.Select(Describe))
             .Should().BeEmpty("version 3 adds the call and put schedules and changes nothing version 2 declares");
+    }
+
+    [Fact]
+    public void BondVersionFive_AddsOnlyTheOptionalWorkflow_WithoutChangingVersionFour()
+    {
+        var manifest = LoadCommittedManifests().Should().ContainKey("Bond").WhoseValue;
+        var before = manifest.Versions[3].Fields.Select(Describe).ToArray();
+        var after = manifest.Versions[4].Fields.Select(Describe).ToArray();
+
+        after.Except(before).Should().Equal("bondWorkflow:Object:optional");
+        before.Except(after).Should().BeEmpty("v5 adds explicit conventions without changing historical terms");
+        var workflow = SecurityAssetTermsSchema.Field("Bond", "bondWorkflow")!;
+        workflow.SinceTermsVersion.Should().Be(5);
+        workflow.Required.Should().BeFalse();
+        workflow.AuthoringEnabled.Should().BeTrue();
+        SecurityAssetClassCatalog.GetTermsVersion("Bond").Should().Be(5);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("Bond").Should().Be(5);
     }
 
     [Theory]
@@ -304,8 +327,34 @@ public sealed class SecurityAssetClassTermsHistoryTests
         var after = manifest.Versions[version - 1].Fields.Select(Describe).ToArray();
         after.Except(before).Should().Equal("cashFlowContract:Object:optional");
         before.Except(after).Should().BeEmpty();
-        SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass).Should().Be(version);
-        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().BeLessThan(version);
+        SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass).Should().BeGreaterThanOrEqualTo(version);
+        SecurityAssetTermsSchema.Field(assetClass, "cashFlowContract")!.AuthoringEnabled.Should().BeFalse();
+        SecurityAssetTermsSchema.WritableFields(assetClass).Should().NotContain(static field => field.Key == "cashFlowContract",
+            "a later writable rate-unit declaration does not activate calculation-only terms");
+    }
+
+    [Theory]
+    [InlineData("Deposit", 2)]
+    [InlineData("CertificateOfDeposit", 5)]
+    [InlineData("CommercialPaper", 2)]
+    [InlineData("TreasuryBill", 2)]
+    [InlineData("Repo", 2)]
+    [InlineData("CashSweep", 2)]
+    [InlineData("StructuredCredit", 6)]
+    [InlineData("Swap", 4)]
+    [InlineData("DirectLoan", 3)]
+    [InlineData("Swaption", 2)]
+    [InlineData("CapFloor", 2)]
+    [InlineData("StructuredNote", 2)]
+    public void GovernedRateUnit_AddsOnlyAnOptionalString_WithoutChangingEarlierTerms(string assetClass, int version)
+    {
+        var manifest = LoadCommittedManifests().Should().ContainKey(assetClass).WhoseValue;
+        var before = manifest.Versions[version - 2].Fields.Select(Describe).ToArray();
+        var after = manifest.Versions[version - 1].Fields.Select(Describe).ToArray();
+        after.Except(before).Should().Equal("rateUnit:String:optional");
+        before.Except(after).Should().BeEmpty();
+        SecurityAssetTermsSchema.Field(assetClass, "rateUnit")!.SinceTermsVersion.Should().Be(version);
+        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(version);
     }
 
     [Fact]
@@ -344,15 +393,16 @@ public sealed class SecurityAssetClassTermsHistoryTests
         }
 
         var structuredCredit = SecurityAssetClassCatalog.GetOrDefault("StructuredCredit").TermsUpgrades;
-        structuredCredit.Should().HaveCount(4);
-        structuredCredit!.Select(static step => (step.FromVersion, step.ToVersion)).Should().Equal((1, 2), (2, 3), (3, 4), (4, 5));
+        structuredCredit.Should().HaveCount(5);
+        structuredCredit!.Select(static step => (step.FromVersion, step.ToVersion)).Should().Equal((1, 2), (2, 3), (3, 4), (4, 5), (5, 6));
         structuredCredit.Should().OnlyContain(static step => step.Kind == SecurityTermsUpgradeKind.Identity && step.Transform == null);
 
         foreach (var assetClass in new[] { "Bond", "CertificateOfDeposit" })
         {
             var steps = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsUpgrades;
-            steps.Should().HaveCount(3, $"{assetClass} reads terms versions 1 through 4");
-            steps!.Select(static step => (step.FromVersion, step.ToVersion)).Should().Equal((1, 2), (2, 3), (3, 4));
+            var expected = new[] { (1, 2), (2, 3), (3, 4), (4, 5) };
+            steps.Should().HaveCount(expected.Length);
+            steps!.Select(static step => (step.FromVersion, step.ToVersion)).Should().Equal(expected);
             steps.Should().OnlyContain(static step => step.Kind == SecurityTermsUpgradeKind.Identity && step.Transform == null);
         }
     }

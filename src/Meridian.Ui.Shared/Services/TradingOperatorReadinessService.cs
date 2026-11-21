@@ -18,6 +18,10 @@ namespace Meridian.Ui.Shared.Services;
 /// </summary>
 public sealed partial class TradingOperatorReadinessService : ITradingOperatorReadinessProvider
 {
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, TradingOperatorReadinessDto> _observations = new();
+    public TradingOperatorReadinessDto? Observe(Guid accountId) =>
+        _observations.TryGetValue(accountId, out var snapshot)
+            && snapshot.AsOf <= DateTimeOffset.UtcNow && DateTimeOffset.UtcNow - snapshot.AsOf <= TimeSpan.FromSeconds(30) ? snapshot : null;
     private static readonly string[] RequiredLivePromotionEvidenceTokens =
         PromotionApprovalChecklist.CreateRequiredFor(RunType.Live);
 
@@ -55,20 +59,22 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
     public Task<TradingOperatorReadinessDto> GetAsync(
         Guid? fundAccountId = null,
         CancellationToken ct = default) =>
-        GetCoreAsync(fundAccountId, scope: null, ct);
+        GetCoreAsync(fundAccountId, scope: null, fundAccountId, ct);
 
     public Task<TradingOperatorReadinessDto> GetAsync(
         Guid? fundAccountId,
         StrategyRunReadScope scope,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        Guid? authorizedPaperAccountId = null)
     {
         ArgumentNullException.ThrowIfNull(scope);
-        return GetCoreAsync(fundAccountId, scope, ct);
+        return GetCoreAsync(fundAccountId, scope, authorizedPaperAccountId, ct);
     }
 
     private async Task<TradingOperatorReadinessDto> GetCoreAsync(
         Guid? fundAccountId,
         StrategyRunReadScope? scope,
+        Guid? authorizedPaperAccountId,
         CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -85,7 +91,7 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
         var latestRun = await ResolveLatestRunAsync(scope, ct).ConfigureAwait(false);
         var promotionRecords = await ResolvePromotionRecordsAsync(scope, ct).ConfigureAwait(false);
         var promotion = BuildPromotion(latestRun, promotionRecords);
-        var paperReadiness = BuildPaperSessionReadiness(paperService, latestRun, auditEntries, workItems);
+        var paperReadiness = BuildPaperSessionReadiness(paperService, authorizedPaperAccountId, latestRun, auditEntries, workItems);
         var sessions = paperReadiness.Sessions;
         var activeSession = paperReadiness.ActiveSession;
         var replay = paperReadiness.Replay;
@@ -200,6 +206,8 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
         };
 
         ValidateRequiredReadinessFields(readiness);
+        if (fundAccountId is { } observedAccount)
+            _observations[observedAccount] = readiness;
         return readiness;
     }
 
@@ -591,12 +599,14 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
 
     private static PaperSessionReadiness BuildPaperSessionReadiness(
         PaperSessionPersistenceService? paperService,
+        Guid? authorizedPaperAccountId,
         StrategyRunDetail? latestRun,
         IReadOnlyList<ExecutionAuditEntry> auditEntries,
         ICollection<OperatorWorkItemDto> workItems)
     {
         var sessionSummaries = paperService?.GetSessions() ?? [];
         var sessions = sessionSummaries
+            .Where(summary => summary.FundAccountId is null || summary.FundAccountId == authorizedPaperAccountId)
             .Select(summary => MapSession(summary, paperService?.GetSession(summary.SessionId)))
             .ToArray();
         var activeSession = SelectActiveSession(sessions, latestRun);

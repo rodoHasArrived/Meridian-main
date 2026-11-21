@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+<title>Monitor · Ops Wall — Meridian</title>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Monitor · Ops Wall" description="The shared-monitor operations wall — cookbook recipe 3 assembled: headline KPIs, feed health, coverage heat, alert board and a live log tail at terminal density. Glanceable by rule: no interaction required to read state; color carries status." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="ops-wall">
+<style>html,body{margin:0;padding:0;height:100%}
+.ow-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.ow-kpis .mds-metric{padding:12px}.ow-kpis .mds-metric__value{font-size:22px}
+.ow-kpis .mds-metric--hero{grid-column:span 2}.ow-kpis .mds-metric--hero .mds-metric__value{font-size:28px}
+[data-ow-dot="error"]{background:var(--red,#B54B42)}[data-ow-dot="warn"]{background:var(--orange,#986717)}[data-ow-dot="info"]{background:var(--color-info,#2F648A)}</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Wall feeds" action-label="Retry" on-action="{{ onPreviewRetry }}" hint-size="100%,860px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="monitor" labelled-by="workspace-title" topbar="{{ topbar }}" status-bar="{{ statusBar }}" hint-size="100%,860px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ScreenComposition" screen="{{ screen }}" data-screen-label="Ops wall" hint-size="100%,820px">
+<div data-region="context" style="display:flex;align-items:baseline;gap:12px">
+<h1 id="workspace-title" style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">Operations wall</h1>
+<span style="font:500 11px var(--font-data);color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">shared monitor · read-only · updates itself</span>
+<div style="flex:1"></div>
+<span style="font:500 11px var(--font-data);color:var(--text-muted);white-space:nowrap">Desk P&amp;L</span>
+{{ pnlEnvelope }}
+<span style="font:600 16px var(--font-data);color:var(--text-primary);font-variant-numeric:tabular-nums;white-space:nowrap">{{ clockLabel }}</span>
+</div>
+<div data-region="metrics" class="ow-kpis">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" hero="{{ true }}" tone="danger" label="Feeds live" value="5 / 6" context="IBKR ws stalled · retry 30s" hint-size="100%,92px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" tone="success" label="Ingestion lag" value="00:00:04" context="p99 · all live feeds" sparkline="{{ lagSpark }}" hint-size="100%,92px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" tone="danger" label="Open alerts" value="3" context="1 error · 2 warn · 1 info" hint-size="100%,92px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" tone="neutral" label="Backfills" value="2 running" context="1 queued · 1 stalled" hint-size="100%,92px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" tone="danger" label="Coverage gaps" value="2" context="NVDA 08-12 · EURUSD 08-11" hint-size="100%,92px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" tone="success" label="Order flow" value="38 fills/min" context="RTH · both venues" sparkline="{{ fillsSpark }}" hint-size="100%,92px"></x-import>
+</div>
+<div data-region="feeds" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+<sc-for list="{{ providers }}" as="p" hint-placeholder-count="6">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FreshnessIndicator" source="{{ p.source }}" status="{{ p.status }}" last-seen="{{ p.lastSeen }}" time-format="relative" hint-size="140px,20px"></x-import>
+</sc-for>
+</div>
+<div data-region="coverage">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CoverageMatrix" rows="{{ covSyms }}" cols="{{ covCols }}" data="{{ covData }}" cell-size="{{ 18 }}" hint-size="100%,180px"></x-import>
+<div style="margin-top:8px;font-family:var(--font-data);font-size:11px;color:var(--text-secondary)">green full · amber partial · red gap · hatched pending backfill</div>
+</div>
+<div data-region="alerts" style="display:flex;flex-direction:column;gap:0;height:100%">
+<sc-for list="{{ alerts }}" as="a" hint-placeholder-count="4">
+<div style="display:flex;align-items:baseline;gap:8px;padding:7px 2px;border-bottom:1px solid var(--border-divider,#E2DED5)">
+<span data-ow-dot="{{ a.level }}" style="flex:none;width:8px;height:8px;border-radius:50%;align-self:center"></span>
+<div style="min-width:0;flex:1">
+<div style="font:600 12px var(--font-body);color:var(--text-primary)">{{ a.title }}</div>
+<div style="font:11px var(--font-data);color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.detail }}</div>
+</div>
+<span style="font:500 10px var(--font-data);color:var(--text-muted);white-space:nowrap">{{ a.age }}</span>
+</div>
+</sc-for>
+<div style="margin-top:auto;padding-top:8px;font:11px var(--font-data);color:var(--text-muted)">Acknowledge from the Alerting workstation — the wall never asks for input.</div>
+</div>
+<div data-region="log">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.LogTail" title="ops · ingestion + execution" height="{{ 190 }}" entries="{{ logEntries }}" hint-size="100%,190px"></x-import>
+</div>
+<div data-region="status">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="warning" title="1 feed degraded — IBKR websocket stalled" detail="backfill-7746 held at 12% · retry backoff 30s · Polygon and Databento carrying live coverage" hint-size="100%,48px"></x-import>
+</div>
+</x-import>
+</x-import>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;severityFloor&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;debug&quot;,&quot;options&quot;:[&quot;debug&quot;,&quot;info&quot;,&quot;warn&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Wall&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;terminal&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;dark&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;LIVE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  retryPreview = () => this.setState({ previewReady: true });
+  // Chrome tweaks — same contract as every template; density DEFAULTS TO TERMINAL:
+  // the wall exists to prove the densest token scope on a real screen.
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "dark"):(this.props.theme ?? "dark")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "LIVE").toUpperCase()):(String(this.props.environment ?? "LIVE").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "terminal"):(this.props.density ?? "terminal")));
+  }
+  componentDidMount() {
+    this.applyChrome();
+    this._untick = window.MeridianWorld && window.MeridianWorld.tick(this);
+    if (this.ds().ValueEnvelope) return;
+    let tries = 0;
+    this._t = setInterval(() => {
+      if (this.ds().ValueEnvelope || ++tries > 80) { clearInterval(this._t); this.forceUpdate(); }
+    }, 60);
+  }
+  componentWillUnmount() { if (this._t) clearInterval(this._t); this._untick && this._untick(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
+
+  // The wallboard clock reads the one shared instant and ticks — a frozen time on a screen
+  // people watch from across the room is the loudest possible "this is a mock".
+  NOW = Date.now();
+  get clockLabel() { return window.MeridianWorld ? window.MeridianWorld.clock() : new Date(this.NOW).toISOString().slice(11, 19) + " UTC"; }
+  asOf = new Date(this.NOW).toISOString().slice(0, 19).replace("T", " ") + "Z";
+  providers = [
+    { source: "Polygon", status: "live", lastSeen: this.NOW - 2000 },
+    { source: "Databento", status: "live", lastSeen: this.NOW - 5000 },
+    { source: "IBKR", status: "stale", lastSeen: this.NOW - 61000 },
+    { source: "OPRA", status: "delayed", lastSeen: this.NOW - 900000 },
+    { source: "FX gateway", status: "live", lastSeen: this.NOW - 3000 },
+    { source: "Reference", status: "live", lastSeen: this.NOW - 12000 },
+  ];
+  days = ["2026-08-05","2026-08-06","2026-08-07","2026-08-10","2026-08-11","2026-08-12","2026-08-13"];
+  syms = ["AAPL","MSFT","NVDA","SPY","ESU6","EURUSD"];
+  cov = (() => {
+    const days = ["2026-08-05","2026-08-06","2026-08-07","2026-08-10","2026-08-11","2026-08-12","2026-08-13"];
+    const cov = {};
+    for (const s of ["AAPL","MSFT","NVDA","SPY","ESU6","EURUSD"]) { cov[s] = {}; for (const d of days) cov[s][d] = "full"; }
+    cov.NVDA["2026-08-12"] = { status: "gap", detail: "0/390 · provider outage" };
+    cov.EURUSD["2026-08-11"] = { status: "gap", detail: "0/1440 · IBKR stalled" };
+    cov.ESU6["2026-08-12"] = { status: "partial", detail: "112/460 · recovering" };
+    cov.AAPL["2026-08-13"] = { status: "pending", detail: "backfill-7745 queued" };
+    return cov;
+  })();
+  alertsAll = [
+    { level: "error", title: "IBKR websocket disconnect", detail: "backfill-7746 stalled at 12% · retry backoff 30s", age: "6m" },
+    { level: "warn", title: "OPRA delayed 15m", detail: "options tape on delayed feed · quotes unaffected", age: "15m" },
+    { level: "warn", title: "Coverage gap · NVDA 08-12", detail: "0/390 bars · outage window confirmed by gap scan", age: "42m" },
+    { level: "info", title: "Gap scan complete", detail: "6 symbols × 7 sessions · 2 gaps · next scan 15:00Z", age: "3m" },
+  ];
+  log = (() => {
+    const t0 = Date.now() - 640000;
+    return [
+      { ts: t0, level: "info", source: "fetch", text: "backfill-7743 · Databento XNAS 1m · 120 symbols · resume token none" },
+      { ts: t0 + 4200, level: "debug", source: "fetch", text: "batch 41/120 · 3.1s · 100 rps" },
+      { ts: t0 + 9900, level: "warn", source: "verify", text: "AAPL 2026-08-07 short session · expected 210 bars, schedule says 390" },
+      { ts: t0 + 21000, level: "error", source: "conn", text: "IBKR ws disconnect · backfill-7746 stalled at 12% · retry backoff 30s" },
+      { ts: t0 + 41000, level: "info", source: "scan", text: "gap scan · NVDA 2026-08-12 · 0/390 bars · provider outage window confirmed" },
+      { ts: t0 + 388000, level: "info", source: "exec", text: "fills 38/min · slippage p50 0.4bp · both venues nominal" },
+      { ts: t0 + 610000, level: "debug", source: "fetch", text: "batch 96/120 · 2.8s · 100 rps" },
+    ];
+  })();
+
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+
+  renderVals() {
+    // Retry only the declared synthetic preview, never an application transport.
+
+    this.applyChrome();
+    const { WorkstationTopbar, StatusBar, ValueEnvelope } = this.ds();
+    const el = React.createElement;
+    const RANK = { debug: 0, info: 1, warn: 2, error: 3 };
+    const floor = RANK[this.props.severityFloor ?? "debug"] ?? 0;
+    return {
+      onPreviewRetry: this.retryPreview, dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      noop: () => {},
+      screen: {
+        id: "ops-wall", archetype: "monitor",
+        regions: [
+          { id: "context", role: "context", span: 12 },
+          { id: "metrics", role: "metrics", span: 12 },
+          { id: "feeds", role: "status", span: 12, title: "Feed health" },
+          { id: "coverage", role: "primary", span: 8, title: "Coverage · bars on disk" },
+          { id: "alerts", role: "secondary", span: 4, title: "Open alerts" },
+          { id: "log", role: "primary", span: 12, title: "Run log" },
+          { id: "status", role: "status", span: 12 },
+        ],
+      },
+      // Desk P&L is a stated figure, so it ships as a ValueEnvelope — value, condition,
+      // authority and clocks travel together even on a read-only wall.
+      pnlEnvelope: ValueEnvelope
+        ? el(ValueEnvelope, {
+            value: "+$18,204.55", condition: "confirmed", authority: "derived",
+            detail: "mark-to-last", label: "Desk P&L today", align: "right",
+            clocks: { valuation: this.asOf, asOf: this.asOf },
+            style: { color: "var(--green-dim)", font: "600 16px var(--font-data)" },
+          })
+        : el("span", { style: { color: "var(--green-dim)", font: "600 16px var(--font-data)" } }, "+$18,204.55"),
+      clockLabel: this.clockLabel,
+      topbar: WorkstationTopbar && el(WorkstationTopbar, {
+        moduleLabel: "Ops Wall", environment: String(this.props.environment ?? "LIVE").toUpperCase(),
+        brandSrc: "../../assets/brand/meridian-mark-light.svg",
+      }),
+      statusBar: StatusBar && el(StatusBar, { items: [
+        { status: "warn", label: "Feeds", value: "5 of 6 live" },
+        { label: "Lag", value: "00:00:04 p99" },
+        { status: "warn", label: "Alerts", value: "1 error · 2 warn" },
+        { label: "Gap scan", value: "13:50Z · 2 gaps" },
+        { status: "ok", label: "Execution", value: "38 fills/min", push: true },
+      ] }),
+      lagSpark: [9, 8, 9, 7, 8, 6, 7, 6, 6],
+      fillsSpark: [4, 6, 5, 7, 8, 7, 9, 8, 9],
+      providers: this.providers,
+      covSyms: this.syms,
+      covCols: this.days,
+      covData: this.cov,
+      alerts: this.alertsAll.filter((a) => (RANK[a.level] ?? 1) >= floor),
+      logEntries: this.log.filter((e) => (RANK[e.level] ?? 1) >= floor),
+    };
+  }
+}
+</script>
+</body>
+</html>

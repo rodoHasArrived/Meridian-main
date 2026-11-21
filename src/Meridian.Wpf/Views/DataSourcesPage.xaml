@@ -1,13 +1,15 @@
 <Page x:Class="Meridian.Wpf.Views.DataSourcesPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:conv="clr-namespace:Meridian.Wpf.Converters"
-      xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
       mc:Ignorable="d"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Data Sources">
     <Page.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -40,6 +42,8 @@
                             VerticalAlignment="Center" />
                 </Grid>
             </Border>
+
+            <controls:ProviderActivationPanel DataContext="{Binding Activation}" />
 
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                 <StackPanel>
@@ -188,7 +192,7 @@
                                                   VerticalAlignment="Center" />
 
                                         <StackPanel Grid.Column="1">
-                                            <StackPanel Orientation="Horizontal">
+                                            <WrapPanel>
                                                 <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
                                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                                 <Border Background="{StaticResource ConsoleAccentBlueAlpha20}"
@@ -200,7 +204,12 @@
                                                     <TextBlock Text="{Binding Type}" FontSize="11"
                                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                                                 </Border>
-                                            </StackPanel>
+                                                <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                        CornerRadius="999" Padding="8,3" Margin="8,0,0,0">
+                                                    <TextBlock Text="{Binding ActivationState}" ToolTip="{Binding ActivationDetail}"
+                                                               FontSize="11" AutomationProperties.HelpText="{Binding ActivationDetail}" />
+                                                </Border>
+                                            </WrapPanel>
                                             <TextBlock Text="{Binding Description}"
                                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                                        FontSize="12"
@@ -238,9 +247,8 @@
             </Border>
 
             <Border x:Name="EditPanel" Style="{StaticResource CardStyle}"
-                    Visibility="{Binding IsEditPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                    IsVisibleChanged="EditPanel_IsVisibleChanged">
-                <StackPanel>
+                    Visibility="{Binding IsEditPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel IsEnabled="{Binding IsEditFormEnabled}">
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                         <TextBlock Text="{StaticResource IconEdit}"
                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -302,7 +310,9 @@
                                 <ComboBoxItem Content="Interactive Brokers (IB)" Tag="IB" />
                                 <ComboBoxItem Content="Alpaca" Tag="Alpaca" />
                                 <ComboBoxItem Content="Polygon.io" Tag="Polygon" />
-                                <ComboBoxItem Content="Robinhood" Tag="Robinhood" />
+                                <ComboBoxItem Content="Yahoo Finance" Tag="Yahoo" />
+                                <ComboBoxItem Content="NYSE" Tag="NYSE" />
+                                <ComboBoxItem Content="Synthetic" Tag="Synthetic" />
                             </ComboBox>
                         </StackPanel>
 
@@ -397,8 +407,12 @@
                             <TextBlock Text="Alpaca Settings" FontWeight="SemiBold" Margin="0,0,0,8" />
                             <Border Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
                                     CornerRadius="6" Padding="8" Margin="0,0,0,12">
-                                <TextBlock Text="API credentials are stored securely. Use the Provider page to manage credentials."
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
+                                <StackPanel>
+                                    <TextBlock Text="Manage the host's owned Alpaca credentials in Settings. Feed changes apply to Alpaca on this host after restart."
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
+                                    <Button Content="Manage provider credentials" Command="{Binding OpenProviderCredentialsCommand}"
+                                            Style="{StaticResource GhostButtonStyle}" HorizontalAlignment="Left" />
+                                </StackPanel>
                             </Border>
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -412,8 +426,8 @@
                                               Style="{StaticResource FormComboBoxStyle}"
                                               SelectedValuePath="Tag"
                                               SelectedValue="{Binding AlpacaFeed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                        <ComboBoxItem Content="IEX (Free)" Tag="iex" />
-                                        <ComboBoxItem Content="SIP (Paid)" Tag="sip" />
+                                        <ComboBoxItem Content="IEX (single venue)" Tag="iex" />
+                                        <ComboBoxItem Content="SIP (consolidated)" Tag="sip" />
                                         <ComboBoxItem Content="Delayed SIP" Tag="delayed_sip" />
                                     </ComboBox>
                                 </StackPanel>
@@ -455,13 +469,10 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0" Grid.Column="0">
-                                    <TextBlock Text="API Key" Style="{StaticResource FormLabelStyle}" />
-                                    <views:SecretInputControl x:Name="PolygonApiKeyInput"
-                                                              InputAutomationId="DataSourcesPolygonApiKeyInput"
-                                                              RevealAutomationId="DataSourcesPolygonApiKeyRevealButton"
-                                                              InputAutomationName="Polygon API key"
-                                                              RevealAutomationName="Show or hide Polygon API key"
-                                                              RevealToolTip="Show or hide Polygon API key" />
+                                    <TextBlock Text="Polygon credentials are managed in Settings." TextWrapping="Wrap"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                    <Button Content="Manage provider credentials" Command="{Binding OpenProviderCredentialsCommand}"
+                                            Style="{StaticResource GhostButtonStyle}" HorizontalAlignment="Left" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="0" Grid.Column="1">
@@ -520,8 +531,7 @@
                                 IsEnabled="{Binding CanSaveSource}"
                                 ToolTip="{Binding SourceSetupReadinessDetail}"
                                 ToolTipService.ShowOnDisabled="True"
-                                Click="SaveDataSource_Click"
- />
+                                Command="{Binding SaveSourceCommand}" />
                         <Button Content="Cancel"
                                 Command="{Binding CancelEditCommand}"
                                 Margin="12,0,0,0" />
@@ -543,7 +553,7 @@
                     Visibility="{Binding IsStatusVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                 <TextBlock Text="{Binding StatusMessage}"
                            Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                           TextWrapping="Wrap" />
+                           TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
             </Border>
         </StackPanel>
     </ScrollViewer>

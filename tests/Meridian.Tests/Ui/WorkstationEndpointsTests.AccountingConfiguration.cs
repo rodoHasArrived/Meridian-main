@@ -629,7 +629,7 @@ public sealed partial class WorkstationEndpointsTests
                 RegisterRunReadServices(services);
                 services.AddSingleton(new ReportPackRunReadService(
                     new DefaultReportingTemplateCatalog()));
-                RegisterAccountingConfigurationServices(services);
+                RegisterCapitalProjectionConfigurationServices(services);
             },
             currentUserPermissions: UserPermission.AdminMaintenance,
             currentUserCompanyId: "company-alpha");
@@ -656,15 +656,15 @@ public sealed partial class WorkstationEndpointsTests
                 Node: new ChartOfAccountsNodeDto("capital-contributions", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
                 Actor: "browser-user"),
             ServerJsonOptions);
-        var draft = ManualJournalEntryDraft();
+        var draft = await SeedGovernedCapitalProjectionDraftAsync(app.Services);
 
         using var validateResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerManualJournalEntryValidate,
-            new ValidateManualJournalEntryDraftRequest(draft, "browser-user"),
+            new ValidateManualJournalEntryDraftRequest(draft, "browser-user", LedgerBookId: draft.LedgerBookId),
             ServerJsonOptions);
         using var saveResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerManualJournalEntryDrafts,
-            new SaveManualJournalEntryDraftRequest(draft, "browser-user", CorrelationId: "manual-je-save"),
+            new SaveManualJournalEntryDraftRequest(draft, "browser-user", CorrelationId: "manual-je-save", LedgerBookId: draft.LedgerBookId),
             ServerJsonOptions);
         var saved = await saveResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
         using var submitResponse = await client.PostAsJsonAsync(
@@ -681,13 +681,13 @@ public sealed partial class WorkstationEndpointsTests
         using var workbenchResponse = await client.GetAsync($"{UiApiRoutes.LedgerManualJournalEntryWorkbench}?fundProfileId=fund-alpha");
         using var privateCapitalResponse = await client.GetAsync($"{UiApiRoutes.LedgerPrivateCapitalActivity}?fundProfileId=fund-alpha");
         using var filteredPrivateCapitalResponse = await client.GetAsync(
-            $"{UiApiRoutes.LedgerPrivateCapitalActivity}?fundProfileId=fund-alpha&fundEventId={Uri.EscapeDataString("fund-event:fund-alpha:capital-call:20260630")}");
+            $"{UiApiRoutes.LedgerPrivateCapitalActivity}?fundProfileId=fund-alpha&fundEventId={Uri.EscapeDataString("fund-event:fund-alpha:capital-call:20260630:commitment-1")}");
         using var paymentIntentPrivateCapitalResponse = await client.GetAsync(
             $"{UiApiRoutes.LedgerPrivateCapitalActivity}?fundProfileId=fund-alpha&paymentIntentId={Uri.EscapeDataString("payment:fund-alpha:capital-call:20260630")}");
         using var fundEventRecordResponse = await client.GetAsync(
-            $"{UiApiRoutes.LedgerPrivateCapitalFundEventRecord}?fundProfileId=fund-alpha&fundEventId={Uri.EscapeDataString("fund-event:fund-alpha:capital-call:20260630")}");
+            $"{UiApiRoutes.LedgerPrivateCapitalFundEventRecord}?fundProfileId=fund-alpha&fundEventId={Uri.EscapeDataString("fund-event:fund-alpha:capital-call:20260630:commitment-1")}");
         using var fundEventCommandCenterResponse = await client.GetAsync(
-            $"{UiApiRoutes.LedgerPrivateCapitalFundEventCommandCenter}?fundProfileId=fund-alpha&fundEventId={Uri.EscapeDataString("fund-event:fund-alpha:capital-call:20260630")}");
+            $"{UiApiRoutes.LedgerPrivateCapitalFundEventCommandCenter}?fundProfileId=fund-alpha&fundEventId={Uri.EscapeDataString("fund-event:fund-alpha:capital-call:20260630:commitment-1")}");
         using var capitalAccountSubledgerResponse = await client.GetAsync(
             $"{UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger}?fundProfileId=fund-alpha&capitalAccountId={Uri.EscapeDataString("capital-account:fund-alpha:lp-1")}");
         using var capitalAccountWorkbenchResponse = await client.GetAsync(
@@ -708,7 +708,7 @@ public sealed partial class WorkstationEndpointsTests
         using var reportingWorkspaceResponse = await client.GetAsync($"{UiApiRoutes.WorkstationReporting}?fundProfileId=fund-alpha");
 
         validateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK, await saveResponse.Content.ReadAsStringAsync());
         submitResponse.StatusCode.Should().Be(HttpStatusCode.OK, submitResponseBody);
         workbenchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         privateCapitalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -764,31 +764,31 @@ public sealed partial class WorkstationEndpointsTests
         workbench.AuditTrail.Select(item => item.Action).Should().Contain("manual-je.submit-approval");
         workbench.PrivateCapitalActivity.Should().NotBeNull();
         workbench.PrivateCapitalActivity!.FundEvents.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.NetCapitalActivity == 100m);
         workbench.PrivateCapitalActivity.CapitalAccounts.Should().ContainSingle(item =>
             item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
             item.NetActivity == 100m);
         workbench.PrivateCapitalActivity.CapitalAccountSubledgerEntries.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
             item.NetCapitalActivity == 100m &&
             item.RunningNetActivity == 100m);
         workbench.PrivateCapitalActivity.LedgerImpacts.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.TotalDebits == 100m &&
             item.TotalCredits == 100m &&
             item.IsPostingReady);
         workbench.PrivateCapitalActivity.ReportOutputs.Should().ContainSingle(item =>
             item.ReportOutputType == "CapitalCallNotice" &&
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.IsReportReady &&
             item.EvidenceLinkCount == 1);
         accountingWorkspace.Should().NotBeNull();
         accountingWorkspace!.ManualJournalWorkbench.Should().NotBeNull();
         accountingWorkspace.ManualJournalWorkbench!.PrivateCapitalActivity.Should().NotBeNull();
         accountingWorkspace.ManualJournalWorkbench.PrivateCapitalActivity!.FundEventRecords.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.ReportOutputCount == 1 &&
             item.CapitalAccountSubledgerEntryCount == 1 &&
             item.LedgerImpactCount == 1);
@@ -797,19 +797,19 @@ public sealed partial class WorkstationEndpointsTests
         reportingWorkspace.DeploymentCapability.Should().NotBeNull();
         reportingWorkspace.DeploymentCapability!.IsReady.Should().BeTrue();
         privateCapitalActivity.FundEvents.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.NetCapitalActivity == 100m);
         privateCapitalActivity.CapitalAccounts.Should().ContainSingle(item =>
             item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
             item.NetActivity == 100m);
         privateCapitalActivity.CapitalAccountSubledgerEntries.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
             item.ApprovalState == ManualJournalEntryStatusDto.Submitted &&
             item.NetCapitalActivity == 100m &&
             item.RunningNetActivity == 100m);
         privateCapitalActivity.LedgerImpacts.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.ApprovalState == ManualJournalEntryStatusDto.Submitted &&
             item.LineCount == 2 &&
             item.EvidenceLinks.Count == 1);
@@ -818,11 +818,11 @@ public sealed partial class WorkstationEndpointsTests
             item.ApprovalState == ManualJournalEntryStatusDto.Submitted &&
             item.ReportWorkflowState == ManualJournalEntryStatusDto.Submitted.ToString() &&
             item.ReportRoute.Contains("fundProfileId=fund-alpha", StringComparison.OrdinalIgnoreCase) &&
-            item.ReportRoute.Contains("fund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase));
+            item.ReportRoute.Contains("fund-event%3Afund-alpha%3Acapital-call%3A20260630%3Acommitment-1", StringComparison.OrdinalIgnoreCase));
         reportOutput.Should().NotBeNull();
         reportOutput!.ReportOutputId.Should().Be(reportOutputId);
         reportOutput.ReportOutputType.Should().Be("CapitalCallNotice");
-        reportOutput.FundEventId.Should().Be("fund-event:fund-alpha:capital-call:20260630");
+        reportOutput.FundEventId.Should().Be("fund-event:fund-alpha:capital-call:20260630:commitment-1");
         reportOutput.CapitalAccountId.Should().Be("capital-account:fund-alpha:lp-1");
         reportOutput.ReportOutputRoute.Should().NotBeNullOrWhiteSpace();
         reportOutput.ReportOutputRoute!.Should().Contain(UiApiRoutes.LedgerPrivateCapitalReportOutput);
@@ -832,7 +832,7 @@ public sealed partial class WorkstationEndpointsTests
         reportOutput.CapitalAccountSubledgerRoute.Should().NotBeNullOrWhiteSpace();
         reportOutput.CapitalAccountSubledgerRoute!.Should().Contain(UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger);
         reportOutput.EvidenceRoute.Should().NotBeNullOrWhiteSpace();
-        reportOutput.EvidenceRoute!.Should().Contain("/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630/packet");
+        reportOutput.EvidenceRoute!.Should().Contain("/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630%3Acommitment-1/packet");
         reportOutput.ApprovalRoute.Should().NotBeNullOrWhiteSpace();
         reportOutput.ApprovalRoute!.Should().Contain("approvalId=" + submitted.ApprovalId);
         reportOutput.ReadinessLabel.Should().Be("Ready");
@@ -840,7 +840,7 @@ public sealed partial class WorkstationEndpointsTests
         reportOutput.NextAction.Should().Be("Review report output");
         reportOutput.NextActionRoute.Should().Be(reportOutput.ReportOutputRoute);
         privateCapitalActivity.FundEventRecords.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.JournalEntryId == submitted.JournalEntryId &&
             item.GrossAmount == 100m &&
             item.CapitalAccountOpeningNetActivity == 0m &&
@@ -848,10 +848,10 @@ public sealed partial class WorkstationEndpointsTests
             item.Memo == "Manual close adjustment" &&
             item.PaymentIntentId == "payment:fund-alpha:capital-call:20260630" &&
             item.SettlementReference == "settlement:fund-alpha:capital-call:20260630" &&
-            item.ActivityRoute.Contains("fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase) &&
+            item.ActivityRoute.Contains("fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630%3Acommitment-1", StringComparison.OrdinalIgnoreCase) &&
             item.ActivityRoute.Contains("capitalAccountId=capital-account%3Afund-alpha%3Alp-1", StringComparison.OrdinalIgnoreCase) &&
             item.ActivityRoute.Contains("investorId=investor%3Alp-1", StringComparison.OrdinalIgnoreCase) &&
-            item.EvidenceRoute.Contains("/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630/packet", StringComparison.OrdinalIgnoreCase) &&
+            item.EvidenceRoute.Contains("/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630%3Acommitment-1/packet", StringComparison.OrdinalIgnoreCase) &&
             item.ApprovalId == submitted.ApprovalId &&
             item.ApprovalRoute != null &&
             item.ApprovalRoute.Contains("approvalId=" + submitted.ApprovalId, StringComparison.OrdinalIgnoreCase) &&
@@ -862,7 +862,7 @@ public sealed partial class WorkstationEndpointsTests
             item.PrimaryReportOutputType == "CapitalCallNotice" &&
             item.PrimaryReportRoute != null &&
             item.PrimaryReportRoute.Contains("/api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase) &&
-            item.PrimaryReportRoute.Contains("fund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase) &&
+            item.PrimaryReportRoute.Contains("fund-event%3Afund-alpha%3Acapital-call%3A20260630%3Acommitment-1", StringComparison.OrdinalIgnoreCase) &&
             item.ReportWorkflowState == ManualJournalEntryStatusDto.Submitted.ToString() &&
             item.ReportLineProvenanceCount == 0 &&
             item.CapitalAccountSubledgerEntries.Count == 1 &&
@@ -879,32 +879,32 @@ public sealed partial class WorkstationEndpointsTests
         paymentIntentPrivateCapitalActivity.Should().NotBeNull();
         paymentIntentPrivateCapitalActivity!.FundEventCount.Should().Be(1);
         paymentIntentPrivateCapitalActivity.FundEvents.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.PaymentIntentId == "payment:fund-alpha:capital-call:20260630");
         paymentIntentPrivateCapitalActivity.FundEventRecords.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.PaymentIntentId == "payment:fund-alpha:capital-call:20260630");
         paymentIntentPrivateCapitalActivity.PaymentIntents.Should().ContainSingle(item =>
             item.PaymentIntentId == "payment:fund-alpha:capital-call:20260630" &&
             item.WorkbenchRoute.Contains(UiApiRoutes.LedgerPrivateCapitalActivity, StringComparison.OrdinalIgnoreCase) &&
             item.WorkbenchRoute.Contains("paymentIntentId=payment%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase));
         filteredPrivateCapitalActivity.FundEvents.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630");
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1");
         filteredPrivateCapitalActivity.CapitalAccountSubledgerEntries.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.RunningNetActivity == 100m);
         filteredPrivateCapitalActivity.LedgerImpacts.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630");
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1");
         filteredPrivateCapitalActivity.ReportOutputs.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630");
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1");
         filteredPrivateCapitalActivity.FundEventRecords.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.JournalEntryId == submitted.JournalEntryId &&
             item.CapitalAccountOpeningNetActivity == 0m &&
             item.CapitalAccountEndingNetActivity == 100m &&
-            item.ActivityRoute.Contains("fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase) &&
+            item.ActivityRoute.Contains("fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630%3Acommitment-1", StringComparison.OrdinalIgnoreCase) &&
             item.ActivityRoute.Contains("capitalAccountId=capital-account%3Afund-alpha%3Alp-1", StringComparison.OrdinalIgnoreCase) &&
-            item.EvidenceRoute.Contains("/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630/packet", StringComparison.OrdinalIgnoreCase) &&
+            item.EvidenceRoute.Contains("/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630%3Acommitment-1/packet", StringComparison.OrdinalIgnoreCase) &&
             item.ApprovalId == submitted.ApprovalId &&
             item.ApprovalRoute != null &&
             item.ApprovalRoute.Contains("approvalId=" + submitted.ApprovalId, StringComparison.OrdinalIgnoreCase) &&
@@ -917,7 +917,7 @@ public sealed partial class WorkstationEndpointsTests
             item.LedgerImpacts.Count == 1 &&
             item.ReportOutputs.Count == 1);
         fundEventRecord.Should().NotBeNull();
-        fundEventRecord!.FundEventId.Should().Be("fund-event:fund-alpha:capital-call:20260630");
+        fundEventRecord!.FundEventId.Should().Be("fund-event:fund-alpha:capital-call:20260630:commitment-1");
         fundEventRecord.JournalEntryId.Should().Be(submitted.JournalEntryId);
         fundEventRecord.ApprovalId.Should().Be(submitted.ApprovalId);
         fundEventRecord.Readiness.Should().Be(PrivateCapitalFundEventLedgerReadinessDto.Ready);
@@ -957,7 +957,7 @@ public sealed partial class WorkstationEndpointsTests
             item.IsReady &&
             item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/accounting-record/manual-je-endpoint"));
         fundEventCommandCenter.Should().NotBeNull();
-        fundEventCommandCenter!.FundEventId.Should().Be("fund-event:fund-alpha:capital-call:20260630");
+        fundEventCommandCenter!.FundEventId.Should().Be("fund-event:fund-alpha:capital-call:20260630:commitment-1");
         fundEventCommandCenter.CommandCenterRoute.Should().Contain(UiApiRoutes.LedgerPrivateCapitalFundEventCommandCenter);
         fundEventCommandCenter.Lanes.Should().HaveCount(10);
         fundEventCommandCenter.Lanes.Should().ContainSingle(item =>
@@ -973,7 +973,7 @@ public sealed partial class WorkstationEndpointsTests
             item.Route != null &&
             item.Route.Contains(UiApiRoutes.LedgerPrivateCapitalReportOutput, StringComparison.OrdinalIgnoreCase));
         fundEventCommandCenter.SupportPackages.Should().Contain(item =>
-            item.PackageId == "evidence:fund-event:fund-alpha:capital-call:20260630" &&
+            item.PackageId == "evidence:fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.EvidenceLinkCount >= 1);
         fundEventCommandCenter.SupportPackages.Should().Contain(item =>
             item.PackageId.StartsWith("payment-intent:", StringComparison.OrdinalIgnoreCase));
@@ -1017,7 +1017,7 @@ public sealed partial class WorkstationEndpointsTests
             .Should()
             .BeTrue();
         capitalAccountSubledger.FundEventRecords.Should().ContainSingle(item =>
-            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630:commitment-1" &&
             item.ApprovalId == submitted.ApprovalId &&
             item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.Ready &&
             item.ReadinessLabel == "Ready" &&
@@ -1133,7 +1133,7 @@ public sealed partial class WorkstationEndpointsTests
 
         // A closing entry may only be produced by the in-process period-close automation. A client
         // stamping EntryType=ClosingEntry would otherwise bypass the closed-period posting bar.
-        var closingDraft = ManualJournalEntryDraft() with
+        var closingDraft = OrdinaryManualJournalEntryDraft() with
         {
             EntryType = ManualJournalEntryTypeDto.ClosingEntry
         };
@@ -1182,7 +1182,7 @@ public sealed partial class WorkstationEndpointsTests
         using var saveResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerManualJournalEntryDrafts,
             new SaveManualJournalEntryDraftRequest(
-                ManualJournalEntryDraft(),
+                OrdinaryManualJournalEntryDraft(),
                 "spoofed-preparer",
                 CorrelationId: "manual-je-audit-save"),
             ServerJsonOptions);
@@ -1223,7 +1223,7 @@ public sealed partial class WorkstationEndpointsTests
             RegisterAccountingConfigurationServices,
             currentUserPermissions: UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
-        var draft = ManualJournalEntryDraft() with { EvidenceAttachments = [], EvidenceLinks = [] };
+        var draft = OrdinaryManualJournalEntryDraft() with { EvidenceAttachments = [], EvidenceLinks = [] };
 
         using var saveResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerManualJournalEntryDrafts,
@@ -1295,7 +1295,7 @@ public sealed partial class WorkstationEndpointsTests
             RegisterAccountingConfigurationServices,
             currentUserPermissions: UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
-        var draft = ManualJournalEntryDraft();
+        var draft = OrdinaryManualJournalEntryDraft();
 
         using var lockedSaveResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerManualJournalEntryDrafts,
@@ -1349,7 +1349,7 @@ public sealed partial class WorkstationEndpointsTests
         var controllerClient = app.GetTestClient();
         controllerClient.DefaultRequestHeaders.Add("X-Meridian-Test-User", "journal-controller");
         var periodId = Guid.NewGuid();
-        var draft = ManualJournalEntryDraft("fund-event:fund-alpha:capital-call:hard-close-bypass") with
+        var draft = OrdinaryManualJournalEntryDraft() with
         {
             PeriodId = periodId.ToString("D")
         };
@@ -1522,7 +1522,7 @@ public sealed partial class WorkstationEndpointsTests
                 new ChartOfAccountsNodeDto("capital", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
                 "browser-user"),
             ServerJsonOptions);
-        var submitted = await SaveAndSubmitManualJournalDraftAsync(client, ManualJournalEntryDraft(), "non-admin-lifecycle");
+        var submitted = await SaveAndSubmitManualJournalDraftAsync(client, OrdinaryManualJournalEntryDraft(), "non-admin-lifecycle");
 
         using var validateResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
@@ -1591,7 +1591,7 @@ public sealed partial class WorkstationEndpointsTests
                 ["Class"] = "FundAlpha",
                 ["Department"] = "Accounting"
             });
-        var draft = ManualJournalEntryDraft() with
+        var draft = OrdinaryManualJournalEntryDraft() with
         {
             Dimensions = dimensions,
             Lines =
@@ -1918,7 +1918,7 @@ public sealed partial class WorkstationEndpointsTests
         var promotionApprovalResponseBody = await promotionApprovalResponse.Content.ReadAsStringAsync();
         promotionApprovalResponse.StatusCode.Should().Be(HttpStatusCode.OK, promotionApprovalResponseBody);
         var lifecyclePeriodId = Guid.NewGuid();
-        var lifecycleDraft = ManualJournalEntryDraft() with
+        var lifecycleDraft = OrdinaryManualJournalEntryDraft() with
         {
             AccountingBasis = AccountingBasisKindDto.Gaap,
             PeriodId = lifecyclePeriodId.ToString("D")
@@ -2278,7 +2278,7 @@ public sealed partial class WorkstationEndpointsTests
                 Node: new ChartOfAccountsNodeDto("capital-contributions", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
                 Actor: "browser-user"),
             ServerJsonOptions);
-        var draft = ManualJournalEntryDraft();
+        var draft = OrdinaryManualJournalEntryDraft();
 
         using var saveResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerManualJournalEntryDrafts,
@@ -2311,8 +2311,13 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task LedgerPrivateCapitalCapitalAccountSubledger_WhenMultipleInvestorSubledgersMatch_ReturnsBadRequestUntilDisambiguated()
     {
+        var retainedDrafts = new InMemoryManualJournalEntryDraftStore();
         await using var app = await CreateAppAsync(
-            RegisterAccountingConfigurationServices,
+            services =>
+            {
+                RegisterAccountingConfigurationServices(services);
+                services.AddSingleton<IManualJournalEntryDraftStore>(retainedDrafts);
+            },
             currentUserPermissions: UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
 
@@ -2341,8 +2346,22 @@ public sealed partial class WorkstationEndpointsTests
             capitalAccountId: "capital-account:fund-alpha:shared",
             investorId: "investor:lp-2",
             amount: 75m);
-        await SaveAndSubmitManualJournalDraftAsync(client, lp1Draft, "lp-1");
-        await SaveAndSubmitManualJournalDraftAsync(client, lp2Draft, "lp-2");
+        // This read contract must still disambiguate retained legacy records. Native commitment
+        // authority refuses this shared-account/different-investor mapping for new writes.
+        await retainedDrafts.SaveAsync(lp1Draft with
+        {
+            Status = ManualJournalEntryStatusDto.Submitted,
+            ApprovalId = "retained-legacy-lp-1",
+            TenantId = "tenant-test",
+            CompanyId = "tenant-test"
+        });
+        await retainedDrafts.SaveAsync(lp2Draft with
+        {
+            Status = ManualJournalEntryStatusDto.Submitted,
+            ApprovalId = "retained-legacy-lp-2",
+            TenantId = "tenant-test",
+            CompanyId = "tenant-test"
+        });
 
         using var ambiguousResponse = await client.GetAsync(
             $"{UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger}?fundProfileId=fund-alpha&capitalAccountId={Uri.EscapeDataString("capital-account:fund-alpha:shared")}");

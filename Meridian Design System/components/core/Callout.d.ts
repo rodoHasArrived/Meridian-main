@@ -11,4 +11,4 @@ export interface CalloutProps {
   children?: React.ReactNode;
 }
 
-export declare function Callout(props: CalloutProps): JSX.Element;
+export declare function Callout(props: CalloutProps): React.JSX.Element;

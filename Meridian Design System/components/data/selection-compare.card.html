@@ -1,0 +1,52 @@
+<!-- @dsCard group="Data" viewport="960x720" name="Comparison by selection" subtitle="CompareToggle · CompareTray · CompareSheet — promote grid rows into a PlateGrid from the screen" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Comparison by selection — SelectionCompare</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+body{margin:0;padding:16px;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary)}
+.demo-title{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);margin:0 0 8px}
+.note{font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:14px}
+.note b{color:var(--text-secondary)}
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel">
+const { DataGrid, SelectionCompareProvider, CompareToggle, CompareTray, CompareSheet } = window.MeridianDesignSystem_205d17;
+const CATS = ["2Y", "5Y", "10Y", "30Y"];
+const ROWS = [
+  { id: "ust", name: "United States", tag: "UST", curve: [4.20, 4.24, 4.45, 4.81], chg: "+11 bp" },
+  { id: "gilt", name: "United Kingdom", tag: "GILT", curve: [4.11, 4.05, 4.12, 4.68], chg: "+10 bp" },
+  { id: "bund", name: "Germany", tag: "BUND", curve: [2.61, 2.48, 2.52, 2.79], chg: "+4 bp" },
+  { id: "oat", name: "France", tag: "OAT", curve: [2.72, 2.84, 3.13, 3.79], chg: "+9 bp" },
+  { id: "jgb", name: "Japan", tag: "JGB", curve: [0.58, 0.72, 1.04, 2.18], chg: "+3 bp" },
+  { id: "acgb", name: "Australia", tag: "ACGB", curve: [3.90, 3.94, 4.28, 4.72], chg: "+7 bp" },
+];
+function Demo() {
+  const [sel, setSel] = React.useState(null);
+  const columns = [
+    { key: "cmp", label: "", width: 40, cell: (r) => <CompareToggle compact item={{ id: r.id, title: r.name, tag: r.tag, values: r.curve, footerValue: r.chg }} /> },
+    { key: "name", label: "Sovereign" }, { key: "tag", label: "Code" },
+    ...CATS.map((c, i) => ({ key: c, label: c, align: "right", cell: (r) => <span style={{ fontVariantNumeric: "tabular-nums" }}>{r.curve[i].toFixed(2)}</span> })),
+    { key: "chg", label: "10Y chg", align: "right" },
+  ];
+  return (
+    <SelectionCompareProvider max={6} categories={CATS} domain={[0, 6]} format={(v) => v.toFixed(0)}>
+      <p className="demo-title">Sovereign curves · tick rows to build a comparison</p>
+      <div style={{ marginBottom: 8 }}><CompareTray emptyLabel="Tick two or more rows to compare them as plates." /></div>
+      <DataGrid rowKey="id" columns={columns} rows={ROWS} activeKey={sel} onRowClick={(r) => setSel(r.id)} />
+      <div style={{ marginTop: 12 }}><CompareSheet mode="inline" footerLabel="10Y change" /></div>
+      <p className="note"><b>Try:</b> tick UST, GILT and JGB, then <b>Compare 3</b>. The plates share a 0–6 domain and one tick set — so the JGB curve reads as genuinely lower, not rescaled to fill its plate. The set caps at six; past ~12 the contract says a table plus one focused plate.</p>
+    </SelectionCompareProvider>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

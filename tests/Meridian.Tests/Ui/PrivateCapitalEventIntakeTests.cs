@@ -1,0 +1,462 @@
+using FluentAssertions;
+using Meridian.Contracts.Ledger;
+using Meridian.FinancialOperations.FundAdministration;
+using Meridian.Ledger;
+using Meridian.Ui.Shared.Services;
+using Xunit;
+
+namespace Meridian.Tests.Ui;
+
+/// <summary>
+/// Capital-call default interest and distribution waterfall drafts through the real runner, journal
+/// intake and workbench: each lands in the approval queue unposted, and neither can book the same
+/// economics twice.
+/// </summary>
+public sealed class PrivateCapitalEventIntakeTests : IDisposable
+{
+    private const string Fund = "fund-alpha";
+    private const string Tenant = "tenant-alpha";
+    private const string Company = "company-alpha";
+    private const string CallId = "call-1";
+    private const string DefaultId = "default:cmt-1:call-1:cmt-1";
+    private static readonly Guid BookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    private static readonly DateOnly NoticeDate = new(2026, 3, 15);
+    private static readonly DateTimeOffset AsOf = new(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-private-capital-events-" + Guid.NewGuid().ToString("N"));
+
+    [Fact]
+    public async Task DefaultInterest_AccruesOnTheUnfundedCall_AndLaterRunsBookOnlyWhatIsNotYetPosted()
+    {
+        // 1,000,000 called; due 25 March with 5 grace days, so interest runs from 30 March at 10%.
+        var issuance = new[] { CapitalCallFundingTestData.PostedIssuanceEvent(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate, AsOf) };
+        var issued = CapitalCallFundingTestData.PostedIssuanceImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate);
+        var first = await CreateFixtureAsync(issuance, [issued]);
+
+        var april = await first.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 4, 29)));
+
+        april.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+        var draft = april.Intake.Created.Should().ContainSingle().Subject;
+        draft.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
+        draft.TotalDebits.Should().Be(8_219.18m, "1,000,000 x 10% x 30/365");
+        draft.Lines.Select(line => (line.AccountPath, line.Side)).Should().BeEquivalentTo(new[]
+        {
+            ("Assets:Capital Call Default Interest Receivable", AccountingTemplateLineSideDto.Debit),
+            ("Revenue:Capital Call Default Interest Income", AccountingTemplateLineSideDto.Credit)
+        });
+        draft.TreasuryContext!.IdempotencyKey.Should().Be($"default-interest:{DefaultId}:20260429");
+        draft.TreasuryContext.CapitalAccountId.Should().Be("ca-lp-1");
+        draft.EvidenceLinks.Should().Contain("evidence://lpa/default-terms");
+
+        // The same run again admits nothing new.
+        var replay = await first.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 4, 29)));
+        replay.Intake.Created.Should().BeEmpty();
+        replay.Intake.Skipped.Should().ContainSingle().Which.IsReadyDuplicate.Should().BeTrue();
+
+        // While April's draft awaits approval, accruing through May would count April's days twice.
+        var early = await first.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+        early.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        early.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("post or reject it before accruing further");
+        early.Intake.Created.Should().BeEmpty();
+
+        // Once April's interest is posted, May books the 30 further days only.
+        await first.Drafts.SaveAsync(draft with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = AsOf, PostedBy = "controller" });
+        var second = await CreateFixtureAsync(issuance, [issued, PostedInterest("20260429", 8_219.18m)]);
+        var may = await second.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+        var mayDraft = may.Intake.Created.Should().ContainSingle().Subject;
+        mayDraft.TotalDebits.Should().Be(8_219.18m, "16,438.36 cumulative less 8,219.18 posted");
+
+        await second.Drafts.SaveAsync(mayDraft with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = AsOf, PostedBy = "controller" });
+        var settled = await CreateFixtureAsync(issuance, [issued, PostedInterest("20260429", 8_219.18m), PostedInterest("20260529", 8_219.18m)]);
+        var again = await settled.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+        again.Intake.Created.Should().BeEmpty();
+        again.ProducerSkips.Should().ContainSingle().Which.Reason.Should().Contain("already posted");
+    }
+
+    [Fact]
+    public async Task DefaultInterest_CallWithAReversedReceipt_BlocksInsteadOfCountingItAsCalledCapital()
+    {
+        var funding = CapitalCallFundingTestData.PostedFundingImpact(Fund, CallId, "cmt-1", "lp-1", 500_000m, new(2026, 4, 9));
+        var reversal = funding with
+        {
+            LedgerImpactId = "journal-entry:reversal",
+            JournalEntryId = Guid.NewGuid(),
+            EffectiveDate = new DateOnly(2026, 4, 20),
+            Lines = funding.Lines.Select(line => line with
+            {
+                Side = line.Side == AccountingTemplateLineSideDto.Debit ? AccountingTemplateLineSideDto.Credit : AccountingTemplateLineSideDto.Debit
+            }).ToArray()
+        };
+        var fixture = await CreateFixtureAsync(
+            [CapitalCallFundingTestData.PostedIssuanceEvent(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate, AsOf)],
+            [CapitalCallFundingTestData.PostedIssuanceImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate), funding, reversal]);
+
+        var result = await fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+
+        result.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        result.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("correction journal against its receivable");
+        result.Intake.Created.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DefaultInterest_MorePostedThanIsNowOwed_BlocksWithTheExcess()
+    {
+        // 8,219.18 was accrued through 29 April; a receipt later dated 9 April shows only 2,739.73 was owed.
+        var fixture = await CreateFixtureAsync(
+            [CapitalCallFundingTestData.PostedIssuanceEvent(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate, AsOf)],
+            [CapitalCallFundingTestData.PostedIssuanceImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate),
+             CapitalCallFundingTestData.PostedFundingImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, new(2026, 4, 9)),
+             PostedInterest("20260429", 8_219.18m)]);
+
+        var result = await fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+
+        result.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        result.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("exceeds").And.Contain("5479.45");
+        result.Intake.Created.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DefaultInterest_PostedAccrualThatWasReversed_IsOwedAgain()
+    {
+        // April's 8,219.18 was posted and then reversed, so May owes the whole cumulative amount.
+        var fixture = await CreateFixtureAsync(
+            [CapitalCallFundingTestData.PostedIssuanceEvent(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate, AsOf)],
+            [CapitalCallFundingTestData.PostedIssuanceImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate),
+             PostedInterest("20260429", 8_219.18m), PostedInterest("20260429", 8_219.18m, reversal: true)]);
+
+        var may = await fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+
+        may.Intake.Created.Should().ContainSingle().Which.TotalDebits.Should().Be(16_438.36m);
+    }
+
+    [Fact]
+    public async Task DefaultInterest_StopsAtTheCureDate_AndIgnoresACallFundedWithinGrace()
+    {
+        var issuance = new[]
+        {
+            CapitalCallFundingTestData.PostedIssuanceEvent(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate, AsOf),
+        };
+        var issued = CapitalCallFundingTestData.PostedIssuanceImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate);
+        // Funded in full on 9 April: 10 days of interest from 30 March, however late the run.
+        var cured = await CreateFixtureAsync(issuance,
+            [issued, CapitalCallFundingTestData.PostedFundingImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, new(2026, 4, 9))]);
+        var late = await cured.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+        late.Intake.Created.Should().ContainSingle().Which.TotalDebits.Should().Be(2_739.73m);
+
+        var prompt = await CreateFixtureAsync(issuance,
+            [issued, CapitalCallFundingTestData.PostedFundingImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, new(2026, 3, 28))]);
+        var none = await prompt.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+        none.Intake.Created.Should().BeEmpty();
+        none.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+        none.ProducerSkips.Should().ContainSingle().Which.Reason.Should().Contain("No default interest has accrued");
+    }
+
+    [Fact]
+    public async Task DefaultInterest_WithoutAPostedCallOrEvidence_Blocks()
+    {
+        var fixture = await CreateFixtureAsync([], []);
+
+        var unissued = await fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 4, 29)));
+        var unevidenced = await fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 4, 29), evidence: []));
+
+        unissued.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        unissued.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("no posted issuance");
+        unevidenced.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("no retained evidence");
+    }
+
+    [Fact]
+    public async Task Distribution_SplitsThroughTheWaterfall_AndTheNextOneContinuesFromThePostedTiers()
+    {
+        var fixture = await CreateFixtureAsync([], []);
+
+        // 1,000,000 contributed, 80,000 preferred accrued, 20% carry with full catch-up.
+        var first = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)));
+
+        first.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+        var firstDraft = first.Intake.Created.Should().ContainSingle().Subject;
+        firstDraft.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
+        firstDraft.EntryType.Should().Be(ManualJournalEntryTypeDto.Distribution);
+        firstDraft.TreasuryContext!.CapitalAccountId.Should().Be("ca-lp-1");
+        Lines(firstDraft).Should().BeEquivalentTo(new[]
+        {
+            ("Equity:Investor Capital", AccountingTemplateLineSideDto.Debit, 600_000m),
+            ("Liabilities:Fund Distribution Payable", AccountingTemplateLineSideDto.Credit, 600_000m)
+        });
+        firstDraft.ValidationIssues.Where(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical).Should().BeEmpty();
+
+        // Until the first is posted its tiers are not final, so the second cannot be split.
+        var early = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+        early.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        early.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("post or reject it first");
+
+        await fixture.Drafts.SaveAsync(firstDraft with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = AsOf, PostedBy = "controller" });
+        var second = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+
+        // Remaining capital 400,000, preferred 80,000, GP catch-up 20,000, then 100,000 split 80/20.
+        Lines(second.Intake.Created.Should().ContainSingle().Subject).Should().BeEquivalentTo(new[]
+        {
+            ("Equity:Investor Capital", AccountingTemplateLineSideDto.Debit, 560_000m),
+            ("Equity:Carried Interest Allocation", AccountingTemplateLineSideDto.Debit, 40_000m),
+            ("Liabilities:Fund Distribution Payable", AccountingTemplateLineSideDto.Credit, 600_000m)
+        });
+
+        var replay = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+        replay.Intake.Created.Should().BeEmpty();
+        replay.Intake.Skipped.Should().ContainSingle();
+        var retained = await fixture.Register.ListAsync(Tenant, Company, Fund, BookId, "lp-1");
+        retained.Select(record => (record.DistributionId, record.ReturnOfCapital, record.PreferredReturn, record.GpCatchUp, record.GpCarry))
+            .Should().Equal(("dist-1", 600_000m, 0m, 0m, 0m), ("dist-2", 400_000m, 80_000m, 20_000m, 20_000m));
+        retained.Should().OnlyContain(record => record.JournalEntryId != Guid.Empty);
+
+        // The same distribution id cannot be redeclared with a different amount.
+        var changed = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31), amount: 700_000m));
+        changed.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        changed.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("different terms");
+    }
+
+    [Fact]
+    public async Task Distribution_RejectedEarlierDistribution_DoesNotCountTowardLaterTiers()
+    {
+        var fixture = await CreateFixtureAsync([], []);
+        var first = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)));
+        await fixture.Drafts.SaveAsync(first.Intake.Created.Single() with { Status = ManualJournalEntryStatusDto.Rejected });
+
+        var second = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+
+        // Nothing was returned by the rejected distribution, so this one is all return of capital.
+        Lines(second.Intake.Created.Should().ContainSingle().Subject).Should().BeEquivalentTo(new[]
+        {
+            ("Equity:Investor Capital", AccountingTemplateLineSideDto.Debit, 600_000m),
+            ("Liabilities:Fund Distribution Payable", AccountingTemplateLineSideDto.Credit, 600_000m)
+        });
+    }
+
+    [Fact]
+    public async Task Distribution_PostedWithEditedAmounts_BlocksTheNextDeclaration()
+    {
+        var first = await CreateFixtureAsync([], []);
+        var declared = (await first.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)))).Intake.Created.Single();
+        // The operator cut the distribution to 100,000 before posting; the retained tiers say 600,000.
+        await first.Drafts.SaveAsync(declared with
+        {
+            Status = ManualJournalEntryStatusDto.Posted,
+            PostedAtUtc = AsOf,
+            PostedBy = "controller",
+            TotalDebits = 100_000m,
+            TotalCredits = 100_000m
+        });
+
+        var next = await (await CreateFixtureAsync([], [])).Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+
+        next.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        next.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("no longer matches its retained waterfall");
+    }
+
+    [Fact]
+    public async Task Distribution_ReversedAndItsReversalPosted_NoLongerCountsOrBlocks()
+    {
+        var first = await CreateFixtureAsync([], []);
+        var declared = (await first.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)))).Intake.Created.Single();
+        await first.Drafts.SaveAsync(declared with { Status = ManualJournalEntryStatusDto.Reversed });
+        var reversal = declared with
+        {
+            JournalEntryId = Guid.NewGuid(),
+            Status = ManualJournalEntryStatusDto.Draft,
+            EntryType = ManualJournalEntryTypeDto.Reversal,
+            ReversalOfJournalEntryId = declared.JournalEntryId
+        };
+        await first.Drafts.SaveAsync(reversal);
+
+        var pending = await (await CreateFixtureAsync([], [])).Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+        pending.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        pending.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("post its reversal first");
+
+        // With the reversal posted, dist-1 paid nothing: dist-2 starts again from return of capital.
+        await first.Drafts.SaveAsync(reversal with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = AsOf, PostedBy = "controller" });
+        var next = await (await CreateFixtureAsync([], [])).Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+        next.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+        next.Intake.Created.Should().ContainSingle().Which.Lines.Should().NotContain(line => line.AccountPath == "Equity:Carried Interest Allocation");
+    }
+
+    [Fact]
+    public async Task DefaultInterest_TwoAccrualsAtOnce_OnlyOneIsAdmitted()
+    {
+        var fixture = await CreateFixtureAsync(
+            [CapitalCallFundingTestData.PostedIssuanceEvent(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate, AsOf)],
+            [CapitalCallFundingTestData.PostedIssuanceImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate)]);
+
+        var results = await Task.WhenAll(
+            Task.Run(() => fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 4, 29)))),
+            Task.Run(() => fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)))));
+
+        // Whichever runs second sees the first one's pending draft and is refused.
+        results.Should().ContainSingle(result => result.Readiness == AutomatedJournalIntakeReadiness.Ready)
+            .Which.Intake.Created.Should().ContainSingle();
+        results.Should().ContainSingle(result => result.Readiness == AutomatedJournalIntakeReadiness.Blocked);
+        (await fixture.Drafts.ListAsync(Fund, BookId)).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Distribution_TwoDeclarationsAtOnce_OnlyOneIsAdmitted()
+    {
+        var fixture = await CreateFixtureAsync([], []);
+        var otherInstance = await CreateFixtureAsync([], []);
+
+        var results = await Task.WhenAll(
+            Task.Run(() => fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)))),
+            Task.Run(() => otherInstance.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)))));
+
+        // Whichever runs second sees the first one's unposted draft and is refused.
+        results.Should().ContainSingle(result => result.Readiness == AutomatedJournalIntakeReadiness.Ready)
+            .Which.Intake.Created.Should().ContainSingle();
+        results.Should().ContainSingle(result => result.Readiness == AutomatedJournalIntakeReadiness.Blocked);
+        (await fixture.Drafts.ListAsync(Fund, BookId)).Should().ContainSingle();
+        (await otherInstance.Register.ListAsync(Tenant, Company, Fund, BookId, "lp-1")).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Distribution_DraftAdmittedWithoutItsTierRecord_BlocksTheNextDeclarationUntilRestored()
+    {
+        var first = await CreateFixtureAsync([], []);
+        var declared = await first.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)));
+        var originalDraft = declared.Intake.Created.Single();
+        originalDraft.DistributionDeclarationJson.Should().NotBeNullOrEmpty();
+        var edited = originalDraft with
+        {
+            Lines = originalDraft.Lines.Select(line => line with { Amount = line.Amount + 100m }).ToArray(),
+            DistributionDeclarationJson = null
+        };
+        var edit = () => first.Workbench.SaveDraftAsync(new(edited, "ops-user", LedgerBookId: BookId, TenantId: Tenant, CompanyId: Company));
+        await edit.Should().ThrowAsync<InvalidOperationException>().WithMessage("*posting terms*fixed*");
+        // A memo-only save leaves the posting terms alone and must go through.
+        var memoOnly = await first.Workbench.SaveDraftAsync(new(originalDraft with { Memo = originalDraft.Memo + " (reviewed)" },
+            "ops-user", LedgerBookId: BookId, TenantId: Tenant, CompanyId: Company));
+        memoOnly.Memo.Should().EndWith("(reviewed)");
+        originalDraft = memoOnly;
+        await first.Drafts.SaveAsync(originalDraft with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = AsOf, PostedBy = "controller" });
+        // Simulate the interruption: the draft exists and is posted, its register record does not.
+        File.Delete(Path.Combine(_root, "registers", "distribution-register.json"));
+
+        var fixture = await CreateFixtureAsync([], []);
+        var next = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+
+        next.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        next.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("no retained waterfall record");
+        next.Intake.Created.Should().BeEmpty();
+
+        var changed = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30), amount: 700_000m));
+        changed.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        changed.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("different terms");
+        (await fixture.Register.ListAsync(Tenant, Company, Fund, BookId, "lp-1")).Should().BeEmpty();
+
+        // The original terms, tiers and attribution survive a retry by a different operator.
+        var restored = await fixture.Runner.RunDistributionDeclarationIntakeAsync(
+            DistributionRequest("dist-1", new(2026, 4, 30)) with { Actor = "another-operator", AsOf = AsOf.AddDays(1) });
+        restored.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+        restored.Intake.Created.Should().BeEmpty();
+        var retained = (await fixture.Register.ListAsync(Tenant, Company, Fund, BookId, "lp-1")).Should().ContainSingle().Subject;
+        retained.JournalEntryId.Should().Be(originalDraft.JournalEntryId);
+        retained.AmountToDistribute.Should().Be(600_000m);
+        retained.ReturnOfCapital.Should().Be(600_000m);
+        retained.DeclaredBy.Should().Be("ops-user");
+        retained.DeclaredAtUtc.Should().Be(AsOf);
+        var second = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+        second.Intake.Created.Should().ContainSingle().Which.Lines.Should().Contain(line => line.AccountPath == "Equity:Carried Interest Allocation");
+    }
+
+    [Fact]
+    public async Task Distribution_LegacyDraftCanReplayOnlyWithItsOriginalRegisterRecord()
+    {
+        var fixture = await CreateFixtureAsync([], []);
+        var request = DistributionRequest("legacy-dist", new(2026, 4, 30));
+        var admitted = await fixture.Runner.RunDistributionDeclarationIntakeAsync(request);
+        var legacyDraft = admitted.Intake.Created.Single() with { DistributionDeclarationJson = null };
+        await fixture.Drafts.SaveAsync(legacyDraft);
+        await fixture.Drafts.SaveAsync(legacyDraft with
+        {
+            JournalEntryId = Guid.NewGuid(),
+            ReversalOfJournalEntryId = legacyDraft.JournalEntryId,
+            UpdatedAtUtc = legacyDraft.UpdatedAtUtc.AddDays(1)
+        });
+
+        var replay = await fixture.Runner.RunDistributionDeclarationIntakeAsync(request);
+        replay.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+        replay.Intake.Skipped.Should().ContainSingle().Which.JournalEntryId.Should().Be(legacyDraft.JournalEntryId);
+
+        foreach (var changed in new[] { request with { EntityId = "different-entity" }, request with { PeriodId = "different-period" } })
+        {
+            var changedReplay = await fixture.Runner.RunDistributionDeclarationIntakeAsync(changed);
+            changedReplay.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+            changedReplay.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("different terms");
+        }
+
+        File.Delete(Path.Combine(_root, "registers", "distribution-register.json"));
+        var blocked = await fixture.Runner.RunDistributionDeclarationIntakeAsync(request);
+        blocked.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        blocked.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("Restore its original register record");
+    }
+
+    private static IEnumerable<(string, AccountingTemplateLineSideDto, decimal)> Lines(ManualJournalEntryDraftDto draft)
+        => draft.Lines.Select(line => (line.AccountPath, line.Side, line.Amount));
+
+    private static RunCapitalCallDefaultInterestDraftIntakeRequest DefaultRequest(DateOnly through, string[]? evidence = null)
+        => new(Fund, "USD", "ops-user", CallId, through,
+            [new CapitalCallDefaultTermsInput("cmt-1", "ca-lp-1", "lp-1", new DateOnly(2026, 3, 25), 0.10m,
+                DefaultInterestConvention.Actual365Fixed, 5, evidence ?? ["evidence://lpa/default-terms"])],
+            BookId, "2026-04", "entity-alpha", Tenant, Company, AsOf);
+
+    private static RunDistributionDeclarationDraftIntakeRequest DistributionRequest(string id, DateOnly date, decimal amount = 600_000m)
+        => new(Fund, "USD", "ops-user", id, date, 0.20m, 1m,
+            [new DistributionInvestorInput("lp-1", "ca-lp-1", 1_000_000m, 80_000m, amount, ["evidence://distribution/notice"])],
+            BookId, null, "entity-alpha", Tenant, Company, AsOf);
+
+    private static PrivateCapitalLedgerImpactDto PostedInterest(string through, decimal amount, bool reversal = false)
+    {
+        var (receivable, income) = reversal
+            ? (AccountingTemplateLineSideDto.Credit, AccountingTemplateLineSideDto.Debit)
+            : (AccountingTemplateLineSideDto.Debit, AccountingTemplateLineSideDto.Credit);
+        var id = Guid.NewGuid();
+        return new($"journal-entry:{id:D}", id, $"fund-event:{Fund}:default-interest:{DefaultId}:{through}", "DefaultInterest",
+            "ca-lp-1", "lp-1", ManualJournalEntryStatusDto.Approved, new DateOnly(2026, 4, 29), "USD", amount, amount, 0m, 2, true, true, [],
+            [new("line-1", "Capital Call Default Interest Receivable", receivable, amount, "USD", "lp-1", null, null, null),
+             new("line-2", "Capital Call Default Interest Income", income, amount, "USD", Fund, null, null, null)],
+            []);
+    }
+
+    private async Task<Fixture> CreateFixtureAsync(PrivateCapitalFundEventDto[] postedFundEvents, PrivateCapitalLedgerImpactDto[] postedLedgerImpacts)
+    {
+        var workspace = CapitalCallFundingTestData.Workspace(Fund, Tenant, Company);
+        var configurationStore = new InMemoryAccountingConfigurationStore();
+        await configurationStore.SaveAsync(workspace with
+        {
+            ChartOfAccounts =
+            [
+                .. workspace.ChartOfAccounts,
+                Node("Assets:Capital Call Default Interest Receivable", "Capital Call Default Interest Receivable", "Asset"),
+                Node("Revenue:Capital Call Default Interest Income", "Capital Call Default Interest Income", "Revenue"),
+                Node("Equity:Carried Interest Allocation", "Carried Interest Allocation", "Equity"),
+                Node("Liabilities:Fund Distribution Payable", "Fund Distribution Payable", "Liability")
+            ]
+        });
+        var configurationService = new AccountingConfigurationService(configurationStore, new InMemoryAccountingActionAuditStore());
+        var drafts = new FileManualJournalEntryDraftStore(Path.Combine(_root, "drafts.json"));
+        var workbench = new ManualJournalEntryWorkbenchService(drafts, configurationService, new InMemoryAccountingActionAuditStore());
+        var register = new FileDistributionRegister(Path.Combine(_root, "registers"));
+        var runner = new AutomatedJournalIntakeRunner(new AutomatedJournalDraftIntakeService(workbench, drafts, configurationService),
+            new FeeScheduleAccrualEventProducer(),
+            manualJournalWorkbench: new PostedActivityManualJournalWorkbench(workbench, postedFundEvents, postedLedgerImpacts),
+            distributionRegister: register);
+        return new(runner, drafts, register, workbench);
+    }
+
+    private static ChartOfAccountsNodeDto Node(string path, string name, string type)
+        => new(NodeId: path, Path: path, AccountName: name, AccountType: type);
+
+    private sealed record Fixture(AutomatedJournalIntakeRunner Runner, FileManualJournalEntryDraftStore Drafts,
+        FileDistributionRegister Register, ManualJournalEntryWorkbenchService Workbench);
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_root))
+            Directory.Delete(_root, recursive: true);
+    }
+}

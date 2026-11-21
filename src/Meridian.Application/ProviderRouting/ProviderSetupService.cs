@@ -19,12 +19,18 @@ public sealed class ProviderSetupService
     private readonly UI.ConfigStore _store;
     private readonly IProviderCredentialStore _credentialStore;
     private readonly IProviderSetupRegistry _setupRegistry;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
+    private readonly ProviderRuntimeCredentialMutationGuard _mutationGuard;
 
-    public ProviderSetupService(UI.ConfigStore store, IProviderCredentialStore credentialStore, IProviderSetupRegistry setupRegistry)
+    public ProviderSetupService(UI.ConfigStore store, IProviderCredentialStore credentialStore, IProviderSetupRegistry setupRegistry,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null,
+        ProviderRuntimeCredentialMutationGuard? mutationGuard = null)
     {
         _store = store;
         _credentialStore = credentialStore;
         _setupRegistry = setupRegistry;
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
+        _mutationGuard = mutationGuard ?? new(store, _ownershipPolicy);
     }
 
     /// <summary>Configures credentials for an existing connection whose tenant ownership is already retained.</summary>
@@ -35,7 +41,10 @@ public sealed class ProviderSetupService
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
         // Keep retained ownership stable through the scoped vault mutation and its status read.
         // Connection writers take the same configuration lease; the vault never reenters it.
-        using var ownershipLease = await _store.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
+        var requestedHandler = _setupRegistry.Find(request.Kind ?? string.Empty)
+            ?? throw new UnauthorizedAccessException("Provider setup connection ownership could not be established.");
+        using var ownershipLease = await _mutationGuard.AcquireForConnectionAsync(requestedHandler.Descriptor.ProviderId,
+            connectionId, tenantId, ct).ConfigureAwait(false);
         var matches = (_store.LoadRequired().ProviderConnections?.Connections ?? [])
             .Where(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray();
         var connection = matches.Length == 1 ? matches[0] : null;
@@ -95,6 +104,9 @@ public sealed class ProviderSetupService
         {
             return Failure(displayName, $"Provider '{request.Kind}' is not in the credential catalog.");
         }
+
+        if (_ownershipPolicy.ProhibitsLegacy(descriptor.ProviderId))
+            return Failure(displayName, LegacyOwnershipError);
 
         var normalizedCapabilities = NormalizeCapabilities(request.Capabilities);
         var sourceType = ResolveSourceType(normalizedCapabilities);

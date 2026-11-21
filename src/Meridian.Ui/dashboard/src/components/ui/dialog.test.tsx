@@ -128,7 +128,7 @@ describe("Dialog", () => {
       "max-h-[calc(100dvh-2rem)]",
       "overflow-y-auto",
       "overscroll-contain",
-      "rounded-[2px]"
+      "rounded-[var(--radius-dialog)]"
     );
   });
 

@@ -1,9 +1,11 @@
+using Meridian.Core.Exceptions;
+
 namespace Meridian.Storage.Ledger;
 
 /// <summary>
 /// Represents a failure in ledger book or accounting period operations.
 /// </summary>
-public class LedgerBookServiceException : Exception
+public class LedgerBookServiceException : MeridianException
 {
     public LedgerBookServiceException(string message)
         : base(message)

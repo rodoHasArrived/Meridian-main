@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Commitment bar — capital-commitment funding state for private capital vehicles.
  * Mirrors `CapitalCommitmentDto` / `PrivateAssetSummaryDto`: commitment, called,
@@ -29,4 +30,4 @@ export interface CommitmentBarProps extends React.HTMLAttributes<HTMLElement> {
   /** Vintage year, shown right-aligned in the header. */
   vintage?: number | string;
 }
-export declare function CommitmentBar(props: CommitmentBarProps): JSX.Element;
+export declare function CommitmentBar(props: CommitmentBarProps): React.JSX.Element;

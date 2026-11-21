@@ -1,9 +1,10 @@
 using System.Text.Json;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Strategies.Services;
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -47,13 +48,15 @@ public sealed partial class StatementReconciliationIntakeAuthority
         foreach (var sourceBreak in artifact.Breaks)
         {
             var item = retained.SingleOrDefault(item => item.SourceBreakId == sourceBreak.BreakId);
+            var match = artifact.CaseMatchEvidence?.GetValueOrDefault(sourceBreak.BreakId);
             if (item is null || sourceBreak.SourceReference is null
                 || !rowSubjects.TryGetValue(sourceBreak.SourceReference, out var subject)
-                || subject is null || duplicateSubjects.Contains(subject))
+                || subject is null || duplicateSubjects.Contains(subject)
+                || match?.SourceAllocations.Count > 1 || match is null && sourceBreak.BreakCode == "TRANSACTION_AMBIGUOUS")
             {
                 // A row ordinal or mutable amount/date is not a business identity. Keep ambiguous,
                 // internal-only, and externally unreferenced transactions explicitly untracked;
-                // never use a partial population to clear a previous observation.
+                // a multi-source break's primary reference cannot account for all of its members.
                 return;
             }
             // Classification and mapped comparison fields can change under another policy.
@@ -68,7 +71,50 @@ public sealed partial class StatementReconciliationIntakeAuthority
                 ComparisonSourceIdentity(import, artifact, institution),
                 import.ExternalAccountId)
             { LineageSourceIdentity = institution },
-            import.ImportedAtUtc, true, true, inputs), ct).ConfigureAwait(false);
+            import.ImportedAtUtc, true, true, inputs)
+        {
+            ConfirmedMatchGroups = VerifiedRegroupingCandidates(artifact, checkpoint, rowSubjects, duplicateSubjects)
+        }, ct).ConfigureAwait(false);
+    }
+
+    private static IReadOnlyList<ReconciliationObservedMatchGroup>? VerifiedRegroupingCandidates(
+        StatementRunMatchArtifact artifact, StatementRunRecoveryCheckpoint checkpoint,
+        IReadOnlyDictionary<string, string?> rowSubjects, HashSet<string> duplicateSubjects)
+    {
+        if (artifact.MatchGroups is not { } groups || artifact.MatchGroupAllocations is not { } allocations
+            || artifact.ExecutedTolerancePolicy is not { } policy
+            || policy.ComparisonPolicyFingerprint != artifact.SourceComparisonPolicyFingerprint)
+            return null;
+
+        var repeatedSource = RepeatedReferences(groups.SelectMany(static group => group.StatementEvidenceReferences));
+        var repeatedLedger = RepeatedReferences(allocations.Values.SelectMany(static match => match.LedgerAllocations)
+            .Select(static leg => leg.RecordId));
+        var results = new List<ReconciliationObservedMatchGroup>();
+        foreach (var group in groups.OrderBy(static item => item.MatchGroupId, StringComparer.Ordinal))
+        {
+            if (group.Kind != nameof(StatementMatchKind.Transaction) || group.MatchTier is not ("Exact" or "Tolerance")
+                || !(group.StatementEvidenceReferences.Count == 1 && group.InternalEvidenceReferences.Count > 1
+                    || group.StatementEvidenceReferences.Count > 1 && group.InternalEvidenceReferences.Count == 1)
+                || group.StatementEvidenceReferences.Any(repeatedSource.Contains)
+                || !allocations.TryGetValue(group.MatchGroupId, out var match) || match.Tier != group.MatchTier
+                || !match.SourceAllocations.Select(static leg => leg.EvidenceReference).SequenceEqual(group.StatementEvidenceReferences)
+                || !match.LedgerAllocations.Select(static leg => leg.EvidenceReference).SequenceEqual(group.InternalEvidenceReferences)
+                || match.LedgerAllocations.Any(leg => repeatedLedger.Contains(leg.RecordId))
+                || match.Residuals.Count != 2)
+                continue;
+
+            var members = group.StatementEvidenceReferences.Select(reference => (Reference: reference, Subject: rowSubjects.GetValueOrDefault(reference))).ToArray();
+            if (members.Any(member => member.Subject is null || duplicateSubjects.Contains(member.Subject)))
+                continue;
+            results.Add(new ReconciliationObservedMatchGroup(group.MatchGroupId,
+                members.Select(static member => new ReconciliationObservedMatchSubject(member.Reference, member.Subject!)).ToArray(),
+                new RetainedStatementCaseEvidence(artifact.RunId, checkpoint.MatchArtifact!.Sha256, policy, match)));
+        }
+        return results.Count == 0 ? null : results;
+
+        static HashSet<string> RepeatedReferences(IEnumerable<string> references) => references
+            .GroupBy(static reference => reference, StringComparer.Ordinal).Where(static group => group.Count() > 1)
+            .Select(static group => group.Key).ToHashSet(StringComparer.Ordinal);
     }
 
     internal static bool HasVerifiedCompletion(StatementRunRecoveryCheckpoint checkpoint,
@@ -88,7 +134,7 @@ public sealed partial class StatementReconciliationIntakeAuthority
            && StatementDurabilityHashing.FixedTimeEquals(matchArtifact.Sha256, StatementDurabilityHashing.Hash(artifact));
 
     internal static string ComparisonSourceIdentity(CanonicalStatementImport import,
-        Meridian.Infrastructure.Reconciliation.StatementRunMatchArtifact artifact, string institution)
+        Meridian.DataIntegration.Reconciliation.StatementRunMatchArtifact artifact, string institution)
         => JsonSerializer.Serialize(new
         {
             institution,
@@ -98,7 +144,7 @@ public sealed partial class StatementReconciliationIntakeAuthority
             artifact.SourceComparisonPopulationKinds
         });
 
-    internal static bool CanCompareSourceRun(Meridian.Infrastructure.Reconciliation.StatementRunMatchArtifact artifact)
+    internal static bool CanCompareSourceRun(Meridian.DataIntegration.Reconciliation.StatementRunMatchArtifact artifact)
         => artifact.SourceComparisonComplete == true
            && Meridian.Contracts.Integrity.Sha256Digest.IsWellFormed(artifact.SourceComparisonPolicyFingerprint)
            && Meridian.Contracts.Integrity.Sha256Digest.IsWellFormed(artifact.SourceComparisonMappingFingerprint)

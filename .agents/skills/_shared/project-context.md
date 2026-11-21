@@ -18,6 +18,12 @@
 
 <!-- shared-context:begin — identical in .claude/, .codex/, and .agents/ copies; check-ai-inventory.py enforces it -->
 
+## Generated file delivery
+
+Run `python build/python/cli/buildctl.py regen --fix` after merging. Commit reviewed views only;
+declared machine inventories and workstation builds are CI artifacts. Preserve reviewed source
+hashes. See `docs/engineering/generated-output-delivery.md` for the exact ownership policy.
+
 ## Platform Snapshot
 
 - Meridian is a .NET 10 operational-finance and trading-platform codebase in active delivery; fund
@@ -142,7 +148,8 @@ the full `bash scripts/ci.sh` aggregate is optional at Level 1, recommended at L
 practical at Level 3 or for build/CI-tooling changes; state which checks ran and which did not.
 GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may happen on `main` when the user explicitly requests
 it or the checkout is intentionally operating there, but PR-ready publishing should flow through a
-`codex/<short-task-name>` branch and PR targeting `main` unless GitHub repository rules explicitly
+`codex/<short-task-name>` or `claude/<short-task-name>` branch (either agent prefix is accepted)
+and PR targeting `main` unless GitHub repository rules explicitly
 allow the requested protected-branch flow.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
 unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
@@ -175,7 +182,8 @@ validation.
 - `src/Meridian.QuantScript/`: strategy analytics scripting and charting-oriented tooling
 - `src/Meridian.Mcp/`: active MCP host, tools, and resources
 - `src/Meridian.Ui/dashboard/`: browser-based operator workstation
-- `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by `Meridian.Ui`
+- `src/Meridian.Ui/wwwroot/workstation/`: built web workstation assets served by the
+  `src/Meridian/` host (`src/Meridian.Ui/` is a folder with no project file)
 - `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Wpf/`: shared UI
   services, workstation endpoints, and the active WPF desktop shell
 - `tests/`: cross-platform, F#, UI-service, and WPF test projects

@@ -30,7 +30,7 @@ describe("accounting onboarding API boundary", () => {
   });
   it("keeps stale-version and unavailable-source failures visible", async () => {
     fetchMock.mockResolvedValue({ ok: false, status: 409, text: async () => JSON.stringify({ error: "Workspace version has changed." }) });
-    await expect(api.freezeOnboardingPacket("workspace-1", 1)).rejects.toThrow("409");
+    await expect(api.freezeOnboardingPacket("workspace-1", 1)).rejects.toMatchObject({ status: 409, message: "Workspace version has changed." });
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
   it("downloads exact artifact bytes without parsing or rounding decimal source values", async () => {

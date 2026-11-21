@@ -29,6 +29,7 @@ export const WORKSTATION_ROUTE_CATALOG = {
   portfolioCashLadder: "/portfolio/cash-ladder",
   portfolioFamilyOffice: "/portfolio/family-office",
   portfolioLoanBook: "/portfolio/loan-book",
+  portfolioNav: "/portfolio/nav",
   accounting: "/accounting",
   accountingClose: "/accounting/close",
   instrumentDossier: "/records/instrument/:id",
@@ -37,6 +38,8 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingOperationsContinuity: "/accounting/operations-continuity",
   accountingEntitySetup: "/accounting/entity-setup",
   accountingLedger: "/accounting/ledger",
+  accountingFactorPaydown: "/accounting/factor-paydown",
+  accountingConsolidation: "/accounting/consolidation",
   accountingTrialBalanceLegacy: "/accounting/trial-balance",
   accountingAccountDetail: "/accounting/accounts/detail",
   accountingJournalEntries: "/accounting/journal-entries",
@@ -279,7 +282,7 @@ export function evidenceWorkbenchPath(subjectKind: string, subjectId: string) {
  * link should land on the desk directly instead of bouncing through a redirect.
  */
 export function marketDataDeskPath(
-  view: "quotes" | "watchlist" | "alerts",
+  view: "quotes" | "watchlist" | "alerts" | "options",
   query: Record<string, WorkstationRouteQueryValue> = {}
 ): string {
   return workstationRouteWithQuery("dataQuotes", {
@@ -409,8 +412,11 @@ export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> 
   evidence: "Evidence",
   exceptions: "Exceptions",
   "family-office": "Family Office",
-  "journal-entries": "Journal entries",
+  "journal-entries": "Journal Entries",
   ledger: "Ledger Explorer",
+  nav: "NAV",
+  "factor-paydown": "Factor Paydown",
+  consolidation: "Consolidation",
   "run-ledger": "Run Ledger Explorer",
   "operations-continuity": "Operations Continuity",
   "operations-record": "Operations Record",
@@ -430,9 +436,22 @@ export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> 
   watchlist: "Watchlist"
 };
 
-export function resolveWorkstationRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary): string {
+/**
+ * Views of one route that the sidebar lists as their own destination. The page heading names the
+ * view the operator opened, not the route that hosts it.
+ */
+const WORKSTATION_ROUTE_VIEW_LABELS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  "/data/quotes": { options: "Options screening" }
+};
+
+export function resolveWorkstationRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary, search = ""): string {
   if (pathname.startsWith("/records/instrument/")) return "Instrument dossier";
   if (pathname === "/today") return "Today";
+  const view = new URLSearchParams(search).get("view");
+  const viewLabel = view ? WORKSTATION_ROUTE_VIEW_LABELS[pathname.replace(/\/+$/, "")]?.[view] : undefined;
+  if (viewLabel) {
+    return viewLabel;
+  }
   const segments = pathname.split("/").filter(Boolean);
   const routeSegments = segments[0] === workspace.key ? segments.slice(1) : segments.slice(2);
   if (routeSegments.length === 0) {

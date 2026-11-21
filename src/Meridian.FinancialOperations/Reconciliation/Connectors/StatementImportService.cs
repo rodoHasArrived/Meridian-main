@@ -249,9 +249,13 @@ public sealed partial class StatementImportService(
         // canonical artifact, destroying the normalized evidence that run still references. Combining
         // both hashes gives every distinct rendering its own directory, while a same-profile re-import
         // rewrites identical bytes in place and stays idempotent.
+        // The fund account is part of the key too: the evidence sidecar records the fund account the
+        // import was ownership-checked for, and margin views scope by it. Importing identical bytes
+        // for another fund account must not overwrite that owner and move the evidence's visibility.
         var rawHash = ComputeSha256Hex(capturedSourceBytes);
         var canonicalHash = ComputeSha256Hex(artifactBytes);
-        var uploadId = $"sc-{rawHash}-{canonicalHash}";
+        var ownerKey = ComputeSha256Hex(Encoding.UTF8.GetBytes(request.FundAccountId.Trim().ToUpperInvariant()))[..16];
+        var uploadId = $"sc-{rawHash}-{canonicalHash}-{ownerKey}";
         const string reconciliationDirectory = "reconciliation";
         const string retainedImportsDirectory = "statement-connector-imports";
         var retainedDirectory = _retainedPathGuard.ResolvePath(
@@ -296,7 +300,8 @@ public sealed partial class StatementImportService(
             ActivityEvents: parse.ActivityEvents ?? [],
             ActivityCursors: parse.ActivityCursors ?? [],
             TaxLots: parse.TaxLots ?? [],
-            BorrowPositions: parse.BorrowPositions ?? []);
+            BorrowPositions: parse.BorrowPositions ?? [],
+            FundAccountId: request.FundAccountId.Trim());
         var canonicalEvidenceBytes = JsonSerializer.SerializeToUtf8Bytes(
             canonicalEvidence,
             StatementCanonicalEvidenceJsonContext.Default.StatementCanonicalEvidenceArtifact);
@@ -774,7 +779,12 @@ public sealed partial class StatementImportService(
     internal static string RenderCanonicalArtifact(IReadOnlyList<StatementCanonicalRecord> records)
     {
         var builder = new StringBuilder();
-        builder.Append(string.Join(',', CanonicalArtifactHeader)).Append('\n');
+        var receiptMetadata = records.Any(record => record.SecurityId.HasValue || record.ReceiptAllocations is not null
+            || record.ObligationKey is not null || record.ProjectedCashFlowId.HasValue);
+        builder.Append(string.Join(',', CanonicalArtifactHeader));
+        if (receiptMetadata)
+            builder.Append(",marketValue,accruedInterest,securityId,receiptAllocations,obligationKey,projectedCashFlowId");
+        builder.Append('\n');
         foreach (var record in records)
         {
             builder
@@ -794,7 +804,13 @@ public sealed partial class StatementImportService(
                 .Append(EncodeArtifactValue(record.ProviderActivityCode)).Append(',')
                 .Append(EncodeArtifactValue(record.RelatedTransactionId)).Append(',')
                 .Append(EncodeArtifactValue(record.OrderId)).Append(',')
-                .Append(EncodeArtifactValue(record.Description)).Append('\n');
+                .Append(EncodeArtifactValue(record.Description));
+            if (receiptMetadata)
+                builder.Append(",,,").Append(record.SecurityId?.ToString("D")).Append(',')
+                    .Append(EncodeArtifactValue(record.ReceiptAllocations)).Append(',')
+                    .Append(EncodeArtifactValue(record.ObligationKey)).Append(',')
+                    .Append(record.ProjectedCashFlowId?.ToString("D"));
+            builder.Append('\n');
         }
 
         return builder.ToString();

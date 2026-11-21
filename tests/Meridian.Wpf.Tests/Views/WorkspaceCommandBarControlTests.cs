@@ -75,4 +75,56 @@ public sealed class WorkspaceCommandBarControlTests
             wasRouted.Should().BeFalse();
         });
     }
+
+    [Fact]
+    public void OverflowMenu_ShouldEndWithResetLayout_WhenTheCommandIsBound()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var resetCount = 0;
+            var group = new WorkspaceCommandGroup
+            {
+                SecondaryCommands = [new WorkspaceCommandItem { Id = "Export", Label = "Export" }]
+            };
+            var sut = new WorkspaceCommandBarControl
+            {
+                CommandGroup = group,
+                ResetLayoutCommand = new RelayCommand(() => resetCount++)
+            };
+
+            var items = sut.BuildOverflowMenuItems();
+
+            items.Should().HaveCount(3);
+            items[1].Should().BeOfType<System.Windows.Controls.Separator>();
+            var reset = items[2].Should().BeOfType<System.Windows.Controls.MenuItem>().Subject;
+            reset.Header.Should().Be("Reset layout");
+            reset.Command!.Execute(null);
+            resetCount.Should().Be(1);
+        });
+    }
+
+    [Fact]
+    public void OverflowMenu_ShouldOfferOnlyResetLayout_WhenThereAreNoSecondaryCommands()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var sut = new WorkspaceCommandBarControl { ResetLayoutCommand = new RelayCommand(() => { }) };
+
+            sut.BuildOverflowMenuItems().Should().ContainSingle()
+                .Which.Should().BeOfType<System.Windows.Controls.MenuItem>()
+                .Which.Header.Should().Be("Reset layout");
+            sut.MoreButton.Visibility.Should().Be(System.Windows.Visibility.Visible);
+        });
+    }
+
+    [Fact]
+    public void OverflowMenu_ShouldNotOfferResetLayout_WhenTheCommandIsNotBound()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var sut = new WorkspaceCommandBarControl();
+
+            sut.BuildOverflowMenuItems().Should().BeEmpty();
+        });
+    }
 }

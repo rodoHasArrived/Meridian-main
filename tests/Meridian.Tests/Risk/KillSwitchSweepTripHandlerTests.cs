@@ -34,6 +34,9 @@ public sealed class KillSwitchSweepTripHandlerTests
             CancellationToken.None);
 
         orderManager.CancelAllCalls.Should().Be(1, "the trip reuses the OMS kill-switch sweep, not a second sweep");
+        orderManager.SweepAuthority!.Origin.Should().Be(OrderCommandOrigin.KillSwitch);
+        orderManager.SweepAuthority.Actor.Should().Be("risk-engine/gross-exposure",
+            "the OMS records what tripped the breaker on every cancellation the sweep makes");
 
         var entries = await auditTrail.GetRecentAsync(10);
         var entry = entries.Should().ContainSingle().Subject;
@@ -133,6 +136,14 @@ public sealed class KillSwitchSweepTripHandlerTests
         public IReadOnlyList<OrderState> GetOpenOrders() => [];
 
         public OrderState? GetOrder(string orderId) => null;
+
+        public OrderSubmissionAuthority? SweepAuthority { get; private set; }
+
+        public Task<KillSwitchSweepResult> CancelAllAsync(OrderCancelAllCommand command, CancellationToken ct = default)
+        {
+            SweepAuthority = command.Authority;
+            return CancelAllAsync(ct);
+        }
 
         public Task<KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default)
         {

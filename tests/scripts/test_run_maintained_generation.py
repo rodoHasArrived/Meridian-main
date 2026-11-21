@@ -34,7 +34,7 @@ EMPTY_CHANGES = {"added": [], "modified": [], "deleted": []}
 
 class MaintainedGenerationTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.repo = Path(self.temp.name)
         self.git("init", "--initial-branch=main")
@@ -107,6 +107,8 @@ class MaintainedGenerationTests(unittest.TestCase):
             "render-source-docs.py", "render-roadmap-diagrams.py", "render-source-diagrams.py",
             "npm run generate-diagrams", "generate-structure-docs.py --workflows-only",
             "run-docs-automation.py --profile core",
+            "generate-contract-manifest.py", "render-production-readiness.py",
+            "scripts/generate_program_state_summary.py",
         ):
             with self.subTest(producer=producer):
                 self.assertIn(producer, flattened)
@@ -371,7 +373,7 @@ class MaintainedGenerationTests(unittest.TestCase):
         self.write(BASELINE, '{"reviewed": "preserve-local-baseline"}\n')
         self.git("add", "--all")
         before = generation.snapshot(self.repo)
-        external = tempfile.TemporaryDirectory()
+        external = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(external.cleanup)
         external_file = Path(external.name) / "external-baseline.json"
         external_file.write_bytes(b"external content must not be overwritten\n")

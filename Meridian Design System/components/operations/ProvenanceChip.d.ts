@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Provenance chip — the recurring evidence tuple that every family-office and
  * reconciliation read model carries (`SourceSystem`, `SourceDocumentId`, `AsOfDate`,
@@ -34,4 +35,4 @@ export interface ProvenanceChipProps extends React.HTMLAttributes<HTMLElement> {
   /** Makes the chip a button (e.g. open the evidence drawer). */
   onOpen?: () => void;
 }
-export declare function ProvenanceChip(props: ProvenanceChipProps): JSX.Element;
+export declare function ProvenanceChip(props: ProvenanceChipProps): React.JSX.Element;

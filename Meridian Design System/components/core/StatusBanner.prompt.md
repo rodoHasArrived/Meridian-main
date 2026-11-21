@@ -6,3 +6,5 @@ Inline status banner — alpha-10 fill with a 4px solid semantic left-accent bor
 ```
 
 Tones: `success | warning | danger | info`. Title is terse sentence case; detail carries mono evidence.
+
+A11y (3.5): `announce` = "polite" | "assertive" | "off" (default assertive for danger, polite otherwise) — the banner is a live region without any wrapper.

@@ -91,4 +91,9 @@ describe("TrialBalanceTable", () => {
     expect(within(table).getByText("Fund I")).toBeInTheDocument();
     expect(within(table).queryByText("acct-cash-internal")).not.toBeInTheDocument();
   });
+
+  it("makes the scroll region keyboard-focusable with an accessible name", () => {
+    render(<TrialBalanceTable rows={[row("cash", "Cash", "Asset", 100)]} />);
+    expect(screen.getByRole("region", { name: "Trial balance" })).toHaveAttribute("tabindex", "0");
+  });
 });

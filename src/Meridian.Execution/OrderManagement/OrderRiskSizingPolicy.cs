@@ -125,7 +125,7 @@ internal static class OrderRiskSizingPolicy
     /// Reconstructs the order the gateway would hold after <paramref name="modification"/>,
     /// so the pre-trade rules evaluate the proposed order rather than the original.
     /// </summary>
-    private static OrderRequest BuildAmendedRequest(OrderState state, OrderModification modification) => new()
+    internal static OrderRequest BuildAmendedRequest(OrderState state, OrderModification modification) => new()
     {
         Symbol = state.Symbol,
         Side = state.Side,
@@ -136,6 +136,7 @@ internal static class OrderRiskSizingPolicy
         ClientOrderId = state.OrderId,
         StrategyId = state.StrategyId,
         FundAccountId = state.FundAccountId,
+        SessionIntent = state.SessionIntent,
         Metadata = BuildAmendedSizingMetadata(state, modification),
         // Without the derivative identity the rules re-value the amended order as shares,
         // repeating the 1x mistake the multiplier above exists to prevent.

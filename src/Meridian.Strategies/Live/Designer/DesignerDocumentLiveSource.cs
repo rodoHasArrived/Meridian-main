@@ -33,6 +33,8 @@ namespace Meridian.Strategies.Live.Designer;
 /// </remarks>
 public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
 {
+    internal const string RetainedArtifactParameterKey = "meridian.retainedStrategyArtifactId";
+    private readonly Meridian.Strategies.Artifacts.StrategyArtifactRegistry? _artifacts;
     /// <summary>Run parameter naming the designer document to activate.</summary>
     public const string DesignerDocumentParameterKey = "designerDocumentId";
 
@@ -61,12 +63,14 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
         IStrategyDesignRepository? repository,
         StrategyDesignService designService,
         ILogger<DesignerDocumentLiveSource>? logger = null,
-        TimeSpan? loadTimeout = null)
+        TimeSpan? loadTimeout = null,
+        Meridian.Strategies.Artifacts.StrategyArtifactRegistry? artifacts = null)
     {
         _repository = repository;
         _designService = designService ?? throw new ArgumentNullException(nameof(designService));
         _logger = logger;
         _loadTimeout = loadTimeout is { } timeout && timeout > TimeSpan.Zero ? timeout : DefaultLoadTimeout;
+        _artifacts = artifacts;
     }
 
     /// <inheritdoc/>
@@ -88,7 +92,8 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             return false;
         }
 
-        if (_repository is null)
+        var hasArtifact = context.Parameters.TryGetValue(RetainedArtifactParameterKey, out var artifactId);
+        if (hasArtifact ? _artifacts is null : _repository is null)
         {
             failureReason =
                 $"Run references designer document '{documentId}', but no strategy design repository is " +
@@ -96,7 +101,7 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             return false;
         }
 
-        var document = LoadDocument(documentId, out failureReason);
+        var document = LoadDocument(documentId, artifactId, out failureReason);
         if (document is null)
         {
             return false;
@@ -292,7 +297,7 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
     private static string Shorten(string hash) =>
         hash.Length <= 12 ? hash : string.Concat(hash.AsSpan(0, 12), "...");
 
-    private StrategyDesignDocument? LoadDocument(string documentId, out string? failureReason)
+    private StrategyDesignDocument? LoadDocument(string documentId, string? artifactId, out string? failureReason)
     {
         try
         {
@@ -306,13 +311,15 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             // cooperative cancellation alone would let a stalled store block the promotion path
             // and the startup resume sweep indefinitely.
             var document = Task.Run(
-                    () => _repository!.GetAsync(documentId, timeout.Token),
+                    async () => artifactId is null
+                        ? await _repository!.GetAsync(documentId, timeout.Token).ConfigureAwait(false)
+                        : (await _artifacts!.GetAsync(artifactId, timeout.Token).ConfigureAwait(false))?.DesignerDocument,
                     CancellationToken.None)
                 .WaitAsync(_loadTimeout)
                 .GetAwaiter()
                 .GetResult();
 
-            if (document is null)
+            if (document is null || !string.Equals(document.DocumentId, documentId, StringComparison.Ordinal))
             {
                 failureReason =
                     $"Designer document '{documentId}' was not found in the strategy design repository. " +

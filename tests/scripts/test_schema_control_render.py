@@ -30,7 +30,7 @@ class SchemaRenderTests(unittest.TestCase):
                 }
             ],
         }
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             render_snapshot(
                 root,
@@ -103,7 +103,7 @@ class SchemaRenderTests(unittest.TestCase):
                 {"id": "ledger-contracts", "schemas": ["ledger"], "diagram": True}
             ],
         }
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             first = render_snapshot(
                 root,

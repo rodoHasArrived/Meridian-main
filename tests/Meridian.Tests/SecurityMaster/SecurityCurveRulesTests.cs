@@ -15,6 +15,23 @@ public sealed class SecurityCurveRulesTests
     private static readonly DateOnly AsOf = new(2026, 1, 1);
 
     [Fact]
+    public void SignedRateAdmission_IsExplicitWhileLegacyDefinitionsKeepTheirRestrictionsAndJson()
+    {
+        var legacy = Definition(SecurityCurveKind.Discount);
+        var signed = legacy with { RatePolicy = SecurityCurveRatePolicy.SignedRates };
+        var request = Publish(legacy, (AsOf, 1m), (AsOf.AddYears(1), 1.01m), (AsOf.AddYears(2), 1.02m));
+        Action legacyAdmission = () => SecurityCurveRules.Normalize(request, legacy);
+        legacyAdmission.Should().Throw<ArgumentException>();
+        SecurityCurveRules.Normalize(request, signed).Points[^1].Value.Should().Be(1.02m);
+        var forward = Definition(SecurityCurveKind.Forward, "SIGNED") with { RatePolicy = SecurityCurveRatePolicy.SignedRates };
+        SecurityCurveRules.Normalize(Publish(forward, (AsOf, -0.005m)), forward).Points[0].Value.Should().Be(-0.005m);
+        Action invalidDf = () => SecurityCurveRules.Normalize(Publish(signed, (AsOf.AddYears(1), 0m)), signed);
+        invalidDf.Should().Throw<ArgumentException>();
+        System.Text.Json.JsonSerializer.Serialize(legacy).Should().NotContain("RatePolicy");
+        System.Text.Json.JsonSerializer.Serialize(signed).Should().Contain("SignedRates");
+    }
+
+    [Fact]
     public void Define_NormalizesTheIdentity()
     {
         var normalized = SecurityCurveRules.Normalize(Define(key: "  usd-discount  ", currency: "usd", dayCount: "30/360", description: " curve "));

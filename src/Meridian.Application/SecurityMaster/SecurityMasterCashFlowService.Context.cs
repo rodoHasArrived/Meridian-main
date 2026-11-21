@@ -7,7 +7,10 @@ namespace Meridian.Application.SecurityMaster;
 
 public sealed partial class SecurityMasterCashFlowService
 {
-    public const string ContextCalculationVersion = "bond-cash-flow-context-v2";
+    public const string ContextCalculationVersion = "bond-cash-flow-context-v5";
+    public const string PreviousContextCalculationVersion = "bond-cash-flow-context-v4";
+    public const string NegativeInterestContextCalculationVersion = "bond-cash-flow-context-v3";
+    public const string UnifiedEconomicsContextCalculationVersion = "bond-cash-flow-context-v2";
     public const string LegacyContextCalculationVersion = "bond-cash-flow-context-v1";
 
     public async Task<StructuredCashFlowProjectionDto?> GetProjectionAsync(
@@ -31,6 +34,22 @@ public sealed partial class SecurityMasterCashFlowService
         return ExportProjection(await CaptureResolvedProjectionAsync(security, source, scenario, context, ct).ConfigureAwait(false), _receiptStore is not null);
     }
 
+    public async Task<SecurityCashFlowBlockerDto?> GetProjectionBlockerAsync(
+        SecurityDetailDto security, BondCalculationContext context, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(security);
+        ArgumentNullException.ThrowIfNull(context);
+        ct.ThrowIfCancellationRequested();
+        var source = await _store.GetSourceAsync(security.SecurityId, ct).ConfigureAwait(false);
+        if (source is null)
+            return null;
+        var calculation = await CaptureResolvedProjectionAsync(security, source, StructuredCashFlowScenario.Base,
+            context, ct, retainReceipt: false).ConfigureAwait(false);
+        return calculation.Projection.Blocker ?? (calculation.Projection.BlockedReason is { } reason
+            ? new SecurityCashFlowBlockerDto("CashFlowProjectionBlocked", reason)
+            : null);
+    }
+
     public async Task<SecurityCashFlowCalculationReceipt?> CaptureProjectionAsync(
         Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default)
     {
@@ -50,7 +69,7 @@ public sealed partial class SecurityMasterCashFlowService
 
     private async Task<SecurityCashFlowCalculationReceipt> CaptureResolvedProjectionAsync(
         SecurityDetailDto security, SecurityCashFlowSourceDto source, StructuredCashFlowScenario scenario,
-        BondCalculationContext context, CancellationToken ct)
+        BondCalculationContext context, CancellationToken ct, bool retainReceipt = true)
     {
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
         var curves = new Dictionary<string, SecurityForwardCurve>(StringComparer.OrdinalIgnoreCase);
@@ -92,7 +111,7 @@ public sealed partial class SecurityMasterCashFlowService
         // Freeze caller-owned lists and JSON documents before exposing a replay receipt.
         receipt = JsonSerializer.Deserialize(JsonSerializer.Serialize(receipt, SecurityCashFlowReceiptJsonContext.Default.SecurityCashFlowCalculationReceipt), SecurityCashFlowReceiptJsonContext.Default.SecurityCashFlowCalculationReceipt)!;
         receipt = receipt with { ContentSha256 = ReceiptHash(receipt) };
-        if (_receiptStore is not null)
+        if (retainReceipt && _receiptStore is not null)
             await _receiptStore.RetainAsync(receipt, ct).ConfigureAwait(false);
         return receipt;
     }
@@ -118,8 +137,11 @@ public sealed partial class SecurityMasterCashFlowService
     {
         ct.ThrowIfCancellationRequested();
         StructuredCashFlowProjectionDto Refused(string reason) => receipt.Projection with { Schedule = [], LegSchedules = null, BlockedReason = reason };
-        if (receipt.ModelVersion is not (ContextCalculationVersion or LegacyContextCalculationVersion) || !string.Equals(receipt.ContentSha256, ReceiptHash(receipt), StringComparison.Ordinal))
+        var rowVersion = RowVersionForModel(receipt.ModelVersion);
+        if (rowVersion < 0 || !string.Equals(receipt.ContentSha256, ReceiptHash(receipt), StringComparison.Ordinal))
             return Refused("The retained calculation receipt has an unsupported model or its content digest does not match.");
+        if (!SecurityCashFlowScheduleRowCodec.HasSupportedRows(receipt.Projection, rowVersion))
+            return Refused("The retained calculation receipt has an unsupported schedule row contract.");
         if (receipt.Projection.BlockedReason is not null)
             return receipt.Projection;
         foreach (var calendar in receipt.Projection.ScheduleEvidence?.Calendars ?? [])
@@ -137,7 +159,9 @@ public sealed partial class SecurityMasterCashFlowService
                 Legs = terms.Legs.Select(leg => leg with
                 { CurrentIndexResetDate = null, CurrentIndexRateSource = null }).ToArray()
             };
-        var replay = CalculateCaptured(receipt.Security, receipt.Source, receipt.Scenario, receipt.Context, terms, curves, receipt.Projection.Staleness, receipt.ModelVersion == ContextCalculationVersion)
+        var replay = CalculateCaptured(receipt.Security, receipt.Source, receipt.Scenario, receipt.Context, terms, curves, receipt.Projection.Staleness, receipt.ModelVersion != LegacyContextCalculationVersion,
+            receipt.ModelVersion is ContextCalculationVersion or PreviousContextCalculationVersion or NegativeInterestContextCalculationVersion,
+            rowVersion, factorAwareEconomics: receipt.ModelVersion == ContextCalculationVersion)
             with
         { InputManifest = receipt.Projection.InputManifest };
         if (JsonSerializer.Serialize(replay, SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto) != JsonSerializer.Serialize(receipt.Projection, SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto))
@@ -147,13 +171,17 @@ public sealed partial class SecurityMasterCashFlowService
 
     private StructuredCashFlowProjectionDto CalculateCaptured(SecurityDetailDto security, SecurityCashFlowSourceDto source,
         StructuredCashFlowScenario scenario, BondCalculationContext context, StructuredCashFlowTerms terms,
-        IReadOnlyDictionary<string, SecurityForwardCurve> curves, StructuredCashFlowStaleness? retainedFreshness = null, bool unifiedEconomics = true)
+        IReadOnlyDictionary<string, SecurityForwardCurve> curves, StructuredCashFlowStaleness? retainedFreshness = null,
+        bool unifiedEconomics = true, bool rejectNegativeInterest = true,
+        int rowVersion = SecurityCashFlowScheduleRowCodec.CurrentVersion, bool factorAwareEconomics = true)
     {
         var assessmentTime = context.KnownAt ?? _clock.GetUtcNow();
         var freshness = retainedFreshness ?? (source.LastUpdatedUtc is not { } updated ? StructuredCashFlowStaleness.Unknown
             : assessmentTime - updated > StalenessThreshold ? StructuredCashFlowStaleness.Stale : StructuredCashFlowStaleness.Fresh);
         var projection = BuildCalculatedProjectionCore(security, source.SourceKind, scenario, freshness,
-            source.LastUpdatedUtc, context.AsOf, _calendars, curves, terms, unifiedEconomics);
+            source.LastUpdatedUtc, context.AsOf, _calendars, curves, terms, unifiedEconomics, rejectNegativeInterest,
+            factorAwareEconomics);
+        projection = SecurityCashFlowScheduleRowCodec.ForVersion(projection, rowVersion);
         var normalized = terms.PrincipalFace is not > 0m && (!terms.HasLegs || terms.Legs!.Any(leg => leg.Notional is not > 0m));
         return normalized ? projection with
         {
@@ -161,6 +189,14 @@ public sealed partial class SecurityMasterCashFlowService
             BlockedReason = projection.BlockedReason ?? "Schedule is normalized per 100 units; retained principal or leg notional is required before ledger posting."
         } : projection;
     }
+
+    private static int RowVersionForModel(string modelVersion) => modelVersion switch
+    {
+        ContextCalculationVersion => SecurityCashFlowScheduleRowCodec.CurrentVersion,
+        PreviousContextCalculationVersion => 1,
+        NegativeInterestContextCalculationVersion or UnifiedEconomicsContextCalculationVersion or LegacyContextCalculationVersion => 0,
+        _ => -1
+    };
 
     private static IReadOnlyList<BondCalculationInput> BuildInputManifest(SecurityDetailDto security,
         SecurityCashFlowSourceDto source, StructuredCashFlowProjectionDto projection, IEnumerable<SecurityForwardCurve> curves)

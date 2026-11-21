@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useLocation } from "react-router-dom";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
@@ -186,6 +186,8 @@ describe("TrialBalanceScreen", () => {
     await renderTrialBalanceScreen();
 
     expect(await screen.findByText(/No ledger periods exist yet/)).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Ledger book" })).toBeEnabled();
+    expect(screen.getByRole("combobox", { name: "Period" })).toBeDisabled();
   });
 
   /**
@@ -201,7 +203,13 @@ describe("TrialBalanceScreen", () => {
 
     expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(PERIOD_ID);
     expect(ledgerReportsApi.getLedgerPeriodJournalEntries).toHaveBeenCalledWith(PERIOD_ID);
-    expect(screen.getByText("Posted journal")).toBeInTheDocument();
+    // The status row is collapsed above the trial balance. Its one line names only what is not
+    // ready, so a ready source is not in it; the breakdown behind Details names the posted
+    // journal as the source.
+    const confidence = screen.getByRole("region", { name: "Data confidence" });
+    expect(within(confidence.querySelector("summary") as HTMLElement).queryByText("Posted journal")).toBeNull();
+    expect(within(confidence.querySelector("dl") as HTMLElement).getByText("Posted journal")).toBeInTheDocument();
+    expect(confidence.querySelector("details")).not.toHaveAttribute("open");
     expect(screen.getByRole("heading", { name: "Trial balance scope" })).toBeInTheDocument();
     // The structure node the book is scoped to. This asserted the hard-coded "All entities" — an
     // affirmative claim about a book scoped to exactly one node — and then, briefly, the book's
@@ -210,7 +218,7 @@ describe("TrialBalanceScreen", () => {
     // The scope card names the book actually in scope, not a fixed "Primary GL": the card asks
     // operators to confirm the book before drill-through, so it must not label another book's
     // balances as the primary one.
-    expect(screen.getByLabelText("Book")).toHaveValue("Master Fund");
+    expect(screen.getByRole("combobox", { name: "Ledger book" })).toHaveValue("Master Fund · USD");
     expect(await screen.findByRole("region", { name: POSTED_REGION })).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /Cash Asset\. Primary basis/ })).toBeInTheDocument();
   });
@@ -228,7 +236,29 @@ describe("TrialBalanceScreen", () => {
     await waitForAsyncEffects();
 
     expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(PRIOR_PERIOD_ID);
-    expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(PRIOR_PERIOD_ID);
+    expect(screen.getByRole("combobox", { name: "Period" })).toHaveValue("June 2026 · Hard closed");
+  });
+
+  it("searches periods above their results and loads only the confirmed selection", async () => {
+    const user = userEvent.setup();
+    primeHappyPath();
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValue([
+      makePeriod(),
+      makePeriod({ periodId: PRIOR_PERIOD_ID, periodNo: 6, label: "June 2026" })
+    ]);
+    const search = renderTrialBalanceScreenWithLocation(`/accounting/ledger?view=trial-balance&periodId=${PERIOD_ID}`);
+    await waitForAsyncEffects();
+    const picker = screen.getByRole("combobox", { name: "Period" });
+    const results = screen.getByRole("region", { name: POSTED_REGION });
+    expect(picker.compareDocumentPosition(results) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    await user.type(picker, "June");
+    expect(screen.queryByRole("option", { name: "July 2026 · Hard closed" })).not.toBeInTheDocument();
+    expect(ledgerReportsApi.getLedgerPeriodTrialBalance).not.toHaveBeenCalledWith(PRIOR_PERIOD_ID);
+    await user.keyboard("{Enter}{Tab}");
+    await waitForAsyncEffects();
+    expect(picker).toHaveValue("June 2026 · Hard closed");
+    expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(PRIOR_PERIOD_ID);
+    expect(search()).toContain(PRIOR_PERIOD_ID);
   });
 
   it("opens a period in a book other than the first, which the periodId alone cannot name", async () => {
@@ -281,7 +311,7 @@ describe("TrialBalanceScreen", () => {
 
     expect(ledgerReportsApi.getLedgerPeriods).toHaveBeenCalledWith({ ledgerBookId: FEEDER_BOOK_ID });
     expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(FEEDER_PERIOD_ID);
-    expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(FEEDER_PERIOD_ID);
+    expect(screen.getByRole("combobox", { name: "Period" })).toHaveValue("June 2026 · Hard closed");
   });
 
   it("reports the retained closed-summary timestamp instead of claiming none was kept", async () => {
@@ -305,8 +335,13 @@ describe("TrialBalanceScreen", () => {
 
     // The book is attached to a fund-structure node; "All entities" was an affirmative claim
     // about a book scoped to exactly one.
-    expect(screen.getAllByText((_, node) => (node?.textContent ?? "").includes("Fund · 00000000-0000-0000-0000-0000000000bb")).length)
+    // The heading names the node by its kind; the exact node identifier stays in the read-only
+    // scope field rather than in the page's reading path.
+    expect(screen.getAllByText((_, node) => /^Fund · [^·]*Master Fund · /.test(node?.textContent ?? "")).length)
       .toBeGreaterThan(0);
+    expect(screen.queryAllByText((_, node) => (node?.textContent ?? "").includes("00000000-0000-0000-0000-0000000000bb")))
+      .toHaveLength(0);
+    expect(screen.getByLabelText("Entity / fund / portfolio")).toHaveValue("Fund · 00000000-0000-0000-0000-0000000000bb");
   });
 
   it("lets a book chosen by hand supersede a deep link whose period request failed", async () => {
@@ -365,14 +400,12 @@ describe("TrialBalanceScreen", () => {
     expect(search()).toContain(FEEDER_BOOK_ID);
     expect(search()).toContain(FEEDER_PERIOD_ID);
 
-    await userEvent.selectOptions(
-      screen.getByLabelText("Ledger book", { selector: "select" }),
-      MASTER_BOOK_ID
-    );
+    await userEvent.type(screen.getByRole("combobox", { name: "Ledger book" }), "Alpha Master");
+    await userEvent.click(screen.getByRole("option", { name: "Alpha Master Fund · USD" }));
     await waitForAsyncEffects();
     await waitForAsyncEffects();
 
-    expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(PERIOD_ID);
+    expect(screen.getByRole("combobox", { name: "Period" })).toHaveValue("July 2026 · Hard closed");
     expect(search()).toContain(MASTER_BOOK_ID);
     expect(search()).toContain(PERIOD_ID);
     expect(search()).not.toContain(FEEDER_BOOK_ID);
@@ -427,14 +460,12 @@ describe("TrialBalanceScreen", () => {
     await waitForAsyncEffects();
     await waitForAsyncEffects();
 
-    await userEvent.selectOptions(
-      screen.getByLabelText("Ledger book", { selector: "select" }),
-      MASTER_BOOK_ID
-    );
+    await userEvent.type(screen.getByRole("combobox", { name: "Ledger book" }), "Alpha Master");
+    await userEvent.click(screen.getByRole("option", { name: "Alpha Master Fund · USD" }));
     await waitForAsyncEffects();
     await waitForAsyncEffects();
 
-    expect(screen.getByLabelText("Ledger book", { selector: "select" })).toHaveValue(MASTER_BOOK_ID);
+    expect(screen.getByRole("combobox", { name: "Ledger book" })).toHaveValue("Alpha Master Fund · USD");
     expect(search()).toContain(MASTER_BOOK_ID);
     expect(search()).not.toContain(FEEDER_BOOK_ID);
     // No book answered, so there is no period to name.
@@ -453,7 +484,7 @@ describe("TrialBalanceScreen", () => {
     await waitForAsyncEffects();
 
     expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(PERIOD_ID);
-    expect(screen.getByLabelText("Period", { selector: "select" })).toHaveValue(PERIOD_ID);
+    expect(screen.getByRole("combobox", { name: "Period" })).toHaveValue("July 2026 · Hard closed");
   });
 
   it("switches basis and narrows rows with the account filter", async () => {

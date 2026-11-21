@@ -602,6 +602,8 @@ public sealed record ReconciliationBreakQueueItem(
     /// <summary>Invariant exact values for cases without a retained typed comparison.</summary>
     public string VarianceExact => Variance.ToString(CultureInfo.InvariantCulture);
     public string? ToleranceBandExact => ToleranceBand?.ToString(CultureInfo.InvariantCulture);
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Reconciliation.RetainedStatementCaseEvidence? StatementEvidence { get; init; }
 }
 
 public sealed record ReconciliationPermittedCommandDto(string Action, bool Enabled, string? DisabledReason);
@@ -777,6 +779,22 @@ public sealed record ReconciliationBulkCaseworkRequest(
     /// <summary>Optional guarded versions inspected by the caller. Legacy adapters may omit them.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, long>? ExpectedVersions { get; init; }
+    /// <summary>
+    /// Bulk "assign to me": the endpoint replaces <see cref="Assignee"/> with the authenticated
+    /// operator, because a client knows its display name but not its login identity. It is cleared
+    /// before the request reaches the queue, and skipped when false, so retained input hashes keep
+    /// their shape. Init-only preserves the positional constructor and deconstruction ABI.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool AssignToCurrentOperator { get; init; }
+
+    /// <summary>The durable dry-run action whose eligible rows and exact versions were reviewed.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PreviewBulkActionId { get; init; }
+
+    /// <summary>Trusted endpoint policy. It is never bound from the request body or included in receipt hashes.</summary>
+    [JsonIgnore]
+    public bool RequireReviewedPreview { get; init; }
 }
 
 public sealed record ReconciliationBulkCaseworkCaseResult(
@@ -785,6 +803,8 @@ public sealed record ReconciliationBulkCaseworkCaseResult(
     bool WouldSucceed,
     string? Error,
     ReconciliationBreakQueueItem? Item);
+
+public sealed record ReconciliationBulkReviewedCaseVersion(string BreakId, long Version);
 
 public sealed record ReconciliationBulkCaseworkResult(
     string BulkActionId,
@@ -795,6 +815,13 @@ public sealed record ReconciliationBulkCaseworkResult(
     int FailedCount,
     IReadOnlyList<ReconciliationBulkCaseworkCaseResult> Results)
 {
+    /// <summary>Protocol supported by a retained, version-bound dry-run receipt.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? ReviewProtocol { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ReconciliationBulkReviewedCaseVersion? ReviewedSuccessor { get; init; }
+
     /// <summary>Canonical hash of the complete admitted bulk request.</summary>
     public string InputHashSha256 { get; init; } = ComputeCompatibilityInputHash(
         BulkActionId,

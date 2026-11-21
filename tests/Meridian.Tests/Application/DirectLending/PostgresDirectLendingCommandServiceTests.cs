@@ -7,14 +7,109 @@ using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
+using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
 using NSubstitute;
 
 namespace Meridian.Tests.Application.DirectLending;
 
-public sealed class PostgresDirectLendingCommandServiceTests
+public sealed partial class PostgresDirectLendingCommandServiceTests
 {
+    [Theory]
+    [InlineData("loan.drawdown-booked", "{\"amount\":1000}")]
+    [InlineData("loan.daily-accrual-posted", "{\"interestAmount\":10}")]
+    [InlineData("loan.principal-payment-applied", "{\"amount\":1000}")]
+    [InlineData("loan.daily-accrual-reversed", "{\"interestAmount\":10}")]
+    public async Task LoanProjection_PreservesTypedCurrencyAcrossLineReconstruction(string eventType, string json)
+    {
+        var loanId = Guid.NewGuid();
+        using var payload = JsonDocument.Parse(json);
+        var projector = new LoanAccountingProjector(BuildLedgerJournalStore(), new AccountingPolicyService(), BuildSecurityMasterQueryService());
+        var writes = await projector.ProjectAsync(loanId, BuildContract(loanId), eventType,
+            new DateOnly(2026, 3, 24), payload, Guid.NewGuid(), new(null, null, Guid.NewGuid(), "synthetic", false), default);
+
+        var journal = writes.Should().ContainSingle().Subject.Entry;
+        journal.IsBalanced.Should().BeTrue();
+        journal.Lines.Should().OnlyContain(line => line.Currency != null &&
+            line.Currency.TransactionCurrency == "USD" && line.Currency.FunctionalCurrency == "USD" &&
+            line.Currency.FxRateToFunctional == 1m && line.Currency.TransactionDebit == line.Debit &&
+            line.Currency.TransactionCredit == line.Credit);
+    }
+
+    [Fact]
+    public async Task ConfiguredLoanProjection_UsesPinnedChartRetainedOwnerAndExactCustomBookPolicy()
+    {
+        var loanId = Guid.NewGuid();
+        var store = BuildLedgerJournalStore();
+        var period = (await store.ListPeriodsAsync()).Single();
+        var bookId = period.LedgerBookId!.Value;
+        store.ListPeriodsAsync(bookId, null, null, null, Arg.Any<CancellationToken>()).Returns([period]);
+        var book = new LedgerBookRecord(
+            bookId, "synthetic-entity", Guid.NewGuid(), FundStructureNodeKindDto.Fund, "Synthetic USD book", "USD",
+            period.OpenedAt, period.OpenedAt, AccountingBasis: AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: "synthetic-loan-book-policy", AccountingPolicyVersion: "v7");
+        store.GetLedgerBookAsync(bookId, Arg.Any<CancellationToken>()).Returns(book);
+        var policies = new AccountingPolicyService();
+        await policies.CreatePolicyAsync(new CreateAccountingPolicyRequest(book.AccountingBasis,
+            book.AccountingPolicyId, book.AccountingPolicyVersion, "Synthetic scoped loan book policy", new(2026, 1, 1),
+            FundProfileId: book.FundProfileId, FundStructureNodeId: book.FundStructureNodeId));
+        await policies.CreatePolicyAsync(new CreateAccountingPolicyRequest(book.AccountingBasis,
+            book.AccountingPolicyId, "v8", "Later default must not replace the book's pinned version", new(2026, 2, 1),
+            IsDefault: true, FundProfileId: book.FundProfileId, FundStructureNodeId: book.FundStructureNodeId));
+        var owners = Substitute.For<IFundProfileTenancyRegistry>();
+        var caller = Substitute.For<IFundScopeTenantAccessor>();
+        caller.ResolveCallerTenant().Returns("synthetic-tenant");
+        owners.ResolveAsync("synthetic-entity", Arg.Any<CancellationToken>())
+            .Returns(new FundProfileOwnership("synthetic-entity", "synthetic-tenant", "synthetic-company"));
+        var resolver = Substitute.For<IConfiguredLedgerAccountResolver>();
+        resolver.ResolveAsync(Arg.Any<ConfiguredLedgerAccountRequestDto>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var request = call.Arg<ConfiguredLedgerAccountRequestDto>();
+                return new ChartOfAccountsNodeDto(request.AccountPath, request.AccountPath,
+                    request.AccountPath == "Assets:Cash" ? "Cash" : "Loan Principal", request.ExpectedAccountType)
+                { AccountCode = request.AccountPath == "Assets:Cash" ? "1000" : "1500" };
+            });
+        var options = new DirectLendingOptions
+        {
+            LedgerBookId = bookId,
+            LedgerChartMappingRevision = "approved-chart-v1",
+            LedgerAccountPaths = new(StringComparer.OrdinalIgnoreCase)
+            {
+                ["LoanPrincipal"] = "Assets:Loans",
+                ["Cash"] = "Assets:Cash"
+            }
+        };
+        using var payload = JsonDocument.Parse("{\"amount\":1000}");
+        var projector = new LoanAccountingProjector(store, policies,
+            BuildSecurityMasterQueryService(), options, resolver, owners, caller);
+
+        var writes = await projector.ProjectAsync(loanId, BuildContract(loanId), "loan.drawdown-booked",
+            new DateOnly(2026, 3, 24), payload, Guid.NewGuid(), new(null, null, Guid.NewGuid(), "synthetic", false), default);
+
+        writes.Single().Entry.Lines.Select(line => line.Account.Name).Should().Equal("Loan Principal", "Cash");
+        writes.Single().Entry.Lines.Select(line => line.ChartAccount).Should().Equal(
+            new LedgerAccountChartReference("Assets:Loans", "approved-chart-v1", "1500"),
+            new LedgerAccountChartReference("Assets:Cash", "approved-chart-v1", "1000"));
+        writes.Single().AccountingBasis.Should().Be(AccountingBasisKindDto.Gaap);
+        writes.Single().AccountingPolicyId.Should().Be(book.AccountingPolicyId);
+        writes.Single().AccountingPolicyVersion.Should().Be(book.AccountingPolicyVersion);
+        await resolver.Received(2).ResolveAsync(Arg.Is<ConfiguredLedgerAccountRequestDto>(request =>
+            request.TenantId == "synthetic-tenant" && request.CompanyId == "synthetic-company" &&
+            request.LedgerBookId == bookId && request.ConfigurationVersion == "approved-chart-v1"), Arg.Any<CancellationToken>());
+        options.LedgerAccountPaths.Remove("Cash");
+        await FluentActions.Awaiting(() => projector.ProjectAsync(loanId, BuildContract(loanId), "loan.drawdown-booked",
+            new DateOnly(2026, 3, 24), payload, Guid.NewGuid(), new(null, null, Guid.NewGuid(), "synthetic", false), default))
+            .Should().ThrowAsync<LedgerValidationException>().WithMessage("*No configured chart mapping*");
+        options.LedgerAccountPaths["Cash"] = "Assets:Cash";
+        caller.ResolveCallerTenant().Returns("other-tenant");
+        await FluentActions.Awaiting(() => projector.ProjectAsync(loanId, BuildContract(loanId), "loan.drawdown-booked",
+            new DateOnly(2026, 3, 24), payload, Guid.NewGuid(), new(null, null, Guid.NewGuid(), "synthetic", false), default))
+            .Should().ThrowAsync<LedgerValidationException>().WithMessage("*outside the caller's tenant*");
+    }
+
     [Fact]
     public async Task ServiceFacade_DerivedRuns_PreserveRetryMetadata()
     {
@@ -350,6 +445,87 @@ public sealed class PostgresDirectLendingCommandServiceTests
             default,
             default,
             default);
+    }
+
+    [Fact]
+    public async Task RefundUnappliedCashAsync_RetryUnderARecordedExternalReference_IsRefusedWithoutSaving()
+    {
+        // PRD-115: a refund whose response was lost is retried with a fresh command id. The cash
+        // transaction write would be skipped as a duplicate, but the state, event and journal would not.
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var servicing = BuildServicing(loanId);
+        servicing = servicing with { Balances = servicing.Balances with { UnappliedCash = 2_000m } };
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        queryService.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, BuildContract(loanId), servicing));
+        var operations = Substitute.For<IDirectLendingOperationsStore>();
+        operations.GetCashTransactionsAsync(loanId, Arg.Any<CancellationToken>()).Returns(
+        [
+            new CashTransactionDto(Guid.NewGuid(), loanId, "UnappliedCashRefund", new DateOnly(2026, 4, 1), new DateOnly(2026, 4, 1),
+                new DateOnly(2026, 4, 1), 500m, CurrencyCode.USD, "wire-out-1", Guid.NewGuid(), DateTimeOffset.UtcNow, false)
+        ]);
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            operations,
+            queryService,
+            new LoanAccountingProjector(null, new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
+
+        var result = await service.RefundUnappliedCashAsync(loanId, new RefundUnappliedCashRequest(500m, new DateOnly(2026, 4, 1), "wire-out-1"));
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error!.Code.Should().Be(DirectLendingErrorCode.Conflict);
+        await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
+            default, default, default, default!, default!, default!, default, default, default!, default!, default, default, default, default);
+    }
+
+    [Theory]
+    [InlineData("loan.unapplied-cash-applied", 100, true)]
+    [InlineData("loan.mixed-payment-applied", 100, false)]
+    [InlineData("loan.unapplied-cash-applied", 200, false)]
+    public async Task ApplyUnappliedCashAsync_RetryOfACommittedCommand_ReturnsTheCommittedStateWithoutSaving(string recordedEventType, int recordedAmount, bool isReplay)
+    {
+        // PRD-115: the retry carries the same command id. Recomputing it would report a second,
+        // unsaved application (or a payload the store refuses as a conflict).
+        var loanId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var commandId = Guid.NewGuid();
+        var servicing = BuildServicing(loanId);
+        servicing = servicing with { Balances = servicing.Balances with { UnappliedCash = 900m } };
+        var stateStore = Substitute.For<IDirectLendingStateStore>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        queryService.LoadAggregateAsync(loanId, Arg.Any<CancellationToken>())
+            .Returns(new PersistedDirectLendingState(loanId, 7, BuildContract(loanId), servicing));
+        queryService.GetHistoryAsync(loanId, Arg.Any<CancellationToken>()).Returns(
+        [
+            new LoanEventLineageDto(Guid.NewGuid(), 7, recordedEventType, 3, new DateOnly(2026, 4, 1), DateTimeOffset.UtcNow,
+                $$"""{"loanId":"{{loanId}}","amount":{{recordedAmount}},"appliedAmount":{{recordedAmount}},"effectiveDate":"2026-04-01","externalRef":null}""",
+                null, null, commandId, "meridian.wpf", false)
+        ]);
+        var service = new PostgresDirectLendingCommandService(
+            stateStore,
+            Substitute.For<IDirectLendingOperationsStore>(),
+            queryService,
+            new LoanAccountingProjector(null, new AccountingPolicyService(), BuildSecurityMasterQueryService()),
+            new DirectLendingOptions { CurrentEventSchemaVersion = 3 });
+
+        var result = await service.ApplyUnappliedCashAsync(
+            loanId,
+            new ApplyUnappliedCashRequest(100m, new DateOnly(2026, 4, 1), null, null),
+            new DirectLendingCommandMetadataDto(commandId, null, null, "meridian.wpf", false));
+
+        if (isReplay)
+        {
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().BeSameAs(servicing, "the committed state is returned, not a second application");
+        }
+        else
+        {
+            result.Error!.Code.Should().Be(DirectLendingErrorCode.Conflict);
+        }
+
+        await stateStore.DidNotReceiveWithAnyArgs().SaveAsync(
+            default, default, default, default!, default!, default!, default, default, default!, default!, default, default, default, default);
     }
 
     [Fact]

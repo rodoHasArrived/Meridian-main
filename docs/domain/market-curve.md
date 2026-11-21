@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** core-team
-**Reviewed:** 2026-10-27
+**Reviewed:** 2026-11-12
 
 ## Definition
 
@@ -18,6 +18,15 @@ The seam lives in `Meridian.Contracts.SecurityMaster`: `SecurityCurveDefinitionD
 `SecurityCurveVersionDto`, `SecurityCurvePointDto`, `ISecurityCurveStore` and the pure rules in
 `SecurityCurveRules`. Stored curves live in the `security_master` schema under the governance log.
 The decision record is [ADR-026](../adr/026-stored-curves-and-valuation-seam.md).
+
+Typed rate ingestion retains original decimal text, units, observation date, publication time
+when supplied, vintage interval, retrieval time and transformation with each pillar. Observed
+fixings, forecast rates, assumptions and Treasury constant-maturity yields have distinct roles.
+Holding a fixing flat is an explicit forecast assumption; a Treasury par yield requires an
+externally reviewed construction with supplied discount factors. The FRED rates path re-verifies
+source facts and currency/index agreement before publication. It does not construct a zero curve
+from constant-maturity yields. Retries differing only in retrieval time return the original
+version and evidence atomically, including when another version was published in between.
 
 ## Relationships
 
@@ -109,8 +118,9 @@ bootstrapping from par or swap quotes and tenor-to-date resolution are not model
 factors above 1 or rising between pillars, and negative forward fixings (negative-rate currencies),
 are refused pending a definition flag and a projection that represents unfloored legs. Per-request
 pinning of a forward version, a knowledge-time cutoff for curves inside the projection, a persisted
-valuation receipt, the clean price and accrued interest split, scenarios other than Base, and curve
-ingest from vendors are not yet designed. Whether a model value may enter a close-price set, and how
+valuation receipt, the clean price and accrued interest split, and scenarios other than Base remain
+separate expansion work. Typed vendor ingestion currently supports FRED observations and reviewed
+construction; automatic par-curve bootstrapping remains unavailable. Whether a model value may enter a close-price set, and how
 the mark lane maps `SecurityValuationObservability` to the ledger's fair-value level, are decided
 with those lanes.
 

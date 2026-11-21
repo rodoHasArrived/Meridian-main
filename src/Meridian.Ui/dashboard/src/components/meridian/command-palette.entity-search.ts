@@ -1,166 +1,180 @@
 import { useEffect, useState } from "react";
-import {
-  searchSecurities as defaultSearchSecurities,
-  searchSymbolsQuery as defaultSearchSymbolsQuery,
-  type ApiRequestOptions
-} from "@/lib/api";
+import { getJson, type ApiRequestOptions } from "@/lib/api";
+import { isApiError } from "@/lib/api-errors";
+import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import { WORKSTATION_ROUTE_CATALOG, appendRouteQuery } from "@/lib/workspace";
-import { instrumentDossierRoute } from "@/lib/instrument-dossier-route";
-import type { SecurityMasterEntry, SymbolRecord } from "@/types";
 import type { CommandPaletteEntityItem } from "@/components/meridian/command-palette.view-model";
 
-const COMMAND_PALETTE_ENTITY_DEBOUNCE_MS = 250;
-const COMMAND_PALETTE_ENTITY_RESULT_LIMIT = 8;
+const SEARCH_DEBOUNCE_MS = 250;
+const MAX_QUERY_LENGTH = 256;
+const SYMBOL_RESULT_LIMIT = 8;
 
-export type CommandPaletteEntitySearchStatus = "idle" | "searching" | "ready" | "degraded" | "error";
+export interface WorkstationRecordSearchHit {
+  recordType: string;
+  recordId: string;
+  label: string;
+  scope: string;
+  asOfPosture: string;
+  status: string;
+  href: string;
+}
 
-export interface CommandPaletteEntitySearchState {
+export interface WorkstationRecordSearchResult {
+  items: WorkstationRecordSearchHit[];
+  isPartial: boolean;
+}
+
+interface CommandPaletteEntitySearchState {
   items: CommandPaletteEntityItem[];
-  status: CommandPaletteEntitySearchStatus;
+  status: "idle" | "searching" | "ready" | "degraded" | "error";
   error: string | null;
 }
 
-export interface CommandPaletteEntitySearchServices {
-  searchSymbols: (query: string, options?: ApiRequestOptions) => Promise<SymbolRecord[]>;
-  searchSecurities: (
-    query: string,
-    take?: number,
-    activeOnly?: boolean,
-    options?: ApiRequestOptions
-  ) => Promise<SecurityMasterEntry[]>;
+interface PaletteSymbol {
+  symbol: string;
+  status?: string;
 }
 
-const emptyEntitySearchState: CommandPaletteEntitySearchState = {
-  items: [],
-  status: "idle",
-  error: null
-};
+export interface CommandPaletteEntitySearchServices {
+  searchSymbols: (query: string, options?: ApiRequestOptions) => Promise<PaletteSymbol[]>;
+  searchRecords: (query: string, options?: ApiRequestOptions) => Promise<WorkstationRecordSearchResult>;
+}
 
-const defaultCommandPaletteEntitySearchServices: CommandPaletteEntitySearchServices = {
-  searchSymbols: defaultSearchSymbolsQuery,
-  searchSecurities: defaultSearchSecurities
+const idleState: CommandPaletteEntitySearchState = { items: [], status: "idle", error: null };
+const searchingState: CommandPaletteEntitySearchState = { items: [], status: "searching", error: null };
+
+const defaultSearchServices: CommandPaletteEntitySearchServices = {
+  searchSymbols: async (query, options) => {
+    const response = await getJson<{ results: PaletteSymbol[] } | PaletteSymbol[]>(
+      `${UI_API_ROUTES.SymbolsSearch}?${new URLSearchParams({ q: query })}`, options);
+    const results = Array.isArray(response) ? response : response?.results;
+    if (!Array.isArray(results)) {
+      throw new Error("Invalid market symbol search response");
+    }
+    return results;
+  },
+  searchRecords: (query, options) => getJson(
+    `${UI_API_ROUTES.WorkstationRecordSearch}?${new URLSearchParams({ q: query })}`, options)
 };
 
 export function useCommandPaletteEntitySearch({
   open,
   query,
-  services = defaultCommandPaletteEntitySearchServices
+  scopeKey = "",
+  services = defaultSearchServices
 }: {
   open: boolean;
   query: string;
+  scopeKey?: string;
   services?: CommandPaletteEntitySearchServices;
 }): CommandPaletteEntitySearchState {
-  const [state, setState] = useState<CommandPaletteEntitySearchState>(emptyEntitySearchState);
+  const [response, setResponse] = useState<{
+    query: string;
+    scopeKey: string;
+    services: CommandPaletteEntitySearchServices;
+    state: CommandPaletteEntitySearchState;
+  } | null>(null);
   const normalizedQuery = query.trim();
+  const enabled = open && normalizedQuery.length > 0 && normalizedQuery.length <= MAX_QUERY_LENGTH;
 
   useEffect(() => {
-    if (!open || normalizedQuery.length < 2) {
-      setState(emptyEntitySearchState);
+    setResponse(null);
+    if (!enabled) {
       return;
     }
 
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => {
-      setState((current) => ({ ...current, status: "searching", error: null }));
+    const options = { signal: controller.signal, allowDevelopmentFallback: false };
+    const timer = window.setTimeout(async () => {
+      const [recordResult, symbolResult] = await Promise.allSettled([
+        services.searchRecords(normalizedQuery, options),
+        services.searchSymbols(normalizedQuery, options)
+      ]);
+      if (controller.signal.aborted) {
+        return;
+      }
 
-      void Promise.allSettled([
-        services.searchSymbols(normalizedQuery, { signal: controller.signal }),
-        services.searchSecurities(normalizedQuery, COMMAND_PALETTE_ENTITY_RESULT_LIMIT, true, {
-          signal: controller.signal
-        })
-      ]).then(([symbolResult, securityResult]) => {
-        if (controller.signal.aborted) {
-          return;
+      const recordResponse = recordResult.status === "fulfilled" ? recordResult.value : null;
+      const symbols = symbolResult.status === "fulfilled" ? symbolResult.value : [];
+      // A refused family contributes neither a hit nor an error that distinguishes a hidden match.
+      const recordFailure = recordResult.status === "rejected" && !isAccessRefusal(recordResult.reason);
+      const symbolFailure = symbolResult.status === "rejected" && !isAccessRefusal(symbolResult.reason);
+      const degraded = recordResponse?.isPartial || recordFailure || symbolFailure;
+      setResponse({
+        query: normalizedQuery,
+        scopeKey,
+        services,
+        state: {
+          items: buildCommandPaletteEntityItems(recordResponse?.items ?? [], symbols, normalizedQuery),
+          status: recordFailure && symbolFailure ? "error" : degraded ? "degraded" : "ready",
+          error: degraded ? "Some record sources are temporarily unavailable" : null
         }
-
-        const symbols = symbolResult.status === "fulfilled" ? symbolResult.value : [];
-        const securities = securityResult.status === "fulfilled" ? securityResult.value : [];
-        const failures = [
-          symbolResult.status === "rejected" ? "symbol search" : null,
-          securityResult.status === "rejected" ? "security search" : null
-        ].filter((failure): failure is string => failure !== null);
-
-        setState({
-          items: buildCommandPaletteEntityItems(symbols, securities),
-          status: failures.length === 0 ? "ready" : failures.length === 2 ? "error" : "degraded",
-          error: failures.length > 0 ? `${failures.join(" and ")} unavailable` : null
-        });
       });
-    }, COMMAND_PALETTE_ENTITY_DEBOUNCE_MS);
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => {
-      window.clearTimeout(timeout);
+      window.clearTimeout(timer);
       controller.abort();
     };
-  }, [normalizedQuery, open, services]);
+  }, [enabled, normalizedQuery, scopeKey, services]);
 
-  return state;
+  if (!enabled) {
+    return idleState;
+  }
+  return response?.query === normalizedQuery && response.scopeKey === scopeKey && response.services === services
+    ? response.state
+    : searchingState;
+}
+
+function isAccessRefusal(reason: unknown) {
+  return isApiError(reason) && (reason.status === 401 || reason.status === 403);
 }
 
 export function buildCommandPaletteEntityItems(
-  symbols: SymbolRecord[],
-  securities: SecurityMasterEntry[]
+  records: WorkstationRecordSearchHit[],
+  symbols: PaletteSymbol[],
+  query: string
 ): CommandPaletteEntityItem[] {
-  return [
-    ...dedupeSymbols(symbols).slice(0, COMMAND_PALETTE_ENTITY_RESULT_LIMIT).map(buildSymbolEntityItem),
-    ...dedupeSecurities(securities).slice(0, COMMAND_PALETTE_ENTITY_RESULT_LIMIT).map(buildSecurityEntityItem)
-  ];
+  const term = query.toUpperCase();
+  const eligibleSymbols = symbols.filter((record) => {
+    const symbol = record.symbol.toUpperCase();
+    return symbol === term || (term.length >= 2 && symbol.startsWith(term));
+  });
+  const symbolItems = [...new Map(eligibleSymbols.map((record) => [record.symbol.toUpperCase(), record])).values()]
+    .sort((left, right) => Number(right.symbol.toUpperCase() === term) - Number(left.symbol.toUpperCase() === term)
+      || left.symbol.localeCompare(right.symbol))
+    .slice(0, SYMBOL_RESULT_LIMIT)
+    .map(buildSymbolEntityItem);
+
+  return [...records.map(buildRecordEntityItem), ...symbolItems];
 }
 
-function buildSymbolEntityItem(record: SymbolRecord): CommandPaletteEntityItem {
+function buildRecordEntityItem(record: WorkstationRecordSearchHit): CommandPaletteEntityItem {
+  const status = record.status.replace(/([a-z\d])([A-Z])/g, "$1 $2");
+  const description = `${record.scope} · ${record.asOfPosture}`;
+  return {
+    id: `record:${record.href}`,
+    label: record.label,
+    description,
+    route: record.href,
+    sourceLabel: record.recordType,
+    statusLabel: status,
+    recordId: record.recordId,
+    commandLabel: record.label,
+    ariaLabel: `Open ${record.recordType} ${record.label}, ${record.recordId}, ${record.scope}, ${record.asOfPosture}, ${status}`
+  };
+}
+
+function buildSymbolEntityItem(record: PaletteSymbol): CommandPaletteEntityItem {
   const symbol = record.symbol.toUpperCase();
-  const provider = record.provider ? `Provider ${record.provider}` : "Provider not assigned";
-  const history = record.hasHistoricalData ? "Historical data retained" : "No historical data retained";
   return {
     id: `symbol:${symbol}`,
     label: symbol,
-    description: `${provider} - ${record.status} - ${history} - ${record.eventCount} event${record.eventCount === 1 ? "" : "s"}`,
+    description: "Market data catalog",
     route: appendRouteQuery(WORKSTATION_ROUTE_CATALOG.dataQuotes, { symbol }),
     sourceLabel: "Symbol",
-    statusLabel: record.status,
+    statusLabel: record.status ?? "Configured",
     commandLabel: `Open ${symbol} quotes`,
     ariaLabel: `Open symbol ${symbol} in Live quotes`
   };
-}
-
-function buildSecurityEntityItem(entry: SecurityMasterEntry): CommandPaletteEntityItem {
-  const identifier = entry.classification.primaryIdentifierValue ?? entry.securityId;
-  const assetClass = entry.classification.assetClass;
-  return {
-    id: `security:${entry.securityId}`,
-    label: entry.displayName,
-    description: `${assetClass} - ${identifier} - ${entry.status}`,
-    route: instrumentDossierRoute(entry.securityId),
-    sourceLabel: "Security",
-    statusLabel: entry.status,
-    commandLabel: `Open ${entry.displayName} instrument dossier`,
-    ariaLabel: `Open security ${entry.displayName} in instrument dossier`
-  };
-}
-
-function dedupeSymbols(symbols: SymbolRecord[]): SymbolRecord[] {
-  const seen = new Set<string>();
-  const result: SymbolRecord[] = [];
-  for (const record of symbols) {
-    const key = record.symbol.toUpperCase();
-    if (seen.has(key)) {
-      continue;
-    }
-    seen.add(key);
-    result.push(record);
-  }
-  return result;
-}
-
-function dedupeSecurities(securities: SecurityMasterEntry[]): SecurityMasterEntry[] {
-  const seen = new Set<string>();
-  const result: SecurityMasterEntry[] = [];
-  for (const entry of securities) {
-    if (seen.has(entry.securityId)) {
-      continue;
-    }
-    seen.add(entry.securityId);
-    result.push(entry);
-  }
-  return result;
 }

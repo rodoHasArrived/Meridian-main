@@ -1,3 +1,4 @@
+using Meridian.Core.Config;
 using System.Collections.Concurrent;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -22,28 +23,34 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
     private readonly HttpClient _http;
     private readonly RateLimiter _rateLimiter;
     private readonly ConcurrentDictionary<string, SymbolResolution> _cache = new();
-    private readonly string? _apiKey;
+    private readonly OpenFigiRequestCredentials _credentials;
     private readonly ILogger _log;
     private bool _disposed;
 
     public string Name => "openfigi";
 
-    public OpenFigiSymbolResolver(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
+    public OpenFigiSymbolResolver(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null,
+        IProviderCredentialResolver? credentialResolver = null,
+        OpenFigiConfig? options = null)
     {
-        _apiKey = apiKey;
+        _credentials = new OpenFigiRequestCredentials(apiKey, credentialResolver, useEnvironmentFallback: false);
         _log = log ?? LoggingSetup.ForContext<OpenFigiSymbolResolver>();
 
         // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
         _http = httpClient ?? HttpClientFactoryProvider.CreateClient(HttpClientNames.OpenFigi);
         _http.DefaultRequestHeaders.Add("Accept", "application/json");
 
-        if (!string.IsNullOrEmpty(apiKey))
-        {
-            _http.DefaultRequestHeaders.Add("X-OPENFIGI-APIKEY", apiKey);
-        }
-
         // Rate limit: 25/min without key, 250/min with key
-        var maxRequests = string.IsNullOrEmpty(apiKey) ? 25 : 250;
+        var tier = BackfillProviderCatalog.GetTier("openfigi", options?.TierId ?? "free");
+        var configured = options?.RateLimitPerMinute ?? tier.RateLimitPerMinute!.Value;
+        if (configured < 1 || configured > tier.RateLimitPerMinute)
+            throw new ArgumentOutOfRangeException(nameof(options), "OpenFIGI limit exceeds the selected tier ceiling.");
+        // A dynamically resolved credential can disappear or change. Preserve the unauthenticated
+        // ceiling until request-time credential authority can supply a different limiter.
+        var safeCeiling = credentialResolver is not null || string.IsNullOrEmpty(apiKey)
+            ? BackfillProviderCatalog.GetTier("openfigi", "free").RateLimitPerMinute!.Value
+            : tier.RateLimitPerMinute!.Value;
+        var maxRequests = Math.Min(configured, safeCeiling);
         _rateLimiter = new RateLimiter(maxRequests, TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(100), _log);
     }
 
@@ -82,7 +89,8 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
 
             _log.Information("Resolving symbol {Symbol} via OpenFIGI", symbol);
 
-            using var response = await _http.PostAsJsonAsync($"{BaseUrl}/mapping", request, ct).ConfigureAwait(false);
+            using var httpRequest = await _credentials.CreateRequestAsync($"{BaseUrl}/mapping", request, ct).ConfigureAwait(false);
+            using var response = await _http.SendAsync(httpRequest, ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -232,7 +240,8 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
                 }
             };
 
-            using var response = await _http.PostAsJsonAsync($"{BaseUrl}/mapping", request, ct).ConfigureAwait(false);
+            using var httpRequest = await _credentials.CreateRequestAsync($"{BaseUrl}/mapping", request, ct).ConfigureAwait(false);
+            using var response = await _http.SendAsync(httpRequest, ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -253,7 +262,7 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
                 ))
                 .ToList();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             _log.Error(ex, "Failed to search for {Query}", query);
             return Array.Empty<SymbolSearchResult>();

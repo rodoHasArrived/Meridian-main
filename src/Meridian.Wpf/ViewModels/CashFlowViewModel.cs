@@ -2,9 +2,11 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Services.Services.Comparisons;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -13,7 +15,7 @@ namespace Meridian.Wpf.ViewModels;
 /// Loads a <see cref="RunCashFlowSummary"/> for a strategy run and exposes
 /// both the raw entry list and the time-bucketed cash ladder to the view.
 /// </summary>
-public sealed class CashFlowViewModel : BindableBase
+public sealed partial class CashFlowViewModel : BindableBase
 {
     private readonly StrategyRunWorkspaceService _runService;
     private readonly NavigationService _navigationService;
@@ -316,18 +318,22 @@ public sealed class CashFlowViewModel : BindableBase
     /// dependencies from the static singleton instances.
     /// </summary>
     public CashFlowViewModel()
-        : this(StrategyRunWorkspaceService.Instance, NavigationService.Instance)
+        : this(StrategyRunWorkspaceService.Instance, NavigationService.Instance,
+            periodComparisonClient: new PeriodComparisonApiClient(Meridian.Ui.Services.ApiClientService.Instance))
     {
     }
 
     internal CashFlowViewModel(
         StrategyRunWorkspaceService runService,
         NavigationService navigationService,
-        StrategyRunContinuityService? continuityService = null)
+        StrategyRunContinuityService? continuityService = null,
+        IPeriodComparisonApiClient? periodComparisonClient = null)
     {
         _runService = runService ?? throw new ArgumentNullException(nameof(runService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _continuityService = continuityService;
+        _periodComparisonClient = periodComparisonClient;
+        LoadPortfolioLadderComparisonCommand = new AsyncRelayCommand(LoadPortfolioLadderComparisonAsync, () => _periodComparisonClient is not null);
 
         EntriesTable = new WorkstationTableModel<CashFlowEntryDto>(
             Entries,
@@ -410,7 +416,7 @@ public sealed class CashFlowViewModel : BindableBase
     {
         _runId = summary.RunId;
         Title = $"Cash Flow ({summary.RunId[..Math.Min(8, summary.RunId.Length)]})";
-        AsOfText = summary.AsOf.LocalDateTime.ToString("g");
+        AsOfText = UtcFormat.FormatDisplayTimestamp(summary.AsOf);
         TotalEntriesText = summary.TotalEntries.ToString("N0");
         TotalInflowsText = summary.TotalInflows.ToString("C2");
         TotalOutflowsText = summary.TotalOutflows.ToString("C2");
@@ -639,7 +645,7 @@ public sealed class CashFlowViewModel : BindableBase
                 selected.Amount >= 0 ? WorkspaceTone.Success : WorkspaceTone.Warning),
             Facts =
             [
-                new("Timestamp", selected.Timestamp.LocalDateTime.ToString("g")),
+                new("Timestamp", UtcFormat.FormatDisplayTimestamp(selected.Timestamp)),
                 new("Type", selected.EventKind),
                 new("Symbol", hasSymbol ? selected.Symbol! : "-"),
                 new("Amount", selected.Amount.ToString("C2")),
@@ -661,7 +667,7 @@ public sealed class CashFlowViewModel : BindableBase
     internal static InspectorPanelModel BuildLadderBucketInspector(CashLadderBucketDto selected)
         => new()
         {
-            Title = $"{selected.BucketStart.LocalDateTime:yyyy-MM-dd} to {selected.BucketEnd.LocalDateTime:yyyy-MM-dd}",
+            Title = $"{selected.BucketStart.UtcDateTime:yyyy-MM-dd} to {selected.BucketEnd.UtcDateTime:yyyy-MM-dd}",
             Subtitle = "Cash ladder bucket",
             Detail = "Review the projected inflow and outflow bucket before using cash posture in run review.",
             Badge = new WorkstationBadgeModel(
@@ -671,8 +677,8 @@ public sealed class CashFlowViewModel : BindableBase
                 selected.NetFlow >= 0 ? WorkspaceTone.Success : WorkspaceTone.Warning),
             Facts =
             [
-                new("Start", selected.BucketStart.LocalDateTime.ToString("g")),
-                new("End", selected.BucketEnd.LocalDateTime.ToString("g")),
+                new("Start", UtcFormat.FormatDisplayTimestamp(selected.BucketStart)),
+                new("End", UtcFormat.FormatDisplayTimestamp(selected.BucketEnd)),
                 new("Inflows", selected.ProjectedInflows.ToString("C2")),
                 new("Outflows", selected.ProjectedOutflows.ToString("C2")),
                 new("Currency", selected.Currency),

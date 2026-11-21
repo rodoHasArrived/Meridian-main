@@ -9,49 +9,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Execution.Services;
 
-/// <summary>Lifecycle of a parked risk escalation.</summary>
-public enum RiskEscalationStatus
-{
-    PendingApproval,
-    Approved,
-    Denied,
-    Released
-}
-
-/// <summary>
-/// An order parked by the pre-trade risk gate awaiting governed operator approval.
-/// The original <see cref="OrderRequest"/> is retained so an approval can release
-/// exactly the order that was evaluated, never a caller-supplied variant.
-/// </summary>
-public sealed record RiskEscalationEntry(
-    string EscalationId,
-    OrderRequest Request,
-    string Reason,
-    string? RuleName,
-    string? Actor,
-    string? RunId,
-    string? CorrelationId,
-    DateTimeOffset ParkedAt,
-    RiskEscalationStatus Status,
-    string? ResolvedBy = null,
-    string? ResolutionReason = null,
-    DateTimeOffset? ResolvedAt = null,
-    // Release is a distinct act from approval: overwriting the approver's identity and
-    // timestamp when the order is later released would claim the approver performed the
-    // release and lose when the decision was actually made.
-    string? ReleasedBy = null,
-    DateTimeOffset? ReleasedAt = null,
-    bool ReleaseInFlight = false,
-    // Server-written marker recording that the entry's Actor binding was established by
-    // the current Park path. Clients never controlled this record field — unlike request
-    // metadata, which was unreserved before the retained-submitter migration — so a null
-    // value reliably identifies a pre-migration entry whose identity binding cannot be
-    // trusted.
-    string? SubmitterProvenance = null);
-
-/// <summary>Persisted snapshot of the governed-approval queue.</summary>
-public sealed record RiskEscalationSnapshot(IReadOnlyList<RiskEscalationEntry> Entries);
-
 /// <summary>
 /// Location of the durable governed-approval queue snapshot.
 /// </summary>
@@ -84,7 +41,7 @@ public sealed record RiskEscalationQueueOptions(
 /// executable order than the risk desk reviewed. Queue transitions persist atomically so
 /// parked decisions and armed approvals survive process restarts.
 /// </summary>
-public sealed class RiskEscalationQueueService : IAsyncDisposable
+public sealed class RiskEscalationQueueService : IRiskEscalationQueue, IAsyncDisposable
 {
     /// <summary>Order-metadata key carrying the escalation id(s) of granted governed approvals.</summary>
     public const string ApprovalMetadataKey = "riskEscalationId";
@@ -101,7 +58,7 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     /// position, while notional-based rules measure only the exposure being added (the
     /// snapshot already reserves the working order at its current size).
     /// </summary>
-    public const string IncrementalNotionalMetadataKey = "riskIncrementalNotional";
+    public const string IncrementalNotionalMetadataKey = RiskEscalationMetadata.IncrementalNotionalMetadataKey;
 
     /// <summary>
     /// Order-metadata flag marking a probe evaluation: the rules should decide, but an
@@ -109,7 +66,7 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     /// escalated amendment could never be released as a modification and would leave an
     /// unusable approval behind.
     /// </summary>
-    public const string EvaluationOnlyMetadataKey = "riskEvaluationOnly";
+    public const string EvaluationOnlyMetadataKey = RiskEscalationMetadata.EvaluationOnlyMetadataKey;
 
     /// <summary>
     /// Order-metadata key carrying the original submitting operator across a chained
@@ -130,6 +87,11 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
     private readonly RiskEscalationQueueOptions _options;
     private readonly Lock _resolveLock = new();
     private readonly ConcurrentDictionary<Task, byte> _pendingAuditWrites = new();
+
+    // Typed authority the OMS stages for an order while its risk validation runs, keyed by client
+    // order id, so a park during that validation retains the authority in the same durable write
+    // as the entry itself.
+    private readonly ConcurrentDictionary<string, OrderSubmissionAuthorityRecord> _stagedAuthority = new(StringComparer.Ordinal);
 
     public RiskEscalationQueueService(
         ILogger<RiskEscalationQueueService> logger,
@@ -183,7 +145,13 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
             CorrelationId: correlationId,
             ParkedAt: DateTimeOffset.UtcNow,
             Status: RiskEscalationStatus.PendingApproval,
-            SubmitterProvenance: "parked");
+            SubmitterProvenance: "parked",
+            // The authority the OMS staged for this order, persisted with the entry, so no window
+            // exists in which a parked typed order has no retained authority.
+            Authority: request.ClientOrderId is { } stagedOrderId
+                && _stagedAuthority.TryGetValue(stagedOrderId, out var stagedAuthority)
+                ? stagedAuthority
+                : null);
 
         lock (_resolveLock)
         {
@@ -339,6 +307,61 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
         _entries.TryGetValue(escalationId, out var entry) ? entry : null;
 
     /// <summary>
+    /// Stages the typed authority an order is being submitted under while its risk validation
+    /// runs. A park of that order (by client order id) during validation retains the authority in
+    /// the entry's own durable write. Dispose the result when validation ends.
+    /// </summary>
+    internal IDisposable StageAuthority(string clientOrderId, OrderSubmissionAuthorityRecord authority)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(clientOrderId);
+        ArgumentNullException.ThrowIfNull(authority);
+        _stagedAuthority[clientOrderId] = authority;
+        return new StagedAuthority(_stagedAuthority, clientOrderId, authority);
+    }
+
+    private sealed class StagedAuthority(
+        ConcurrentDictionary<string, OrderSubmissionAuthorityRecord> staged,
+        string clientOrderId,
+        OrderSubmissionAuthorityRecord authority) : IDisposable
+    {
+        public void Dispose() => staged.TryRemove(KeyValuePair.Create(clientOrderId, authority));
+    }
+
+    /// <summary>
+    /// Retains the typed authority a parked order was submitted under, so its release is judged
+    /// by that authority. Attaches once, only to a pending entry, and only when the snapshot can be
+    /// persisted; otherwise the entry is left unchanged and its release stays on the untyped path,
+    /// which refuses live orders.
+    /// </summary>
+    /// <returns>True when the authority is attached and durably retained.</returns>
+    public bool TryAttachAuthority(string escalationId, OrderSubmissionAuthorityRecord authority)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(escalationId);
+        ArgumentNullException.ThrowIfNull(authority);
+        lock (_resolveLock)
+        {
+            if (!_entries.TryGetValue(escalationId, out var entry)
+                || entry.Status != RiskEscalationStatus.PendingApproval
+                || entry.Authority is not null)
+            {
+                return false;
+            }
+
+            _entries[escalationId] = entry with { Authority = authority };
+            if (!TryPersistSnapshotLocked())
+            {
+                _entries[escalationId] = entry;
+                _logger.LogError(
+                    "Typed authority for escalation {EscalationId} was not retained: the snapshot could not be persisted",
+                    escalationId);
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Approves a pending escalation, arming a one-shot release of the parked order.
     /// Returns the updated entry, or <see langword="null"/> when the entry does not exist
     /// or is no longer pending.
@@ -407,7 +430,7 @@ public sealed class RiskEscalationQueueService : IAsyncDisposable
 
     /// <summary>Joins escalation ids into a single governed-approval token value.</summary>
     public static string JoinTokens(IEnumerable<string> escalationIds) =>
-        string.Join(TokenSeparator, escalationIds.Distinct(StringComparer.OrdinalIgnoreCase));
+        RiskEscalationMetadata.JoinTokens(escalationIds);
 
     private RiskEscalationEntry? TryConsumeSingleApproval(OrderRequest request, string escalationId)
     {

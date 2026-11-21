@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * AsyncCombobox — type-ahead picker over a large or server-backed option set (the "one of
  * 40k instruments" control). Debounced async loading, a windowed option list (only visible
@@ -13,6 +14,11 @@
  *   minChars={1} placeholder="Symbol…" />
  */
 export interface AsyncComboboxProps<O = any> {
+  /** Input identity for an external label. Generated per instance when omitted. */
+  id?: string;
+  /** Accessible input and result-list name. @default "Search options" */
+  "aria-label"?: string;
+  disabled?: boolean;
   value?: O | null;
   onChange?: (option: O) => void;
   /** Debounced, cancelable. Return the option array (sliced to maxRows). */
@@ -30,4 +36,4 @@ export interface AsyncComboboxProps<O = any> {
   /** Cap rows kept in memory. @default 200 */
   maxRows?: number;
 }
-export declare function AsyncCombobox<O = any>(props: AsyncComboboxProps<O>): JSX.Element;
+export declare function AsyncCombobox<O = any>(props: AsyncComboboxProps<O>): React.JSX.Element;

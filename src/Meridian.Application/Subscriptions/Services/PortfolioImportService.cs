@@ -14,7 +14,7 @@ namespace Meridian.Application.Subscriptions.Services;
 /// Service for importing symbols from broker portfolios.
 /// Supports Alpaca, Interactive Brokers, and manual entry.
 /// </summary>
-public sealed class PortfolioImportService
+public sealed partial class PortfolioImportService
 {
     private const NumberStyles ProviderDecimalStyles = NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint;
     private readonly ConfigStore _configStore;
@@ -71,6 +71,7 @@ public sealed class PortfolioImportService
         try
         {
             var portfolio = await FetchAlpacaPortfolioAsync(alpacaConfig, ct);
+            RequireSelectedAccount(portfolio, options.BrokerAccountId);
             return await ProcessPortfolioAsync(portfolio, options, ct);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
@@ -106,7 +107,7 @@ public sealed class PortfolioImportService
 
         try
         {
-            var portfolio = await FetchInteractiveBrokersPortfolioAsync(clientPortalConfig, ct);
+            var portfolio = await FetchInteractiveBrokersPortfolioAsync(clientPortalConfig, ct, options.BrokerAccountId);
             return await ProcessPortfolioAsync(portfolio, options, ct);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
@@ -153,16 +154,22 @@ public sealed class PortfolioImportService
     /// <summary>
     /// Get portfolio summary without importing.
     /// </summary>
-    public async Task<PortfolioSummary?> GetPortfolioSummaryAsync(string broker, CancellationToken ct = default)
+    public Task<PortfolioSummary?> GetPortfolioSummaryAsync(string broker, CancellationToken ct = default)
+        => GetPortfolioSummaryAsync(broker, null, ct);
+
+    public async Task<PortfolioSummary?> GetPortfolioSummaryAsync(string broker, string? accountId, CancellationToken ct = default)
     {
         var config = _configStore.Load();
 
-        return broker.ToLowerInvariant() switch
+        var portfolio = broker.ToLowerInvariant() switch
         {
             "alpaca" when config.Alpaca is not null => await FetchAlpacaPortfolioAsync(config.Alpaca, ct),
-            "ib" or "interactivebrokers" when config.IBClientPortal is { Enabled: true } => await FetchInteractiveBrokersPortfolioAsync(config.IBClientPortal, ct),
+            "ib" or "interactivebrokers" when config.IBClientPortal is { Enabled: true } => await FetchInteractiveBrokersPortfolioAsync(config.IBClientPortal, ct, accountId),
             _ => null
         };
+        if (portfolio is not null)
+            RequireSelectedAccount(portfolio, accountId);
+        return portfolio;
     }
 
     /// <summary>
@@ -195,8 +202,8 @@ public sealed class PortfolioImportService
         using var response = await _httpClient.SendAsync(request, ct);
         response.EnsureSuccessStatusCode();
 
-        var positionsJson = await response.Content.ReadFromJsonAsync<AlpacaPosition[]>(
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
+        var positionsJson = await response.Content.ReadFromJsonAsync(BrokerImportJsonContext.Default.AlpacaPositionArray, ct)
+            ?? throw new InvalidDataException("Alpaca returned no position population.");
 
         // Also get account info
         using var accountRequest = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/v2/account");
@@ -206,13 +213,15 @@ public sealed class PortfolioImportService
         using var accountResponse = await _httpClient.SendAsync(accountRequest, ct);
         accountResponse.EnsureSuccessStatusCode();
 
-        var account = await accountResponse.Content.ReadFromJsonAsync<AlpacaAccount>(
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
+        var account = await accountResponse.Content.ReadFromJsonAsync(BrokerImportJsonContext.Default.AlpacaAccount, ct)
+            ?? throw new InvalidDataException("Alpaca returned no account evidence.");
+        if (string.IsNullOrWhiteSpace(account.AccountNumber))
+            throw new InvalidDataException("Alpaca account identity is missing.");
 
         var positions = (positionsJson ?? Array.Empty<AlpacaPosition>())
             .Select(p => new PortfolioPosition(
-                Symbol: p.Symbol,
-                Quantity: decimal.Parse(p.Qty ?? "0", ProviderDecimalStyles, CultureInfo.InvariantCulture),
+                Symbol: RequireSymbol(p.Symbol),
+                Quantity: ParseRequiredProviderDecimal(p.Qty, $"quantity for {p.Symbol}"),
                 MarketValue: ParseProviderDecimal(p.MarketValue),
                 AverageCost: ParseProviderDecimal(p.AvgEntryPrice),
                 UnrealizedPnL: ParseProviderDecimal(p.UnrealizedPl),
@@ -243,7 +252,7 @@ public sealed class PortfolioImportService
     /// with Client Portal enabled. For fully automated integration, consider using IBAutomater
     /// or the official TWS API with the EnhancedIBConnectionManager.
     /// </remarks>
-    private async Task<PortfolioSummary> FetchInteractiveBrokersPortfolioAsync(IBClientPortalOptions clientPortalConfig, CancellationToken ct)
+    private async Task<PortfolioSummary> FetchInteractiveBrokersPortfolioAsync(IBClientPortalOptions clientPortalConfig, CancellationToken ct, string? selectedAccount = null)
     {
         var clientPortalUrl = clientPortalConfig.BaseUrl.TrimEnd('/');
 
@@ -268,36 +277,59 @@ public sealed class PortfolioImportService
                     $"IB Client Portal not available at {clientPortalUrl}. Please ensure IB Gateway or TWS is running with Client Portal enabled.");
             }
 
-            var accounts = await response.Content.ReadFromJsonAsync<IbAccount[]>(
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
+            var accounts = await response.Content.ReadFromJsonAsync(BrokerImportJsonContext.Default.IbAccountArray, ct);
 
             if (accounts is null || accounts.Length == 0)
             {
                 throw new InvalidOperationException("No IB accounts found.");
             }
 
-            var accountId = accounts[0].AccountId ?? "unknown";
+            var accountId = string.IsNullOrWhiteSpace(selectedAccount)
+                ? accounts.Length == 1 ? accounts[0].AccountId : throw new InvalidDataException("Select an IB account explicitly when multiple accounts are available.")
+                : accounts.SingleOrDefault(a => a.AccountId == selectedAccount)?.AccountId;
+            if (string.IsNullOrWhiteSpace(accountId))
+                throw new InvalidDataException("The selected IB account is unavailable or has no identity.");
+            var escapedAccount = Uri.EscapeDataString(accountId);
 
             // Get positions
-            using var posRequest = new HttpRequestMessage(HttpMethod.Get,
-                new Uri(baseUri, $"/v1/api/portfolio/{accountId}/positions/0"));
+            var ibPositions = new List<IbPosition>();
+            var pageHashes = new HashSet<string>(StringComparer.Ordinal);
+            for (var page = 0; ; page++)
+            {
+                if (page >= 10_000)
+                    throw new InvalidDataException("IB position pagination did not terminate.");
+                using var posRequest = new HttpRequestMessage(HttpMethod.Get,
+                    new Uri(baseUri, $"/v1/api/portfolio/{escapedAccount}/positions/{page}"));
+                using var posResponse = await ibClient.SendAsync(posRequest, ct);
+                posResponse.EnsureSuccessStatusCode();
+                var batch = await posResponse.Content.ReadFromJsonAsync(BrokerImportJsonContext.Default.IbPositionArray, ct)
+                    ?? throw new InvalidDataException("IB returned no position population.");
+                if (batch.Length == 0)
+                    break;
+                var pageHash = Meridian.Contracts.Integrity.Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(batch, BrokerImportJsonContext.Default.IbPositionArray));
+                if (!pageHashes.Add(pageHash))
+                    throw new InvalidDataException("IB repeated a position page; account coverage is incomplete.");
+                ibPositions.AddRange(batch);
+            }
+            using var summaryRequest = new HttpRequestMessage(HttpMethod.Get,
+                new Uri(baseUri, $"/v1/api/portfolio/{escapedAccount}/summary"));
+            using var summaryResponse = await ibClient.SendAsync(summaryRequest, ct);
+            summaryResponse.EnsureSuccessStatusCode();
+            using var summary = await JsonDocument.ParseAsync(await summaryResponse.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
+            var cash = ReadIbSummaryAmount(summary.RootElement, "cashbalance")
+                ?? ReadIbSummaryAmount(summary.RootElement, "totalcashvalue");
+            var equity = ReadIbSummaryAmount(summary.RootElement, "netliquidation");
 
-            using var posResponse = await ibClient.SendAsync(posRequest, ct);
-            posResponse.EnsureSuccessStatusCode();
-            var ibPositions = await posResponse.Content.ReadFromJsonAsync<IbPosition[]>(
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }, ct);
-
-            var positions = (ibPositions ?? Array.Empty<IbPosition>())
-                .Where(p => !string.IsNullOrEmpty(p.Ticker))
+            var positions = ibPositions
                 .Select(p => new PortfolioPosition(
-                    Symbol: p.Ticker!,
-                    Quantity: p.Position,
+                    Symbol: RequireSymbol(p.Ticker),
+                    Quantity: p.Position ?? throw new InvalidDataException($"IB quantity for {p.Ticker} is missing."),
                     MarketValue: p.MktValue,
                     AverageCost: p.AvgCost,
                     UnrealizedPnL: p.UnrealizedPnl,
                     AssetClass: p.AssetClass,
                     Exchange: p.ListingExchange,
-                    Currency: p.Currency ?? "USD",
+                    Currency: string.IsNullOrWhiteSpace(p.Currency) ? throw new InvalidDataException($"IB currency for {p.Ticker} is missing.") : p.Currency,
                     Side: p.Position >= 0 ? "long" : "short"
                 ))
                 .ToArray();
@@ -305,12 +337,12 @@ public sealed class PortfolioImportService
             return new PortfolioSummary(
                 Broker: "interactivebrokers",
                 AccountId: accountId,
-                TotalValue: positions.Sum(p => p.MarketValue ?? 0),
-                CashBalance: null,
+                TotalValue: equity?.Amount,
+                CashBalance: cash?.Amount,
                 BuyingPower: null,
                 Positions: positions,
                 RetrievedAt: DateTimeOffset.UtcNow,
-                Currency: "USD"
+                Currency: cash?.Currency ?? equity?.Currency ?? throw new InvalidDataException("IB account currency is missing.")
             );
         }
         catch (HttpRequestException)
@@ -320,19 +352,14 @@ public sealed class PortfolioImportService
         }
     }
 
-    private async Task<PortfolioImportResult> ProcessPortfolioAsync(
-        PortfolioSummary portfolio,
-        PortfolioImportOptions options,
-        CancellationToken ct)
+    public static IReadOnlyList<PortfolioPosition> SelectPositions(PortfolioSummary portfolio, PortfolioImportOptions options)
     {
         var excludeSymbols = new HashSet<string>(
             options.ExcludeSymbols ?? Array.Empty<string>(),
             StringComparer.OrdinalIgnoreCase);
 
-        var errors = new List<string>();
-
         // Filter positions based on options
-        var filteredPositions = portfolio.Positions
+        return portfolio.Positions
             .Where(p =>
             {
                 if (excludeSymbols.Contains(p.Symbol))
@@ -357,6 +384,16 @@ public sealed class PortfolioImportService
                 return true;
             })
             .ToList();
+
+    }
+
+    public async Task<PortfolioImportResult> ProcessPortfolioAsync(
+        PortfolioSummary portfolio,
+        PortfolioImportOptions options,
+        CancellationToken ct)
+    {
+        var filteredPositions = SelectPositions(portfolio, options);
+        var errors = new List<string>();
 
         var (imported, skipped) = await _configStore.UpdateAsync(config =>
         {
@@ -439,6 +476,29 @@ public sealed class PortfolioImportService
     private static decimal? ParseProviderDecimal(string? value)
         => decimal.TryParse(value, ProviderDecimalStyles, CultureInfo.InvariantCulture, out var parsed) ? parsed : null;
 
+    private static decimal ParseRequiredProviderDecimal(string? value, string field)
+        => decimal.TryParse(value, ProviderDecimalStyles, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed : throw new InvalidDataException($"Provider {field} is missing or malformed.");
+
+    private static string RequireSymbol(string? symbol)
+        => string.IsNullOrWhiteSpace(symbol) ? throw new InvalidDataException("Provider position symbol is missing.") : symbol.Trim().ToUpperInvariant();
+
+    private static void RequireSelectedAccount(PortfolioSummary portfolio, string? accountId)
+    {
+        if (accountId is not null && !string.Equals(accountId, portfolio.AccountId, StringComparison.Ordinal))
+            throw new InvalidDataException("The provider response does not belong to the selected account.");
+    }
+
+    private static (decimal Amount, string Currency)? ReadIbSummaryAmount(JsonElement root, string name)
+    {
+        if (!root.TryGetProperty(name, out var row))
+            return null;
+        if (!row.TryGetProperty("currency", out var currency) || string.IsNullOrWhiteSpace(currency.GetString()) ||
+            !row.TryGetProperty("amount", out var amount))
+            throw new InvalidDataException($"IB {name} lacks dated currency/amount evidence.");
+        return (amount.ValueKind == JsonValueKind.Number ? amount.GetDecimal() : ParseRequiredProviderDecimal(amount.GetString(), name), currency.GetString()!);
+    }
+
     private static string MapAssetClass(string? assetClass)
     {
         if (string.IsNullOrEmpty(assetClass))
@@ -503,7 +563,7 @@ public sealed class PortfolioImportService
 
     private sealed record IbPosition(
         [property: JsonPropertyName("ticker")] string? Ticker,
-        [property: JsonPropertyName("position")] decimal Position,
+        [property: JsonPropertyName("position")] decimal? Position,
         [property: JsonPropertyName("mktValue")] decimal? MktValue,
         [property: JsonPropertyName("avgCost")] decimal? AvgCost,
         [property: JsonPropertyName("unrealizedPnl")] decimal? UnrealizedPnl,
@@ -511,4 +571,11 @@ public sealed class PortfolioImportService
         [property: JsonPropertyName("listingExchange")] string? ListingExchange,
         [property: JsonPropertyName("currency")] string? Currency
     );
+
+    [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
+    [JsonSerializable(typeof(AlpacaPosition[]))]
+    [JsonSerializable(typeof(AlpacaAccount))]
+    [JsonSerializable(typeof(IbAccount[]))]
+    [JsonSerializable(typeof(IbPosition[]))]
+    private partial class BrokerImportJsonContext : JsonSerializerContext;
 }

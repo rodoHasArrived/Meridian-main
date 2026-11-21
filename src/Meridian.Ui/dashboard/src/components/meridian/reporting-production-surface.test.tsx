@@ -20,7 +20,7 @@ describe("ReportingProductionSurface", () => {
   it("renders the seven pipeline lanes as a numbered operating index", () => {
     render(<ReportingProductionSurface model={model([])} />);
 
-    const lanes = screen.getByRole("navigation", { name: "Reporting pipeline lanes" });
+    const lanes = screen.getByRole("navigation", { name: "Reporting pipeline stages" });
     const links = within(lanes).getAllByRole("link");
 
     expect(links).toHaveLength(7);

@@ -27,6 +27,22 @@ public sealed class RecurringJournalQueueViewModelTests
     }
 
     [Fact]
+    public void Row_NoDraftRequired_ReadsAsNothingToPostWithItsReasonAsANote()
+    {
+        var row = new RecurringJournalQueueRow(Occurrence with
+        {
+            State = "NoDraftRequired",
+            JournalEntryId = null,
+            ApprovalStatus = null,
+            Blockers = ["Cumulative performance fee 0.00 needs no further accrual."]
+        });
+
+        row.State.Should().Be("Nothing to post");
+        row.Draft.Should().Be("No retained draft");
+        row.Blockers.Should().Contain("needs no further accrual");
+    }
+
+    [Fact]
     public async Task Queue_ShowsBlockedOccurrenceAndGovernedLockRemediation()
     {
         var occurrence = Occurrence with

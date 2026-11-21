@@ -1,7 +1,9 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
+import { Route, Routes, useLocation } from "react-router-dom";
 import * as api from "@/lib/api";
+import { readRecordWorkspaceContext, withoutRecordWorkspaceContext } from "@/lib/record-workspace-context";
 import { AssetDetailScreen } from "@/screens/asset-detail-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { CorporateAction, SecurityIdentityDrillIn, SecurityMasterEntry, TradingParameters } from "@/types";
@@ -54,6 +56,17 @@ const identity: SecurityIdentityDrillIn = {
 };
 
 const corporateActions: CorporateAction[] = [];
+const bondEntry: SecurityMasterEntry = {
+  ...entry,
+  securityId: "bond-1",
+  displayName: "Synthetic Treasury 2030",
+  classification: { ...entry.classification, assetClass: "Bond", primaryIdentifierValue: "US-SYNTHETIC" }
+};
+
+function WorkflowDestination() {
+  const location = useLocation();
+  return <output aria-label="Workflow destination">{location.pathname}{location.search}</output>;
+}
 
 const tradingParameters: TradingParameters = {
   securityId: "sec-aapl",
@@ -167,6 +180,11 @@ describe("AssetDetailScreen", () => {
     expect(screen.getByText("No corporate actions recorded for this security.")).toBeInTheDocument();
 
     const user = userEvent.setup();
+    const identity = within(screen.getByRole("region", { name: "Instrument identity" }));
+    expect(identity.getByText("Ticker AAPL")).toBeVisible();
+    expect(identity.getByText("sec-aapl")).not.toBeVisible();
+    await user.click(identity.getByText("Technical identity"));
+    expect(identity.getByText("sec-aapl")).toBeVisible();
     await user.click(screen.getByRole("tab", { name: "Passport" }));
     expect(await screen.findByTestId("security-passport-editor")).toBeInTheDocument();
 
@@ -182,5 +200,68 @@ describe("AssetDetailScreen", () => {
 
     expect(await screen.findByText("Asset not found")).toBeInTheDocument();
     expect(screen.getByText(/No security matching "missing-id" was found/)).toBeInTheDocument();
+  });
+
+  it("links a selected bond directly to analytics and governed convention migration", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(bondEntry);
+    await renderScreen("/portfolio/asset-detail?securityId=bond-1");
+
+    for (const [name, query] of [
+      ["Bond analytics", "?securityId=bond-1&tab=evidence&bondAction=analytics"],
+      ["Convention migration", "?securityId=bond-1&tab=evidence&bondAction=migration"],
+      ["Open Security Master", "?securityId=bond-1"]
+    ]) {
+      const url = new URL(screen.getByRole("link", { name }).getAttribute("href")!, "https://meridian.local");
+      expect(url.pathname).toBe("/accounting/security-master");
+      expect(withoutRecordWorkspaceContext(url.search)).toBe(query);
+      expect(readRecordWorkspaceContext(url.search)?.origin).toBe("/portfolio/asset-detail?securityId=bond-1");
+    }
+  });
+
+  it.each(["analytics", "migration"])("resolves an exact holding identity before opening %s", async (action) => {
+    vi.mocked(api.searchSecurities).mockResolvedValue([bondEntry]);
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(bondEntry);
+    renderWithRouter(<Routes>
+      <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
+      <Route path="/accounting/security-master" element={<WorkflowDestination />} />
+    </Routes>, { initialEntries: [`/portfolio/asset-detail?symbol=US-SYNTHETIC&bondAction=${action}`] });
+
+    expect(await screen.findByLabelText("Workflow destination")).toHaveTextContent(`/accounting/security-master?securityId=bond-1&tab=evidence&bondAction=${action}`);
+    expect(api.getSecurityDetail).toHaveBeenCalledWith("bond-1", expect.objectContaining({ signal: expect.any(AbortSignal) }));
+  });
+
+  it("keeps ambiguous holding identities selectable and preserves the requested workflow", async () => {
+    vi.mocked(api.searchSecurities).mockResolvedValue([bondEntry, { ...bondEntry, securityId: "bond-2", displayName: "Other synthetic bond" }]);
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(bondEntry);
+    const user = userEvent.setup();
+    renderWithRouter(<Routes>
+      <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
+      <Route path="/accounting/security-master" element={<WorkflowDestination />} />
+    </Routes>, { initialEntries: ["/portfolio/asset-detail?symbol=US-SYNTHETIC&bondAction=analytics"] });
+
+    const selected = await screen.findByRole("button", { name: /Synthetic Treasury 2030/ });
+    expect(api.getSecurityDetail).not.toHaveBeenCalled();
+    await user.click(selected);
+    expect(await screen.findByLabelText("Workflow destination")).toHaveTextContent("securityId=bond-1&tab=evidence&bondAction=analytics");
+  });
+
+  it("explains when a resolved holding cannot use a bond workflow", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(entry);
+    await renderScreen("/portfolio/asset-detail?securityId=sec-aapl&bondAction=analytics");
+
+    expect(screen.getByText("Bond workflow unavailable for this instrument")).toBeInTheDocument();
+    expect(screen.getByText(/The selected Security Master record is Equity/)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Bond analytics" })).not.toBeInTheDocument();
+  });
+
+  it("refuses to forward to a different security returned by the detail read", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(bondEntry);
+    renderWithRouter(<Routes>
+      <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
+      <Route path="/accounting/security-master" element={<WorkflowDestination />} />
+    </Routes>, { initialEntries: ["/portfolio/asset-detail?securityId=other-bond&bondAction=analytics"] });
+
+    expect(await screen.findByText("Asset not found")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Workflow destination")).not.toBeInTheDocument();
   });
 });

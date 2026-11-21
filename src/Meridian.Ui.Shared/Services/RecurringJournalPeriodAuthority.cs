@@ -6,7 +6,7 @@ using Meridian.Storage.Ledger;
 namespace Meridian.Ui.Shared.Services;
 
 public sealed record RecurringJournalPeriodState(string PeriodId, long Version, bool IsOpen,
-    string? LockOwner, string? ReopenPath, string? Blocker);
+    string? LockOwner, string? ReopenPath, string? Blocker, DateOnly? StartDate = null, DateOnly? EndDate = null);
 
 /// <summary>
 /// Resolves the authoritative ledger period and book state for a recurring journal occurrence.
@@ -41,12 +41,13 @@ public sealed class RecurringJournalPeriodAuthority(
             throw new InvalidOperationException("Exactly one authoritative accounting period must cover the recurring occurrence.");
         var period = matching[0];
         if (Same(period.Status, "Open"))
-            return new(period.PeriodId.ToString("D"), period.Version, true, null, null, null);
+            return new(period.PeriodId.ToString("D"), period.Version, true, null, null, null, period.StartDate, period.EndDate);
         var lockOwner = await durable.GetPeriodLockOwnerAsync(period.PeriodId, ct).ConfigureAwait(false)
             ?? "Unattributed retained period lock — controller investigation required";
         return new(period.PeriodId.ToString("D"), period.Version, false, lockOwner,
             UiApiRoutes.LedgerCloseManagementPeriodReopen,
-            $"Period '{period.Label}' is {period.Status}; lock owner: {lockOwner}. Request an evidence-backed reopen through Accounting Close.");
+            $"Period '{period.Label}' is {period.Status}; lock owner: {lockOwner}. Request an evidence-backed reopen through Accounting Close.",
+            period.StartDate, period.EndDate);
     }
 
     private static bool Same(string? a, string? b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);

@@ -2,6 +2,7 @@ using System.Globalization;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using Meridian.Risk;
 using Meridian.Strategies.Services;
@@ -23,6 +24,32 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static partial class WorkstationEndpoints
 {
+    /// <summary>
+    /// The host's singleton broker book is readable only once its owning fund account is selected
+    /// and authorized. Shared by the trading workspace and the cross-screen counts endpoint so both
+    /// hide the same orders.
+    /// </summary>
+    private static async Task<bool> CanReadBrokerPortfolioAsync(
+        BrokeragePortfolioState? brokerPortfolio,
+        Guid? fundAccountId,
+        HttpContext context) =>
+        brokerPortfolio is null
+            || fundAccountId.HasValue && brokerPortfolio.FundAccountId == fundAccountId
+                && await FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(fundAccountId.Value, context)
+                    .ConfigureAwait(false);
+
+    /// <summary>
+    /// Open orders the trading blotter shows: every order the OMS reports open, limited to the
+    /// selected fund account when a broker book is attached. The open-order count is this list's length.
+    /// </summary>
+    private static IReadOnlyList<OrderState> SelectVisibleOpenOrders(
+        IOrderManager? oms,
+        BrokeragePortfolioState? brokerPortfolio,
+        Guid? fundAccountId) =>
+        oms?.GetOpenOrders()
+            .Where(order => brokerPortfolio is null || order.FundAccountId == fundAccountId)
+            .ToArray() ?? [];
+
     // PR-03: returns typed DTO instead of anonymous object.
     // Returns null when neither the execution layer nor the strategy run read service is
     // registered so the route can respond 503 instead of serving fabricated positions and fills.
@@ -32,10 +59,8 @@ public static partial class WorkstationEndpoints
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
         var brokerPortfolio = portfolio as BrokeragePortfolioState;
-        var canReadBrokerPortfolio = brokerPortfolio is null
-            || fundAccountId.HasValue && brokerPortfolio.FundAccountId == fundAccountId
-                && await FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(fundAccountId.Value, context)
-                    .ConfigureAwait(false);
+        var canReadBrokerPortfolio = await CanReadBrokerPortfolioAsync(brokerPortfolio, fundAccountId, context)
+            .ConfigureAwait(false);
         if (!canReadBrokerPortfolio)
         {
             // The workstation still needs its account-selection/recovery panel. Hide the
@@ -77,9 +102,8 @@ public static partial class WorkstationEndpoints
         var realisedPnl = portfolio?.RealisedPnl ?? run?.NetPnl ?? 0m;
         var unrealisedPnl = portfolio?.UnrealisedPnl ?? 0m;
         var totalPnl = realisedPnl + unrealisedPnl;
-        var visibleOpenOrders = oms?.GetOpenOrders()
-            .Where(order => brokerPortfolio is null || order.FundAccountId == fundAccountId).ToArray() ?? [];
-        var openOrderCount = visibleOpenOrders.Length;
+        var visibleOpenOrders = SelectVisibleOpenOrders(oms, brokerPortfolio, fundAccountId);
+        var openOrderCount = visibleOpenOrders.Count;
         var pnlTone = totalPnl >= 0m ? "success" : "warning";
 
         // --- Positions (live execution layer when available) — PR-03: typed rows ---
@@ -115,11 +139,9 @@ public static partial class WorkstationEndpoints
         }
         else
         {
-            // No live positions yet — show an informational placeholder row
-            positions =
-            [
-                new WorkstationTradingPositionRow("—", "—", "—", "—", "—", "—", "—", "—", "No open positions")
-            ];
+            // Empty-state copy belongs to the client, not to the financial population.
+            // A placeholder row inflated position counts and could be exported as a holding.
+            positions = [];
         }
 
         // --- Open orders (live OMS when available) — PR-03: typed rows ---
@@ -134,7 +156,8 @@ public static partial class WorkstationEndpoints
                 Quantity: order.Quantity.ToString(CultureInfo.InvariantCulture),
                 LimitPrice: order.LimitPrice.HasValue ? order.LimitPrice.Value.ToString("F2", CultureInfo.InvariantCulture) : "—",
                 Status: order.Status.ToString(),
-                SubmittedAt: order.CreatedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC")).ToArray();
+                SubmittedAt: order.CreatedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC",
+                Origin: order.Origin?.ToString())).ToArray();
         }
         else
         {
@@ -270,7 +293,32 @@ public static partial class WorkstationEndpoints
                 Notes: [BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)]),
             Readiness: readiness,
             Comparisons: run is null ? Array.Empty<WorkstationModeComparisonGroup>() : BuildModeComparisons([run]),
-            DrillIn: run is null ? null : BuildRunDrillInLinks(run));
+            DrillIn: run is null ? null : BuildRunDrillInLinks(run),
+            ManualOrderEntry: oms is null
+                ? null
+                : ResolveManualOrderEntry(context.RequestServices.GetService<IExecutionGateway>(), brokerageConfiguration));
+    }
+
+    /// <summary>
+    /// Mirrors the OMS's routing mode for the active gateway: manual orders are refused live
+    /// (<c>MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED</c>) and admitted in paper.
+    /// </summary>
+    public static WorkstationManualOrderEntry? ResolveManualOrderEntry(
+        IExecutionGateway? gateway,
+        BrokerageConfiguration? configuration)
+    {
+        if (gateway is null)
+            return null;
+
+        var mode = gateway is IExecutionGatewayModeProvider modeProvider
+            ? modeProvider.ExecutionMode
+            : BrokerageOrderPlacementGate.ResolveExecutionMode(configuration, gateway.GatewayId);
+        return mode == Meridian.Execution.Sdk.ExecutionMode.Live
+            ? new WorkstationManualOrderEntry(
+                Available: false,
+                ReasonCode: OrderAuthorityReasonCodes.ManualLiveIntentContractNotReviewed,
+                Reason: "Manual live orders are not available: they need a reviewed manual-intent authority contract, which is not yet defined. Live orders route only from promoted strategy runs.")
+            : new WorkstationManualOrderEntry(Available: true, ReasonCode: null, Reason: null);
     }
 
 }

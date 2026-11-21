@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj" />
     <ProjectReference Include="..\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.Ledger\Meridian.Ledger.csproj" />
     <ProjectReference Include="..\Meridian.Core\Meridian.Core.csproj" />
@@ -25,5 +26,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Meridian.Tests" />
+    <InternalsVisibleTo Include="Meridian.Storage.Tests" />
+    <InternalsVisibleTo Include="Meridian.Execution.Tests" />
   </ItemGroup>
 </Project>

@@ -26,11 +26,12 @@ public sealed class SecurityMasterContractOwnershipTests
     [Theory]
     [InlineData(typeof(Meridian.Execution.SecurityMasterGate))]
     [InlineData(typeof(Meridian.Backtesting.CorporateActionAdjustmentService))]
-    public void ExecutionAndSimulation_DoNotImportApplication(Type runtimeType)
+    [InlineData(typeof(Meridian.QuantScript.Api.QuantDataContext))]
+    public void ExecutionSimulationAndScripting_DoNotImportApplication(Type runtimeType)
     {
         runtimeType.Assembly.GetReferencedAssemblies().Select(assembly => assembly.Name)
             .Should().NotContain("Meridian.Application",
-                "execution and simulation must compose against shared contracts without the application implementation");
+                "execution, simulation and scripting must compose against shared contracts without the application implementation");
     }
 
     [Fact]

@@ -5,51 +5,53 @@
 // column then becomes ONE tab stop: ↑/↓ move between levels, Home/End jump to the extremes,
 // Enter/Space fires the click (roving tabindex, starting at the best bid).
 import React from "react";
+import { formatNumber } from "../core/format.js";
 
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+@property --ladder-row{syntax:"*";inherits:true;}
 .mds-ladder{font-family:var(--font-data);font-size:12px;display:inline-flex;flex-direction:column;
-  border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);min-width:264px;}
-.mds-ladder__head{display:grid;grid-template-columns:1fr 88px 1fr;border-bottom:1px solid var(--border,#E4E3DE);
+  border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);min-width:264px;}
+.mds-ladder__head{display:grid;grid-template-columns:1fr 88px 1fr;border-bottom:1px solid var(--border,#D2CDC3);
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.05em;color:var(--text-muted,#5E666F);}
+  letter-spacing:.05em;color:var(--text-muted,#606870);}
 .mds-ladder__head>span{padding:4px 8px;}
 .mds-ladder__head>span:first-child{text-align:right;}
-.mds-ladder__head>span:nth-child(2){text-align:center;border-left:1px solid var(--border,#E4E3DE);
-  border-right:1px solid var(--border,#E4E3DE);}
+.mds-ladder__head>span:nth-child(2){text-align:center;border-left:1px solid var(--border,#D2CDC3);
+  border-right:1px solid var(--border,#D2CDC3);}
 .mds-ladder__row{display:grid;grid-template-columns:1fr 88px 1fr;height:var(--ladder-row,22px);
   align-items:stretch;}
-.mds-ladder__row+.mds-ladder__row{border-top:1px solid var(--bg-hover,#F0EEE9);}
+.mds-ladder__row+.mds-ladder__row{border-top:1px solid var(--bg-hover,#EDEFF0);}
 .mds-ladder__size{position:relative;display:flex;align-items:center;overflow:hidden;}
 .mds-ladder__size--bid{justify-content:flex-end;}
 .mds-ladder__size--ask{justify-content:flex-start;}
 .mds-ladder__bar{position:absolute;top:2px;bottom:2px;}
-.mds-ladder__bar--bid{right:0;background:var(--green-a20,rgba(58,122,86,.2));}
-.mds-ladder__bar--ask{left:0;background:var(--red-a20,rgba(168,68,60,.2));}
-.mds-ladder__num{position:relative;padding:0 8px;color:var(--text-primary,#22252A);font-variant-numeric:tabular-nums;}
+.mds-ladder__bar--bid{right:0;background:var(--green-a20,rgba(46,118,85,.2));}
+.mds-ladder__bar--ask{left:0;background:var(--red-a20,rgba(181,75,66,.2));}
+.mds-ladder__num{position:relative;padding:0 8px;color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;}
 .mds-ladder__price{display:flex;align-items:center;justify-content:center;gap:5px;
-  border-left:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border,#E4E3DE);
-  font-variant-numeric:tabular-nums;background:none;font:inherit;color:var(--text-secondary,#4E5258);
+  border-left:1px solid var(--border,#D2CDC3);border-right:1px solid var(--border,#D2CDC3);
+  font-variant-numeric:tabular-nums;background:none;font:inherit;color:var(--text-secondary,#535C65);
   padding:0;margin:0;border-top:0;border-bottom:0;}
-.mds-ladder__price--bid{color:var(--green,#3A7A56);font-weight:600;}
-.mds-ladder__price--ask{color:var(--red,#A8443C);font-weight:600;}
+.mds-ladder__price--bid{color:var(--green,#2E7655);font-weight:600;}
+.mds-ladder__price--ask{color:var(--red,#B54B42);font-weight:600;}
 button.mds-ladder__price{cursor:pointer;}
-button.mds-ladder__price:hover{background:var(--bg-hover,#F0EEE9);}
+button.mds-ladder__price:hover{background:var(--bg-hover,#EDEFF0);}
 button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .mds-ladder__last{width:0;height:0;border-style:solid;border-width:4px 0 4px 5px;
-  border-color:transparent transparent transparent var(--text-primary,#22252A);}
+  border-color:transparent transparent transparent var(--text-primary,#20252B);}
 .mds-ladder__spread{display:grid;grid-template-columns:1fr 88px 1fr;height:20px;align-items:center;
-  border-top:1px solid var(--border,#E4E3DE);border-bottom:1px solid var(--border,#E4E3DE);
-  background:var(--card-surface-raised,#F6F4F0);}
+  border-top:1px solid var(--border,#D2CDC3);border-bottom:1px solid var(--border,#D2CDC3);
+  background:var(--card-surface-raised,#FCFBF8);}
 .mds-ladder__spreadlab{grid-column:2;display:flex;align-items:center;justify-content:center;gap:6px;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.05em;color:var(--text-muted,#5E666F);border-left:1px solid var(--border,#E4E3DE);
-  border-right:1px solid var(--border,#E4E3DE);height:100%;white-space:nowrap;}
+  letter-spacing:.05em;color:var(--text-muted,#606870);border-left:1px solid var(--border,#D2CDC3);
+  border-right:1px solid var(--border,#D2CDC3);height:100%;white-space:nowrap;}
 .mds-ladder__spreadval{font-family:var(--font-data);font-variant-numeric:tabular-nums;
-  color:var(--text-secondary,#4E5258);font-weight:400;}
+  color:var(--text-secondary,#535C65);font-weight:400;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "depth-ladder");
@@ -61,7 +63,7 @@ function fmt(n, dp) {
   return typeof n === "number" ? n.toFixed(dp) : "";
 }
 function fmtSize(n) {
-  return typeof n === "number" ? n.toLocaleString("en-US") : "";
+  return typeof n === "number" ? formatNumber(n) : "";
 }
 
 export function DepthLadder({
@@ -137,9 +139,9 @@ export function DepthLadder({
         tabIndex={keyboard ? (Math.min(focusIdx, visualCount - 1) === idx ? 0 : -1) : undefined}
         onFocus={keyboard ? () => setFocusIdx(idx) : undefined}
         role="cell"
-        aria-label={`${side} ${fmt(level.price, priceDecimals)}`}
+        aria-label={`${side} ${fmt(level.price, priceDecimals)}${nearLast(level.price)?", last price":""}`}
       >
-        {nearLast(level.price) && <span className="mds-ladder__last" aria-label="last price" />}
+        {nearLast(level.price) && <span className="mds-ladder__last" aria-hidden="true" />}
         {fmt(level.price, priceDecimals)}
       </PriceTag>
       <span className="mds-ladder__size mds-ladder__size--ask" role="cell">

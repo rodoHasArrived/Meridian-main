@@ -1,8 +1,16 @@
+import { PageHeading } from "@/components/ui/page-heading";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
-import React from "react";
+import React, { type ReactNode } from "react";
+import { ServerOrderPreviewPanel } from "./trading-screen.server-preview";
+import { ExecutionJournalPanel } from "./trading-screen.journal";
+import { PaperReconciliationPanel } from "./trading-screen.paper-reconciliation";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
-import { useLocation, useNavigate } from "react-router-dom";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { Link, useLocation } from "react-router-dom";
+import { describeBrokerageSessionSource, positionSourceAttributes } from "@/lib/position-source";
+import { StatusBadge } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
@@ -15,7 +23,9 @@ import {
 } from "@/components/ui/dialog";
 import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
+import { OverflowMenu } from "@/components/ui/overflow-menu";
 import { OrderStatusBanner } from "@/components/ui/order-status-banner";
+import { TradingOrderTicketForm } from "@/screens/trading-screen.order-ticket-form";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TradingRiskControls } from "@/components/ui/trading-risk-controls";
@@ -35,17 +45,21 @@ import {
   SheetHeader,
   SheetTitle
 } from "@/components/ui/sheet";
-import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { DetailPane } from "@/components/meridian/detail-pane";
+import { type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import type { CsvCell } from "@/lib/csv";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
-import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
+import { KpiProvider } from "@/lib/kpi-context";
+import { operatorNote } from "@/lib/internal-copy";
+import { workspaceKpiIds } from "@/lib/kpi-registry";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   AcceptanceStatusCard,
-  acceptanceTone,
+  acceptanceSeverity,
   mapAcceptanceGate,
   type CockpitAcceptanceItem
 } from "@/screens/trading-screen.acceptance-panel";
@@ -78,8 +92,16 @@ import {
 } from "@/screens/trading-screen.view-model";
 import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
 import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recovery";
+import { ExecutionJourneyPanel } from "@/screens/execution-journey";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, MetricFreshness, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { pluralizeCount } from "@/lib/format";
+import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
+import { withTradingHeadlineEvidence } from "@/screens/trading-screen.headline-evidence";
+import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
+import { TextArea } from "@/components/ui/text-area";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -100,37 +122,15 @@ const dataToneClass: Record<TradingDataTone, string> = {
   muted: "text-muted-foreground"
 };
 
-const dataTonePanelClass: Record<TradingDataTone, string> = {
-  default: "border-border/70",
-  success: "border-success/35 bg-success/10",
-  warning: "border-warning/35 bg-warning/10",
-  danger: "border-danger/35 bg-danger/10",
-  muted: "border-border/70 bg-secondary/20"
-};
-
 type TradingRouteViewId = "overview" | "orders" | "positions" | "risk";
+// Stated once on the Orders page (and carried into each CSV export), not under every table.
+const TRADING_QUOTE_PRICE_BASIS = "Prices are as quoted by the source; no currency was supplied.";
 
-interface TradingRouteTab {
-  id: string;
-  label: string;
-  route: string;
-  view: TradingRouteViewId | null;
-}
 
 /**
- * Route-scoped views: each Trading sub-route renders its focused tool and the
- * workspace root renders the acceptance/session overview. The tab strip and
- * the sidebar sub-navigation share this taxonomy, so there is exactly one
- * navigation system for the workspace.
+ * Route-scoped views: each Trading sub-route renders its focused tool and the workspace root
+ * renders the acceptance/session overview. The sidebar is the only sub-route navigation.
  */
-const tradingRouteTabs: TradingRouteTab[] = [
-  { id: "overview", label: "Overview", route: WORKSTATION_ROUTE_CATALOG.trading, view: "overview" },
-  { id: "orders", label: "Orders", route: WORKSTATION_ROUTE_CATALOG.tradingOrders, view: "orders" },
-  { id: "positions", label: "Positions", route: WORKSTATION_ROUTE_CATALOG.tradingPositions, view: "positions" },
-  { id: "risk", label: "Risk", route: WORKSTATION_ROUTE_CATALOG.tradingRisk, view: "risk" },
-  { id: "readiness", label: "Readiness", route: WORKSTATION_ROUTE_CATALOG.tradingReadiness, view: null }
-];
-
 export function resolveTradingRouteView(pathname: string): TradingRouteViewId {
   const segments = pathname.split("/").filter(Boolean);
   if (segments.includes("positions")) {
@@ -151,11 +151,11 @@ export function resolveTradingRouteView(pathname: string): TradingRouteViewId {
 const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; description: string }> = {
   overview: {
     title: "Trading overview",
-    description: "Paper cockpit acceptance, session workflows, and promotion evidence. Orders, positions, and risk have focused routes."
+    description: "See your positions and open orders, and check whether the paper account is ready to trade."
   },
   orders: {
     title: "Orders blotter",
-    description: "Working orders, recent fills, and order actions for the active paper session."
+    description: "Work open orders and review recent fills for the active paper session."
   },
   positions: {
     title: "Position book",
@@ -163,50 +163,66 @@ const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; descript
   },
   risk: {
     title: "Risk guardrails",
-    description: "Guardrail posture, execution controls, and adapter health."
+    description: "Check risk limits, trading controls, and broker connection health."
   }
 };
 
+function tradingExportColumns<T>(columns: DenseDataTableColumn<T>[], values: Record<string, (row: T) => CsvCell>): TableWorkbenchColumn<T>[] {
+  return columns.map((column) => ({ ...column, exportValue: values[column.id] }));
+}
+
 function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
   return [
-    { id: "mark-readiness", label: "Mark readiness", render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
+    {
+      id: "mark-readiness",
+      label: "Mark readiness",
+      // Ascending puts marks that need review first.
+      sortValue: (row) => (row.markFreshness.reviewRequired ? 0 : 1),
+      render: (row) => <MarkFreshnessCell mark={row.markFreshness} />
+    },
     {
       id: "symbol",
       label: "Symbol",
+      sortValue: (position) => position.symbol,
       className: "font-mono font-semibold text-foreground",
       render: (position) => position.symbol
     },
     {
       id: "side",
       label: "Side",
+      sortValue: (position) => position.side,
       className: "font-mono text-foreground",
       render: (position) => position.side
     },
     {
       id: "quantity",
       label: "Qty",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-foreground",
       render: (position) => position.quantity
     },
     {
       id: "average",
       label: "Avg",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-muted-foreground",
       render: (position) => position.averagePrice
     },
     {
       id: "mark",
       label: "Recorded mark",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-muted-foreground",
       render: (position) => position.markPrice
     },
     {
       id: "day-pnl",
       label: "Day P&L",
-      align: "right",
+      numeric: true,
+      hideable: true,
       render: (position) => (
         <span className={cn("font-mono font-semibold", dataToneClass[position.dayPnlTone])}>
           {position.dayPnl}
@@ -216,7 +232,8 @@ function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTabl
     {
       id: "unrealized",
       label: "Unrealized",
-      align: "right",
+      numeric: true,
+      hideable: true,
       render: (position) => (
         <span className={cn("font-mono font-semibold", dataToneClass[position.unrealizedPnlTone])}>
           {position.unrealizedPnl}
@@ -226,7 +243,8 @@ function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTabl
     {
       id: "exposure",
       label: "Exposure",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-foreground",
       render: (position) => position.exposure
     },
@@ -255,49 +273,63 @@ function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableCo
     {
       id: "order",
       label: "Order",
+      sortValue: (order) => order.orderId,
       className: "font-mono font-semibold text-foreground",
       render: (order) => order.orderId
     },
     {
       id: "symbol",
       label: "Symbol",
+      sortValue: (order) => order.symbol,
       className: "font-mono text-foreground",
       render: (order) => order.symbol
     },
     {
       id: "side",
       label: "Side",
+      sortValue: (order) => order.side,
       className: "font-mono text-foreground",
       render: (order) => order.side
     },
     {
       id: "type",
       label: "Type",
+      sortValue: (order) => order.type,
       className: "font-mono text-foreground",
       render: (order) => order.type
     },
     {
       id: "quantity",
       label: "Qty",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-foreground",
       render: (order) => order.quantity
     },
     {
       id: "limit",
       label: "Limit",
-      align: "right",
+      numeric: true,
+      hideable: true,
       className: "font-mono text-muted-foreground",
       render: (order) => order.limitPrice
     },
     {
       id: "status",
       label: "Status",
+      sortValue: (order) => order.status,
       render: (order) => (
         <span className={cn("font-mono font-semibold", dataToneClass[order.statusTone])}>
           {order.status}
         </span>
       )
+    },
+    {
+      id: "origin",
+      label: "Origin",
+      sortValue: (order) => order.origin,
+      className: "text-foreground",
+      render: (order) => order.origin
     },
     {
       id: "submitted",
@@ -430,12 +462,30 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
   );
 }
 
-export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
+export function TradingScreen(props: TradingScreenProps) {
+  const crossScreenCounts = useSharedCrossScreenCounts();
+  return (
+    <KpiProvider models={{ trading: props.data, crossScreenCounts }}>
+      <TradingScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
   const { pathname, search } = useLocation();
+  const sharedCounts = useSharedCrossScreenCounts();
+  const figureContext = useWorkspaceFigureContext();
+  // One open-order count for the headline card, the completeness card and every other screen.
+  const crossCounts = selectCrossScreenCounts({ shared: sharedCounts, openOrders: data?.openOrders });
+  const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
-  const blotterVm = useTradingBlotterViewModel(data);
-  const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId)
-    ?? normalizeFundAccountGuid(data?.brokerage?.account);
+  const blotterVm = useTradingBlotterViewModel(data, new URLSearchParams(search).get("positionRef"));
+  const positionSource = describeBrokerageSessionSource(data?.brokerage);
+  const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId);
+  const positionRecord = blotterVm.selectedPositionRecord;
+  const scopedPositionRecord = positionRecord ? { ...positionRecord, scope: { ...positionRecord.scope, fundAccountId } } : null;
+  const positionContext = useRecordWorkspaceContext(scopedPositionRecord, blotterVm.selectedPositionReference
+    ? { positionRef: blotterVm.selectedPositionReference, fundAccountId } : null, `#${blotterVm.positionDetailId}`);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
@@ -444,6 +494,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
     fundAccountId,
     positions: data?.positions ?? [],
     risk: data?.risk ?? null,
+    manualOrderEntry: data?.manualOrderEntry ?? null,
     onOrderAccepted: async () => {
       await Promise.all([
         executionEvidence.refresh(),
@@ -462,8 +513,25 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       ]);
     }
   });
-  const positionColumns = React.useMemo(() => buildPositionColumns(confirmVm), [confirmVm]);
-  const orderColumns = React.useMemo(() => buildOrderColumns(confirmVm), [confirmVm]);
+  const selectedPositionRow = blotterVm.positionRows.find((row) => row.id === blotterVm.selectedPositionRowId) ?? null;
+  const selectedOrderRow = blotterVm.orderRows.find((row) => row.id === blotterVm.selectedOrderRowId) ?? null;
+  const journeyOrderId = blotterVm.selectedExecutionKind === "fill"
+    ? blotterVm.fillRows.find((row) => row.id === blotterVm.selectedFillRowId)?.orderId
+    : selectedOrderRow?.orderId;
+  const positionColumns = React.useMemo(() => tradingExportColumns(buildPositionColumns(confirmVm), {
+    "mark-readiness": (row) => row.markFreshness.label,
+    symbol: (row) => row.symbol, side: (row) => row.side, quantity: (row) => row.quantity,
+    average: (row) => row.averagePrice, mark: (row) => row.markPrice,
+    "day-pnl": (row) => row.dayPnl, unrealized: (row) => row.unrealizedPnl, exposure: (row) => row.exposure
+  }), [confirmVm]);
+  const orderColumns = React.useMemo(() => tradingExportColumns(buildOrderColumns(confirmVm), {
+    order: (row) => row.orderId, symbol: (row) => row.symbol, side: (row) => row.side, type: (row) => row.type,
+    quantity: (row) => row.quantity, limit: (row) => row.limitPrice, status: (row) => row.status, submitted: (row) => row.submittedAt
+  }), [confirmVm]);
+  const exportedFillColumns = React.useMemo(() => tradingExportColumns(fillColumns, {
+    fill: (row) => row.fillId, order: (row) => row.orderId, symbol: (row) => row.symbol, side: (row) => row.side,
+    quantity: (row) => row.quantity, price: (row) => row.price, venue: (row) => row.venue, timestamp: (row) => row.timestamp
+  }), []);
 
   const paperSessions = usePaperSessionsViewModel({
     onSessionEvidenceChanged: refreshSessionEvidence
@@ -474,7 +542,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   });
   const sessionReplay = useSessionReplayControlsViewModel();
   const promotionGate = usePromotionGateViewModel();
-  const navigate = useNavigate();
   const routeView = resolveTradingRouteView(pathname);
   const [sessionCloseTarget, setSessionCloseTarget] = React.useState<string | null>(null);
   const [sessionCloseAcknowledged, setSessionCloseAcknowledged] = React.useState(false);
@@ -511,6 +578,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       tradingReadiness.refresh()
     ]);
   }
+  // Readiness and execution evidence reload with the header Refresh; neither has its own button.
+  useOnGlobalRefresh(refreshSessionEvidence);
 
   if (!data) {
     return <TradingLoadingPanel state={shellVm.loadingState} />;
@@ -528,11 +597,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
     promotionApprovedBy: promotionGate.form.approvedBy,
     promotionApprovalReason: promotionGate.form.approvalReason
   });
-  const routeTabs = tradingRouteTabs.map((tab) => ({
-    id: tab.id,
-    label: tab.label,
-    selected: tab.view === routeView
-  }));
   const showOverview = routeView === "overview";
   const showOrders = routeView === "orders";
   const showPositions = routeView === "positions";
@@ -561,41 +625,26 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         ? "review"
         : "unknown";
 
-  return (
-    <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Trading headline metrics" />
+  // Headline figures are marked when the broker evidence behind them is stale or cannot be
+  // confirmed. A readiness refresh in flight does not mute them: the last observation is still
+  // the evidence on screen. Scope, as-of and the combined verdict: `withTradingHeadlineEvidence`.
+  const brokerFreshness: MetricFreshness = hasRecoveryProjection
+    ? recoveryPortfolio?.isFresh === false
+      ? "stale"
+      : recoveryPortfolio?.isFresh && !tradingReadiness.errorText ? "fresh" : "unverified"
+    : sourceTone === "ready" ? "fresh" : "unverified";
+  const trustedHeadlineMetrics = withTradingHeadlineEvidence(headlineMetrics, {
+    figureContext,
+    operatingFundAccountId,
+    fundAccountId,
+    brokerageAccount: data.brokerage.account,
+    lastHeartbeat: data.brokerage.lastHeartbeat,
+    brokerFreshness
+  });
 
-      <section
-        id="trading-overview"
-        role="region"
-        aria-label="Execution cockpit context"
-        className="flex flex-wrap items-end justify-between gap-3"
-      >
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {routeCopy.title}
-          </h2>
-          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-            {routeCopy.description}
-          </p>
-        </div>
-        <WorkspaceTabStrip
-          label="Trading routes"
-          tabs={routeTabs}
-          onSelect={(id) => {
-            const tab = tradingRouteTabs.find((candidate) => candidate.id === id);
-            if (tab) {
-              // Preserve the querystring: the operating scope (symbol, fund
-              // account) is threaded through search params across the shell.
-              navigate({ pathname: tab.route, search });
-            }
-          }}
-        />
-      </section>
-
+  const tradingConfidence = (
       <OperationalTrustSummary
         label="Trading data confidence"
-        disclosure
         source={{
           value: hasRecoveryProjection ? reconciliation?.brokerDisplayName ?? scopedRecovery?.providerId ?? "Broker unavailable" : `${data.brokerage.provider} · ${data.brokerage.environment}`,
           detail: hasRecoveryProjection
@@ -604,6 +653,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: sourceTone
         }}
         scope={{
+          // "Scope" means the operating scope chosen in the header. Without one the page answers
+          // for a brokerage account, and says so, instead of a second "scope" the header denies.
+          label: fundAccountId ? "Scope" : "Account",
           value: fundAccountId ?? data.brokerage.account ?? "All loaded accounts",
           detail: fundAccountId ? "Operating fund account" : "Brokerage account scope",
           tone: fundAccountId || data.brokerage.account ? "ready" : "unknown"
@@ -614,45 +666,286 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: hasRecoveryProjection ? recoveryPortfolio?.isFresh === false ? "blocked" : recoveryUnavailable ? "unknown" : recoveryPortfolio?.isFresh ? "ready" : "blocked" : sourceTone
         }}
         completeness={{
-          value: hasRecoveryProjection ? recoveryPortfolio ? `${recoveryPortfolio.positionCount} positions · ${reconciliation?.matchedOpenOrderCount ?? "Unknown"} matched open orders` : "Unavailable" : `${data.positions.length} positions · ${data.openOrders.length} orders · ${data.fills.length} fills`,
-          detail: hasRecoveryProjection ? recoveryUnavailable ? "Current account evidence unverified" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "Complete and consistent broker evidence" : "Incomplete or inconsistent broker evidence" : `${completenessCount} execution records loaded`,
+          value: hasRecoveryProjection ? recoveryPortfolio ? `${pluralizeCount(recoveryPortfolio.positionCount, "position")} · ${typeof reconciliation?.matchedOpenOrderCount === "number" ? pluralizeCount(reconciliation.matchedOpenOrderCount, "matched open order") : "Unknown matched open orders"}` : "Unavailable" : `${pluralizeCount(data.positions.length, "position")} · ${pluralizeCount(crossCounts.openOrders ?? 0, "open order")} · ${pluralizeCount(data.fills.length, "fill")}`,
+          detail: hasRecoveryProjection ? recoveryUnavailable ? "Current account evidence unverified" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "Complete and consistent broker evidence" : "Incomplete or inconsistent broker evidence" : `${pluralizeCount(completenessCount, "execution record")} loaded`,
           tone: hasRecoveryProjection ? recoveryUnavailable ? "unknown" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "ready" : "blocked" : completenessCount > 0 ? "ready" : "review"
         }}
         blocker={readinessStatus ? {
           value: formatReadinessStatusValue(readinessStatus),
-          detail: "Operator readiness posture",
+          detail: "Operator readiness status",
           tone: readinessTone
         } : undefined}
       />
+  );
 
+  return (
+    <div className={showOverview ? "space-y-3" : showOrders ? "space-y-1.5" : "space-y-2"}>
+      {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
+          navigation is the sidebar's job alone (no in-page tab strip). */}
+      <section
+        id="trading-overview"
+        role="region"
+        aria-label="Execution cockpit context"
+        className="min-w-0"
+      >
+        <PageHeading title={routeCopy.title} purpose={routeCopy.description} descriptionKey={`trading:${routeView}`} />
+      </section>
+
+      {showOverview ? <KpiProvider models={{ trading: { ...data, metrics: trustedHeadlineMetrics } }}><StatStrip ids={workspaceKpiIds("trading", trustedHeadlineMetrics)} label="Trading headline metrics" /></KpiProvider> : null}
+
+      {/* The full recovery workspace belongs to the overview; every other route keeps one
+          blocked-state row so its own object (blotter, book, guardrails) stays above the fold. */}
       <BrokerageRecoveryPanel
         readiness={tradingReadiness.readiness}
         fundAccountId={fundAccountId}
+        brokerageEnvironment={data?.brokerage.environment ?? null}
         busy={tradingReadiness.refreshing}
         error={tradingReadiness.errorText}
         onRecover={tradingReadiness.recoverBrokerage}
+        // With no account in scope the overview shows one row that picks the account into the
+        // header scope, not a second picker box; the recovery workspace appears once one is chosen.
+        variant={showOverview && fundAccountId ? "full" : "row"}
+        reviewHref={`${WORKSTATION_ROUTE_CATALOG.trading}${search}#brokerage-recovery`}
       />
 
-      {showOverview ? (
-      <section id="trading-posture" className="workspace-section-band" aria-labelledby="trading-posture-heading">
-        <div className="workspace-section-subheader">
-          <div className="min-w-0">
-            <p className="eyebrow-label">Posture</p>
-            <h3 id="trading-posture-heading" className="workspace-section-title">Trading readiness posture</h3>
-          </div>
+      {showOverview ? tradingConfidence : null}
+
+      {/* The overview leads with its main lists: the position book, then the order blotter. */}
+      {showPositions || showOverview ? (
+      <section id={showOverview ? "trading-positions" : "trading-actions"} className="workspace-section-band" aria-label="Position book and selected detail">
+      <WorkspaceWorkbenchShell label="Trading positions workbench" switchInspector inspectorRole="region" inspectorLabel={showOverview ? "Selected position inspector" : undefined} inspector={(
+<div className="min-w-0">
+          <TradingBlotterDetailPanel
+            id={blotterVm.positionDetailId}
+            objectType="Position"
+            detail={blotterVm.selectedPosition}
+            emptyText={blotterVm.positionEmptyText}
+            action={selectedPositionRow ? (
+              <Button
+                size="sm"
+                variant="destructive"
+                aria-label={selectedPositionRow.closeAriaLabel}
+                onClick={() => confirmVm.openConfirm({ kind: "close-position", positionKey: selectedPositionRow.positionKey, symbol: selectedPositionRow.symbol })}
+              >
+                {selectedPositionRow.closeTitleLabel}
+              </Button>
+            ) : null}
+            identity={scopedPositionRecord ? <RecordIdentitySpine record={scopedPositionRecord} context={positionContext} /> : null}
+          />
+        </div>
+      )}>
+
+        <Card className="panel-surface" {...positionSourceAttributes(positionSource)}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Wallet className="h-4 w-4 text-primary" />
+                  Positions
+                </CardTitle>
+                <p className="mt-1 text-xs text-muted-foreground" data-testid="trading-position-source">
+                  Source: {positionSource.label}. Portfolio holdings cover every account and can differ.{" "}
+                  <Link className="underline underline-offset-2" to="/portfolio#compare-sources">Compare with Portfolio holdings</Link>
+                </p>
+                <CardDescription className="mt-2">
+                  Select a holding to keep risk, exposure, and guardrail context visible.
+                </CardDescription>
+              </div>
+              <CockpitChip label="Rows" value={String(blotterVm.positionRows.length)} />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <TableWorkbench
+              workbenchId="trading-positions" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All positions in the current authorized workspace snapshot; source decimal text and recorded money strings retained without recalculation."
+              completePopulation getSearchText={(row) => `${row.symbol} ${row.side} ${row.quantity} ${row.exposure}`}
+              ariaLabel={blotterVm.positionsTableLabel}
+              caption="Select a position to update the position detail status window."
+              columns={positionColumns}
+              rows={blotterVm.positionRows}
+              getRowId={(position) => position.id}
+              getRowAriaLabel={(position) => position.ariaLabel}
+              getRowSelectAriaLabel={(position) => position.selectAriaLabel}
+              getRowAriaControls={(position) => position.detailPanelId}
+              getRowAriaExpanded={(position) => position.ariaExpanded}
+              selectedRowId={blotterVm.selectedPositionRowId}
+              onRowSelect={(position) => blotterVm.selectPosition(position.id)}
+              emptyText={blotterVm.positionEmptyText}
+            />
+          </CardContent>
+        </Card>
+
+        </WorkspaceWorkbenchShell>
+      </section>
+      ) : null}
+
+      {showOrders || showOverview ? (
+      <section id={showOverview ? "trading-orders" : "trading-actions"} className="workspace-section-band" aria-label="Order blotter and selected detail">
+      <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspectorLabel={showOverview ? "Selected order inspector" : undefined} inspector={(
+<div className="min-w-0">
+          {/* Orders and fills share one pane keyed to the row selected last. */}
+          <TradingBlotterDetailPanel
+            id={blotterVm.executionDetailId}
+            objectType={blotterVm.selectedExecutionKind === "fill" ? "Fill" : "Order"}
+            detail={blotterVm.selectedExecution}
+            emptyText={blotterVm.executionEmptyText}
+            action={blotterVm.selectedExecutionKind === "order" && selectedOrderRow ? (
+              <Button
+                size="sm"
+                variant="destructive"
+                aria-label={selectedOrderRow.cancelAriaLabel}
+                onClick={() => confirmVm.openConfirm({ kind: "cancel-order", orderId: selectedOrderRow.orderId })}
+              >
+                {selectedOrderRow.cancelTitleLabel}
+              </Button>
+            ) : null}
+          />
+          {journeyOrderId ? <ExecutionJourneyPanel key={`${fundAccountId}:${data.brokerage.account}:${journeyOrderId}`} orderId={journeyOrderId} fills={data.fills} /> : null}
+        </div>
+      )}>
+
+        <div className="min-w-0 space-y-4">
+        <Card className="panel-surface">
+          <CardHeader className="px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ClipboardList className="h-4 w-4 text-primary" />
+                Open orders
+              </CardTitle>
+              <div className="panel-action-zone">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={orderTicket.toggleTicket}
+                  aria-expanded={orderTicket.open}
+                  aria-controls="trading-order-ticket"
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  {orderTicket.openButtonLabel}
+                </Button>
+                {/* Cancelling every open order is rare and destructive, so it sits behind "more
+                    actions" instead of beside New order. Choosing it still opens the confirmation. */}
+                <OverflowMenu
+                  label="More order actions"
+                  items={[{
+                    id: "cancel-all",
+                    label: "Cancel all open orders…",
+                    description: blotterVm.cancelAllDisabledReason ?? "Asks for confirmation before anything is cancelled.",
+                    icon: <Trash2 className="h-4 w-4" aria-hidden="true" />,
+                    danger: true,
+                    disabled: blotterVm.cancelAllDisabled,
+                    onSelect: () => confirmVm.openConfirm({ kind: "cancel-all" })
+                  }]}
+                />
+              </div>
+            </div>
+          </CardHeader>
+          {orderTicket.open && (
+            <TradingOrderTicketForm
+              orderTicket={orderTicket}
+              preview={<>
+                <OrderPreviewPanel preview={orderTicket.preview} />
+                <ServerOrderPreviewPanel
+                  preview={orderTicket.serverPreview} error={orderTicket.serverPreviewError}
+                  loading={orderTicket.serverPreviewLoading} expired={orderTicket.serverPreviewExpired}
+                  sessionIntent={orderTicket.sessionIntent} onSessionIntent={orderTicket.setSessionIntent}
+                  onRefresh={orderTicket.refreshServerPreview}
+                />
+              </>}
+            />
+          )}
+          {!orderTicket.open && (
+            <OrderStatusBanner
+              successText={orderTicket.successText}
+              parkedText={orderTicket.parkedText}
+              riskWarnings={orderTicket.riskWarnings}
+            />
+          )}
+          <CardContent className="space-y-3 px-3 py-2">
+            <TableWorkbench
+              workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All open orders in the current authorized workspace snapshot; filters do not alter the scope of Cancel all."
+              exportContext={{ "Price basis": TRADING_QUOTE_PRICE_BASIS }}
+              completePopulation getSearchText={(row) => `${row.orderId} ${row.symbol} ${row.side} ${row.type} ${row.status}`}
+              ariaLabel={blotterVm.ordersTableLabel}
+              caption="Select an order to update the order detail status window."
+              columns={orderColumns}
+              rows={blotterVm.orderRows}
+              getRowId={(order) => order.id}
+              getRowAriaLabel={(order) => order.ariaLabel}
+              getRowSelectAriaLabel={(order) => order.selectAriaLabel}
+              getRowAriaControls={() => blotterVm.executionDetailId}
+              getRowAriaExpanded={(order) => order.ariaExpanded}
+              selectedRowId={blotterVm.selectedOrderRowId}
+              onRowSelect={(order) => blotterVm.selectOrder(order.id)}
+              emptyText={blotterVm.orderEmptyText}
+            />
+            <p className="text-xs text-muted-foreground">{TRADING_QUOTE_PRICE_BASIS}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface">
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CandlestickChart className="h-4 w-4 text-primary" />
+                  Recent fills
+                </CardTitle>
+                <CardDescription className="mt-2">
+                  Select a fill to inspect execution venue, price, and linked order context.
+                </CardDescription>
+              </div>
+              <CockpitChip label="Rows" value={String(blotterVm.fillRows.length)} />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <TableWorkbench
+              workbenchId="trading-fills" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All recent fills in the authorized workspace snapshot, not a complete historical execution ledger."
+              exportContext={{ "Price basis": TRADING_QUOTE_PRICE_BASIS }}
+              completePopulation getSearchText={(row) => `${row.fillId} ${row.orderId} ${row.symbol} ${row.side} ${row.venue}`}
+              ariaLabel={blotterVm.fillsTableLabel}
+              caption="Select a fill to update the fill detail status window."
+              columns={exportedFillColumns}
+              rows={blotterVm.fillRows}
+              getRowId={(fill) => fill.id}
+              getRowAriaLabel={(fill) => fill.ariaLabel}
+              getRowSelectAriaLabel={(fill) => fill.selectAriaLabel}
+              getRowAriaControls={() => blotterVm.executionDetailId}
+              getRowAriaExpanded={(fill) => fill.ariaExpanded}
+              selectedRowId={blotterVm.selectedFillRowId}
+              onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
+              emptyText={blotterVm.fillEmptyText}
+            />
+          </CardContent>
+        </Card>
         </div>
 
+        </WorkspaceWorkbenchShell>
+      </section>
+      ) : null}
+
+      {showOrders ? (
+        <ExecutionJournalPanel accountId={fundAccountId} />
+      ) : null}
+
+      {showOverview ? (
+      <section id="trading-posture" className="workspace-section-band" aria-label="Trading readiness">
+      {/* Secondary to the blotters, so collapsed by default. */}
+      <TechnicalDetails label="Readiness checks" contentClassName="p-0">
       <AcceptanceStatusCard
         items={cockpitAcceptance}
         readinessVm={tradingReadiness}
       />
+      </TechnicalDetails>
 
       <div
         role="region"
         aria-label={shellVm.workflowStrip.ariaLabel}
         className="panel-surface flex flex-wrap items-center gap-3 px-4 py-3"
       >
-        <span className="mr-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <span className={cn("mr-1 text-xs font-semibold text-muted-foreground", usesTrackedCaps(shellVm.workflowStrip.eyebrow) && "type-label--caps")}>
           {shellVm.workflowStrip.eyebrow}
         </span>
         {shellVm.workflowStrip.chips.map((chip) => (
@@ -680,8 +973,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             <h3 id="trading-exceptions-heading" className="workspace-section-title">Risk and adapter exceptions</h3>
           </div>
         </div>
-      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="panel-surface">
+      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <Card className="panel-surface min-w-0">
           <CardHeader>
             <div className="eyebrow-label">Risk State</div>
             <CardTitle className="flex items-center gap-2">
@@ -692,8 +985,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <Stat label="State" value={data.risk.state} tone={riskTone[data.risk.state]} />
-            <Stat label="Net Exposure" value={data.risk.netExposure} />
-            <Stat label="Gross Exposure" value={data.risk.grossExposure} />
+            {/* Scope named on the label: these are the paper session's risk figures, not the
+                Portfolio header's gross exposure over live holdings. */}
+            <Stat label="Net exposure · paper session" value={data.risk.netExposure} />
+            <Stat label="Gross exposure · paper session" value={data.risk.grossExposure} />
             <Stat label="VaR (95%)" value={data.risk.var95} />
             <Stat label="Max Drawdown" value={data.risk.maxDrawdown} />
             <Stat label="Buying Power Used" value={data.risk.buyingPowerUsed} />
@@ -742,14 +1037,14 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </CardContent>
         </Card>
 
-        <Card className="panel-surface-strong bg-panel-strong">
+        <Card className="panel-surface-strong min-w-0 bg-panel-strong">
           <CardHeader>
-            <div className="eyebrow-label">Brokerage Wiring</div>
+            <div className="eyebrow-label">Brokerage connection</div>
             <CardTitle className="flex items-center gap-2">
               <Cable className="h-5 w-5 text-primary" />
               Execution adapter health
             </CardTitle>
-            <CardDescription>{data.brokerage.notes}</CardDescription>
+            {operatorNote(data.brokerage.notes) ? <CardDescription>{operatorNote(data.brokerage.notes)}</CardDescription> : null}
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <KeyValueRow label="Provider" value={data.brokerage.provider} />
@@ -765,325 +1060,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       </section>
       ) : null}
 
-      {showPositions ? (
-      <section id="trading-actions" className="workspace-section-band" aria-label="Position book and selected detail">
-      <WorkspaceWorkbenchShell label="Trading positions workbench" switchInspector inspectorRole="region" inspector={(
-<div className="min-w-0">
-          <TradingBlotterDetailPanel id={blotterVm.positionDetailId} detail={blotterVm.selectedPosition} emptyText={blotterVm.positionEmptyText} selectedSourceLabel="Selected from live positions" />
-        </div>
-      )}>
-
-        <Card className="panel-surface">
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Wallet className="h-4 w-4 text-primary" />
-                  Live positions
-                </CardTitle>
-                <CardDescription className="mt-2">
-                  Select a holding to keep risk, exposure, and guardrail context visible.
-                </CardDescription>
-              </div>
-              <CockpitChip label="Rows" value={String(blotterVm.positionRows.length)} />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <DenseDataTable
-              ariaLabel={blotterVm.positionsTableLabel}
-              caption="Select a position to update the position detail status window."
-              columns={positionColumns}
-              rows={blotterVm.positionRows}
-              getRowId={(position) => position.id}
-              getRowAriaLabel={(position) => position.ariaLabel}
-              getRowSelectAriaLabel={(position) => position.selectAriaLabel}
-              getRowAriaControls={(position) => position.detailPanelId}
-              getRowAriaExpanded={(position) => position.ariaExpanded}
-              selectedRowId={blotterVm.selectedPositionRowId}
-              onRowSelect={(position) => blotterVm.selectPosition(position.id)}
-              emptyText={blotterVm.positionEmptyText}
-            />
-          </CardContent>
-        </Card>
-
-        </WorkspaceWorkbenchShell>
-      </section>
-      ) : null}
-
-      {showOrders ? (
-      <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
-      <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
-<div className="min-w-0 space-y-4">
-          <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} selectedSourceLabel="Selected from open orders" />
-          <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} selectedSourceLabel="Selected from recent fills" />
-        </div>
-      )}>
-
-        <div className="min-w-0 space-y-4">
-        <Card className="panel-surface">
-          <CardHeader>
-            <div className="flex items-center justify-between gap-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <ClipboardList className="h-4 w-4 text-primary" />
-                Open orders
-              </CardTitle>
-              <div className="panel-action-zone">
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => confirmVm.openConfirm({ kind: "cancel-all" })}
-                  disabled={blotterVm.cancelAllDisabled}
-                  disabledReason={blotterVm.cancelAllDisabledReason}
-                  aria-label={blotterVm.cancelAllAriaLabel}
-                  title="Cancel all open orders"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Cancel all
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={orderTicket.toggleTicket}
-                  aria-expanded={orderTicket.open}
-                  aria-controls="trading-order-ticket"
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  {orderTicket.openButtonLabel}
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          {orderTicket.open && (
-            <CardContent id={orderTicket.formId} className="border-b border-border/60 pb-6">
-              <form onSubmit={(event) => { event.preventDefault(); void orderTicket.submitOrder(); }} className="space-y-4" aria-describedby={orderTicket.requirementId}>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.symbol.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.symbol.label}</label>
-                    <Input
-                      id={orderTicket.controls.symbol.id}
-                      type="text"
-                      placeholder="AAPL"
-                      value={orderTicket.controls.symbol.value}
-                      onChange={(e) => orderTicket.updateField(orderTicket.controls.symbol.field, e.target.value)}
-                      onBlur={orderTicket.normalizeSymbol}
-                      aria-label={orderTicket.controls.symbol.ariaLabel}
-                      aria-describedby={orderTicket.controls.symbol.describedBy}
-                      error={orderTicket.controls.symbol.invalid}
-                      className="font-mono"
-                      required={orderTicket.controls.symbol.required}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.side.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.side.label}</label>
-                    <Select
-                      id={orderTicket.controls.side.id}
-                      value={orderTicket.controls.side.value}
-                      onChange={(e) => orderTicket.updateField(orderTicket.controls.side.field, e.target.value)}
-                      aria-label={orderTicket.controls.side.ariaLabel}
-                      aria-describedby={orderTicket.controls.side.describedBy}
-                      required={orderTicket.controls.side.required}
-                    >
-                      {orderTicket.controls.side.options.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))}
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.type.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.type.label}</label>
-                    <Select
-                      id={orderTicket.controls.type.id}
-                      value={orderTicket.controls.type.value}
-                      onChange={(e) => orderTicket.updateField(orderTicket.controls.type.field, e.target.value)}
-                      aria-label={orderTicket.controls.type.ariaLabel}
-                      aria-describedby={orderTicket.controls.type.describedBy}
-                      required={orderTicket.controls.type.required}
-                    >
-                      {orderTicket.controls.type.options.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))}
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.quantity.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{orderTicket.controls.quantity.label}</label>
-                    <Input
-                      id={orderTicket.controls.quantity.id}
-                      type="number"
-                      min={1}
-                      step={1}
-                      value={orderTicket.controls.quantity.value}
-                      onChange={(e) => orderTicket.updateField(orderTicket.controls.quantity.field, e.target.value)}
-                      aria-label={orderTicket.controls.quantity.ariaLabel}
-                      aria-describedby={orderTicket.controls.quantity.describedBy}
-                      error={orderTicket.controls.quantity.invalid}
-                      className="font-mono"
-                      required={orderTicket.controls.quantity.required}
-                    />
-                  </div>
-                  {orderTicket.controls.limitPrice && (
-                    <div className="space-y-1">
-                      <label htmlFor={orderTicket.controls.limitPrice.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                        {orderTicket.controls.limitPrice.label}
-                      </label>
-                      <Input
-                        id={orderTicket.controls.limitPrice.id}
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        value={orderTicket.controls.limitPrice.value}
-                        onChange={(e) => orderTicket.controls.limitPrice && orderTicket.updateField(orderTicket.controls.limitPrice.field, e.target.value)}
-                        aria-label={orderTicket.controls.limitPrice.ariaLabel}
-                        aria-describedby={orderTicket.controls.limitPrice.describedBy}
-                        error={orderTicket.controls.limitPrice.invalid}
-                        className="font-mono"
-                        required={orderTicket.controls.limitPrice.required}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <p id={orderTicket.requirementId} className="text-xs text-muted-foreground">
-                  {orderTicket.requirementText}
-                </p>
-                <span className="sr-only" aria-live="polite">{orderTicket.statusAnnouncement}</span>
-
-                <OrderPreviewPanel preview={orderTicket.preview} />
-
-                <label
-                  htmlFor={orderTicket.acknowledgement.id}
-                  className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
-                >
-                  <input
-                    id={orderTicket.acknowledgement.id}
-                    type="checkbox"
-                    checked={orderTicket.acknowledgement.checked}
-                    disabled={orderTicket.acknowledgement.disabled}
-                    onChange={(event) => orderTicket.setAcknowledged(event.target.checked)}
-                    aria-describedby={joinDescribedByIds(
-                      `${orderTicket.acknowledgement.id}-description`,
-                      `${orderTicket.acknowledgement.id}-disabled-reason`
-                    )}
-                    className="mt-1 h-4 w-4 accent-primary"
-                  />
-                  <span>
-                    <span className="block font-medium text-foreground">{orderTicket.acknowledgement.label}</span>
-                    <span id={`${orderTicket.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
-                      {orderTicket.acknowledgement.description}
-                    </span>
-                    <FieldSupportText
-                      disabledReason={orderTicket.acknowledgement.disabledReason}
-                      disabledReasonId={`${orderTicket.acknowledgement.id}-disabled-reason`}
-                      disabledReasonClassName="mt-1 block"
-                    />
-                  </span>
-                </label>
-
-                {orderTicket.errorText && (
-                  <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
-                    <XCircle className="h-4 w-4 shrink-0" />
-                    {orderTicket.errorText}
-                  </div>
-                )}
-
-                <div className="panel-action-zone justify-start">
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={!orderTicket.canSubmit}
-                    disabledReason={orderTicket.submitDisabledReason}
-                    busy={orderTicket.submitBusy}
-                    busyLabel={orderTicket.submitBusyLabel}
-                    aria-label={orderTicket.submitAriaLabel}
-                    aria-describedby="order-ticket-requirements"
-                  >
-                    {orderTicket.submitButtonLabel}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={orderTicket.closeTicket}
-                    disabled={!orderTicket.canClose}
-                    disabledReason={orderTicket.closeDisabledReason}
-                    aria-label={orderTicket.closeAriaLabel}
-                  >
-                    {orderTicket.closeButtonLabel}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          )}
-          {!orderTicket.open && (
-            <OrderStatusBanner
-              successText={orderTicket.successText}
-              parkedText={orderTicket.parkedText}
-              riskWarnings={orderTicket.riskWarnings}
-            />
-          )}
-          <CardContent className="space-y-3">
-            <DenseDataTable
-              ariaLabel={blotterVm.ordersTableLabel}
-              caption="Select an order to update the order detail status window."
-              columns={orderColumns}
-              rows={blotterVm.orderRows}
-              getRowId={(order) => order.id}
-              getRowAriaLabel={(order) => order.ariaLabel}
-              getRowSelectAriaLabel={(order) => order.selectAriaLabel}
-              getRowAriaControls={(order) => order.detailPanelId}
-              getRowAriaExpanded={(order) => order.ariaExpanded}
-              selectedRowId={blotterVm.selectedOrderRowId}
-              onRowSelect={(order) => blotterVm.selectOrder(order.id)}
-              emptyText={blotterVm.orderEmptyText}
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface">
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <CandlestickChart className="h-4 w-4 text-primary" />
-                  Recent fills
-                </CardTitle>
-                <CardDescription className="mt-2">
-                  Select a fill to inspect execution venue, price, and linked order context.
-                </CardDescription>
-              </div>
-              <CockpitChip label="Rows" value={String(blotterVm.fillRows.length)} />
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <DenseDataTable
-              ariaLabel={blotterVm.fillsTableLabel}
-              caption="Select a fill to update the fill detail status window."
-              columns={fillColumns}
-              rows={blotterVm.fillRows}
-              getRowId={(fill) => fill.id}
-              getRowAriaLabel={(fill) => fill.ariaLabel}
-              getRowSelectAriaLabel={(fill) => fill.selectAriaLabel}
-              getRowAriaControls={(fill) => fill.detailPanelId}
-              getRowAriaExpanded={(fill) => fill.ariaExpanded}
-              selectedRowId={blotterVm.selectedFillRowId}
-              onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
-              emptyText={blotterVm.fillEmptyText}
-            />
-          </CardContent>
-        </Card>
-        </div>
-
-        </WorkspaceWorkbenchShell>
-      </section>
-      ) : null}
-
       {showOverview ? (
-      <section id="trading-history" className="workspace-section-band" aria-labelledby="trading-history-heading">
-        <div className="workspace-section-subheader">
-          <div className="min-w-0">
-            <p className="eyebrow-label">History</p>
-            <h3 id="trading-history-heading" className="workspace-section-title">Paper session history and execution evidence</h3>
-          </div>
-          <a className="workspace-section-jump" href="#trading-posture">Posture</a>
-        </div>
+      <section id="trading-history" className="workspace-section-band" aria-label="Paper session history and execution evidence">
+      {/* Secondary to the blotters, so collapsed by default. */}
+      <TechnicalDetails label="Paper sessions and execution evidence">
       <section className="grid gap-4 xl:grid-cols-2">
         {/* Paper session management */}
         <Card className="panel-surface">
@@ -1130,7 +1110,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               >
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
-                    <label htmlFor={paperSessions.strategyIdField.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    <label htmlFor={paperSessions.strategyIdField.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(paperSessions.strategyIdField.label) && "type-label--caps")}>
                       {paperSessions.strategyIdField.label}
                     </label>
                     <Input
@@ -1151,7 +1131,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                     />
                   </div>
                   <div className="space-y-1">
-                    <label htmlFor={paperSessions.initialCashField.id} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                    <label htmlFor={paperSessions.initialCashField.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(paperSessions.initialCashField.label) && "type-label--caps")}>
                       {paperSessions.initialCashField.label}
                     </label>
                     <Input
@@ -1279,10 +1259,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               className="mt-4 rounded-lg border border-border/70 bg-secondary/20 p-4"
             >
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <p className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(executionEvidence.auditTitle) && "type-label--caps")}>
                   {executionEvidence.auditTitle}
                 </p>
-                <span className="font-mono text-[11px] text-muted-foreground">{executionEvidence.auditCountLabel}</span>
+                <span className="font-mono text-xs text-muted-foreground">{executionEvidence.auditCountLabel}</span>
               </div>
               {executionEvidence.auditRows.length === 0 ? (
                 <p className="text-xs text-muted-foreground">{executionEvidence.auditEmptyText}</p>
@@ -1311,10 +1291,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                         </span>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">{entry.message}</p>
-                      <p className="mt-1 font-mono text-[11px] text-muted-foreground">{entry.metadataText}</p>
+                      <p className="mt-1 font-mono text-xs text-muted-foreground">{entry.metadataText}</p>
                       {entry.technicalMetadataText ? (
                         <TechnicalDetails label="Execution references" className="mt-2">
-                          <p className="break-all font-mono text-[11px] text-muted-foreground">
+                          <p className="break-all font-mono text-xs text-muted-foreground">
                             {entry.technicalMetadataText}
                           </p>
                         </TechnicalDetails>
@@ -1329,6 +1309,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
         {/* Strategy lifecycle controls — moved to sheet; trigger in Workflow Tools strip */}
       </section>
+      </TechnicalDetails>
       </section>
       ) : null}
 
@@ -1345,17 +1326,17 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </SheetHeader>
           <SheetBody>
             <div className="space-y-1">
-              <label htmlFor={strategyLifecycle.strategyIdInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <label htmlFor={strategyLifecycle.strategyIdInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(strategyLifecycle.strategyIdLabel) && "type-label--caps")}>
                 {strategyLifecycle.strategyIdLabel}
               </label>
-              <input
+              <Input
                 id={strategyLifecycle.strategyIdInputId}
                 type="text"
                 placeholder={strategyLifecycle.strategyIdPlaceholder}
                 value={strategyLifecycle.strategyId}
                 aria-describedby={`${strategyLifecycle.strategyIdHelpId} ${strategyLifecycle.strategyIdStatusId}`}
                 onChange={(e) => strategyLifecycle.updateStrategyId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full font-mono text-sm"
               />
               <p id={strategyLifecycle.strategyIdHelpId} className="text-xs text-muted-foreground">
                 {strategyLifecycle.helpText}
@@ -1406,7 +1387,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </SheetHeader>
           <SheetBody className="space-y-3">
             <div className="grid gap-2">
-              <label htmlFor={sessionReplay.fileSelectId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <label htmlFor={sessionReplay.fileSelectId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.fileSelectLabel) && "type-label--caps")}>
                 {sessionReplay.fileSelectLabel}
               </label>
               <Select
@@ -1429,7 +1410,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
             <div className="grid gap-3 lg:grid-cols-[minmax(7rem,9rem)_1fr] lg:items-end">
               <div className="grid gap-1.5">
-                <label htmlFor={sessionReplay.speedInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                <label htmlFor={sessionReplay.speedInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.speedLabel) && "type-label--caps")}>
                   {sessionReplay.speedLabel}
                 </label>
                 <Input
@@ -1441,7 +1422,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   inputMode="decimal"
                   error={Boolean(sessionReplay.speedValidationText)}
                 />
-                <span id={sessionReplay.speedHelpId} className="text-[11px] text-muted-foreground">
+                <span id={sessionReplay.speedHelpId} className="text-xs text-muted-foreground">
                   {sessionReplay.speedHelpText}
                 </span>
               </div>
@@ -1489,7 +1470,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
             <div className="grid gap-3 lg:grid-cols-[minmax(8rem,10rem)_1fr] lg:items-end">
               <div className="grid gap-1.5">
-                <label htmlFor={sessionReplay.seekInputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                <label htmlFor={sessionReplay.seekInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(sessionReplay.seekLabel) && "type-label--caps")}>
                   {sessionReplay.seekLabel}
                 </label>
                 <Input
@@ -1501,7 +1482,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   inputMode="numeric"
                   error={Boolean(sessionReplay.seekValidationText)}
                 />
-                <span id={sessionReplay.seekHelpId} className="text-[11px] text-muted-foreground">
+                <span id={sessionReplay.seekHelpId} className="text-xs text-muted-foreground">
                   {sessionReplay.seekHelpText}
                 </span>
               </div>
@@ -1557,7 +1538,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           <SheetHeader>
             <SheetTitle id="promotion-gate-title">
               <FlaskConical className="h-4 w-4 text-primary" />
-              Backtest → Paper promotion gate
+              {promotionGate.evaluation?.targetMode?.toLowerCase() === "live"
+                ? "Paper → Live promotion gate" : "Backtest → Paper promotion gate"}
             </SheetTitle>
             <SheetDescription id="promotion-gate-description">Requires eligibility check before confirmation and audit refresh.</SheetDescription>
             <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("promotion")} />
@@ -1576,8 +1558,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
             <div className="grid gap-3 sm:grid-cols-2">
               <label htmlFor={promotionGate.fields.runId.id} className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.runId.label}</span>
-                <input
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.runId.label) && "type-label--caps")}>{promotionGate.fields.runId.label}</span>
+                <Input
                   id={promotionGate.fields.runId.id}
                   aria-label={promotionGate.fields.runId.ariaLabel}
                   placeholder={promotionGate.fields.runId.placeholder}
@@ -1585,15 +1567,15 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.runId.field, e.target.value)}
                   aria-describedby={promotionGate.fields.runId.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full font-mono text-sm"
                 />
                 {promotionGate.fields.runId.helpText ? (
                   <span id={promotionGate.fields.runId.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.runId.helpText}</span>
                 ) : null}
               </label>
               <label htmlFor={promotionGate.fields.approvedBy.id} className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.approvedBy.label}</span>
-                <input
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvedBy.label) && "type-label--caps")}>{promotionGate.fields.approvedBy.label}</span>
+                <Input
                   id={promotionGate.fields.approvedBy.id}
                   aria-label={promotionGate.fields.approvedBy.ariaLabel}
                   placeholder={promotionGate.fields.approvedBy.placeholder}
@@ -1601,14 +1583,14 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.approvedBy.field, e.target.value)}
                   aria-describedby={promotionGate.fields.approvedBy.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full text-sm"
                   required={promotionGate.fields.approvedBy.required}
                 />
               </label>
             </div>
             <label htmlFor={promotionGate.fields.approvalReason.id} className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.approvalReason.label}</span>
-              <input
+              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvalReason.label) && "type-label--caps")}>{promotionGate.fields.approvalReason.label}</span>
+              <Input
                 id={promotionGate.fields.approvalReason.id}
                 aria-label={promotionGate.fields.approvalReason.ariaLabel}
                 placeholder={promotionGate.fields.approvalReason.placeholder}
@@ -1616,13 +1598,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.approvalReason.field, e.target.value)}
                 aria-describedby={promotionGate.fields.approvalReason.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full text-sm"
                 required={promotionGate.fields.approvalReason.required}
               />
             </label>
             <label htmlFor={promotionGate.fields.rejectionReason.id} className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.rejectionReason.label}</span>
-              <input
+              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.rejectionReason.label) && "type-label--caps")}>{promotionGate.fields.rejectionReason.label}</span>
+              <Input
                 id={promotionGate.fields.rejectionReason.id}
                 aria-label={promotionGate.fields.rejectionReason.ariaLabel}
                 placeholder={promotionGate.fields.rejectionReason.placeholder}
@@ -1630,13 +1612,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.rejectionReason.field, e.target.value)}
                 aria-describedby={promotionGate.fields.rejectionReason.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full text-sm"
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label htmlFor={promotionGate.fields.reviewNotes.id} className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.reviewNotes.label}</span>
-                <input
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.reviewNotes.label) && "type-label--caps")}>{promotionGate.fields.reviewNotes.label}</span>
+                <Input
                   id={promotionGate.fields.reviewNotes.id}
                   aria-label={promotionGate.fields.reviewNotes.ariaLabel}
                   placeholder={promotionGate.fields.reviewNotes.placeholder}
@@ -1644,12 +1626,12 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.reviewNotes.field, e.target.value)}
                   aria-describedby={promotionGate.fields.reviewNotes.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full text-sm"
                 />
               </label>
               <label htmlFor={promotionGate.fields.manualOverrideId.id} className="grid gap-1 text-sm">
-                <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.manualOverrideId.label}</span>
-                <input
+                <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.manualOverrideId.label) && "type-label--caps")}>{promotionGate.fields.manualOverrideId.label}</span>
+                <Input
                   id={promotionGate.fields.manualOverrideId.id}
                   aria-label={promotionGate.fields.manualOverrideId.ariaLabel}
                   placeholder={promotionGate.fields.manualOverrideId.placeholder}
@@ -1657,13 +1639,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.manualOverrideId.field, e.target.value)}
                   aria-describedby={promotionGate.fields.manualOverrideId.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full font-mono text-sm"
                 />
               </label>
             </div>
             <label htmlFor={promotionGate.fields.evidenceReferences.id} className="grid gap-1 text-sm">
-              <span className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">{promotionGate.fields.evidenceReferences.label}</span>
-              <textarea
+              <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.evidenceReferences.label) && "type-label--caps")}>{promotionGate.fields.evidenceReferences.label}</span>
+              <TextArea rows={2}
                 id={promotionGate.fields.evidenceReferences.id}
                 aria-label={promotionGate.fields.evidenceReferences.ariaLabel}
                 placeholder={promotionGate.fields.evidenceReferences.placeholder}
@@ -1671,12 +1653,32 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.evidenceReferences.field, e.target.value)}
                 aria-describedby={promotionGate.fields.evidenceReferences.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="min-h-24 w-full font-mono text-sm"
               />
               {promotionGate.fields.evidenceReferences.helpText ? (
                 <span id={promotionGate.fields.evidenceReferences.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.evidenceReferences.helpText}</span>
               ) : null}
             </label>
+            {promotionGate.evaluation?.targetMode?.toLowerCase() === "live" && (
+              <fieldset className="grid gap-3 rounded-lg border border-border/60 p-3 text-xs sm:grid-cols-3" disabled={promotionGate.busy}>
+                <legend className="px-1 font-semibold">Live authorization</legend>
+                <p className="break-all text-muted-foreground sm:col-span-3">
+                  Strategy revision {promotionGate.evaluation.strategyArtifactId ?? "unavailable"}
+                </p>
+                <label className="grid gap-1">
+                  Allowed symbols
+                  <Input value={promotionGate.form.liveSymbols ?? ""} onChange={(event) => promotionGate.updateField("liveSymbols", event.target.value)} />
+                </label>
+                <label className="grid gap-1">
+                  Max USD per order
+                  <Input type="number" min="0.01" step="0.01" value={promotionGate.form.liveNotional ?? ""} onChange={(event) => promotionGate.updateField("liveNotional", event.target.value)} />
+                </label>
+                <label className="grid gap-1">
+                  Expiry (local time)
+                  <Input type="datetime-local" value={promotionGate.form.liveExpiry ?? ""} onChange={(event) => promotionGate.updateField("liveExpiry", event.target.value)} />
+                </label>
+              </fieldset>
+            )}
             <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
@@ -1734,7 +1736,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   <dl className="mt-2 grid gap-2 sm:grid-cols-3">
                     {promotionGate.evaluationPanel.metrics.map((metric) => (
                       <div key={metric.id}>
-                        <dt className="font-mono text-[10px] uppercase tracking-[0.14em] opacity-75">{metric.label}</dt>
+                        <dt className={cn("text-xs opacity-75", usesTrackedCaps(metric.label) && "uppercase tracking-[0.08em]")}>{metric.label}</dt>
                         <dd className="font-mono text-xs">{metric.value}</dd>
                       </div>
                     ))}
@@ -1790,6 +1792,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 {promotionGate.historyRows.map((record) => (
                   <li key={record.id} className="font-mono" aria-label={record.ariaLabel}>
                     {record.label}
+                    {record.canRevoke && (
+                      <LiveAuthorizationRevokeForm
+                        authorizationId={record.id}
+                        disabled={promotionGate.busy}
+                        revoke={promotionGate.revokeLiveAuthorization}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
@@ -1798,6 +1807,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </SheetContent>
       </Sheet>
 
+      {!showOverview ? <TechnicalDetails label="Trading data confidence">{tradingConfidence}</TechnicalDetails> : null}
       <ConfirmActionDialog vm={confirmVm} />
       <SessionCloseConfirmationDialog
         sessionId={sessionCloseTarget}
@@ -1808,6 +1818,46 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         onConfirm={confirmSessionClose}
       />
     </div>
+  );
+}
+
+function LiveAuthorizationRevokeForm({ authorizationId, disabled, revoke }: {
+  authorizationId: string;
+  disabled: boolean;
+  revoke: (id: string, reason: string) => Promise<void>;
+}) {
+  const [reason, setReason] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  return (
+    <details className="my-2 font-sans">
+      <summary className="cursor-pointer font-medium">Revoke live authorization</summary>
+      <form className="mt-2 grid gap-2" onSubmit={async (event) => {
+        event.preventDefault();
+        if (busy || disabled || !reason.trim()) return;
+        setBusy(true);
+        setError(null);
+        try {
+          await revoke(authorizationId, reason.trim());
+        } catch (failure) {
+          setError(failure instanceof Error ? failure.message : "Revocation could not be confirmed.");
+        } finally {
+          setBusy(false);
+        }
+      }}>
+        <p className="text-muted-foreground">Blocks new orders and replacements for this run.</p>
+        <label className="grid gap-1">
+          Revocation reason
+          <Input required disabled={busy || disabled} value={reason} onChange={(event) => setReason(event.target.value)} />
+        </label>
+        <Button type="submit" size="sm" variant="destructive" className="justify-self-start"
+          disabled={disabled || !reason.trim()} busy={busy} busyLabel="Revoking authorization">
+          Confirm revocation
+        </Button>
+        {error && <p role="alert" className="text-danger">{error}</p>}
+      </form>
+    </details>
   );
 }
 
@@ -2026,9 +2076,7 @@ function PaperSessionDetailPanelView({ detail }: { detail: PaperSessionDetailPan
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Session detail</p>
           <p className="mt-1 font-mono text-sm text-foreground">{detail.sessionId}</p>
         </div>
-        <span className={cn("rounded-sm border px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", acceptanceTone[detail.statusTone])}>
-          {detail.statusLabel}
-        </span>
+        <StatusBadge status={acceptanceSeverity[detail.statusTone]} dot={false} label={detail.statusLabel} />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -2046,6 +2094,7 @@ function PaperSessionDetailPanelView({ detail }: { detail: PaperSessionDetailPan
       )}
 
       {detail.replay && <PaperSessionReplayPanelView panel={detail.replay} />}
+      <PaperReconciliationPanel key={detail.sessionId} sessionId={detail.sessionId} />
     </div>
   );
 }
@@ -2089,7 +2138,7 @@ function PaperSessionReplayPanelView({ panel }: { panel: PaperSessionReplayPanel
 function DataRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="data-grid-surface px-3 py-2">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</div>
       <div className="mt-1 font-mono text-sm text-foreground">{value ?? "Unavailable"}</div>
     </div>
   );
@@ -2110,6 +2159,15 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
           <DialogDescription id={vm.dialogDescriptionId}>{vm.description}</DialogDescription>
         </DialogHeader>
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
+
+        {vm.state.action?.kind === "cancel-all" && vm.state.cancelAllPreview ? (
+          <details className="border-y border-border py-2 text-sm">
+            <summary className="cursor-pointer">Review {vm.state.cancelAllPreview.orderIds.length} open order identities</summary>
+            <ul className="mt-2 max-h-48 overflow-auto" aria-label="OMS open orders at review">
+              {vm.state.cancelAllPreview.orderIds.map((orderId) => <li key={orderId} className="font-mono text-xs">{orderId}</li>)}
+            </ul>
+          </details>
+        ) : null}
 
         {vm.errorPanel && (
           <div role="alert" aria-label={vm.errorPanel.ariaLabel} className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
@@ -2138,6 +2196,12 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
               <span className="font-semibold">{vm.resultPanel.status}</span>
             </div>
             <p>{vm.resultPanel.message}</p>
+            {vm.state.result?.brokerViewUnavailable ? <p>The broker open book could not be verified. Review broker state before relying on the cancellation outcome.</p> : null}
+            {vm.state.result?.stillWorking?.length ? (
+              <ul aria-label="Orders still working after cancellation" className="max-h-48 overflow-auto text-xs">
+                {vm.state.result.stillWorking.map((order) => <li key={order.orderId} className="font-mono">{order.orderId}: {order.reason}</li>)}
+              </ul>
+            ) : null}
             <p className="mt-1 font-mono text-xs opacity-70">Action ID: {vm.resultPanel.actionId}</p>
           </div>
         )}
@@ -2273,58 +2337,44 @@ function SessionCloseConfirmationDialog({
 
 function TradingBlotterDetailPanel({
   id,
+  objectType,
   detail,
   emptyText,
-  selectedSourceLabel
+  action,
+  identity
 }: {
   id: string;
+  objectType: string;
   detail: TradingBlotterDetail | null;
   emptyText: string;
-  selectedSourceLabel: string;
+  /** The next action for the selected row, e.g. cancel the order. */
+  action?: ReactNode;
+  identity?: ReactNode;
 }) {
   return (
-    <DenseRowDetailPanel
+    <DetailPane
       id={id}
       ariaLabel={detail?.ariaLabel ?? "Trading blotter detail"}
-      selectedSourceLabel={selectedSourceLabel}
-      className={cn(
-        "rounded-md border bg-background/70 p-3",
-        detail ? dataTonePanelClass[detail.statusTone] : "border-border/70"
-      )}
-    >
-      {detail ? (
-        <>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="eyebrow-label">{detail.statusLabel}</div>
-              <h3 className="mt-1 break-words text-sm font-semibold text-foreground">{detail.title}</h3>
-              <p className="mt-1 font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
-            </div>
-            <span className={cn("rounded-sm border px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", dataTonePanelClass[detail.statusTone], dataToneClass[detail.statusTone])}>
-              Detail
-            </span>
-          </div>
-          <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
-          <dl className="mt-3 grid gap-2 sm:grid-cols-2">
-            {detail.fields.map((field) => (
-              <div key={field.label} className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/20 px-3 py-2">
-                <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                <dd className={cn("break-words text-right font-mono text-xs", dataToneClass[field.tone])}>{field.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </>
-      ) : (
-        <div role="status" className="text-sm text-muted-foreground">{emptyText}</div>
-      )}
-    </DenseRowDetailPanel>
+      objectType={detail?.objectType ?? objectType}
+      title={detail?.title}
+      status={detail ? { label: detail.statusLabel, tone: detail.statusTone } : null}
+      subtitle={detail?.subtitle}
+      summary={detail?.detail}
+      actions={detail ? action : null}
+      identity={identity}
+      fields={detail?.fields}
+      shownInRow={detail?.shownInRow}
+      empty={{ text: emptyText }}
+    />
   );
 }
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
     <div className="workspace-header-card p-4">
-      <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">{label}</div>
+      {/* KPI labels are the one place the tracked-caps eyebrow is used, and every tile in a row
+          uses it: per-label casing left "Buying Power Used" beside "MAX DRAWDOWN". */}
+      <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">{label}</div>
       <div className={cn("mt-2 font-mono text-sm font-semibold text-foreground", tone)}>{value}</div>
     </div>
   );
@@ -2403,7 +2453,7 @@ function OrderPreviewPanel({ preview }: { preview: OrderPreview }) {
       data-testid="order-preview"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        <div className="text-xs font-medium text-muted-foreground">
           Order impact preview
         </div>
         <div className={cn("font-semibold", effectTone)} data-testid="order-preview-effect">
@@ -2445,7 +2495,7 @@ function OrderPreviewPanel({ preview }: { preview: OrderPreview }) {
 function PreviewStat({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <dt className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</dt>
       <dd className={cn("text-foreground", mono && "font-mono")}>{value}</dd>
     </div>
   );

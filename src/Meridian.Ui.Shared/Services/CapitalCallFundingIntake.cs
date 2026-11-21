@@ -14,7 +14,9 @@ public sealed record CapitalCallFundingInput(
     string CapitalAccountId,
     string InvestorId,
     decimal FundedAmount,
-    IReadOnlyList<string>? EvidenceLinks = null)
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? FundingReceiptId = null,
+    string? BankLineId = null)
 {
     public IReadOnlyList<string> EvidenceLinks { get; init; } = EvidenceLinks ?? [];
 }
@@ -239,7 +241,8 @@ internal static class CapitalCallFundingDraftProducer
                 line.Input.FundedAmount,
                 effectiveDate: request.ReceivedDate,
                 occurredAtUtc: evaluatedAtUtc,
-                evidenceReferences: evidenceReferences);
+                evidenceReferences: evidenceReferences,
+                fundingReceiptId: line.Input.FundingReceiptId);
             drafts.Add(draft);
 
             if (!string.IsNullOrWhiteSpace(draft.Metadata.IdempotencyKey))
@@ -352,10 +355,11 @@ internal static class CapitalCallFundingDraftProducer
         var remaining = line.OpenReceivable - line.Input.FundedAmount;
         // Honesty grading: the fundable ceiling is fully ledger-corroborated (posted issuance and
         // posted funding), but the cash arrival itself rests on the operator-retained remittance
-        // evidence — no bank-feed corroboration is wired into this lane yet.
+        // evidence. The native runner independently corroborates the retained bank transaction;
+        // this calculation kernel does not establish live-provider verification.
         var reasons = new List<string>
         {
-            "The cash receipt itself rests on the retained remittance evidence; no bank-feed corroboration is wired into this lane."
+            "The receipt retains remittance evidence. Native intake separately verifies the retained bank transaction; this assessment does not claim live-provider verification."
         };
         if (remaining > LedgerToleranceConstants.Balance)
         {

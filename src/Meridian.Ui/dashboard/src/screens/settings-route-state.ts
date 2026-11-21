@@ -49,35 +49,35 @@ export const SETTINGS_ROUTE_TABS: readonly SettingsRouteTab[] = [
 
 export const SETTINGS_ROUTE_VIEW_COPY: Readonly<Record<SettingsRouteViewId, { title: string; description: string }>> = {
   chooser: {
-    title: "Settings",
-    description: "Choose the operator task you need without loading unrelated administration controls."
+    title: "Settings overview",
+    description: "Pick the setup task you need."
   },
   preferences: {
-    title: "Preferences",
-    description: "Personalize this browser workstation without changing authority or service configuration."
+    title: "Workstation preferences",
+    description: "Set how the workstation looks. Your choices follow you to other browsers and the desktop app."
   },
   access: {
-    title: "Access",
-    description: "Review authentication posture and manage scoped authority with retained audit evidence."
+    title: "Access and authority",
+    description: "Review who is signed in and what they are allowed to do."
   },
   operations: {
-    title: "Accounting systems",
-    description: "External general-ledger connections and asset-profile governance."
+    title: "External ledger connections",
+    description: "Connect external general ledgers and manage asset profiles."
   },
   providers: {
     title: "Provider connections",
-    description: "Review provider health and choose guided setup or advanced runtime evidence."
+    description: "Check provider health and set up or adjust a connection."
   },
   "provider-setup": {
     title: "Guided provider setup",
-    description: "Configure and verify one provider connection before reviewing advanced runtime evidence."
+    description: "Set up one provider connection and verify that it works."
   },
   "provider-advanced": {
     title: "Advanced provider controls",
-    description: "Inspect provider integration manifests, sync evidence, quarantine, and activation controls."
+    description: "Inspect a provider's sync history and turn its connection on or off."
   },
   diagnostics: {
-    title: "Diagnostics",
+    title: "Current failures and events",
     description: "Start with current failures and recent events that need operator attention."
   },
   "diagnostics-advanced": {
@@ -151,7 +151,7 @@ export function resolveLegacySettingsHash(hash: string): SettingsRouteState | nu
   if (normalizedHash === "runtime-feature-capabilities" || normalizedHash === "backend-capability-coverage") {
     return routeState("diagnostics-advanced", null, true);
   }
-  if (normalizedHash === "settings-appearance") {
+  if (normalizedHash === "settings-appearance" || normalizedHash === "settings-notifications") {
     return routeState("preferences", null, true);
   }
   if (normalizedHash === "settings-overview" || normalizedHash === "profile-authentication" || normalizedHash === "scoped-access-control") {

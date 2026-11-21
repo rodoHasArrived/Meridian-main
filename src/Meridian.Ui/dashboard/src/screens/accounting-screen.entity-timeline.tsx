@@ -1,0 +1,92 @@
+import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
+import { ExternalLegalReviewFields, ExternalLegalReviewReceipt, isCompleteExternalReview, newExternalReviewInput } from "@/components/accounting/intercompany-external-review";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
+import { FormGrid } from "@/components/ui/form";
+import { TechnicalDetails } from "@/components/ui/technical-details";
+import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
+import type { EntityLifecycleRevision, EntityOperationScope, EntityTimeline } from "@/types/entity-operations";
+import { effectiveUtc, EntityOperationTable, MutationFeedback, newIdentity, OperationError, OperationField, today, useEntityData, useEntityMutation } from "./accounting-screen.entity-operations.shared";
+
+const statuses = ["Draft", "Forming", "Active", "AmendmentPending", "Restructuring", "WindingDown", "Dissolved", "Merged"];
+const events = ["Formation", "LegalFormChange", "NameChange", "JurisdictionChange", "Amendment", "Restructure", "SpvRollup", "BeneficialOwnershipChange", "Dissolution", "Reactivation", "Other"];
+
+export function EntityLifecycleTimeline({ scope }: { scope: EntityOperationScope }) {
+  const [entityId, setEntityId] = useState(scope.graph?.entities.find((entity) => entity.entityId === scope.book.fundStructureNodeId)?.entityId ?? scope.graph?.entities[0]?.entityId ?? "");
+  const [organizationId, setOrganizationId] = useState(scope.graph?.organizations[0]?.organizationId ?? "");
+  const [asOf, setAsOf] = useState(today());
+  const [drafting, setDrafting] = useState(false);
+  const query = new URLSearchParams({ organizationId, asOf: `${asOf}T23:59:59.9999999Z` });
+  const timeline = useEntityData<EntityTimeline>(entityId && organizationId && asOf ? `/api/fund-structure/entities/${entityId}/timeline?${query}` : null);
+  const currentLifecycle = useEntityData<EntityLifecycleRevision>(entityId && scope.capabilities.canManageLifecycle ? endpoints.lifecycle(entityId) : null);
+  return <section className="space-y-4"><h3 className="font-semibold">Entity timeline and legal perimeter</h3><FormGrid columns={3}>
+    <OperationField label="Timeline organization" value={organizationId} onChange={setOrganizationId} required><option value="">Select organization</option>{scope.graph?.organizations.map((organization) => <option key={organization.organizationId} value={organization.organizationId}>{organization.name}</option>)}</OperationField>
+    <OperationField label="Timeline entity" value={entityId} onChange={(value) => { setEntityId(value); setDrafting(false); }} required><option value="">Select entity</option>{scope.graph?.entities.map((entity) => <option key={entity.entityId} value={entity.entityId}>{entity.name}</option>)}</OperationField>
+    <OperationField label="Timeline as of (UTC)" value={asOf} onChange={setAsOf} type="date" required />
+  </FormGrid><PanelReload reload={() => { if (drafting && !timeline.error && !currentLifecycle.error) return; timeline.refresh(); currentLifecycle.refresh(); }} failed={Boolean(timeline.error || currentLifecycle.error)} busy={timeline.loading} what="entity timeline" />
+    <OperationError error={timeline.error} />{timeline.loading ? <p role="status">Loading shared entity history…</p> : null}
+    {timeline.data ? <div className="space-y-4"><p className="text-sm"><strong>{timeline.data.entity.name}</strong> · {timeline.data.entity.baseCurrency} · server as of {timeline.data.asOf}</p>
+      {timeline.data.warnings.map((warning, index) => <p role="status" className="text-sm text-warning" key={index}>{warning}</p>)}
+      <EntityOperationTable label="Entity lifecycle timeline" rows={timeline.data.lifecycleRevisions.flatMap((revision) => revision.timeline.map((state) => ({ revision, state })))} getRowId={({ revision, state }) => `${revision.revision}:${state.transitionId}`} emptyText="No lifecycle windows are retained."
+        columns={[
+          { id: "revision", label: "Revision", rowHeader: true, render: ({ revision }) => `${revision.revision}${revision.legacySnapshot ? " · legacy snapshot" : ""}` },
+          { id: "effective", label: "Effective window", render: ({ state }) => `${state.effectiveFrom} → ${state.effectiveTo ?? "Open"} (exclusive)` },
+          { id: "lifecycle", label: "Lifecycle", render: ({ state }) => <><Badge variant="outline">{state.status}</Badge><p className="mt-1 text-xs">{state.eventKind}</p>{state.successorEntityId ? <p className="mt-1 break-all text-xs">Successor {state.successorEntityId}</p> : null}</> },
+          { id: "evidence", label: "Evidence", render: ({ revision, state }) => <>{revision.reason}{revision.externalReview ? <ExternalLegalReviewReceipt review={revision.externalReview} /> : null}<p className="mt-1 text-xs">{revision.recordedBy} · {revision.recordedAtUtc}</p><TechnicalDetails label={`Lifecycle evidence revision ${revision.revision}, transition ${state.eventKind}`}><p className="break-all text-xs">{revision.evidenceReference}</p><p className="mt-1 break-all font-mono text-xs">{revision.contentHash}</p></TechnicalDetails></> }
+        ]} />
+      <TechnicalDetails label="Ownership, agreements and books"><div className="grid gap-4 lg:grid-cols-3"><div><h4 className="mb-2 text-sm font-semibold">Ownership links</h4><ul className="space-y-2 text-xs">{timeline.data.ownershipLinks.map((link) => <li key={link.ownershipLinkId} className="break-all">{link.relationshipType} · {link.ownershipPercent ?? "Unspecified"}% · {link.effectiveFrom} → {link.effectiveTo ?? "Open"}<p>{link.parentNodeId} → {link.childNodeId}</p></li>)}</ul></div>
+        <div><h4 className="mb-2 text-sm font-semibold">Legal agreements and accounting profiles</h4><ul className="space-y-2 text-xs">{timeline.data.agreements.map((agreement) => <li key={agreement.agreementId}>{agreement.code} · {agreement.effectiveStatus} · {agreement.currency}<p>Applicable legal version {agreement.applicableRevision?.agreementVersion ?? "None"}</p></li>)}{timeline.data.accountingArrangements.map((arrangement) => <li key={arrangement.arrangementId}>{arrangement.arrangementReference} · {arrangement.status}<p>Accounting revision {arrangement.revisionNumber} · legal version {arrangement.canonicalAgreementVersion}</p></li>)}</ul></div>
+        <div><h4 className="mb-2 text-sm font-semibold">Books</h4><ul className="space-y-2 text-xs">{timeline.data.books.map((book) => <li key={book.ledgerBookId}>{book.displayName} · {book.accountingBasis} · {book.baseCurrency}</li>)}</ul></div></div></TechnicalDetails>
+    </div> : null}
+    <OperationError error={currentLifecycle.error} />
+    {scope.capabilities.canManageLifecycle && timeline.data?.canAttestExternalLifecycleReview === true && currentLifecycle.data ? <LifecycleTransitionEditor key={`${entityId}:${currentLifecycle.data.revision}`} scope={scope} current={currentLifecycle.data} onSaved={() => { setDrafting(false); timeline.refresh(); currentLifecycle.refresh(); }} onDraft={() => setDrafting(true)} />
+      : !scope.capabilities.canManageLifecycle ? <p className="text-sm text-muted-foreground">Entity lifecycle transitions require fund-structure management permission. Historical posted balances remain inspectable.</p> : timeline.data && timeline.data.canAttestExternalLifecycleReview !== true ? <p className="text-sm text-muted-foreground">External lifecycle-review attestation requires compliance management capability for this entity.</p> : null}
+  </section>;
+}
+
+interface LifecyclePreparedRequest {
+  entityId: string; expectedRevision: number; reason: string; evidenceReference: string;
+  timeline: EntityLifecycleRevision["timeline"];
+}
+function LifecycleTransitionEditor({ scope, current, onSaved, onDraft }: { scope: EntityOperationScope; current: EntityLifecycleRevision; onSaved: () => void; onDraft: () => void }) {
+  const [status, setStatus] = useState("Active");
+  const [eventKind, setEventKind] = useState("Amendment");
+  const [effectiveFrom, setEffectiveFrom] = useState(today());
+  const [successorEntityId, setSuccessorEntityId] = useState("");
+  const [reason, setReason] = useState("");
+  const [evidence, setEvidence] = useState("");
+  const [externalReview, setExternalReview] = useState(newExternalReviewInput);
+  const [prepared, setPrepared] = useState<{ request: LifecyclePreparedRequest; submittedHash: string } | null>(null);
+  const mutation = useEntityMutation();
+  function change(setter: (value: string) => void) { return (value: string) => { setter(value); setPrepared(null); onDraft(); }; }
+  async function prepare(event: FormEvent) {
+    event.preventDefault();
+    const date = effectiveUtc(effectiveFrom);
+    const priorStates = current.timeline.map((state) => state.effectiveTo === null ? { ...state, effectiveTo: date } : state);
+    const request = { entityId: current.entityId, expectedRevision: current.revision, reason: reason.trim(), evidenceReference: evidence.trim(),
+      timeline: [...priorStates, { transitionId: newIdentity(), effectiveFrom: date, effectiveTo: null, status, eventKind, successorEntityId: successorEntityId || null }] };
+    setPrepared(null);
+    const result = await mutation.run<{ submittedHash: string }>(`${endpoints.lifecycle(current.entityId)}/review-preview`, request,
+      "Exact lifecycle subject prepared. Inspect and attest retained external review before recording it.");
+    if (result?.submittedHash) setPrepared({ request, submittedHash: result.submittedHash });
+  }
+  async function retain() {
+    if (!prepared || !isCompleteExternalReview(externalReview)) return;
+    const result = await mutation.run<EntityLifecycleRevision>(`${endpoints.lifecycle(current.entityId)}/revisions`, {
+      ...prepared.request, externalReview: { ...externalReview, submittedHash: prepared.submittedHash }
+    }, "Externally reviewed lifecycle successor retained. Status resolves by its effective window; historical journals remain unchanged.");
+    if (result) onSaved();
+  }
+  return <TechnicalDetails label="Retain an entity lifecycle transition"><form className="space-y-3" onSubmit={(event) => void prepare(event)}><p className="text-sm text-muted-foreground">This closes the current open status window at the selected UTC date and appends a new window. A merger requires an explicit successor. Prepare the exact legal subject before attesting external review.</p><fieldset disabled={mutation.busy} className="space-y-3"><FormGrid columns={3}>
+    <OperationField label="Next entity status" value={status} onChange={change(setStatus)}>{statuses.map((value) => <option key={value}>{value}</option>)}</OperationField>
+    <OperationField label="Lifecycle event" value={eventKind} onChange={change(setEventKind)}>{events.map((value) => <option key={value}>{value}</option>)}</OperationField>
+    <OperationField label="Lifecycle transition effective from (UTC)" value={effectiveFrom} onChange={change(setEffectiveFrom)} type="date" required />
+    <OperationField label="Successor entity" value={successorEntityId} onChange={change(setSuccessorEntityId)} required={status === "Merged" || eventKind === "SpvRollup"}><option value="">Select successor if applicable</option>{scope.graph?.entities.filter((entity) => entity.entityId !== current.entityId).map((entity) => <option key={entity.entityId} value={entity.entityId}>{entity.name}</option>)}</OperationField>
+    <OperationField label="Lifecycle transition reason" value={reason} onChange={change(setReason)} required />
+    <OperationField label="Lifecycle transition evidence" value={evidence} onChange={change(setEvidence)} required />
+  </FormGrid><Link className="inline-block text-sm underline underline-offset-4" to={`/reporting/evidence?${new URLSearchParams({ classification: "Agreement", linkKind: "LegalEntity", objectId: current.entityId, ledgerBookId: scope.book.ledgerBookId, fundProfileId: scope.book.fundProfileId })}`}>Retain and review lifecycle evidence for this entity</Link><Button type="submit" variant="outline">Prepare lifecycle review subject</Button>
+  {prepared ? <><ExternalLegalReviewFields value={externalReview} onChange={setExternalReview} subjectHash={prepared.submittedHash} busy={mutation.busy} /><Button type="button" variant="outline" disabled={!isCompleteExternalReview(externalReview)} onClick={() => void retain()}>Attest external review and retain lifecycle successor</Button></> : null}
+  </fieldset><MutationFeedback state={mutation} /></form></TechnicalDetails>;
+}

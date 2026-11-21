@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * SLA chip — the case clock. Mirrors the reconciliation case SLA model
  * (`ReconciliationCaseSummaryDto`: `SlaState` OnTrack | Warning | Breached,
@@ -25,6 +26,6 @@ export interface SlaChipProps extends React.HTMLAttributes<HTMLElement> {
   /** Leading label. Pass "" to drop it. @default "SLA" */
   label?: string;
 }
-export declare function SlaChip(props: SlaChipProps): JSX.Element;
+export declare function SlaChip(props: SlaChipProps): React.JSX.Element;
 /** Format a millisecond duration as "2d 4h" / "3h 12m" / "9m". */
 export declare function formatSlaDuration(ms: number): string;

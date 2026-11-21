@@ -1,5 +1,15 @@
 import fixtureManualJournalWorkbench from "../test/fixtures/manual-journal-workbench.json";
 import { accountingPayload as fixtureAccountingWorkspace } from "../scenarios/accounting-payload";
+import {
+  capHealthyOnStaleEvidence,
+  countOpenBreaks,
+  countOpenOrders,
+  countProviderHealth,
+  OPEN_BREAKS_DEFINITION,
+  OPEN_ORDERS_DEFINITION,
+  PROVIDERS_DEFINITION
+} from "./cross-screen-counts";
+import type { WorkstationCrossScreenCounts } from "../types/cross-screen-counts";
 import { fixtureTradingRisk } from "./dev-fixtures.trading-risk";
 import type {
   CoveredCallChainPreview,
@@ -125,6 +135,9 @@ import {
 } from "./dev-fixtures/fixture-resolver";
 import { marketDataFixturePatterns, marketDataFixtureRoutes } from "./dev-fixtures/market-data-fixtures";
 import { bootstrapFixtureRoutes } from "./dev-fixtures/bootstrap-fixtures";
+import { analyticalFixturePatterns, analyticalFixtureRoutes } from "./dev-fixtures/analytical-fixtures";
+import { workstationSurfaceFixturePatterns, workstationSurfaceFixtureRoutes } from "./dev-fixtures/workstation-surface-fixtures";
+import { UI_API_ROUTES } from "./ui-api-routes.generated";
 
 const fixtureSession: SessionInfo = {
   displayName: "Ops Desk",
@@ -155,10 +168,10 @@ const fixtureSystemOverview: SystemOverviewResponse = {
 
 const fixtureStrategyWorkspace: StrategyWorkspaceResponse = {
   metrics: [
-    { id: "runs", label: "Runs", value: "24", delta: "+8%", tone: "success" },
-    { id: "queued", label: "Queued", value: "3", delta: "0%", tone: "default" },
-    { id: "review", label: "Needs Review", value: "2", delta: "-1%", tone: "warning" },
-    { id: "promotions", label: "Promotions", value: "5", delta: "+2", tone: "default" }
+    { id: "active-runs", label: "Active Runs", value: "1", delta: "+1", tone: "success" },
+    { id: "queued-runs", label: "Queued Promotions", value: "0", delta: "0%", tone: "default" },
+    { id: "review-runs", label: "Needs Review", value: "0", delta: "0%", tone: "warning" },
+    { id: "winning-runs", label: "Positive P&L", value: "2", delta: "+2", tone: "default" }
   ],
   runs: [
     {
@@ -694,6 +707,36 @@ const fixtureDataWorkspace: DataWorkspaceResponse = {
       reasonCode: "review-backfill",
       recommendedAction: "Review queued options-chain backfill before report-pack use.",
       gateImpact: "Review required"
+    },
+    // The server lists every provider with a saved connection or a routing connection, so the
+    // seeded workspace does too: these are the Plaid connection and the Alpaca paper route below.
+    {
+      providerId: "plaid",
+      displayName: "Plaid",
+      provider: "Plaid",
+      status: "Blocked",
+      capability: "Bank account evidence",
+      latency: "Latency not reported",
+      note: "Sandbox credentials are not connected.",
+      trustScore: "0.00",
+      signalSource: "provider-connection",
+      reasonCode: "credentials-missing",
+      recommendedAction: "Connect Plaid sandbox credentials before bank-account evidence can be retained.",
+      gateImpact: "Blocks accounting evidence"
+    },
+    {
+      providerId: "alpaca",
+      displayName: "Alpaca paper route",
+      provider: "Alpaca",
+      status: "Healthy",
+      capability: "Live quotes",
+      latency: "Latency not reported",
+      note: "Paper route is enabled; certification is pending.",
+      trustScore: "0.90",
+      signalSource: "provider-routing",
+      reasonCode: "provider-ready",
+      recommendedAction: "Keep provider in the active trust set.",
+      gateImpact: "Supports paper trading"
     }
   ],
   backfills: [
@@ -2195,7 +2238,7 @@ const fixturePortfolioFinancialRecordExplorerRows: FinancialRecordExplorerDto["r
       fields: [
         { label: "Quantity", value: "100", detail: "Retained fixture quantity.", tone: "Default" },
         { label: "Market value", value: "$18,840.00", detail: "Fixture market value.", tone: "Default" },
-        { label: "Unrealized PnL", value: "+$1,180.00", detail: "Fixture unrealized gain.", tone: "Success" }
+        { label: "Unrealized P&L", value: "+$1,180.00", detail: "Fixture unrealized gain.", tone: "Success" }
       ],
       proofActions: [
         {
@@ -2254,7 +2297,7 @@ const fixturePortfolioFinancialRecordExplorerRows: FinancialRecordExplorerDto["r
       fields: [
         { label: "Quantity", value: "16", detail: "Retained fixture quantity.", tone: "Default" },
         { label: "Market value", value: "$6,747.20", detail: "Fixture market value.", tone: "Default" },
-        { label: "Unrealized PnL", value: "+$59.20", detail: "Fixture unrealized gain.", tone: "Success" }
+        { label: "Unrealized P&L", value: "+$59.20", detail: "Fixture unrealized gain.", tone: "Success" }
       ],
       proofActions: [
         {
@@ -2328,7 +2371,7 @@ const fixturePortfolioFinancialRecordExplorer: FinancialRecordExplorerDto = {
       tone: "Default"
     },
     {
-      label: "Unrealized PnL",
+      label: "Unrealized P&L",
       value: "+$1,239",
       detail: "Fixture unrealized gain retained for portfolio review.",
       tone: "Success"
@@ -2343,8 +2386,8 @@ const fixturePortfolioFinancialRecordExplorer: FinancialRecordExplorerDto = {
     { columnId: "quantity", header: "Quantity", cellKind: "number", width: 120, isRightAligned: true },
     { columnId: "averageCost", header: "Average cost", cellKind: "currency", width: 140, isRightAligned: true },
     { columnId: "marketValue", header: "Market value", cellKind: "currency", width: 150, isRightAligned: true },
-    { columnId: "unrealizedPnl", header: "Unrealized PnL", cellKind: "currency", width: 150, isRightAligned: true },
-    { columnId: "realizedPnl", header: "Realized PnL", cellKind: "currency", width: 140, isRightAligned: true }
+    { columnId: "unrealizedPnl", header: "Unrealized P&L", cellKind: "currency", width: 150, isRightAligned: true },
+    { columnId: "realizedPnl", header: "Realized P&L", cellKind: "currency", width: 140, isRightAligned: true }
   ],
   rows: fixturePortfolioFinancialRecordExplorerRows,
   selectedRecord: fixturePortfolioFinancialRecordExplorerRows[0]!.detail,
@@ -4387,7 +4430,7 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       fromGateStatus: "NotStarted",
       toGateStatus: "InProgress",
       actor: "ops-user",
-      rationale: "Open monthly close lane.",
+      rationale: "Open monthly close.",
       correlationId: "dev-continuity",
       references: [],
       previousHash: null,
@@ -5831,18 +5874,55 @@ function createFixtureFinancialRecordExplorer(seed: FixtureFinancialRecordExplor
   };
 }
 
+// Counted from the same fixtures the Trading, Data and Accounting screens read, with the same
+// definitions, as the server counts its own sources (A3).
+// The seeded evidence times are fixed, so the server rule that a provider is not Healthy on
+// evidence older than three days is applied here as the server would apply it at request time.
+// The seeded Data payload and the seeded shared count both read this list.
+const fixtureListedDataProviders: DataWorkspaceResponse["providers"] = fixtureDataWorkspace.providers.map((provider) => {
+  const connection = fixtureProviderConnections.find((candidate) => candidate.providerId === provider.providerId);
+  const readiness = fixtureProviderReadiness.providers.find((candidate) => candidate.providerId === provider.providerId);
+  return {
+    ...provider,
+    status: capHealthyOnStaleEvidence(provider.status, [
+      connection?.lastSuccessfulAt, connection?.lastVerifiedAt, readiness?.lastSuccessfulAt, readiness?.lastVerifiedAt,
+      ...(readiness?.evidence ?? []).map((item) => item.observedAt)
+    ])
+  };
+});
+
+const fixtureCrossScreenCounts: WorkstationCrossScreenCounts = {
+  asOf: "2026-03-21T14:30:00Z",
+  openOrders: { count: countOpenOrders(fixtureTradingWorkspace.openOrders) ?? 0, definition: OPEN_ORDERS_DEFINITION },
+  providers: { ...(countProviderHealth(fixtureListedDataProviders) ?? { healthy: 0, total: 0 }), definition: PROVIDERS_DEFINITION },
+  openBreaks: { count: countOpenBreaks(fixtureAccountingWorkspace.breakQueue) ?? 0, definition: OPEN_BREAKS_DEFINITION }
+};
+
 const fixtures = {
   [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
+  [WORKSTATION_API_ENDPOINTS.crossScreenCounts]: fixtureCrossScreenCounts,
   [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
-  [WORKSTATION_API_ENDPOINTS.strategy]: fixtureStrategyWorkspace,
+  [WORKSTATION_API_ENDPOINTS.strategy]: { ...fixtureStrategyWorkspace, metrics: fixtureStrategyWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded strategy workspace snapshot", source: "Deterministic development fixture" })) },
   [WORKSTATION_API_ENDPOINTS.strategyBriefing]: fixtureStrategyBriefing,
   "/api/workstation/research": fixtureStrategyWorkspace,
-  [WORKSTATION_API_ENDPOINTS.trading]: fixtureTradingWorkspace,
-  [WORKSTATION_API_ENDPOINTS.portfolio]: fixturePortfolioWorkspace,
+  [WORKSTATION_API_ENDPOINTS.trading]: { ...fixtureTradingWorkspace, metrics: fixtureTradingWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded trading workspace snapshot", source: "Deterministic development fixture" })) },
+  [WORKSTATION_API_ENDPOINTS.portfolio]: { ...fixturePortfolioWorkspace, metrics: fixturePortfolioWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded portfolio workspace snapshot", source: "Deterministic development fixture" })) },
   [workstationFinancialRecordExplorerEndpoint("portfolio")]: fixturePortfolioFinancialRecordExplorer,
   [WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage]: fixturePortfolioMultiAssetCoverage,
   [WORKSTATION_API_ENDPOINTS.tradingReadiness]: fixtureTradingReadiness,
   [WORKSTATION_API_ENDPOINTS.operatorInbox]: fixtureOperatorInbox,
+  "/api/workstation/operator/triage": {
+    asOf: fixtureOperatorInbox.asOf,
+    actorId: "seeded-demo-operator",
+    persistenceAvailable: false,
+    unavailableReason: "Seeded read-only inbox. Use a configured shared host for durable triage actions.",
+    items: fixtureOperatorInbox.items.map(item => ({
+      ...item, ownerId: null, dueAt: null, version: 0, sourceVersion: null,
+      acknowledgedAt: null, snoozedUntil: null, activity: [],
+      capabilities: { canAssign: false, canAcknowledge: false, canSnooze: false,
+        canUnsnooze: false, disabledReason: "Seeded read-only inbox; actions are unavailable in this preview." }
+    }))
+  },
   [WORKSTATION_API_ENDPOINTS.workflowSummary]: fixtureWorkflowSummary,
   [WORKSTATION_API_ENDPOINTS.featureCapabilities]: fixtureFeatureCapabilities,
   [WORKSTATION_API_ENDPOINTS.workflowLibrary]: fixtureWorkflowLibrary,
@@ -5866,8 +5946,8 @@ const fixtures = {
   [brokerageConnectionStatusEndpoint("alpaca")]: fixtureAlpacaConnection,
   [brokerageConnectionStatusEndpoint("robinhood")]: fixtureRobinhoodConnection,
   [PORTFOLIO_API_ENDPOINTS.household]: fixtureAlpacaPortfolio,
-  [WORKSTATION_API_ENDPOINTS.data]: fixtureDataWorkspace,
-  "/api/workstation/data-operations": fixtureDataWorkspace,
+  [WORKSTATION_API_ENDPOINTS.data]: { ...fixtureDataWorkspace, providers: fixtureListedDataProviders, metrics: fixtureDataWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded data workspace snapshot", source: "Deterministic development fixture" })) },
+  "/api/workstation/data-operations": { ...fixtureDataWorkspace, providers: fixtureListedDataProviders },
   [PROVIDER_API_ENDPOINTS.connections]: fixtureProviderConnections,
   [PROVIDER_API_ENDPOINTS.readiness]: fixtureProviderReadiness,
   [PROVIDER_ROUTING_API_ENDPOINTS.connections]: fixtureProviderRoutingConnections,
@@ -5984,13 +6064,18 @@ const fixtures = {
   [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
   [RISK_API_ENDPOINTS.rules]: fixtureRiskRules,
   [riskRuleConfigEndpoint("DrawdownCircuitBreaker")]: fixtureDrawdownRiskRuleConfig,
+  // The books the Accounting configuration fixture already declares, served on their own route.
+  [UI_API_ROUTES.LedgerBooks]: fixtureAccountingConfiguration.ledgerBooks,
   ...marketDataFixtureRoutes,
-  ...bootstrapFixtureRoutes
+  ...bootstrapFixtureRoutes,
+  ...workstationSurfaceFixtureRoutes,
+  ...analyticalFixtureRoutes
 } satisfies Record<string, unknown>;
 
 const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRecordExplorer.replace("/{explorerId}", "");
 
 const dynamicFixturePatterns: DynamicFixturePattern[] = [
+  ...workstationSurfaceFixturePatterns,
   {
     pattern: apiRoutePattern(RECONCILIATION_API_ENDPOINTS.breakQueue, "/[^/]+"),
     resolve: (cleanPath) => fixtureAccountingWorkspace.breakQueue.find((item) => item.breakId === readDecodedPathSegment(cleanPath))
@@ -6059,6 +6144,7 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
     }
   },
   ...marketDataFixturePatterns,
+  ...analyticalFixturePatterns,
   {
     pattern: apiRoutePattern(PROMOTION_API_ENDPOINTS.evaluate, "/[^/]+"),
     resolve: (cleanPath) => {
@@ -6113,6 +6199,12 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
   {
     pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.evidenceSubjects, "/accounting-record/[^/]+/export-manifest"),
     resolve: () => fixtureAccountingRecordExportResponse
+  },
+  {
+    // Saved table views: an empty personal list, so captures show the normal state rather than the
+    // failure notice. Writes never match: resolveScenarioResponse returns early for non-GET.
+    pattern: apiRoutePattern("/api/workstation/tables", "/[^/]+/views"),
+    resolve: () => []
   }
 ];
 

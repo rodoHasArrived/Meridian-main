@@ -150,6 +150,30 @@ public sealed class AutomatedJournalEventProducerTests
     }
 
     [Fact]
+    public async Task DividendProducer_CommitmentMeasuredLot_SkipsInsteadOfMultiplyingTheRateByCommittedCurrency()
+    {
+        // A private fund interest's lots are measured in commitment amount, so a per-unit dividend
+        // has no reading on the held quantity; the producer reports it instead of accruing.
+        var dividend = DividendAction(AaplSecurityId, new DateOnly(2026, 07, 02), 0.26m);
+        var securityMaster = new FakeSecurityMasterQueryService(
+            tickerToSecurityId: new Dictionary<string, Guid> { ["AAPL"] = AaplSecurityId },
+            corporateActions: [dividend],
+            assetClass: "PrivateFundInterest");
+        var producer = new CorporateActionDividendEventProducer(securityMaster);
+
+        var production = await producer.ProduceAsync(new CorporateActionDividendRequest(
+            [new DividendAccrualPosition("AAPL", Quantity: 1_000_000m)],
+            Currency: "USD",
+            WindowStart: new DateOnly(2026, 07, 01),
+            WindowEnd: new DateOnly(2026, 07, 31),
+            AsOf));
+
+        production.Events.Should().BeEmpty();
+        production.Skipped.Should().ContainSingle()
+            .Which.Reason.Should().Contain("Commitment");
+    }
+
+    [Fact]
     public async Task DividendProducer_UnresolvedTicker_SurfacesSkipAndContinues()
     {
         var dividend = DividendAction(AaplSecurityId, new DateOnly(2026, 07, 02), 0.26m);
@@ -1654,13 +1678,16 @@ public sealed class AutomatedJournalEventProducerTests
     {
         private readonly IReadOnlyDictionary<string, Guid> _tickerToSecurityId;
         private readonly IReadOnlyList<CorporateActionDto> _corporateActions;
+        private readonly string _assetClass;
 
         public FakeSecurityMasterQueryService(
             IReadOnlyDictionary<string, Guid> tickerToSecurityId,
-            IReadOnlyList<CorporateActionDto> corporateActions)
+            IReadOnlyList<CorporateActionDto> corporateActions,
+            string assetClass = "Equity")
         {
             _tickerToSecurityId = tickerToSecurityId;
             _corporateActions = corporateActions;
+            _assetClass = assetClass;
         }
 
         public Task<SecurityDetailDto?> GetByIdentifierAsync(
@@ -1706,12 +1733,12 @@ public sealed class AutomatedJournalEventProducerTests
         public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<ConvertibleEquityTermsDto?>(null);
 
-        private static SecurityDetailDto? Detail(Guid securityId)
+        private SecurityDetailDto? Detail(Guid securityId)
         {
             var emptyTerms = JsonDocument.Parse("{}").RootElement;
             return new SecurityDetailDto(
                 securityId,
-                "Equity",
+                _assetClass,
                 SecurityStatusDto.Active,
                 "Test Security",
                 "USD",

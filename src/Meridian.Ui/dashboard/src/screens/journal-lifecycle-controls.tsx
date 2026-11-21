@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { ManualJournalEntryWorkbenchViewModel } from "./accounting-screen.view-model";
 import type { JournalEntryLifecycleAction } from "@/types";
 
@@ -34,10 +35,14 @@ export function JournalLifecycleControls({ view }: { view: ManualJournalEntryWor
       <p className="mt-1 text-sm">{view.lifecycleConflict.action} was not retried. Review latest replaces the current editor, including unsaved edits, with the latest retained draft. The submitted snapshot and exact decision notes remain in this comparison.</p>
       {view.lifecycleConflict.loading ? <p role="status" className="mt-2 text-sm">Reading the latest journal once…</p> : null}
       {view.lifecycleConflict.unavailableReason ? <p role="alert" className="mt-2 text-sm">{view.lifecycleConflict.unavailableReason}</p> : null}
-      {view.lifecycleConflict.latest ? <div className="mt-2 overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr><th>Field</th><th>Submitted snapshot</th><th>Latest retained</th></tr></thead>
-        <tbody>{view.lifecycleConflict.changes.map((change) => <tr key={change.label}><th className="pr-3 font-medium">{change.label}</th><td className="whitespace-pre-wrap break-words pr-3">{change.before}</td><td className="whitespace-pre-wrap break-words">{change.after}</td></tr>)}</tbody></table>
-        {view.lifecycleConflict.changes.length === 0 ? <p>No differences were found in the displayed fields. Review the latest retained journal before acting.</p> : null}
-      </div> : null}
+      {view.lifecycleConflict.latest ? <div className="mt-2"><DenseDataTable rows={view.lifecycleConflict.changes}
+        getRowId={(change) => change.label} maxVisibleRows={null} ariaLabel="Journal conflict field comparison"
+        emptyText="No differences were found in the displayed fields. Review the latest retained journal before acting."
+        columns={[
+          { id: "field", label: "Field", render: (change) => change.label },
+          { id: "before", label: "Submitted snapshot", render: (change) => <span className="block whitespace-pre-wrap break-words">{change.before}</span> },
+          { id: "after", label: "Latest retained", render: (change) => <span className="block whitespace-pre-wrap break-words">{change.after}</span> }
+        ]} /></div> : null}
       <p className="mt-2 text-sm font-medium">Retained decision notes</p><p className="whitespace-pre-wrap break-words text-sm">{view.lifecycleConflict.notes || "Not recorded"}</p>
       {view.lifecycleConflict.reviewedLatest ? <p role="status" className="mt-2 text-sm">Latest journal loaded. Validate again and make a fresh decision; the submitted snapshot and exact notes remain in this comparison.</p> : null}
       <div className="mt-3 flex flex-wrap gap-2"><Button size="sm" disabled={!view.lifecycleConflict.latest || view.lifecycleConflict.loading || view.lifecycleConflict.reviewedLatest}
@@ -74,10 +79,14 @@ export function JournalLifecycleControls({ view }: { view: ManualJournalEntryWor
           : review?.action === "Approve" ? "Approval does not post the journal. Posting remains a separate governed decision."
           : "Posting makes the approved journal immutable. Corrections require reversal or rebook."}</p>
         <div className="mt-3 overflow-x-auto" role="region" aria-label="Confirmation balance impact" tabIndex={0}>
-          <table className="w-full text-sm"><thead><tr><th className="text-left">Account</th><th>Debit</th><th>Credit</th><th>Effect</th></tr></thead>
-            <tbody>{view.balanceImpactRows.map((row) => <tr key={row.id}><td>{row.accountName}</td><td className="text-right font-mono">{row.debitLabel}</td><td className="text-right font-mono">{row.creditLabel}</td><td>{row.netEffectLabel}</td></tr>)}</tbody>
-          </table>
-          {view.balanceImpactRows.length === 0 ? <p>Balance impact unavailable. Review the journal lines.</p> : null}
+          <DenseDataTable rows={view.balanceImpactRows} getRowId={(row) => row.id} maxVisibleRows={null}
+            ariaLabel="Journal confirmation balance impact" emptyText="Balance impact unavailable. Review the journal lines."
+            columns={[
+              { id: "account", label: "Account", render: (row) => row.accountName },
+              { id: "debit", label: "Debit", align: "right", render: (row) => <span className="font-mono">{row.debitLabel}</span> },
+              { id: "credit", label: "Credit", align: "right", render: (row) => <span className="font-mono">{row.creditLabel}</span> },
+              { id: "effect", label: "Effect", render: (row) => row.netEffectLabel }
+            ]} />
         </div>
         <label className="mt-4 block text-sm" htmlFor="journal-decision-reason">Reason {needsReason ? "(required)" : "(optional)"}</label>
         <textarea id="journal-decision-reason" className="mt-1 w-full rounded border border-border bg-background p-2" value={reason} onChange={(event) => setReason(event.target.value)} required={needsReason} />

@@ -18,15 +18,15 @@ describe("Accounting navigation", () => {
     expect(ACCOUNTING_NAVIGATION_GROUPS.map((group) => (
       [group.label, group.items.map((item) => item.label)]
     ))).toEqual([
-      ["Close", ["Today", "Close", "Close calendar"]],
-      ["Records", ["Ledger explorer", "Journal entries", "Capital accounts", "Capital calls", "Security Master"]],
+      ["Close", ["Close cockpit", "Close", "Close calendar"]],
+      ["Records", ["Ledger explorer", "Factor paydown", "Consolidation", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
       ["Reconciliation", ["Import statement", "Casework", "External GL"]],
       ["Review", ["Exceptions", "Approvals"]],
       ["Administration", ["Entity setup", "Configure"]]
     ]);
 
     const routes = ACCOUNTING_NAVIGATION_ITEMS.map((item) => item.route);
-    expect(routes).toHaveLength(15);
+    expect(routes).toHaveLength(17);
     expect(new Set(routes).size).toBe(routes.length);
     expect(routes).not.toContain("/accounting/reporting");
     expect(routes).not.toContain("/reporting/evidence");
@@ -38,7 +38,7 @@ describe("Accounting navigation", () => {
       .map((item) => item.label);
 
     expect(activeLabels("/accounting/accounts/detail")).toEqual(["Ledger explorer"]);
-    expect(activeLabels("/accounting/journal-entries/detail")).toEqual(["Journal entries"]);
+    expect(activeLabels("/accounting/journal-entries/detail")).toEqual(["Adjustments"]);
     expect(activeLabels("/accounting/reconciliation/match")).toEqual(["Casework"]);
     expect(activeLabels("/accounting/reconciliation/external-gl")).toEqual(["External GL"]);
     expect(activeLabels("/accounting/approvals/inbox")).toEqual(["Approvals"]);

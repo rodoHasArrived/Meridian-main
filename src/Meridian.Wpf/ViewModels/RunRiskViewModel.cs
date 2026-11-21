@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.QuantScript.Plotting;
+using Meridian.Wpf.ViewModels.Comparisons;
 using Meridian.Strategies.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -263,6 +264,15 @@ public sealed class RunRiskViewModel : BindableBase
     public IRelayCommand OpenCashFlowCommand { get; }
     public IRelayCommand OpenSelectedSymbolCommand { get; }
 
+    /// <summary>
+    /// The run's per-symbol P&amp;L for its last month against the month before (UX Phase E parity),
+    /// from <see cref="StrategyRunReadService.GetAttributionPeriodComparisonAsync(string, DateOnly?, CancellationToken)"/>.
+    /// </summary>
+    public PeriodComparisonSectionViewModel AttributionComparison { get; } = new(
+        "P&L vs prior month",
+        "Each symbol's P&L for the run's last month against the month before, with commissions and financing; the total is the change in run equity.",
+        "Select a retained strategy run to compare its last month with the month before.");
+
     // ── Constructor ───────────────────────────────────────────────────────────
 
     public RunRiskViewModel(
@@ -325,6 +335,9 @@ public sealed class RunRiskViewModel : BindableBase
 
             _runId = runId;
             ApplyDetail(detail, curve, attribution);
+            _ = AttributionComparison.LoadAsync(async token =>
+                await _readService.GetAttributionPeriodComparisonAsync(runId, null, token)
+                ?? throw new InvalidOperationException("The run is no longer retained, so its months cannot be compared."));
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -358,7 +371,7 @@ public sealed class RunRiskViewModel : BindableBase
         RunAttributionSummary? attribution)
     {
         Title = $"{detail.Summary.StrategyName} — Risk Analytics";
-        StatusText = $"{detail.Summary.Mode} {detail.Summary.Status} · {detail.Summary.StartedAt.LocalDateTime:d}";
+        StatusText = $"{detail.Summary.Mode} {detail.Summary.Status} · {detail.Summary.StartedAt.UtcDateTime:d}";
 
         // ── Exposure metrics (from portfolio snapshot) ────────────────────────
         var portfolio = detail.Portfolio;
@@ -446,6 +459,7 @@ public sealed class RunRiskViewModel : BindableBase
 
     private void ApplyNoRunSelectedState()
     {
+        AttributionComparison.Reset("Select a retained strategy run to compare its last month with the month before.");
         ResetAnalysisState();
         Title = "Portfolio Risk";
         StatusText = "Select a strategy run from the browser.";
@@ -461,6 +475,7 @@ public sealed class RunRiskViewModel : BindableBase
 
     private void ApplyLoadingState(string runId)
     {
+        AttributionComparison.Reset("Loading the run…");
         ResetAnalysisState();
         StatusText = $"Loading risk analytics for run '{runId}'...";
         RunActionStateTitle = "Loading run evidence";

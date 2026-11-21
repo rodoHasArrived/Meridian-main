@@ -1,7 +1,7 @@
 using Meridian.Storage.Archival;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;

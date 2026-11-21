@@ -18,14 +18,15 @@ public sealed class FileContractualCashFlowRunStore(StorageOptions options) : IC
         var retained = await JsonSerializer.DeserializeAsync(input, ContractualCashFlowJsonContext.Default.ContractualCashFlowRun, ct).ConfigureAwait(false)
             ?? throw new InvalidDataException("Empty contractual cash-flow run.");
         if (retained.SubjectKind != subjectKind || retained.SubjectId != subjectId || retained.RunId != runId
-            || !ContractualCashFlowEngine.Verify(retained))
+            || !ContractualCashFlowEngine.Verify(retained) || !ValidAttestationContext(retained))
             throw new InvalidDataException("Contractual cash-flow replay packet failed identity or output verification.");
         return retained;
     }
 
     public async Task<ContractualCashFlowRun> SaveAsync(ContractualCashFlowRun run, CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(run.Actor) || !run.Result.IsCalculated || !ContractualCashFlowEngine.Verify(run))
+        if (string.IsNullOrWhiteSpace(run.Actor) || !run.Result.IsCalculated || !ContractualCashFlowEngine.Verify(run)
+            || !ValidAttestationContext(run))
             throw new ArgumentException("Only a calculated, reproducible run with an authenticated actor may be retained.");
         var path = FilePath(run.SubjectKind, run.SubjectId, run.RunId);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -43,7 +44,9 @@ public sealed class FileContractualCashFlowRunStore(StorageOptions options) : IC
             catch (IOException) when (File.Exists(path))
             {
                 var retained = await GetAsync(run.SubjectKind, run.SubjectId, run.RunId, ct).ConfigureAwait(false);
-                if (retained is null || ContractualCashFlowEngine.Hash(retained.Request) != ContractualCashFlowEngine.Hash(run.Request))
+                if (retained is null || ContractualCashFlowEngine.Hash(retained.Request) != ContractualCashFlowEngine.Hash(run.Request)
+                    || retained.AttestationContext != run.AttestationContext
+                    || retained.AttestationContext is not null && !string.Equals(retained.Actor, run.Actor, StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException("Run identity is already bound to a different projection request.");
                 return retained;
             }
@@ -51,6 +54,13 @@ public sealed class FileContractualCashFlowRunStore(StorageOptions options) : IC
         }
         finally { if (File.Exists(staging)) File.Delete(staging); }
     }
+
+    private static bool ValidAttestationContext(ContractualCashFlowRun run) => run.AttestationContext is not { } context
+        || context.SchemaVersion == 1
+        && !string.IsNullOrWhiteSpace(context.TenantId) && !string.IsNullOrWhiteSpace(context.CompanyId)
+        && !string.IsNullOrWhiteSpace(context.PreparedBy) && !string.IsNullOrWhiteSpace(run.Actor)
+        && string.Equals(context.PreparedBy.Trim(), run.Actor.Trim(), StringComparison.OrdinalIgnoreCase)
+        && Enum.IsDefined(context.Origin);
 
     private string FilePath(string kind, Guid subjectId, Guid runId)
     {

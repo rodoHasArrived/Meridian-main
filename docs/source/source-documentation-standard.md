@@ -83,6 +83,10 @@ Run `python3 build/scripts/docs/validate-doc-hashes.py --write-module <MODULE_ID
 confirming a specific stale module's source changes and README/registry updates are intentionally
 aligned. Use broad `--write --summary` only after reviewing the full source hash baseline.
 
+Module source hashes exclude `package-lock.json` and the registry version ranges in `package.json`
+dependency sections, so dependency-only bumps do not require a README review or hash refresh.
+Adding, removing, or re-pointing a dependency still drifts the hash.
+
 ## Stale-doc workflow
 
 Use the stale-doc marker before updating source documentation after code changes:

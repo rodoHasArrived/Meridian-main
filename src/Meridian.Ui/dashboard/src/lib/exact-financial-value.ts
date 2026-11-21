@@ -1,4 +1,6 @@
-/** Decimal display and addition without passing retained decimal text through binary floats. */
+import { formatExactMagnitude, parseExactDecimal as parseSharedDecimal } from "@/lib/exact-decimal";
+
+/** Strict retained-value adapter over the workstation's shared exact-decimal engine. */
 export interface ExactDecimal { coefficient: bigint; scale: number }
 
 /** Compatibility for existing display-valued reads; never supplies a currency code or proof. */
@@ -27,11 +29,8 @@ export function parseExactDecimal(value: string | number | null | undefined): Ex
   if (text.length > 512) return null;
   const match = /^([+-]?)(\d+)(?:\.(\d*))?(?:[eE]([+-]?\d{1,3}))?$/.exec(text);
   if (!match) return null;
-  const exponent = Number(match[4] ?? 0);
-  const fraction = match[3] ?? "";
-  const scale = fraction.length - exponent;
-  const coefficient = BigInt(`${match[1] === "-" ? "-" : ""}${match[2]}${fraction}`);
-  return scale < 0 ? { coefficient: coefficient * 10n ** BigInt(-scale), scale: 0 } : { coefficient, scale };
+  const parsed = parseSharedDecimal(text);
+  return parsed ? { coefficient: parsed.negative ? -parsed.units : parsed.units, scale: parsed.scale } : null;
 }
 
 export function exactDecimalText(decimal: ExactDecimal): string {
@@ -65,14 +64,7 @@ export function formatExactDecimal(value: string | number | null | undefined, op
   const decimals = options.decimals ?? currencyMinorUnits(options.currency);
   if (!Number.isInteger(decimals) || decimals < 0 || decimals > 28) return null;
   const negative = parsed.coefficient < 0n;
-  let magnitude = negative ? -parsed.coefficient : parsed.coefficient;
-  if (parsed.scale > decimals) {
-    const divisor = 10n ** BigInt(parsed.scale - decimals);
-    magnitude = magnitude / divisor + (magnitude % divisor * 2n >= divisor ? 1n : 0n);
-  } else magnitude *= 10n ** BigInt(decimals - parsed.scale);
-  const digits = magnitude.toString().padStart(decimals + 1, "0");
-  const integer = (decimals ? digits.slice(0, -decimals) : digits).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  const text = decimals ? `${integer}.${digits.slice(-decimals)}` : integer;
-  if (negative && magnitude !== 0n && options.parens) return `(${text})`;
-  return `${negative && magnitude !== 0n ? "−" : options.signed && magnitude !== 0n ? "+" : ""}${text}`;
+  const magnitude = formatExactMagnitude({ negative, units: negative ? -parsed.coefficient : parsed.coefficient, scale: parsed.scale }, decimals);
+  if (negative && !magnitude.roundsToZero && options.parens) return `(${magnitude.text})`;
+  return `${negative && !magnitude.roundsToZero ? "−" : options.signed && !magnitude.roundsToZero ? "+" : ""}${magnitude.text}`;
 }

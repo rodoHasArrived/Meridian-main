@@ -23,15 +23,6 @@ public interface IEvidenceArtifactStore
         EvidenceVaultIntakeRequestDto request,
         CancellationToken ct = default);
 
-    /// <summary>Legacy unscoped manifest lookup retained as a fail-closed compatibility shim.</summary>
-    [Obsolete("Use TryOpenManifestAsync(..., tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
-    Task<EvidenceManifestFile?> TryOpenManifestAsync(
-        string subjectKind,
-        string subjectId,
-        string fileName,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
-
     Task<EvidenceManifestFile?> TryOpenManifestAsync(
         string subjectKind,
         string subjectId,
@@ -41,26 +32,12 @@ public interface IEvidenceArtifactStore
         CancellationToken ct = default) =>
         throw ScopedImplementationRequired();
 
-    /// <summary>Legacy unscoped vault lookup retained as a fail-closed compatibility shim.</summary>
-    [Obsolete("Use TryOpenManifestByVaultIdAsync(vaultId, tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
-    Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
-        string vaultId,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
-
     Task<EvidenceManifestFile?> TryOpenManifestByVaultIdAsync(
         string vaultId,
         string tenantId,
         string scope,
         CancellationToken ct = default) =>
         throw ScopedImplementationRequired();
-
-    /// <summary>Legacy unscoped identity lookup retained as a fail-closed compatibility shim.</summary>
-    [Obsolete("Use TryGetVaultIdentityAsync(vaultId, tenantId, scope, ct); Evidence Vault reads require authenticated scope.")]
-    Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
-        string vaultId,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
 
     Task<EvidenceVaultIdentityDto?> TryGetVaultIdentityAsync(
         string vaultId,
@@ -77,6 +54,10 @@ public interface IEvidenceArtifactStore
     Task<EvidenceManifestFile?> TryOpenDocumentContentAsync(string vaultId, string documentId,
         string tenantId, string scope, CancellationToken ct = default) => Task.FromResult<EvidenceManifestFile?>(null);
 
+    /// <summary>Streams and verifies one exact pinned artifact within the vault's configured document limits.</summary>
+    Task<bool> VerifyDocumentContentAsync(string vaultId, string documentId, string artifactId, string contentHashSha256,
+        string tenantId, string scope, CancellationToken ct = default) => Task.FromResult(false);
+
     Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
         EvidenceVaultLookupRequestDto request,
         CancellationToken ct = default);
@@ -89,15 +70,6 @@ public interface IEvidenceArtifactStore
         EvidenceVaultDocumentQueryDto query,
         CancellationToken ct = default);
 
-    /// <summary>Legacy unscoped review mutation retained as a fail-closed compatibility shim.</summary>
-    [Obsolete("Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.")]
-    Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
-        string vaultId,
-        string documentId,
-        EvidenceVaultDocumentReviewRequestDto request,
-        CancellationToken ct = default) =>
-        throw UnscopedAccessNotSupported();
-
     Task<EvidenceVaultDocumentReviewResponseDto?> ReviewDocumentAsync(
         string vaultId,
         string documentId,
@@ -106,10 +78,6 @@ public interface IEvidenceArtifactStore
         EvidenceVaultDocumentReviewRequestDto request,
         CancellationToken ct = default) =>
         throw ScopedImplementationRequired();
-
-    private static NotSupportedException UnscopedAccessNotSupported() =>
-        new("Evidence Vault access requires an authenticated tenant and company scope. " +
-            "Migrate to the scoped overload.");
 
     private static NotSupportedException ScopedImplementationRequired() =>
         new("This evidence store implementation must implement the tenant/company-scoped contract.");
@@ -213,115 +181,6 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         _storageQuota = new EvidenceStorageQuotaCoordinator(
             dataRoot, _quotaOptions, MeasurePublishedTenantBytes, availableDiskBytes, RecoverStorageAttemptAsync);
     }
-    public async Task<EvidencePacketExportResponse> WriteManifestAsync(
-        EvidencePacketDto packet,
-        EvidencePacketExportRequest request,
-        CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(packet);
-        request ??= new EvidencePacketExportRequest(null, null);
-        var (tenantId, scope) = RequireWriteScope(request.TenantId, request.Scope);
-
-        var generatedAt = DateTimeOffset.UtcNow;
-        var subjectKind = SanitizePathSegment(packet.Subject.SubjectKind);
-        var subjectId = SanitizePathSegment(packet.Subject.SubjectId);
-        var supportRequests = BuildSupportRequests(packet);
-        var requestLists = BuildRequestLists(packet.Subject, supportRequests);
-        var manifest = new RetainedEvidenceManifestDto(
-            SchemaVersion: 1,
-            ExportedAt: generatedAt,
-            RequestedBy: request.RequestedBy,
-            Reason: request.Reason,
-            ManifestOnly: true,
-            Subject: packet.Subject,
-            Completeness: packet.Completeness,
-            Nodes: packet.Nodes,
-            Edges: packet.Edges,
-            Actions: packet.Actions,
-            Warnings: request.IncludeWarnings ? packet.Warnings : [],
-            RequestLists: requestLists,
-            SupportRequests: supportRequests,
-            VaultIdentity: null,
-            Lifecycle: request.Lifecycle,
-            Linkage: ResolveManifestLinkage(packet, request))
-        {
-            TenantId = tenantId,
-            Scope = scope
-        };
-        ValidateRetainedArtifactReferences(packet);
-        var retainedExportJson = JsonSerializer.Serialize(manifest, _jsonOptions);
-        var contentHash = Sha256Digest.ComputeUtf8(retainedExportJson);
-        var vaultId = $"ev-{contentHash[..24]}";
-        // The scoped hash suffix prevents different tenants exporting the same subject in the
-        // same millisecond from sharing and overwriting one manifest path.
-        var fileName = $"{generatedAt:yyyyMMddTHHmmssfffZ}-{contentHash[..12]}-manifest.json";
-        var directory = Path.Combine(_rootDirectory, subjectKind, subjectId);
-        var manifestPath = Path.Combine(directory, fileName);
-        var relativePath = Path.Combine("workstation", "evidence", subjectKind, subjectId, fileName);
-        var manifestRoute = $"/workstation/evidence/{RouteSegment(subjectKind)}/{RouteSegment(subjectId)}/{RouteSegment(fileName)}";
-        var (estimatedBytes, artifactCount) = EstimateExportStorage(packet);
-        await using var reservation = await _storageQuota.ReserveAsync(tenantId, estimatedBytes, artifactCount, ct)
-            .ConfigureAwait(false);
-        await using var publication = new ExportPublication(this, vaultId, manifestPath, reservation);
-        var retainedArtifacts = await RetainLocalArtifactsAsync(
-                packet, vaultId, generatedAt, publication.ArtifactDirectory, reservation, ct)
-            .ConfigureAwait(false);
-        var vaultIdentity = new EvidenceVaultIdentityDto(
-            VaultId: vaultId,
-            SubjectKind: packet.Subject.SubjectKind,
-            SubjectId: packet.Subject.SubjectId,
-            ManifestPath: relativePath.Replace(Path.DirectorySeparatorChar, '/'),
-            ManifestRoute: manifestRoute,
-            RetainedAt: generatedAt,
-            ContentHashSha256: contentHash,
-            SchemaVersion: 1,
-            StorageKind: retainedArtifacts.Count == 0 ? FileManifestStorageKind : FileBundleStorageKind)
-        {
-            TenantId = tenantId,
-            Scope = scope,
-            Artifacts = retainedArtifacts,
-            RequestLists = requestLists,
-            SupportRequests = supportRequests,
-            Documents = ResolveArtifactDocuments(retainedArtifacts).ToArray(),
-            ManifestSnapshot = BuildManifestSnapshot(
-                vaultId,
-                packet.Subject.SubjectKind,
-                packet.Subject.SubjectId,
-                generatedAt,
-                contentHash,
-                ResolveArtifactDocuments(retainedArtifacts),
-                supportRequests,
-                requestLists)
-        };
-        manifest = manifest with { VaultIdentity = vaultIdentity };
-        vaultIdentity = RefreshVaultIdentityContentHash(vaultIdentity, manifest);
-        manifest = manifest with { VaultIdentity = vaultIdentity };
-
-        await publication.PublishAsync(
-                JsonSerializer.Serialize(manifest, _jsonOptions),
-                JsonSerializer.Serialize(vaultIdentity, _jsonOptions), ct)
-            .ConfigureAwait(false);
-
-        _logger.LogInformation(
-            "Wrote evidence manifest for {SubjectKind}/{SubjectId} to {ManifestPath}.",
-            packet.Subject.SubjectKind,
-            packet.Subject.SubjectId,
-            manifestPath);
-
-        return new EvidencePacketExportResponse(
-            SubjectKind: packet.Subject.SubjectKind,
-            SubjectId: packet.Subject.SubjectId,
-            GeneratedAt: generatedAt,
-            ManifestPath: relativePath.Replace(Path.DirectorySeparatorChar, '/'),
-            ManifestRoute: manifestRoute,
-            EvidenceCount: packet.Nodes.Count,
-            WarningCount: request.IncludeWarnings ? packet.Warnings.Count : 0,
-            Retained: true)
-        {
-            VaultIdentity = vaultIdentity
-        };
-    }
-
     public async Task<EvidenceVaultIntakeResponseDto> WriteIntakeArtifactAsync(
         EvidenceVaultIntakeRequestDto request,
         CancellationToken ct = default)
@@ -525,10 +384,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             JsonSerializer.Serialize(vaultIdentity, _jsonOptions), ct).ConfigureAwait(false);
 
         _logger.LogInformation(
-            "Retained evidence vault intake {VaultId} for {SubjectKind}/{SubjectId}.",
-            vaultId,
-            subjectKind,
-            subjectId);
+            "Retained evidence vault intake {VaultId}.",
+            vaultId);
 
         return new EvidenceVaultIntakeResponseDto(
             IntakeId: artifactId,
@@ -2071,19 +1928,19 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be deserialized.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be deserialized ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (IOException ex)
         {
             // A locked or transiently unreadable file must skip this entry, not fail the
             // whole vault listing.
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be read.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be read ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be accessed.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be accessed ({FailureType}).", ex.GetType().Name);
             return null;
         }
     }
@@ -2112,17 +1969,17 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be deserialized.", manifestPath);
+            _logger.LogWarning("Evidence vault manifest could not be deserialized ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (IOException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be read.", manifestPath);
+            _logger.LogWarning("Evidence vault manifest could not be read ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be accessed.", manifestPath);
+            _logger.LogWarning("Evidence vault manifest could not be accessed ({FailureType}).", ex.GetType().Name);
             return null;
         }
     }

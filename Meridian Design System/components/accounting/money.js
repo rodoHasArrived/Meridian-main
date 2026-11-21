@@ -4,35 +4,18 @@
 // arithmetic they prove: explicit rounding policy, remainder-exact allocation, FX translation,
 // and normal-balance classification. Exposed to consumers via the `Money` carrier object.
 
-const SYMBOLS = { USD: "$", EUR: "\u20AC", GBP: "\u00A3", JPY: "\u00A5", CNY: "\u00A5", CHF: "CHF\u202F", CAD: "$", AUD: "$" };
+// Formatting is NOT owned here — `core/format.js` is the numeric authority (one Intl constructor for
+// the whole system, one place a number becomes text). money.js owns the ARITHMETIC the books prove:
+// rounding policy, remainder-exact allocation, FX translation, normal-balance classification. It
+// imports the formatters it needs and does not re-export them; the `Money` carrier composes both
+// halves, so the consumer API is unchanged. See guidelines/NUMERIC_AUTHORITY.md.
+import { toNumber, setNumberDefaults, getNumberDefaults } from "../core/format.js";
 
-// ISO-4217 minor units where they differ from 2.
-const MINOR_UNITS = { JPY: 0, KRW: 0, VND: 0, CLP: 0, ISK: 0, BHD: 3, KWD: 3, OMR: 3, TND: 3 };
+/** Set the global formatting locale for every money/quantity helper. On a screen, prefer `FormatProvider`. */
+export function setDefaultLocale(locale) { setNumberDefaults({ locale: locale || "en-US" }); }
 
-/** Currency code → leading symbol. Literal symbols ("$", "€") pass through; unknown ISO codes render as "CODE " prefix. */
-export function currencySymbol(code) {
-  if (!code) return "";
-  const s = String(code);
-  if (SYMBOLS[s]) return SYMBOLS[s];
-  if (!/^[A-Za-z]{3}$/.test(s)) return s; // already a symbol, not a code
-  return s + "\u202F";
-}
-
-/** ISO-4217 minor units for a currency code — JPY → 0, BHD → 3, default 2. */
-export function currencyDecimals(code) {
-  const c = String(code || "").toUpperCase();
-  return MINOR_UNITS[c] != null ? MINOR_UNITS[c] : 2;
-}
-
-/** Coerce a value (number or money-ish string like "(1,234.00)") to a Number. NaN if unparseable. */
-export function toNumber(value) {
-  if (value == null || value === "") return NaN;
-  if (typeof value === "number") return value;
-  const s = String(value).trim();
-  const neg = /^\(.*\)$/.test(s); // accounting parentheses = negative
-  const n = parseFloat(s.replace(/[(),\s]/g, "").replace(/[^0-9.\-]/g, ""));
-  return neg ? -Math.abs(n) : n;
-}
+/** The current global formatting locale (default "en-US"). */
+export function getDefaultLocale() { return getNumberDefaults().locale; }
 
 /**
  * Round a money value to `decimals` places under an explicit policy.
@@ -101,59 +84,18 @@ export function accountNormalSide(type) {
 
 /**
  * Format a money value the Meridian way.
- * opts: { currency, decimals=2, parens=false, zeroDash=false, signed=false }
+ * opts: { currency, decimals=2, parens=false, zeroDash=false, signed=false, locale }
  *  - parens   → negatives as (1,234.00) instead of -1,234.00 (statement convention)
  *  - zeroDash → exact zero renders as an em dash
  *  - signed   → positives get an explicit leading +
+ *  - locale   → BCP-47 tag; overrides the global default (setDefaultLocale)
  */
-export function formatMoney(value, opts = {}) {
-  const { currency, decimals = 2, parens = false, zeroDash = false, signed = false } = opts;
-  const num = toNumber(value);
-  if (!isFinite(num)) return value == null ? "" : String(value);
-  if (zeroDash && num === 0) return "\u2014";
-  const sym = currencySymbol(currency);
-  const mag = Math.abs(num).toLocaleString("en-US", {
-    minimumFractionDigits: decimals, maximumFractionDigits: decimals,
-  });
-  const neg = num < 0;
-  if (neg && parens) return `(${sym}${mag})`;
-  const sign = neg ? "\u2212" : signed && num > 0 ? "+" : "";
-  return `${sign}${sym}${mag}`;
-}
 
-/** Compact money for metric surfaces — $12.4M, −€3.2K. Never use inside ledger columns. */
-export function formatMoneyCompact(value, opts = {}) {
-  const { currency, decimals = 1, signed = false } = opts;
-  const n = toNumber(value);
-  if (!isFinite(n)) return value == null ? "" : String(value);
-  const sym = currencySymbol(currency);
-  const abs = Math.abs(n);
-  const TIERS = [[1e12, "T"], [1e9, "B"], [1e6, "M"], [1e3, "K"]];
-  let text = null;
-  for (const [t, suffix] of TIERS) {
-    if (abs >= t) { text = (abs / t).toFixed(decimals) + suffix; break; }
-  }
-  if (text == null) text = abs.toLocaleString("en-US", { maximumFractionDigits: 2 });
-  const sign = n < 0 ? "\u2212" : signed && n > 0 ? "+" : "";
-  return `${sign}${sym}${text}`;
-}
+/** Compact money for metric surfaces — $12.4M, −€3.2K. Keeps prefix-symbol metric notation in every locale (house style); `locale` localizes the digits. Never use inside ledger columns. */
 
-/** Format a share/contract quantity — thousands separators, up to `maxDecimals` (default 4). */
-export function formatQuantity(value, maxDecimals = 4) {
-  const n = toNumber(value);
-  if (!isFinite(n)) return value == null ? "" : String(value);
-  return n.toLocaleString("en-US", { maximumFractionDigits: maxDecimals });
-}
+/** Format a share/contract quantity — thousands separators, up to `maxDecimals` (default 4). Optional `locale` overrides the global default. */
 
 /** Format a decimal fraction as basis points — formatBps(0.00124) → "+12.4 bp". */
-export function formatBps(fraction, opts = {}) {
-  const { signed = true, decimals = 1 } = opts;
-  const n = toNumber(fraction);
-  if (!isFinite(n)) return "";
-  const bps = n * 10000;
-  const sign = bps < 0 ? "\u2212" : signed && bps > 0 ? "+" : "";
-  return `${sign}${Math.abs(bps).toFixed(decimals)}\u202Fbp`;
-}
 
 /** Sum a list of money-ish values, ignoring blanks/NaN. */
 export function sumAmounts(values) {
@@ -230,4 +172,38 @@ export function fxRevalue(localAmount, bookedRate, currentRate, decimals = 2) {
   const current = convertAmount(localAmount, currentRate, decimals);
   if (!isFinite(booked) || !isFinite(current)) return { booked: NaN, current: NaN, gainLoss: NaN };
   return { booked, current, gainLoss: roundMoney(current - booked, decimals, "half-even") };
+}
+
+/**
+ * Constant-yield (effective-interest) income schedule for a discount/premium lot —
+ * the arithmetic behind `IncomeSchedule` and the book-value rollforward, exposed so a
+ * consumer's own figures agree to the cent with what the table renders.
+ *
+ *   coupon    = par × couponRate ÷ periodsPerYear
+ *   income    = opening book value × effectiveYield ÷ periodsPerYear
+ *   accretion = income − coupon        (negative = premium amortization)
+ *   closing   = opening + accretion
+ *
+ * @param {object} lot { par, cost, couponRate, effectiveYield, periodsPerYear=12, periods=12, labels? }
+ * @returns {Array<{period,coupon,accretion,income,openingBook,closingBook}>}
+ */
+export function effectiveYieldSchedule(lot = {}) {
+  const {
+    par, cost, couponRate, effectiveYield,
+    periodsPerYear = 12, periods = 12, labels = [], decimals = 2,
+  } = lot;
+  const p = toNumber(par), c0 = toNumber(cost);
+  const cr = toNumber(couponRate), ey = toNumber(effectiveYield);
+  if (![p, c0, cr, ey].every(isFinite)) return [];
+  const coupon = roundMoney((p * cr) / periodsPerYear, decimals, "half-even");
+  const rows = [];
+  let opening = c0;
+  for (let i = 0; i < periods; i += 1) {
+    const income = roundMoney((opening * ey) / periodsPerYear, decimals, "half-even");
+    const accretion = roundMoney(income - coupon, decimals, "half-even");
+    const closing = roundMoney(opening + accretion, decimals, "half-even");
+    rows.push({ period: labels[i] || `P${i + 1}`, coupon, accretion, income, openingBook: opening, closingBook: closing });
+    opening = closing;
+  }
+  return rows;
 }

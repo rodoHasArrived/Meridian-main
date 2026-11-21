@@ -92,7 +92,7 @@ function journalEntryStatusTone(status: ManualJournalEntryStatus): JournalEntryD
 function buildLifecycleRow(transition: JournalEntryLifecycleTransition): JournalEntryDetailLifecycleRow {
   return {
     transitionId: transition.transitionId,
-    label: `${transition.fromStatus} -> ${transition.toStatus} (${transition.action})`,
+    label: `${transition.fromStatus} → ${transition.toStatus} (${transition.action})`,
     actor: transition.actor,
     recordedAtUtc: transition.recordedAtUtc,
     notes: transition.notes ?? null

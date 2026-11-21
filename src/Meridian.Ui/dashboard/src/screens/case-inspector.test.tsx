@@ -1,28 +1,31 @@
 import { MemoryRouter } from "react-router-dom";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { CaseInspector, CaseVariance, caseChanges } from "./case-inspector";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
-import type { ReconciliationBreakQueueItem, ReconciliationCaseworkOperationResult } from "@/types";
+import type { ReconciliationBreakQueueItem, ReconciliationCaseworkOperationResult, ReconciliationCaseworkCommand } from "@/types";
 
 const record: ReconciliationBreakQueueItem = { breakId: "cash-1", runId: "run-1", strategyName: "Cash review",
   category: "AmountMismatch", status: "Open", variance: 500, reason: "Cash variance needs review", assignedTo: "ops",
   detectedAt: "2026-01-01T00:00:00Z", lastUpdatedAt: "2026-01-01T00:00:00Z", reviewedBy: null, reviewedAt: null,
-  resolvedBy: null, resolvedAt: null, resolutionNote: null, version: 1,
+  resolvedBy: null, resolvedAt: null, resolutionNote: null, version: 1, rootCauseCode: "TimingDifference", resolutionCode: "EvidenceAccepted",
   permittedCommands: [{ action: "Resolve", enabled: true, disabledReason: null }, { action: "Assign", enabled: false, disabledReason: "Requires an operations role." }],
   measures: [{ kind: "Value", expected: 100, actual: 600, variance: 500, tolerance: 1, unit: "USD" }] };
 function result(item: ReconciliationBreakQueueItem, overrides: Partial<ReconciliationCaseworkOperationResult> = {}): ReconciliationCaseworkOperationResult {
   return { transitionStatus: "Success", item, outcome: buildSuccessfulVerifiedOperationOutcome(), ...overrides };
 }
-function setup(readRecord: ReconciliationBreakQueueItem = record) {
+function setup(readRecord: ReconciliationBreakQueueItem = record, options: { operatorId?: string; commandMemory?: Map<string, ReconciliationCaseworkCommand> } = {}) {
   const services = { read: vi.fn().mockResolvedValue(readRecord), audit: vi.fn().mockResolvedValue([]),
     resolve: vi.fn().mockResolvedValue(result({ ...record, version: 2, status: "Resolved" })),
-    commands: { TransitionStatus: vi.fn(), Assign: vi.fn(), Waive: vi.fn(), SignOff: vi.fn(), Reopen: vi.fn(), Supersede: vi.fn() } };
+    taxonomy: vi.fn().mockResolvedValue({ version: 1,
+      rootCauses: [{ code: "TimingDifference", displayName: "Timing difference", version: 1, isActive: true }],
+      resolutionCodes: [{ code: "EvidenceAccepted", displayName: "Evidence accepted", version: 1, isActive: true }] }),
+    commands: { TransitionStatus: vi.fn(), Assign: vi.fn(), Waive: vi.fn(), SignOff: vi.fn(), Reopen: vi.fn(), Supersede: vi.fn(), SetRootCause: vi.fn(), SetResolution: vi.fn() } };
   const onChanged = vi.fn();
-  const view = render(<MemoryRouter><CaseInspector caseId="cash-1" initialCase={record} services={services} onChanged={onChanged} /></MemoryRouter>);
+  const view = render(<MemoryRouter><CaseInspector {...options} caseId="cash-1" initialCase={record} services={services} onChanged={onChanged} /></MemoryRouter>);
   return { ...view, services, onChanged, user: userEvent.setup() };
 }
 
@@ -53,8 +56,8 @@ describe("shared case inspector", () => {
     const { user, services, onChanged } = setup();
     await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "Resolve" }));
-    await user.type(screen.getByRole("textbox", { name: "Root cause code" }), "TimingDifference");
-    await user.type(screen.getByRole("textbox", { name: "Resolution code" }), "EvidenceAccepted");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Root cause code" }), "TimingDifference");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Resolution code" }), "EvidenceAccepted");
     await user.type(screen.getByRole("textbox", { name: "Resolve rationale" }), "Reviewed the retained cash evidence");
     expect(services.resolve).not.toHaveBeenCalled();
     await user.click(screen.getByRole("button", { name: "Confirm resolve" }));
@@ -62,6 +65,26 @@ describe("shared case inspector", () => {
       rootCauseCode: "TimingDifference", resolutionCode: "EvidenceAccepted", operatorRationale: "Reviewed the retained cash evidence" })));
     expect(await screen.findByRole("status", { name: "Decision receipt" })).toHaveTextContent("Succeeded");
     expect(onChanged).toHaveBeenCalledWith(expect.objectContaining({ version: 2, status: "Resolved" }));
+  });
+
+  it("returns focus after a successful decision only once its pending case refresh enables the trigger", async () => {
+    const assignable: ReconciliationBreakQueueItem = { ...record, permittedCommands: [{ action: "Assign", enabled: true, disabledReason: null }] };
+    const updated = { ...assignable, version: 2 };
+    const { user, services } = setup(assignable);
+    const trigger = await screen.findByRole("button", { name: "Assign" });
+    await waitFor(() => expect(trigger).toBeEnabled());
+    let finishRefresh!: (item: ReconciliationBreakQueueItem) => void;
+    services.read.mockReturnValueOnce(new Promise<ReconciliationBreakQueueItem>((resolve) => { finishRefresh = resolve; }));
+    services.commands.Assign.mockResolvedValue(result(updated));
+    await user.click(trigger);
+    await user.type(screen.getByRole("textbox", { name: "Assign rationale" }), "Reviewed assignment");
+    await user.click(screen.getByRole("button", { name: "Confirm assign" }));
+    await screen.findByRole("status", { name: "Decision receipt" });
+    expect(trigger).toBeDisabled();
+    expect(trigger).not.toHaveFocus();
+    await act(async () => { finishRefresh(updated); });
+    await waitFor(() => { expect(trigger).toBeEnabled(); expect(trigger).toHaveFocus(); });
+    expect(services.commands.Assign).toHaveBeenCalledTimes(1);
   });
 
   it("shows semantic conflicts and reuses the latest version only after review and another explicit confirmation", async () => {
@@ -110,12 +133,65 @@ describe("shared case inspector", () => {
     expect(services.resolve).not.toHaveBeenCalled();
   });
 
+  it("classifies an investigating case through guarded taxonomy forms without resolving it", async () => {
+    const investigating: ReconciliationBreakQueueItem = { ...record, status: "InReview", lifecycleState: "Investigating", version: 7, rootCauseCode: null, resolutionCode: null,
+      permittedCommands: [{ action: "SetRootCause", enabled: true, disabledReason: null }, { action: "SetResolution", enabled: true, disabledReason: null }] };
+    const { user, services } = setup(investigating);
+    const classified = { ...investigating, version: 8, rootCauseCode: "TimingDifference" };
+    services.commands.SetRootCause.mockImplementation(async () => {
+      services.read.mockResolvedValue(classified);
+      return result(classified);
+    });
+    services.commands.SetResolution.mockImplementation(async () => {
+      const updated = { ...classified, version: 9, resolutionCode: "EvidenceAccepted" };
+      services.read.mockResolvedValue(updated);
+      return result(updated);
+    });
+    await waitFor(() => expect(screen.getByRole("region", { name: "Case inspector" })).toHaveAttribute("aria-busy", "false"));
+    expect(screen.queryByRole("button", { name: "Update root cause" })).not.toBeInTheDocument();
+    await user.click(screen.getByText("Other decisions"));
+    await user.click(screen.getByRole("button", { name: "Update root cause" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Root cause code" }), "TimingDifference");
+    expect(screen.queryByRole("combobox", { name: "Resolution code" })).not.toBeInTheDocument();
+    await user.type(screen.getByRole("textbox", { name: "Update root cause rationale" }), "Confirmed timing evidence");
+    expect(services.commands.SetRootCause).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Confirm update root cause" }));
+    await waitFor(() => expect(services.commands.SetRootCause).toHaveBeenCalledWith(expect.objectContaining({
+      action: "SetRootCause", expectedVersion: 7, rootCauseCode: "TimingDifference", reason: "Confirmed timing evidence"
+    })));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Update resolution" })).toBeEnabled());
+    await user.click(screen.getByRole("button", { name: "Update resolution" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Resolution code" }), "EvidenceAccepted");
+    expect(screen.queryByRole("combobox", { name: "Root cause code" })).not.toBeInTheDocument();
+    await user.type(screen.getByRole("textbox", { name: "Update resolution rationale" }), "Retained resolution plan");
+    await user.click(screen.getByRole("button", { name: "Confirm update resolution" }));
+    await waitFor(() => expect(services.commands.SetResolution).toHaveBeenCalledWith(expect.objectContaining({
+      action: "SetResolution", expectedVersion: 8, resolutionCode: "EvidenceAccepted", reason: "Retained resolution plan"
+    })));
+    expect(await screen.findByRole("status", { name: "Decision receipt" })).toHaveTextContent("Succeeded");
+    expect(services.resolve).not.toHaveBeenCalled();
+  });
+
+  it("honors the server refusal to change classification on a resolved case", async () => {
+    const { user, services } = setup({ ...record, status: "Resolved", permittedCommands: [
+      { action: "SetRootCause", enabled: false, disabledReason: "Resolved cases cannot change classification." }
+    ] });
+    await waitFor(() => expect(screen.getByRole("region", { name: "Case inspector" })).toHaveAttribute("aria-busy", "false"));
+    await user.click(screen.getByText("Other decisions"));
+    expect(screen.getByRole("button", { name: "Update root cause" })).toBeDisabled();
+    expect(screen.getByText("Resolved cases cannot change classification.")).toBeInTheDocument();
+    await user.click(screen.getByText("Timeline and discussion"));
+    expect(screen.getByText("TimingDifference")).toBeVisible();
+    expect(screen.getByText("EvidenceAccepted")).toBeVisible();
+    expect(services.commands.SetRootCause).not.toHaveBeenCalled();
+  });
+
   it("cancels with Escape and returns keyboard focus to the decision trigger", async () => {
     const { user, services } = setup();
     const trigger = screen.getByRole("button", { name: "Resolve" });
     await waitFor(() => expect(trigger).toBeEnabled());
     await user.click(trigger);
-    await waitFor(() => expect(screen.getByRole("textbox", { name: "Root cause code" })).toHaveFocus());
+    await waitFor(() => expect(screen.getByRole("combobox", { name: "Root cause code" })).toHaveFocus());
     await user.keyboard("{Escape}");
     await waitFor(() => expect(trigger).toHaveFocus());
     expect(screen.queryByRole("form", { name: "Resolve case" })).not.toBeInTheDocument();
@@ -129,6 +205,45 @@ describe("shared case inspector", () => {
     expect(screen.getByRole("button", { name: "Assign" })).toBeDisabled();
     expect(screen.getByText("Comparison unavailable: No retained comparison pair is recorded for this case.")).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Case inspector" })).getByRole("button", { name: "Assign" })).toHaveAttribute("aria-describedby");
+  });
+
+  it("checks retained audit before resuming the identical pending command and payload", async () => {
+    const current = { ...record, tenantId: "tenant", companyId: "company", permittedCommands: [{ action: "Assign", enabled: true, disabledReason: null }] };
+    const memory = new Map<string, ReconciliationCaseworkCommand>();
+    const { user, services } = setup(current, { operatorId: "ops-user", commandMemory: memory });
+    services.commands.Assign.mockRejectedValueOnce(new Error("Connection interrupted"))
+      .mockResolvedValueOnce(result({ ...current, version: 2 }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Assign" })).toBeEnabled());
+    await user.click(screen.getByRole("button", { name: "Assign" }));
+    await user.type(screen.getByRole("textbox", { name: "Assign rationale" }), "Reviewed assignment");
+    await user.click(screen.getByRole("button", { name: "Confirm assign" }));
+    expect(await screen.findByRole("region", { name: "Pending case command" })).toHaveTextContent("Command outcome unconfirmed");
+    expect(screen.queryByRole("button", { name: "Resume same command" })).not.toBeInTheDocument();
+    const command = services.commands.Assign.mock.calls[0][0];
+    expect([...memory.values()]).toEqual([command]);
+    expect(services.commands.Assign).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button", { name: "Check command outcome" }));
+    await user.click(await screen.findByRole("button", { name: "Resume same command" }));
+    await waitFor(() => expect(services.commands.Assign).toHaveBeenCalledTimes(2));
+    expect(services.commands.Assign).toHaveBeenNthCalledWith(2, command);
+    await waitFor(() => expect(screen.queryByRole("region", { name: "Pending case command" })).not.toBeInTheDocument());
+  });
+
+  it("rereads an uncertain legacy resolve and requires fresh review without retrying it", async () => {
+    const { user, services } = setup();
+    services.resolve.mockRejectedValueOnce(new ApiError({ path: "/case/resolve", status: 503 }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
+    await user.click(screen.getByRole("button", { name: "Resolve" }));
+    await user.type(screen.getByRole("textbox", { name: "Resolve rationale" }), "Reviewed evidence");
+    services.read.mockResolvedValue({ ...record, version: 2, status: "Resolved", permittedCommands: [{ action: "Resolve", enabled: false, disabledReason: "Already resolved." }] });
+    await user.click(screen.getByRole("button", { name: "Confirm resolve" }));
+    expect(await screen.findByRole("alert", { name: "Case changed" })).toHaveTextContent("Resolved");
+    expect(services.resolve).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("button", { name: "Resume same command" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Review latest version" }));
+    await waitFor(() => expect(screen.queryByRole("form", { name: "Resolve case" })).not.toBeInTheDocument());
+    expect(screen.getByRole("button", { name: "Resolve" })).toBeDisabled();
+    expect(services.resolve).toHaveBeenCalledTimes(1);
   });
 
   it("has no axe violations in the populated decision form", async () => {

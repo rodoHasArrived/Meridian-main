@@ -81,6 +81,12 @@ public sealed partial class PostgresDirectLendingService : IDirectLendingService
     public async Task<LoanServicingStateDto?> ApplyWriteOffAsync(Guid loanId, ApplyWriteOffRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
         => DirectLendingServiceSupport.RequireSuccess(await _commandService.ApplyWriteOffAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 
+    public async Task<LoanServicingStateDto?> ApplyUnappliedCashAsync(Guid loanId, ApplyUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.ApplyUnappliedCashAsync(loanId, request, metadata, ct).ConfigureAwait(false));
+
+    public async Task<LoanServicingStateDto?> RefundUnappliedCashAsync(Guid loanId, RefundUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.RefundUnappliedCashAsync(loanId, request, metadata, ct).ConfigureAwait(false));
+
     public async Task<LoanServicingStateDto?> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
         => DirectLendingServiceSupport.RequireSuccess(await _commandService.ChargePrepaymentPenaltyAsync(loanId, request, metadata, ct).ConfigureAwait(false));
 
@@ -161,6 +167,21 @@ public sealed partial class PostgresDirectLendingService : IDirectLendingService
 
     public async Task<LoanServicingStateDto?> TransitionLoanStatusAsync(Guid loanId, TransitionLoanStatusRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
         => DirectLendingServiceSupport.RequireSuccess(await _commandService.TransitionLoanStatusAsync(loanId, request, metadata, ct).ConfigureAwait(false));
+
+    public async Task<DirectLendingIndexFixingDto?> RecordIndexFixingAsync(RecordIndexFixingRequest request, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.RecordIndexFixingAsync(request, ct).ConfigureAwait(false));
+
+    public Task<IReadOnlyList<DirectLendingIndexFixingDto>> GetIndexFixingsAsync(string? indexName = null, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default)
+        => _commandService.GetIndexFixingsAsync(indexName, from, to, ct);
+
+    public async Task<LoanServicingStateDto?> ApplyScheduledRateResetAsync(Guid loanId, ApplyScheduledRateResetRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.ApplyScheduledRateResetAsync(loanId, request, metadata, ct).ConfigureAwait(false));
+
+    public async Task<LoanServicingStateDto?> CapitalizePikAsync(Guid loanId, CapitalizePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+        => DirectLendingServiceSupport.RequireSuccess(await _commandService.CapitalizePikAsync(loanId, request, metadata, ct).ConfigureAwait(false));
+
+    public Task<LoanServicingSchedulePreviewDto?> GetServicingSchedulePreviewAsync(Guid loanId, DateOnly from, DateOnly to, CancellationToken ct = default)
+        => _commandService.GetServicingSchedulePreviewAsync(loanId, from, to, ct);
 
     public async Task<LoanServicingStateDto?> TogglePikAsync(Guid loanId, TogglePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
         => DirectLendingServiceSupport.RequireSuccess(await _commandService.TogglePikAsync(loanId, request, metadata, ct).ConfigureAwait(false));

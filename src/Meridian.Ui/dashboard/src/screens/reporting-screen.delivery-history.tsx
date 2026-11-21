@@ -1,3 +1,4 @@
+import { TimeText } from "@/components/ui/time-text";
 import { Network } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ import type {
   ReportPackDeliveryAttempt,
   ReportPackDeliveryPackage
 } from "@/types";
+import { formatCount } from "@/lib/format";
 
 interface ReportingDeliveryHistoryPanelProps {
   deliveryAttempts: ReportPackDeliveryAttempt[];
@@ -30,7 +32,7 @@ export function ReportingDeliveryHistoryPanel({
       </CardHeader>
       <CardContent className="space-y-2">
         <p role="status" className="rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-xs leading-5 text-primary">
-          Dispatch and provider failure receipts are server-owned. Use the governed run detail for release and distribution controls; this panel remains read-only evidence.
+          Dispatch and provider failure receipts are server-owned. Use the report run detail for release and distribution controls; this panel remains read-only evidence.
         </p>
         {deliveryAttempts.length > 0 ? (
           <div role="list" aria-label="Report-pack delivery attempts" className="space-y-2">
@@ -48,9 +50,9 @@ export function ReportingDeliveryHistoryPanel({
                   </span>
                   <SeverityBadge status={attempt.state} label={attempt.state} />
                 </div>
-                <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{redactReportingCredentialText(attempt.deliveryReference)}</p>
+                <p className="mt-2 break-all font-mono text-xs text-muted-foreground">{redactReportingCredentialText(attempt.deliveryReference)}</p>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  Attempt {attempt.attemptNumber} by {attempt.actor} at {attempt.attemptedAtUtc}
+                  Attempt {attempt.attemptNumber} by {attempt.actor} at <TimeText value={attempt.attemptedAtUtc} fallback="time unavailable" />
                 </p>
                 {attempt.package ? (
                   <div className="mt-2 space-y-1 text-xs leading-5 text-muted-foreground">
@@ -67,12 +69,12 @@ export function ReportingDeliveryHistoryPanel({
                       <p>{redactReportingCredentialText(attempt.package.downloadSummary)}</p>
                     ) : null}
                     {attempt.package.accessExpiresAtUtc ? (
-                      <p className="break-all font-mono text-[11px]">
-                        Access expires: {attempt.package.accessExpiresAtUtc}
+                      <p className="break-all font-mono text-xs">
+                        Access expires: <TimeText value={attempt.package.accessExpiresAtUtc} fallback="not recorded" />
                       </p>
                     ) : null}
                     {attempt.package.brandingTheme ? (
-                      <p className="break-all text-[11px]">
+                      <p className="break-all text-xs">
                         Branding: {attempt.package.brandingTheme.name} · {attempt.package.brandingTheme.firmName} · {attempt.package.brandingTheme.themeId}
                       </p>
                     ) : null}
@@ -85,7 +87,7 @@ export function ReportingDeliveryHistoryPanel({
                           return safeHref ? (
                             <a
                               key={`${attempt.attemptId}-${link.kind}-${index}`}
-                              className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40"
+                              className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-xs text-muted-foreground hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                               href={safeHref}
                               aria-label={`${redactReportingCredentialText(link.label)} ${link.requiresToken ? "fragment-token gated" : "internal route"}`}
                             >
@@ -93,12 +95,12 @@ export function ReportingDeliveryHistoryPanel({
                                 {redactReportingCredentialText(link.label)}
                               </span>
                               <Badge variant="outline">{link.requiresToken ? "Fragment gated" : "Internal"}</Badge>
-                              {link.expiresAtUtc ? <span>Expires {link.expiresAtUtc}</span> : null}
+                              {link.expiresAtUtc ? <span>Expires <TimeText value={link.expiresAtUtc} fallback="time unavailable" /></span> : null}
                             </a>
                           ) : (
                             <span
                               key={`${attempt.attemptId}-${link.kind}-${index}`}
-                              className="inline-flex items-center gap-1.5 rounded-sm border border-warning/40 px-2 py-1 text-[11px] text-warning"
+                              className="inline-flex items-center gap-1.5 rounded-sm border border-warning/40 px-2 py-1 text-xs text-warning"
                             >
                               {redactReportingCredentialText(link.label)} <Badge variant="warning">Unsafe link suppressed</Badge>
                             </span>
@@ -106,11 +108,11 @@ export function ReportingDeliveryHistoryPanel({
                         })}
                       </div>
                     ) : attempt.package.secureLink ? (
-                      <p className="text-[11px] text-muted-foreground">
-                        Legacy package access reference retained as non-actionable evidence. Use the governed run for scoped recipient access.
+                      <p className="text-xs text-muted-foreground">
+                        Legacy package access reference retained as non-actionable evidence. Use the report run for scoped recipient access.
                       </p>
                     ) : (
-                      <p className="text-[11px] text-warning">Legacy or query-credential package link suppressed.</p>
+                      <p className="text-xs text-warning">Legacy or query-credential package link suppressed.</p>
                     )}
                     {attempt.package.notifications?.length ? (
                       <ul aria-label={`${attempt.recipient} delivery notifications`} className="grid gap-1.5">
@@ -128,14 +130,14 @@ export function ReportingDeliveryHistoryPanel({
                                 <span className="block font-semibold text-foreground">
                                   {redactReportingCredentialText(notification.subject)}
                                 </span>
-                                <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
+                                <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">
                                   {notification.notificationId}
                                 </span>
                               </span>
                               <Badge variant="outline">{notification.status}</Badge>
                             </div>
                             <p className="mt-1 text-xs leading-5 text-muted-foreground">{redactReportingCredentialText(notification.body)}</p>
-                            <dl className="mt-2 grid gap-1 text-[11px] sm:grid-cols-2">
+                            <dl className="mt-2 grid gap-1 text-xs sm:grid-cols-2">
                               <ReportingScheduleField label="Channel" value={`${notification.channel} · ${notification.deliveryMode}`} />
                               <ReportingScheduleField label="Recipient" value={`${notification.recipient} · ${notification.recipientRole}`} />
                               <ReportingScheduleField label="Created" value={notification.createdAtUtc} />
@@ -143,61 +145,61 @@ export function ReportingDeliveryHistoryPanel({
                             </dl>
                               {safeNotificationHref ? (
                                 <a
-                                  className="mt-2 block font-mono text-[11px] text-primary underline-offset-2 hover:underline"
+                                  className="mt-2 block font-mono text-xs text-primary underline-offset-2 hover:underline"
                                   href={safeNotificationHref}
                                   aria-label={`${redactReportingCredentialText(notification.subject)} ${notification.requiresToken ? "fragment-token gated" : "internal route"}`}
                                 >
                                   Open retained notification access
                                 </a>
                               ) : (
-                                <p className="mt-2 text-[11px] text-warning">Unsafe notification link suppressed.</p>
+                                <p className="mt-2 text-xs text-warning">Unsafe notification link suppressed.</p>
                               )}
                             </li>
                           );
                         })}
                       </ul>
                     ) : null}
-                    <p className="break-all font-mono text-[11px]">
+                    <p className="break-all font-mono text-xs">
                       {redactReportingCredentialText(attempt.package.retainedManifestPath)}
                     </p>
                     {attempt.package.reportingRunId ? (
-                      <p className="break-all font-mono text-[11px]">
+                      <p className="break-all font-mono text-xs">
                         Reporting run: {attempt.package.reportingRunId}{" "}
                         <Link
                           className="font-sans font-medium text-primary underline-offset-2 hover:underline"
                           to={workstationRouteWithQuery("reportingRunDetail", { runId: attempt.package.reportingRunId })}
                         >
-                          Open governed run
+                          Open report run
                         </Link>
                       </p>
                     ) : null}
                     {attempt.package.reportingTemplateId ? (
-                      <p className="break-all font-mono text-[11px]">
+                      <p className="break-all font-mono text-xs">
                         Template: {attempt.package.reportingTemplateId}
                       </p>
                     ) : null}
                     {attempt.package.reportingScheduleId ? (
-                      <p className="break-all font-mono text-[11px]">
+                      <p className="break-all font-mono text-xs">
                         Schedule: {attempt.package.reportingScheduleId}
                       </p>
                     ) : null}
                     {hasReportingRunMetadata(attempt.package) ? (
-                      <p className="break-all font-mono text-[11px]">
+                      <p className="break-all font-mono text-xs">
                         Run metadata: {formatReportingRunPackageMetadata(attempt.package)}
                       </p>
                     ) : null}
                     {hasReportWriterDatasetMetadata(attempt.package) ? (
-                      <p className="break-all font-mono text-[11px]">
+                      <p className="break-all font-mono text-xs">
                         Dataset source: {formatReportWriterDatasetMetadata(attempt.package)}
                       </p>
                     ) : null}
                     {attempt.package.sourceArtifacts?.length ? (
-                      <p className="break-all font-mono text-[11px]">
+                      <p className="break-all font-mono text-xs">
                         Source artifacts: {redactReportingCredentialText(attempt.package.sourceArtifacts.join(", "))}
                       </p>
                     ) : null}
                     {attempt.package.generatedReportWriterGrids?.length ? (
-                      <div className="break-all font-mono text-[11px]">
+                      <div className="break-all font-mono text-xs">
                         <p>
                           Generated grids: {attempt.package.generatedReportWriterGrids.map((grid) => {
                             const validationSummary = grid.validationSummary?.trim();
@@ -211,7 +213,7 @@ export function ReportingDeliveryHistoryPanel({
                               return (
                                 <span
                                   key={`${attempt.attemptId}-${grid.gridId}`}
-                                  className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground"
+                                  className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-xs text-muted-foreground"
                                 >
                                   <span className="max-w-[16rem] truncate text-foreground">{title}</span>
                                   <a
@@ -262,7 +264,7 @@ export function ReportingDeliveryHistoryPanel({
                       </div>
                     ) : null}
                     {attempt.package.renderedReportWriterGrids?.length ? (
-                      <div className="rounded-md border border-border/70 bg-background/40 px-2 py-2 text-[11px]">
+                      <div className="rounded-md border border-border/70 bg-background/40 px-2 py-2 text-xs">
                         <p className="break-all font-mono">
                           Rendered grid rows: {attempt.package.renderedReportWriterGrids.map((grid) => `${grid.title || grid.gridId} (${grid.rows.length}r/${grid.columns.length}c)`).join(", ")}
                         </p>
@@ -301,7 +303,7 @@ export function ReportingDeliveryHistoryPanel({
                       </div>
                     ) : null}
                     {attempt.package.lineProvenance?.length ? (
-                      <div className="rounded-md border border-border/70 bg-background/40 px-2 py-2 text-[11px]">
+                      <div className="rounded-md border border-border/70 bg-background/40 px-2 py-2 text-xs">
                         <p className="font-semibold text-foreground">
                           Report-line provenance: {attempt.package.lineProvenance.length} line{attempt.package.lineProvenance.length === 1 ? "" : "s"}
                         </p>
@@ -325,7 +327,7 @@ export function ReportingDeliveryHistoryPanel({
                       </div>
                     ) : null}
                     {attempt.package.deliveryEvidencePacket ? (
-                      <div className="rounded-md border border-border/70 bg-background/40 px-2 py-2 text-[11px]">
+                      <div className="rounded-md border border-border/70 bg-background/40 px-2 py-2 text-xs">
                         <p className="font-semibold text-foreground">
                           Evidence packet: {attempt.package.deliveryEvidencePacket.packetKind} · {attempt.package.deliveryEvidencePacket.datasetVersion}
                         </p>
@@ -412,7 +414,7 @@ export function ReportingDeliveryHistoryPanel({
                           </p>
                         ) : null}
                         <Link
-                          className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                          className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary underline-offset-2 hover:underline"
                           to={reportPackDeliveryEvidencePath(attempt.reportId, attempt.attemptId)}
                           aria-label={`Open delivery evidence graph for ${attempt.recipient} delivery attempt`}
                         >
@@ -432,25 +434,25 @@ export function ReportingDeliveryHistoryPanel({
                               <span className="min-w-0">
                                 {safeGovernedDistributionArtifactHref(artifact.downloadRoute) ? (
                                   <a
-                                    className="block break-all font-mono text-[11px] text-primary underline-offset-2 hover:underline"
+                                    className="block break-all font-mono text-xs text-primary underline-offset-2 hover:underline"
                                     href={safeGovernedDistributionArtifactHref(artifact.downloadRoute)!}
                                     aria-label={`Download ${artifact.artifactName}`}
                                   >
                                     {artifact.artifactName}
                                   </a>
                                 ) : (
-                                  <span className="block break-all font-mono text-[11px] text-foreground">
+                                  <span className="block break-all font-mono text-xs text-foreground">
                                     {artifact.artifactName}
                                   </span>
                                 )}
-                                <span className="mt-1 block break-all font-mono text-[11px]">
+                                <span className="mt-1 block break-all font-mono text-xs">
                                   {redactReportingCredentialText(artifact.retainedPath)}
                                 </span>
                               </span>
                               <Badge variant="outline">{artifact.format}</Badge>
                             </div>
-                            <dl className="mt-2 grid gap-1 text-[11px] sm:grid-cols-2">
-                              <ReportingScheduleField label="Size" value={`${artifact.byteSize.toLocaleString()} bytes`} />
+                            <dl className="mt-2 grid gap-1 text-xs sm:grid-cols-2">
+                              <ReportingScheduleField label="Size" value={`${formatCount(artifact.byteSize)} bytes`} />
                               <ReportingScheduleField label="Evidence" value={artifact.evidenceId} />
                               <ReportingScheduleField label="Checksum" value={artifact.checksumSha256 || "Checksum pending"} />
                               <ReportingScheduleField label="Version" value={artifact.versionStamp || "Version pending"} />
@@ -507,9 +509,9 @@ function formatReportingRunPackageMetadata(reportPackage: ReportPackDeliveryPack
     reportPackage.reportingRunAsOfDate ? `asOf=${reportPackage.reportingRunAsOfDate}` : null,
     reportPackage.reportingRunStatus ? `status=${reportPackage.reportingRunStatus}` : null,
     reportPackage.reportingRunTrigger ? `trigger=${reportPackage.reportingRunTrigger}` : null,
-    reportPackage.reportingRunAttemptCount != null ? `attempt=${reportPackage.reportingRunAttemptCount.toLocaleString()}` : null,
-    reportPackage.reportingRunSectionCount != null ? `sections=${reportPackage.reportingRunSectionCount.toLocaleString()}` : null,
-    reportPackage.reportingRunLineageLinkedSections != null ? `lineage=${reportPackage.reportingRunLineageLinkedSections.toLocaleString()}` : null
+    reportPackage.reportingRunAttemptCount != null ? `attempt=${formatCount(reportPackage.reportingRunAttemptCount)}` : null,
+    reportPackage.reportingRunSectionCount != null ? `sections=${formatCount(reportPackage.reportingRunSectionCount)}` : null,
+    reportPackage.reportingRunLineageLinkedSections != null ? `lineage=${formatCount(reportPackage.reportingRunLineageLinkedSections)}` : null
   ].filter((part): part is string => Boolean(part)).join(" · ");
 }
 
@@ -527,7 +529,7 @@ function formatReportWriterDatasetMetadata(reportPackage: ReportPackDeliveryPack
     "Report-writer dataset";
   return reportPackage.reportWriterDatasetRowCount == null
     ? source
-    : `${source} (${reportPackage.reportWriterDatasetRowCount.toLocaleString()} row${reportPackage.reportWriterDatasetRowCount === 1 ? "" : "s"})`;
+    : `${source} (${formatCount(reportPackage.reportWriterDatasetRowCount)} row${reportPackage.reportWriterDatasetRowCount === 1 ? "" : "s"})`;
 }
 
 function reportPackDeliveryEvidencePath(reportId: string, attemptId: string): string {

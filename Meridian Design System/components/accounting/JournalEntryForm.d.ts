@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Journal-entry form — balanced double-entry input. A header (date / reference / memo) sits over
  * a line grid of Account · Debit · Credit with live column totals and a balance gauge that stays
@@ -26,9 +27,15 @@ export interface JournalEntryFormProps {
   currency?: string;
   /** Absolute debit−credit difference treated as balanced. @default 0.005 */
   tolerance?: number;
+  /**
+   * Reasons this entry may not post even when it balances — a changed reviewed snapshot, a closed
+   * period, a withdrawn approval. Each is named on the form and the Post button is disabled while
+   * any remain. Balanced arithmetic is a precondition for posting, not permission to post.
+   */
+  blockers?: (string | { id?: string; label: string; detail?: string })[];
   /** Fires on every edit with the full { header, lines } state. */
   onChange?: (entry: { header: JournalHeader; lines: JournalLine[] }) => void;
-  /** When set, renders a Post button (enabled only when balanced). */
+  /** When set, renders a Post button (enabled only when balanced and unblocked). */
   onPost?: (entry: { header: JournalHeader; lines: JournalLine[] }) => void;
 }
-export declare function JournalEntryForm(props: JournalEntryFormProps): JSX.Element;
+export declare function JournalEntryForm(props: JournalEntryFormProps): React.JSX.Element;

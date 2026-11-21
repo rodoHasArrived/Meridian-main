@@ -20,7 +20,8 @@ public sealed class LifecycleControlPageSmokeTests
 
             page.ApplyTemplate();
 
-            page.FindName("RefreshButton").Should().BeOfType<Button>();
+            page.FindName("RefreshButton").Should().BeNull("the shell Refresh reloads lifecycle state in place");
+            PageRefreshResolver.Resolve(page).Should().BeSameAs(viewModel.RefreshCommand);
             page.FindName("RestartButton").Should().BeOfType<Button>();
             page.FindName("ShutdownButton").Should().BeOfType<Button>();
             page.FindName("ConfirmationPanel").Should().BeOfType<Border>();

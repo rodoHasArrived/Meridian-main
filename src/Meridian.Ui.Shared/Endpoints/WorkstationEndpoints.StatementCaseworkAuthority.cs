@@ -66,10 +66,20 @@ public static partial class WorkstationEndpoints
             // The caller's origin, re-derived at the route handler, rather than a constant. For a
             // human session this is still "HumanOperator", so existing command ids are unchanged;
             // only a non-human origin -- which the gate downstream refuses anyway -- differs (#2673).
-            request.ActionOrigin.ToString(),
-            request.ExpectedVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty,
-            request.RootCauseCode ?? string.Empty,
-            request.ResolutionCode ?? string.Empty);
+            request.ActionOrigin.ToString());
+        // Existing statement handoff markers and receipts retain the exact v1 hash. Adding even
+        // empty optional fields changes that identity and strands a pending legacy replay.
+        // Guarded requests use a separate schema so all new decision inputs remain bound.
+        if (request.ExpectedVersion.HasValue || request.RootCauseCode is not null || request.ResolutionCode is not null)
+        {
+            material = $"meridian.workstation.statement-legacy-resolve.v2\n{JsonSerializer.Serialize(new
+            {
+                LegacyInputHash = Sha256Digest.ComputeUtf8(material),
+                request.ExpectedVersion,
+                request.RootCauseCode,
+                request.ResolutionCode
+            }, ReconciliationAuditJsonOptions)}";
+        }
         var inputHash = Sha256Digest.ComputeUtf8(material);
         var commandId = $"statement-legacy-resolve:{inputHash}";
         var commandBase = current;

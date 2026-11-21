@@ -38,7 +38,7 @@ class ExportProjectArtifactWorkflowTests(unittest.TestCase):
         self.assertEqual(failures, [])
 
     def test_hygiene_rejects_reintroduced_retired_workflow(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             workflow_dir = Path(temporary)
             for filename in ("export-project-artifact.yml", "python-package-conda.yml"):
                 with self.subTest(filename=filename):

@@ -53,7 +53,7 @@ class ValidateSourceReadmesTests(unittest.TestCase):
         self.assertIn("missing=missing generated block end marker", output)
 
     def test_absolute_readme_path_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_root = Path(temp_dir)
             modules = temp_root / "modules.yml"
             coverage = temp_root / "coverage.yml"
@@ -88,7 +88,7 @@ class ValidateSourceReadmesTests(unittest.TestCase):
             self.assertIn("README path must be relative to repository root", result.stdout + result.stderr)
 
     def test_declared_existing_missing_readme_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_root = Path(temp_dir)
             modules = temp_root / "modules.yml"
             coverage = temp_root / "coverage.yml"
@@ -110,7 +110,7 @@ class ValidateSourceReadmesTests(unittest.TestCase):
             self.assertIn("README path does not exist: missing/README.md", result.stdout + result.stderr)
 
     def test_symlink_readme_path_escaping_repo_root_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_root = Path(temp_dir)
             modules = temp_root / "modules.yml"
             coverage = temp_root / "coverage.yml"

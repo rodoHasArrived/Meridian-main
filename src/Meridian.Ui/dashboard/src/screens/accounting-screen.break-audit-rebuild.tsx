@@ -1,3 +1,4 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 /**
  * Break audit rebuild check for the reconciliation break detail panel.
  *
@@ -78,29 +79,11 @@ export function BreakAuditRebuildCheck({ breakId }: BreakAuditRebuildCheckProps)
             detail={view.verdict}
           />
           {view.differences.length > 0 ? (
-            <table className="w-full text-xs" aria-label="Fields where the stored break and its audit rebuild differ">
-              <caption className="sr-only">
-                Each row is a field whose stored value does not match the value implied by the audit trail.
-              </caption>
-              <thead>
-                <tr className="text-left text-muted-foreground">
-                  <th scope="col" className="py-1 pr-3 font-medium">Field</th>
-                  <th scope="col" className="py-1 pr-3 font-medium">Stored</th>
-                  <th scope="col" className="py-1 font-medium">From audit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {view.differences.map((difference) => (
-                  <tr key={difference.field} className="border-t border-border/60">
-                    <th scope="row" className="py-1 pr-3 text-left font-mono font-normal text-foreground">
+            <TableWorkbench<(typeof view.differences)[number]> workbenchId="accounting-break-audit-differences" sourceKey={JSON.stringify(view.differences)} rows={view.differences} columns={[{id:"field-0",label:"Field",rowHeader:true,exportValue:difference=>difference.field,render:difference=><>
                       {difference.field}
-                    </th>
-                    <td className="py-1 pr-3 font-mono text-danger">{difference.storedValue}</td>
-                    <td className="py-1 font-mono text-muted-foreground">{difference.rebuiltValue}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </>},
+{id:"field-1",label:"Stored",exportValue:difference=>difference.storedValue,render:difference=><>{difference.storedValue}</>},
+{id:"field-2",label:"From audit",exportValue:difference=>difference.rebuiltValue,render:difference=><>{difference.rebuiltValue}</>}]} getRowId={difference=>difference.field} getSearchText={difference=>[difference.field,difference.storedValue,difference.rebuiltValue].join(" ")} completePopulation sourceDescription="Complete differences returned by the selected stored-break audit rebuild." ariaLabel="Fields where the stored break and its audit rebuild differ" emptyText="No source records returned." />
           ) : null}
           {view.notReconstructedNotice ? (
             <p className="text-xs text-muted-foreground">{view.notReconstructedNotice}</p>

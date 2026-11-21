@@ -4,9 +4,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
 import type { SettingsProviderConnectionRow } from "./settings-screen.view-model";
 import type { ProviderConnectionRow, ProviderRoutingConnection, SessionInfo } from "@/types";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 
-const api = vi.hoisted(() => ({ getProviderRoutingConnections: vi.fn(), getProviderConnections: vi.fn(), putProviderCredentials: vi.fn(), verifyProviderConnection: vi.fn(), deleteProviderCredentials: vi.fn() }));
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
+
+const api = vi.hoisted(() => ({ getProviderRoutingConnections: vi.fn(), getProviderConnections: vi.fn(), putProviderCredentials: vi.fn(), verifyProviderConnection: vi.fn(), verifyDraftProviderConnection: vi.fn(), deleteProviderCredentials: vi.fn() }));
 vi.mock("@/lib/api", () => api);
+const ownership = vi.hoisted(() => ({
+  createOwnedProviderConnection: vi.fn(), bindProviderRuntimeCredential: vi.fn(), previewProviderCredentialMigration: vi.fn(), migrateProviderCredential: vi.fn(),
+  rollbackProviderCredential: vi.fn(), getProviderRuntimeCredentialStatus: vi.fn(), applyProviderRuntimeCredential: vi.fn(), finalizeProviderCredentialMigration: vi.fn()
+}));
+vi.mock("@/lib/api/provider-ownership.api", () => ownership);
 const session = { displayName: "Operator", role: "Admin", environment: "paper", activeWorkspace: "settings", commandCount: 0 } as SessionInfo;
 const row = { providerId: "alpaca", displayName: "Alpaca", affectedWorkflowsLabel: "Paper orders" } as SettingsProviderConnectionRow;
 const owned = (id: string): ProviderRoutingConnection => ({ connectionId: id, providerFamilyId: "alpaca", displayName: id, tenantId: "tenant-a", externalAccountId: `account-${id}`, credentialEnvironment: "paper", enabled: true } as ProviderRoutingConnection);
@@ -66,6 +78,26 @@ describe("owned provider credential editor", () => {
       credentials: { KeyId: "key", SecretKey: "secret" }, environment: "paper"
     }, expect.objectContaining({ connectionId: "paper-a", allowDevelopmentFallback: false }));
     expect(api.getProviderConnections.mock.calls.every(([options]) => options.connectionId === "paper-a")).toBe(true);
+  });
+
+  it("tests only the unsaved draft and offers explicit offline save after rejection", async () => {
+    api.verifyDraftProviderConnection.mockResolvedValue({ providerId: "alpaca", status: "Rejected", message: "The provider refused these credentials." });
+    const rotationDueAt = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString();
+    api.getProviderConnections.mockResolvedValue([{ ...status("paper-a"), rotationDueAt }]);
+    render(<OwnedProviderCredentialPanel row={row} session={session} />);
+    await select(); await fill();
+    await screen.findByText(`Credential rotation due ${rotationDueAt.slice(0, 10)} UTC.`);
+
+    await userEvent.click(screen.getByRole("button", { name: "Test draft credentials" }));
+
+    await screen.findByText(/Rejected. The provider refused/);
+    expect(api.verifyDraftProviderConnection).toHaveBeenCalledWith("alpaca", { KeyId: "key", SecretKey: "secret" }, "paper",
+      expect.objectContaining({ connectionId: "paper-a", allowDevelopmentFallback: false }));
+    expect(api.putProviderCredentials).not.toHaveBeenCalled();
+    expect(api.verifyProviderConnection).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Alpaca Secret key")).toHaveValue("secret");
+    await userEvent.click(screen.getByRole("button", { name: "Save anyway" }));
+    await screen.findByText("Credentials saved (Configured).");
   });
 
   it.each([
@@ -146,6 +178,41 @@ describe("owned provider credential editor", () => {
     expect(api.putProviderCredentials).not.toHaveBeenCalled();
     expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("");
   });
+  it("keeps the selected ownership and its migration receipt across the refresh a migration triggers, so verify then finalize can follow", async () => {
+    const receipt = { providerId: "alpaca", scope: { tenantId: "tenant-a", connectionId: "paper-a", externalAccountId: "account-paper-a", environment: "paper" }, credentialGeneration: "gen-1", actor: "operator-a", migratedAt: "2026-10-31T00:00:00Z", rolledBack: false };
+    ownership.previewProviderCredentialMigration.mockResolvedValue({ providerId: "alpaca", displayName: "Alpaca", credentialState: "Configured", credentialSource: "LocalEncryptedStore", verificationState: "NotVerified", missingFields: [], presentFields: ["KeyId"], auditMetadata: { credentialGeneration: "gen-1" } });
+    ownership.migrateProviderCredential.mockImplementation(async (_c: string, request: { migrationId: string }) => ({ ...receipt, migrationId: request.migrationId }));
+    ownership.finalizeProviderCredentialMigration.mockImplementation(async (_c: string, request: { migrationId: string }) => ({ ...receipt, migrationId: request.migrationId, finalizedBy: "controller", finalizedAt: "2026-11-01T00:00:00Z" }));
+    render(<OwnedProviderCredentialPanel row={row} session={session} />);
+    await select();
+    const listings = api.getProviderRoutingConnections.mock.calls.length;
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview migration" }));
+    await screen.findByText(/generation gen-1 can be migrated/);
+    fireEvent.click(screen.getByRole("button", { name: "Migrate to this connection" }));
+    await screen.findByText(/retained by operator-a at generation gen-1/);
+    await screen.findByText("Owned connections refreshed; selected connection status reloaded.");
+    expect(api.getProviderRoutingConnections.mock.calls.length).toBeGreaterThan(listings);
+    expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("paper-a");
+    expect(screen.getByLabelText("Alpaca migration receipt")).toHaveTextContent(/· migrated · generation gen-1 · paper-a/);
+
+    await userEvent.click(screen.getByRole("button", { name: "Re-verify Alpaca connection" }));
+    await screen.findByText("Verification succeeded.");
+    expect(api.verifyProviderConnection).toHaveBeenCalledWith("alpaca", expect.objectContaining({ connectionId: "paper-a" }));
+    expect(screen.getByLabelText("Alpaca migration receipt")).toBeInTheDocument();
+    const finalize = screen.getByRole("button", { name: "Finalize migration" });
+    expect(finalize).toBeEnabled();
+    fireEvent.click(finalize);
+    await screen.findByText(/finalized by controller; rollback has ended/);
+    expect(ownership.finalizeProviderCredentialMigration).toHaveBeenCalledWith("paper-a", { providerId: "alpaca", migrationId: ownership.migrateProviderCredential.mock.calls[0][1].migrationId });
+    expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("paper-a");
+
+    api.getProviderRoutingConnections.mockResolvedValue([owned("paper-b")]);
+    ownership.getProviderRuntimeCredentialStatus.mockResolvedValue({ providerId: "alpaca", connectionId: "paper-a", isBound: false, pendingRestart: false, detail: "Not bound." });
+    fireEvent.click(screen.getByRole("button", { name: "Check running instances" }));
+    await screen.findByText(/Selected ownership changed or was removed/);
+    expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("");
+  });
   it("retains selection through ordinary data refreshes but blocks when the session disappears", async () => {
     const view = render(<OwnedProviderCredentialPanel row={row} session={session} />);
     await select();
@@ -155,6 +222,29 @@ describe("owned provider credential editor", () => {
     view.rerender(<OwnedProviderCredentialPanel row={row} session={null} />);
     expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("");
     expect(screen.getByRole("button", { name: "Save Alpaca credentials" })).toBeDisabled();
+  });
+  it("reloads with the header refresh while keeping the selection, never over an open credential editor", async () => {
+    render(<HeaderRefresh><OwnedProviderCredentialPanel row={row} session={session} /></HeaderRefresh>);
+    await select();
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading connections for Alpaca" })).not.toBeInTheDocument();
+    expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(1);
+    await userEvent.click(screen.getByRole("button", { name: "Header refresh" }));
+    await screen.findByText("Owned connections refreshed; selected connection status reloaded.");
+    expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(2);
+    expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("paper-a");
+
+    await fill();
+    await userEvent.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(api.getProviderRoutingConnections).toHaveBeenCalledTimes(2);
+    expect(screen.getByLabelText("Alpaca Secret key")).toHaveValue("secret");
+  });
+  it("offers Retry only after owned connections fail to load", async () => {
+    api.getProviderRoutingConnections.mockRejectedValueOnce(new Error("offline"));
+    render(<OwnedProviderCredentialPanel row={row} session={session} />);
+    await userEvent.click(await screen.findByRole("button", { name: "Retry loading connections for Alpaca" }));
+    await screen.findByRole("option", { name: /paper-a/ });
+    expect(screen.queryByRole("button", { name: "Retry loading connections for Alpaca" })).not.toBeInTheDocument();
   });
   it("invalidates selection on exposed session change and ignores delayed status", async () => {
     const pending = deferred<ProviderConnectionRow[]>(); api.getProviderConnections.mockReturnValue(pending.promise);

@@ -2,18 +2,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<title>Meridian — Radii &amp; accent bars</title>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { margin: 0; padding: 16px; background: var(--bg); color: var(--text-primary); font-family: var(--font-body); display: flex; gap: 10px; align-items: stretch; }
   .box { flex: 1; border: 1px solid var(--border); background: var(--card-surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; height: 108px; box-shadow: var(--shadow-card); }
   .n { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: var(--text-muted); }
   .u { font-family: var(--font-data); font-size: 11px; color: var(--text-primary); }
-  .accent { border-left-width: 3px; border-left-color: var(--accent); }
+  .accent { border-left-width: 3px; border-left-color: var(--brand-signal,#C56343); }
   .accent4 { border-left-width: 4px; border-left-color: var(--green); }
 </style>
 </head>
-<body>
+<body class="mds-specimen">
   <div class="box" style="border-radius: 4px;"><span class="u">4px</span><span class="n">chip · badge</span></div>
   <div class="box" style="border-radius: 6px;"><span class="u">6px</span><span class="n">button · input</span></div>
   <div class="box" style="border-radius: 8px;"><span class="u">8px</span><span class="n">card · panel</span></div>

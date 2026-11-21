@@ -5,6 +5,7 @@ using System.Windows.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Features.Reporting;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -118,7 +119,7 @@ public sealed class WorkspaceAttentionRibbonViewModel : BindableBase
 
     public DateTimeOffset Timestamp { get; }
 
-    public string TimestampText => Timestamp.ToLocalTime().ToString("MMM d, HH:mm", CultureInfo.InvariantCulture);
+    public string TimestampText => FormatHelpers.FormatDisplayTimestamp(Timestamp);
 
     public string SummaryWithTimestamp => $"{SummaryText} Updated {TimestampText}.";
 
@@ -356,8 +357,8 @@ public sealed class PortfolioWorkspaceShellViewModel : WorkspaceShellViewModelBa
             ShellContext = await _shellContextService.CreateAsync(
                 new WorkspaceShellContextInput
                 {
-                    WorkspaceTitle = "Portfolio",
-                    WorkspaceSubtitle = "Accounts, exposure, imports, and close readiness over shared portfolio read models.",
+                    WorkspaceTitle = WorkspaceCopyCatalog.Portfolio.ShellTitle,
+                    WorkspaceSubtitle = WorkspaceCopyCatalog.Portfolio.ShellSubtitle,
                     PrimaryScopeLabel = "Fund",
                     ReviewStateLabel = "Close readiness"
                 },
@@ -574,8 +575,8 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
             ShellContext = await _shellContextService.CreateAsync(
                 new WorkspaceShellContextInput
                 {
-                    WorkspaceTitle = "Reporting",
-                    WorkspaceSubtitle = "Governed report packs, schedules, exports, and delivery evidence.",
+                    WorkspaceTitle = WorkspaceCopyCatalog.Reporting.ShellTitle,
+                    WorkspaceSubtitle = WorkspaceCopyCatalog.Reporting.ShellSubtitle,
                     PrimaryScopeLabel = "Fund",
                     ReviewStateLabel = "Approval"
                 },

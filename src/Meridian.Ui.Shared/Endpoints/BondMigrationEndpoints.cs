@@ -15,6 +15,7 @@ public static class BondMigrationEndpoints
 {
     public static void MapBondMigrationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        jsonOptions = FixedIncomeHttpJson.Options(jsonOptions);
         var group = app.MapGroup(string.Empty).WithTags("BondMigration").RequireWorkstationTenantScope();
         group.MapPost(UiApiRoutes.ReferenceDataBondMigrationPreview, (
             BondMigrationPreviewRequest request, [FromServices] IBondMigrationService service, CancellationToken ct) =>
@@ -94,7 +95,8 @@ public static class BondMigrationEndpoints
         {
             return Results.BadRequest(new { code = "BondMigrationRequestInvalid", error = EndpointHelpers.RefusalDetail(exception) });
         }
-        catch (InvalidOperationException exception)
+        // A terms capability floor refusal is the shared handler's 503, never this route's 409 (ADR-025).
+        catch (InvalidOperationException exception) when (exception is not SecurityMasterTermsCapabilityRefusedException)
         {
             return Results.Conflict(new { code = "BondMigrationStateConflict", error = EndpointHelpers.RefusalDetail(exception) });
         }

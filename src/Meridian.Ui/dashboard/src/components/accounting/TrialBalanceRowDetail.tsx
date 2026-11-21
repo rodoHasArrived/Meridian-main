@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import type { ReactNode } from "react";
 import { DenseDataTableColumn, EntitySummary } from "@/components/meridian/ui-kit-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,7 @@ export const trialBalanceColumns: DenseDataTableColumn<AccountingTrialBalanceRow
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.accountLabel}</span>
-        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.dimensionLabel}</span>
+        <span className="mt-1 block break-words font-mono text-xs text-muted-foreground">{row.dimensionLabel}</span>
       </span>
     )
   },
@@ -56,10 +57,12 @@ export const trialBalanceColumns: DenseDataTableColumn<AccountingTrialBalanceRow
 
 export function AccountingTrialBalanceSelectedDetailPanel({
   panelId,
-  detail
+  detail,
+  identity
 }: {
   panelId: string;
   detail: AccountingTrialBalanceDetailViewState;
+  identity?: ReactNode;
 }) {
   const technicalFields = detail.fields.filter((field) => TRIAL_BALANCE_TECHNICAL_FIELD_LABELS.has(field.label));
   const operationalFields = detail.fields.filter((field) => !TRIAL_BALANCE_TECHNICAL_FIELD_LABELS.has(field.label));
@@ -75,6 +78,7 @@ export function AccountingTrialBalanceSelectedDetailPanel({
         fields={operationalFields}
         ariaLabel={detail.ariaLabel}
       />
+      {identity}
       {technicalFields.length > 0 ? (
         <TechnicalDetails label="Record identifiers" className="mt-3">
           <dl className="grid gap-2 text-xs sm:grid-cols-2">
@@ -111,24 +115,24 @@ export function AccountingTrialBalanceSelectedDetailPanel({
                 <div className="flex items-start justify-between gap-3">
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold text-foreground">{line.description}</span>
-                    <span className="mt-1 block text-[11px] text-muted-foreground">Retained journal posting</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">Retained journal posting</span>
                   </span>
                   <Badge variant="outline">{line.balanceLabel}</Badge>
                 </div>
-                <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
                   <span className="font-mono">Debit {line.debitLabel}</span>
                   <span className="font-mono">Credit {line.creditLabel}</span>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                   {line.evidenceHref ? (
-                    <Link className="text-primary underline-offset-2 hover:underline" to={line.evidenceHref}>
+                    <Link className="text-[var(--interaction-link)] underline-offset-2 hover:text-[var(--interaction-link-hover)] hover:underline" to={line.evidenceHref}>
                       {line.evidenceLabel}
                     </Link>
                   ) : (
                     <span className="text-muted-foreground">{line.evidenceLabel}</span>
                   )}
                   {line.approvalHref ? (
-                    <Link className="text-primary underline-offset-2 hover:underline" to={line.approvalHref}>
+                    <Link className="text-[var(--interaction-link)] underline-offset-2 hover:text-[var(--interaction-link-hover)] hover:underline" to={line.approvalHref}>
                       Approval evidence
                     </Link>
                   ) : null}
@@ -154,11 +158,11 @@ export function AccountingTrialBalanceSelectedDetailPanel({
                 <div className="text-sm font-semibold text-foreground">
                   {document.href ? (
                     document.href.startsWith("/accounting") ? (
-                      <Link className="text-primary underline-offset-2 hover:underline" to={document.href} aria-label={document.ariaLabel}>
+                      <Link className="text-[var(--interaction-link)] underline-offset-2 hover:text-[var(--interaction-link-hover)] hover:underline" to={document.href} aria-label={document.ariaLabel}>
                         {document.label}
                       </Link>
                     ) : (
-                      <a className="text-primary underline-offset-2 hover:underline" href={document.href} target="_blank" rel="noreferrer" aria-label={document.ariaLabel}>
+                      <a className="text-[var(--interaction-link)] underline-offset-2 hover:text-[var(--interaction-link-hover)] hover:underline" href={document.href} target="_blank" rel="noreferrer" aria-label={document.ariaLabel}>
                         {document.label}
                       </a>
                     )

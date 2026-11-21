@@ -152,7 +152,7 @@ describe("statement run reconcile action", () => {
   it("only cites permission once the server has actually declined", () => {
     expect(buildStatementRunReconcileAction(base).disabledReason).toBeNull();
     expect(buildStatementRunReconcileAction({ ...base, forbidden: true }).disabledReason)
-      .toContain("does not hold reconciliation mutation permission");
+      .toContain("does not hold permission to change reconciliations");
   });
 
   it("blocks a re-run while validation is blocking the run", () => {

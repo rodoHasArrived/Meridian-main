@@ -8,7 +8,7 @@ using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Reporting;
 using Meridian.Strategies.Services;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Storage.Archival;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;

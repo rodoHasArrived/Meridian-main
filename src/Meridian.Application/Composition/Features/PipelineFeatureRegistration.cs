@@ -49,13 +49,23 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         {
             var eventMetrics = sp.GetRequiredService<IEventMetrics>();
             var configStore = sp.GetRequiredService<ConfigStore>();
-            var reportOutputDirectory = Path.Combine(configStore.GetDataRoot(configStore.Load()), "reports");
-            return new DataQualityMonitoringService(
+            var appConfig = configStore.Load();
+            var reportOutputDirectory = Path.Combine(configStore.GetDataRoot(appConfig), "reports");
+            var symbolRegistry = sp.GetService<ISymbolRegistryService>();
+            var service = new DataQualityMonitoringService(
                 new DataQualityMonitoringConfig
                 {
-                    ReportOutputDirectory = reportOutputDirectory
+                    ReportOutputDirectory = reportOutputDirectory,
+                    CrossProviderPolicy = ResolveCrossProviderPolicy(appConfig),
+                    AssetClassResolver = symbolRegistry is null
+                        ? null
+                        : symbol => symbolRegistry.LookupSymbol(symbol).Entry?.AssetClass
                 },
                 eventMetrics);
+
+            // Tolerance edits saved from the workstation apply to this running instance.
+            CrossProviderPolicyApplier.Attach(configStore.ConfigPath, service.CrossProvider);
+            return service;
         });
         services.AddSingleton<ICompositeDataQualityReadService>(sp =>
             new CompositeDataQualityReadService(
@@ -193,7 +203,9 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
             var ledger = new PersistentDedupLedger(Path.Combine(storageOptions.RootPath, "_dedup"));
-            ledger.InitializeAsync().GetAwaiter().GetResult();
+            // A DI factory cannot await, so load with synchronous I/O rather than blocking on
+            // the asynchronous load. The ledger must be loaded before the pipeline starts.
+            ledger.Initialize();
             return ledger;
         });
 
@@ -365,5 +377,26 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         }
 
         return sinks;
+    }
+
+    /// <summary>
+    /// Saved tolerances, or the built-in defaults when the section is absent or out of bounds. An
+    /// out-of-bounds file edit never widens tolerances silently; it is logged and ignored.
+    /// </summary>
+    internal static CrossProviderTolerancePolicy ResolveCrossProviderPolicy(AppConfig config)
+    {
+        var policy = CrossProviderTolerancePolicy.FromConfig(config);
+        try
+        {
+            policy.Validate();
+            return policy;
+        }
+        catch (ArgumentException ex)
+        {
+            Log.ForContext<PipelineFeatureRegistration>().Warning(
+                "DataQuality.CrossProvider is outside supported bounds ({Reason}); using default cross-provider tolerances",
+                ex.Message);
+            return CrossProviderTolerancePolicy.Default;
+        }
     }
 }

@@ -1,4 +1,5 @@
-/** Left operator rail — light paper sidebar with small-caps section labels and a 3px teal-blue active indicator. */
+import type React from "react";
+/** Left operator rail — light paper sidebar with small-caps section labels and a 3px terracotta active indicator. */
 export interface NavRailItem {
   id: string;
   label: string;
@@ -8,8 +9,8 @@ export interface NavRailItem {
   shortcut?: string;
 }
 export interface NavRailProps {
-  sections: { label: string; items: NavRailItem[] }[];
+  sections?: { label: string; items: NavRailItem[] }[];
   activeId?: string;
   onSelect?: (id: string) => void;
 }
-export declare function NavRail(props: NavRailProps): JSX.Element;
+export declare function NavRail(props: NavRailProps): React.JSX.Element;

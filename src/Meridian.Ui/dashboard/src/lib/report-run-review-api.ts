@@ -6,6 +6,7 @@ export interface ReportReviewLine {
   gridId: string; rowKey: string; column: string; state: string;
   previous: string | null; current: string | null; delta: string | null; percent: string | null;
   evidenceIds: string[];
+  isMeasure?: boolean;
   materialityOutcome?: "NotAssessed" | "WithinTolerance" | "MaterialException";
 }
 export interface ReportRunReview {

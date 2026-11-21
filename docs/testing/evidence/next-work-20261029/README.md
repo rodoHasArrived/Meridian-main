@@ -16,6 +16,12 @@ candidate's local gate receipts and required hosted checks, rather than the hist
 
 ## Automated proof selection
 
+The [bond settlement and LOT handoff golden case](bond-lot-golden-case.md) covers opt-in required
+paper settlement and separate server-verified bond acquisition intake into immutable journal
+review, with independently checked clean cost, purchased interest and dirty settlement cash.
+It provides no automatic paper-to-canonical conversion. Its candidate receipt separates pending
+checks from observed results and does not accept the complete LOT row or the reference slice.
+
 The owner expanded LOT to include short opening/cover, remaining-face amortization and automatic
 yield-to-worst. See [the accounting boundary and golden cases](accounting-expansion.md). The
 implementation is subject to final candidate tests and hosted checks; this does not close LOT or

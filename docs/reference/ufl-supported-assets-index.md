@@ -2,11 +2,11 @@
 
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, and application contributors
-**Last Updated:** 2026-05-29
+**Last Updated:** 2026-11-14
 
 **Status:** active
 **Scope:** reference framework and historical asset-profile index
-**Reviewed:** 2026-05-13
+**Reviewed:** 2026-11-14
 
 ## Summary
 
@@ -29,6 +29,23 @@ UFL should be read as a shared capability and conformance framework first. Indiv
 - Reference-data endpoint support currently exists for bonds, options, equities, futures, FX spot, swaps, commodities, crypto, deposits, money-market funds, and certificates of deposit.
 - Commercial paper, treasury bill, repo, cash sweep, other-security, CFD, and warrant packages remain active target-state designs unless their individual checklist marks a narrower baseline as delivered.
 - Do not treat a target-state package as complete just because a `SecurityKind` case, CSV parser mapping, or basic projection exists.
+
+## `SecurityKind` Cases Without An Asset Profile
+
+As of the 2026-11-14 review, the `SecurityKind` union in
+`src/Meridian.FSharp/Domain/SecurityMaster.fs` carries cases that postdate the 2026-05-29 assessment
+and have no asset profile in this index or a row in the [UFL Conformance Matrix](ufl-conformance-matrix.md):
+
+| Group | `SecurityKind` cases |
+| --- | --- |
+| Private markets and credit | `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, `CommitmentGuarantee` (`DirectLoan` is covered by the direct-lending slice) |
+| FX and rates derivatives | `FxForward`, `NonDeliverableForward`, `CreditDefaultSwap`, `Swaption`, `CapFloor` |
+| Funds and notes | `InvestmentFund`, `StructuredNote` |
+| Custom coverage | `CustomAsset` (the governed profile-backed case that implements the custom-asset lane below) |
+
+A union case alone establishes at most L1 (Canonical Terms). Do not assign these cases a higher
+maturity level until a conformance-matrix entry cites implementation and test evidence. The
+reference-data endpoint families listed above were rechecked on 2026-11-14 and are unchanged.
 
 ## UFL Maturity Model
 

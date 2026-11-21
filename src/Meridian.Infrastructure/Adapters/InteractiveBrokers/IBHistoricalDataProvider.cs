@@ -35,7 +35,7 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 [ImplementsAdr("ADR-001", "Interactive Brokers historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLimitAwareProvider, IDisposable
+public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLimitAwareProvider, IBackfillRequestMeteredProvider, IDisposable
 {
     private readonly EnhancedIBConnectionManager _connectionManager;
     private readonly RateLimiter _globalRateLimiter;
@@ -150,7 +150,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
             // Request just 1 day of data as a health check
             var bars = await RequestHistoricalBarsWithPacingAsync(
                 cfg,
-                DateTime.UtcNow.ToString("yyyyMMdd-HH:mm:ss"),
+                DateTime.UtcNow.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture),
                 "1 D",
                 IBBarSizes.Day1,
                 IBWhatToShow.Trades,
@@ -207,7 +207,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
         {
             var daysToFetch = Math.Min(maxDaysPerRequest, currentEnd.DayNumber - startDate.DayNumber + 1);
             var durationStr = $"{daysToFetch} D";
-            var endDateTime = currentEnd.ToDateTime(new TimeOnly(23, 59, 59)).ToString("yyyyMMdd-HH:mm:ss");
+            var endDateTime = currentEnd.ToDateTime(new TimeOnly(23, 59, 59)).ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture);
 
             try
             {
@@ -266,6 +266,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
                 _isRateLimited = true;
                 _rateLimitResetsAt = DateTimeOffset.UtcNow + PacingViolationCooldown;
                 OnRateLimitHit?.Invoke(GetRateLimitInfo());
+                HistoricalBackfillRequestScope.Current?.Throttled(Name, "provider-rate-limit", PacingViolationCooldown);
 
                 _log.Warning("IB pacing violation for {Symbol}, waiting {Seconds}s",
                     symbol, (int)PacingViolationCooldown.TotalSeconds);
@@ -294,15 +295,23 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
         await _concurrentRequestsSemaphore.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            // Wait for global rate limit
-            await _globalRateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-
             // Enforce per-contract rate limiting
             var contractKey = $"{cfg.Symbol}:{cfg.Exchange}:{whatToShow}";
             await EnforcePerContractPacingAsync(contractKey, ct).ConfigureAwait(false);
 
+            var observation = HistoricalBackfillRequestScope.Current;
+            if (observation is not null && _rateLimitResetsAt is { } reset && reset - DateTimeOffset.UtcNow is var wait && wait > TimeSpan.Zero)
+            {
+                observation.Throttled(Name, "provider-backoff", wait);
+                await Task.Delay(wait, ct).ConfigureAwait(false);
+            }
+
+            await _globalRateLimiter.WaitForUnitsAsync(1, observation?.HeadroomPercent(this) ?? 0,
+                observation is null ? null : delay => observation.Throttled(Name, "quota-admission", delay), ct).ConfigureAwait(false);
+
             // Track request count
             Interlocked.Increment(ref _requestCount);
+            observation?.RequestStarted(Name);
 
             // Make the request
             var bars = await _connectionManager.RequestHistoricalDataAsync(
@@ -383,7 +392,9 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
 
             var duration = currentEnd - chunkStart;
             var durationStr = FormatDuration(duration);
-            var endDateTime = currentEnd.ToString("yyyyMMdd-HH:mm:ss");
+            // The dash form is read by IB as UTC, so format the UTC instant rather than the
+            // offset-local clock time (which shifted the window by the offset).
+            var endDateTime = currentEnd.UtcDateTime.ToString("yyyyMMdd-HH:mm:ss", CultureInfo.InvariantCulture);
 
             try
             {
@@ -422,6 +433,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
                 _isRateLimited = true;
                 _rateLimitResetsAt = DateTimeOffset.UtcNow + PacingViolationCooldown;
                 OnRateLimitHit?.Invoke(GetRateLimitInfo());
+                HistoricalBackfillRequestScope.Current?.Throttled(Name, "provider-rate-limit", PacingViolationCooldown);
 
                 _log.Warning("IB pacing violation for {Symbol} intraday, waiting {Seconds}s",
                     symbol, (int)PacingViolationCooldown.TotalSeconds);
@@ -453,36 +465,60 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
         throw new FormatException($"Cannot parse IB date: {ibDate}");
     }
 
-    private static DateTimeOffset ParseBarTimestamp(string ibDateTime)
+    internal static DateTimeOffset ParseBarTimestamp(string ibDateTime)
     {
-        // IB returns timestamps in various formats depending on bar size
-        // Common formats: "yyyyMMdd  HH:mm:ss" or "yyyyMMdd HH:mm:ss" or epoch
-        if (long.TryParse(ibDateTime, out var epoch))
+        // Historical requests ask IB for epoch seconds (formatDate = 2), which is unambiguous UTC.
+        // The string forms are kept for robustness: the dash form ("yyyyMMdd-HH:mm:ss") is UTC,
+        // and the space form may carry a trailing IANA/IB zone id ("yyyyMMdd HH:mm:ss US/Eastern").
+        // A space form without a zone is in the TWS login time zone, which cannot be known here;
+        // it is refused rather than silently read as UTC (that shifted bars by 4-5 hours).
+        if (long.TryParse(ibDateTime, NumberStyles.Integer, CultureInfo.InvariantCulture, out var epoch))
         {
             return DateTimeOffset.FromUnixTimeSeconds(epoch);
         }
 
-        var formats = new[]
+        var trimmed = ibDateTime.Trim();
+        if (DateTimeOffset.TryParseExact(
+            trimmed,
+            "yyyyMMdd-HH:mm:ss",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            out var utc))
         {
-            "yyyyMMdd  HH:mm:ss",
-            "yyyyMMdd HH:mm:ss",
-            "yyyyMMdd-HH:mm:ss"
-        };
+            return utc;
+        }
 
-        foreach (var format in formats)
-        {
-            if (DateTimeOffset.TryParseExact(
-                ibDateTime,
-                format,
+        var parts = trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 3 &&
+            DateTime.TryParseExact(
+                $"{parts[0]} {parts[1]}",
+                "yyyyMMdd HH:mm:ss",
                 CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal,
-                out var dt))
-            {
-                return dt;
-            }
+                DateTimeStyles.None,
+                out var local) &&
+            TryFindTimeZone(parts[2], out var zone))
+        {
+            var unspecified = DateTime.SpecifyKind(local, DateTimeKind.Unspecified);
+            return new DateTimeOffset(unspecified, zone.GetUtcOffset(unspecified));
         }
 
         throw new FormatException($"Cannot parse IB timestamp: {ibDateTime}");
+    }
+
+    private static bool TryFindTimeZone(string id, out TimeZoneInfo zone)
+    {
+        // IB emits IANA ids ("US/Eastern", "America/New_York"); .NET resolves IANA ids on all
+        // platforms with ICU, and maps them to Windows ids where needed.
+        try
+        {
+            zone = TimeZoneInfo.FindSystemTimeZoneById(id);
+            return true;
+        }
+        catch (Exception ex) when (ex is TimeZoneNotFoundException or InvalidTimeZoneException)
+        {
+            zone = TimeZoneInfo.Utc;
+            return false;
+        }
     }
 
     private static string FormatDuration(TimeSpan duration)

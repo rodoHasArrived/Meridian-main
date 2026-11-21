@@ -16,10 +16,11 @@ namespace Meridian.Tests.Application;
 /// plus increment 5a-0) before increment 5a adds a declared mode to the Security Master engine. Each
 /// case goes through the public <see cref="SecurityMasterCashFlowService.GetProjectionAsync"/> seam and
 /// is serialized with the UI endpoints' options (<see cref="UiEndpoints.CreateEndpointJsonOptions"/>).
-/// Increment 5a must leave every undeclared projection as it is: the same twelve top-level members,
-/// the same <c>termsUsed</c> members, the same nested members in every row it writes, and a row
-/// carrying a stray or malformed block projecting exactly as its clean twin. Only a declared projection
-/// may add <c>scheduleEvidence</c>.
+/// The frozen legacy row codec preserves the original nested-member pins. Current calculated rows
+/// explicitly declare row version 2 and retain measured interest intervals and principal-basis
+/// segments when the v5 fixed-rate walk supplies them. Current and frozen contracts pin every nested member
+/// independently. Top-level and resolved terms members remain unchanged; only a declared projection
+/// adds <c>scheduleEvidence</c>. A stray or malformed convention block still projects exactly as its clean twin.
 /// </summary>
 /// <remarks>
 /// The service reads the wall clock for its as-of date and drops periods paid before it, so every case
@@ -112,6 +113,9 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         "termsUsed.legs[].resetSchedule",
     ];
 
+    // The termsUsed leg members a blocked swap still reports: SwapLegPaths without the leg schedules.
+    private static readonly string[] SwapTermsLegPaths = SwapLegPaths.Where(static path => path.StartsWith("termsUsed.", StringComparison.Ordinal)).ToArray();
+
     private static readonly string[] PrincipalScheduleRowPaths =
     [
         "termsUsed.principalSchedule[].paymentDate",
@@ -120,19 +124,75 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
 
     // The rows each case writes beyond the top-level and termsUsed members. No case writes a factor
     // schedule, a step-coupon schedule, or a leg notional or reset schedule.
-    private static readonly IReadOnlyDictionary<string, string[][]> RowsWritten =
+    // D3 (decided 2026-11-05): undeclared non-zero rates block, so every undeclared case with a
+    // non-zero rate writes no rows and carries its block reason (UndeclaredRateBlocks below). Before D3
+    // the bonds, the CD and the StructuredCredit wrote ScheduleRowPaths (the contractual-schedule bond
+    // also PrincipalScheduleRowPaths) and the swaps also SwapLegPaths. The zero-rate cases need no unit
+    // and keep those original undeclared row shapes pinned through the frozen legacy codec.
+    private static readonly IReadOnlyDictionary<string, string[][]> LegacyRowsWritten =
         new Dictionary<string, string[][]>(StringComparer.Ordinal)
         {
-            ["Bond.fixedBullet"] = [ScheduleRowPaths],
-            ["Bond.atMaturity"] = [ScheduleRowPaths],
-            ["Bond.contractualSchedule"] = [ScheduleRowPaths, PrincipalScheduleRowPaths],
-            ["CertificateOfDeposit"] = [ScheduleRowPaths],
-            ["StructuredCredit.flat"] = [ScheduleRowPaths],
-            ["Swap.twoLeg"] = [ScheduleRowPaths, SwapLegPaths],
+            ["Bond.fixedBullet"] = [],
+            ["Bond.atMaturity"] = [],
+            ["Bond.contractualSchedule"] = [PrincipalScheduleRowPaths],
+            ["CertificateOfDeposit"] = [],
+            ["StructuredCredit.flat"] = [],
+            ["Swap.twoLeg"] = [SwapTermsLegPaths],
             ["Bond.blocked"] = [],
-            ["Bond.stampOneStrayBlock"] = [ScheduleRowPaths],
-            ["Bond.stampTwoBlockAsNumber"] = [ScheduleRowPaths],
-            ["Swap.stampOneStrayLegBlocks"] = [ScheduleRowPaths, SwapLegPaths],
+            ["Bond.stampOneStrayBlock"] = [],
+            ["Bond.stampTwoBlockAsNumber"] = [],
+            ["Swap.stampOneStrayLegBlocks"] = [SwapTermsLegPaths],
+            ["Bond.zeroRateBullet"] = [ScheduleRowPaths],
+            ["Bond.zeroRateContractualSchedule"] = [ScheduleRowPaths, PrincipalScheduleRowPaths],
+            ["Swap.zeroRateTwoLeg"] = [ScheduleRowPaths, SwapLegPaths],
+        };
+
+    private static readonly string[] MeasuredInterestRowPaths =
+    [
+        "schedule[].rowVersion",
+        "schedule[].interestMeasuredFrom",
+        "schedule[].interestMeasuredTo",
+    ];
+
+    private static readonly string[] InterestSegmentRowPaths =
+    [
+        "schedule[].interestSegments",
+        "schedule[].interestSegments[].start",
+        "schedule[].interestSegments[].end",
+        "schedule[].interestSegments[].referencePrincipal",
+        "schedule[].interestSegments[].unroundedInterestAmount",
+        "schedule[].interestSegments[].factor",
+        "schedule[].interestSegments[].periodStart",
+        "schedule[].interestSegments[].periodEnd",
+        "schedule[].interestSegments[].factorAfter",
+    ];
+
+    // Exact additions in current row contract 2. Both fixed-rate bond walks retain their measured
+    // intervals and interest-principal segments. Netted multi-leg rows cannot claim that evidence.
+    private static string[] CurrentRowAdditions(string caseName) => caseName switch
+    {
+        "Bond.zeroRateBullet" or "Bond.zeroRateContractualSchedule" =>
+            [.. MeasuredInterestRowPaths, .. InterestSegmentRowPaths],
+        "Swap.zeroRateTwoLeg" => ["schedule[].rowVersion", "legSchedules[].schedule[].rowVersion"],
+        _ => []
+    };
+
+    private const string UndeclaredUnitTail =
+        " has no declared unit (Fraction, Percent or BasisPoints). A legacy value is flagged rather than converted; its unit cannot be inferred from its magnitude.";
+
+    // D3 (decided 2026-11-05): the exact block each undeclared non-zero case now carries.
+    private static readonly IReadOnlyDictionary<string, string> UndeclaredRateBlocks =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Bond.fixedBullet"] = "Rate couponRate = 5 on Bond" + UndeclaredUnitTail,
+            ["Bond.atMaturity"] = "Rate couponRate = 5 on Bond" + UndeclaredUnitTail,
+            ["Bond.contractualSchedule"] = "Rate couponRate = 5 on Bond" + UndeclaredUnitTail,
+            ["CertificateOfDeposit"] = "Rate couponRate = 4.1 on CertificateOfDeposit" + UndeclaredUnitTail,
+            ["StructuredCredit.flat"] = "Rate couponOrIndex = 5.25 on StructuredCredit" + UndeclaredUnitTail,
+            ["Swap.twoLeg"] = "Rate legs.fixedRate = 4.25 on Swap" + UndeclaredUnitTail,
+            ["Bond.stampOneStrayBlock"] = "Rate couponRate = 5 on Bond" + UndeclaredUnitTail,
+            ["Bond.stampTwoBlockAsNumber"] = "Rate couponRate = 5 on Bond" + UndeclaredUnitTail,
+            ["Swap.stampOneStrayLegBlocks"] = "Rate legs.fixedRate = 4.25 on Swap" + UndeclaredUnitTail,
         };
 
     // A fully-populated scheduleConventions block, as a node that writes it would store it.
@@ -172,6 +232,11 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             ["Bond.stampTwoBlockAsNumber"] = ("Bond", StructuredCashFlowSourceKind.CalculatedBullet, static issue =>
                 WithBlock(Stamped(FixedBond(issue, "SemiAnnual"), 2), "7")),
             ["Swap.stampOneStrayLegBlocks"] = ("Swap", StructuredCashFlowSourceKind.CalculatedBullet, static issue => StampOneSwapWithLegBlocks(issue)),
+            // D3 (decided 2026-11-05): a zero rate resolves without a unit, so these undeclared cases
+            // still walk the legacy projection and pin its row shapes.
+            ["Bond.zeroRateBullet"] = ("Bond", StructuredCashFlowSourceKind.CalculatedBullet, static issue => ZeroRate(FixedBond(issue, "SemiAnnual"))),
+            ["Bond.zeroRateContractualSchedule"] = ("Bond", StructuredCashFlowSourceKind.CalculatedSinker, static issue => ZeroRate(ContractualScheduleBond(issue))),
+            ["Swap.zeroRateTwoLeg"] = ("Swap", StructuredCashFlowSourceKind.CalculatedBullet, static issue => ZeroRateSwap(TwoLegSwap(issue))),
         };
 
     public static TheoryData<string> UndeclaredCases()
@@ -210,16 +275,102 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
 
     [Theory]
     [MemberData(nameof(UndeclaredCases))]
-    public async Task UndeclaredProjection_SerializesTheSameNestedMembers(string caseName)
+    public async Task UndeclaredProjection_CurrentRowsSerializeExactlyTheirVersionedNestedMembers(string caseName)
     {
         var projection = await ProjectAsync(caseName);
 
         var expected = TopLevelMembers
             .Concat(TermsUsedMembers.Select(static member => $"termsUsed.{member}"))
-            .Concat(RowsWritten[caseName].SelectMany(static rows => rows));
+            .Concat(LegacyRowsWritten[caseName].SelectMany(static rows => rows))
+            .Concat(CurrentRowAdditions(caseName));
         MemberPaths(projection).Should().BeEquivalentTo(
             expected,
-            $"the undeclared '{caseName}' projection writes the same members in every row");
+            $"the undeclared '{caseName}' projection writes exactly the current row contract");
+        foreach (var row in projection["schedule"]!.AsArray())
+            row!["rowVersion"]!.GetValue<int>().Should().Be(2);
+        foreach (var leg in projection["legSchedules"]?.AsArray() ?? [])
+            foreach (var row in leg!["schedule"]!.AsArray())
+                row!["rowVersion"]!.GetValue<int>().Should().Be(2);
+        if (caseName is "Bond.zeroRateBullet" or "Bond.zeroRateContractualSchedule")
+        {
+            projection["schedule"]!.AsArray().Should().NotBeEmpty();
+            foreach (var row in projection["schedule"]!.AsArray())
+            {
+                var start = DateOnly.Parse(row!["interestMeasuredFrom"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
+                var end = DateOnly.Parse(row["interestMeasuredTo"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
+                start.Should().BeBefore(end);
+                end.Should().Be(DateOnly.FromDateTime(row["periodDate"]!.GetValue<DateTimeOffset>().UtcDateTime));
+                var segments = row["interestSegments"]!.AsArray();
+                segments.Should().NotBeEmpty("version-2 bond rows retain their measured interest basis");
+                segments[0]!["start"]!.GetValue<string>().Should().Be(row["interestMeasuredFrom"]!.GetValue<string>());
+                segments[^1]!["end"]!.GetValue<string>().Should().Be(row["interestMeasuredTo"]!.GetValue<string>());
+                var cursor = start;
+                var interest = 0m;
+                foreach (var segment in segments)
+                {
+                    var segmentStart = DateOnly.Parse(segment!["start"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
+                    var segmentEnd = DateOnly.Parse(segment["end"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
+                    segmentStart.Should().Be(cursor);
+                    segmentEnd.Should().BeAfter(segmentStart).And.BeOnOrBefore(end);
+                    segment["periodStart"]!.GetValue<string>().Should().Be(row["interestMeasuredFrom"]!.GetValue<string>());
+                    segment["periodEnd"]!.GetValue<string>().Should().Be(row["interestMeasuredTo"]!.GetValue<string>());
+                    var factor = segment["factor"]!.GetValue<decimal>();
+                    segment["referencePrincipal"]!.GetValue<decimal>().Should().Be(1000m * factor);
+                    segment["factorAfter"]!.GetValue<decimal>().Should().BeInRange(0m, factor);
+                    segment["unroundedInterestAmount"]!.GetValue<decimal>().Should().Be(0m);
+                    interest += segment["unroundedInterestAmount"]!.GetValue<decimal>();
+                    cursor = segmentEnd;
+                }
+                cursor.Should().Be(end);
+                interest.Should().Be(row["interestAmount"]!.GetValue<decimal>());
+            }
+        }
+        if (UndeclaredRateBlocks.TryGetValue(caseName, out var reason))
+        {
+            // D3 (decided 2026-11-05): the undeclared non-zero rate blocks with its exact reason.
+            projection["blockedReason"]!.GetValue<string>().Should().Be(reason);
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(UndeclaredCases))]
+    public async Task UndeclaredProjection_FrozenLegacyRowsRetainExactlyTheOriginalNestedMembers(string caseName)
+    {
+        var legacy = await ProjectAsync(caseName, frozenRowVersion: 0);
+        var expected = TopLevelMembers
+            .Concat(TermsUsedMembers.Select(static member => $"termsUsed.{member}"))
+            .Concat(LegacyRowsWritten[caseName].SelectMany(static rows => rows));
+
+        // Receipt serialization uses PascalCase; the original endpoint pins use camelCase.
+        // Only casing is normalized: the frozen row writer must emit every original member and
+        // no current-version additions in either the net schedule or nested leg schedules.
+        MemberPaths(legacy).Select(static path => string.Join('.', path.Split('.')
+            .Select(JsonNamingPolicy.CamelCase.ConvertName))).Should().BeEquivalentTo(expected);
+        if (UndeclaredRateBlocks.TryGetValue(caseName, out var reason))
+            legacy["BlockedReason"]!.GetValue<string>().Should().Be(reason);
+    }
+
+    [Theory]
+    [InlineData("Bond.zeroRateBullet")]
+    [InlineData("Bond.zeroRateContractualSchedule")]
+    public async Task VersionOneRows_RetainMeasuredIntervalsWithoutVersionTwoSegments(string caseName)
+    {
+        var versionOne = await ProjectAsync(caseName, frozenRowVersion: 1);
+        var expected = TopLevelMembers
+            .Concat(TermsUsedMembers.Select(static member => $"termsUsed.{member}"))
+            .Concat(LegacyRowsWritten[caseName].SelectMany(static rows => rows))
+            .Concat(MeasuredInterestRowPaths);
+
+        MemberPaths(versionOne).Select(static path => string.Join('.', path.Split('.')
+            .Select(JsonNamingPolicy.CamelCase.ConvertName))).Should().BeEquivalentTo(expected);
+        versionOne["Schedule"]!.AsArray().Should().NotBeEmpty();
+        foreach (var row in versionOne["Schedule"]!.AsArray())
+        {
+            row!["RowVersion"]!.GetValue<int>().Should().Be(1);
+            row["InterestMeasuredFrom"].Should().NotBeNull();
+            row["InterestMeasuredTo"].Should().NotBeNull();
+            row.AsObject().ContainsKey("InterestSegments").Should().BeFalse();
+        }
     }
 
     [Fact]
@@ -238,8 +389,11 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         var clean = await ProjectAsync(cleanName);
         var twin = await ProjectAsync(twinName);
 
-        clean["schedule"]!.AsArray().Count.Should().BePositive($"the clean twin '{cleanName}' projects rows to compare");
-        clean["blockedReason"].Should().BeNull();
+        // D3 (decided 2026-11-05): undeclared non-zero rates block, so both twins block with the same
+        // reason; the comparison below still requires every other member to be equal.
+        clean["schedule"]!.AsArray().Should().BeEmpty($"the clean twin '{cleanName}' declares no rate unit");
+        clean["blockedReason"]!.GetValue<string>().Should().Be(UndeclaredRateBlocks[cleanName]);
+        twin["blockedReason"]!.GetValue<string>().Should().Be(UndeclaredRateBlocks[cleanName]);
 
         // The as-of is the wall clock at projection time; every other member, rows included, is equal.
         clean.Remove("asOf");
@@ -253,11 +407,12 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
     public async Task DeclaredProjection_AddsExactlyScheduleEvidence()
     {
         // A Bond stamped at its scheduleConventions version with a minimal block declares a schedule.
+        // D3 (decided 2026-11-05): the block also declares the Percent its 5 coupon was written in.
         var projection = await ProjectAsync(
             "Bond.declared",
             "Bond",
             StructuredCashFlowSourceKind.CalculatedBullet,
-            WithBlock(Stamped(FixedBond(IssueDate, "SemiAnnual"), 2), """{"accrualAdjusted":false}"""));
+            WithBlock(Stamped(FixedBond(IssueDate, "SemiAnnual"), 2), """{"accrualAdjusted":false,"couponRateUnit":"Percent"}"""));
 
         projection["blockedReason"].Should().BeNull();
         projection["schedule"]!.AsArray().Count.Should().BePositive("the declared bond projects rows");
@@ -272,19 +427,27 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
                 "coverageGaps");
         projection["termsUsed"].Should().BeOfType<JsonObject>()
             .Which.Select(static member => member.Key).Should().BeEquivalentTo(TermsUsedMembers);
+        foreach (var row in projection["schedule"]!.AsArray())
+        {
+            row!.AsObject().Select(static member => member.Key).Should().Equal(
+                "periodDate", "principalAmount", "interestAmount", "factor", "unadjustedStart",
+                "unadjustedEnd", "accrualStart", "accrualEnd", "rowVersion");
+            row["rowVersion"]!.GetValue<int>().Should().Be(2);
+        }
     }
 
-    private static Task<JsonObject> ProjectAsync(string caseName)
+    private static Task<JsonObject> ProjectAsync(string caseName, int? frozenRowVersion = null)
     {
         var (assetClass, sourceKind, buildTerms) = Cases[caseName];
-        return ProjectAsync(caseName, assetClass, sourceKind, buildTerms(IssueDate));
+        return ProjectAsync(caseName, assetClass, sourceKind, buildTerms(IssueDate), frozenRowVersion);
     }
 
     private static async Task<JsonObject> ProjectAsync(
         string caseName,
         string assetClass,
         StructuredCashFlowSourceKind sourceKind,
-        JsonObject terms)
+        JsonObject terms,
+        int? frozenRowVersion = null)
     {
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(SecurityId, Arg.Any<CancellationToken>())
@@ -301,7 +464,10 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         var projection = await service.GetProjectionAsync(SecurityId, StructuredCashFlowScenario.Base);
 
         projection.Should().NotBeNull($"the '{caseName}' security has a calculated source");
-        return JsonSerializer.SerializeToNode(projection, EndpointOptions)!.AsObject();
+        return frozenRowVersion is { } rowVersion
+            ? JsonSerializer.SerializeToNode(SecurityCashFlowScheduleRowCodec.ForVersion(projection!, rowVersion),
+                SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto)!.AsObject()
+            : JsonSerializer.SerializeToNode(projection, EndpointOptions)!.AsObject();
     }
 
     // Every member path in the serialized projection, array indices collapsed to [].
@@ -399,6 +565,20 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
                     ["exchangesPrincipal"] = false,
                 }),
         };
+
+    private static JsonObject ZeroRate(JsonObject bond)
+    {
+        bond["couponRate"] = 0m;
+        return bond;
+    }
+
+    private static JsonObject ZeroRateSwap(JsonObject swap)
+    {
+        var legs = swap["legs"]!.AsArray();
+        legs[0]!["fixedRate"] = 0m;
+        legs[1]!["currentIndexRate"] = 0m;
+        return swap;
+    }
 
     private static JsonObject StampOneSwapWithLegBlocks(DateOnly issue)
     {

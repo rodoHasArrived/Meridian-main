@@ -1,7 +1,10 @@
+using System.Globalization;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
+using Meridian.Storage.Export;
 using Serilog;
 
 namespace Meridian.DataIntegration.Monitoring.DataQuality;
@@ -291,6 +294,7 @@ public sealed class DataQualityReportGenerator
         var content = format switch
         {
             ReportExportFormat.Json => ExportWeeklyToJson(report),
+            ReportExportFormat.Csv => ExportWeeklyToCsv(report),
             ReportExportFormat.Html => ExportWeeklyToHtml(report),
             ReportExportFormat.Markdown => ExportWeeklyToMarkdown(report),
             _ => ExportWeeklyToJson(report)
@@ -489,8 +493,10 @@ public sealed class DataQualityReportGenerator
 
         foreach (var summary in report.SymbolSummaries)
         {
-            sb.AppendLine($"{summary.Symbol},{summary.OverallScore:F4},{summary.CompletenessScore:F4}," +
-                $"{summary.TotalEvents},{summary.GapCount},{summary.SequenceErrors},{summary.Anomalies},{summary.Grade}");
+            sb.AppendLine(string.Create(CultureInfo.InvariantCulture,
+                $"{SpreadsheetFormulaGuard.EscapeCsvCell(summary.Symbol)},{summary.OverallScore:F4},{summary.CompletenessScore:F4}," +
+                $"{summary.TotalEvents},{summary.GapCount},{summary.SequenceErrors},{summary.Anomalies}," +
+                $"{SpreadsheetFormulaGuard.EscapeCsvCell(summary.Grade)}"));
         }
 
         return sb.ToString();
@@ -523,8 +529,8 @@ public sealed class DataQualityReportGenerator
 
         foreach (var s in report.SymbolSummaries.Take(50))
         {
-            sb.AppendLine($"<tr><td>{s.Symbol}</td><td class='{GetScoreClass(s.OverallScore)}'>{s.OverallScore:P1}</td>" +
-                $"<td>{s.TotalEvents:N0}</td><td>{s.GapCount}</td><td>{s.SequenceErrors}</td><td>{s.Grade}</td></tr>");
+            sb.AppendLine($"<tr><td>{WebUtility.HtmlEncode(s.Symbol)}</td><td class='{GetScoreClass(s.OverallScore)}'>{s.OverallScore:P1}</td>" +
+                $"<td>{s.TotalEvents:N0}</td><td>{s.GapCount}</td><td>{s.SequenceErrors}</td><td>{WebUtility.HtmlEncode(s.Grade)}</td></tr>");
         }
 
         sb.AppendLine("</table>");
@@ -534,7 +540,7 @@ public sealed class DataQualityReportGenerator
             sb.AppendLine("<h2>Recommendations</h2><ul>");
             foreach (var rec in report.Recommendations)
             {
-                sb.AppendLine($"<li>{rec}</li>");
+                sb.AppendLine($"<li>{WebUtility.HtmlEncode(rec)}</li>");
             }
             sb.AppendLine("</ul>");
         }
@@ -592,6 +598,21 @@ public sealed class DataQualityReportGenerator
     private string ExportWeeklyToJson(WeeklyQualityReport report)
     {
         return JsonSerializer.Serialize(report, s_jsonOptions);
+    }
+
+    private string ExportWeeklyToCsv(WeeklyQualityReport report)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("Date,OverallScore,TotalEvents,TotalGaps,TotalSequenceErrors,TotalAnomalies");
+
+        foreach (var day in report.DailyReports)
+        {
+            sb.AppendLine(string.Create(CultureInfo.InvariantCulture,
+                $"{day.Date:yyyy-MM-dd},{day.OverallScore:F4},{day.Statistics.TotalEvents}," +
+                $"{day.Statistics.TotalGaps},{day.Statistics.TotalSequenceErrors},{day.Statistics.TotalAnomalies}"));
+        }
+
+        return sb.ToString();
     }
 
     private string ExportWeeklyToHtml(WeeklyQualityReport report)

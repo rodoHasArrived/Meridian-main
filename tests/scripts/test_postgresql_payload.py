@@ -30,7 +30,7 @@ class PostgreSqlPayloadTests(unittest.TestCase):
     def setUp(self) -> None:
         self.pwsh = shutil.which("pwsh")
         self.assertIsNotNone(self.pwsh, "PowerShell 7 is required for payload approval tests.")
-        self.temporary = tempfile.TemporaryDirectory()
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         self.source = self.root / "installed" / "17"

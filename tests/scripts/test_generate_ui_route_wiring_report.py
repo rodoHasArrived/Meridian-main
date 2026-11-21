@@ -36,7 +36,7 @@ spec.loader.exec_module(wiring)
 
 class SourceDiscoveryTests(unittest.TestCase):
     def test_generated_and_dependency_sources_do_not_enter_the_route_inventory(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             authored = root / "App" / "Routes.cs"
             authored.parent.mkdir()
@@ -54,7 +54,7 @@ class SourceDiscoveryTests(unittest.TestCase):
 
 class SourceTraversalTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        self.root = Path(self.enterContext(tempfile.TemporaryDirectory(ignore_cleanup_errors=True)))
         self.source = self.root / "src"
         self.dashboard = self.source / "Meridian.Ui/dashboard/src"
         self.wpf = self.source / "Meridian.Wpf"

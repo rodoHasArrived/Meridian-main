@@ -21,9 +21,11 @@ Diagram source/artifact triplets are organized by domain to reduce top-level spr
 - `workflows/operations/`
 - `operations/`
 - `reference/`
-- `ui/`
 - `analytics/`
 - `uml/`
+
+The auto-generated WPF UI diagrams (`ui-*.{dot,svg,png}`) live only at the top level of
+`docs/diagrams/`; the generators write nowhere else.
 
 The index links diagram sources. Consult [Architecture](../architecture/README.md), [provider capabilities](../reference/provider-capability-matrix.md), and the [support matrix](../adr/019-production-support-matrix-and-deployment-posture.md) for maintained behavior and deployment guidance.
 

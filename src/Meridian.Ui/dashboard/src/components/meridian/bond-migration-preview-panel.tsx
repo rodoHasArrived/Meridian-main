@@ -57,11 +57,13 @@ const conventionLabels: Record<BusinessDayConvention, string> = {
 export function BondMigrationPreviewPanel({
   securityId,
   expectedVersion,
+  initiallyOpen = false,
   preview = previewBondMigration,
   stage = stageBondMigration
 }: {
   securityId: string;
   expectedVersion: number | null;
+  initiallyOpen?: boolean;
   preview?: typeof previewBondMigration;
   stage?: typeof stageBondMigration;
 }) {
@@ -207,7 +209,7 @@ export function BondMigrationPreviewPanel({
             ? "Terms or preview inputs changed. Reload the selected security and prepare a fresh preview before staging."
             : uncertain
               ? "The draft outcome is uncertain. Inspect retained revision history and reload the security before trying again."
-              : describeApiError(failure, "The governed draft could not be created.").summary
+              : describeApiError(failure, "The draft could not be created.").summary
         );
       }
     } finally {
@@ -216,11 +218,11 @@ export function BondMigrationPreviewPanel({
   }
 
   return (
-    <details className="rounded-md border border-border p-3">
+    <details open={initiallyOpen} className="rounded-md border border-border p-3">
       <summary className="cursor-pointer text-sm font-semibold">Review bond convention migration</summary>
       <div className="mt-3 flex flex-col gap-3">
         <p className="text-xs text-muted-foreground">
-          Compare legacy and candidate payments before proposing a governed terms change. This preview does not change
+          Compare legacy and candidate payments before proposing a terms change. This preview does not change
           terms, posted journals, or published reports. Terms version: {expectedVersion ?? "Unavailable"}.
         </p>
         <form onSubmit={submit} aria-label="Bond migration preview inputs">
@@ -327,7 +329,7 @@ export function BondMigrationPreviewPanel({
           <>
             <StatusBanner
               tone={result.canStage ? "info" : "warning"}
-              title={result.canStage ? "Preview ready for governed review" : "Migration has unresolved gaps"}
+              title={result.canStage ? "Preview ready for review" : "Migration has unresolved gaps"}
               detail={
                 result.canStage ? (
                   "Review the changed payments and fingerprint before creating a terms revision through the existing Security Master workflow."
@@ -370,7 +372,7 @@ export function BondMigrationPreviewPanel({
                     />
                   </FormRow>
                   <Button type="submit" className="w-fit" disabled={!justification.trim()} aria-busy={staging}>
-                    {staging ? "Creating governed draft…" : "Stage governed draft"}
+                    {staging ? "Creating draft…" : "Stage draft"}
                   </Button>
                 </fieldset>
               </form>
@@ -378,11 +380,11 @@ export function BondMigrationPreviewPanel({
           </>
         ) : null}
         {staged ? (
-          <div ref={stagedResult} role="region" aria-label="Governed bond migration result" tabIndex={-1}>
+          <div ref={stagedResult} role="region" aria-label="Bond migration result" tabIndex={-1}>
             <StatusBanner
               role="status"
               tone="success"
-              title="Governed revision created"
+              title="Revision created"
               detail={`Revision ${staged.revisionId} · state ${staged.state} · terms version ${staged.newVersion}. No approval or publication was requested. Continue through independent review in the Security Master workflow and reload this security before preparing another migration.`}
             />
           </div>

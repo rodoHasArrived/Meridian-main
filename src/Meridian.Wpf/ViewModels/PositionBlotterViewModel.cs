@@ -847,6 +847,8 @@ public sealed class PositionBlotterViewModel : BindableBase, IDisposable
             ProductDescription = pos.ProductDescription,
             TradeId = pos.TradeId ?? string.Empty,
             UnitPrice = pos.AverageCostBasis,
+            // The source reports zero when it has no mark; show that as "no value", not as 0.00.
+            MarketValue = pos.MarketPrice > 0m ? pos.MarketValue : null,
             Quantity = pos.Quantity,
             Side = pos.Side,
             Status = "Active",

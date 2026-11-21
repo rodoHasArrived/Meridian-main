@@ -50,11 +50,14 @@ describe("buildFreshnessChipViewModel", () => {
     expect(vm.text).toBe("Stale · 2m ago");
   });
 
-  it("suppresses the aging tone while a refresh is in flight", () => {
+  it("keeps the last successful data stale while a refresh is in flight", () => {
     const vm = buildFreshnessChipViewModel(
       baseInput({ timestamp: "2026-07-02T11:58:00.000Z", inFlight: true })
     );
-    expect(vm.state).toBe("fresh");
+    expect(vm.state).toBe("aging");
+    expect(vm.badgeVariant).toBe("warning");
+    expect(vm.text).toBe("Stale · 2m ago");
+    expect(vm.title).toBe("Refresh in progress.");
   });
 
   it("reports failing when an error is present, keeping the last success age", () => {
@@ -75,13 +78,36 @@ describe("buildFreshnessChipViewModel", () => {
     expect(vm.ariaLabel).toBe("Quotes has not been updated yet.");
   });
 
-  it("gives live precedence over everything else", () => {
+  it("keeps a refresh failure visible even when the socket is live", () => {
     const vm = buildFreshnessChipViewModel(
-      baseInput({ live: true, errorMessage: "ignored", timestamp: null })
+      baseInput({ live: true, errorMessage: "HTTP 503", timestamp: "2026-07-02T11:58:00.000Z" })
     );
+    expect(vm.state).toBe("failing");
+    expect(vm.badgeVariant).toBe("danger");
+    expect(vm.text).toBe("Failing · 2m ago");
+    expect(vm.ariaLabel).toContain("HTTP 503");
+  });
+
+  it("reports a healthy push-fed surface as live when no failure is present", () => {
+    const vm = buildFreshnessChipViewModel(baseInput({ live: true, timestamp: null }));
     expect(vm.state).toBe("live");
     expect(vm.dot).toBe(true);
     expect(vm.badgeVariant).toBe("success");
+  });
+
+  it.each([false, true])("reports an invalid timestamp as unavailable when live=%s", (live) => {
+    const vm = buildFreshnessChipViewModel(baseInput({ timestamp: "not-an-iso-date", live }));
+    expect(vm.state).toBe("unknown");
+    expect(vm.text).toBe("Unavailable");
+    expect(vm.ariaLabel).toContain("timestamp is invalid");
+    expect(vm.badgeVariant).toBe("outline");
+  });
+
+  it("does not describe an invalid timestamp as a successful update during a failure", () => {
+    const vm = buildFreshnessChipViewModel(baseInput({ timestamp: "invalid", errorMessage: "HTTP 503" }));
+    expect(vm.state).toBe("failing");
+    expect(vm.text).toBe("Failing");
+    expect(vm.ariaLabel).not.toContain("Last success Never");
   });
 });
 

@@ -23,7 +23,7 @@ class DocRenderDeterminismTests(unittest.TestCase):
         self.assertIn("YYYY-MM-DD", result.stderr + result.stdout)
 
     def test_normalizes_unicode_and_sorts_keys(self):
-        with tempfile.TemporaryDirectory() as td:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
             out = Path(td) / "normalized.yaml"
             cmd = [
                 "python3",

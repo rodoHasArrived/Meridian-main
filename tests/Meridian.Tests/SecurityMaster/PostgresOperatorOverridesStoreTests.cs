@@ -228,7 +228,7 @@ public sealed class PostgresOperatorOverridesStoreTests : IClassFixture<Security
                 lotSize = 1,
                 tickSize = 0.01m
             }),
-            JsonSerializer.SerializeToElement(new { shareClass = "Common" }),
+            SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new { shareClass = "Common" })),
             JsonSerializer.SerializeToElement(new
             {
                 sourceSystem = "integration-test",

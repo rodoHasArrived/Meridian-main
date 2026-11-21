@@ -13,8 +13,17 @@ vi.mock("@/screens/watchlist-screen", () => ({
 vi.mock("@/screens/price-alerts-screen", () => ({
   PriceAlertsScreen: () => <div>price-alerts-panel</div>
 }));
+vi.mock("@/screens/options-screen", () => ({ OptionsScreen: () => <div>options-screen-panel</div> }));
 
 describe("MarketDataScreen", () => {
+  it("mounts the options screening view for its existing desk deep link", () => {
+    renderWithRouter(<MarketDataScreen />, { initialEntries: ["/data/quotes?view=options&symbol=XYZ"] });
+    // The sidebar owns this destination, so the desk does not repeat it as a tab.
+    expect(screen.queryByRole("tab", { name: "Options screening" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
+    expect(screen.getByText("options-screen-panel")).toBeInTheDocument();
+    expect(screen.queryByText("live-quotes-panel")).not.toBeInTheDocument();
+  });
   it("defaults to the live quotes view and mounts only that panel", () => {
     renderWithRouter(<MarketDataScreen />, { initialEntries: ["/data/quotes"] });
 

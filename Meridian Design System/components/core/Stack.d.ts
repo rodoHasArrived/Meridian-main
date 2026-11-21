@@ -13,4 +13,4 @@ export interface StackProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 
-export declare function Stack(props: StackProps): JSX.Element;
+export declare function Stack(props: StackProps): React.JSX.Element;

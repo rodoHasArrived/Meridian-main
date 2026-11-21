@@ -20,10 +20,20 @@ let ``Management fee is day-weighted over the accrual window`` () =
     |> should equal 50_000.00m
 
 [<Fact>]
-let ``Management fee rounds to the currency scale with banker's rounding`` () =
+let ``Management fee rounds to the currency scale`` () =
     // 100,000,000 × 2% × 90/365 = 493,150.6849315... -> 493,150.68
     FundEconomics.managementFeeAccrual 100_000_000m 0.02m 90 365
     |> should equal 493_150.68m
+
+[<Fact>]
+let ``Accruals on a half-cent round away from zero like the posted ledger`` () =
+    // 0.25 × 50% × 1/1 = 0.125 -> 0.13 (banker's rounding would give 0.12).
+    FundEconomics.managementFeeAccrual 0.25m 0.5m 1 1 |> should equal 0.13m
+    // 0.125 × 1/1 = 0.125 -> 0.13.
+    FundEconomics.expenseAccrual 0.125m 1 1 |> should equal 0.13m
+    // fee base 0.25 × 50% = 0.125 -> 0.13.
+    (FundEconomics.performanceFeeAccrual 100.25m 100m 0m 0.5m false).PerformanceFee
+    |> should equal 0.13m
 
 [<Fact>]
 let ``Expense accrues straight-line over the accrual window`` () =

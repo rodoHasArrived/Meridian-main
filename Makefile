@@ -59,4 +59,4 @@ NC := \033[0m # No Color
 .PHONY: help
 
 help: ## Show this help message
-	@python build/scripts/docs/render-make-help.py $(MAKEFILE_LIST)
+	@python3 build/scripts/docs/render-make-help.py $(MAKEFILE_LIST)

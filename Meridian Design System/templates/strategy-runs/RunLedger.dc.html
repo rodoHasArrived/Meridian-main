@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+<title>RunLedger — Meridian</title>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Companion · RunLedger" description="Declared companion view of the strategy-runs template; retains the same shared object and workflow state." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="../_strategy-executor/executor-store.js"></script>
+<script src="../_strategy-executor/screen-kit.js"></script>
+<meta name="dc-template" content="strategy-runs">
+<style>html,body{margin:0;padding:0;height:100%}
+tr[data-sr-row="on"]{background:var(--selected-surface,#E7EDF2);box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F)}
+[data-sr-ret="pos"]{color:var(--green-dim,#23583F)}[data-sr-ret="neg"]{color:var(--red-dim,#873832)}
+tr[data-sr-row="on"] td:not([data-sr-ret]){color:var(--text-primary)!important}
+tr[data-sr-row="on"] td[data-sr-ret="pos"]{color:var(--green-dim,#23583F)!important}
+tr[data-sr-row="on"] td[data-sr-ret="neg"]{color:var(--red-dim,#873832)!important}
+.sr-kv{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+.sr-kv .k{color:var(--text-muted)}.sr-kv .v{font-family:var(--font-data);color:var(--text-primary);font-variant-numeric:tabular-nums;text-align:right}
+</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Runs" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,780px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="monitor" labelled-by="workspace-title" topbar="{{ topbar }}" nav="{{ nav }}" status-bar="{{ statusBar }}" hint-size="100%,780px">
+<div data-screen-label="Strategy runs" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px">
+<h1 id="workspace-title" style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">Strategy Runs</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="neutral" hint-size="60px,18px">{{ runChip }}</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ filt }}" on-change="{{ onFilt }}" options="{{ filtOptions }}" hint-size="280px,26px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onNewRun }}" hint-size="70px,28px">New run</x-import>
+</div>
+<sc-if value="{{ showStorageNotice }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="warning" title="{{ storageTitle }}" detail="{{ storageDetail }}" hint-size="100%,48px"></x-import>
+</sc-if>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SelectionCompareProvider" max="{{ 6 }}" categories="{{ cmpCategories }}" format="{{ cmpFormat }}" hint-size="100%,600px">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CompareTray" label="runs to compare" empty-label="Tick ▢ on two or more runs to compare their equity paths on one scale." hint-size="100%,32px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CompareSheet" mode="inline" footer-label="Total return" hint-size="100%,0px"></x-import>
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);border-radius:4px;overflow:auto">
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+<thead><tr>
+<th style="width:28px;padding:7px 6px;border-bottom:1px solid var(--border-strong)"><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Compare</span></th>
+<th style="text-align:left;padding:7px 10px;font:600 10px var(--font-body);letter-spacing:.04em;font-variant:all-small-caps;color:var(--text-muted);border-bottom:1px solid var(--border-strong)">Run</th>
+<th style="text-align:left;padding:7px 10px;font:600 10px var(--font-body);letter-spacing:.04em;font-variant:all-small-caps;color:var(--text-muted);border-bottom:1px solid var(--border-strong)">Env</th>
+<th style="text-align:left;padding:7px 10px;font:600 10px var(--font-body);letter-spacing:.04em;font-variant:all-small-caps;color:var(--text-muted);border-bottom:1px solid var(--border-strong)">Requested</th>
+<th style="text-align:right;padding:7px 10px;font:600 10px var(--font-body);letter-spacing:.04em;font-variant:all-small-caps;color:var(--text-muted);border-bottom:1px solid var(--border-strong)">Duration</th>
+<th style="text-align:left;padding:7px 10px;font:600 10px var(--font-body);letter-spacing:.04em;font-variant:all-small-caps;color:var(--text-muted);border-bottom:1px solid var(--border-strong)">Status</th>
+<th style="text-align:left;padding:7px 10px;font:600 10px var(--font-body);letter-spacing:.04em;font-variant:all-small-caps;color:var(--text-muted);border-bottom:1px solid var(--border-strong)">Freshness</th>
+<th style="text-align:right;padding:7px 10px;font:600 10px var(--font-body);letter-spacing:.04em;font-variant:all-small-caps;color:var(--text-muted);border-bottom:1px solid var(--border-strong)">Total return</th>
+<th style="text-align:right;padding:7px 10px;font:600 10px var(--font-body);letter-spacing:.04em;font-variant:all-small-caps;color:var(--text-muted);border-bottom:1px solid var(--border-strong)">Sharpe</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="5">
+<tr data-sr-row="{{ r.on }}" onClick="{{ r.pick }}" style="cursor:pointer">
+<td style="padding:4px 6px;border-bottom:1px solid var(--border)" onClick="{{ stop }}"><sc-if value="{{ r.comparable }}" hint-placeholder-val="{{ true }}"><x-import component-from-global-scope="MeridianDesignSystem_205d17.CompareToggle" compact="{{ true }}" item="{{ r.cmp }}" hint-size="20px,20px"></x-import></sc-if></td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-primary);white-space:nowrap">{{ r.id }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ r.envVariant }}" dot="{{ true }}" hint-size="60px,18px">{{ r.env }}</x-import></td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11px;color:var(--text-muted);white-space:nowrap">{{ r.started }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary)">{{ r.dur }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ r.status }}" hint-size="80px,18px"></x-import></td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ r.freshVariant }}" dot="{{ true }}" hint-size="70px,18px">{{ r.fresh }}</x-import></td>
+<td data-sr-ret="{{ r.retTone }}" style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:11.5px">{{ r.ret }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary)">{{ r.sharpe }}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="background:var(--card-surface-raised,#FCFBF8);border:1px solid var(--border-strong);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="80px,14px">Run {{ selId }}</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ selStatus }}" hint-size="80px,18px"></x-import>
+</div>
+<sc-if value="{{ hasSpark }}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="RunSpark" from="./spark.jsx" pts="{{ sparkPts }}" tone="{{ sparkTone }}" hint-size="100%,56px"></x-import>
+</sc-if>
+<sc-if value="{{ isLegacy }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="warning" title="Legacy artifact" hint-size="100%,60px">Ported from the legacy Run shape — no raw series or trades were recorded, so derived metrics are null. Reported figures below are provisional.</x-import>
+</sc-if>
+<div style="display:flex;flex-direction:column;gap:6px">
+<sc-for list="{{ selRows }}" as="kv" hint-placeholder-count="6">
+<div class="sr-kv"><span class="k">{{ kv.k }}</span><span class="v">{{ kv.v }}</span></div>
+</sc-for>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onRerun }}" hint-size="60px,28px">Re-run</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onCompare }}" hint-size="100px,28px">Compare as B</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tooltip" content="{{ exportReason }}" hint-size="90px,28px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ exportDisabled }}" on-click="{{ onExport }}" hint-size="90px,28px">Export JSON</x-import>
+</x-import>
+</div>
+</div>
+<div style="background:var(--card-surface-raised,#FCFBF8);border:1px solid var(--border-strong);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="60px,14px">Run trace</x-import>
+<sc-for list="{{ traceRows }}" as="e" hint-placeholder-count="4">
+<div style="display:flex;gap:8px;align-items:baseline;padding-bottom:6px;border-bottom:1px solid var(--border)">
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);white-space:nowrap">{{ e.t }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ e.sev }}" dot="{{ true }}" hint-size="60px,18px"></x-import>
+<span style="font-size:12px;color:var(--text-primary)">{{ e.m }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.GateRail" gates="{{ gates }}" hint-size="100%,44px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="{{ bannerTone }}" title="{{ bannerTitle }}" detail="{{ bannerDetail }}" hint-size="100%,48px"></x-import>
+</div>
+</x-import>
+</x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;FIXTURE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  state = { booted: false, bootError: null, draft: null, runId: null, filt: "all" };
+  K() { return window.MeridianExecutorKit; }
+  componentDidMount() { const wait = setInterval(() => { if (this.K()) { clearInterval(wait); this.K().applyChrome(this.props, "FIXTURE"); this.K().boot(this, (X, idn) => ({ draft: X.getStrategy(idn.strategyId), runId: idn.runId })); } }, 30); this._wait = wait; }
+  componentWillUnmount() { clearInterval(this._wait); this.K() && this.K().unboot(this); }
+  componentDidUpdate() { this.K() && this.K().applyChrome(this.props, "FIXTURE"); }
+  renderVals() {
+    const K = this.K(), env = String(this.props.environment ?? "FIXTURE").toUpperCase();
+    if (!K) return { dataState: "loading" };
+    const base = { dataState: this.state.bootError ? "error" : (!this.state.booted ? "loading" : (this.props.dataState ?? "ready")), onRetry: () => window.location.reload(), topbar: K.topbarEl(React, "Strategy Runs", env), nav: K.navEl(React, "runs") };
+    if (!this.state.booted) return { ...base, statusBar: K.statusEl(React, [{ label: "Runs", value: "Loading" }].concat(K.statusTail(env))), rows: [], selRows: [], traceRows: [], gates: [], filtOptions: this.filts(), bannerTone: "info", bannerTitle: "Loading", runChip: "…" };
+    const X = K.X(), d = this.state.draft;
+    const all = X.listRuns(d.id);
+    const withFresh = all.map((r) => ({ r, fresh: X.freshnessFor(r.id) }));
+    const filtered = withFresh.filter(({ r, fresh }) => this.state.filt === "all" ? true : this.state.filt === "current" ? fresh.state === "current" : this.state.filt === "stale" ? fresh.state === "stale" : !!r.legacy);
+    const sel = (this.state.runId && X.getRun(this.state.runId)) || (filtered[0] && filtered[0].r) || all[0] || null;
+    const selFresh = sel ? X.freshnessFor(sel.id) : { state: "unknown", changed: [] };
+    const m = (sel && (sel.metrics || sel.reported)) || {};
+    const eq = sel && sel.series ? sel.series.equity : null;
+    const spark = eq ? K.sample(eq, 40).values : [];
+    const storage = X.storageNotice();
+    const SM = K.ds().StrategyModel, RM = K.ds().StrategyRunModel;
+    const proof = sel && !sel.legacy ? RM.verifyProof(sel) : { state: "unverified" };
+    const atts = X.getStore().attestations.filter((a) => a.runId === (sel && sel.id));
+    const standing = atts.filter((a) => X.attestationState(a).state === "standing");
+    const formationOk = SM.formationReady(d);
+    const gated = !sel || sel.lifecycle !== "complete" || selFresh.state !== "current";
+    const num = (v, f) => (v == null ? "—" : f(v));
+    const statusOf = (r) => ({ queued: "Queued", running: "Running", complete: "Complete", failed: "Failed", cancelled: "Cancelled" }[r.lifecycle] || r.lifecycle);
+    return {
+      ...base,
+      statusBar: K.statusEl(React, [
+        { label: "Strategy", value: d.id + " v" + d.version },
+        { label: "Runs", value: String(all.length) },
+        { status: withFresh.some(({ fresh }) => fresh.state === "stale") ? "warn" : "ok", label: "Current", value: withFresh.filter(({ fresh }) => fresh.state === "current").length + "/" + all.length },
+      ].concat(K.statusTail(env))),
+      runChip: all.length + " runs",
+      filt: this.state.filt, onFilt: (v) => this.setState({ filt: v }), filtOptions: this.filts(),
+      onNewRun: () => { const t = window.MeridianToast; const res = X.runBacktest(d.id, { env: env.toLowerCase(), seedTag: "runs" }); if (res && res.ok) { X.setUrlState({ run: res.artifact.id }); this.setState({ runId: res.artifact.id, draft: X.getStrategy(d.id) }); t && t.success && t.success("Run complete · " + res.artifact.id, "Snapshot v" + res.artifact.strategyVersion + " · " + res.artifact.validation.disposition); } else if (res) { t && t.error && t.error("Run blocked", res.issues[0].message); } },
+      showStorageNotice: !!storage, storageTitle: storage ? storage.title : "", storageDetail: storage ? storage.message : "",
+      rows: filtered.map(({ r, fresh }) => { const fb = r.legacy ? { variant: "neutral", label: "legacy" } : K.freshBadge(fresh.state); const mm = r.metrics || r.reported || {}; return {
+        id: r.id, on: sel && r.id === sel.id ? "on" : "off",
+        pick: () => { X.setUrlState({ run: r.id }); this.setState({ runId: r.id }); },
+        env: r.env.toUpperCase(), envVariant: r.env,
+        started: K.iso(r.requestedAt).slice(0, 16), dur: K.durS(r.startedAt, r.completedAt),
+        status: statusOf(r),
+        fresh: fb.label.replace("Proof ", ""), freshVariant: fb.variant,
+        ret: num(mm.totalReturn, (v) => K.pct(v)), retTone: mm.totalReturn == null ? "" : mm.totalReturn >= 0 ? "pos" : "neg",
+        sharpe: num(mm.sharpe, (v) => Number(v).toFixed(2)),
+        // 4.2 · E-2: any completed run with a series is a comparison candidate from the ledger itself.
+        comparable: !!(r.series && r.series.equity && r.series.equity.length > 1),
+        cmp: r.series && r.series.equity ? { id: r.id, title: r.id, tag: r.env.toUpperCase(), values: K.sample(r.series.equity, 8).values.map((v, i, a) => a[0] ? (v / a[0] - 1) * 100 : 0), footerValue: num(mm.totalReturn, (v) => K.pct(v)) } : null,
+      }; }),
+      stop: (e) => e.stopPropagation(),
+      cmpCategories: ["start", "", "", "", "", "", "", "end"],
+      cmpFormat: (v) => (v >= 0 ? "+" : "") + v.toFixed(0) + "%",
+      selId: sel ? sel.id : "—", selStatus: sel ? statusOf(sel) : "Info",
+      hasSpark: spark.length > 1, sparkPts: spark.length > 1 ? spark : [1, 1], sparkTone: "var(--series-actual, #29323A)",
+      isLegacy: !!(sel && sel.legacy),
+      selRows: sel ? [
+        { k: "Strategy", v: sel.strategyId + " · v" + (sel.strategyVersion ?? "?") },
+        { k: "Window", v: sel.request.window ? K.isoD(sel.request.window.start) + " → " + K.isoD(sel.request.window.end) : "—" },
+        { k: "Engine", v: sel.request.engine.name + " " + (sel.request.engine.version || "") },
+        { k: "Proof", v: sel.proof ? K.hash8(sel.proof.inputHash) + " · " + proof.state : "none · unverified" },
+        { k: "Freshness", v: sel.legacy ? "n/a · legacy" : selFresh.state + (selFresh.changed.length ? " · " + selFresh.changed.join(", ") : "") },
+        { k: "Validation", v: (sel.validation.disposition || "—") + " · " + sel.validation.issues.length + " issue" + (sel.validation.issues.length === 1 ? "" : "s") },
+        { k: "Total return", v: num(m.totalReturn, (v) => K.pct(v)) },
+        { k: "CAGR", v: num(m.cagr, (v) => K.pct(v)) },
+        { k: "Sharpe", v: num(m.sharpe, (v) => Number(v).toFixed(2)) },
+        { k: "Max drawdown", v: num(m.maxDrawdown, (v) => K.pct(v)) },
+        { k: "Win rate", v: num(m.winRate, (v) => K.pctu(v)) },
+        { k: "Fees", v: m.fees == null ? "null · unrecorded" : K.usd0(m.fees) },
+      ] : [],
+      onRerun: () => { const t = window.MeridianToast; if (!sel) return; const res = X.runBacktest(d.id, { env: env.toLowerCase(), window: sel.request.window || undefined, seedTag: "rerun" }); if (res && res.ok) { X.setUrlState({ run: res.artifact.id }); this.setState({ runId: res.artifact.id, draft: X.getStrategy(d.id) }); t && t.success && t.success("Re-ran as " + res.artifact.id, sel.id + " remains unchanged — artifacts are immutable."); } else if (res) { t && t.error && t.error("Run blocked", res.issues[0].message); } },
+      onCompare: () => { if (!sel) return; const other = all.filter((r) => r.id !== sel.id && r.lifecycle === "complete")[0]; K.nav("compare", { runB: sel.id, runA: other ? other.id : null }); },
+      exportDisabled: gated, exportReason: gated ? (sel && sel.legacy ? "Legacy artifacts have no raw evidence to export." : "Only current, completed proofs export.") : "Download the immutable artifact JSON.",
+      onExport: () => { if (gated || !sel) return; const blob = new Blob([JSON.stringify(sel, null, 2)], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = sel.id + ".artifact.json"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); },
+      traceRows: sel ? [
+        { t: K.iso(sel.requestedAt).slice(5, 16), sev: "Info", m: "Requested · snapshot v" + (sel.strategyVersion ?? "?") + (sel.proof ? " · input " + K.hash8(sel.proof.inputHash) : "") },
+        { t: K.iso(sel.startedAt).slice(5, 16), sev: sel.startedAt ? "InProgress" : "NotStarted", m: "Engine " + sel.request.engine.name + " " + (sel.request.engine.version || "") },
+        { t: K.iso(sel.completedAt).slice(5, 16), sev: sel.lifecycle === "complete" ? "Passed" : sel.lifecycle === "failed" ? "Blocked" : "InProgress", m: sel.lifecycle === "complete" ? "Completed · metrics derived once from raw series + trades" : (sel.error || sel.lifecycle) },
+        { t: "—", sev: sel.validation.disposition === "pass" ? "Passed" : "ReviewRequired", m: "Validation " + (sel.validation.disposition || "—") + (sel.validation.issues.length ? " · " + sel.validation.issues[0].message : "") },
+        { t: "now", sev: sel.legacy ? "ReviewRequired" : selFresh.state === "current" ? "Passed" : "ReviewRequired", m: sel.legacy ? "Legacy — reported figures provisional" : "Freshness " + selFresh.state + " against draft " + K.hash8(K.ds().StrategyModel.materialHash(d)) },
+      ] : [],
+      gates: [
+        { key: "Formation", label: "Formation", status: formationOk ? "Passed" : "Blocked" },
+        { key: "Proof", label: "Proof integrity", status: sel && sel.legacy ? "ReviewRequired" : proof.state === "verified" ? "Passed" : "NotStarted" },
+        { key: "Validation", label: "Validation", status: !sel ? "NotStarted" : sel.validation.disposition === "pass" ? "Passed" : sel.validation.disposition === "fail" ? "Blocked" : "ReviewRequired" },
+        { key: "Freshness", label: "Draft freshness", status: !sel || sel.legacy ? "NotStarted" : selFresh.state === "current" ? "Passed" : "ReviewRequired" },
+        { key: "Approval", label: "Approval", status: standing.length ? "Passed" : atts.length ? "ReviewRequired" : "NotStarted", statusLabel: standing.length ? "attested" : atts.length ? "superseded" : "none" },
+      ],
+      bannerTone: !sel ? "info" : sel.lifecycle === "failed" ? "danger" : sel.legacy ? "warning" : selFresh.state === "current" ? "success" : "warning",
+      bannerTitle: !sel ? "No runs yet" : sel.lifecycle === "failed" ? sel.id + " failed" : sel.legacy ? sel.id + " · legacy artifact" : selFresh.state === "current" ? sel.id + " · proof current" : sel.id + " · proof stale",
+      bannerDetail: !sel ? "Run a backtest from Builder or Backtest to create the first artifact." : sel.legacy ? "Adapted by StrategyRunModel.fromLegacyRun — reported metrics stay provisional and never merge into derived metrics." : selFresh.state === "current" ? "Input hash matches the current draft — export, staging and approval are available." : "Draft material inputs changed (" + (selFresh.changed.join(", ") || "material inputs") + ") — rerun or revert; this artifact itself never changes.",
+    };
+  }
+  filts() { return [{ value: "all", label: "All" }, { value: "current", label: "Current" }, { value: "stale", label: "Stale" }, { value: "legacy", label: "Legacy" }]; }
+}
+</script>
+</body>
+</html>

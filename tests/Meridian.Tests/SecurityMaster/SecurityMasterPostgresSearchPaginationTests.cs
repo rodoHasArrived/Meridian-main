@@ -37,6 +37,12 @@ public sealed class SecurityMasterPostgresSearchPaginationTests(SecurityMasterDa
 
         var includingInactive = await store.SearchAsync(new SecuritySearchRequest("Shared", pageSize + 4));
         includingInactive.Select(security => security.SecurityId).Should().Equal(new[] { inactiveId }.Concat(securityIds));
+
+        var exact = await store.SearchAsync(new SecuritySearchRequest(inactiveId.ToString("N")) { PrefixOnly = true });
+        exact.Should().ContainSingle().Which.SecurityId.Should().Be(inactiveId);
+        var prefix = await store.SearchAsync(new SecuritySearchRequest("x Shared", Take: 2) { PrefixOnly = true });
+        prefix.Select(security => security.SecurityId).Should().Equal(inactiveId, securityIds[0]);
+        (await store.SearchAsync(new SecuritySearchRequest("Shared") { PrefixOnly = true })).Should().BeEmpty();
     }
 
     private async Task SeedTiedSecuritiesAsync(Guid[] securityIds, Guid inactiveId)
@@ -54,7 +60,7 @@ public sealed class SecurityMasterPostgresSearchPaginationTests(SecurityMasterDa
             select security_id, 'Equity',
                    case when security_id = @inactive_id then 'Inactive' else 'Active' end,
                    'x Shared Securities', 'USD', 'Ticker', security_id::text, upper(security_id::text),
-                   '{}'::jsonb, '{}'::jsonb, '{}'::jsonb, 1, '2026-01-01'::timestamptz
+                   '{}'::jsonb, '{"termsFormat":"flat"}'::jsonb, '{}'::jsonb, 1, '2026-01-01'::timestamptz
             from unnest(@security_ids) as securities(security_id)
             order by securities.security_id desc;
             """;

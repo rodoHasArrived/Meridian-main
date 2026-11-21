@@ -14,14 +14,14 @@ public sealed partial class PostgresLedgerJournalStore
     }
 
     private async Task EnsureTenantRowAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction,
-        string table, string idColumn, Guid id, bool allowMissing, CancellationToken ct)
+        string table, string idColumn, Guid id, bool allowMissing, CancellationToken ct, bool retainLock = true)
     {
         if (!_tenantScope.IsFailClosed)
             return;
         var caller = RequireWriteTenant();
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = $"select tenant_id from {Qualified(table)} where {idColumn} = @id for share";
+        command.CommandText = $"select tenant_id from {Qualified(table)} where {idColumn} = @id" + (retainLock ? " for share" : "");
         command.Parameters.AddWithValue("id", id);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         if (!await reader.ReadAsync(ct).ConfigureAwait(false))
@@ -37,6 +37,8 @@ public sealed partial class PostgresLedgerJournalStore
     private async Task EnsureBookWriteAuthorityAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction,
         Guid? bookId, CancellationToken ct)
     {
+        if (transaction is not null && bookId is { } retainedBookId)
+            await CashDividendEntitlementLock.AcquireAsync(connection, transaction, retainedBookId, false, ct).ConfigureAwait(false);
         if (!_tenantScope.IsFailClosed)
             return;
         var caller = RequireWriteTenant();

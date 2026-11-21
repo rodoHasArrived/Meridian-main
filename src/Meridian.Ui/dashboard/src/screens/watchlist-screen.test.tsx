@@ -4,6 +4,8 @@ import userEvent from "@testing-library/user-event";
 import { ApiError } from "@/lib/api-errors";
 import { WatchlistScreen } from "@/screens/watchlist-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import * as api from "@/lib/api";
 import type { QuotesSnapshotResponse, SymbolRecord, SymbolStatistics } from "@/types";
 
@@ -184,6 +186,22 @@ describe("WatchlistScreen", () => {
     expect(screen.getByLabelText(/Watchlist quotes updated/)).toBeInTheDocument();
   });
 
+  it("reloads the symbol list with the header refresh instead of a watchlist refresh button", async () => {
+    function HeaderRefresh({ children }: { children: ReactNode }) {
+      const [sequence, setSequence] = useState(0);
+      return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+    }
+    const user = userEvent.setup();
+    renderWithRouter(<HeaderRefresh><WatchlistScreen /></HeaderRefresh>, { initialEntries: ["/data/watchlist"] });
+    await screen.findByText(/Live prices for 2 symbols/i, undefined, fullSuiteTimeout);
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    vi.mocked(api.getSymbols).mockClear();
+
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+
+    await waitFor(() => expect(api.getSymbols).toHaveBeenCalledTimes(1));
+  });
+
   it("lets operators manually refresh live quotes", async () => {
     const user = userEvent.setup();
     renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
@@ -191,7 +209,8 @@ describe("WatchlistScreen", () => {
     await screen.findByText(/Live prices for 2 symbols/i, undefined, fullSuiteTimeout);
     vi.mocked(api.getLiveQuotesSnapshot).mockClear();
 
-    await user.click(screen.getByRole("button", { name: /Refresh live prices/i }));
+    expect(screen.queryByRole("button", { name: /^Refresh/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Fetch latest live prices" }));
 
     await waitFor(() => {
       expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["MSFT", "AAPL"], expect.objectContaining({

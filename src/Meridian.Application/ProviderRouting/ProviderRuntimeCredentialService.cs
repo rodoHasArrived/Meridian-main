@@ -1,5 +1,6 @@
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Configuration;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Credentials;
 using Microsoft.Extensions.Logging;
@@ -10,11 +11,15 @@ namespace Meridian.Application.ProviderRouting;
 /// <summary>Explicit host credential selection and ownership-checked migration commands.</summary>
 public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IProviderCredentialStore credentialStore,
     ILogger<ProviderRuntimeCredentialService>? logger = null, ProviderRuntimeCredentialApplicationTracker? applicationTracker = null,
-    IProviderRuntimeCredentialApplier? applier = null)
+    IProviderRuntimeCredentialApplier? applier = null,
+    ProviderRuntimeCredentialMutationGuard? mutationGuard = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
 {
     private readonly ILogger<ProviderRuntimeCredentialService> _logger = logger ?? NullLogger<ProviderRuntimeCredentialService>.Instance;
     private readonly ProviderRuntimeCredentialApplicationTracker _applicationTracker = applicationTracker ?? new ProviderRuntimeCredentialApplicationTracker();
     private readonly IProviderRuntimeCredentialApplier _applier = applier ?? new NoInProcessProviderRecycleApplier();
+    private ProviderRuntimeCredentialMutationGuard? _mutationGuard = mutationGuard;
+    private ProviderRuntimeCredentialMutationGuard MutationGuard => _mutationGuard ??=
+        new(configStore, ownershipPolicy, _applier, _applicationTracker);
 
     public async Task<ProviderCredentialStoreStatus> GetMigrationPreviewAsync(string providerId, string connectionId,
         string tenantId, CancellationToken ct = default)
@@ -31,16 +36,19 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
     public async Task<ProviderRuntimeCredentialBinding> BindAsync(string providerId, string connectionId, string tenantId,
         CancellationToken ct = default, string? actor = null)
     {
+        using var mutation = await MutationGuard.AcquireForSelectionAsync(providerId, connectionId, tenantId, ct).ConfigureAwait(false);
+        mutation.ReleaseConfigurationLease();
         var bound = await configStore.UpdateRequiredAsync(config =>
         {
             var provider = RequireProvider(providerId);
-            RequireScope(config, provider, connectionId, tenantId);
+            var scope = RequireHostSelectionScope(config, provider, connectionId, tenantId);
             var section = config.ProviderConnections!;
             var bindings = section.RuntimeCredentials ?? [];
             var existing = bindings.Where(binding => SameProvider(binding.ProviderId, provider)).ToArray();
             if (existing.Length > 1 || existing.Any(binding => binding.TenantId != tenantId))
                 throw new UnauthorizedAccessException("Runtime credential ownership is ambiguous or belongs to another tenant.");
-            var next = new ProviderRuntimeCredentialBinding(provider, tenantId, connectionId);
+            var next = new ProviderRuntimeCredentialBinding(provider, scope.TenantId, scope.ConnectionId,
+                scope.ExternalAccountId, scope.Environment, Guid.NewGuid().ToString("N"));
             // ResolveScope applies the same identity and enabled-state checks used by host construction.
             var updated = config with
             {
@@ -63,8 +71,10 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
     {
         var provider = RequireProvider(providerId);
         var config = configStore.LoadRequired();
-        RequireScope(config, provider, connectionId, tenantId);
+        var scope = RequireScope(config, provider, connectionId, tenantId);
         var binding = CurrentBinding(config, provider, tenantId);
+        if (binding is not null && string.Equals(binding.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
+            RequireBoundScope(binding, scope);
         var (boundAt, appliedAt, pending) = _applicationTracker.Get(provider);
         if (binding is null || !string.Equals(binding.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
             return new(provider, tenantId, connectionId, false, false, null, null, "No retained host binding selects this connection.");
@@ -82,12 +92,27 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
         var provider = RequireProvider(providerId);
-        var config = configStore.LoadRequired();
-        RequireScope(config, provider, connectionId, tenantId);
-        var binding = CurrentBinding(config, provider, tenantId);
-        if (binding is null || !string.Equals(binding.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Bind the connection as the host runtime credential before applying it to running instances.");
+        using var operation = await MutationGuard.AcquireOperationAsync(provider, ct).ConfigureAwait(false);
+        ProviderRuntimeCredentialBinding binding;
+        using (await configStore.AcquireWriteLeaseAsync(ct).ConfigureAwait(false))
+        {
+            var config = configStore.LoadRequired();
+            var scope = RequireHostSelectionScope(config, provider, connectionId, tenantId);
+            binding = CurrentBinding(config, provider, tenantId)
+                ?? throw new InvalidOperationException("Bind the connection as the host runtime credential before applying it to running instances.");
+            if (!string.Equals(binding.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Bind the connection as the host runtime credential before applying it to running instances.");
+            RequireBoundScope(binding, scope);
+        }
+        // Recycling may resolve credentials and acquire the configuration lease itself. Do not
+        // hold that lease across the callback; condition publication on the exact selection below.
         var outcome = await _applier.ApplyAsync(binding, actor, ct).ConfigureAwait(false);
+        using var publicationLease = await configStore.AcquireWriteLeaseAsync(CancellationToken.None).ConfigureAwait(false);
+        var current = configStore.LoadRequired();
+        var currentScope = RequireHostSelectionScope(current, provider, connectionId, tenantId);
+        if (CurrentBinding(current, provider, tenantId) != binding)
+            throw new ProviderCredentialConflictException("Runtime credential selection changed while applying it. Reload the retained connection before retrying.");
+        RequireBoundScope(binding, currentScope);
         if (outcome == ProviderRuntimeCredentialApplyOutcome.Applied)
         {
             _applicationTracker.MarkApplied(provider);
@@ -111,8 +136,8 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
     public async Task<ProviderCredentialMigrationReceipt> TransferAsync(string providerId, string connectionId, string tenantId,
         string migrationId, string? expectedGeneration, string actor, bool rollback, CancellationToken ct = default)
     {
-        using var lease = await configStore.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
         var provider = RequireProvider(providerId);
+        using var lease = await MutationGuard.AcquireForConnectionAsync(provider, connectionId, tenantId, ct).ConfigureAwait(false);
         var scope = RequireScope(configStore.LoadRequired(), provider, connectionId, tenantId);
         var migration = credentialStore as IProviderCredentialOwnershipMigration
             ?? throw new NotSupportedException("Credential vault does not support explicit ownership migration.");
@@ -131,6 +156,22 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         return migrated;
     }
 
+    /// <summary>Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit.</summary>
+    public async Task<ProviderCredentialMigrationReceipt> FinalizeAsync(string providerId, string connectionId, string tenantId,
+        string migrationId, string actor, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
+        using var lease = await configStore.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
+        var provider = RequireProvider(providerId);
+        var scope = RequireScope(configStore.LoadRequired(), provider, connectionId, tenantId);
+        var migration = credentialStore as IProviderCredentialOwnershipMigration
+            ?? throw new NotSupportedException("Credential vault does not support explicit ownership migration.");
+        var finalized = await migration.FinalizeMigrationAsync(provider, scope, migrationId, actor, ct).ConfigureAwait(false);
+        _logger.LogInformation("Finalized credential ownership migration {MigrationId} for provider {ProviderId} on connection {ConnectionId} in tenant {TenantId} by {Actor}.",
+            ProviderRoutingLogValues.Safe(migrationId), provider, ProviderRoutingLogValues.Safe(connectionId), ProviderRoutingLogValues.Safe(tenantId), ProviderRoutingLogValues.Safe(actor));
+        return finalized;
+    }
+
     /// <summary>Null is permitted only for an entirely legacy provider family, never a partial owner or dangling default.</summary>
     public static ProviderCredentialScope? ResolveScope(AppConfig config, string providerId)
     {
@@ -140,14 +181,29 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         if (ownership.RuntimeBindingCount == 1)
         {
             var binding = (section?.RuntimeCredentials ?? []).Single(binding => SameProvider(binding.ProviderId, provider));
-            return RequireScope(config, provider, binding.ConnectionId, binding.TenantId);
+            var scope = RequireHostSelectionScope(config, provider, binding.ConnectionId, binding.TenantId);
+            RequireBoundScope(binding, scope);
+            return scope;
         }
         if (ownership.RequiresScopedOwnership)
             throw new InvalidOperationException("An explicit, unambiguous runtime credential connection is required.");
         return null;
     }
 
-    public static ProviderCredentialScope RequireScope(AppConfig config, string providerId, string connectionId, string tenantId)
+    internal static ProviderCredentialScope RequireHostSelectionScope(AppConfig config, string providerId, string connectionId, string tenantId)
+    {
+        var scope = RequireScope(config, providerId, connectionId, tenantId);
+        var template = config.ProviderConnections!.Connections!.Single(connection => connection.ConnectionId == scope.ConnectionId).SetupTemplate;
+        var capability = ProviderCredentialCatalog.Find(providerId)!.Capability;
+        if (template is not null && (template.AllowedScope != "Tenant" ||
+            capability is ProviderConnectionCapabilityDto.Brokerage or ProviderConnectionCapabilityDto.DataAndBrokerage &&
+            !template.RequestedCapabilities.Any(request => request.Capability == "OrderExecution")))
+            throw new InvalidOperationException("This template's scope or capabilities do not permit a host-wide runtime binding.");
+        return scope;
+    }
+
+    public static ProviderCredentialScope RequireScope(AppConfig config, string providerId, string connectionId, string tenantId,
+        bool requireEnabled = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
@@ -155,7 +211,7 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         var matches = (config.ProviderConnections?.Connections ?? []).Where(connection =>
             string.Equals(connection.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray();
         var connection = matches.Length == 1 ? matches[0] : null;
-        if (connection is null || !connection.Enabled || connection.TenantId != tenantId ||
+        if (connection is null || (requireEnabled && !connection.Enabled) || connection.TenantId != tenantId ||
             !SameProvider(connection.ProviderFamilyId, provider) || string.IsNullOrWhiteSpace(connection.ExternalAccountId) ||
             string.IsNullOrWhiteSpace(connection.CredentialEnvironment))
             throw new UnauthorizedAccessException("Credential connection ownership could not be established.");
@@ -163,6 +219,17 @@ public sealed class ProviderRuntimeCredentialService(ConfigStore configStore, IP
         if (ProviderCredentialCatalog.Find(provider)!.NormalizeEnvironment(scope.Environment) != scope.Environment)
             throw new InvalidDataException("Retained credential environment is not canonical.");
         return scope;
+    }
+
+    internal static void RequireBoundScope(ProviderRuntimeCredentialBinding binding, ProviderCredentialScope scope)
+    {
+        // A connection ID may be reused after removal. Keep the reviewed external account and
+        // environment in the selection so recreation cannot silently authorize another account.
+        // Legacy unpinned selections require an explicit rebind, never inferred migration.
+        if (binding.TenantId != scope.TenantId || binding.ConnectionId != scope.ConnectionId ||
+            binding.ExternalAccountId != scope.ExternalAccountId || binding.Environment != scope.Environment ||
+            string.IsNullOrWhiteSpace(binding.SelectionId))
+            throw new InvalidDataException("Runtime credential selection does not match retained account ownership. Bind the current connection explicitly.");
     }
 
     private static string RequireProvider(string providerId)

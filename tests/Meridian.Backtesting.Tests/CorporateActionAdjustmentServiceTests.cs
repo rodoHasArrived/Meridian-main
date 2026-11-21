@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
@@ -20,6 +21,32 @@ public sealed class CorporateActionAdjustmentServiceTests
         _mockResolver = new MockSecurityResolver();
         _mockQueryService = new MockSecurityMasterQueryService();
         _service = new CorporateActionAdjustmentService(_mockQueryService, _mockResolver, NullLogger<CorporateActionAdjustmentService>.Instance);
+    }
+
+    [Fact]
+    public void CreateSecurityMasterAdjustment_BuildsService_WhenHostRegistersSecurityMasterOnly()
+    {
+        // The browser/CLI host registers the Security Master but, unlike WPF, registers no
+        // ICorporateActionAdjustmentService, so AdjustForCorporateActions ran unadjusted there.
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<ISecurityMasterQueryService>(_mockQueryService);
+        services.AddSingleton<ISecurityResolver>(_mockResolver);
+        using var provider = services.BuildServiceProvider();
+
+        var adjustment = BacktestingServiceCollectionExtensions.CreateSecurityMasterAdjustment(provider);
+
+        adjustment.Should().BeOfType<CorporateActionAdjustmentService>();
+    }
+
+    [Fact]
+    public void CreateSecurityMasterAdjustment_ReturnsNull_WhenSecurityMasterIsNotConfigured()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        using var provider = services.BuildServiceProvider();
+
+        BacktestingServiceCollectionExtensions.CreateSecurityMasterAdjustment(provider).Should().BeNull();
     }
 
     [Fact]

@@ -73,11 +73,17 @@ public sealed class TrialBalanceAmountProvenanceService(
         var nodes = new List<EvidenceNodeDto>();
         var edges = new List<EvidenceEdgeDto>();
         var warnings = new List<string>();
+        var accountingAttestations = new List<AccountingPreparerAttestationDisclosureDto>();
+        var staleSupport = false;
         foreach (var record in records.Where(record => row.JournalEntryIds.Contains(record.Entry.JournalEntryId)))
         foreach (var line in record.Entry.Lines.Where(line => row.LedgerEntryIds.Contains(line.EntryId)))
         {
+            // Classification belongs to the frozen posting even when its source proof is blocked.
+            // Aggregation must not turn preparer-only accounting into independent approval.
+            accountingAttestations.AddRange(AccountingPreparerAttestationDisclosure.Read(record, scope) ?? []);
             var sourceSubject = $"{record.Entry.JournalEntryId:D}:{line.EntryId:D}:{(line.Debit > 0m ? "debit" : "credit")}";
             var packet = await postedAmounts.GetRetainedPacketAsync(sourceSubject, scope, record, book.BaseCurrency, ct).ConfigureAwait(false);
+            staleSupport |= packet?.LedgerAmount?.RetainedSupportStale == true;
             if (packet?.LedgerAmount is not { } proof || proof.Status != EvidenceStatusDto.Ready
                 || !string.Equals(proof.Currency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase))
             {
@@ -109,8 +115,10 @@ public sealed class TrialBalanceAmountProvenanceService(
         }
         if (row.LedgerEntryIds.Count == 0 || evidence.Select(item => item.EvidenceId).Distinct().Count() != evidence.Count)
             warnings.Add("Contributing ledger identities are missing or ambiguous.");
-        return ReportLedgerAmountProvenanceService.Packet(subjectId, scope, row.AccountName, row.Balance, book.BaseCurrency,
-            warnings.Count == 0 ? evidence : [], warnings.Count == 0 ? nodes : [], warnings.Distinct().ToArray(), warnings.Count == 0 ? edges : []);
+        var result = ReportLedgerAmountProvenanceService.Packet(subjectId, scope, row.AccountName, row.Balance, book.BaseCurrency,
+            warnings.Count == 0 ? evidence : [], warnings.Count == 0 ? nodes : [], warnings.Distinct().ToArray(), warnings.Count == 0 ? edges : [],
+            AccountingPreparerAttestationDisclosure.Union(accountingAttestations));
+        return result with { LedgerAmount = result.LedgerAmount! with { RetainedSupportStale = staleSupport } };
     }
 
     private async Task<IReadOnlyList<LedgerJournalEntryRecord>?> AuthorizedPopulationAsync(LedgerAmountScopeDto scope, CancellationToken ct)

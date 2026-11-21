@@ -1,34 +1,30 @@
+import {
+  formatCount as formatCountShared,
+  formatDecimal as formatDecimalShared,
+  formatRatioAsPercent as formatRatioAsPercentShared,
+  formatTimestamp
+} from "@/lib/format";
+
 export function formatPrice(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return value.toFixed(2);
+  return formatDecimalShared(value, 2);
 }
 
 export function formatDecimal(value: number, digits: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return value.toFixed(digits);
+  return formatDecimalShared(value, digits);
 }
 
 /**
  * Input is a fraction of 1 (0.425 -> "42.5%"), not percent units.
  *
  * Implied volatility and CAGR arrive from the covered-call API as fractions.
- * Kept local rather than delegating to `@/lib/format` because these render
- * ungrouped (`toFixed`); the shared helper adds thousands separators.
  */
 export function formatRatioAsPercent(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return `${(value * 100).toFixed(1)}%`;
+  return formatRatioAsPercentShared(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
 export function formatCount(value: number): string {
   if (!Number.isFinite(value)) return "—";
-  return Math.trunc(value).toLocaleString("en-US");
-}
-
-export function formatSignedMoney(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  const sign = value < 0 ? "-$" : "$";
-  return `${sign}${Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  return formatCountShared(Math.trunc(value));
 }
 
 export function formatExitReason(value: string): string {
@@ -43,17 +39,12 @@ export function formatExitReason(value: string): string {
     .replace(/^\w/, (letter) => letter.toUpperCase());
 }
 
-export function formatUtcDateTime(value: string): string {
+export function formatCoveredCallDateTime(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return "Unavailable";
   }
 
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+  return formatTimestamp(date);
 }
 
-function padUtc(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

@@ -21,7 +21,7 @@ SPEC.loader.exec_module(gate)
 def governance_dto_fixture(body: str):
     # Keep real file reads and repository-relative contract paths without writing
     # fixtures into the checkout or depending on the caller's working directory.
-    with tempfile.TemporaryDirectory() as temporary:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
         root = Path(temporary)
         relative_path = Path("src/Meridian.Contracts/Workstation/GovernanceInstrumentContractDto.cs")
         fixture = root / relative_path

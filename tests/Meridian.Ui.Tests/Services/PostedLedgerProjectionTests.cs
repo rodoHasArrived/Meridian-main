@@ -412,6 +412,15 @@ public sealed class PostedLedgerProjectionTests
             + "Cost center: cc-42 · Counterparty: cp-1");
     }
 
+    [Fact]
+    public void DescribeDimensionScope_ShowsThePinnedAgreementVersion()
+    {
+        var id = Guid.Parse("aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb");
+        var dimensions = new LedgerDimensionSetDto { IntercompanyAgreementId = id, IntercompanyAgreementVersion = 2 };
+        PostedLedgerProjection.DescribeDimensionScope(dimensions)
+            .Should().Be($"Agreement: {id:D} · Agreement version: 2");
+    }
+
     /// <summary>
     /// A row scoped only by a dimension the projection used to omit must still name its scope —
     /// otherwise it reads as unscoped and is indistinguishable from every other such row.

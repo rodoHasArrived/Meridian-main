@@ -1,4 +1,5 @@
-import type { ProductMaturity, SessionInfo, WorkspaceSummary } from "@/types";
+import type { SessionInfo, WorkspaceSummary } from "@/types";
+import type { DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 
 export type WorkspaceHeaderBadgeVariant =
   | "default"
@@ -46,6 +47,10 @@ export interface WorkspaceHeaderViewModel {
   title: string;
   description: string;
   badges: WorkspaceHeaderBadge[];
+  /** Shown in the About disclosure: the product maturity that used to be a page badge. */
+  maturityNote: string;
+  /** Accessible name of the About section in the overflow menu. */
+  aboutLabel: string;
   metaItems: WorkspaceHeaderMetaItem[];
   sessionLabel: string;
   sessionRoleLabel: string | null;
@@ -62,15 +67,20 @@ interface BuildWorkspaceHeaderViewModelOptions {
   session: SessionInfo | null;
   canRefresh: boolean;
   refreshing?: boolean;
+  /** The page name that ends the breadcrumb and is the header's heading. Defaults to the workspace. */
+  pageTitle?: string;
+  dataProvenance?: DataProvenanceKind;
 }
 
 export function buildWorkspaceHeaderViewModel({
   workspace,
   session,
   canRefresh,
-  refreshing = false
+  refreshing = false,
+  pageTitle,
+  dataProvenance = "unknown"
 }: BuildWorkspaceHeaderViewModelOptions): WorkspaceHeaderViewModel {
-  const isLiveEnvironment = session?.environment === "live";
+  const isLiveEnvironment = session?.environment === "live" && dataProvenance === "real";
   const refreshLabel = refreshing ? "Refreshing" : "Refresh";
   const refreshDisabledReason = refreshing
     ? `${workspace.label} workspace data is refreshing.`
@@ -78,16 +88,14 @@ export function buildWorkspaceHeaderViewModel({
 
   return {
     eyebrow: "Workspace",
-    title: `${workspace.label} Workstation`,
+    // The breadcrumb's last crumb is the heading; the route body carries the task title.
+    title: pageTitle ?? workspace.label,
     description: workspace.description,
-    badges: [
-      {
-        id: "workspace-maturity",
-        label: workspace.maturity,
-        variant: maturityVariant(workspace.maturity),
-        ariaLabel: `${workspace.label} product maturity ${workspace.maturity}`
-      }
-    ],
+    // Product maturity told an operator nothing about what is wrong or what to do as a page
+    // badge, so it lives in the About section of the overflow menu instead.
+    badges: [],
+    maturityNote: `Product maturity: ${workspace.maturity}.`,
+    aboutLabel: `About ${workspace.label}`,
     metaItems: [],
     sessionLabel: session?.displayName ?? "Loading session",
     sessionRoleLabel: session?.role ?? null,
@@ -121,15 +129,4 @@ export function buildWorkspaceHeaderViewModel({
         }
       : null
   };
-}
-
-function maturityVariant(maturity: ProductMaturity): WorkspaceHeaderBadgeVariant {
-  switch (maturity) {
-    case "Preview":
-      return "warning";
-    case "Setup":
-      return "outline";
-    case "Available":
-      return "outline";
-  }
 }

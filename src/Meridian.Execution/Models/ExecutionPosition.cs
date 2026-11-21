@@ -60,6 +60,12 @@ public sealed record ExecutionPosition(
         init => _exactQuantity = value;
     }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateTimeOffset? MarkObservedAtUtc { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MarkSource { get; init; }
+
     /// <summary>True when this is a short (negative) position.</summary>
     public bool IsShort => Quantity < 0;
 

@@ -32,7 +32,7 @@ class WorkflowSchedulingTests(unittest.TestCase):
         self.assertEqual(step["env"]["DISPATCH_REF"], "${{ github.ref }}")
         self.assertEqual(step["env"]["DISPATCH_SHA"], "${{ github.sha }}")
         self.assertNotIn("${{", step["run"], "Dispatch values must be passed as data, never shell source.")
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             output = Path(directory) / "output"
             result = subprocess.run(
                 ["bash", "-euo", "pipefail", "-c", step["run"]],

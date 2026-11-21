@@ -1,110 +1,105 @@
 // Meridian YieldCurve — term-structure line chart (yield vs tenor) for rates & bond
 // surfaces (Basket Builder, fixed-income research). Tenors position on a sqrt-of-years
-// x-scale so the money-market end doesn't crush; an optional second series (prior date,
-// benchmark curve) overlays dashed; an optional tenor-pair spread readout ("2Y–10Y")
-// prints top-left, red when inverted. Flat, token-driven, mirrors ScatterChart conventions.
+// x-scale so the money-market end doesn't crush. Prior-period overlays recede down the
+// series ladder (--chart-compare-1/2); scenario overlays render dashed --chart-scenario
+// (terracotta) so a shock can never read as observed data. An optional tenor-pair spread
+// readout ("2Y–10Y") prints top-left, red when inverted. Renders through ChartFrame.
 import React from "react";
+import { domainOf } from "./viz.js";
+import { ChartFrame, AXIS_FONT } from "./ChartFrame.jsx";
 
 const X_SCALES = {
   sqrt: (y) => Math.sqrt(y),
   linear: (y) => y,
 };
 
-export function YieldCurve({
-  points = [],
+export function YieldCurve({ ariaLabel, ariaDescription, accessibleData,
+  points = [],                 // [{ tenor, years, value }]
   compare = null,
+  overlays = null,
   label = "Current",
   compareLabel = "Prior",
   yFmt = (v) => v.toFixed(2) + "%",
   yTicks = 5,
   xScale = "sqrt",
-  spread = null,
+  spread = null,               // { a, b } tenor names
   markers = true,
   lineColor = "var(--chart-primary)",
   compareColor = "var(--chart-secondary)",
+  height = 300,
 }) {
-  const W = 960, H = 340;
-  const padT = 18, axisB = 26, axisL = 52, axisR = 16;
-  const plotL = axisL, plotR = W - axisR, plotT = padT, plotB = H - axisB;
-
   const sc = typeof xScale === "function" ? xScale : X_SCALES[xScale] || X_SCALES.sqrt;
-  const all = points.concat(compare || []);
-  if (!all.length) return <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "100%", display: "block" }} />;
-
+  const LADDER = ["var(--chart-compare-1)", "var(--chart-compare-2)", "var(--chart-secondary)"];
+  const ovls = (overlays || (compare ? [{ points: compare, label: compareLabel, color: compareColor, dashed: true }] : []))
+    .filter((o) => o && o.points && o.points.length)
+    .map((o, i) => ({
+      points: o.points,
+      label: o.label || `Series ${i + 2}`,
+      dashed: !!(o.dashed || o.scenario),
+      color: o.color || (o.scenario ? "var(--chart-scenario)" : LADDER[Math.min(i, LADDER.length - 1)]),
+    }));
+  const all = ovls.reduce((a, o) => a.concat(o.points), points.slice());
+  if (!all.length) return <div style={{ width: "100%", height }} />;
   const xVals = all.map((p) => sc(p.years));
   const xLo = Math.min(...xVals), xHi = Math.max(...xVals);
-  const yMin = Math.min(...all.map((p) => p.value));
-  const yMax = Math.max(...all.map((p) => p.value));
-  const yPad = (yMax - yMin || 1) * 0.14;
-  const yLo = yMin - yPad, yHi = yMax + yPad;
-
-  const px = (p) => plotL + ((sc(p.years) - xLo) / (xHi - xLo || 1)) * (plotR - plotL);
-  const py = (v) => plotB - ((v - yLo) / (yHi - yLo || 1)) * (plotB - plotT);
-  const path = (pts) => pts.map((p, i) => `${i ? "L" : "M"}${px(p).toFixed(1)},${py(p.value).toFixed(1)}`).join(" ");
-
-  const labelFont = { fontFamily: "var(--font-data)", fontSize: 11 };
-  const yTickVals = Array.from({ length: yTicks + 1 }, (_, i) => yLo + (i / yTicks) * (yHi - yLo));
-
-  // spread readout: value(b) − value(a), in bp — negative (inversion) reads red
-  let spreadNode = null;
-  if (spread && spread.a && spread.b) {
-    const pa = points.find((p) => p.tenor === spread.a);
-    const pb = points.find((p) => p.tenor === spread.b);
-    if (pa && pb) {
-      const bp = Math.round((pb.value - pa.value) * 100);
-      const neg = bp < 0;
-      spreadNode = (
-        <text x={plotL + 8} y={plotT + 12} style={labelFont}
-          fill={neg ? "var(--red)" : "var(--text-secondary)"}>
-          {`${spread.a}–${spread.b} ${bp >= 0 ? "+" : "−"}${Math.abs(bp)}bp${neg ? " · inverted" : ""}`}
-        </text>
-      );
-    }
-  }
-
-  const series = (pts, color, dashed, r) => (
-    <g>
-      <path d={path(pts)} fill="none" stroke={color} strokeWidth="1.6"
-        strokeDasharray={dashed ? "5 4" : undefined} />
-      {markers && pts.map((p, i) => (
-        <circle key={i} cx={px(p)} cy={py(p.value)} r={r} fill={color} stroke="var(--chart-plot)" strokeWidth="1.2" />
-      ))}
-    </g>
-  );
-
+  const yDomain = domainOf([all.map((p) => p.value)], 0.14);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}
-      role="img" aria-label={`Yield curve, ${points.length} tenors`}>
-      <rect x="0" y="0" width={W} height={H} fill="var(--chart-plot)" />
-      {yTickVals.map((v, i) => (
-        <g key={"y" + i}>
-          <line x1={plotL} x2={plotR} y1={py(v)} y2={py(v)} stroke="var(--chart-grid)" strokeWidth="0.8" opacity="0.55" />
-          <text x={plotL - 6} y={py(v) + 4} fill="var(--chart-axis)" textAnchor="end" style={labelFont}>{yFmt(v)}</text>
-        </g>
-      ))}
-      {points.map((p, i) => (
-        <g key={"x" + i}>
-          <line x1={px(p)} x2={px(p)} y1={plotB} y2={plotB + 4} stroke="var(--chart-border)" strokeWidth="1" />
-          <text x={px(p)} y={H - 8} fill="var(--chart-axis)" textAnchor="middle" style={labelFont}>{p.tenor}</text>
-        </g>
-      ))}
-
-      {compare && series(compare, compareColor, true, 2.4)}
-      {series(points, lineColor, false, 3.2)}
-      {spreadNode}
-
-      {compare && (
-        <g>
-          <line x1={plotR - 150} x2={plotR - 128} y1={plotT + 8} y2={plotT + 8} stroke={lineColor} strokeWidth="1.6" />
-          <text x={plotR - 122} y={plotT + 12} fill="var(--text-secondary)" style={labelFont}>{label}</text>
-          <line x1={plotR - 150} x2={plotR - 128} y1={plotT + 24} y2={plotT + 24} stroke={compareColor} strokeWidth="1.6" strokeDasharray="5 4" />
-          <text x={plotR - 122} y={plotT + 28} fill="var(--text-secondary)" style={labelFont}>{compareLabel}</text>
-        </g>
-      )}
-
-      <line x1={plotL} x2={plotR} y1={plotB} y2={plotB} stroke="var(--chart-border)" strokeWidth="1.2" />
-      <line x1={plotL} x2={plotL} y1={plotT} y2={plotB} stroke="var(--chart-border)" strokeWidth="1" opacity="0.5" />
-    </svg>
+    <ChartFrame ariaLabel={ariaLabel} ariaDescription={ariaDescription} accessibleData={accessibleData} height={height} n={Math.max(1, points.length)} railSide="left" rail={52} padL={16} padT={18} leftRule
+      panes={[{ key: "y", domain: yDomain, ticks: yTicks, fmt: yFmt }]}>
+      {(g) => {
+        const Y = g.pane("y");
+        const px = (p) => g.plotL + ((sc(p.years) - xLo) / (xHi - xLo || 1)) * (g.plotR - g.plotL);
+        const path = (pts) => pts.map((p, i) => `${i ? "L" : "M"}${px(p).toFixed(1)},${Y.y(p.value).toFixed(1)}`).join(" ");
+        const series = (pts, color, dashed, r) => (
+          <g>
+            <path d={path(pts)} fill="none" stroke={color} strokeWidth="1.6"
+              strokeDasharray={dashed ? "5 4" : undefined} />
+            {markers && pts.map((p, i) => (
+              <circle key={i} cx={px(p)} cy={Y.y(p.value)} r={r} fill={color} stroke="var(--chart-plot)" strokeWidth="1.2" />
+            ))}
+          </g>
+        );
+        let spreadNode = null;
+        if (spread && spread.a && spread.b) {
+          const pa = points.find((p) => p.tenor === spread.a);
+          const pb = points.find((p) => p.tenor === spread.b);
+          if (pa && pb) {
+            const bp = Math.round((pb.value - pa.value) * 100);
+            const neg = bp < 0;
+            spreadNode = (
+              <text x={g.plotL + 8} y={Y.t + 12} style={AXIS_FONT}
+                fill={neg ? "var(--red)" : "var(--text-secondary)"}>
+                {`${spread.a}–${spread.b} ${bp >= 0 ? "+" : "−"}${Math.abs(bp)}bp${neg ? " · inverted" : ""}`}
+              </text>
+            );
+          }
+        }
+        return (
+          <g>
+            {points.map((p, i) => (
+              <g key={"x" + i}>
+                <line x1={px(p)} x2={px(p)} y1={g.innerB} y2={g.innerB + 4} stroke="var(--chart-border)" strokeWidth="1" />
+                <text x={px(p)} y={height - 8} fill="var(--chart-axis)" textAnchor="middle" style={AXIS_FONT}>{p.tenor}</text>
+              </g>
+            ))}
+            {ovls.map((o, i) => <g key={"ov" + i}>{series(o.points, o.color, o.dashed, 2.4)}</g>).reverse()}
+            {series(points, lineColor, false, 3.2)}
+            {spreadNode}
+            {ovls.length > 0 && (
+              <g>
+                {[{ label, color: lineColor, dashed: false }].concat(ovls).map((s, i) => (
+                  <g key={"lg" + i}>
+                    <line x1={g.plotR - 150} x2={g.plotR - 128} y1={Y.t + 8 + i * 15} y2={Y.t + 8 + i * 15}
+                      stroke={s.color} strokeWidth="1.6" strokeDasharray={s.dashed ? "5 4" : undefined} />
+                    <text x={g.plotR - 122} y={Y.t + 12 + i * 15} fill="var(--text-secondary)" style={AXIS_FONT}>{s.label}</text>
+                  </g>
+                ))}
+              </g>
+            )}
+          </g>
+        );
+      }}
+    </ChartFrame>
   );
 }
 

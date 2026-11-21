@@ -1,3 +1,4 @@
+import { formatEnumLabel } from "@/lib/display-labels";
 import { buildOperatorFocusCandidate, type OperatorFocusCandidate } from "@/app-shell.operator-focus";
 import { pluralizeCount } from "@/lib/format";
 import {
@@ -36,7 +37,7 @@ export function buildAccountingOperatorFocusItems({
       .map((row, index) => buildOperatorFocusCandidate({
         id: `reconciliation-run:${row.runId}`,
         label: `${row.strategyName} reconciliation open`,
-        detail: `${formatAccountingFocusCount(row.openBreakCount, "open break")} across ${formatAccountingFocusCount(row.breakCount, "total break")}. Status: ${row.reconciliationStatus}.`,
+        detail: `${formatAccountingFocusCount(row.openBreakCount, "open break")} across ${formatAccountingFocusCount(row.breakCount, "total break")}. Status: ${formatEnumLabel(row.reconciliationStatus).toLowerCase()}.`,
         route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
         workspaceLabel: "Accounting",
         actionLabel: "Open reconciliation",

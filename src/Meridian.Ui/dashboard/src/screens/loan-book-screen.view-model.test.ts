@@ -67,6 +67,24 @@ describe("loan book view model", () => {
     expect(view.statusAnnouncement).toBe("Loan book loaded with 1 facility, 1 needing attention.");
   });
 
+  it("shows prepaid interest and unapplied cash beside the receivables (PRD-115)", () => {
+    const row = buildLoanBookRow(loan({ prepaidInterest: 600, unappliedCash: 99_000 }));
+
+    expect(row.prepaidInterestLabel).toBe("$600.00");
+    expect(row.unappliedCashLabel).toBe("$99,000.00");
+    expect(row.interestAccruedLabel).toBe("$18,400.00");
+    // Owed to the borrower, so they never count as a missing receivable.
+    expect(row.missing).toHaveLength(0);
+  });
+
+  it("reads absent PRD-115 balances from an older host as not reported, not as zero", () => {
+    const row = buildLoanBookRow(loan());
+
+    expect(row.prepaidInterestLabel).toBe("—");
+    expect(row.unappliedCashLabel).toBe("—");
+    expect(row.missing).toHaveLength(0);
+  });
+
   it("tones an impaired status as a danger and a healthy one as success", () => {
     expect(loanStatusTone("Active")).toBe("success");
     expect(loanStatusTone("Defaulted")).toBe("danger");

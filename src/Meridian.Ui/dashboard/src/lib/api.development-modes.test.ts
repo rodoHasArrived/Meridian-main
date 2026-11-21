@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   developmentFixtureHeader,
+  getProviderReadiness,
   getSession,
   hasDevelopmentFixtureUsage,
   resetDevelopmentFixtureUsage,
@@ -43,6 +44,25 @@ describe("API client development modes", () => {
     fetchMock.mockResolvedValue(new Response("[]"));
 
     await expect(searchSecurities("pcg")).resolves.toEqual([]);
+  });
+
+  it("decodes numeric provider readiness and retains the string form used by fixtures", async () => {
+    vi.stubEnv("VITE_MERIDIAN_DEV_MODE", "backend-connected");
+    fetchMock.mockResolvedValue(Response.json({
+      status: 3,
+      providers: [
+        { providerId: "alpaca", status: 1, evidence: [{ kind: 5, status: 0 }] },
+        { providerId: "tiingo", status: "Ready", evidence: [{ kind: "Credential", status: "Ready" }] }
+      ]
+    }));
+
+    await expect(getProviderReadiness()).resolves.toMatchObject({
+      status: "Blocked",
+      providers: [
+        { providerId: "alpaca", status: "Review", evidence: [{ kind: "Routing", status: "Ready" }] },
+        { providerId: "tiingo", status: "Ready", evidence: [{ kind: "Credential", status: "Ready" }] }
+      ]
+    });
   });
 
   it("retains the proxy fixture provenance in fixture-only mode", async () => {

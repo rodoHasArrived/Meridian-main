@@ -22,6 +22,69 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
 {
     private ParquetStorageSink? _sink;
 
+    [Fact]
+    public async Task FlushAsync_ReleasesEmptyBuffersAndLateWritesPreserveEarlierRows()
+    {
+        _sink = CreateSink();
+        for (var day = 1; day <= 10; day++)
+            await _sink.AppendAsync(CreateTradeEvent("SPY") with
+            {
+                Timestamp = new DateTimeOffset(2024, 1, day, 15, 0, 0, TimeSpan.Zero)
+            });
+        var buffers = (System.Collections.IDictionary)typeof(ParquetStorageSink)
+            .GetField("_buffers", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(_sink)!;
+        buffers.Count.Should().Be(10);
+
+        await _sink.FlushAsync();
+        buffers.Count.Should().Be(0);
+        await _sink.AppendAsync(CreateTradeEvent("SPY") with
+        {
+            Timestamp = new DateTimeOffset(2024, 1, 1, 16, 0, 0, TimeSpan.Zero)
+        });
+        await _sink.FlushAsync();
+
+        buffers.Count.Should().Be(0);
+        var firstDay = Directory.GetFiles(TestDataRoot, "*20240101.parquet", SearchOption.AllDirectories).Single();
+        (await CountRowsAsync(firstDay)).Should().Be(2);
+    }
+
+    [Fact]
+    public async Task FlushAsync_OffsetCrossingMidnight_UsesUtcDateForFilenameAndDirectory()
+    {
+        _sink = CreateSink();
+        await _sink.AppendAsync(CreateTradeEvent("SPY") with
+        {
+            Timestamp = new DateTimeOffset(2024, 1, 2, 0, 30, 0, TimeSpan.FromHours(2))
+        });
+
+        await _sink.FlushAsync();
+
+        var file = Directory.GetFiles(TestDataRoot, "*.parquet", SearchOption.AllDirectories).Single();
+        Path.GetFileName(file).Should().Contain("20240101");
+        Path.GetFileName(file).Should().NotContain("20240102");
+    }
+
+    [Theory]
+    [InlineData("BRK/B")]
+    [InlineData("../ESCAPE")]
+    public async Task FlushAsync_SymbolWithPathCharacters_WritesOneEncodedFileInsideTheRoot(string symbol)
+    {
+        _sink = CreateSink();
+        await _sink.AppendAsync(CreateTradeEvent(symbol));
+
+        await _sink.FlushAsync();
+
+        var root = Path.GetFullPath(TestDataRoot);
+        var parent = Path.GetDirectoryName(root.TrimEnd(Path.DirectorySeparatorChar))!;
+        Directory.GetFiles(parent, "*ESCAPE*.parquet", SearchOption.TopDirectoryOnly)
+            .Should().BeEmpty("a symbol must never place a file outside the storage root");
+
+        var file = Directory.GetFiles(root, "*.parquet", SearchOption.AllDirectories).Single();
+        Path.GetFullPath(file).Should().StartWith(root);
+        Path.GetFileName(file).Should().StartWith("~", "unsafe symbols are hex-encoded into one path segment");
+        Directory.GetParent(file)!.Name.Should().NotBe("BRK", "a '/' in the symbol must not create a subfolder");
+    }
+
     public override async Task DisposeAsync()
     {
         if (_sink is not null)

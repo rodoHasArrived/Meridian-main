@@ -342,7 +342,7 @@ public static class SecurityTermConventions
     /// <summary>
     /// Coupon payments per year as the legacy schedulers read a stored cadence. The Security Master
     /// cash-flow projection and the asset-operations bond projection
-    /// (<c>fixed-income-cash-flow-projection-v1</c>) both step <c>Math.Max(1, 12 / n)</c> months per
+    /// (<c>fixed-income-cash-flow-projection-v2</c>, <c>-v1</c> on stored runs) both step <c>Math.Max(1, 12 / n)</c> months per
     /// coupon period from it. It never returns null and never refuses.
     /// </summary>
     /// <remarks>

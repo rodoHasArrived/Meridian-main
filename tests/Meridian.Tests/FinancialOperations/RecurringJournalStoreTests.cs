@@ -8,13 +8,13 @@ namespace Meridian.Tests.FinancialOperations;
 public sealed class RecurringJournalStoreTests : IDisposable
 {
     private readonly string _directory = Path.Combine(Path.GetTempPath(), "meridian-recurring-tests", Guid.NewGuid().ToString("N"));
-    private static readonly DateTimeOffset At = new(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
-    private static readonly DateOnly Date = new(2026, 10, 1);
-    private static readonly RecurringJournalScope Scope = new("fund-a", Guid.Parse("048804c2-31df-4878-8008-580386a12e80"), "entity-a", "USD", "tenant-a", "company-a", "account-a");
+    internal static readonly DateTimeOffset At = new(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
+    internal static readonly DateOnly Date = new(2026, 10, 1);
+    internal static readonly RecurringJournalScope Scope = new("fund-a", Guid.Parse("048804c2-31df-4878-8008-580386a12e80"), "entity-a", "USD", "tenant-a", "company-a", "account-a");
 
     private FileRecurringJournalStore Store() => new(_directory);
 
-    private static JournalTemplate Template(decimal factor = 1m) => new("fee", "Management fee", "Approved contract fee",
+    internal static JournalTemplate Template(decimal factor = 1m) => new("fee", "Management fee", "Approved contract fee",
     [
         new JournalTemplateLine(new LedgerAccount("Expenses:ManagementFees", LedgerAccountType.Expense, "FUND", "account-a"),
             JournalTemplateSide.Debit, "fee", Factor: factor,
@@ -23,11 +23,11 @@ public sealed class RecurringJournalStoreTests : IDisposable
             JournalTemplateSide.Credit, "fee", Factor: factor)
     ], ledgerBook: "Fund");
 
-    private static RecurringJournalSchedule Schedule(decimal amount = 100m) => new("schedule-a", "fee", new LedgerBookKey("fund-a", "Fund"),
+    internal static RecurringJournalSchedule Schedule(decimal amount = 100m) => new("schedule-a", "fee", new LedgerBookKey("fund-a", "Fund"),
         RecurringJournalCadence.Monthly, Date, "controller", At,
         new Dictionary<string, decimal> { ["fee"] = amount }, description: "Monthly management fee");
 
-    private static JournalEvidenceReference Evidence() => new("contract-1", "vault://contracts/1", "Contract", "DocumentVault", At,
+    internal static JournalEvidenceReference Evidence() => new("contract-1", "vault://contracts/1", "Contract", "DocumentVault", At,
         "controller", "fund-a", new string('a', 64), "Approved fee contract", EvidenceVersion: 3);
 
     private async Task SeedAsync(IReadOnlyList<JournalEvidenceReference>? evidence = null)
@@ -241,6 +241,22 @@ public sealed class RecurringJournalStoreTests : IDisposable
         session.Schedules.Select(item => item.Version).Should().Equal(1, 2, 3);
     }
 
+    [Fact]
+    public async Task CalculatedDefinitions_CanBeRestoredAfterAnEdit()
+    {
+        var calculated = new JournalTemplate("fee", "Management fee", "Calculated", [],
+            calculation: new JournalTemplateCalculation("management-fee-accrual"));
+        await Store().InitializeAsync();
+        await using var session = await Store().OpenSessionAsync();
+        await session.ConfigureAsync(Schedule(), calculated, Scope, [Evidence()], "controller", 0, 0, At);
+        await session.ConfigureAsync(Schedule(200), calculated, Scope, [Evidence()], "controller", 1, 1, At);
+
+        // A calculated template has no fixed lines to plan, which must not stop the restore.
+        await session.ActivateDefinitionsAsync("schedule-a", 1, 1, "controller", "Restore original", At);
+
+        session.GetCurrentSchedule("schedule-a").Version.Should().Be(1);
+    }
+
     [Theory]
     [InlineData(LedgerViewKind.Historical, null)]
     [InlineData(LedgerViewKind.Actual, "simulation-1")]
@@ -322,5 +338,23 @@ public sealed class RecurringJournalStoreTests : IDisposable
     {
         if (Directory.Exists(_directory))
             Directory.Delete(_directory, recursive: true);
+    }
+
+    [Fact]
+    public void FixedLineTemplateDefinition_SerializesWithoutACalculationMember()
+    {
+        // Retained definitions are fingerprinted from this JSON; adding calculated templates must
+        // not change the bytes of any fixed-line definition registered before them.
+        var definition = new RecurringTemplateDefinition("fixed", 1, "", new JournalTemplate("fixed", "Fixed", "",
+            [new JournalTemplateLine(LedgerAccounts.Cash, JournalTemplateSide.Debit, FixedAmount: 1m),
+             new JournalTemplateLine(LedgerAccounts.RealizedGain, JournalTemplateSide.Credit, FixedAmount: 1m)]),
+            "controller", DateTimeOffset.UnixEpoch);
+        var calculated = definition with
+        {
+            Template = new JournalTemplate("fixed", "Fixed", "", [], calculation: new JournalTemplateCalculation("fx-revaluation"))
+        };
+
+        RecurringJournalIdentity.SerializeTemplate(definition).Should().NotContain("alculation");
+        RecurringJournalIdentity.SerializeTemplate(calculated).Should().Contain("\"calculation\":{\"kind\":\"fx-revaluation\"");
     }
 }

@@ -1,8 +1,9 @@
+import * as React from "react";
 /**
  * Tax-lot table — cost-basis lots with holding-period classification and unrealized (or realized)
  * P&L. Each lot shows acquisition date + days held, quantity, cost basis, market value (or
  * proceeds), and gain/loss with a percent, plus a short/long-term badge derived from days held vs.
- * `longTermDays` (amber short-term / teal-blue long-term). The footer rolls up basis, value, and
+ * `longTermDays` (amber short-term / terracotta long-term). The footer rolls up basis, value, and
  * total gain. All figures mono and tabular; P&L is red/green.
  */
 export interface TaxLot {
@@ -36,5 +37,9 @@ export interface TaxLotTableProps {
   showSymbol?: boolean;
   /** Accessible caption / region label. */
   caption?: string;
+  /** Row click/keyboard handler — receives the original lot and its index. */
+  onRowClick?: (lot: TaxLot, index: number) => void;
+  /** Highlight one row (index into `lots`). */
+  selectedIndex?: number;
 }
-export declare function TaxLotTable(props: TaxLotTableProps): JSX.Element;
+export declare function TaxLotTable(props: TaxLotTableProps): React.JSX.Element;

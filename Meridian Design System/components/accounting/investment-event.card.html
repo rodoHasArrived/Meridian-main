@@ -1,0 +1,115 @@
+<!-- @dsCard group="Accounting" viewport="1280x860" name="Investment event" subtitle="Lifecycle ribbon, income schedule, book-value rollforward, and the basis bridge" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Investment event</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+.event-grid{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+.event-grid > *{min-width:0}
+@media(max-width:900px){.event-grid{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { LifecycleRibbon, LifecycleLanes, IncomeSchedule, RollforwardTrace, BasisBridge,
+  Money, Eyebrow, ClaimHeader } = window.MeridianDesignSystem_205d17;
+
+const LABELS = ["June 2026","July 2026","August 2026","September 2026","October 2026","November 2026"];
+const SCHEDULE = Money.effectiveYieldSchedule({
+  par: 10000000, cost: 9875000, couponRate: 0.0525, effectiveYield: 0.05418,
+  periods: 6, labels: LABELS,
+}).map((r, i) => ({ ...r, id: r.period, state: i === 0 ? "accrued" : "scheduled" }));
+
+const STAGES = [
+  { id:"trade",   label:"Trade captured",       meta:"May 29", state:"done" },
+  { id:"acct",    label:"Accounting generated", meta:"May 29", state:"current" },
+  { id:"settle",  label:"Settlement expected",  meta:"Jun 2",  state:"pending" },
+  { id:"custody", label:"Custody match",        meta:"Awaiting", state:"pending" },
+  { id:"income",  label:"Income accrual",       meta:"From Jun 2", state:"pending" },
+  { id:"value",   label:"Valuation",            meta:"Jun 30", state:"pending" },
+  { id:"report",  label:"Reporting",            meta:"June close", state:"pending" },
+];
+const LANES = [
+  { label:"Transaction", steps:[{label:"Trade",state:"done"},{label:"Settlement",state:"pending"},{label:"Close",state:"pending"}] },
+  { label:"Position",    steps:[{label:"Create lot",state:"done"},{label:"Confirm par",state:"pending"},{label:"Update",state:"pending"}] },
+  { label:"Cash",        steps:[{label:"Payable",state:"done"},{label:"Cash movement",state:"pending"},{label:"Reconcile",state:"pending"}] },
+  { label:"Income",      steps:[{label:"Purchased AI",state:"done"},{label:"Accrual",state:"current"},{label:"Coupon",state:"pending"}] },
+  { label:"Book value",  steps:[{label:"Cost",state:"done"},{label:"Accretion",state:"current"},{label:"Carrying value",state:"pending"}] },
+  { label:"Reporting",   steps:[{label:"Classify",state:"done"},{label:"Map",state:"pending"},{label:"Certify",state:"pending"}] },
+];
+
+function Panel({ eyebrow, title, note, children, span }) {
+  return (
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, minWidth:0, gridColumn: span }}>
+      <Eyebrow>{eyebrow}</Eyebrow>
+      <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
+      {note ? <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"80ch" }}>{note}</p> : null}
+      {children}
+    </section>
+  );
+}
+
+function Demo() {
+  const [stage, setStage] = React.useState("acct");
+  const [period, setPeriod] = React.useState(LABELS[0]);
+  const row = SCHEDULE.find((r) => r.id === period) || SCHEDULE[0];
+  return (
+    <div className="event-grid" style={{ display:"grid", gap:16, maxWidth:1240 }}>
+      <div style={{ gridColumn:"1 / -1" }}>
+        <ClaimHeader
+          context={["Investment accounting","EVT-2026-08421","Statutory"]}
+          claim="A USD 10,000,000 discount purchase of Acme Energy 5.25% 2034 accretes 3,812.40 into book value in June."
+          note="Trade May 29, settling June 2 at 98.750 plus 76,562.50 accrued interest. Illustrative design data — treatment and account mapping come from the configured rules."
+          states={[{ condition:"provisional", label:"Posting state", detail:"Draft" },
+                   { condition:"pending", label:"Custody", detail:"Awaiting Jun 2" },
+                   { condition:"confirmed", label:"Balanced" }]} />
+      </div>
+      <Panel span="1 / -1" eyebrow="Lifecycle" title="One event, one lifecycle grammar"
+        note="Selecting a stage synchronizes the schedule, rollforward, journal preview, and evidence rail. The lane view expands the same event into its parallel tracks.">
+        <LifecycleRibbon stages={STAGES} selectedId={stage} onSelect={setStage} />
+        <div style={{ marginTop:16, paddingTop:12, borderTop:"1px solid var(--border-divider)" }}>
+          <LifecycleLanes lanes={LANES} />
+        </div>
+      </Panel>
+      <Panel eyebrow="Income & amortization" title="Constant-yield schedule"
+        note="Coupon accrual, discount accretion, income, and the book value each period rolls to. Rows are selectable and drive the rollforward beside them.">
+        <IncomeSchedule rows={SCHEDULE} selectedId={period} onSelect={setPeriod} maxHeight={230} />
+      </Panel>
+      <Panel eyebrow="Book value" title={`Rollforward — ${row.period}`}
+        note="Opening plus movements equals closing, proved on screen; each movement resolves to its calculation, journal, and rule.">
+        <RollforwardTrace
+          opening={row.openingBook} closing={row.closingBook} currency="USD"
+          movements={[
+            { label:"Discount accretion", value:row.accretion, note:"BOND.INCOME.STAT.021", linkLabel:"Journal", onOpen:() => {} },
+            { label:"Principal movement", value:0 },
+            { label:"Other book-value adjustment", value:0 },
+          ]} />
+      </Panel>
+      <Panel span="1 / -1" eyebrow="Override scope" title="Basis bridge — statutory only"
+        note="The selected ledger account conflicts with the Security Master classification. The bridge states which basis moves, what regenerates, and who has to approve it.">
+        <BasisBridge
+          bases={[{ id:"stat", label:"Statutory", meta:"Selected" },
+                  { id:"gaap", label:"GAAP", meta:"Configured", reference:true },
+                  { id:"tax",  label:"Tax",  meta:"Configured", reference:true }]}
+          rows={[
+            { label:"Security classification", values:{ stat:"Corporate bond", gaap:"Corporate bond", tax:"Corporate bond" } },
+            { label:"Ledger account", changed:["stat"], values:{ stat:"Private placement debt", gaap:"Corporate bonds", tax:"Tax investments" } },
+            { label:"Yield method", changed:["stat"], values:{ stat:"Overridden", gaap:"Configured", tax:"Configured" } },
+            { label:"Future schedule", changed:["stat"], values:{ stat:"Recalculated", gaap:"Unchanged", tax:"Unchanged" } },
+            { label:"Next-period income", values:{ stat:"47,496.18", gaap:"47,562.40", tax:"47,562.40" }, changed:["stat"] },
+          ]}
+          footer={[{ label:"Approval", values:{ stat:"Required", gaap:"Not required", tax:"Not required" }, tones:{ stat:"exception" } }]} />
+      </Panel>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

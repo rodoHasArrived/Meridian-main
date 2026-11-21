@@ -1,34 +1,43 @@
 /* ───────────────────────────────────────────────────────────────────────────
-   Meridian — Typography
-   From src/Meridian.Wpf/Styles/ThemeTypography.xaml. Native Windows stack:
-   restrained Segoe UI display + body, Cascadia/JetBrains mono for all data.
+   Meridian — Typography (Programmed Institutionalism)
+   Ulm / Olivetti / Swiss-modernist discipline: one grotesk for interface,
+   one mono for all data. Tabular numerals everywhere numbers appear.
 ─────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* Families — Segoe UI Variable is the desktop face; system-ui covers other OSes.
-     JetBrains Mono is loaded (fonts.css) as the cross-platform Cascadia Mono. */
-  --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-body:    "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-data:    "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  /* Families — IBM Plex Sans interface grotesk; IBM Plex Mono for data + identifiers. */
+  --font-display: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-body:    "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-data:    "IBM Plex Mono", ui-monospace, Consolas, monospace;
 
-  /* Type ramp (px / line-height) — refined hierarchy with tighter leading */
-  --type-page-title:   24px;  --lh-page-title:   32px;  /* SemiBold, clear separation */
-  --type-section:      16px;  --lh-section:      24px;  /* SectionHeaderStyle, SemiBold */
-  --type-card-title:   13px;  --lh-card-title:   20px;  /* Card header, medium weight */
-  --type-body:         13px;  --lh-body:         20px;  /* Body text, balanced */
-  --type-metric:       28px;                            /* MetricValueStyle, mono, bold */
-  --type-data-value:   16px;                            /* DataValueStyle, mono, SemiBold */
-  --type-label:         9px;                            /* MetricLabel — small-caps, muted, tighter */
-  --type-caption:      11px;  --lh-caption:      16px;  /* Secondary info */
+  /* Type ramp (px / line-height) — v2.1 scale:
+     Editorial 48 (report covers only) · Workspace 28 · Page 22 · Data-medium 18 ·
+     Section 16 · Body 14 (dense 13 / review 15) · Label 11 · Micro 10. */
+  --type-display:      48px;  --lh-display:      52px;  /* editorial — report covers ONLY */
+  --type-workspace:    28px;  --lh-workspace:    34px;  /* workspace headline / metric */
+  --type-page-title:   22px;  --lh-page-title:   28px;  /* workspace titles */
+  --type-data-medium:  18px;  --lh-data-medium:  24px;  /* prominent data value */
+  --type-section:      16px;  --lh-section:      22px;  /* panel / section titles */
+  --type-card-title:   14px;  --lh-card-title:   20px;  /* card header, medium */
+  --type-body:         14px;  --lh-body:         20px;  /* interface body */
+  --type-body-dense:   13px;  --lh-body-dense:   18px;  /* dense mode body */
+  --type-body-review:  15px;  --lh-body-review:  22px;  /* review mode body */
+  --type-metric:       28px;  --lh-metric:       34px;  /* metric value, mono, bold */
+  --type-data-value:   16px;                            /* data value, mono, semibold */
+  --type-label-lg:     11px;  --lh-label-lg:     16px;  /* label — form + column headings */
+  --type-label:        10px;  --lh-label:        14px;  /* micro-label — small-caps, muted */
+  --type-micro:        10px;  --lh-micro:        14px;  /* alias of label — v2.1 naming */
+  --type-caption:      12px;  --lh-caption:      16px;  /* secondary info */
 
   /* Weights — intentional hierarchy */
   --weight-normal:   400;
+  --weight-data:     450;   /* mono data — optical match to 400 sans */
   --weight-medium:   500;
   --weight-semibold: 600;
   --weight-bold:     700;
 
-  /* Letter spacing — refine whitespace */
-  --letter-spacing-label: 0.04em;  /* small-caps labels */
+  /* Letter spacing */
+  --letter-spacing-label: 0.05em;  /* small-caps labels */
   --letter-spacing-data:  0.01em;  /* tabular data (tight) */
 
   /* Numeric rendering — mono data surfaces: disambiguated 0/O + column-aligned digits.

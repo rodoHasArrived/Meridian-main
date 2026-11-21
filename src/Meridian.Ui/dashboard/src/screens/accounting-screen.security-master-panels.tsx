@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
+import type { SecurityMasterPolicyEvidence } from "./security-master-policy-evidence";
 import type {
   CorporateActionsViewState,
   CorporateActionRowViewModel,
@@ -26,7 +27,7 @@ const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.eventTypeLabel}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.corpActId}</span>
+        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{row.corpActId}</span>
       </span>
     )
   },
@@ -42,7 +43,7 @@ const securityScheduleColumns: DenseDataTableColumn<SecurityScheduleRowViewModel
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.eventTypeLabel}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.eventId}</span>
+        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{row.eventId}</span>
       </span>
     )
   },
@@ -79,7 +80,7 @@ const securityOpenLotColumns: DenseDataTableColumn<SecurityOpenLotRowViewModel>[
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.lotId}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.runId}</span>
+        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{row.runId}</span>
       </span>
     )
   },
@@ -187,7 +188,7 @@ export function CorporateActionsPanel({
                 />
               ) : (
                 <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                  <div className="eyebrow-label">Corporate action detail</div>
+                  <div className="eyebrow-label eyebrow-label--sentence">Corporate action detail</div>
                   <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
                 </div>
@@ -275,7 +276,7 @@ export function ReferenceDataWorkbenchPanel({
                     fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
                   />
                   {view.selectedDetail.responsePreview ? (
-                    <pre className="max-h-72 overflow-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-[11px] leading-5 text-muted-foreground">
+                    <pre className="max-h-72 overflow-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-xs leading-5 text-muted-foreground">
                       {view.selectedDetail.responsePreview}
                     </pre>
                   ) : null}
@@ -294,7 +295,7 @@ export function ReferenceDataWorkbenchPanel({
                 </div>
               ) : (
                 <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                  <div className="eyebrow-label">Reference data detail</div>
+                  <div className="eyebrow-label eyebrow-label--sentence">Reference data detail</div>
                   <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
                 </div>
@@ -346,6 +347,12 @@ export function SecuritySchedulesPanel({
           </div>
         )}
         {!view.loadingText && !view.errorText && (
+          <>
+          {view.cashFlowBlocker && <PolicyEvidence evidence={view.cashFlowBlocker} />}
+          <div className="grid gap-4 xl:grid-cols-2">
+            {view.declaredExercise && <PolicyEvidence evidence={view.declaredExercise} />}
+            <PolicyEvidence evidence={view.governance} />
+          </div>
           <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.55fr)]">
           <DenseDataTable
             columns={securityScheduleColumns}
@@ -374,16 +381,34 @@ export function SecuritySchedulesPanel({
               />
             ) : (
               <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                <div className="eyebrow-label">Schedule event detail</div>
+                <div className="eyebrow-label eyebrow-label--sentence">Schedule event detail</div>
                 <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
               </div>
             )}
           </div>
           </div>
+          </>
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function PolicyEvidence({ evidence }: { evidence: SecurityMasterPolicyEvidence }) {
+  return (
+    <section aria-label={evidence.title} className={cn("rounded-lg border p-4", evidence.blocked ? "border-warning/40 bg-warning/5" : "border-border")}>
+      <h3 className="text-sm font-semibold text-foreground">{evidence.title}</h3>
+      <p className="mt-2 text-sm text-muted-foreground">{evidence.summary}</p>
+      {evidence.fields.length > 0 && <dl className="mt-3 space-y-1 text-xs">
+        {evidence.fields.map((field) => <div key={field.label} className="flex flex-wrap justify-between gap-x-4 gap-y-1">
+          <dt className="text-muted-foreground">{field.label}</dt><dd className="font-mono text-foreground">{field.value}</dd>
+        </div>)}
+      </dl>}
+      {evidence.messages.length > 0 && <ul className="mt-3 list-disc space-y-1 pl-5 text-xs leading-5 text-foreground">
+        {evidence.messages.map((message, index) => <li key={`${index}-${message}`} className="break-words">{message}</li>)}
+      </ul>}
+    </section>
   );
 }
 
@@ -459,7 +484,7 @@ export function SecurityOpenLotReadModelPanel({
                   />
                 ) : (
                   <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                    <div className="eyebrow-label">Open lot detail</div>
+                    <div className="eyebrow-label eyebrow-label--sentence">Open lot detail</div>
                     <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
                   </div>
@@ -575,7 +600,7 @@ export function InstrumentPassportPanel({ view }: { view: InstrumentPassportView
                       <Badge variant={item.statusBadgeVariant}>{item.statusLabel}</Badge>
                     </div>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.summary}</p>
-                    <div className="mt-2 flex flex-wrap gap-2 font-mono text-[11px] text-muted-foreground">
+                    <div className="mt-2 flex flex-wrap gap-2 font-mono text-xs text-muted-foreground">
                       <span>{item.evidenceLabel}</span>
                       <span>{item.blockerLabel}</span>
                     </div>
@@ -612,17 +637,17 @@ export function InstrumentPassportPanel({ view }: { view: InstrumentPassportView
                               <span className="text-xs font-semibold text-foreground">{item.label}</span>
                               <Badge variant={item.statusBadgeVariant}>{item.statusLabel}</Badge>
                             </div>
-                            <div className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{item.value}</div>
+                            <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{item.value}</div>
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
-                            <div className="mt-1 flex flex-wrap gap-2 font-mono text-[11px] text-muted-foreground">
+                            <div className="mt-1 flex flex-wrap gap-2 font-mono text-xs text-muted-foreground">
                               <span>{item.evidenceLabel}</span>
                               <span>{item.blockerLabel}</span>
                             </div>
                             {item.route ? (
                               <Button asChild variant="ghost" size="sm" className="mt-2 h-7 px-2 text-xs">
-                                <Link to={item.route} aria-label={`Follow handoff action ${item.label}`}>
+                                <Link to={item.route} aria-label={`Follow next-step action ${item.label}`}>
                                   Follow
                                 </Link>
                               </Button>

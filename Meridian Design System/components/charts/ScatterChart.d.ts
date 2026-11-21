@@ -2,7 +2,8 @@
  * ScatterChart — X/Y relationship across a sample (spread vs implied vol, factor exposure,
  * tracking error vs return). History points optionally fade in with recency so the most
  * recent observations read as more saturated; an optional highlighted "current" point sits
- * over the cloud; an optional least-squares trendline overlays. Flat, token-driven.
+ * over the cloud; an optional least-squares trendline overlays. Renders through ChartFrame
+ * (real-pixel geometry, shared nice ticks on both axes).
  */
 import * as React from "react";
 
@@ -32,5 +33,13 @@ export interface ScatterChartProps {
   pointColor?: string;
   /** @default "var(--orange)" */
   currentColor?: string;
+  /** SVG height in px. @default 300 */
+  height?: number;
+  /** 3.5 · Forwarded to ChartFrame — names the figure (svg role="img"). */
+  ariaLabel?: string;
+  /** 3.5 · Forwarded to ChartFrame — linked description. */
+  ariaDescription?: string;
+  /** 3.5 · Forwarded to ChartFrame — visually-hidden data table/list behind the pixels. */
+  accessibleData?: string | { label: string; value: React.ReactNode }[] | { caption?: string; columns: React.ReactNode[]; rows: React.ReactNode[][] };
 }
-export declare function ScatterChart(props: ScatterChartProps): JSX.Element;
+export declare function ScatterChart(props: ScatterChartProps): React.JSX.Element;

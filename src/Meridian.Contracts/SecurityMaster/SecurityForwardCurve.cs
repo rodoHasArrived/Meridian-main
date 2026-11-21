@@ -112,6 +112,11 @@ public sealed record SecurityForwardCurve(
 /// flat-forward projection (last fixing plus spread). The stored implementation is
 /// <c>StoredSecurityForwardCurveProvider</c> in Application, reading <see cref="ISecurityCurveStore"/>.
 /// </summary>
+/// <summary>Source-generated serialization for curve-content hashing where no retained version identifies the curve.</summary>
+[JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Metadata)]
+[JsonSerializable(typeof(SecurityForwardCurve))]
+public sealed partial class SecurityForwardCurveJsonContext : JsonSerializerContext;
+
 public interface ISecurityForwardCurveProvider
 {
     Task<SecurityForwardCurve?> GetForwardCurveAsync(string indexName, DateOnly asOf, CancellationToken ct = default);

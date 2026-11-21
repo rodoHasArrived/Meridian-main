@@ -3,10 +3,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildCommandPaletteEntityItems,
   useCommandPaletteEntitySearch,
-  type CommandPaletteEntitySearchServices
+  type CommandPaletteEntitySearchServices,
+  type WorkstationRecordSearchHit,
+  type WorkstationRecordSearchResult
 } from "@/components/meridian/command-palette.entity-search";
-import { requirePresent } from "@/test/fixtures";
-import type { SecurityMasterEntry, SymbolRecord } from "@/types";
+import { ApiError } from "@/lib/api-errors";
+import type { SymbolRecord } from "@/types";
 
 const symbol: SymbolRecord = {
   symbol: "aapl",
@@ -17,123 +19,125 @@ const symbol: SymbolRecord = {
   hasHistoricalData: true
 };
 
-const security: SecurityMasterEntry = {
-  securityId: "sec-aapl",
-  displayName: "Apple Inc.",
+const instrument: WorkstationRecordSearchHit = {
+  recordId: "sec-aapl",
+  recordType: "Instrument",
+  label: "Apple Inc.",
   status: "Active",
-  classification: {
-    assetClass: "Equity",
-    subType: "Common",
-    primaryIdentifierKind: "Ticker",
-    primaryIdentifierValue: "AAPL"
-  },
-  economicDefinition: {
-    currency: "USD",
-    version: 1,
-    effectiveFrom: null,
-    effectiveTo: null,
-    subType: "Common",
-    assetFamily: "Equity",
-    issuerType: "Corporate"
-  }
+  scope: "Security Master catalog",
+  asOfPosture: "Current reference",
+  href: "/records/instrument/sec-aapl?recordScope=1&tab=positions"
 };
+
+const response = { items: [instrument], isPartial: false };
+
+async function advance(ms: number) {
+  await act(() => vi.advanceTimersByTimeAsync(ms));
+}
 
 afterEach(() => {
   vi.useRealTimers();
 });
 
 describe("command palette entity search", () => {
-  it("normalizes symbol and security records into palette entity items", () => {
-    expect(buildCommandPaletteEntityItems([symbol], [security])).toEqual([
+  it("keeps authorized records in server order, followed by matching symbol prefixes", () => {
+    expect(buildCommandPaletteEntityItems([instrument], [{ ...symbol, symbol: "BAAP" }, symbol], "aa")).toEqual([
+      expect.objectContaining({
+        recordId: "sec-aapl",
+        label: "Apple Inc.",
+        route: instrument.href,
+        sourceLabel: "Instrument",
+        description: "Security Master catalog · Current reference",
+        statusLabel: "Active"
+      }),
       expect.objectContaining({
         id: "symbol:AAPL",
         label: "AAPL",
         route: "/data/quotes?symbol=AAPL",
         sourceLabel: "Symbol",
         commandLabel: "Open AAPL quotes"
-      }),
-      expect.objectContaining({
-        id: "security:sec-aapl",
-        label: "Apple Inc.",
-        route: "/records/instrument/sec-aapl?tab=positions",
-        sourceLabel: "Security",
-        commandLabel: "Open Apple Inc. instrument dossier"
       })
     ]);
   });
 
-  it("debounces searches and passes abort signals to both sources", async () => {
+  it("debounces both sources and disables development fallbacks", async () => {
     vi.useFakeTimers();
     const services: CommandPaletteEntitySearchServices = {
       searchSymbols: vi.fn().mockResolvedValue([symbol]),
-      searchSecurities: vi.fn().mockResolvedValue([security])
+      searchRecords: vi.fn().mockResolvedValue(response)
     };
 
     const { result } = renderHook(() =>
-      useCommandPaletteEntitySearch({ open: true, query: "aa", services })
+      useCommandPaletteEntitySearch({ open: true, query: " aa ", services })
     );
 
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(249);
-    });
+    expect(result.current.status).toBe("searching");
+    await advance(249);
+    expect(services.searchRecords).not.toHaveBeenCalled();
     expect(services.searchSymbols).not.toHaveBeenCalled();
+    await advance(1);
 
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(1);
-    });
-
+    const options = { signal: expect.any(AbortSignal), allowDevelopmentFallback: false };
+    expect(services.searchRecords).toHaveBeenCalledWith("aa", options);
+    expect(services.searchSymbols).toHaveBeenCalledWith("aa", options);
     expect(result.current.status).toBe("ready");
-    expect(services.searchSymbols).toHaveBeenCalledWith("aa", { signal: expect.any(AbortSignal) });
-    expect(services.searchSecurities).toHaveBeenCalledWith("aa", 8, true, { signal: expect.any(AbortSignal) });
     expect(result.current.items).toHaveLength(2);
   });
 
-  it("aborts stale requests when the query changes", async () => {
+  it("drops pending and visible results when the query, scope or palette changes", async () => {
     vi.useFakeTimers();
-    let firstSignal: AbortSignal | null = null;
-    const services: CommandPaletteEntitySearchServices = {
-      searchSymbols: vi.fn((_query, options) => {
-        firstSignal ??= options?.signal ?? null;
-        return Promise.resolve([symbol]);
-      }),
-      searchSecurities: vi.fn().mockResolvedValue([security])
-    };
-
-    const { rerender } = renderHook(
-      ({ query }) => useCommandPaletteEntitySearch({ open: true, query, services }),
-      { initialProps: { query: "aa" } }
+    let resolveFirst: (answer: WorkstationRecordSearchResult) => void = () => {};
+    const searchRecords = vi.fn<CommandPaletteEntitySearchServices["searchRecords"]>()
+      .mockReturnValueOnce(new Promise((resolve) => { resolveFirst = resolve; }))
+      .mockResolvedValueOnce(response);
+    const services = { searchRecords, searchSymbols: vi.fn().mockResolvedValue([]) };
+    const { result, rerender } = renderHook(
+      (props) => useCommandPaletteEntitySearch({ ...props, services }),
+      { initialProps: { open: true, query: "aa", scopeKey: "account-a" } }
     );
 
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(250);
-    });
-    rerender({ query: "ms" });
+    await advance(250);
+    rerender({ open: true, query: "ms", scopeKey: "account-a" });
+    expect(searchRecords.mock.calls[0][1]?.signal?.aborted).toBe(true);
+    await act(async () => resolveFirst(response));
+    expect(result.current.items).toEqual([]);
 
-    // The only assignment to `firstSignal` happens inside the fetch mock, which control-flow
-    // analysis cannot see, so here it is still narrowed to the `null` it was initialised with -
-    // `firstSignal?.aborted` would read `.aborted` off `never`. The explicit type argument restores
-    // the intended type, and asserting presence turns "the mock never captured a signal" into a
-    // named failure instead of a silently-passing optional chain.
-    expect(requirePresent<AbortSignal>(firstSignal, "captured abort signal").aborted).toBe(true);
+    await advance(250);
+    expect(result.current.items).toHaveLength(1);
+    rerender({ open: true, query: "ms", scopeKey: "account-b" });
+    expect(result.current.items).toEqual([]);
+    rerender({ open: false, query: "ms", scopeKey: "account-b" });
+    expect(result.current).toMatchObject({ items: [], status: "idle" });
+    await advance(250);
+    expect(searchRecords).toHaveBeenCalledTimes(2);
   });
 
-  it("keeps fulfilled results and reports degraded state when one source fails", async () => {
+  it("keeps authorized hits when a provider degrades and hides refusal details", async () => {
     vi.useFakeTimers();
     const services: CommandPaletteEntitySearchServices = {
-      searchSymbols: vi.fn().mockResolvedValue([symbol]),
-      searchSecurities: vi.fn().mockRejectedValue(new Error("security search down"))
+      searchSymbols: vi.fn().mockRejectedValue(new ApiError({ path: "/search", status: 403, detail: "Private scope" })),
+      searchRecords: vi.fn().mockResolvedValue({ ...response, isPartial: true })
     };
-
     const { result } = renderHook(() =>
       useCommandPaletteEntitySearch({ open: true, query: "aa", services })
     );
-
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(250);
-    });
+    await advance(250);
 
     expect(result.current.status).toBe("degraded");
-    expect(result.current.items.map((item) => item.id)).toEqual(["symbol:AAPL"]);
-    expect(result.current.error).toBe("security search unavailable");
+    expect(result.current.items.map((item) => item.recordId)).toEqual(["sec-aapl"]);
+    expect(result.current.error).toBe("Some record sources are temporarily unavailable");
+  });
+
+  it("treats an access refusal as an empty source", async () => {
+    vi.useFakeTimers();
+    const services: CommandPaletteEntitySearchServices = {
+      searchSymbols: vi.fn().mockResolvedValue([]),
+      searchRecords: vi.fn().mockRejectedValue(new ApiError({ path: "/search", status: 403, detail: "Private scope" }))
+    };
+    const { result } = renderHook(() =>
+      useCommandPaletteEntitySearch({ open: true, query: "aa", services })
+    );
+    await advance(250);
+    expect(result.current).toEqual({ items: [], status: "ready", error: null });
   });
 });

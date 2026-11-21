@@ -1,9 +1,9 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import { AccountingPostedLedgerSection } from "@/screens/accounting-screen.posted-ledger-panel";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
-import type { LedgerBook, LedgerPeriod } from "@/types";
+import type { LedgerAccountRunningBalance, LedgerBook, LedgerPeriod, LedgerPeriodTrialBalanceLine } from "@/types";
 
 /**
  * The canonical Accounting ledger surface.
@@ -20,7 +20,8 @@ vi.mock("@/lib/ledger-reports-api", () => ({
   getLedgerPeriods: vi.fn(),
   getLedgerPeriodTrialBalance: vi.fn(),
   getLedgerPeriodPnlSummary: vi.fn(),
-  getLedgerPeriodJournalEntries: vi.fn()
+  getLedgerPeriodJournalEntries: vi.fn(),
+  getLedgerPeriodAccountRunningBalance: vi.fn()
 }));
 
 const MASTER_BOOK_ID = "00000000-0000-0000-0000-0000000000aa";
@@ -60,12 +61,31 @@ function makePeriod(overrides: Partial<LedgerPeriod> = {}): LedgerPeriod {
   };
 }
 
+function makeLine(overrides: Partial<LedgerPeriodTrialBalanceLine> = {}): LedgerPeriodTrialBalanceLine {
+  return {
+    accountName: "Cash", accountType: "Asset", symbol: null, financialAccountId: null,
+    debitTotal: 100, creditTotal: 0, balance: 100, entryCount: 1, accountingBasis: "Primary",
+    dimensions: { fundId: "fund-alpha" }, ...overrides
+  };
+}
+
+function makeRunningBalance(balance = 100): LedgerAccountRunningBalance {
+  return {
+    periodId: makePeriod().periodId, ledgerBookId: MASTER_BOOK_ID, accountName: "Cash", accountType: "Asset",
+    symbol: null, financialAccountId: null, totalDebits: balance, totalCredits: 0, endingBalance: balance,
+    points: [{ journalEntryId: "journal-cash", entryId: "entry-cash", globalSequence: 1,
+      timestamp: "2026-07-02T00:00:00Z", description: "Retained cash posting", debit: balance, credit: 0, balance }]
+  };
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(ledgerReportsApi.getLedgerPeriods).mockResolvedValue([makePeriod()]);
   vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue([]);
   vi.mocked(ledgerReportsApi.getLedgerPeriodPnlSummary).mockRejectedValue(new Error("no summary"));
   vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([]);
+  vi.mocked(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).mockImplementation(async (_periodId, query) =>
+    makeRunningBalance(query.accountingBasis === "Gaap" ? 40 : 100));
 });
 
 async function renderPanel() {
@@ -104,5 +124,35 @@ describe("AccountingPostedLedgerSection", () => {
 
     expect(await screen.findByText("Master Fund")).toBeInTheDocument();
     expect(screen.queryByRole("group", { name: "Ledger book" })).not.toBeInTheDocument();
+  });
+
+  it("uses the selected row's basis and exact dimension scope for its running balance", async () => {
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([makeBook()]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue([
+      makeLine(), makeLine({ accountingBasis: "Gaap", balance: 40, debitTotal: 40 })
+    ]);
+    await renderPanel();
+    const postings = within(await screen.findByRole("region", { name: "Postings to Cash" }));
+    expect(await postings.findByText("Retained cash posting")).toBeInTheDocument();
+    expect(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).toHaveBeenLastCalledWith(makePeriod().periodId, {
+      account: "Cash", accountingBasis: "Primary", symbol: null, financialAccountId: null, dimensions: { fundId: "fund-alpha" }
+    });
+    await userEvent.click(screen.getByRole("button", { name: /^GAAP basis,/ }));
+    const gaapPostings = within(await screen.findByRole("region", { name: "Postings to Cash" }));
+    expect(await gaapPostings.findByText(/1 posting; ending balance/)).toHaveTextContent("$40");
+    expect(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).toHaveBeenLastCalledWith(makePeriod().periodId, {
+      account: "Cash", accountingBasis: "Gaap", symbol: null, financialAccountId: null, dimensions: { fundId: "fund-alpha" }
+    });
+    expect(gaapPostings.queryByText("$100")).not.toBeInTheDocument();
+  });
+
+  it("keeps a missing book currency explicit in the running-balance amounts", async () => {
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([makeBook({ baseCurrency: "  " })]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodTrialBalance).mockResolvedValue([makeLine()]);
+    await renderPanel();
+    const postings = await screen.findByRole("region", { name: "Postings to Cash" });
+    expect(await within(postings).findByText(/1 posting; ending balance/)).toHaveTextContent("100 (currency unavailable)");
+    expect(postings).not.toHaveTextContent("$");
+    expect(postings).not.toHaveTextContent("USD");
   });
 });

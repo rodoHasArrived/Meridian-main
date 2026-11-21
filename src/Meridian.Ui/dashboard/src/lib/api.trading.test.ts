@@ -8,6 +8,7 @@ import {
   createExecutionManualOverride,
   deleteWorkflowPreset,
   evaluatePromotion,
+  revokeLiveAuthorization,
   getAlpacaConnectionStatus,
   getAccountingWorkspace,
   getBrokerageHouseholdPortfolio,
@@ -179,6 +180,11 @@ describe("trading endpoint wiring", () => {
           manualOverrideId: "override-42"
         })
       })
+    );
+    await revokeLiveAuthorization("promotion / 1", "Withdraw approval");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/promotion/live-authorizations/promotion%20%2F%201/revoke",
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ reason: "Withdraw approval" }) })
     );
   });
 
@@ -544,7 +550,7 @@ describe("trading endpoint wiring", () => {
         type: "Market",
         quantity: 1
       })
-    ).rejects.toThrow("Request failed for /api/execution/orders/submit (404) - not found");
+    ).rejects.toMatchObject({ path: "/api/execution/orders/submit", status: 404, message: "not found" });
   });
 
   it("posts order mutations with selected fund account scope", async () => {
@@ -589,9 +595,11 @@ describe("trading endpoint wiring", () => {
         text: async () => "Workflow preset store unavailable"
       });
 
-    await expect(evaluatePromotion("run-123")).rejects.toThrow(
-      "Request failed for /api/promotion/evaluate/run-123 (409) - Promotion gate still has open blockers."
-    );
+    await expect(evaluatePromotion("run-123")).rejects.toMatchObject({
+      path: "/api/promotion/evaluate/run-123",
+      status: 409,
+      message: "Promotion gate still has open blockers."
+    });
     await expect(
       updateWorkflowPreset("preset-1", {
         presetId: "preset-1",
@@ -602,12 +610,16 @@ describe("trading endpoint wiring", () => {
         tags: [],
         isPinned: false
       })
-    ).rejects.toThrow(
-      "Request failed for /api/workstation/workflows/presets/preset-1 (422) - Preset name is required."
-    );
-    await expect(deleteWorkflowPreset("preset-1")).rejects.toThrow(
-      "Request failed for /api/workstation/workflows/presets/preset-1 (503) - Workflow preset store unavailable"
-    );
+    ).rejects.toMatchObject({
+      path: "/api/workstation/workflows/presets/preset-1",
+      status: 422,
+      message: "Preset name is required."
+    });
+    await expect(deleteWorkflowPreset("preset-1")).rejects.toMatchObject({
+      path: "/api/workstation/workflows/presets/preset-1",
+      status: 503,
+      message: "Workflow preset store unavailable"
+    });
   });
 
   it("includes validation problem field errors in mutation diagnostics", async () => {
@@ -629,9 +641,11 @@ describe("trading endpoint wiring", () => {
         approvedBy: "",
         approvalReason: ""
       })
-    ).rejects.toThrow(
-      "Request failed for /api/promotion/approve (400) - One or more validation errors occurred. approvedBy: Approved by is required.; approvalReason: Approval reason must explain the promotion evidence."
-    );
+    ).rejects.toMatchObject({
+      path: "/api/promotion/approve",
+      status: 400,
+      message: "One or more validation errors occurred. approvedBy: Approved by is required.; approvalReason: Approval reason must explain the promotion evidence."
+    });
   });
 
   it("accepts empty success bodies from no-content mutations", async () => {

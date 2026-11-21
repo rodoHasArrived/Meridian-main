@@ -37,9 +37,12 @@ class GoldenPathValidationWorkflowTests(unittest.TestCase):
         self.assertIn("FullyQualifiedName~PilotAcceptanceHarnessTests", self.workflow)
         self.assertIn("tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs", self.workflow)
 
-    def test_workflow_uses_current_dotnet_sdk(self) -> None:
-        self.assertIn("DOTNET_VERSION: '10.0.x'", self.workflow)
-        self.assertNotIn("DOTNET_VERSION: '9.0.x'", self.workflow)
+    def test_workflow_uses_repository_dotnet_sdk(self) -> None:
+        for job_id in ["wpf-w4-acceptance", "pilot-harness"]:
+            with self.subTest(job=job_id):
+                self.assertIn("global-json-file: global.json", self.job(job_id))
+        self.assertNotIn("dotnet-version:", self.workflow)
+        self.assertNotIn("DOTNET_VERSION:", self.workflow)
 
     def test_workflow_publishes_pilot_readiness_artifact(self) -> None:
         self.assertIn("generate-pilot-readiness-dashboard.py", self.workflow)

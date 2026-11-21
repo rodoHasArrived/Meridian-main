@@ -37,6 +37,9 @@ public sealed class CapitalCallFundingIntakeTests
         result.ReadinessBlockers.Should().BeEmpty();
         result.Intake.Skipped.Should().BeEmpty();
         result.Intake.Created.Should().HaveCount(2);
+        result.Intake.Created.SelectMany(draft => draft.ValidationIssues)
+            .Where(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+            .Select(issue => $"{issue.Code}: {issue.Message}").Should().BeEmpty();
         result.Intake.Created.Should().OnlyContain(
             draft => draft.Status == ManualJournalEntryStatusDto.Draft,
             "funding drafts must land in the human approval queue, never post directly");
@@ -66,10 +69,10 @@ public sealed class CapitalCallFundingIntakeTests
         first.TreasuryContext!.FundEventId.Should().Be("fund-event:fund-alpha:capital-call:call-1:cmt-1");
         first.TreasuryContext.FundEventType.Should().Be("CapitalCall");
         first.TreasuryContext.CapitalAccountId.Should().Be("ca-lp-1");
-        first.TreasuryContext.IdempotencyKey.Should().Be("capital-call-funding:cmt-1:call-1:cmt-1");
+        first.TreasuryContext.IdempotencyKey.Should().Be("capital-call-funding:cmt-1:call-1:cmt-1:receipt:cmt-1");
         first.EvidenceLinks.Should().Contain("evidence://funding/cmt-1/remittance");
 
-        var assessment = result.EvidenceAssessments["capital-call-funding:cmt-1:call-1:cmt-1"];
+        var assessment = result.EvidenceAssessments["capital-call-funding:cmt-1:call-1:cmt-1:receipt:cmt-1"];
         assessment.RequiresInvestigation.Should().BeFalse();
         assessment.ConfidenceScore.Should().Be(0.90m);
         assessment.Quality.Should().Be(AutomatedJournalEvidenceQualityDto.High);
@@ -93,6 +96,9 @@ public sealed class CapitalCallFundingIntakeTests
         var secondRun = await fixture.Runner.RunCapitalCallFundingIntakeAsync(request);
 
         firstRun.Intake.Created.Should().HaveCount(2);
+        firstRun.Intake.Created.SelectMany(draft => draft.ValidationIssues)
+            .Where(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+            .Select(issue => $"{issue.Code}: {issue.Message}").Should().BeEmpty();
         secondRun.Intake.Created.Should().BeEmpty("a re-run must never duplicate governed drafts");
         secondRun.Intake.Skipped.Should().HaveCount(2);
         secondRun.Intake.Skipped.Should().OnlyContain(skip => skip.IsReadyDuplicate);
@@ -103,19 +109,21 @@ public sealed class CapitalCallFundingIntakeTests
     {
         var fixture = await CreateFixtureAsync(
             postedFundEvents: [PostedIssuanceEvent("cmt-1", "lp-1", 600_000m)],
-            postedLedgerImpacts: [PostedIssuanceImpact("cmt-1", "lp-1", 600_000m)]);
+            postedLedgerImpacts: [PostedIssuanceImpact("cmt-1", "lp-1", 600_000m)], firstReceiptAmount: 250_000m);
 
         var result = await fixture.Runner.RunCapitalCallFundingIntakeAsync(BuildRequest(
             Funding("cmt-1", "lp-1", 250_000m)));
 
         result.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
         var draft = result.Intake.Created.Should().ContainSingle().Subject;
+        draft.ValidationIssues.Where(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+            .Select(issue => $"{issue.Code}: {issue.Message}").Should().BeEmpty();
         draft.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
         draft.TotalDebits.Should().Be(250_000m);
 
         // Partial funding never closes the receivable: the assessment says the remainder stays
         // open instead of implying the call settled.
-        var assessment = result.EvidenceAssessments["capital-call-funding:cmt-1:call-1:cmt-1"];
+        var assessment = result.EvidenceAssessments["capital-call-funding:cmt-1:call-1:cmt-1:receipt:cmt-1"];
         assessment.RequiresInvestigation.Should().BeFalse();
         assessment.Reasons.Should().Contain(reason =>
             reason.Contains("Partial funding") && reason.Contains("350000.00"));
@@ -127,7 +135,7 @@ public sealed class CapitalCallFundingIntakeTests
     {
         var fixture = await CreateFixtureAsync(
             postedFundEvents: [PostedIssuanceEvent("cmt-1", "lp-1", 600_000m)],
-            postedLedgerImpacts: [PostedIssuanceImpact("cmt-1", "lp-1", 600_000m)]);
+            postedLedgerImpacts: [PostedIssuanceImpact("cmt-1", "lp-1", 600_000m)], firstReceiptAmount: 100_000m);
 
         var result = await fixture.Runner.RunCapitalCallFundingIntakeAsync(BuildRequest(
             Funding("cmt-1", "lp-1", 100_000m) with { EvidenceLinks = [] }));
@@ -148,7 +156,7 @@ public sealed class CapitalCallFundingIntakeTests
     {
         // Nothing is posted anywhere: funding call-1 must refuse instead of relieving a
         // receivable the ledger never raised.
-        var fixture = await CreateFixtureAsync();
+        var fixture = await CreateFixtureAsync(firstReceiptAmount: 100_000m);
 
         var result = await fixture.Runner.RunCapitalCallFundingIntakeAsync(BuildRequest(
             Funding("cmt-1", "lp-1", 100_000m)));
@@ -165,7 +173,7 @@ public sealed class CapitalCallFundingIntakeTests
     [Fact]
     public async Task RunCapitalCallFundingIntakeAsync_WithoutPostedActivitySource_BlocksWithoutDrafting()
     {
-        var fixture = await CreateFixtureAsync(includeWorkbenchSource: false);
+        var fixture = await CreateFixtureAsync(includeWorkbenchSource: false, firstReceiptAmount: 100_000m);
 
         var result = await fixture.Runner.RunCapitalCallFundingIntakeAsync(BuildRequest(
             Funding("cmt-1", "lp-1", 100_000m)));
@@ -174,6 +182,37 @@ public sealed class CapitalCallFundingIntakeTests
         result.ReadinessBlockers.Should().ContainSingle(blocker =>
             blocker.Contains("posted private-capital activity source is unavailable"));
         result.Intake.Created.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RunCapitalCallFundingIntakeAsync_ConflictingReceiptReplay_RefusesDifferentBankEvidence()
+    {
+        var fixture = await CreateFixtureAsync(
+            postedFundEvents: [PostedIssuanceEvent("cmt-1", "lp-1", 600_000m)],
+            postedLedgerImpacts: [PostedIssuanceImpact("cmt-1", "lp-1", 600_000m)]);
+        await fixture.Runner.RunCapitalCallFundingIntakeAsync(BuildRequest(Funding("cmt-1", "lp-1", 600_000m)));
+        var changed = Funding("cmt-1", "lp-1", 400_000m) with
+        {
+            BankLineId = CapitalIntakeAuthorityFixture.SecondBankId.ToString("D")
+        };
+        var act = () => fixture.Runner.RunCapitalCallFundingIntakeAsync(BuildRequest(changed));
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*already retains different approved inputs*");
+    }
+
+    [Fact]
+    public async Task RunCapitalCallFundingIntakeAsync_VoidedBankEvidence_RefusesBeforeDrafting()
+    {
+        var fixture = await CreateFixtureAsync(firstReceiptAmount: 100_000m, voidBankReceipt: true);
+        var act = () => fixture.Runner.RunCapitalCallFundingIntakeAsync(BuildRequest(Funding("cmt-1", "lp-1", 100_000m)));
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*bank evidence does not match*");
+    }
+
+    [Fact]
+    public async Task RunCapitalCallFundingIntakeAsync_AmountDiffersFromBankEvidence_RefusesBeforeDrafting()
+    {
+        var fixture = await CreateFixtureAsync(firstReceiptAmount: 100_000m);
+        var act = () => fixture.Runner.RunCapitalCallFundingIntakeAsync(BuildRequest(Funding("cmt-1", "lp-1", 200_000m)));
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*bank evidence does not match*");
     }
 
     [Fact]
@@ -258,18 +297,29 @@ public sealed class CapitalCallFundingIntakeTests
     private static async Task<Fixture> CreateFixtureAsync(
         bool includeWorkbenchSource = true,
         PrivateCapitalFundEventDto[]? postedFundEvents = null,
-        PrivateCapitalLedgerImpactDto[]? postedLedgerImpacts = null)
+        PrivateCapitalLedgerImpactDto[]? postedLedgerImpacts = null,
+        decimal firstReceiptAmount = 600_000m,
+        bool voidBankReceipt = false)
     {
         var configurationStore = new InMemoryAccountingConfigurationStore();
-        await configurationStore.SaveAsync(CapitalCallFundingTestData.Workspace(FundProfileId));
+        await configurationStore.SaveAsync(CapitalCallFundingTestData.Workspace(FundProfileId,
+            tenantId: "tenant-alpha", companyId: "company-alpha"));
         var configurationService = new AccountingConfigurationService(
             configurationStore,
             new InMemoryAccountingActionAuditStore());
         var draftStore = new InMemoryManualJournalEntryDraftStore();
+        var capitalAuthority = CapitalIntakeAuthorityFixture.Issuance(new RunCapitalCallIssuanceDraftIntakeRequest(
+            FundProfileId, "USD", "preparer", "call-1", 1_000_000m, CallEffectiveDate, CallEffectiveDate.AddDays(14),
+            [new("cmt-1", "ca-lp-1", "lp-1", 6_000_000m, new DateOnly(2025,1,1), EvidenceLinks: ["vault://commitment/1"]),
+             new("cmt-2", "ca-lp-2", "lp-2", 4_000_000m, new DateOnly(2025,1,1), EvidenceLinks: ["vault://commitment/2"])],
+            LedgerBookId: BookId, PeriodId: "2026-03", EntityId: CapitalIntakeAuthorityFixture.EntityId,
+            TenantId: "tenant-alpha", CompanyId: "company-alpha"), postedIssuance: true);
         var workbench = new ManualJournalEntryWorkbenchService(
             draftStore,
             configurationService,
-            new InMemoryAccountingActionAuditStore());
+            new InMemoryAccountingActionAuditStore(),
+            bankTransactionSource: CapitalIntakeAuthorityFixture.BankSource(firstReceiptAmount, ReceivedDate, voidBankReceipt),
+            privateCapitalStore: capitalAuthority);
         // The in-memory workbench has no posted ledger, so posted issuance activity is layered
         // onto its projection through the decorator; draft intake still flows through the real
         // workbench underneath.
@@ -281,7 +331,9 @@ public sealed class CapitalCallFundingIntakeTests
         var runner = new AutomatedJournalIntakeRunner(
             intake,
             new FeeScheduleAccrualEventProducer(),
-            manualJournalWorkbench: includeWorkbenchSource ? activitySource : null);
+            manualJournalWorkbench: includeWorkbenchSource ? activitySource : null,
+            privateCapitalStore: capitalAuthority,
+            bankTransactionSource: CapitalIntakeAuthorityFixture.BankSource(firstReceiptAmount, ReceivedDate, voidBankReceipt));
         return new Fixture(runner, workbench);
     }
 
@@ -291,7 +343,9 @@ public sealed class CapitalCallFundingIntakeTests
             CapitalAccountId: $"ca-{investorId}",
             InvestorId: investorId,
             FundedAmount: amount,
-            EvidenceLinks: [$"evidence://funding/{commitmentId}/remittance"]);
+            EvidenceLinks: [$"evidence://funding/{commitmentId}/remittance"],
+            FundingReceiptId: commitmentId,
+            BankLineId: (commitmentId == "cmt-1" ? CapitalIntakeAuthorityFixture.FirstBankId : CapitalIntakeAuthorityFixture.SecondBankId).ToString("D"));
 
     private static RunCapitalCallFundingDraftIntakeRequest BuildRequest(
         params CapitalCallFundingInput[] fundings)
@@ -304,7 +358,9 @@ public sealed class CapitalCallFundingIntakeTests
             Fundings: fundings,
             LedgerBookId: BookId,
             PeriodId: "2026-03",
-            EntityId: "entity-alpha",
+            EntityId: CapitalIntakeAuthorityFixture.EntityId,
+            TenantId: "tenant-alpha",
+            CompanyId: "company-alpha",
             AsOf: AsOf);
 
     private static PrivateCapitalFundEventDto PostedIssuanceEvent(

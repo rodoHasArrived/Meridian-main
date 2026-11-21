@@ -3,7 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Contracts.Operations;
 using Meridian.Ui.Services;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 
 namespace Meridian.Wpf.Services;
 

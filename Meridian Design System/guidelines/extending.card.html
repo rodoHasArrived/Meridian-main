@@ -1,0 +1,33 @@
+<!-- @dsCard group="Documentation" viewport="700x300" name="Extending Meridian" subtitle="guidelines/EXTENDING.md — recipes for components, tokens, brands, densities, templates" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Extending Meridian</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+body{margin:0;background:var(--card-surface,#F8F7F3);font-family:var(--font-body);color:var(--text-primary);padding:20px 24px;box-sizing:border-box;}
+h1{font-size:18px;font-weight:600;margin:0 0 4px;}
+.sub{font-size:12.5px;color:var(--text-secondary);margin:0 0 14px;}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.recipe{border:1px solid var(--border);border-radius:var(--radius-card);background:var(--bg-light);padding:10px 12px;}
+.recipe b{display:block;font-size:12.5px;margin-bottom:3px;}
+.recipe span{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);line-height:1.5;}
+.rule{margin-top:12px;font-size:11.5px;color:var(--text-secondary);border-top:1px solid var(--border-divider);padding-top:9px;}
+.rule code{font-family:var(--font-data);font-size:10.5px;background:var(--card-surface-raised);border:1px solid var(--border-divider);border-radius:2px;padding:0 4px;}
+</style>
+</head>
+<body>
+<h1>Extending Meridian</h1>
+<p class="sub">Additive recipes — the compiler registers new files automatically. Full guide: <b style="display:inline">guidelines/EXTENDING.md</b></p>
+<div class="grid">
+  <div class="recipe"><b>Component</b><span>Name.d.ts + .jsx + .prompt.md<br>scoped inject() CSS · tokens only</span></div>
+  <div class="recipe"><b>Token</b><span>Tier 2 in tokens/*.css<br>dark value in colors-dark.css</span></div>
+  <div class="recipe"><b>Brand preset</b><span>one html[data-brand] block<br>in tokens/theme.css</span></div>
+  <div class="recipe"><b>Density</b><span>one body[data-theme-density]<br>block — remap spacing only</span></div>
+  <div class="recipe"><b>Template</b><span>templates/&lt;slug&gt;/ + @template<br>frame with WorkstationShell</span></div>
+  <div class="recipe"><b>Gate</b><span>check clean · unit tests green<br>contrast + governance pass</span></div>
+</div>
+<div class="rule">Stable surface = PascalCase namespace exports, <code>.d.ts</code> props, Tier-1/2 token names. Internal = lowercase helpers, <code>--ws-*</code> aliases, injected class names — never target from consumer CSS.</div>
+</body>
+</html>

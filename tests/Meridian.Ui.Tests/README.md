@@ -16,6 +16,7 @@ dotnet test tests/Meridian.Ui.Tests
   - `BoundedObservableCollection` (8 tests)
   - `CircularBuffer` (11 tests)
 - **Services**:
+  - `ColorPalette` (C#/XAML color parity and retained status-mapping boundaries)
   - `FormValidationRules` (4 tests)
   - `ApiClientService` (7 tests)
   - `BackfillService` (9 tests)

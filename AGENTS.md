@@ -31,7 +31,8 @@ Unless the task explicitly requires a different protected-branch flow that
 GitHub repository rules allow, use the pull-request workflow:
 
 1. Begin from the latest `origin/main`.
-2. Create or use a branch named `codex/<short-task-name>`.
+2. Create or use a branch named `codex/<short-task-name>` or `claude/<short-task-name>`; either agent
+   prefix is accepted.
 3. Make only changes that are required for the assigned task.
 4. Add or update appropriate automated tests.
 5. Run the checks for the change's Level 1/2/3 tier in `docs/ai/solo-developer-workflow.md#verification-tiers` (routine, financial/architectural, sensitive/destructive); attempt `bash scripts/ci.sh` when proportionate or required, and state precisely if it was not run.
@@ -184,3 +185,7 @@ The four-lane `Meridian CI / quality-gate` keeps its identity. The always-report
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
 Production Certification, including pull requests and merge groups.
 All CI governance changes require human review.
+
+Generated-file delivery: run `python build/python/cli/buildctl.py regen --fix` after merging.
+Commit reviewed views only; declared machine inventories and workstation builds are CI artifacts.
+Preserve reviewed source hashes. See [generated output delivery](docs/engineering/generated-output-delivery.md).

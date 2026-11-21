@@ -48,6 +48,7 @@ import type {
   ReportingRunReadiness,
   ReportingRunRequest
 } from "@/types";
+import { TextArea } from "@/components/ui/text-area";
 
 interface ReportRunParametersScreenProps {
   data: ReportingWorkspacePayload | null;
@@ -289,7 +290,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
     };
   }, [readinessPreflight, readinessRequest, readinessRequestJson]);
   const runBlockedReason = draft.restatementTargetRunId
-    ? "Restatements must use the governed restatement-request workflow."
+    ? "Restatements must use the restatement-request workflow."
     : parameterValidation.issues[0]
       ?? (readinessPreflight.phase === "checking"
         ? "Wait for the server readiness preflight to finish."
@@ -420,7 +421,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
       {
         id: "library",
         label: "Open library",
-        detail: `${templates.length} governed template(s) available`,
+        detail: `${templates.length} template(s) available`,
         href: WORKSTATION_ROUTE_CATALOG.reportingLibrary,
         tone: "outline" as const
       },
@@ -438,7 +439,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
             <CardTitle>Report Parameters</CardTitle>
-            <CardDescription>Choose a governed template, review readiness, then run or open one from the Report Library.</CardDescription>
+            <CardDescription>Choose a template, review readiness, then run or open one from the Report Library.</CardDescription>
           </div>
           <Badge variant={advisoryReadinessGate.isClear ? "success" : "warning"}>
             {advisoryReadinessGate.isClear ? "Readiness clear" : "Review readiness"}
@@ -517,7 +518,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
                 </ul>
               ) : (
                 <p className="border border-border bg-background/50 p-3 text-sm text-muted-foreground">
-                  No runnable templates are available. Open the library to review approval posture.
+                  No runnable templates are available. Open the library to review approval status.
                 </p>
               )}
             </section>
@@ -759,9 +760,9 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
               />
             </div>
             <FormRow label="Ledger dimensions (JSON)" labelFor="report-ledger-dimensions" className="md:col-span-2">
-              <textarea
+              <TextArea rows={2}
                 id="report-ledger-dimensions"
-                className="min-h-36 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                className="min-h-36 w-full font-mono text-sm"
                 value={standardDraft.dimensionsJson}
                 onChange={(event) => onStandardDraftChange("dimensionsJson", event.target.value)}
                 aria-describedby="report-ledger-dimensions-help"
@@ -772,9 +773,9 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
               </span>
             </FormRow>
             <FormRow label="Template parameters (JSON)" labelFor="report-template-parameters" className="md:col-span-2">
-              <textarea
+              <TextArea rows={2}
                 id="report-template-parameters"
-                className="min-h-24 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                className="min-h-24 w-full font-mono text-sm"
                 value={standardDraft.templateParametersJson}
                 onChange={(event) => onStandardDraftChange("templateParametersJson", event.target.value)}
                 aria-describedby="report-template-parameters-help"
@@ -792,7 +793,7 @@ export function ReportRunParametersScreen({ data, accounting }: ReportRunParamet
               <CardTitle>Can this report run?</CardTitle>
               <CardDescription>
                 {readinessPreflight.phase === "checking"
-                  ? "The server is resolving the exact template, scope, accounting dependencies, dataset, and evidence posture."
+                  ? "The server is resolving the exact template, scope, accounting dependencies, dataset, and evidence status."
                   : readinessPreflight.phase === "complete"
                     ? authoritativeReadinessGate?.summary
                     : readinessPreflight.phase === "error"

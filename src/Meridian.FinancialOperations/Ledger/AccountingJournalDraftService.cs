@@ -502,6 +502,8 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         AddTag(tags, prefix + "taxLotId", dimensions.TaxLotId);
         AddTag(tags, prefix + "costCenterId", dimensions.CostCenterId);
         AddTag(tags, prefix + "counterpartyId", dimensions.CounterpartyId);
+        AddTag(tags, prefix + "intercompanyAgreementId", dimensions.IntercompanyAgreementId?.ToString("D"));
+        AddTag(tags, prefix + "intercompanyAgreementVersion", dimensions.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         AddTag(tags, prefix + "organizationId", dimensions.OrganizationId);
         AddTag(tags, prefix + "portfolioId", dimensions.PortfolioId);
         AddTag(tags, prefix + "bookId", dimensions.BookId);

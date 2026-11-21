@@ -1,13 +1,17 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Backfill;
 using Meridian.Application.Scheduling;
+using Meridian.Contracts.Operations;
 using Meridian.Core.Config;
 using Meridian.Identity.Auth;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -31,6 +35,37 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
     }
 
     public void Dispose() => _client.Dispose();
+
+    [Fact]
+    public async Task ReceiptReadsAndCloneReviewEnforceTenantScope()
+    {
+        const string tenantId = "endpoint-test-tenant";
+        var coordinator = _fixture.Services.GetRequiredService<Meridian.Ui.Shared.Services.BackfillCoordinator>();
+        var now = DateTimeOffset.UtcNow;
+        var date = DateOnly.FromDateTime(now.UtcDateTime);
+        var receipt = new ProviderProvenanceReceipt(1, Guid.NewGuid(), "HistoricalBars", "Explicit provider",
+            [new("stooq", null, "Public", "Default historical feed", "Public feed", "Historical bars")], [], false,
+            new("historical-backfill/v1"), new(date, date, ["SPY"], "Daily"), now, now, "Historical bars",
+            "The original execution state was unavailable.");
+        var foreign = receipt with { ReceiptId = Guid.NewGuid() };
+        var store = coordinator.GetReceiptStore();
+        await store.WriteRetainedResultAsync(new(receipt, true, 1, ProviderProvenanceAccess.Public.ForRequestTenant(tenantId)));
+        await store.WriteRetainedResultAsync(new(foreign, true, 1, ProviderProvenanceAccess.Public.ForRequestTenant("other-tenant")));
+
+        var response = await _client.GetAsync($"/api/backfill/receipts/{receipt.ReceiptId}");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var content = await response.Content.ReadAsStringAsync();
+        using var json = JsonDocument.Parse(content);
+        json.RootElement.GetProperty("schemaVersion").GetInt32().Should().Be(1);
+        content.Should().NotContain(tenantId).And.NotContain("runtimeRevisions");
+        (await _client.GetAsync($"/api/backfill/receipts/{foreign.ReceiptId}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await _client.GetAsync($"/api/backfill/receipts/{foreign.ReceiptId}/clone")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var clone = await _client.GetAsync($"/api/backfill/receipts/{receipt.ReceiptId}/clone");
+        clone.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var plan = JsonDocument.Parse(await clone.Content.ReadAsStringAsync());
+        plan.RootElement.GetProperty("status").GetString().Should().Be("Unavailable");
+    }
 
     #region GET /api/backfill/providers
 
@@ -291,6 +326,35 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
     #region Provider planning configuration
 
     [Fact]
+    public async Task WorkstationBackfill_PreviewWithoutQuotaCanBeScheduledAndReadBack()
+    {
+        var scheduledAt = DateTimeOffset.UtcNow.AddHours(2);
+        var symbols = new[] { "QUOTATEST" };
+        using var preview = await _client.PostAsJsonAsync("/api/backfill/run/preview", new { provider = "stooq", symbols });
+        preview.StatusCode.Should().Be(HttpStatusCode.OK);
+        var plan = await preview.Content.ReadFromJsonAsync<JsonElement>();
+        plan.GetProperty("quota").GetProperty("requestsPerWindow").ValueKind.Should().Be(JsonValueKind.Null);
+        plan.GetProperty("estimatedDurationSeconds").ValueKind.Should().Be(JsonValueKind.Null);
+
+        var submissionId = Guid.NewGuid();
+        using var submitted = await _client.PostAsJsonAsync("/api/backfill/run", new
+        {
+            provider = "stooq", symbols, executionPolicy = "scheduled", scheduledAt, submissionId
+        });
+        submitted.StatusCode.Should().Be(HttpStatusCode.Accepted);
+        var receipt = await submitted.Content.ReadFromJsonAsync<JsonElement>();
+        receipt.GetProperty("executionId").GetString().Should().Be(submissionId.ToString("N"));
+        receipt.GetProperty("status").GetString().Should().Be("Scheduled");
+
+        var history = await _client.GetFromJsonAsync<JsonElement>("/api/backfill/executions");
+        var row = history.GetProperty("executions").EnumerateArray()
+            .Single(item => item.GetProperty("executionId").GetString() == submissionId.ToString("N"));
+        row.GetProperty("status").GetString().Should().Be("Scheduled");
+        row.GetProperty("requestedProvider").GetString().Should().Be("stooq");
+        row.GetProperty("quotaReceipt").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    [Fact]
     public void ProviderPlanning_DefaultAlphaVantageMapping_UsesCoreEnabledDefault()
     {
         var options = BackfillEndpoints.GetProviderOptionsFromConfig(
@@ -300,6 +364,49 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
         options.Enabled.Should().BeTrue();
         options.Priority.Should().Be(new AlphaVantageConfig().Priority);
         options.RateLimitPerMinute.Should().Be(new AlphaVantageConfig().RateLimitPerMinute);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ProviderPlanning_ExplicitAlphaVantageOptionsRemainAuthoritative(bool enabled)
+    {
+        var configured = new AlphaVantageConfig(Enabled: enabled, Priority: 4, RateLimitPerMinute: 2);
+        var options = BackfillEndpoints.GetProviderOptionsFromConfig(
+            new BackfillProvidersConfig(AlphaVantage: configured), "alphavantage");
+
+        options.Enabled.Should().Be(enabled);
+        options.Priority.Should().Be(configured.Priority);
+        options.RateLimitPerMinute.Should().Be(configured.RateLimitPerMinute);
+    }
+
+    [Fact]
+    public void ProviderPlanning_AlphaVantagePresetDoesNotOptAnAbsentRuntimeProviderIn()
+    {
+        var credentials = new Mock<IProviderCredentialResolver>(MockBehavior.Strict);
+        var config = new AppConfig(Backfill: new BackfillConfig(Providers: new BackfillProvidersConfig(
+            Alpaca: new(Enabled: false), Yahoo: new(Enabled: false), Nasdaq: new(Enabled: false),
+            Stooq: new(Enabled: false), Tiingo: new(Enabled: false), Polygon: new(Enabled: false),
+            Finnhub: new(Enabled: false), TwelveData: new(Enabled: false))));
+        var factory = new ProviderFactory(config, credentials.Object);
+
+        var providers = factory.CreateBackfillProviders();
+
+        providers.Should().BeEmpty();
+        credentials.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ProviderMetadata_WhenProviderConfigurationIsMissing_StillExposesPresets()
+    {
+        var response = await _client.GetAsync("/api/backfill/providers/metadata");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var preset = document.RootElement.EnumerateArray()
+            .Single(provider => provider.GetProperty("providerId").GetString() == "alphavantage");
+        preset.GetProperty("defaultRateLimitPerMinute").GetInt32()
+            .Should().Be(new AlphaVantageConfig().RateLimitPerMinute);
     }
 
     [Theory]

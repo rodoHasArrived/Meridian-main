@@ -131,6 +131,169 @@ public sealed class DirectLendingOutboxDispatcherTests
         savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyIncome" && line.CreditAmount == 10_000m);
     }
 
+    [Theory]
+    [InlineData("""{"amount":10000,"effectiveDate":"2026-05-14","resolution":{"breakdown":{"toInterest":0,"toCommitmentFee":0,"toFees":0,"toPenalty":0,"toPrincipal":0},"resolutionBasis":"WaterfallAuto","ruleVersion":"waterfall-v1","unappliedAmount":0,"excessToPrincipal":10000,"excessToPrepaidInterest":0,"excessRuleApplied":1,"excessRuleNote":null,"prepaymentPenaltyCharged":200}}""", true)]
+    [InlineData("""{"amount":10000,"effectiveDate":"2026-05-14","resolution":{"breakdown":{"toInterest":0,"toCommitmentFee":0,"toFees":0,"toPenalty":0,"toPrincipal":10000},"resolutionBasis":"WaterfallAuto","ruleVersion":"v1","unappliedAmount":0}}""", false)]
+    public async Task ProcessJournalAsync_MixedPayment_SplitsByAllocation_OrKeepsClearingForPaymentsBeforePrd115(string payloadJson, bool split)
+    {
+        // PRD-115 increment 5: the dispatcher posts the same split as LoanAccountingProjector
+        // (DirectLendingJournalLines). Payments recorded before PRD-115 keep Dr Cash / Cr clearing.
+        var savedEntry = await ProcessSingleAsync("loan.mixed-payment-applied", payloadJson);
+
+        savedEntry.Lines.Sum(line => line.DebitAmount).Should().Be(savedEntry.Lines.Sum(line => line.CreditAmount));
+        savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "Cash" && line.DebitAmount == 10_000m);
+        if (split)
+        {
+            savedEntry.Lines.Select(line => (line.AccountCode, line.DebitAmount, line.CreditAmount)).Should().Equal(
+                ("Cash", 10_000m, 0m),
+                ("LoanPrincipal", 0m, 10_000m),
+                ("PenaltyReceivable", 200m, 0m),
+                ("PenaltyIncome", 0m, 200m));
+        }
+        else
+        {
+            savedEntry.Lines.Select(line => (line.AccountCode, line.DebitAmount, line.CreditAmount))
+                .Should().Equal(("Cash", 10_000m, 0m), ("LoanAndAccrualsClearing", 0m, 10_000m));
+        }
+    }
+
+    [Fact]
+    public async Task ProcessJournalAsync_DailyAccrual_SettlesInterestFromPrepaidInterestFirst()
+    {
+        var savedEntry = await ProcessSingleAsync(
+            "loan.daily-accrual-posted",
+            """{"accrualEntryId":"7c9d4a1e-0000-4000-8000-000000000001","accrualDate":"2026-05-14","interestAmount":200,"commitmentFeeAmount":0,"penaltyAmount":0,"annualRateApplied":0.08,"pikInterestAmount":0,"prepaidInterestConsumed":150}""");
+
+        savedEntry.Lines.Select(line => (line.AccountCode, line.DebitAmount, line.CreditAmount)).Should().Equal(
+            ("PrepaidInterestLiability", 150m, 0m),
+            ("AccruedInterestReceivable", 50m, 0m),
+            ("InterestIncome", 0m, 200m));
+    }
+
+    [Fact]
+    public async Task ProcessJournalAsync_FailsClosed_WhenDraftCarriesNegativeAmount()
+    {
+        var act = () => ProcessSingleAsync("loan.drawdown-booked", """{"amount":-1000.00}""");
+
+        // No draft is saved; the delivery stays in the outbox for recovery.
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage("*loan.drawdown-booked*negative amount*");
+    }
+
+    [Theory]
+    [InlineData("loan.principal-payment-applied", """{"AppliedAmount":1000}""", "Cash", "LoanPrincipal", 1000)]
+    [InlineData("loan.discount-premium-amortized", """{"discountAmort":5}""", "DiscountAmortizationExpense", "LoanDiscount", 5)]
+    [InlineData("loan.discount-premium-amortized", """{"premiumAmort":5}""", "LoanPremium", "PremiumAmortizationIncome", 5)]
+    [InlineData("loan.restructured", """{"principalHaircut":25}""", "RestructuringLoss", "LoanPrincipal", 25)]
+    public async Task ProcessJournalAsync_DraftsEveryCanonicalLoanTemplate(
+        string eventType,
+        string payloadJson,
+        string debitAccount,
+        string creditAccount,
+        int amount)
+    {
+        var savedEntry = await ProcessSingleAsync(eventType, payloadJson);
+
+        savedEntry.Status.Should().Be(JournalEntryStatus.Draft);
+        savedEntry.Lines.Select(line => (line.AccountCode, line.DebitAmount, line.CreditAmount))
+            .Should().Equal((debitAccount, (decimal)amount, 0m), (creditAccount, 0m, (decimal)amount));
+    }
+
+    [Fact]
+    public async Task ProcessJournalAsync_AccrualReversalPreservesCanonicalLineOrder()
+    {
+        var savedEntry = await ProcessSingleAsync("loan.daily-accrual-reversed", """{"interestAmount":10}""");
+
+        // The authoritative projector reverses each existing accrual line in place: the
+        // receivable stays first and income stays second, with their debit/credit sides inverted.
+        savedEntry.Lines.Select(line => (line.AccountCode, line.DebitAmount, line.CreditAmount))
+            .Should().Equal(("AccruedInterestReceivable", 0m, 10m), ("InterestIncome", 10m, 0m));
+    }
+
+    [Theory]
+    [InlineData("pikInterestAmount")]
+    [InlineData("commitmentFeeAmount")]
+    [InlineData("penaltyAmount")]
+    public async Task ProcessJournalAsync_RejectsNegativeAccrualComponentBeforePositiveOnlyFiltering(string component)
+    {
+        var payloadJson = JsonSerializer.Serialize(new Dictionary<string, decimal>
+        {
+            ["interestAmount"] = 10m,
+            [component] = -1m
+        });
+        var act = () => ProcessSingleAsync("loan.daily-accrual-posted", payloadJson);
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage("*loan.daily-accrual-posted*negative amount*");
+    }
+
+    [Theory]
+    [InlineData("loan.mixed-payment-applied", "amount")]
+    [InlineData("loan.unapplied-cash-applied", "appliedAmount")]
+    [InlineData("loan.unapplied-cash-refunded", "amount")]
+    public async Task ProcessJournalAsync_RejectsMissingRequiredAmountInsteadOfAcknowledgingDelivery(
+        string eventType,
+        string requiredMember)
+    {
+        var act = () => ProcessSingleAsync(eventType, "{}");
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage($"*missing required amount '{requiredMember}'*");
+    }
+
+    [Fact]
+    public async Task ProcessJournalAsync_RejectsUnbalancedPaymentInsteadOfSavingDraft()
+    {
+        var act = () => ProcessSingleAsync(
+            "loan.mixed-payment-applied",
+            """{"amount":100,"resolution":{"excessToPrincipal":99}}""");
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*would not balance*");
+    }
+
+    private static async Task<JournalEntryDto> ProcessSingleAsync(string eventType, string payloadJson)
+    {
+        var operationsStore = Substitute.For<IDirectLendingOperationsStore>();
+        var commandService = Substitute.For<IDirectLendingCommandService>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        var loanId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        JournalEntryDto? savedEntry = null;
+        var dispatcher = new DirectLendingOutboxDispatcher(
+            operationsStore,
+            commandService,
+            queryService,
+            new DirectLendingOptions(),
+            NullLogger<DirectLendingOutboxDispatcher>.Instance);
+        var sourceEvent = new LoanEventLineageDto(
+            sourceEventId,
+            AggregateVersion: 4,
+            EventType: eventType,
+            EventSchemaVersion: 1,
+            EffectiveDate: new DateOnly(2026, 5, 14),
+            RecordedAt: DateTimeOffset.Parse("2026-05-14T12:00:00Z"),
+            PayloadJson: payloadJson,
+            CausationId: null,
+            CorrelationId: null,
+            CommandId: null,
+            SourceSystem: "test",
+            ReplayFlag: false);
+
+        queryService.GetHistoryAsync(loanId, Arg.Any<CancellationToken>()).Returns([sourceEvent]);
+        queryService.GetJournalsAsync(loanId, Arg.Any<CancellationToken>()).Returns([]);
+        queryService.GetLoanAsync(loanId, Arg.Any<CancellationToken>()).Returns(BuildLoanContract(loanId));
+        operationsStore
+            .SaveJournalEntryAsync(Arg.Do<JournalEntryDto>(entry => savedEntry = entry), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<JournalEntryDto>());
+
+        await InvokeProcessAsync(dispatcher, BuildJournalMessage(loanId, sourceEventId, sourceEvent.EventType, sourceEvent.EffectiveDate));
+
+        return savedEntry ?? throw new InvalidOperationException("No journal entry was saved.");
+    }
+
     [Fact]
     public async Task ProcessJournalAsync_SkipsPrepaymentPenaltyReplayWhenSourceEventAlreadyHasJournal()
     {

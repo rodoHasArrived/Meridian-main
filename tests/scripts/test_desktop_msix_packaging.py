@@ -52,7 +52,7 @@ class DesktopMsixPackagingTests(unittest.TestCase):
 
     @unittest.skipUnless(os.name == "nt" and shutil.which("pwsh"), "requires PowerShell on Windows")
     def test_unsigned_packaging_materializes_manifest_and_assets(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary_directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary_directory:
             root = Path(temporary_directory)
             publish = root / "publish"
             (publish / "Assets" / "Brand").mkdir(parents=True)
@@ -140,7 +140,7 @@ exit /b 0
 
     @unittest.skipUnless(os.name == "nt" and shutil.which("pwsh"), "requires PowerShell on Windows")
     def test_makeappx_success_without_package_fails_closed(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary_directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary_directory:
             root = Path(temporary_directory)
             publish = root / "publish"
             (publish / "Assets" / "Brand").mkdir(parents=True)

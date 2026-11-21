@@ -36,11 +36,12 @@ def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def run(command: list[str], root: Path, log: Path | None = None) -> str:
+def run(command: list[str], root: Path, log: Path | None = None,
+        *, env: dict[str, str] | None = None) -> str:
     result = subprocess.run(command, cwd=root, capture_output=True, text=True,
                             encoding="utf-8", errors="replace", timeout=1800,
                             env={**os.environ, "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
-                                 "MSBUILDDISABLENODEREUSE": "1"})
+                                 "MSBUILDDISABLENODEREUSE": "1", **(env or {})})
     if log:
         log.write_text(result.stdout + result.stderr, encoding="utf-8")
     if result.returncode:
@@ -124,7 +125,11 @@ def checkout(root: Path, commit: str, inputs: dict[str, str]):
     with tempfile.TemporaryDirectory(prefix="meridian-locks-") as directory:
         work = Path(directory) / "repo"
         run(["git", "clone", "--quiet", "--shared", "--no-checkout", str(root), str(work)], root)
-        run(["git", "-c", "core.hooksPath=/dev/null", "checkout", "--quiet", "--detach", commit], work)
+        # This local clone shares Git objects, not the caller's LFS object cache.
+        # Restore does not consume binary assets; retain their pointers offline.
+        # Fingerprinted restore inputs are copied from the caller immediately below.
+        run(["git", "-c", "core.hooksPath=/dev/null", "checkout", "--quiet", "--detach", commit],
+            work, env={"GIT_LFS_SKIP_SMUDGE": "1"})
         for name in inputs:
             target = work / name
             target.parent.mkdir(parents=True, exist_ok=True)

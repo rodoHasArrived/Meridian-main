@@ -1,0 +1,108 @@
+import { useId, type ReactNode } from "react";
+import { ChevronDown } from "lucide-react";
+import {
+  buildOperatingScopeBarSegments,
+  type AppShellOperatingScopeQueryKey,
+  type AppShellOperatingScopeState,
+  type OperatingScopeValueLabels
+} from "@/app-shell.operating-scope";
+import { cn } from "@/lib/utils";
+
+/**
+ * The operating scope as a permanent, labelled part of the top bar. With nothing narrowed it reads
+ * `Scope  All authorized scopes`; otherwise it lists only the fields that are set
+ * (`Scope  Fund Alpha › Period 2026-05`), so an unscoped view never looks like an empty one and a
+ * narrowed one shows exactly what narrows it. Ids show as names when `valueLabels` supplies them. It is shown on every route (the scope still carries
+ * on a page that does not filter by it) and opens the shell's scope picker. A set dimension the
+ * current screen does not filter by stays in the bar, muted, so a carried scope is never invisible.
+ */
+const UNSCOPED_LABEL = "All authorized scopes";
+
+export function OperatingScopeBar({
+  operatingScope,
+  onEditOperatingScope,
+  scopeDimensionsInEffect,
+  valueLabels,
+  accountPicker
+}: {
+  operatingScope: AppShellOperatingScopeState;
+  onEditOperatingScope?: () => void;
+  scopeDimensionsInEffect?: AppShellOperatingScopeQueryKey[];
+  valueLabels?: OperatingScopeValueLabels;
+  /** The inline account step for a workspace that needs one account (see ScopeBarAccountPicker). */
+  accountPicker?: ReactNode;
+}) {
+  const applicabilityId = useId();
+  const allSegments = buildOperatingScopeBarSegments(operatingScope, scopeDimensionsInEffect, valueLabels);
+  const unscoped = !allSegments.some((segment) => segment.isSet);
+  const segments = allSegments.filter((segment) => segment.isSet);
+  const spoken = unscoped ? UNSCOPED_LABEL : segments.map((segment) => `${segment.label} ${segment.value}`).join(", ");
+  const applied = segments.filter((segment) => segment.isSet && segment.applied);
+  const retained = segments.filter((segment) => segment.isSet && !segment.applied);
+  const describe = (items: typeof segments) => items.map((segment) => `${segment.label} ${segment.value}`).join(", ");
+  const hasRetained = retained.length > 0;
+
+  const value = (
+    <>
+      <span className="operating-scope-bar-label" aria-hidden="true">Scope</span>
+      <span className="operating-scope-bar-segments" aria-hidden="true">
+        {unscoped ? (
+          <span className="operating-scope-bar-segment" title="Not narrowed: covers everything you are authorized to see, and each screen's default date range">
+            <span className="operating-scope-bar-value">{UNSCOPED_LABEL}</span>
+          </span>
+        ) : null}
+        {segments.map((segment, index) => (
+          <span
+            key={segment.id}
+            className={cn(
+              "operating-scope-bar-segment",
+              !segment.applied && "operating-scope-bar-segment-retained"
+            )}
+            title={segment.applied
+              ? `${segment.label}: applied here`
+              : `${segment.label}: carried, but not applied on this screen`}
+          >
+            {index > 0 ? <span className="operating-scope-bar-sep">›</span> : null}
+            <span className="operating-scope-bar-dimension">{segment.label}</span>
+            <span className="operating-scope-bar-value">{segment.value}</span>
+          </span>
+        ))}
+      </span>
+    </>
+  );
+
+  return (
+    <section className="operating-scope-bar" aria-label="Operating scope bar">
+      {hasRetained ? (
+        <p id={applicabilityId} className="sr-only">
+          {applied.length > 0 ? `Applied on this screen: ${describe(applied)}.` : "No selected scope dimensions apply on this screen."}
+          {` Retained for other screens: ${describe(retained)}.`}
+        </p>
+      ) : null}
+      {onEditOperatingScope ? (
+        <button
+          type="button"
+          className="operating-scope-bar-button"
+          onClick={onEditOperatingScope}
+          aria-label={`Operating scope: ${spoken}`}
+          aria-describedby={hasRetained ? applicabilityId : undefined}
+          aria-haspopup="dialog"
+          title="Change operating scope"
+        >
+          {value}
+          <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        </button>
+      ) : (
+        <span
+          className="operating-scope-bar-button operating-scope-bar-static"
+          role="group"
+          aria-label={`Operating scope: ${spoken}`}
+          aria-describedby={hasRetained ? applicabilityId : undefined}
+        >
+          {value}
+        </span>
+      )}
+      {accountPicker}
+    </section>
+  );
+}

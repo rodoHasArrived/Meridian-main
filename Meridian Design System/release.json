@@ -1,0 +1,33 @@
+{
+  "version": "4.3.0",
+  "channel": "stable",
+  "lastStable": "4.3.0",
+  "declaredAt": "2026-09-10",
+  "note": "The one authoritative release identity. Every human-readable version statement in this package is generated from this file by scripts/release_identity.py — readme.md's badge, docs/METRICS.md's snapshot line. Do not type a version anywhere else.",
+  "why": "4.3.0 is shipped. The agency layer (OptimisticCell, AnnotationLayer, SelectionCompare) on six production screens, Assurance and the Account Sheet in the accounting workstation, LocalDate on the namespace with the 36-finding template date/number sweep. Every gate ran on this tree: the static conformance gate (0 blocking), tests/unit.html (49/49, 2026-09-10) and the Chromium keyboard / ARIA / responsive matrix (tests/A11Y_RUN_4.3.0.md — 16 surfaces, 8 archetypes x 3 widths; four defects found and fixed before this flip). What remains deferred is the same assistive-technology and Firefox / WebKit half that has been deferred since 3.5; it is listed, not implied. Consumers: the 28 release-candidate exports stay release-candidate maturity inside 4.3.x — public and supported, shape may move in a minor.",
+  "channels": {
+    "stable": "Shipped. QA report present, unit suite + Chromium browser matrix run on the release tree, validator green. Screen-reader journeys are a declared defer, not a claim.",
+    "rc": "Feature-complete, validator green, QA matrix running. May still change shape.",
+    "beta": "Feature-complete for a named consumer, matrix not run.",
+    "development": "In progress. Consume the last stable tag unless you are working on the system itself."
+  },
+  "qaReport": "docs/QA_REPORT_4.3.0.md",
+  "qaDefers": [
+    "NVDA + VoiceOver announcement/verbosity journeys (tests/BROWSER_TEST_PLAN.md — every row marked announced/read)",
+    "Firefox / WebKit half of the browser matrix (Chromium keyboard + ARIA + responsive run: tests/A11Y_RUN_4.3.0.md)"
+  ],
+  "gate": {
+    "validator": "scripts/validate_release.py",
+    "conformance": "tests/conformance.html",
+    "requiredForStable": [
+      "governance",
+      "inventory",
+      "catalog",
+      "scaffold",
+      "families",
+      "identity"
+    ]
+  },
+  "releaseCandidateExports": "api/families.json › stability",
+  "a11yRun": "tests/A11Y_RUN_4.3.0.md"
+}

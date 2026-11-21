@@ -15,6 +15,7 @@ import {
   writeOnboardingState,
   type OnboardingState
 } from "@/lib/onboarding";
+import { Select } from "@/components/ui/select";
 
 export interface OnboardingTourController {
   viewModel: OnboardingTourViewModel;
@@ -168,16 +169,16 @@ export function OnboardingCoachMark({ controller }: { controller: OnboardingTour
         <label htmlFor="onboarding-journey" className="text-xs font-medium text-foreground">
           Choose your task journey
         </label>
-        <select
+        <Select
           id="onboarding-journey"
           value={viewModel.journeyId}
           onChange={(event) => selectJourney(event.target.value)}
-          className="min-h-8 w-full rounded-[2px] border border-border bg-background px-2 text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="min-h-8 w-full text-sm"
         >
           {viewModel.journeys.map((journey) => (
             <option key={journey.id} value={journey.id}>{journey.label}</option>
           ))}
-        </select>
+        </Select>
         <p className="text-xs leading-5 text-muted-foreground">{viewModel.journeyDescription}</p>
       </div>
 

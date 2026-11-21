@@ -1,4 +1,5 @@
 import type { BrokerageHouseholdPortfolio, ReconciliationBreakQueueItem, TradingPosition } from "@/types";
+import type { AmountPassportReference } from "@/types/amount-passport";
 
 export const INSTRUMENT_DOSSIER_TABS = ["reference", "positions", "ledger", "cases"] as const;
 export type InstrumentDossierTab = typeof INSTRUMENT_DOSSIER_TABS[number];
@@ -20,12 +21,15 @@ export interface InstrumentPositionRow {
   id: string;
   account: string;
   symbol: string;
-  quantity: string | number;
-  price: string | number;
-  value: string | number;
+  quantity: string | number | null;
+  price: string | number | null;
+  value: string | number | null;
   currency?: string;
   markStatus: string;
   markReason: string;
+  quantityPassport?: AmountPassportReference;
+  pricePassport?: AmountPassportReference;
+  valuePassport?: AmountPassportReference;
 }
 
 /** Stable source identities only: equal ticker text cannot establish record lineage. */
@@ -42,10 +46,13 @@ export function instrumentPositions(
         id: `${row.providerId}:${row.fundAccountId}:${row.positionId ?? index}`,
         account: row.externalAccountId || row.fundAccountId,
         symbol: row.symbol,
-        quantity: row.quantity,
-        price: row.marketPrice,
-        value: row.marketValue,
-        currency: row.currency ?? row.security?.currency,
+        quantity: row.amountPassports?.quantity?.origin === "unavailable" ? null : row.amountPassports?.quantity?.exactValue ?? row.quantity,
+        price: row.amountPassports?.mark?.origin === "unavailable" ? null : row.amountPassports?.mark?.exactValue ?? row.marketPrice,
+        value: row.amountPassports?.["market-value"]?.origin === "unavailable" ? null : row.amountPassports?.["market-value"]?.exactValue ?? row.marketValue,
+        quantityPassport: row.amountPassports?.quantity,
+        pricePassport: row.amountPassports?.mark,
+        valuePassport: row.amountPassports?.["market-value"],
+        currency: row.currency ?? undefined,
         markStatus: row.markFreshness?.status ?? "Unavailable",
         markReason: sourceMarkSummary(row.markFreshness)
       })),

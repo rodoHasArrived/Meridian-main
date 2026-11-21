@@ -5,6 +5,7 @@ import { describeCondition } from "@/lib/price-alerts/evaluator";
 import type { PriceAlert, PriceAlertCondition, PriceAlertDraft, PriceAlertField, PriceAlertTrigger } from "@/lib/price-alerts";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot } from "@/types";
+import { formatNumber, formatTimestamp } from "@/lib/format";
 
 export interface PriceAlertFormState {
   symbol: string;
@@ -671,10 +672,7 @@ export function formatPriceAlertPrice(value: number | null | undefined): string 
   if (value === null || value === undefined || !Number.isFinite(value)) {
     return "—";
   }
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4
-  });
+  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 }
 
 export function formatPriceAlertTimestamp(value: string | null | undefined): string {
@@ -685,15 +683,7 @@ export function formatPriceAlertTimestamp(value: string | null | undefined): str
   if (Number.isNaN(date.getTime())) {
     return "—";
   }
-  return `${date.toLocaleString("en-US", {
-    timeZone: "UTC",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false
-  })} UTC`;
+  return formatTimestamp(date, { precision: "second" });
 }
 
 const SNOOZE_MINUTES = 30;
@@ -843,7 +833,7 @@ export function buildPriceAlertTriggerSection(
       title: "No triggered alert selected",
       description: count === 0
         ? "Triggered alerts will appear here once a watched price crosses its threshold."
-        : "Select a triggered alert row to inspect acknowledgement state, note, and quote handoff.",
+        : "Select a triggered alert row to inspect acknowledgement state, note, and quote link.",
       ariaLabel: "Triggered price alert detail empty state"
     },
     rows,

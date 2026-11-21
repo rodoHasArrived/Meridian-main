@@ -10,17 +10,68 @@ public sealed record PaymentBreakdownDto(
     public decimal TotalAllocated => ToInterest + ToCommitmentFee + ToFees + ToPenalty + ToPrincipal;
 }
 
+/// <summary>
+/// How a mixed payment was applied. <see cref="Breakdown"/> is the allocation to amounts owed (the
+/// automatic waterfall, or a manual breakdown capped at the amount owed). Any cash left over is
+/// routed by the loan's <see cref="ExcessPaymentApplication"/> rule (PRD-115).
+/// <see cref="UnappliedAmount"/> is the amount held as unapplied cash after that routing. The
+/// excess before routing is <c>ExcessToPrincipal + ExcessToPrepaidInterest + UnappliedAmount</c>.
+/// Events recorded before PRD-115 carry none of the excess members, which read as 0 or null.
+/// </summary>
 public sealed record MixedPaymentResolutionDto(
     PaymentBreakdownDto Breakdown,
     string ResolutionBasis,
     string? RuleVersion,
-    decimal UnappliedAmount);
+    decimal UnappliedAmount)
+{
+    /// <summary>Excess applied to principal as a prepayment, in addition to <c>Breakdown.ToPrincipal</c>.</summary>
+    public decimal ExcessToPrincipal { get; init; }
+
+    /// <summary>Excess credited to the prepaid-interest balance, which later accruals consume.</summary>
+    public decimal ExcessToPrepaidInterest { get; init; }
+
+    /// <summary>The rule in force when there was excess to route; null when the payment had no excess.</summary>
+    public ExcessPaymentApplication? ExcessRuleApplied { get; init; }
+
+    /// <summary>Why some or all of the excess was held unapplied instead of following the rule; see <see cref="ExcessPaymentRuleNotes"/>.</summary>
+    public string? ExcessRuleNote { get; init; }
+
+    /// <summary>Prepayment penalty charged on <see cref="ExcessToPrincipal"/> (rounded half away from zero to 2 dp).</summary>
+    public decimal PrepaymentPenaltyCharged { get; init; }
+}
+
+/// <summary>Notes recorded on <see cref="MixedPaymentResolutionDto.ExcessRuleNote"/>; shared so the C# and F# resolvers agree exactly.</summary>
+public static class ExcessPaymentRuleNotes
+{
+    public const string PrepaymentNotAllowed =
+        "Prepayment is not permitted under the current loan terms; excess held as unapplied cash.";
+
+    public const string ExceedsOutstandingPrincipal =
+        "Excess above the outstanding principal held as unapplied cash.";
+}
 
 public sealed record ApplyMixedPaymentRequest(
     decimal Amount,
     DateOnly EffectiveDate,
     PaymentBreakdownDto? Breakdown,
     string? ExternalRef);
+
+/// <summary>
+/// PRD-115: applies part of the loan's unapplied cash to amounts owed, by the automatic waterfall
+/// or a manual <see cref="Breakdown"/> capped at what is owed. Whatever cannot be allocated stays
+/// unapplied; no new cash is received.
+/// </summary>
+public sealed record ApplyUnappliedCashRequest(
+    decimal Amount,
+    DateOnly EffectiveDate,
+    PaymentBreakdownDto? Breakdown,
+    string? ExternalRef);
+
+/// <summary>PRD-115: returns unapplied cash to the borrower (Dr UnappliedCashLiability / Cr Cash).</summary>
+public sealed record RefundUnappliedCashRequest(
+    decimal Amount,
+    DateOnly EffectiveDate,
+    string ExternalRef);
 
 public sealed record AssessFeeRequest(
     string FeeType,

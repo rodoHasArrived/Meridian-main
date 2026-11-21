@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getReportRunReview, type ReportRunReview } from "@/lib/report-run-review-api";
@@ -40,6 +40,14 @@ describe("ReportReviewPanel", () => {
     expect(screen.getByLabelText("Authoritative materiality policy")).toHaveTextContent("approved-policy · version policy-v2 · USD");
     expect(screen.getByLabelText("Authoritative materiality policy")).toHaveTextContent("absolute tolerance 0.005 USD");
     expect(screen.getByRole("cell", { name: "Material exception" })).toBeInTheDocument();
+  });
+
+  it("uses the shared Amount passport and discloses a missing scoped reference", async () => {
+    vi.mocked(getReportRunReview).mockResolvedValue(review);
+    renderWithRouter(<ReportReviewPanel runId="current" version={3} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect Current income / coupon / amount: 10.01 USD" }));
+    const drawer = await screen.findByRole("dialog", { name: "Amount passport" }, { timeout: 5000 });
+    expect(within(drawer).getByText("An amount-scoped passport reference was not retained for this report comparison. Run and snapshot evidence is available.")).toBeInTheDocument();
   });
 
   it("rejects mismatched versions and allows a retry without inferred data", async () => {

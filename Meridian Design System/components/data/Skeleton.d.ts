@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Loading placeholder with a subtle shimmer (reduced-motion safe). Use `block` for cards,
  * `text` for copy lines (multi-line via `lines`, last line shortened), `circle` for avatars.
@@ -13,7 +14,7 @@ export interface SkeletonProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** Line count when `variant="text"` (last line is shortened). @default 3 */
   lines?: number;
 }
-export declare function Skeleton(props: SkeletonProps): JSX.Element;
+export declare function Skeleton(props: SkeletonProps): React.JSX.Element;
 
 export interface SkeletonTableProps extends React.HTMLAttributes<HTMLTableElement> {
   /** Placeholder row count. @default 5 */
@@ -21,4 +22,4 @@ export interface SkeletonTableProps extends React.HTMLAttributes<HTMLTableElemen
   /** Placeholder column count. @default 4 */
   columns?: number;
 }
-export declare function SkeletonTable(props: SkeletonTableProps): JSX.Element;
+export declare function SkeletonTable(props: SkeletonTableProps): React.JSX.Element;

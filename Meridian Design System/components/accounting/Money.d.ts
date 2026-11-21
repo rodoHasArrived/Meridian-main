@@ -4,6 +4,9 @@
  * accounting components use internally, so consumer arithmetic always matches rendered figures.
  */
 export interface MoneyHelpers {
+  /** Shared formatter default; restore the previous locale after a scoped override. */
+  setDefaultLocale(locale: string): void;
+  getDefaultLocale(): string;
   /** Format a money value — { currency, decimals=2, parens, zeroDash, signed }. */
   formatMoney(value: number | string, opts?: {
     currency?: string; decimals?: number; parens?: boolean; zeroDash?: boolean; signed?: boolean;
@@ -53,5 +56,11 @@ export interface MoneyHelpers {
   /** Revalue a local balance from booked rate to current rate → { booked, current, gainLoss } in base. */
   fxRevalue(localAmount: number | string, bookedRate: number | string, currentRate: number | string, decimals?: number):
     { booked: number; current: number; gainLoss: number };
+  /** Constant-yield (effective-interest) income schedule for a discount/premium lot — the
+   *  arithmetic behind `IncomeSchedule` and the book-value rollforward. */
+  effectiveYieldSchedule(lot: {
+    par: number; cost: number; couponRate: number; effectiveYield: number;
+    periodsPerYear?: number; periods?: number; labels?: string[]; decimals?: number;
+  }): Array<{ period: string; coupon: number; accretion: number; income: number; openingBook: number; closingBook: number }>;
 }
 export declare const Money: MoneyHelpers;

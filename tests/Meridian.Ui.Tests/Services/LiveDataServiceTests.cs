@@ -312,4 +312,103 @@ public sealed class LiveDataServiceTests
         info.IsHealthy.Should().BeFalse();
         info.Issue.Should().BeNull();
     }
+
+    // ── Server envelope mapping ──────────────────────────────────────
+    // These feed the JSON shapes the live-data endpoints really return through the same
+    // serializer options the API client uses. The client used to deserialize them straight
+    // into List<TradeEvent>/List<QuoteEvent>/OrderBookSnapshot, which cannot bind an envelope.
+
+    private static T ReadApiPayload<T>(string json)
+        => System.Text.Json.JsonSerializer.Deserialize<T>(json, DesktopJsonOptions.Api)!;
+
+    [Fact]
+    public void MapTrades_ReadsRowsFromTheTradesResponseEnvelope()
+    {
+        var response = ReadApiPayload<Meridian.Contracts.Api.TradesResponse>("""
+            {"symbol":"SPY","count":2,"timestamp":"2024-01-02T15:00:01+00:00","trades":[
+              {"symbol":"SPY","timestamp":"2024-01-02T15:00:00+00:00","price":470.25,"size":100,"aggressor":"Buy","sequenceNumber":7,"streamId":"s1","venue":"XNAS"},
+              {"symbol":"SPY","timestamp":"2024-01-02T15:00:01+00:00","price":470.20,"size":50,"aggressor":"Sell","sequenceNumber":8,"streamId":"s1","venue":null}]}
+            """);
+
+        var trades = LiveDataService.MapTrades(response);
+
+        trades.Should().HaveCount(2);
+        trades[0].Symbol.Should().Be("SPY");
+        trades[0].Price.Should().Be(470.25m);
+        trades[0].Size.Should().Be(100m);
+        trades[0].Side.Should().Be("Buy");
+        trades[0].Exchange.Should().Be("XNAS");
+        trades[0].SequenceNumber.Should().Be(7);
+        trades[0].Timestamp.Should().Be(new DateTime(2024, 1, 2, 15, 0, 0, DateTimeKind.Utc));
+        trades[1].Exchange.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MapQuotes_ReadsTheSingleQuoteFromTheQuotesResponseEnvelope()
+    {
+        var response = ReadApiPayload<Meridian.Contracts.Api.QuotesResponse>("""
+            {"symbol":"SPY","timestamp":"2024-01-02T15:00:01+00:00","quote":
+              {"symbol":"SPY","timestamp":"2024-01-02T15:00:00+00:00","bidPrice":470.10,"bidSize":300,"askPrice":470.14,"askSize":200,"midPrice":470.12,"spread":0.04,"sequenceNumber":9,"streamId":"s1","venue":"XNAS"}}
+            """);
+
+        var quotes = LiveDataService.MapQuotes(response, limit: 100);
+
+        var quote = quotes.Should().ContainSingle().Subject;
+        quote.BidPrice.Should().Be(470.10m);
+        quote.AskPrice.Should().Be(470.14m);
+        quote.BidSize.Should().Be(300m);
+        quote.AskSize.Should().Be(200m);
+        quote.MidPrice.Should().Be(470.12m);
+        quote.Spread.Should().Be(0.04m);
+        quote.BidExchange.Should().Be("XNAS");
+    }
+
+    [Fact]
+    public void MapQuotes_WithNoQuoteYet_ReturnsEmptyList()
+    {
+        var response = ReadApiPayload<Meridian.Contracts.Api.QuotesResponse>(
+            """{"symbol":"SPY","quote":null,"timestamp":"2024-01-02T15:00:01+00:00"}""");
+
+        LiveDataService.MapQuotes(response, limit: 100).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MapOrderBook_ReadsLevelsAndDerivesTopOfBookFromTheOrderBookResponseEnvelope()
+    {
+        var response = ReadApiPayload<Meridian.Contracts.Api.OrderBookResponse>("""
+            {"symbol":"SPY","timestamp":"2024-01-02T15:00:00+00:00",
+             "bids":[{"side":"Bid","level":0,"price":470.10,"size":300.5,"marketMaker":"MM1"},{"side":"Bid","level":1,"price":470.09,"size":100,"marketMaker":null}],
+             "asks":[{"side":"Ask","level":0,"price":470.14,"size":200,"marketMaker":null}],
+             "midPrice":470.12,"imbalance":0.33,"marketState":"Normal","sequenceNumber":11,"isStale":false,"streamId":"s1","venue":"XNAS"}
+            """);
+
+        var book = LiveDataService.MapOrderBook(response);
+
+        book.Symbol.Should().Be("SPY");
+        book.Bids.Should().HaveCount(2);
+        book.Asks.Should().ContainSingle();
+        book.Bids[0].Size.Should().Be(300.5m);
+        book.Bids[0].Exchange.Should().Be("MM1");
+        book.Bids[1].Exchange.Should().Be("XNAS");
+        book.BestBid.Should().Be(470.10m);
+        book.BestAsk.Should().Be(470.14m);
+        book.Spread.Should().Be(0.04m);
+        book.MidPrice.Should().Be(470.12m);
+        book.TotalBidVolume.Should().Be(400.5m);
+        book.TotalAskVolume.Should().Be(200m);
+        book.Imbalance.Should().Be(0.33m);
+    }
+
+    [Fact]
+    public void MapOrderBook_WithEmptyBook_ReturnsEmptySnapshot()
+    {
+        var response = ReadApiPayload<Meridian.Contracts.Api.OrderBookResponse>(
+            """{"symbol":"SPY","timestamp":"2024-01-02T15:00:00+00:00","bids":[],"asks":[],"midPrice":null,"imbalance":null,"marketState":"NoData","sequenceNumber":0,"isStale":false,"streamId":null,"venue":null}""");
+
+        var book = LiveDataService.MapOrderBook(response);
+
+        book.Bids.Should().BeEmpty();
+        book.BestBid.Should().Be(0m);
+        book.MidPrice.Should().Be(0m);
+    }
 }

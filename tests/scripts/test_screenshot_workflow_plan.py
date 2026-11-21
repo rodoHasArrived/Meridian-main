@@ -29,7 +29,7 @@ class ScreenshotWorkflowPlanTests(unittest.TestCase):
         return path
 
     def test_plan_derives_desktop_matrix_from_workflow_definitions(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             desktop = self.write_json(
                 root,
@@ -72,7 +72,7 @@ class ScreenshotWorkflowPlanTests(unittest.TestCase):
         self.assertNotIn("custom/desktop/manuals/debug-startup/debug-a.png", plan["expectedFiles"])
 
     def test_plan_uses_definition_defaults_for_output_roots(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             desktop = self.write_json(
                 root,
@@ -108,7 +108,7 @@ class ScreenshotWorkflowPlanTests(unittest.TestCase):
         )
 
     def test_web_only_plan_does_not_require_desktop_matrix_entries(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             desktop = self.write_json(root, "desktop-workflows.json", {"workflows": []})
             web = self.write_json(

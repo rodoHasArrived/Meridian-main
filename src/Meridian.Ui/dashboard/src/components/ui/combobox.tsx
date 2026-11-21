@@ -1,5 +1,6 @@
-import { Fragment, type KeyboardEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, type InputHTMLAttributes, type KeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export interface ComboboxOption {
   value: string;
@@ -16,6 +17,10 @@ export interface ComboboxProps {
   emptyText?: string;
   className?: string;
   id?: string;
+  required?: boolean;
+  "aria-label"?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: InputHTMLAttributes<HTMLInputElement>["aria-invalid"];
 }
 
 function normalize(options: Array<ComboboxOption | string>): ComboboxOption[] {
@@ -33,7 +38,7 @@ function highlight(label: string, query: string): ReactNode {
   return (
     <Fragment>
       {label.slice(0, index)}
-      <span className="bg-primary/15 text-primary">{label.slice(index, index + query.length)}</span>
+      <span className="bg-[var(--interaction-selected-surface)] text-foreground">{label.slice(index, index + query.length)}</span>
       {label.slice(index + query.length)}
     </Fragment>
   );
@@ -53,19 +58,41 @@ export function Combobox({
   disabled = false,
   emptyText = "No matches",
   className,
-  id
+  id,
+  required,
+  "aria-label": ariaLabel,
+  "aria-describedby": describedBy,
+  "aria-invalid": invalid
 }: ComboboxProps) {
+  const generatedId = useId();
+  const inputId = id ?? `${generatedId}-combobox`;
+  const listboxId = `${inputId}-listbox`;
+  const labelId = `${inputId}-label`;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [highlighted, setHighlighted] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const items = useMemo(() => normalize(options), [options]);
   const selected = items.find((option) => option.value === value);
   const filtered = useMemo(
-    () => (query ? items.filter((option) => option.label.toLowerCase().includes(query.toLowerCase())) : items),
+    () => {
+      const search = query.toLowerCase();
+      return search ? items.filter((option) => option.label.toLowerCase().includes(search) || option.value.toLowerCase().includes(search)) : items;
+    },
     [items, query]
   );
+  const isOpen = open && !disabled;
+  const activeIndex = Math.max(0, Math.min(highlighted, filtered.length - 1));
+  const optionId = (index: number) => `${listboxId}-option-${index}`;
+  const activeOptionId = isOpen && filtered[activeIndex] ? optionId(activeIndex) : undefined;
+
+  useEffect(() => {
+    if (activeOptionId) {
+      document.getElementById(activeOptionId)?.scrollIntoView?.({ block: "nearest" });
+    }
+  }, [activeOptionId]);
 
   useEffect(() => {
     if (typeof document === "undefined") {
@@ -86,29 +113,46 @@ export function Combobox({
   }, [query]);
 
   const commit = (option: ComboboxOption) => {
+    if (disabled || inputRef.current?.matches(":disabled")) return;
     onChange?.(option.value);
     setOpen(false);
     setQuery("");
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.currentTarget.matches(":disabled")) return;
     switch (event.key) {
       case "ArrowDown":
         event.preventDefault();
         setOpen(true);
-        setHighlighted((current) => Math.min(current + 1, filtered.length - 1));
+        setHighlighted((current) => isOpen ? Math.max(0, Math.min(current + 1, filtered.length - 1)) : Math.max(0, items.findIndex((option) => option.value === value)));
         break;
       case "ArrowUp":
         event.preventDefault();
-        setHighlighted((current) => Math.max(current - 1, 0));
+        setOpen(true);
+        setHighlighted((current) => isOpen ? Math.max(current - 1, 0) : Math.max(filtered.length - 1, 0));
+        break;
+      case "Home":
+      case "End":
+        if (!isOpen) return;
+        event.preventDefault();
+        setHighlighted(event.key === "Home" ? 0 : Math.max(filtered.length - 1, 0));
         break;
       case "Enter":
+        if (!isOpen) return;
         event.preventDefault();
-        if (filtered[highlighted]) {
-          commit(filtered[highlighted]!);
+        if (filtered[activeIndex]) {
+          commit(filtered[activeIndex]!);
         }
         break;
       case "Escape":
+        if (!isOpen) return;
+        event.preventDefault();
+        event.stopPropagation();
+        setOpen(false);
+        setQuery("");
+        break;
+      case "Tab":
         setOpen(false);
         setQuery("");
         break;
@@ -117,36 +161,54 @@ export function Combobox({
     }
   };
 
-  const listboxId = id ? `${id}-listbox` : undefined;
-
   return (
     <div ref={rootRef} className={cn("relative w-full", className)}>
       {label ? (
-        <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <label id={labelId} htmlFor={inputId} className={cn("mb-1.5 block text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>
           {label}
-        </span>
+        </label>
       ) : null}
       <div
         className={cn(
-          "flex h-9 items-center rounded-[2px] border border-border bg-[var(--ws-surface-raised)]",
-          "focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/40",
+          "flex h-9 items-center rounded-[var(--radius-button)] border border-border bg-[var(--ws-surface-raised)]",
+          "focus-within:border-[var(--interaction-focus)] focus-within:ring-2 focus-within:ring-[var(--interaction-focus)]",
           disabled && "cursor-not-allowed opacity-55"
         )}
       >
         <input
-          id={id}
+          ref={inputRef}
+          id={inputId}
           type="text"
           role="combobox"
-          aria-expanded={open}
-          aria-controls={listboxId}
+          aria-expanded={isOpen}
+          aria-controls={isOpen ? listboxId : undefined}
+          aria-activedescendant={activeOptionId}
           aria-autocomplete="list"
+          aria-label={ariaLabel}
+          aria-describedby={describedBy}
+          aria-invalid={invalid}
+          required={required}
+          autoComplete="off"
           disabled={disabled}
-          placeholder={selected && !open ? selected.label : placeholder}
-          value={open ? query : selected ? selected.label : ""}
-          onFocus={() => setOpen(true)}
+          placeholder={selected && !isOpen ? selected.label : placeholder}
+          value={isOpen ? query : selected ? selected.label : ""}
+          onFocus={() => {
+            setHighlighted(Math.max(0, items.findIndex((option) => option.value === value)));
+            setOpen(true);
+          }}
+          onClick={() => {
+            if (!isOpen) {
+              setHighlighted(Math.max(0, items.findIndex((option) => option.value === value)));
+              setOpen(true);
+            }
+          }}
           onChange={(event) => {
             setQuery(event.target.value);
             setOpen(true);
+          }}
+          onBlur={() => {
+            setOpen(false);
+            setQuery("");
           }}
           onKeyDown={handleKeyDown}
           className="min-w-0 flex-1 bg-transparent px-2.5 font-mono text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-hidden"
@@ -155,11 +217,13 @@ export function Combobox({
           ▾
         </span>
       </div>
-      {open ? (
+      {isOpen ? (
         <div
           role="listbox"
           id={listboxId}
-          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[100] max-h-60 overflow-y-auto rounded-[2px] border border-border bg-popover shadow-[0_2px_6px_rgba(0,0,0,0.18)]"
+          aria-labelledby={label ? labelId : undefined}
+          aria-label={label ? undefined : "Options"}
+          className="absolute left-0 right-0 top-[calc(100%+4px)] z-[100] max-h-60 overflow-y-auto rounded-[var(--radius-overlay)] border border-border bg-popover shadow-[0_2px_6px_rgba(0,0,0,0.18)]"
         >
           {filtered.length === 0 ? (
             <div className="px-3 py-2.5 text-xs text-muted-foreground">{emptyText}</div>
@@ -169,19 +233,21 @@ export function Combobox({
               return (
                 <div
                   key={option.value}
+                  id={optionId(index)}
                   role="option"
                   aria-label={option.label}
                   aria-selected={isSelected}
                   onMouseEnter={() => setHighlighted(index)}
+                  onMouseDown={(event) => event.preventDefault()}
                   onClick={() => commit(option)}
                   className={cn(
                     "flex cursor-pointer items-center gap-2 px-3 py-2 font-mono text-xs text-foreground",
-                    index === highlighted && "bg-[var(--ws-row-hover)]",
-                    isSelected && "font-semibold text-primary"
+                    index === activeIndex && "bg-[var(--ws-row-hover)]",
+                    isSelected && "font-semibold text-[var(--interaction-link)]"
                   )}
                 >
                   {highlight(option.label, query)}
-                  {isSelected ? <span className="ml-auto text-[11px]">✓</span> : null}
+                  {isSelected ? <span className="ml-auto text-xs">✓</span> : null}
                 </div>
               );
             })

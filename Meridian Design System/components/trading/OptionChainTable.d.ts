@@ -57,4 +57,4 @@ export interface OptionChainTableProps {
   defaultSelectedStrike?: number | null;
   className?: string;
 }
-export declare function OptionChainTable(props: OptionChainTableProps): JSX.Element;
+export declare function OptionChainTable(props: OptionChainTableProps): React.JSX.Element;

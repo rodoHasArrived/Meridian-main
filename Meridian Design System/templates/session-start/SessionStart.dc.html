@@ -1,31 +1,302 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Start · Session Start — Meridian</title>
 </head>
 <body>
 <x-dc>
-<!-- @template name="Session Start" description="Workstation sign-in — credentials, MFA verify, and the environment gate (Live / Paper / Fixture with typed live confirm) before any surface loads" -->
+<!-- @template name="Start · Session Start" description="Sign-in, MFA, and the environment gate with typed live confirm — then the arrival surface: what moved on the operator's objects since the last-seen mark, and where they were. Chrome, panel and copy are editable markup." -->
 <helmet>
 <script src="./ds-base.js"></script>
+<script src="../_scaffold/operator-layer.js"></script>
 <meta name="dc-template" content="session-start">
-<style>html,body{margin:0;padding:0;height:100%;}</style>
+<style>html,body{margin:0;padding:0;height:100%}[data-ss-sel="off"] [data-ss-dot-inner]{display:none}[data-ss-kind="live"][data-ss-sel="on"]{background:var(--state-live-bg,rgba(181, 75, 66, 0.12));border-color:var(--state-live-bd,rgba(181, 75, 66, 0.42));box-shadow:inset 2px 0 0 var(--mode-live,#B54B42)}[data-ss-kind="live"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-live,#B54B42)}[data-ss-kind="live"] [data-ss-dot-inner]{background:var(--mode-live,#B54B42)}[data-ss-kind="paper"][data-ss-sel="on"]{background:var(--state-paper-bg,rgba(93, 114, 134, 0.1));border-color:var(--state-paper-bd,rgba(93, 114, 134, 0.34));box-shadow:inset 2px 0 0 var(--mode-paper,#5D7286)}[data-ss-kind="paper"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-paper,#5D7286)}[data-ss-kind="paper"] [data-ss-dot-inner]{background:var(--mode-paper,#5D7286)}[data-ss-kind="fixture"][data-ss-sel="on"]{background:var(--state-warn-bg,rgba(152, 103, 23, 0.11));border-color:var(--state-warn-bd,rgba(152, 103, 23, 0.38));box-shadow:inset 2px 0 0 var(--mode-fixture,#986717)}[data-ss-kind="fixture"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-fixture,#986717)}[data-ss-kind="fixture"] [data-ss-dot-inner]{background:var(--mode-fixture,#986717)}</style>
 </helmet>
-<div data-screen-label="Session start" style="height:100vh;">
-<x-import component-from-global-scope="SessionStartScreen" from="./screen.jsx" environment="{{ envDefault }}" require-mfa="{{ mfa }}" hint-size="100%,860px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Sign-in" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,780px">
+<div data-screen-label="Session start" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
+<div style="flex:none;height:48px;background:var(--topbar-bg,#29323A);border-bottom:1px solid var(--topbar-border,#3A444D);display:flex;align-items:center;gap:12px;padding:0 16px">
+<img src="../../assets/brand/meridian-mark-light.svg" alt="" style="height:20px;display:block">
+<span style="font-size:12px;font-weight:600;letter-spacing:.18em;color:var(--topbar-text,#F1EFEA)">MERIDIAN</span>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--topbar-text-muted,#A9B1B8)">workstation sign-in</span>
+<div style="flex:1"></div>
+<sc-if value="{{ started }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HandoverBriefChip" count="{{ handoverCount }}" severity="blocked" since="09:12" hint-size="160px,22px"></x-import>
+</sc-if>
+<span style="font-family:var(--font-data);font-size:11.5px;color:var(--topbar-text-muted,#A9B1B8)">{{ clockStamp }}</span>
 </div>
+<main style="flex:1;min-height:0;overflow-y:auto;display:grid;place-items:center;padding:32px">
+<div style="width:100%;max-width:1080px;display:flex;flex-direction:column;gap:14px;align-items:center">
+<sc-if value="{{ notStarted }}" hint-placeholder-val="{{ true }}">
+<div style="width:448px;background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong)">
+<div style="padding:13px 20px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:10px">
+<h1 style="font:600 16px var(--font-display);color:var(--text-primary);margin:0">Sign in</h1>
+<div style="flex:1"></div>
+<span style="font-family:var(--font-data);font-size:10.5px;color:var(--text-muted)">auth.meridian.internal</span>
+</div>
+<div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+<sc-if value="{{ notStarted }}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Stepper" steps="{{ steps }}" active-step="{{ step }}" hint-size="100%,40px"></x-import>
+</sc-if>
+<sc-if value="{{ showCreds }}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" label="Operator ID" value="{{ op }}" on-change="{{ onOp }}" auto-complete="username" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" label="Password" type="password" value="{{ pw }}" on-change="{{ onPw }}" auto-complete="current-password" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" disabled="{{ credsDisabled }}" on-click="{{ onContinue }}" hint-size="100%,32px">Continue</x-import>
+<span style="font-family:var(--font-data);font-size:10.5px;color:var(--text-muted)">Directory meridian.internal · SSO enforced for admin roles</span>
+</sc-if>
+<sc-if value="{{ showVerify }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" label="Authentication code" value="{{ code }}" on-change="{{ onCode }}" input-mode="numeric" max-length="{{ 6 }}" style="letter-spacing:.4em;font-size:18px;text-align:center" hint-size="100%,54px"></x-import>
+<span style="font-size:11.5px;color:var(--text-secondary)">6-digit code from your authenticator · rotates every 30s</span>
+<div style="display:flex;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" on-click="{{ onBack }}" hint-size="60px,32px">Back</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" disabled="{{ codeDisabled }}" on-click="{{ onVerify }}" hint-size="70px,32px">Verify</x-import>
+</div>
+</sc-if>
+<sc-if value="{{ showEnv }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:8px">
+<button type="button" onClick="{{ selectLive }}" data-ss-kind="live" data-ss-sel="{{ liveSel }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;cursor:pointer;font:inherit;box-sizing:border-box;border:1px solid var(--border);background:var(--bg-light)">
+<span aria-hidden="true" data-ss-dot="1" style="flex:none;width:12px;height:12px;box-sizing:border-box;border-radius:50%;border:1px solid var(--border-strong);display:grid;place-items:center"><span data-ss-dot-inner="1" style="width:7px;height:7px;border-radius:50%"></span></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:12px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-primary)">Live</span>
+<span style="display:block;font-size:11.5px;color:var(--text-secondary)">Real money. Orders route to brokers; fills are binding.</span>
+</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="live" dot="{{ true }}" hint-size="50px,18px">LIVE</x-import>
+</button>
+<button type="button" onClick="{{ selectPaper }}" data-ss-kind="paper" data-ss-sel="{{ paperSel }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;cursor:pointer;font:inherit;box-sizing:border-box;border:1px solid var(--border);background:var(--bg-light)">
+<span aria-hidden="true" data-ss-dot="1" style="flex:none;width:12px;height:12px;box-sizing:border-box;border-radius:50%;border:1px solid var(--border-strong);display:grid;place-items:center"><span data-ss-dot-inner="1" style="width:7px;height:7px;border-radius:50%"></span></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:12px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-primary)">Paper</span>
+<span style="display:block;font-size:11.5px;color:var(--text-secondary)">Simulated fills against live market data.</span>
+</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="paper" dot="{{ true }}" hint-size="60px,18px">PAPER</x-import>
+</button>
+<button type="button" onClick="{{ selectFixture }}" data-ss-kind="fixture" data-ss-sel="{{ fixtureSel }}" style="display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;cursor:pointer;font:inherit;box-sizing:border-box;border:1px solid var(--border);background:var(--bg-light)">
+<span aria-hidden="true" data-ss-dot="1" style="flex:none;width:12px;height:12px;box-sizing:border-box;border-radius:50%;border:1px solid var(--border-strong);display:grid;place-items:center"><span data-ss-dot-inner="1" style="width:7px;height:7px;border-radius:50%"></span></span>
+<span style="flex:1;min-width:0">
+<span style="display:block;font-size:12px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-primary)">Fixture</span>
+<span style="display:block;font-size:11.5px;color:var(--text-secondary)">Deterministic replay of the 2026-06-30 session.</span>
+</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="fixture" dot="{{ true }}" hint-size="70px,18px">FIXTURE</x-import>
+</button>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" label="Role" value="{{ role }}" on-change="{{ onRole }}" options="{{ roleOptions }}" hint-size="100%,54px"></x-import>
+<sc-if value="{{ live }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" label="Type &quot;LIVE&quot; to confirm real-money session" value="{{ confirm }}" on-change="{{ onConfirm }}" style="text-transform:uppercase;letter-spacing:.08em" hint-size="100%,54px"></x-import>
+</sc-if>
+<div style="display:flex;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" on-click="{{ onBack }}" hint-size="60px,32px">Back</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" disabled="{{ startDisabled }}" on-click="{{ onStart }}" hint-size="110px,32px">Start session</x-import>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ started }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectTrailProvider" screen-id="session-start" storage="{{ sessionStore }}" default-entries="{{ trailSeed }}" default-pinned="{{ trailPinned }}" on-navigate="{{ onTrailNavigate }}" hint-size="100%,420px">
+<div data-screen-label="Arrival" style="width:100%;display:flex;flex-direction:column;gap:12px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="success" title="Session started" detail="{{ startedDetail }}" hint-size="100%,48px"></x-import>
+<div style="display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:12px;align-items:start">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HandoverBrief" since="09:12" elapsed="{{ handoverElapsed }}" actor="{{ op }}" owned="{{ handoverOwned }}" items="{{ handoverItems }}" on-open="{{ onOpenObject }}" on-acknowledge="{{ onAcknowledge }}" acknowledged-at="{{ ackAt }}" foot-note="Acknowledging moves your last-seen mark. It does not approve, attest, or act on anything listed." hint-size="100%,420px"></x-import>
+<div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectTrailList" heading="Where you were" limit="{{ 5 }}" hint-size="100%,220px"></x-import>
+<div style="border:1px solid var(--border-strong);background:var(--card-surface,#F8F7F3);padding:14px;display:flex;flex-direction:column;gap:9px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" on-click="{{ onOpenWorkstation }}" hint-size="100%,32px">Open workstation</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onSignOut }}" hint-size="100%,28px">Sign in as someone else</x-import>
+<p style="margin:0;font-size:11.5px;line-height:1.5;color:var(--text-secondary)">Your workspace layouts and trail are restored per screen when you open the workstation. Arrangement only — no filter, period, or selection is carried across the session boundary.</p>
+</div>
+</div>
+</div>
+</div>
+</x-import>
+</sc-if>
+<div style="display:flex;justify-content:center;gap:16px;font-family:var(--font-data);font-size:10.5px;color:var(--text-muted)">
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;background:var(--green);display:inline-block"></span>Gateway · 12ms</span>
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;background:var(--green);display:inline-block"></span>Market data · live</span>
+<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:6px;height:6px;background:var(--green);display:inline-block"></span>Auth directory · ok</span>
+</div>
+<div style="text-align:center;font-family:var(--font-data);font-size:10px;color:var(--text-muted)">Meridian 1.18.0 · us-east-1 · TLS 1.3 · {{ lastSignIn }}</div>
+</div>
+</main>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CommandPalette" commands="{{ paletteCommands }}" group-order="{{ paletteGroups }}" resolve="{{ paletteResolve }}" scope="session-start" placeholder="{{ palettePlaceholder }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeyBindings }}" sheet-title="Sign-in · keyboard shortcuts" hint-size="0px,0px"></x-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{
-  &quot;environment&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;PAPER&quot;, &quot;tsType&quot;: &quot;\&quot;PAPER\&quot; | \&quot;LIVE\&quot; | \&quot;FIXTURE\&quot;&quot;, &quot;options&quot;: [&quot;PAPER&quot;, &quot;LIVE&quot;, &quot;FIXTURE&quot;], &quot;section&quot;: &quot;Session&quot; },
-  &quot;requireMfa&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Session&quot; }
-}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;tsType&quot;:&quot;\&quot;PAPER\&quot; | \&quot;LIVE\&quot; | \&quot;FIXTURE\&quot;&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;section&quot;:&quot;Session&quot;},&quot;requireMfa&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.state.env ?? this.props.environment ?? "PAPER").toUpperCase()):(String(this.state.env ?? this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() {
+    this.applyChrome();
+    // One shared instant, ticking — the gate's stamp and the arrival clock stay true (C-1).
+    this._untick = window.MeridianWorld ? window.MeridianWorld.tick(this) : null;
+    // Enter advances the gate even while a field has focus (HotkeysProvider ignores keys while typing).
+    this._enter = (e) => { if (e.key === "Enter" && !e.metaKey && !e.ctrlKey && !this.state.started && this._advance) { e.preventDefault(); this._advance(); } };
+    document.addEventListener("keydown", this._enter);
+  }
+  componentWillUnmount() { document.removeEventListener("keydown", this._enter); if (this._untick) this._untick(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
+
+  state = { step: 0, op: "r.alvarez", pw: "••••••••••••", code: "", env: null, role: "operator", confirm: "", started: false, ackAt: null };
+
+  // Arrival — track A of guidelines/SESSION_CONTINUITY.md. The mark is explicit (09:12), the four
+  // kinds keep their fixed order, and every row carries its own clock and actor.
+  HANDOVER = [
+    { id: "h1", kind: "breached", status: "Blocked", at: "11:04", actor: "system",
+      object: { type: "Reconciliation", id: "REC-2026-07-CASH", label: "July cash — General Account" },
+      statement: "Custodian file arrived 92 minutes late; the 14:00 delivery SLA is breached and the break is unassigned." },
+    { id: "h2", kind: "breached", status: "NeedsAttention", at: "12:20", actor: "system",
+      object: { type: "Adapter", id: "posting-export", label: "Posting export — NetSuite" },
+      statement: "Retry ladder exhausted with no next attempt; 41 postings are held and nothing is draining." },
+    { id: "h3", kind: "assigned", status: "ReviewRequired", at: "10:47", actor: "m.chen",
+      object: { type: "Journal", id: "JE-88213", label: "Amortization — July STAT" },
+      statement: "Reassigned to you when the controller reopened July; v18 was approved, v21 is now in force." },
+    { id: "h4", kind: "changed", status: "NeedsAttention", at: "11:31", actor: "a.silva",
+      object: { type: "Position", id: "91282CKQ3", label: "UST 4.375% 05/15/34" },
+      statement: "Override on market value replaced by an approved amount $1,160 lower." },
+    { id: "h5", kind: "resolved", status: "Ready", at: "12:41", actor: "j.abbott",
+      object: { type: "Exception", id: "EXC-2211", label: "FX rate mismatch — EUR sleeve" },
+      statement: "Closed with a compensating entry; no action left for you." },
+  ];
+
+  TRAIL = [
+    { type: "reconciliation", id: "REC-2026-07-CASH", label: "July cash — General Account", version: 12, currentVersion: 14, meta: "3 breaks open", at: "yesterday 17:41" },
+    { type: "journal", id: "JE-88213", label: "Amortization — July STAT", version: 18, currentVersion: 21, meta: "period reopened", at: "yesterday 17:12" },
+    { type: "accountingPeriod", id: "2026-07", label: "July 2026 — STAT", version: 3, currentVersion: 3, meta: "soft closed", at: "yesterday 16:30" },
+  ];
+
+  env() { return String(this.state.env ?? this.props.environment ?? "PAPER").toUpperCase(); }
+
+  // Arrival objects carry display types ("Journal", "Adapter"); the app map keys the 17 object
+  // types by their canonical name. This is the translation, and the only place it lives — before
+  // 4.4 every handover row and every trail row went to Reconciliation regardless of what it was.
+  OBJECT_TYPE = {
+    reconciliation: "break", journal: "entry", accountingperiod: "task",
+    adapter: "adapter", position: "position", exception: "exception",
+  };
+  /** Open a handover or trail object on the screen that owns its type. */
+  openObject(o) {
+    if (!o) return;
+    const M = window.MeridianAppMap;
+    const type = this.OBJECT_TYPE[String(o.type || "").toLowerCase()] || String(o.type || "").toLowerCase();
+    if (M && M.open(type, o.id)) return;
+    if (M) M.go("dashboard");
+  }
+
+  // Operator layer — the gate is keyboard-complete: Enter advances, 1/2/3 pick the environment,
+  // and after arrival the palette resolves the handover's objects so "take me to REC-2026-07-CASH"
+  // is one keystroke sequence, not a hunt.
+  advance(steps, envStep, canStart) {
+    const s = this.state;
+    if (s.started) return;
+    if (s.step === 0 && s.op.trim() && s.pw) this.setState({ step: 1 });
+    else if (s.step === 1 && s.step !== envStep && /^\d{6}$/.test(s.code)) this.setState({ step: envStep });
+    else if (s.step === envStep && canStart) this.setState({ started: true });
+  }
+  operatorLayer(steps, envStep, canStart) {
+    const L = window.MeridianOperatorLayer;
+    if (!L) return { commands: [], bindings: [], groupOrder: null };
+    const s = this.state;
+    const gate = !s.started;
+    return L.build({
+      screenId: "session-start", sections: [], activeId: null,
+      actions: [
+        gate ? { id: "continue", label: s.step === envStep ? "Start session" : "Continue", shortcut: "Enter", run: () => this.advance(steps, envStep, canStart) } : null,
+        gate && s.step > 0 ? { id: "back", label: "Back a step", keys: "escape", run: () => this.setState({ step: Math.max(0, s.step - 1) }) } : null,
+        gate && s.step === envStep ? { id: "env-live", label: "Environment · LIVE", keys: "1", run: () => this.setState({ env: "LIVE" }) } : null,
+        gate && s.step === envStep ? { id: "env-paper", label: "Environment · PAPER", keys: "2", run: () => this.setState({ env: "PAPER" }) } : null,
+        gate && s.step === envStep ? { id: "env-fixture", label: "Environment · FIXTURE", keys: "3", run: () => this.setState({ env: "FIXTURE" }) } : null,
+        !gate ? { id: "open", label: "Open workstation", keys: "enter", run: () => { window.location.href = "../dashboard-workstation/DashboardWorkstation.dc.html"; } } : null,
+        !gate && !s.ackAt ? { id: "ack", label: "Acknowledge handover · move last-seen mark", keys: "a", run: () => this.setState({ ackAt: (window.MeridianWorld ? window.MeridianWorld.clock({ bare: true }) + "Z" : "14:32:14Z") + " · mark moved to now" }) } : null,
+        !gate ? { id: "signout", label: "Sign in as someone else", keys: "shift+q", run: () => this.setState({ started: false, step: 0, code: "", confirm: "" }) } : null,
+      ].filter(Boolean),
+      objects: gate ? [] : [
+        ...this.HANDOVER.map((h) => ({ type: h.object.type.toLowerCase(), typeLabel: h.object.type, id: h.object.id, label: h.object.label, keywords: [h.kind, h.status, h.actor], open: () => this.openObject(h.object) })),
+        ...this.TRAIL.map((t) => ({ type: t.type, id: t.id, label: t.label, keywords: [t.meta], open: () => this.openObject(t) })),
+      ],
+      verbs: [{ id: "open", label: "Open", run: (o) => o.open(o) }],
+    });
+  }
+
   renderVals() {
+    this.applyChrome();
+    const s = this.state;
+    const mfa = this.props.requireMfa ?? true;
+    const steps = mfa ? [{ label: "Credentials" }, { label: "Verify" }, { label: "Environment" }] : [{ label: "Credentials" }, { label: "Environment" }];
+    const envStep = mfa ? 2 : 1;
+    const env = this.env();
+    const live = env === "LIVE";
+    const canStart = !live || s.confirm.trim().toUpperCase() === "LIVE";
+    const pick = (e) => () => this.setState({ env: e });
+    const layer = this.operatorLayer(steps, envStep, canStart);
+    const L = window.MeridianOperatorLayer;
+    const W = window.MeridianWorld;
+    this._advance = () => this.advance(steps, envStep, canStart);
     return {
-      envDefault: this.props.environment ?? "PAPER",
-      mfa: this.props.requireMfa ?? true,
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      onRetry: () => this.setState({ previewReady: true }),
+      paletteCommands: layer.commands, paletteGroups: layer.groupOrder, paletteResolve: layer.resolve, palettePlaceholder: layer.placeholder, hotkeyBindings: layer.bindings,
+      sessionStore: L ? L.sessionStore() : undefined,
+      notStarted: !s.started, started: s.started,
+      steps, step: s.step,
+      showCreds: !s.started && s.step === 0,
+      showVerify: !s.started && mfa && s.step === 1,
+      showEnv: !s.started && s.step === envStep,
+      op: s.op, onOp: (e) => this.setState({ op: e.target.value }),
+      pw: s.pw, onPw: (e) => this.setState({ pw: e.target.value }),
+      credsDisabled: !s.op.trim() || !s.pw,
+      onContinue: () => this.setState({ step: 1 }),
+      code: s.code, onCode: (e) => this.setState({ code: e.target.value.replace(/\D/g, "") }),
+      codeDisabled: !/^\d{6}$/.test(s.code),
+      onVerify: () => this.setState({ step: envStep }),
+      onBack: () => this.setState({ step: Math.max(0, s.step - 1) }),
+      liveSel: env === "LIVE" ? "on" : "off",
+      paperSel: env === "PAPER" ? "on" : "off",
+      fixtureSel: env === "FIXTURE" ? "on" : "off",
+      selectLive: pick("LIVE"), selectPaper: pick("PAPER"), selectFixture: pick("FIXTURE"),
+      role: s.role, onRole: (v) => this.setState({ role: v }),
+      roleOptions: [
+        { value: "operator", label: "Operator — trade, post, run" },
+        { value: "viewer", label: "Viewer — read-only" },
+        { value: "admin", label: "Admin — operator + configuration" },
+      ],
+      live, confirm: s.confirm, onConfirm: (e) => this.setState({ confirm: e.target.value }),
+      startDisabled: !canStart,
+      onStart: () => this.setState({ started: true }),
+      startedDetail: env + " · role " + s.role + " · " + (W ? W.stamp() : "2026-08-12 14:32:11Z") + " · session S-88412",
+      onOpenWorkstation: () => { const M = window.MeridianAppMap; if (M) M.go("dashboard"); },
+      clockStamp: W ? W.stamp() : "2026-08-12 14:32:08Z",
+      lastSignIn: W ? "Last sign-in " + W.stamp(W.now() - 62580000) + " from 10.4.18.22" : "Last sign-in 2026-08-11 21:09:00Z from 10.4.18.22",
+      onSignOut: () => this.setState({ started: false, step: 0, code: "", confirm: "" }),
+      handoverItems: this.HANDOVER,
+      handoverCount: this.HANDOVER.length,
+      handoverElapsed: "4h 18m",
+      handoverOwned: 14,
+      ackAt: s.ackAt,
+      onAcknowledge: () => this.setState({ ackAt: (window.MeridianWorld ? window.MeridianWorld.clock({ bare: true }) + "Z" : "14:32:14Z") + " · mark moved to now" }),
+      onOpenObject: (item) => this.openObject(item && item.object ? item.object : item),
+      trailSeed: this.TRAIL,
+      trailPinned: [this.TRAIL[0]],
+      onTrailNavigate: (entry) => this.openObject(entry),
+      statusItems: [
+        { status: "ok", label: "Gateway", value: "us-east-1 · 12ms" },
+        { status: "ok", label: "Auth", value: "directory ok" },
+        { status: "ok", label: "Market data", value: "Polygon · live" },
+        { label: "Clock", value: "UTC", push: true },
+        { label: "Build", value: "1.18.0" },
+      ],
     };
   }
 }

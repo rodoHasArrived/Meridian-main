@@ -1,60 +1,6 @@
-// Meridian severity badge (Concrete) — mirrors the desktop `.severity-badge`.
+// Meridian severity badge — now the design-system StatusBadge.
 //
-// The operator status chip: mono, 9px, uppercase, alpha-10 wash + solid semantic border
-// (never a solid fill). Accepts any of the platform's readiness / severity strings
-// (Ready, ReviewRequired, Blocked, Critical, Stale, …) and collapses them onto the five
-// canonical severities via `normalizeSeverity`.
-import type { HTMLAttributes, ReactNode } from "react";
-import { injectStyle } from "./inject-style";
-import { normalizeSeverity, severityLabels } from "./status";
-
-const CSS = `
-.mds-sev{display:inline-flex;align-items:center;gap:5px;width:fit-content;max-width:100%;
-  min-height:20px;border:1px solid var(--severity-info-bd,#E4E3DE);border-radius:var(--radius-chip,2px);
-  background:var(--severity-info-bg,#EDEAE4);color:var(--severity-info-fg,#5E666F);
-  font-family:var(--font-data,"Cascadia Mono","JetBrains Mono",monospace);font-size:9px;font-weight:700;line-height:1;
-  letter-spacing:.04em;padding:0 7px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mds-sev__dot{height:5px;width:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
-.mds-sev--ready{border-color:var(--severity-ready-bd,rgba(58,122,86,.36));background:var(--severity-ready-bg,rgba(58,122,86,.10));color:var(--severity-ready-fg,#2C5C40);}
-.mds-sev--review{border-color:var(--severity-review-bd,rgba(168,84,54,.36));background:var(--severity-review-bg,rgba(168,84,54,.10));color:var(--severity-review-fg,#8C4429);}
-.mds-sev--action{border-color:var(--severity-action-bd,rgba(138,92,18,.42));background:var(--severity-action-bg,rgba(138,92,18,.11));color:var(--severity-action-fg,#68450E);}
-.mds-sev--blocked{border-color:var(--severity-blocked-bd,rgba(168,68,60,.40));background:var(--severity-blocked-bg,rgba(168,68,60,.10));color:var(--severity-blocked-fg,#7E332D);}
-.mds-sev--info{border-color:var(--severity-info-bd,#E4E3DE);background:var(--severity-info-bg,#EDEAE4);color:var(--severity-info-fg,#5E666F);}
-`;
-
-export interface SeverityBadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  /**
-   * Any Meridian readiness / severity string. Normalized to
-   * ready · review · action · blocked · info.
-   * @default "info"
-   */
-  status?: string;
-  /** Override the auto label (defaults to the canonical severity name). */
-  label?: ReactNode;
-  /** Prepend a filled status dot. @default true */
-  dot?: boolean;
-}
-
-/**
- * Operator status chip — the single most-used status encoding in Meridian.
- *
- * @example
- * <SeverityBadge status="ReviewRequired" />          // → "Review" (steel-blue)
- * <SeverityBadge status="Blocked" label="3 breaks" /> // custom label, brick-red
- */
-export function SeverityBadge({
-  status = "info",
-  label,
-  dot = true,
-  className,
-  ...rest
-}: SeverityBadgeProps) {
-  injectStyle("severity-badge", CSS);
-  const sev = normalizeSeverity(status);
-  return (
-    <span className={`mds-sev mds-sev--${sev}${className ? " " + className : ""}`} {...rest}>
-      {dot && <span className="mds-sev__dot" aria-hidden="true" />}
-      {label != null ? label : severityLabels[sev]}
-    </span>
-  );
-}
+// The operator status chip (mono, uppercase, alpha wash plus semantic border, mirroring the
+// desktop `.severity-badge`) lives in `@/design-system/status` as the one status component.
+// This module keeps the historical `SeverityBadge` name so existing call sites keep working.
+export { StatusBadge as SeverityBadge, type StatusBadgeProps as SeverityBadgeProps } from "@/design-system/status";

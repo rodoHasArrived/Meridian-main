@@ -15,6 +15,30 @@ namespace Meridian.Tests.Ui;
 
 public sealed class TrialBalanceAmountProvenanceTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Aggregate_RetainsPreparerClassificationEvenWhenSourceProofIsBlocked(bool retainSources)
+    {
+        using var fixture = new Fixture();
+        await fixture.AddJournalAsync(125m, retainSources);
+        fixture.Records[0] = AccountingPreparerAttestationTestData.Attach(fixture.Records[0], fixture.Scope);
+        var receipt = fixture.Records[0].Entry.Metadata.PreparerAttestation!.Receipt;
+        var row = (await fixture.BindAsync()).Single(value => value.AccountName == "Cash");
+
+        var packet = await fixture.Service.GetPacketAsync(row.BalanceProofSubjectId!, fixture.Scope);
+
+        var amount = packet!.LedgerAmount!;
+        amount.Status.Should().Be(retainSources ? EvidenceStatusDto.Ready : EvidenceStatusDto.Blocked);
+        var disclosure = amount.AccountingPreparerAttestations.Should().ContainSingle().Which;
+        disclosure.Classification.Should().Be(LedgerAmountApprovalClassification.PreparerAttestation);
+        disclosure.AttestationId.Should().Be(receipt.AttestationId);
+        disclosure.SourceScope.Should().Be(fixture.Scope);
+        amount.OrdinaryRecordedApprovalSatisfied.Should().BeFalse();
+        LedgerAmountApprovalClassification.MayCountAsOrdinaryApproval(amount, true).Should().BeFalse();
+        System.Text.Json.JsonSerializer.Serialize(packet).Should().NotContain("private-retained-operands");
+    }
+
     [Fact]
     public async Task Checkpoint_ProvesExactContributorsAndSurvivesLaterAppends()
     {

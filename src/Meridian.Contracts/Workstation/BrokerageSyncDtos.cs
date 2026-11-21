@@ -126,7 +126,11 @@ public sealed record BrokeragePortfolioPerformanceDto(
     decimal? CashAdjustedReturn,
     decimal? CashAdjustedReturnPercent,
     IReadOnlyList<BrokeragePortfolioPerformancePointDto> Points,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    // W10-PERF-001 extends this seam rather than adding a parallel performance API.
+    // CashAdjustedReturn above keeps its original arithmetic (every cash transaction treated as
+    // a flow); these figures treat only deposits, withdrawals, and transfers as external flows.
+    IReadOnlyList<PerformanceReturnFigureDto>? ReturnFigures = null);
 
 public sealed record BrokerageCashFlowEntryDto(
     string TransactionId,
@@ -185,7 +189,17 @@ public sealed record BrokerageHouseholdPositionDto(
     string? Description = null,
     string? PositionId = null,
     string? Currency = null,
-    MarkFreshnessAssessmentDto? MarkFreshness = null);
+    MarkFreshnessAssessmentDto? MarkFreshness = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccruedInterest { get; init; }
+    /// <summary>ProviderReported, CostDerived, or Unavailable; a cost proxy is not an observed mark.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ValuationBasis { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyDictionary<string, AmountPassportReferenceDto>? AmountPassports { get; init; }
+}
 
 public sealed record BrokerageHouseholdPortfolioDto(
     string ProviderId,
@@ -217,7 +231,14 @@ public sealed record FundAccountBrokeragePositionDto(
     string? Description = null,
     string? PositionId = null,
     string? Currency = null,
-    MarkFreshnessAssessmentDto? MarkFreshness = null);
+    MarkFreshnessAssessmentDto? MarkFreshness = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccruedInterest { get; init; }
+    /// <summary>ProviderReported, CostDerived, or Unavailable; a cost proxy is not an observed mark.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ValuationBasis { get; init; }
+}
 
 public sealed record FundAccountBrokerageOrderDto(
     string OrderId,
@@ -278,7 +299,14 @@ public sealed record FundAccountBrokerageSyncActivityDto(
     DateTimeOffset SyncedAt,
     string RawSnapshotPath,
     string ProjectionPath,
-    IReadOnlyList<FundAccountBrokerageCorporateActionDto>? CorporateActions = null);
+    IReadOnlyList<FundAccountBrokerageCorporateActionDto>? CorporateActions = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BrokerageAmountPassportSnapshotDto? AmountPassportSnapshot { get; init; }
+}
+
+public sealed record BrokerageAmountPassportSnapshotDto(
+    AmountPassportScopeDto Scope, DateTimeOffset CapturedAt, DateTimeOffset AsOf, string ContentHash, bool IsComplete);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ProviderLedgerReconciliationStatusDto>))]
 public enum ProviderLedgerReconciliationStatusDto

@@ -28,6 +28,10 @@ export interface LoanSummary {
   principalOutstanding: number;
   interestAccruedUnpaid: number;
   penaltyAccruedUnpaid: number;
+  /** PRD-115: owed to the borrower. Absent from hosts that predate it. */
+  prepaidInterest?: number | null;
+  /** PRD-115: excess cash held for the borrower. Absent from hosts that predate it. */
+  unappliedCash?: number | null;
   availableToDraw: number;
   originationDate: string;
   maturityDate: string;
@@ -54,6 +58,16 @@ export interface LoanPortfolioSummary {
   currencyTotals?: LoanPortfolioCurrencyTotals[] | null;
   /** Legacy scalar totals have a currency only when the complete population has one. */
   totalCurrency?: LoanCurrency | null;
+  /** Server decimal aggregation of current principal by contractual maturity, without FX. */
+  maturityBuckets?: LoanMaturityBucket[] | null;
+}
+
+export interface LoanMaturityBucket {
+  currency: LoanCurrency;
+  year: number | null;
+  quarter: number | null;
+  principalOutstanding: string | null;
+  loanIds: string[];
 }
 
 export interface LoanPortfolioCurrencyTotals {

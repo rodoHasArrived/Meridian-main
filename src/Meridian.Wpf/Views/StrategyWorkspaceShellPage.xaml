@@ -1,4 +1,5 @@
 <views:StrategyWorkspaceShellPageBase x:Class="Meridian.Wpf.Views.StrategyWorkspaceShellPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -63,8 +64,8 @@
                                                HorizontalAlignment="Center" />
                                 </Border>
                                 <StackPanel Margin="12,0,0,0">
-                                    <TextBlock Text="Strategy" Style="{StaticResource PageTitleStyle}" />
-                                    <TextBlock Text="Market briefing, PlotTool workstation, and paper-promotion review"
+                                    <TextBlock Text="Strategy Workspace" Style="{StaticResource PageTitleStyle}" />
+                                    <TextBlock Text="Review recent strategy runs and open the one you want to work on."
                                                Style="{StaticResource CardDescriptionStyle}" />
                                 </StackPanel>
                             </StackPanel>
@@ -252,7 +253,7 @@
                                     BorderThickness="1"
                                     Margin="0,0,0,12">
                                 <StackPanel>
-                                    <TextBlock Text="Next Handoff"
+                                    <TextBlock Text="Next step"
                                                FontSize="11"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}" />
@@ -616,7 +617,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel>
                                 <TextBlock Text="PlotTool workstation" Style="{StaticResource CardHeaderStyle}" />
-                                <TextBlock Text="Bring PlotTool selection, compare posture, and run evidence into the desktop Strategy lane."
+                                <TextBlock Text="Bring PlotTool selection, run comparison, and run evidence into the desktop Strategy lane."
                                            Margin="0,6,0,0"
                                            Style="{StaticResource CardDescriptionStyle}" />
                             </StackPanel>
@@ -699,7 +700,7 @@
                                     <TextBlock Margin="0,8,0,0"
                                                FontSize="12"
                                                Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                               Text="Left rail: selection and coverage. Center: PlotTool console, compare posture, and notebook cues. Right rail: portfolio, ledger, and risk inspectors." />
+                                               Text="Left rail: selection and coverage. Center: PlotTool console, run comparison, and notebook cues. Right rail: portfolio, ledger, and risk inspectors." />
                                 </StackPanel>
                             </Border>
 

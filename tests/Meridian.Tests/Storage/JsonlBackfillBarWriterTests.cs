@@ -13,6 +13,9 @@ public sealed class JsonlBackfillBarWriterTests
     [InlineData(DataGranularity.Daily, "daily")]
     [InlineData(DataGranularity.Hour1, "hourly")]
     [InlineData(DataGranularity.Minute5, "5min")]
+    [InlineData(DataGranularity.Hour4, "4hour")]
+    [InlineData(DataGranularity.Weekly, "weekly")]
+    [InlineData(DataGranularity.Monthly, "monthly")]
     public async Task WriteAsync_PreservesPartitionAndAppendsSerializedBars(DataGranularity granularity, string prefix)
     {
         using var artifacts = TestArtifactDirectory.Create(nameof(WriteAsync_PreservesPartitionAndAppendsSerializedBars));
@@ -29,6 +32,19 @@ public sealed class JsonlBackfillBarWriterTests
         Assert.Equal(2, lines.Length);
         Assert.Equal(first, JsonSerializer.Deserialize(lines[0], MarketDataJsonContext.Default.HistoricalBar));
         Assert.Equal(second, JsonSerializer.Deserialize(lines[1], MarketDataJsonContext.Default.HistoricalBar));
+    }
+
+    [Fact]
+    public async Task WriteAsync_UnknownGranularity_ThrowsInsteadOfWritingADailyFile()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(WriteAsync_UnknownGranularity_ThrowsInsteadOfWritingADailyFile));
+        IBackfillBarWriter writer = new JsonlBackfillBarWriter(artifacts.RootPath);
+        var bar = new HistoricalBar("SPY", new DateOnly(2026, 7, 1), 100, 105, 99, 103, 500);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            writer.WriteAsync((DataGranularity)byte.MaxValue, [bar], "stooq"));
+
+        Assert.Empty(Directory.EnumerateFiles(artifacts.RootPath, "*", SearchOption.AllDirectories));
     }
 
     [Fact]

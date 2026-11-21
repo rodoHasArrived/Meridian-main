@@ -1,3 +1,5 @@
+import { formatTimestamp } from "@/lib/format";
+
 export function levelFromReadiness(status: string): "ready" | "review" | "blocked" {
   if (status === "Ready") {
     return "ready";
@@ -26,7 +28,7 @@ export function levelFromTone(tone: string): "ready" | "review" | "blocked" | "n
   return "neutral";
 }
 
-export function formatReadinessUtcMinute(value: string | null | undefined, fallback: string): string {
+export function formatReadinessMinute(value: string | null | undefined, fallback: string): string {
   if (!value) {
     return fallback;
   }
@@ -36,7 +38,13 @@ export function formatReadinessUtcMinute(value: string | null | undefined, fallb
     return fallback;
   }
 
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+  return formatTimestamp(date);
+}
+
+/** Ends a message with one period, so a message that already has one does not get a second. */
+export function sentence(message: string): string {
+  const trimmed = message.trim();
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
 }
 
 export function toErrorMessage(err: unknown, fallback: string): string {
@@ -47,8 +55,3 @@ export function toErrorMessage(err: unknown, fallback: string): string {
   return fallback;
 }
 
-function padUtc(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

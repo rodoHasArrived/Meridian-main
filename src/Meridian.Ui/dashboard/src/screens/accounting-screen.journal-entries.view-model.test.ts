@@ -1066,7 +1066,7 @@ describe("accounting-screen journal-entry view model", () => {
           roleLabel: "Requester",
           actorLabel: "ops-user",
           statusLabel: "Requested",
-          decidedLabel: "Jun 30, 00:00 UTC"
+          decidedLabel: "Jun 30, 2026, 00:00 UTC"
         },
         {
           sequenceLabel: "Step 2",
@@ -1117,7 +1117,7 @@ describe("accounting-screen journal-entry view model", () => {
       nextActionRouteLabel: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
       netActivityLabel: "+$100.00 USD",
       grossActivityLabel: "$100 USD",
-      capitalAccountRollForwardLabel: "$0 USD opening -> +$100.00 USD ending",
+      capitalAccountRollForwardLabel: "$0 USD opening → +$100.00 USD ending",
       memoLabel: "Manual close adjustment",
       referenceLabel: "payment:fund-alpha:capital-call:manual-je-1 / settlement:fund-alpha:capital-call:20260630",
       activityRouteLabel: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
@@ -1248,9 +1248,9 @@ describe("accounting-screen journal-entry view model", () => {
       evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/source-doc"]
     }));
     expect(result.current.draft.status).toBe("Posted");
-    expect(result.current.lifecycleStatusText).toBe("Post recorded: Approved -> Posted");
+    expect(result.current.lifecycleStatusText).toBe("Post recorded: Approved → Posted");
     expect(result.current.lifecycleTransitions[0]).toMatchObject({
-      title: "Post: Approved -> Posted",
+      title: "Post: Approved → Posted",
       auditLabel: "Audit transition-post",
       correlationLabel: "Correlation manual-je-post",
       evidenceLabel: "1 evidence link(s)",
@@ -1265,7 +1265,7 @@ describe("accounting-screen journal-entry view model", () => {
       expect.objectContaining({
         id: "post",
         value: "Posted",
-        detail: "browser-user posted the immutable entry on Jun 30, 02:00 UTC.",
+        detail: "browser-user posted the immutable entry on Jun 30, 2026, 02:00 UTC.",
         tone: "success"
       }),
       expect.objectContaining({
@@ -1289,7 +1289,7 @@ describe("accounting-screen journal-entry view model", () => {
       expect.objectContaining({
         id: "audit",
         value: "1 transition",
-        detail: "Lifecycle transitions retain audit id, correlation id, actor, notes, and evidence routes.",
+        detail: "Lifecycle transitions retain audit id, correlation id, actor, notes, and supporting record links.",
         tone: "success"
       })
     ]));
@@ -1592,7 +1592,7 @@ describe("accounting-screen journal-entry view model", () => {
     expect(services.saveDraft).not.toHaveBeenCalled();
     expect(services.applyLifecycleAction).not.toHaveBeenCalled();
     for (const action of ["Approve", "Post", "Reverse", "Rebook", "LockAfterClose"]) {
-      expect(result.current.lifecycleCommands.find((command) => command.action === action)?.disabledReason).toContain("governed asset workflow");
+      expect(result.current.lifecycleCommands.find((command) => command.action === action)?.disabledReason).toContain("asset workflow");
     }
     expect(result.current.lifecycleStatusText).toContain("generic approval, posting and corrections are unavailable");
   });
@@ -1608,7 +1608,7 @@ describe("accounting-screen journal-entry view model", () => {
     await act(async () => { await result.current.submit(); });
     expect(services.submitApproval).toHaveBeenCalledTimes(1);
     expect(result.current.draft.status).toBe("Submitted");
-    expect(result.current.lifecycleCommands.find((command) => command.action === "Approve")?.disabledReason).toContain("governed asset workflow");
+    expect(result.current.lifecycleCommands.find((command) => command.action === "Approve")?.disabledReason).toContain("asset workflow");
     expect(result.current.lifecycleCommands.find((command) => command.action === "Reject")?.disabledReason).toBeNull();
   });
 

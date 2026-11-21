@@ -469,7 +469,9 @@ public enum OperationsActionOriginDto : byte
     HumanOperator = 0,
     AutomationSuggestion = 1,
     AssistantDraft = 2,
-    AutomationAssistant = 3
+    AutomationAssistant = 3,
+    /// <summary>Deterministic system execution under retained operator delegation; never a human or assistant.</summary>
+    AuthorizedSystem = 4
 }
 
 public sealed record OperationsStartWorkflowRequestDto(
@@ -1238,7 +1240,11 @@ public sealed record OperationsTimelineEntryDto(
     IReadOnlyList<OperationsEvidenceLinkDto> References,
     string? PreviousHash,
     string CurrentHash,
-    VerifiedOperationOutcome? Outcome = null);
+    VerifiedOperationOutcome? Outcome = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }
+}
 
 public sealed record OperationsWorkflowAuditDto(
     Guid AuditId,
@@ -1259,7 +1265,11 @@ public sealed record OperationsWorkflowAuditDto(
     IReadOnlyList<OperationsEvidenceLinkDto> References,
     string? PreviousHash,
     string CurrentHash,
-    VerifiedOperationOutcome? Outcome = null);
+    VerifiedOperationOutcome? Outcome = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }
+}
 
 public sealed record OperationsBreakCaseDto(
     string BreakId,

@@ -1,0 +1,70 @@
+version: 1
+goal_id: provider-controls
+objective: Implement the seven supplied provider-control improvements and their configuration
+  guardrails.
+status: complete
+started_at: '2026-11-13T21:30:00Z'
+updated_at: '2026-11-13T22:48:56Z'
+active_task_descriptor: .codex/memory/tasks/provider-controls.yml
+progress_inventory:
+  - id: failover
+    status: completed
+    summary: Real force/reset, configured thresholds and browser CRUD verified by
+      29 backend tests, five component tests and Chromium; actorless threshold edits
+      and deletion remain forbidden, with atomic reasoned audit snapshots.
+    evidence_refs:
+      - tests/Meridian.Tests/Integration/EndpointTests/FailoverEndpointTests.cs
+    updated_at: '2026-11-13T22:48:56Z'
+  - id: backfill-tiers
+    status: completed
+    summary: Catalog defaults, typed cap-limited saves and runtime adapter wiring
+      verified by eight backend editor tests, 95 shared-service tests, three component
+      tests and Chromium; nested configuration and nullable compression survive desktop
+      roundtrips.
+    evidence_refs:
+      - tests/Meridian.Ui.Tests/Services/NestedConfigurationRoundTripTests.cs
+    updated_at: '2026-11-13T22:48:56Z'
+  - id: settings-impact
+    status: completed
+    summary: Shared impacts, guarded atomic saves and both UI banners implemented;
+      25 focused backend impact/guard tests, 95 shared-service tests, browser banner
+      tests and five portable WPF projection tests passed. Windows-target compilation
+      passed; native rendering untested.
+    evidence_refs:
+      - tests/Meridian.Tests/Ui/UiConfigurationSaveGuardTests.cs
+    updated_at: '2026-11-13T22:40:17Z'
+  - id: routing-preview
+    status: completed
+    summary: Safe proposed routing preview, synthetic lint and observed-before-fabricated
+      ordering verified by 15 backend tests, three frontend tests and Chromium workflow.
+    evidence_refs:
+      - tests/Meridian.Tests/Application/ProviderRouting/RoutingPreviewTests.cs
+    updated_at: '2026-11-13T22:40:17Z'
+  - id: symbol-mapping
+    status: completed
+    summary: Provider-scoped mapping CRUD/import and guarded Compare-to-Canonical
+      rollout verified by 13 backend tests, ten frontend tests including existing
+      registry suites and Chromium workflow.
+    evidence_refs:
+      - tests/Meridian.Tests/Ui/SymbolMappingRolloutEndpointTests.cs
+    updated_at: '2026-11-13T22:40:17Z'
+  - id: validation-profiles
+    status: completed
+    summary: Profiles, trusted-actor reasoned audit, runtime application and adjusted/raw
+      isolation verified by 16 backend tests, component tests and Chromium; unavailable
+      adjusted providers fail closed without raw or synthetic substitution.
+    evidence_refs:
+      - tests/Meridian.Tests/Infrastructure/Providers/ProviderValidationProfileTests.cs
+    updated_at: '2026-11-13T22:48:56Z'
+  - id: rate-limit-history
+    status: completed
+    summary: Bounded quota and observed rotation history verified by three dedicated
+      backend tests, four frontend tests and Chromium workflow.
+    evidence_refs:
+      - tests/Meridian.Tests/Infrastructure/Providers/ProviderRateLimitHistoryTests.cs
+    updated_at: '2026-11-13T22:40:17Z'
+next_actions:
+  - Native Windows rendering and live-provider checks remain outside this synthetic verification.
+  - Publish the feature branch and run hosted integration checks only on an explicit publication request.
+open_questions: []
+promotion_candidates: []

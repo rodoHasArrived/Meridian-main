@@ -80,18 +80,14 @@ public static class ReportingCertifiedManifestValidation
             || !string.Equals(template.Name, manifest.TemplateId, StringComparison.Ordinal)
             || template.Version <= 0
             || !Equals(readiness.ResolvedTemplate, template)
-            || !string.Equals(
+            || !ReportingCanonicalParameterSerializer.MatchesRetained(
                 snapshot.ParametersCanonicalJson,
-                ReportingCanonicalParameterSerializer.Serialize(
-                    parameters,
-                    snapshot.RequiresCertifiedLedgerPresentation),
-                StringComparison.Ordinal)
-            || !string.Equals(
+                parameters,
+                snapshot.RequiresCertifiedLedgerPresentation)
+            || !ReportingCanonicalParameterSerializer.MatchesRetained(
                 snapshot.ParametersCanonicalJson,
-                ReportingCanonicalParameterSerializer.Serialize(
-                    readiness.ResolvedParameters,
-                    snapshot.RequiresCertifiedLedgerPresentation),
-                StringComparison.Ordinal)
+                readiness.ResolvedParameters,
+                snapshot.RequiresCertifiedLedgerPresentation)
             || manifest.CertifiedDatasetRows.Length != source.LedgerLineCount
             || manifest.CertifiedDatasetRows.Any(static row =>
                 row is null

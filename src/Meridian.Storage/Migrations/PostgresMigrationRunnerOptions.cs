@@ -1,3 +1,5 @@
+using Npgsql;
+
 namespace Meridian.Storage.Migrations;
 
 /// <summary>
@@ -7,6 +9,13 @@ namespace Meridian.Storage.Migrations;
 /// </summary>
 public sealed class PostgresMigrationRunnerOptions
 {
+    /// <summary>
+    /// Feature-owned apply checks, run under the migration transaction and advisory lock only
+    /// when a script will execute. The boolean identifies a database with migration receipts
+    /// predating this run, so a fresh installation can be distinguished from an upgrade.
+    /// </summary>
+    internal Func<string, NpgsqlConnection, NpgsqlTransaction, bool, CancellationToken, Task>? BeforeScriptAsync { get; init; }
+
     /// <summary>PostgreSQL connection string for the target database.</summary>
     public required string ConnectionString { get; init; }
 
@@ -42,7 +51,9 @@ public sealed class PostgresMigrationRunnerOptions
 
     /// <summary>
     /// When true, script filenames must begin with a unique numeric ordinal prefix that is stored
-    /// alongside the filename (Security Master convention).
+    /// alongside the filename (Security Master convention). Ordinal-tracked sets are append-only:
+    /// the runner refuses to start when an unapplied script's ordinal is below the highest applied
+    /// ordinal, so a retired or skipped number can never be filled in after later migrations ran.
     /// </summary>
     public bool TrackOrdinals { get; init; }
 

@@ -6,7 +6,9 @@ import {
   type HTMLAttributes,
   type ReactNode
 } from "react";
+import { SectionDescription } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 /**
  * `ScreenLayout` — the canonical skeleton for secondary and detail routes.
@@ -92,6 +94,8 @@ export interface ScreenLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   scope?: ReactNode;
   /** Optional secondary description under the title. */
   description?: ReactNode;
+  /** Stable key for instructional copy that can collapse once read. Omit for state or evidence. */
+  descriptionKey?: string;
   /**
    * The 1–3 primary actions for this screen. Always rendered top-right. Keep this
    * to the screen's primary verbs — secondary controls belong in the work zone.
@@ -183,6 +187,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
     title,
     scope,
     description,
+    descriptionKey,
     actions,
     focus,
     focusLabel = "Focus",
@@ -235,11 +240,17 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
           keeps the document heading order valid (h1 → h2 → h3). */}
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
-            {title}
-          </h2>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
+              {title}
+            </h2>
+            {description ? descriptionKey ? (
+              <SectionDescription descriptionKey={descriptionKey} label={`About ${typeof title === "string" ? title : "this screen"}`}>
+                {description}
+              </SectionDescription>
+            ) : <p className="basis-full max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
+          </div>
           {scope ? <div className="mt-0.5 text-xs text-muted-foreground">{scope}</div> : null}
-          {description ? <p className="mt-1 max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
         </div>
         {actions ? (
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">{actions}</div>
@@ -253,16 +264,16 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
           {hasFocus ? (
             <section
               aria-label={focusLabel}
-              className="rounded-[2px] border border-border bg-card text-card-foreground"
+              className="rounded-[var(--radius-card)] border border-border bg-card text-card-foreground"
             >
               <div className="flex items-center justify-between gap-2 px-4 py-2">
-                <span className="eyebrow-label text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <span className={cn(eyebrowClassName(focusLabel), "text-xs font-medium text-muted-foreground", usesTrackedCaps(focusLabel) && "uppercase tracking-wide")}>
                   {focusLabel}
                 </span>
                 {focusCollapsible ? (
                   <button
                     type="button"
-                    className="inline-flex items-center gap-1 rounded-[2px] px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="inline-flex items-center gap-1 rounded-[var(--radius-button)] px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
                     aria-expanded={!focusCollapsed}
                     aria-controls={focusRegionId}
                     onClick={() => setFocusCollapsed((collapsed) => !collapsed)}
@@ -291,7 +302,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
           <aside
             role="complementary"
             aria-label={contextLabel}
-            className="flex w-full shrink-0 flex-col overflow-hidden rounded-[2px] border border-border bg-card text-card-foreground xl:sticky xl:top-3 xl:max-h-[calc(100dvh-9rem)] xl:w-[360px]"
+            className="flex w-full shrink-0 flex-col overflow-hidden rounded-[var(--radius-card)] border border-border bg-card text-card-foreground xl:sticky xl:top-3 xl:max-h-[calc(100dvh-9rem)] xl:w-[360px]"
           >
             <div className="flex items-center justify-between gap-2 border-b border-border/70 px-4 py-2">
               <span className="eyebrow-label text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -300,7 +311,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
               {onContextClose ? (
                 <button
                   type="button"
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-[2px] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-[var(--radius-button)] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
                   aria-label={`Close ${contextLabel}`}
                   onClick={onContextClose}
                 >
@@ -317,7 +328,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
               {context}
             </div>
             {contextScrollLabel ? (
-              <div className="flex shrink-0 items-center justify-center gap-1 border-t border-border/70 bg-secondary/25 px-3 py-2 text-[11px] font-medium text-muted-foreground">
+              <div className="flex shrink-0 items-center justify-center gap-1 border-t border-border/70 bg-secondary/25 px-3 py-2 text-xs font-medium text-muted-foreground">
                 <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>{contextScrollLabel}</span>
               </div>

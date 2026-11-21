@@ -22,6 +22,10 @@ public interface ICoveredCallChainProviderFactory
         int maxDte,
         CancellationToken ct = default);
 
+    ValueTask<IOptionChainProvider> CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to,
+        int maxDte, string? tenantId, CancellationToken ct)
+        => CreateAsync(underlyingSymbol, from, to, maxDte, ct);
+
     /// <summary>
     /// Materialises a single-date chain (for the configure-form preview). Underlying price is
     /// resolved from the latest available snapshot. Returns a tuple of (underlyingPrice, candidates).
@@ -35,4 +39,11 @@ public interface ICoveredCallChainProviderFactory
 /// <summary>Result returned by <see cref="ICoveredCallChainProviderFactory.PreviewAsync"/>.</summary>
 public sealed record CoveredCallChainPreviewResult(
     decimal UnderlyingPrice,
-    IReadOnlyList<OptionCandidateInfo> Candidates);
+    IReadOnlyList<OptionCandidateInfo> Candidates)
+{
+    public bool CoverageKnown { get; init; }
+    public IReadOnlyList<DateOnly> RequestedExpirations { get; init; } = [];
+    public IReadOnlyList<DateOnly> LoadedExpirations { get; init; } = [];
+    public IReadOnlyList<DateTimeOffset> SnapshotTimes { get; init; } = [];
+    public int? MaxStrikesPerExpiration { get; init; }
+}

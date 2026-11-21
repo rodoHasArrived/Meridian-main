@@ -395,54 +395,19 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
         ProviderCorporateActionEvidenceCandidateDto candidate,
         IReadOnlyDictionary<Guid, string> declaredAssetClasses)
         => ResolveDeclared(candidate.SecurityId, declaredAssetClasses)
-           ?? InferAssetClassFromEvidenceShape($"{candidate.CandidateType} {candidate.RequiredFeed}");
+           ?? MultiAssetEvidenceClassRouter.RouteCandidateType(candidate.CandidateType);
 
     private static string? ScheduleAssetClass(
         ProviderSecurityMasterScheduleFeedDto feed,
         IReadOnlyDictionary<Guid, string> declaredAssetClasses)
         => ResolveDeclared(feed.SecurityId, declaredAssetClasses)
-           ?? InferAssetClassFromEvidenceShape($"{feed.FeedKind} {feed.RequiredFeed} {feed.LedgerEffectKind}");
+           ?? MultiAssetEvidenceClassRouter.RouteLedgerEffectKind(feed.LedgerEffectKind)
+           ?? MultiAssetEvidenceClassRouter.RouteCandidateType(feed.CandidateType);
 
     private static string? ResolveDeclared(
         Guid? securityId,
         IReadOnlyDictionary<Guid, string> declaredAssetClasses)
         => securityId is { } id && declaredAssetClasses.TryGetValue(id, out var declared) ? declared : null;
-
-    /// <summary>
-    /// Last-resort classification for evidence that names no security: reads the SHAPE of the feed —
-    /// its candidate/feed kind, required feed, and ledger effect — and never the security's symbol,
-    /// display name, or free-text reason. Those carry operator prose, and matching them classified a
-    /// security by what its name happened to contain.
-    /// <para>
-    /// Structured-asset evidence resolves to <c>StructuredCredit</c>, the canonical securitized home
-    /// under ADR-022 — not <c>CustomAsset</c>, which the asset-class validator now warns against for
-    /// securitized products (<c>SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL</c>).
-    /// </para>
-    /// </summary>
-    private static string? InferAssetClassFromEvidenceShape(string evidenceShape)
-    {
-        if (ContainsAny(evidenceShape, "loan", "private credit", "privatecredit", "borrower", "covenant", "unfunded"))
-        {
-            return "DirectLoan";
-        }
-
-        if (ContainsAny(evidenceShape, "mbs", "abs", "clo", "cmbs", "structured", "servicer", "trustee", "warehouse"))
-        {
-            return "StructuredCredit";
-        }
-
-        // NAV, capital-call and distribution feeds are private-fund lifecycle evidence; the previous
-        // resolver swept them into CustomAsset alongside securitized evidence.
-        if (ContainsAny(evidenceShape, "nav", "capital call", "capitalcall", "distribution"))
-        {
-            return "PrivateFundInterest";
-        }
-
-        return ContainsAny(evidenceShape, "factor") ? "Bond" : null;
-    }
-
-    private static bool ContainsAny(string value, params string[] tokens)
-        => tokens.Any(token => value.Contains(token, StringComparison.OrdinalIgnoreCase));
 
     private static string BuildRoute(string routeTemplate, Guid accountId)
         => routeTemplate.Replace("{accountId}", accountId.ToString("D"), StringComparison.OrdinalIgnoreCase);

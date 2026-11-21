@@ -1085,6 +1085,7 @@ export interface LedgerPeriodTrialBalanceLine {
  */
 /** One posting line of a governed journal entry (`LedgerJournalEntryLineDto`). */
 export interface LedgerPostedJournalEntryLine {
+  amountPassport?: import("./amount-passport").AmountPassportReference | null;
   entryId: string;
   journalEntryId: string;
   timestamp: string;
@@ -1096,6 +1097,15 @@ export interface LedgerPostedJournalEntryLine {
   credit: number;
   description: string;
   dimensions?: LedgerDimensionSet | null;
+  memo?: string | null;
+  chartAccount?: { nodeId: string; revision: string; accountCode: string | null } | null;
+  currency?: {
+    transactionCurrency: string;
+    functionalCurrency: string;
+    transactionDebit: number;
+    transactionCredit: number;
+    fxRateToFunctional: number;
+  } | null;
 }
 
 export interface LedgerPostedJournalEntry {
@@ -1109,9 +1119,47 @@ export interface LedgerPostedJournalEntry {
   isBalanced: boolean;
   lines: LedgerPostedJournalEntryLine[];
   accountingBasis?: AccountingBasisKind;
+  /** The execution this entry was posted from, as its metadata recorded it; absent otherwise. */
+  execution?: LedgerJournalExecutionLineage | null;
   // No entry-level `dimensions`: LedgerJournalEntryDto declares none. Posting dimensions belong to
   // LedgerJournalEntryLineDto, so an entry's scope has to be derived from its lines and only
   // exists when they agree — see resolvePostedEntryDimensions.
+}
+
+/** Order, fill and run identifiers a posting recorded; the order id is the execution journal's own. */
+export interface LedgerJournalExecutionLineage {
+  orderId: string | null;
+  fillId: string | null;
+  strategyRunId: string | null;
+}
+
+/** One posting to an account with the account balance after it. */
+export interface LedgerAccountRunningBalancePoint {
+  journalEntryId: string;
+  entryId: string;
+  globalSequence: number;
+  timestamp: string;
+  description: string;
+  debit: number;
+  credit: number;
+  balance: number;
+}
+
+/**
+ * Posting history of one account inside a ledger period with a running balance in the
+ * account's normal-balance sign (`GET /api/ledger/periods/{periodId}/accounts/running-balance`).
+ */
+export interface LedgerAccountRunningBalance {
+  periodId: string;
+  ledgerBookId: string;
+  accountName: string;
+  accountType: string | null;
+  symbol: string | null;
+  financialAccountId: string | null;
+  totalDebits: number;
+  totalCredits: number;
+  endingBalance: number;
+  points: LedgerAccountRunningBalancePoint[];
 }
 
 /** P&L summary of the posted journal for a closed ledger period (`GET /api/ledger/periods/{periodId}/pnl-summary`). */
@@ -1371,7 +1419,7 @@ export interface RunAttributionSummary {
 // --- Strategy run summary ---
 
 export type StrategyRunMode = "Backtest" | "Paper" | "Live";
-export type StrategyRunEngine = "Internal" | "QuantConnect" | "External";
+export type StrategyRunEngine = "Internal" | "QuantConnect" | "External" | "Unknown" | "MeridianNative" | "Lean" | "BrokerPaper" | "BrokerLive";
 export type StrategyRunStatus = "Running" | "Paused" | "Completed" | "Failed" | "Cancelled" | "Stopped";
 export type StrategyRunPromotionState =
   | "None"
@@ -1399,6 +1447,20 @@ export interface StrategyRunSummary {
   fillCount: number;
   lastUpdatedAt: string;
   auditReference: string | null;
+  parameters?: Record<string, string> | null;
+}
+
+export interface StrategySweepResultGroup {
+  sweepId: string;
+  sweepDefinitionHash: string;
+  objective: string | null;
+  startedAt: string;
+  runCount: number;
+  runs: StrategyRunSummary[];
+  objectiveRankings: Array<{ runId: string; objectiveValue: number | null }>;
+  comparisonContextVerified?: boolean;
+  historyMayBeTruncated?: boolean;
+  coverageDescription?: string;
 }
 
 export type BiasDisclosureSeverity = "info" | "caution" | "warning";
@@ -1452,8 +1514,31 @@ export interface StrategyRunDetail {
   governance?: unknown | null;
   governanceHooks?: unknown[] | null;
   biasDisclosure?: BiasDisclosure | null;
+  replayProvenance?: StrategyRunReplayProvenance | null;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
   evidenceLoop?: StrategyRunEvidenceLoop | null;
   acceptanceChecklist?: StrategyRunAcceptanceChecklistItem[] | null;
+}
+
+export interface StrategyRunReplayProvenance {
+  sourceMix: StrategyRunReplaySourceCount[];
+  revisions: StrategyRunReplayRevision[];
+  sourceMixHash?: string | null;
+  completedInputHashSha256?: string | null;
+}
+
+export interface StrategyRunReplaySourceCount {
+  symbol: string;
+  source: string;
+  bars: number;
+}
+
+export interface StrategyRunReplayRevision {
+  revisionId: string;
+  contentHash: string;
+  servingProvider: string;
+  instrument: string;
+  granularity: string;
 }
 
 export interface StrategyRunContinuityLink {
@@ -1611,7 +1696,11 @@ export type SecurityIdentifierKind =
   | "Cik"
   | "LoanX"
   | "Clip"
-  | "ListingId";
+  | "ListingId"
+  | "Uti"
+  | "Upi"
+  | "MarkitRedEntity"
+  | "MarkitRedPair";
 
 export type SecurityAssetProfileStatus = "Draft" | "Approved" | "Superseded" | "Retired";
 
@@ -1783,6 +1872,26 @@ export interface SecurityIdentityDrillIn {
   aliases: SecurityAliasEntry[];
 }
 
+export type SecurityMasterDeclaredExerciseStatus = "Resolved" | "Blocked";
+
+export interface SecurityMasterScheduleBlocker {
+  code: string;
+  reason: string;
+}
+
+/**
+ * Typed outcome of a record's declared call and put schedule. Absent for a record that declares
+ * no schedule; `blockers` is empty when the schedule resolved.
+ */
+export interface SecurityMasterDeclaredExerciseOutcome {
+  status: SecurityMasterDeclaredExerciseStatus;
+  asOf: string;
+  securityVersion: number | null;
+  windowCount: number;
+  blockers: SecurityMasterScheduleBlocker[];
+  diagnostics: string[];
+}
+
 export interface SecurityMasterScheduleSummary {
   supportsCashflowSchedule: boolean;
   supportsFactorHistory: boolean;
@@ -1792,6 +1901,7 @@ export interface SecurityMasterScheduleSummary {
   nextLifecycleDate: string | null;
   sourceSummary: string;
   summary: string;
+  declaredExercise?: SecurityMasterDeclaredExerciseOutcome | null;
 }
 
 export interface SecurityMasterScheduleEvent {

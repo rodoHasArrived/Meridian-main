@@ -99,7 +99,7 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                     || !Same(item.FundAccountId, scope.FundAccountId)
                     || item.LedgerBookId != scope.LedgerBookId
                     || !Same(item.AccountingPeriodId, scope.AccountingPeriodId)
-                    || !Same(item.SourceImportId, run.RunId))
+                    || (!Same(item.SourceImportId, run.RunId) && !IsStableThreeWayObservation(item, scope, observation)))
                     throw new InvalidOperationException("Source observation does not own the exact retained case scope and run.");
                 EnsureCloseScopeMutationAllowed(item, "retain source comparison");
                 var lineageId = ResolveLineageId(identityScopeId, legacyScopes, observation.SourceSubjectId, existing);
@@ -147,11 +147,20 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                         await RetainObservationAsync(prior, StampComputedFields(refreshed with { Version = prior.Version }, run.ObservedAt), run, ct).ConfigureAwait(false);
                     }
                 }
-                foreach (var item in existing.Where(item => item.Lineage!.ClearedAt is null && item.Lineage.ComparisonScopeId == scopeId && !observedIds.Contains(item.Lineage.LineageId)))
+                var clearing = existing.Where(item => item.Lineage!.ClearedAt is null
+                    && item.Lineage.ComparisonScopeId == scopeId && !observedIds.Contains(item.Lineage.LineageId)).ToArray();
+                var regroupings = ResolveRegroupings(canonicalRun, latest, scopeId, clearing);
+                foreach (var item in clearing)
                 {
                     var next = item with
                     {
-                        Lineage = item.Lineage! with { ObservationState = "Cleared", ClearedAt = run.ObservedAt, ClearedByRunId = run.RunId },
+                        Lineage = item.Lineage! with
+                        {
+                            ObservationState = "Cleared",
+                            ClearedAt = run.ObservedAt,
+                            ClearedByRunId = run.RunId,
+                            Regrouping = regroupings.GetValueOrDefault(item.Lineage.LineageId)
+                        },
                         Version = item.Version + 1
                     };
                     await RetainObservationAsync(item, next, run, ct).ConfigureAwait(false);
@@ -172,6 +181,50 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
             }
         }
         finally { _gate.Release(); }
+    }
+
+    private Dictionary<string, ReconciliationSourceRegrouping> ResolveRegroupings(ReconciliationCompletedRunObservation run,
+        ReconciliationBreakQueueAuditEvent? latest, string scopeId, ReconciliationBreakQueueItem[] clearing)
+    {
+        var result = new Dictionary<string, ReconciliationSourceRegrouping>(StringComparer.Ordinal);
+        if (run.ConfirmedMatchGroups is not { Count: > 0 } groups || latest?.BreakId != scopeId || latest.AfterPayload is not { } payload)
+            return result;
+        var prior = JsonSerializer.Deserialize<ReconciliationCompletedRunObservation>(payload, _jsonOptions);
+        if (prior is not { Succeeded: true, CompletePopulation: true } || !HasVerifiedSourceReceipt(latest, prior)
+            || !ScopeParts(prior.Scope, prior.Scope.SourceSystem).SequenceEqual(ScopeParts(run.Scope, run.Scope.SourceSystem)))
+            return result;
+
+        var clearingById = clearing.ToDictionary(static item => item.BreakId, StringComparer.Ordinal);
+        var eligible = prior.Breaks.Where(item => clearingById.ContainsKey(item.BreakId))
+            .ToLookup(item => StatementBusinessSubject(item.SourceSubjectId), StringComparer.Ordinal);
+        var stillObserved = run.Breaks.Select(static item => item.SourceSubjectId).ToHashSet(StringComparer.Ordinal);
+        var sharedSubjects = groups.SelectMany(static group => group.SourceSubjects).GroupBy(static member => member.SourceSubjectId)
+            .Where(static subjects => subjects.Count() > 1).Select(static subjects => subjects.Key).ToHashSet(StringComparer.Ordinal);
+        foreach (var group in groups)
+        {
+            var sourceCount = group.SourceSubjects.Count;
+            var ledgerCount = group.Evidence.Match.LedgerAllocations.Count;
+            if (group.Evidence.RunId != run.RunId || group.Evidence.Match.Tier is not ("Exact" or "Tolerance")
+                || !Sha256Digest.IsWellFormed(group.Evidence.MatchArtifactSha256)
+                || !(sourceCount == 1 && ledgerCount > 1 || sourceCount > 1 && ledgerCount == 1)
+                || group.SourceSubjects.Any(member => stillObserved.Contains(member.SourceSubjectId) || sharedSubjects.Contains(member.SourceSubjectId)))
+                continue;
+            var predecessors = group.SourceSubjects.Select(member => eligible[member.SourceSubjectId].Take(2).ToArray()
+                is [var predecessor] ? predecessor : null).ToArray();
+            if (predecessors.Any(static item => item is null)
+                || predecessors.Select(item => item!.BreakId).Distinct(StringComparer.Ordinal).Count() != sourceCount)
+                continue;
+            var priorBreakIds = predecessors.Select(item => item!.BreakId).Order(StringComparer.Ordinal).ToArray();
+            var lineageIds = priorBreakIds.Select(id => clearingById[id].Lineage!.LineageId).ToArray();
+            if (lineageIds.Distinct(StringComparer.Ordinal).Count() != sourceCount)
+                continue;
+            var classification = new ReconciliationSourceRegrouping(sourceCount == 1
+                ? ReconciliationSourceRegroupingKind.Split : ReconciliationSourceRegroupingKind.Merged,
+                prior.RunId, priorBreakIds, group);
+            foreach (var lineageId in lineageIds)
+                result.Add(lineageId, classification);
+        }
+        return result;
     }
 
     private static string[] ScopeParts(ReconciliationRunObservationScope scope, string source)
@@ -277,6 +330,14 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
             == JsonSerializer.Serialize(compatibleRequest, _jsonOptions);
     }
 
+    // Statement breaks belong to one import. A three-way case belongs to a stable comparison
+    // subject across runs; each completed observation independently retains its exact run receipt.
+    // This exception never permits a different source, account/book/period or subject to claim it.
+    private static bool IsStableThreeWayObservation(ReconciliationBreakQueueItem item,
+        ReconciliationRunObservationScope scope, ReconciliationBreakObservation observation)
+        => item.SourceType == "three-way" && item.SourceSystem == "three-way" && scope.SourceSystem == "three-way"
+           && string.Equals(item.SourceReference, observation.SourceSubjectId, StringComparison.Ordinal);
+
     private bool HasVerifiedSourceReceipt(ReconciliationBreakQueueAuditEvent receipt, ReconciliationCompletedRunObservation run)
     {
         if (run.Scope is null)
@@ -318,7 +379,9 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
             Guid.NewGuid().ToString("N"), after.BreakId, "SourceBreakObserved", before.Status, after.Status,
             before.LifecycleState, after.LifecycleState, run.ObservedAt, after.AssignedTo, after.ReviewedBy, after.ResolvedBy,
-            after.Lineage!.ObservationState, BeforePayload: JsonSerializer.Serialize(before, _jsonOptions),
+            after.Lineage!.Regrouping is { } regrouping
+                ? $"{regrouping.Kind} by completed match group {regrouping.Group.MatchGroupId}."
+                : after.Lineage.ObservationState, BeforePayload: JsonSerializer.Serialize(before, _jsonOptions),
             AfterPayload: JsonSerializer.Serialize(after, _jsonOptions), CorrelationId: run.RunId,
             Source: after.SourceType), ct).ConfigureAwait(false);
     }

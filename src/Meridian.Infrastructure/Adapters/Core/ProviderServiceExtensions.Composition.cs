@@ -167,7 +167,12 @@ public static partial class ProviderServiceExtensions
                 }
             }
 
-            factory.CreateAndRegisterAllAsync(providers, CancellationToken.None, includeModuleOwned: false).GetAwaiter().GetResult();
+            // A DI factory cannot await. Hosts call InitializeProvidersAsync, which reads the
+            // credentials first and resolves this registry inside that prepared scope, so the
+            // construction below does no storage I/O. The registry also prepares on its own
+            // before creating a streaming client asynchronously.
+            providers.CredentialPreparer = factory.PrepareCredentialsAsync;
+            factory.CreateAndRegisterAll(providers, includeModuleOwned: false);
             foreach (var implementation in moduleRegistrations.GroupBy(registration => registration.ImplementationType))
             {
                 try

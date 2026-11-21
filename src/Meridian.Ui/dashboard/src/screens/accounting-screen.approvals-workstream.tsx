@@ -1,22 +1,34 @@
+// Accounting approvals workstream panel, extracted from accounting-screen.tsx.
+// Pure approval helpers live in accounting-screen.approvals.ts.
 import { RefreshCcw, UserCheck } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import { useScreenPaletteActions } from "@/components/meridian/command-palette.actions";
+import { ApprovalCollaborationPanel } from "@/components/meridian/approval-collaboration-panel";
+import { focusDenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { DetailRail } from "@/components/meridian/detail-rail";
+import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { DesignSystemStatus } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionDescription } from "@/components/ui/section-description";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { approveOperationsContinuityWorkflow, getOperationsContinuityWorkflow, getOperationsContinuityWorkflows, rejectOperationsContinuityWorkflow } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { OperationsApproval, OperationsContinuityWorkflow, OperationsContinuityWorkflowSummary, OperationsTimelineEntry } from "@/types";
-import { approvalBlockedReason, approvalEvidenceSummary, approvalNextAction, approvalSignerLabel, approvalWorkflowStatusLabel, approvalWorkflowStatusTone, buildApprovalActionDisabledReason, formatApprovalDate, formatApprovalError, missingApprovalEvidenceLabel, resolveApprovalReportPackId, splitApprovalWords } from "@/screens/accounting-screen.approvals";
-import { AccountingValue } from "./accounting-screen.presenters";
+import { approvalBlockedReason, approvalEvidenceSummary, approvalNextAction, approvalSignerLabel, approvalWorkflowStatusLabel, buildApprovalActionDisabledReason, formatApprovalDate, formatApprovalError, missingApprovalEvidenceLabel, resolveApprovalReportPackId, splitApprovalWords } from "@/screens/accounting-screen.approvals";
+import { AccountingValue } from "@/screens/accounting-screen.accounting-value";
+import { SinceLastVisitBadge } from "@/components/meridian/since-last-visit-badge";
+import { APPROVALS_VISIT_SURFACE, classifySinceLastVisit, describeSinceLastVisit, summarizeSinceLastVisit, useSinceLastVisit } from "@/lib/since-last-visit";
 
 export function AccountingApprovalsWorkstream() {
   const { search } = useLocation();
   const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
-  const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
+  const [loadedDetail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
+  const [detailReload, setDetailReload] = useState(0);
+  const detail = loadedDetail?.workflowId === selectedWorkflowId ? loadedDetail : null;
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +36,11 @@ export function AccountingApprovalsWorkstream() {
   const [action, setAction] = useState<"approve" | "reject" | "request-changes" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const requestedApprovalId = useMemo(() => new URLSearchParams(search).get("approvalId"), [search]);
+  // Changed since you last looked (UX Phase E). Workflow summaries carry only an update time, so a
+  // workflow that moved after the previous visit reads "Updated"; none reads "New".
+  const approvalsVisit = useSinceLastVisit(APPROVALS_VISIT_SURFACE);
+  const approvalsVisitTimes = (workflow: OperationsContinuityWorkflowSummary) => ({ lastUpdatedAt: workflow.updatedAtUtc });
+  const approvalsVisitLine = describeSinceLastVisit(approvalsVisit, summarizeSinceLastVisit(workflows.map(approvalsVisitTimes), approvalsVisit.baseline), "Workflows");
 
   const refreshWorkflows = async () => {
     setLoading(true);
@@ -44,6 +61,17 @@ export function AccountingApprovalsWorkstream() {
       setLoading(false);
     }
   };
+
+  useScreenPaletteActions("approvals", [{
+    id: "approvals.refresh",
+    verbLabel: "Refresh approval workflows",
+    description: "Reloads the approval queue. Decisions stay on the approval screen.",
+    keywords: ["approvals", "refresh", "reload"],
+    disabled: loading,
+    disabledReason: loading ? "The approval queue is already loading." : null,
+    run: () => refreshWorkflows()
+  }]);
+
 
   useEffect(() => {
     void refreshWorkflows();
@@ -79,7 +107,7 @@ export function AccountingApprovalsWorkstream() {
     return () => {
       cancelled = true;
     };
-  }, [selectedWorkflowId]);
+  }, [selectedWorkflowId, detailReload]);
 
   const selectedApproval = selectApproval(detail, requestedApprovalId);
   const selectedWorkflow = detail ?? workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? null;
@@ -135,12 +163,32 @@ export function AccountingApprovalsWorkstream() {
   };
 
   return (
-    <section id="accounting-approvals" className="workspace-section-band" aria-labelledby="accounting-approvals-heading">
+    <section id="accounting-approvals" className="workspace-section-band" aria-labelledby="accounting-approvals-heading"
+      onKeyDownCapture={(event) => {
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+          || event.nativeEvent.isComposing || !(event.target instanceof HTMLElement)
+          || event.target.closest("input,textarea,select,button,a,[contenteditable=true],[role=dialog],[role=menu]")) return;
+        const rowId = event.target.closest<HTMLElement>("[data-dense-row-id]")?.dataset.denseRowId;
+        if (!rowId || !workflows.some((workflow) => workflow.workflowId === rowId)) return;
+        if (event.key === "r") {
+          event.preventDefault(); event.stopPropagation();
+          setSelectedWorkflowId(rowId);
+          focusDenseRowDetailPanel("accounting-approval-detail");
+        } else if (event.key === "a" && detail?.workflowId === rowId) {
+          const reviewer = event.currentTarget.querySelector<HTMLInputElement>("[data-approval-reviewer-input]");
+          if (!reviewer || reviewer.disabled) return;
+          event.preventDefault(); event.stopPropagation();
+          const disclosure = reviewer.closest("details");
+          if (disclosure) disclosure.open = true;
+          reviewer.focus();
+        }
+      }}>
       <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">Approvals</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <h3 id="accounting-approvals-heading" className="workspace-section-title">Approval queue and audit gate</h3>
-          <p className="workspace-section-summary">Close approvals, missing evidence, signer context, and audit history come from the operations-continuity workflow.</p>
+          <SectionDescription descriptionKey="accounting:approval-audit-gate" label="About the approval queue and audit gate">
+            Close approvals, missing evidence, signer context, and audit history come from the operations-continuity workflow.
+          </SectionDescription>
         </div>
         <Button type="button" size="sm" variant="outline" disabled={loading} busy={loading} busyLabel="Refreshing approvals" onClick={() => void refreshWorkflows()}>
           <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
@@ -149,93 +197,67 @@ export function AccountingApprovalsWorkstream() {
       </div>
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_26rem]">
         <Card className="panel-surface">
-          <CardHeader>
+          <CardHeader className="flex flex-wrap items-center gap-2 px-3 py-1">
             <CardTitle className="flex items-center gap-2 text-base">
               <UserCheck className="h-4 w-4 text-primary" aria-hidden="true" />
               Approval queue
             </CardTitle>
-            <CardDescription>Pending, blocked, approved, and rejected close workflows ready for sign-off review.</CardDescription>
+            <SectionDescription descriptionKey="accounting:approval-queue" label="About the approval queue">
+              Pending, blocked, approved, and rejected close workflows ready for sign-off review.
+            </SectionDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 px-3 py-1">
             <ApprovalStatusMessage loading={loading} error={error} empty={!loading && workflows.length === 0} />
+            {approvalsVisitLine && workflows.length > 0 ? <p className="text-xs text-muted-foreground" data-testid="approvals-since-last-visit">{approvalsVisitLine}</p> : null}
             {workflows.length > 0 ? (
               <div className="overflow-hidden rounded-md border border-border/70" role="region" aria-label="Accounting approval queue">
-                <table className="w-full text-left text-sm">
-                  <caption className="sr-only">Accounting approval queue backed by operations continuity workflows.</caption>
-                  <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                    <tr>
-                      <th className="px-3 py-2 font-medium">Period</th>
-                      <th className="px-3 py-2 font-medium">Status</th>
-                      <th className="px-3 py-2 font-medium">Signer</th>
-                      <th className="px-3 py-2 font-medium">Evidence</th>
-                      <th className="px-3 py-2 font-medium">Updated</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {workflows.map((workflow) => {
-                      const selected = workflow.workflowId === selectedWorkflowId;
-                      return (
-                        <tr
-                          key={workflow.workflowId}
-                          tabIndex={0}
-                          aria-selected={selected}
-                          className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/30", selected && "bg-primary/10")}
-                          onClick={() => setSelectedWorkflowId(workflow.workflowId)}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
-                              setSelectedWorkflowId(workflow.workflowId);
-                            }
-                          }}
-                        >
-                          <td className="px-3 py-2">
-                            <span className="block font-semibold text-foreground">{workflow.periodId}</span>
-                          </td>
-                          <td className="px-3 py-2">
-                            <Badge variant={approvalWorkflowStatusTone(workflow, detail)}>
-                              {approvalWorkflowStatusLabel(workflow, detail)}
-                            </Badge>
-                          </td>
-                          <td className="px-3 py-2 text-muted-foreground">{approvalSignerLabel(detail?.workflowId === workflow.workflowId ? detail.approvals : [])}</td>
-                          <td className="px-3 py-2 text-muted-foreground">{approvalEvidenceSummary(detail?.workflowId === workflow.workflowId ? detail : null)}</td>
-                          <td className="px-3 py-2 font-mono text-muted-foreground">{formatApprovalDate(workflow.updatedAtUtc)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                <TableWorkbench<OperationsContinuityWorkflowSummary>
+                  compactToolbar
+                  workbenchId="accounting-approval-workflows" sourceKey={new URLSearchParams(search).get("fundAccountId") ?? "authorized-workflows"}
+                  sourceDescription="All authorized operations-continuity workflow summaries in the current approval queue."
+                  completePopulation={!loading && !error} rows={workflows} getRowId={(workflow) => workflow.workflowId}
+                  getSearchText={(workflow) => `${workflow.periodId} ${workflow.status} ${workflow.updatedAtUtc}`}
+                  ariaLabel="Accounting approval queue" caption="Accounting approval queue backed by operations continuity workflows."
+                  emptyText="No approval workflows are available." selectedRowId={selectedWorkflowId} onRowSelect={(workflow) => setSelectedWorkflowId(workflow.workflowId)}
+                  getRowAriaControls={() => "accounting-approval-detail"} getRowAriaExpanded={(workflow) => workflow.workflowId === selectedWorkflowId}
+                  getRowAriaLabel={(workflow) => `${workflow.periodId}, ${approvalWorkflowStatusLabel(workflow, detail?.workflowId === workflow.workflowId ? detail : null)}`}
+                  columns={[
+                    { id: "period", label: "Period", render: (workflow) => { const mark = classifySinceLastVisit(approvalsVisitTimes(workflow), approvalsVisit.baseline); return <span className="inline-flex items-center gap-2">{workflow.periodId}{mark ? <SinceLastVisitBadge mark={mark} /> : null}</span>; }, exportValue: (workflow) => workflow.periodId },
+                    { id: "status", label: "Status", render: (workflow) => <DesignSystemStatus status={workflow.status}>{approvalWorkflowStatusLabel(workflow, detail?.workflowId === workflow.workflowId ? detail : null)}</DesignSystemStatus>, exportValue: (workflow) => workflow.status },
+                    { id: "signer", label: "Signer", render: (workflow) => approvalSignerLabel(detail?.workflowId === workflow.workflowId ? detail.approvals : []), exportValue: (workflow) => detail?.workflowId === workflow.workflowId ? approvalSignerLabel(detail.approvals) : null },
+                    { id: "evidence", label: "Evidence", render: (workflow) => approvalEvidenceSummary(detail?.workflowId === workflow.workflowId ? detail : null), exportValue: (workflow) => detail?.workflowId === workflow.workflowId ? approvalEvidenceSummary(detail) : null },
+                    { id: "updated", label: "Updated", render: (workflow) => <span className="whitespace-nowrap">{formatApprovalDate(workflow.updatedAtUtc)}</span>, exportValue: (workflow) => workflow.updatedAtUtc }
+                  ]}
+                />
               </div>
             ) : null}
+            <TechnicalDetails label="Approval queue keyboard shortcuts">
+              <p className="text-xs text-muted-foreground">With a queue row focused: j/k or arrow keys move; Enter or r reviews; a opens reviewer assignment when available. Escape returns from detail to the selected row.</p>
+            </TechnicalDetails>
           </CardContent>
         </Card>
 
-        <Card className="panel-surface" role="region" aria-label="Selected approval detail">
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <CardTitle className="text-base">Selected item detail</CardTitle>
-                <CardDescription>{selectedWorkflow ? `${selectedWorkflow.periodId} close workflow` : "Select an approval queue row."}</CardDescription>
-              </div>
-              {selectedWorkflow ? (
-                <Badge variant={approvalWorkflowStatusTone(selectedWorkflow, detail)}>
-                  {approvalWorkflowStatusLabel(selectedWorkflow, detail)}
-                </Badge>
-              ) : null}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
+        <DetailRail id="accounting-approval-detail" ariaLabel="Selected approval detail"
+          title={selectedWorkflow ? `${selectedWorkflow.periodId} close workflow` : "Choose an approval"}
+          status={selectedWorkflow ? <DesignSystemStatus status={approvalWorkflowStatusLabel(selectedWorkflow, detail)}>{approvalWorkflowStatusLabel(selectedWorkflow, detail)}</DesignSystemStatus> : undefined}
+          fields={selectedWorkflow ? [
+            { label: "Period", value: selectedWorkflow.periodId },
+            { label: "Workflow state", value: approvalWorkflowStatusLabel(selectedWorkflow, detail) },
+            { label: "Approval decision", value: selectedApproval ? splitApprovalWords(selectedApproval.status) : "Not submitted" },
+            { label: "Required signers", value: approvalSignerLabel(detail?.approvals ?? []) },
+            { label: "Missing evidence", value: missingApprovalEvidenceLabel(detail) }
+          ] : []}
+          actions={selectedWorkflow ? <>
+            <Button size="sm" disabled={approveDisabledReason !== null} disabledReason={approveDisabledReason} busy={action === "approve"} busyLabel="Approving" onClick={() => void runDecision("approve")}>Approve</Button>
+            <Button size="sm" variant="outline" disabled={rejectDisabledReason !== null} disabledReason={rejectDisabledReason} busy={action === "reject"} busyLabel="Rejecting" onClick={() => void runDecision("reject")}>Reject</Button>
+            <Button size="sm" variant="ghost" disabled={requestChangesDisabledReason !== null} disabledReason={requestChangesDisabledReason} busy={action === "request-changes"} busyLabel="Requesting changes" onClick={() => void runDecision("request-changes")}>Request changes</Button>
+          </> : undefined}>
+          <div className="mt-4 space-y-4 text-sm">
             {detailLoading ? <p role="status" className="text-muted-foreground">Loading selected approval detail...</p> : null}
             {detailError ? <StatusBanner tone="danger" role="alert" title={detailError} /> : null}
             {actionError ? <StatusBanner tone="danger" role="alert" title={actionError} /> : null}
             {selectedWorkflow ? (
               <>
-                <div className="grid gap-2">
-                  <AccountingValue label="Period" value={selectedWorkflow.periodId} />
-                  <AccountingValue label="Workflow state" value={approvalWorkflowStatusLabel(selectedWorkflow, detail)} />
-                  <AccountingValue label="Approval decision" value={selectedApproval ? splitApprovalWords(selectedApproval.status) : "Not submitted"} />
-                  <AccountingValue label="Required signers" value={approvalSignerLabel(detail?.approvals ?? [])} />
-                  <AccountingValue label="Missing evidence" value={missingApprovalEvidenceLabel(detail)} />
-                </div>
                 <TechnicalDetails label="Workflow identifiers">
                   <div className="grid gap-2 sm:grid-cols-2">
                     <AccountingValue label="Workflow" value={selectedWorkflow.workflowId} />
@@ -251,17 +273,13 @@ export function AccountingApprovalsWorkstream() {
                   <div className="text-xs font-semibold uppercase text-muted-foreground">Next action</div>
                   <p className="mt-2 leading-6 text-muted-foreground">{approvalNextAction(detail, selectedWorkflow)}</p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button size="sm" disabled={approveDisabledReason !== null} disabledReason={approveDisabledReason} busy={action === "approve"} busyLabel="Approving" onClick={() => void runDecision("approve")}>Approve</Button>
-                  <Button size="sm" variant="outline" disabled={rejectDisabledReason !== null} disabledReason={rejectDisabledReason} busy={action === "reject"} busyLabel="Rejecting" onClick={() => void runDecision("reject")}>Reject</Button>
-                  <Button size="sm" variant="ghost" disabled={requestChangesDisabledReason !== null} disabledReason={requestChangesDisabledReason} busy={action === "request-changes"} busyLabel="Requesting changes" onClick={() => void runDecision("request-changes")}>Request changes</Button>
-                </div>
+                {detail?.workflowId === selectedWorkflowId ? <ApprovalCollaborationPanel key={detail.workflowId} workflowId={detail.workflowId} onChanged={() => { setDetailReload((value) => value + 1); void refreshWorkflows(); }} /> : null}
               </>
             ) : (
               <p className="text-muted-foreground">No approval workflow is selected.</p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </DetailRail>
       </div>
 
       <Card className="panel-surface" role="region" aria-label="Approval audit trail">
@@ -304,12 +322,12 @@ function ApprovalTimelineRow({ entry }: { entry: OperationsTimelineEntry }) {
     <div className="rounded-md border border-border/70 px-3 py-2 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="font-semibold text-foreground">{splitApprovalWords(entry.eventType)}</span>
-        <span className="font-mono text-[11px] text-muted-foreground">{formatApprovalDate(entry.occurredAtUtc)}</span>
+        <span className="font-mono text-xs text-muted-foreground">{formatApprovalDate(entry.occurredAtUtc)}</span>
       </div>
-      <p className="mt-1 text-muted-foreground">{entry.rationale || `${splitApprovalWords(entry.fromState)} -> ${splitApprovalWords(entry.toState)}`}</p>
-      <div className="mt-2 text-[11px] text-muted-foreground">Evidence: {entry.references.length}</div>
+      <p className="mt-1 text-muted-foreground">{entry.rationale || `${splitApprovalWords(entry.fromState)} → ${splitApprovalWords(entry.toState)}`}</p>
+      <div className="mt-2 text-xs text-muted-foreground">Evidence: {entry.references.length}</div>
       <TechnicalDetails label="Audit metadata" className="mt-2">
-        <div className="grid gap-1 text-[11px] text-muted-foreground sm:grid-cols-2">
+        <div className="grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
           <span>Actor: {entry.actor || "unknown"}</span>
           <span className="break-all">Hash: {entry.currentHash || "pending"}</span>
           <span className="break-all sm:col-span-2">Audit ID: {entry.auditId}</span>

@@ -25,6 +25,7 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
     private readonly IFundStructurePolicyService _policy;
     private readonly IFundScopeTenantAccessor? _tenantAccessor;
     private readonly TenantScopeEnforcementOptions _tenantScope;
+    private readonly IEntityLifecycleStore? _entityLifecycleStore;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
 
     /// <param name="tenantAccessor">
@@ -45,7 +46,8 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         IGovernanceSharedDataAccessService? sharedDataAccessService = null,
         ISecurityMasterQueryService? securityMasterQueryService = null,
         IFundScopeTenantAccessor? tenantAccessor = null,
-        TenantScopeEnforcementOptions? tenantScope = null)
+        TenantScopeEnforcementOptions? tenantScope = null,
+        IEntityLifecycleStore? entityLifecycleStore = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
@@ -54,6 +56,7 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         _cashFlowReadService = new FundStructureCashFlowReadService(fundAccountService, securityMasterQueryService);
         _tenantAccessor = tenantAccessor;
         _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
+        _entityLifecycleStore = entityLifecycleStore;
     }
 
     // ── Create operations ─────────────────────────────────────────────────────
@@ -309,6 +312,8 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         {
             var snap = await LoadSnapshotAsync(ct).ConfigureAwait(false);
             ClaimNewNode(request.EntityId, snap);
+            var initialLifecycle = _entityLifecycleStore is null ? null
+                : EntityLifecycleInitialization.Create(request, _tenantAccessor?.ResolveCallerTenant());
 
             var summary = new LegalEntitySummaryDto(
                 request.EntityId,
@@ -334,6 +339,8 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
             // the new entity stays unattributed: its creator loses sight of it the moment the
             // deployment goes fail-closed, and until then it reads as a legacy unowned row.
             await StampCreatedNodesAsync(snap, ct).ConfigureAwait(false);
+            if (initialLifecycle is not null)
+                await _entityLifecycleStore!.AppendAsync(initialLifecycle, 0, ct).ConfigureAwait(false);
             return summary;
         }
         finally { _writeLock.Release(); }
@@ -360,6 +367,9 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
             {
                 throw new InvalidOperationException($"LegalEntity {request.EntityId} was not found.");
             }
+
+            if (_entityLifecycleStore is not null && request.LifecycleStatus.HasValue && request.LifecycleStatus.Value != existing.LifecycleStatus)
+                throw new InvalidOperationException("Lifecycle status changes require the entity lifecycle revision endpoint and its expected revision, reason and retained evidence.");
 
             var updated = NormalizeLegalEntity(existing with
             {
@@ -712,6 +722,8 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         var tenantScoped = await LoadSnapshotAsync(ct).ConfigureAwait(false);
         var snap = tenantScoped.ToStructureSnapshot();
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
+        snap = await EntityLifecycleSnapshotProjection.ApplyAsync(snap, _entityLifecycleStore,
+            _tenantAccessor?.ResolveCallerTenant(), asOf, ct).ConfigureAwait(false);
         var sharedDataAccess = await GetSharedDataAccessAsync(ct).ConfigureAwait(false);
         var visibleAccounts = AttachSharedDataAccess(
             await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false), sharedDataAccess);

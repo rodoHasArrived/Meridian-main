@@ -40,8 +40,10 @@ public enum SecurityAssetProfileAccountingImpactHintDto
 /// <param name="IsProjected">
 /// Declared promotion intent, NOT a live capability: the profile author's statement that this field
 /// should become a typed read-model column if the profile is promoted to a first-class asset
-/// package. No projection writer reads it today — profile fields live in the
-/// <c>asset_specific_terms</c> document and are not projected to columns, whatever this flag says.
+/// package. No projection writer reads it today. Profile fields live in the
+/// <c>asset_specific_terms</c> document; for CustomAsset records the profile-keyed
+/// <c>custom_asset_profile_field_projection</c> (migration 064) projects EVERY field of the envelope
+/// as one key/value row, whatever this flag says, and no typed per-field column exists.
 /// It is counted into the promotion-readiness score and shown as a "declared projected" count.
 /// </param>
 /// <param name="IsSearchable">
@@ -93,7 +95,11 @@ public sealed record SecurityAssetProfileDefinitionDto(
     // The governance approval reference for this version, so the write seam can verify the
     // approval evidence a record's envelope claims against the catalog's own facts. Null on
     // definitions predating the field — verification then has no catalog fact to compare.
-    string? ApprovalReference = null);
+    string? ApprovalReference = null,
+    // The actor who last drafted this version. Carried through approval so maker-checker can be
+    // checked on every path. Null on definitions drafted before the field existed; for an unapproved
+    // legacy draft the author is then still in ApprovedBy, and no maker is invented for older records.
+    string? DraftedBy = null);
 
 public sealed record SecurityAssetProfileTermsDto(
     string CustomProfileId,

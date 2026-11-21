@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Reconciliation panel — a two-sided statement vs. ledger comparison rendered as proper
  * multi-column data tables (Date · Reference · Memo · [Category] · Amount). A shared toolbar
@@ -39,6 +40,10 @@ export interface ReconciliationColumn {
   amount?: boolean;
 }
 export interface ReconciliationPanelProps {
+  /** Receives the exact retained row identity and native checked state. Rows without an id are read-only. */
+  onToggleItem?: (id: string | number, matched: boolean) => void;
+  /** Applies to all loaded items on the named side, including filtered-out items. */
+  onToggleAll?: (side: ReconciliationSide, matched: boolean) => void;
   left: ReconciliationSide;
   right: ReconciliationSide;
   /**
@@ -59,4 +64,4 @@ export interface ReconciliationPanelProps {
   /** Show the All / Matched / Open status filter. @default true */
   filterable?: boolean;
 }
-export declare function ReconciliationPanel(props: ReconciliationPanelProps): JSX.Element;
+export declare function ReconciliationPanel(props: ReconciliationPanelProps): React.JSX.Element;

@@ -5,7 +5,7 @@
 // Governance: approval-gated or destructive mutations are never registered here.
 // A `run` handler must delegate to an existing screen command or lib/api wrapper —
 // the palette is a dispatch surface, not a home for business logic.
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 
 export interface CommandPaletteActionResult {
   title: string;
@@ -68,4 +68,29 @@ function subscribe(listener: Listener): () => void {
 
 export function useCommandPaletteActions(): CommandPaletteActionItem[] {
   return useSyncExternalStore(subscribe, getCommandPaletteActionsSnapshot, getCommandPaletteActionsSnapshot);
+}
+
+export interface ScreenPaletteActionSpec extends Omit<CommandPaletteActionItem, "run"> {
+  run: () => Promise<CommandPaletteActionResult | void> | void;
+}
+
+/**
+ * Registers a mounted screen's palette actions. Re-registers only when an action's
+ * identity, label or enablement changes; `run` always calls the latest handler, so
+ * screens can pass inline closures without churning the registry each render.
+ */
+export function useScreenPaletteActions(sourceId: string, specs: ScreenPaletteActionSpec[]): void {
+  const latest = useRef(specs);
+  latest.current = specs;
+  const signature = JSON.stringify(specs.map(({ run: _run, ...rest }) => rest));
+  useEffect(() => {
+    const items: CommandPaletteActionItem[] = latest.current.map(({ run: _run, ...rest }) => ({
+      ...rest,
+      run: async () => {
+        const current = latest.current.find((spec) => spec.id === rest.id);
+        return (await current?.run()) ?? undefined;
+      }
+    }));
+    return registerCommandPaletteActions(sourceId, items);
+  }, [sourceId, signature]);
 }

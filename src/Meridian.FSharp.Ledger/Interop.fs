@@ -188,8 +188,16 @@ type LedgerInterop private () =
         lines: seq<LedgerLineInput>,
         existingJournalIds: seq<Guid>,
         existingEntryIds: seq<Guid>) =
+        // The ledger passes its live HashSets here on every post. Query them in place: copying
+        // them into F# sets made each post cost O(n log n) in the number of ids already posted.
+        let membership (ids: seq<Guid>) : Guid -> bool =
+            match ids with
+            | :? System.Collections.Generic.ISet<Guid> as set -> set.Contains
+            | :? System.Collections.Generic.IReadOnlySet<Guid> as set -> set.Contains
+            | _ -> System.Collections.Generic.HashSet<Guid>(ids).Contains
+
         let totalDebit, totalCredit, errors =
-            JournalValidation.validate journalEntryId timestamp description (lines |> Seq.toList) (existingJournalIds |> Set.ofSeq) (existingEntryIds |> Set.ofSeq)
+            JournalValidation.validateWith journalEntryId timestamp description (lines |> Seq.toList) (membership existingJournalIds) (membership existingEntryIds)
 
         {
             IsValid = List.isEmpty errors

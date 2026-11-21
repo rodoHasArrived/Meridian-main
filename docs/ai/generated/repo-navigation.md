@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-10-21T15:53:39Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-13T09:16:45Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 10 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs` | Unmapped | `468399d31` (2026-10-21T05:33:44Z) | 5 |
-| `src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 2 |
-| `src/Meridian.Contracts/SecurityMaster/NotionalLot.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 1 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs` | Host and Composition | `468399d31` (2026-10-21T05:33:44Z) | 1 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Host and Composition | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 16 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs` | Host and Composition | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 7 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs` | Desktop and UI Workflows | `0bd7b0bc4` (2026-10-20T20:28:18Z) | 3 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.CorporateActions.cs` | Desktop and UI Workflows | `7d276fc6d` (2026-10-20T20:14:06Z) | 5 |
-| `src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs` | Unmapped | `7d276fc6d` (2026-10-20T20:14:06Z) | 2 |
-| `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs` | Host and Composition | `7d276fc6d` (2026-10-20T20:14:06Z) | 1 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.SecurityCoverage.cs` | Desktop and UI Workflows | `7d276fc6d` (2026-10-20T20:14:06Z) | 1 |
-| `src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs` | Host and Composition | `53223bf3b` (2026-10-20T19:34:19Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `0aa3eeb19` (2026-10-20T19:26:20Z) | 3 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.operations-control.ts` | Desktop and UI Workflows | `0aa3eeb19` (2026-10-20T19:26:20Z) | 2 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `c24129bb68` (2026-11-13T09:12:02Z) | 88 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `c24129bb68` (2026-11-13T09:12:02Z) | 83 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `c24129bb68` (2026-11-13T09:12:02Z) | 35 |
+| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | `c24129bb68` (2026-11-13T09:12:02Z) | 12 |
+| `src/Meridian.Execution.Sdk/README.md` | Execution, Risk, and Strategies | `c24129bb68` (2026-11-13T09:12:02Z) | 7 |
+| `src/Meridian.Risk/README.md` | Execution, Risk, and Strategies | `c24129bb68` (2026-11-13T09:12:02Z) | 6 |
+| `src/Meridian.Strategies/Live/BacktestStrategyLiveAdapter.cs` | Execution, Risk, and Strategies | `c24129bb68` (2026-11-13T09:12:02Z) | 2 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `e28650fd27` (2026-11-13T08:49:29Z) | 26 |
+| `src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs` | Providers and Storage | `e28650fd27` (2026-11-13T08:49:29Z) | 3 |
+| `src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs` | Providers and Storage | `e28650fd27` (2026-11-13T08:49:29Z) | 3 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `cf2f0e0735` (2026-11-13T02:44:01Z) | 8 |
+| `src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs` | Desktop and UI Workflows | `cf2f0e0735` (2026-11-13T02:44:01Z) | 2 |
+| `src/Meridian.Strategies/Storage/StrategyRunStore.cs` | Execution, Risk, and Strategies | `cf2f0e0735` (2026-11-13T02:44:01Z) | 1 |
+| `src/Meridian.Application/README.md` | Host and Composition | `ad80338ec2` (2026-11-13T01:51:21Z) | 62 |
+| `src/Meridian.Ui/dashboard/src/design-system-contract.test.ts` | Desktop and UI Workflows | `ad80338ec2` (2026-11-13T01:51:21Z) | 12 |
 

@@ -29,4 +29,17 @@ describe("TaxLotTable", () => {
     expect(within(footer).getByText("$2,200.00")).toBeInTheDocument();
     expect(within(footer).getByText("+$400.00")).toBeInTheDocument();
   });
+
+  it("makes the scroll region keyboard-focusable with an accessible name", () => {
+    render(<TaxLotTable lots={lots} currency="USD" asOf="2026-06-30" />);
+    const region = screen.getByRole("region", { name: "Tax lots" });
+    expect(region).toHaveAttribute("tabindex", "0");
+  });
+
+  it("renders a single full-width empty row when there are no lots", () => {
+    render(<TaxLotTable lots={[]} currency="USD" showSymbol />);
+    const cell = screen.getByText("No lots");
+    expect(cell).toHaveAttribute("colspan", "7");
+    expect(cell.closest("tbody")?.querySelectorAll("tr")).toHaveLength(1);
+  });
 });

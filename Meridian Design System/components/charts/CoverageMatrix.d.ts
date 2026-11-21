@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * CoverageMatrix — symbol × session data-availability heat grid: which instrument has which
  * day, at what completeness. Statuses render as flat alpha washes on a hairline grid —
@@ -44,4 +45,4 @@ export interface CoverageMatrixProps extends React.HTMLAttributes<HTMLDivElement
   /** Makes cells buttons. */
   onCellClick?: (row: CoverageAxisItem, col: CoverageAxisItem, cell: CoverageCell) => void;
 }
-export declare function CoverageMatrix(props: CoverageMatrixProps): JSX.Element;
+export declare function CoverageMatrix(props: CoverageMatrixProps): React.JSX.Element;

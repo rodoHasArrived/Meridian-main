@@ -47,4 +47,23 @@ describe("StatementTable", () => {
     expect(screen.getByRole("region", { name: "Financial statement" })).toBeInTheDocument();
     expect(screen.getByRole("table")).toBeInTheDocument();
   });
+
+  it("makes the scroll region keyboard-focusable with an accessible name", () => {
+    render(<StatementTable sections={sections} currency="USD" />);
+    const region = screen.getByRole("region", { name: "Financial statement" });
+    expect(region).toHaveAttribute("tabindex", "0");
+  });
+
+  it("renders a single full-width empty row when there are no sections", () => {
+    render(<StatementTable sections={[]} columns={[{ key: "cur", label: "Current" }, { key: "prior", label: "Prior" }]} />);
+    const cell = screen.getByText("No line items");
+    expect(cell).toHaveAttribute("colspan", "3");
+    expect(cell.closest("tbody")?.querySelectorAll("tr")).toHaveLength(1);
+  });
+
+  it("names the line-item header column", () => {
+    render(<StatementTable sections={sections} currency="USD" />);
+    const header = screen.getByRole("columnheader", { name: "Line item" });
+    expect(header).toHaveAttribute("scope", "col");
+  });
 });

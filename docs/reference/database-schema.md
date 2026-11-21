@@ -73,6 +73,7 @@ by default.
 | Money Market | `money_market` | `src/Meridian.Storage/MoneyMarket` |
 | Reporting | `reporting` | `src/Meridian.Storage/Reporting` |
 | Identity Scoped Access | `identity_access` | `src/Meridian.Identity` |
+| Operator Triage | `operator_triage` | `src/Meridian.Storage/Workstation` |
 
 Do not add hand-maintained table counts to this page. The generated catalog and fingerprints are the
 reviewable current snapshot.

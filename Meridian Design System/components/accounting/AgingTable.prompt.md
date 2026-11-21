@@ -1,7 +1,7 @@
 AR/AP aging — counterparty rows spread across age buckets, row totals, and a footer with bucket totals plus each bucket's share of the whole. Late buckets escalate: amber wash from `warnFrom` (default bucket 2), red on the last bucket — zero cells stay unwashed dashes.
 
 ```jsx
-const { AgingTable, Money } = window.MeridianDesignSystem_4f61be;
+const { AgingTable, Money } = window.MeridianDesignSystem_205d17;
 
 <AgingTable
   currency="USD"
@@ -17,3 +17,5 @@ const idx = Money.agingBucketIndex(Money.daysBetween(inv.dueDate, asOf)); // 0..
 ```
 
 Non-obvious: `amounts` aligns positionally with `buckets` — pass custom labels (e.g. ["Current","1–15","16–45","45+"]) and the wash thresholds follow (`warnFrom` index, last bucket always red). Use `Money.agingBucketIndex` + `daysBetween` so bucket math matches the rendered schedule.
+
+Missing or invalid supplied buckets keep row/column/grand totals unavailable; a partial known sum is not a whole-population total. Omitted required buckets differ from an explicit known zero.

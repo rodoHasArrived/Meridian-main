@@ -1,13 +1,12 @@
-<!-- @dsCard group="Data" viewport="900x700" name="Data editing & bulk actions" subtitle="EditableCell, SelectionToolbar, DenseDataTable with selection" -->
+<!-- @dsCard group="Data" viewport="900x700" name="Data editing & bulk actions" subtitle="EditableCell, SelectionToolbar, DataGrid with selection" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Data editing & bulk actions — EditableCell + SelectionToolbar</title>
 <link rel="stylesheet" href="../../styles.css">
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <style>
   body { margin: 0; padding: 16px; background: var(--bg); }
@@ -18,10 +17,10 @@
 <body class="meridian">
 <div id="root"></div>
 <script type="text/babel">
-const { Eyebrow, DenseDataTable, EditableCell, SelectionToolbar } = window.MeridianDesignSystem_4f61be;
+const { Eyebrow, DataGrid, EditableCell, SelectionToolbar } = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
-// Demo: DenseDataTable with inline edits and bulk selection
+// Demo: DataGrid with inline edits and bulk selection
 function Demo() {
   const [rows, setRows] = useState([
     { id: 1, date: "2026-06-02", ref: "TRX-101", memo: "Client deposit", amount: "82,440.00", status: "Matched" },
@@ -39,14 +38,6 @@ function Demo() {
     setRows(newRows);
   };
 
-  const handleSelectRow = (row, i, isSelected) => {
-    if (isSelected) {
-      setSelectedRows([...selectedRows, i]);
-    } else {
-      setSelectedRows(selectedRows.filter(idx => idx !== i));
-    }
-  };
-
   const handleSelectAll = (isSelected) => {
     if (isSelected) {
       setSelectedRows(rows.map((_, i) => i));
@@ -54,6 +45,7 @@ function Demo() {
       setSelectedRows([]);
     }
   };
+  // rows have an `id` field, but the demo state is positional — rowKey="index" keeps keys = indices.
 
   const columns = [
     { key: "date", label: "Date" },
@@ -61,7 +53,7 @@ function Demo() {
     {
       key: "memo",
       label: "Memo",
-      render: (row) => (
+      cell: (row) => (
         <EditableCell
           value={row.memo}
           onCommit={(val) => updateRow(rows.indexOf(row), "memo", val)}
@@ -72,7 +64,7 @@ function Demo() {
       key: "amount",
       label: "Amount",
       align: "right",
-      render: (row) => (
+      cell: (row) => (
         <EditableCell
           value={row.amount}
           mode="text"
@@ -88,7 +80,7 @@ function Demo() {
     {
       key: "status",
       label: "Status",
-      render: (row) => (
+      cell: (row) => (
         <EditableCell
           value={row.status}
           onCommit={(val) => updateRow(rows.indexOf(row), "status", val)}
@@ -132,13 +124,12 @@ function Demo() {
       </div>
 
       <div className="demo-section">
-        <DenseDataTable
+        <DataGrid rowKey="index"
           columns={columns}
           rows={rows}
-          selectable={true}
-          selectedRows={selectedRows}
-          onSelectRow={handleSelectRow}
-          onSelectAll={handleSelectAll}
+          select
+          selected={selectedRows}
+          onSelectedChange={setSelectedRows}
         />
       </div>
 

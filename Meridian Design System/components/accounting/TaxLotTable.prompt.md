@@ -1,4 +1,4 @@
-Cost-basis lot table — acquisition date, days held, quantity, basis, market value/proceeds, and gain/loss, with an automatic short/long-term badge (amber/teal) derived from `longTermDays`.
+Cost-basis lot table — acquisition date, days held, quantity, basis, market value/proceeds, and gain/loss, with an automatic short/long-term badge (amber/terracotta) derived from `longTermDays`.
 
 ```jsx
 <TaxLotTable
@@ -9,3 +9,5 @@ Cost-basis lot table — acquisition date, days held, quantity, basis, market va
 ```
 
 Switch `mode="realized"` (and pass `proceeds` instead of `marketValue`) for a closed-lot / trade-history view rather than a live holdings view.
+
+An unavailable cost/value prevents a numeric total for that column and its gain/loss total. Missing lots are never treated as zero exposure.

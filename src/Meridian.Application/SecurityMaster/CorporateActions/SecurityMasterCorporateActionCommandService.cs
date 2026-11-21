@@ -77,11 +77,9 @@ public sealed class SecurityMasterCorporateActionCommandService : ISecurityMaste
             CorrelationId: request.CorrelationId);
 
         _logger.LogInformation(
-            "Appended Security Master corporate action {CorporateActionId} for {SecurityId} from {SourceSystem} by {Actor}",
+            "Appended Security Master corporate action {CorporateActionId} for {SecurityId}",
             action.CorpActId,
-            request.SecurityId,
-            request.SourceSystem,
-            request.Actor);
+            request.SecurityId);
 
         // Restatement is proposed after the append succeeds (never blocks it); the request's
         // fund scope bounds impact resolution exactly like the revision-publish path.

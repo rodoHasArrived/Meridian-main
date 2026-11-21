@@ -1,24 +1,32 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { SecurityPassportEditorLauncher } from "@/components/meridian/security-passport-editor-launcher";
-import { Badge } from "@/components/ui/badge";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScreenLayout } from "@/components/ui/screen-layout";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { StatusBanner } from "@/components/ui/status-banner";
 import { getCorporateActions, getSecurityDetail, getSecurityIdentity, getTradingParameters, searchSecurities } from "@/lib/api";
+import { instrumentDossierRoute } from "@/lib/instrument-dossier-route";
+import { instrumentRecordIdentity } from "@/lib/instrument-record-identity";
+import { appendRecordWorkspaceContext, readRecordWorkspaceContext } from "@/lib/record-workspace-context";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { bondWorkflowRoute, isBondAssetClass, resolveBondWorkflowAction } from "@/lib/fixed-income-navigation";
 import { ContractualCashFlowWorkbench } from "@/components/meridian/contractual-cash-flow-workbench";
+import { BondSettlementPanel } from "@/components/meridian/bond-settlement-panel";
 import { buildAssetDetailOverviewViewState, selectExactSecuritySearchResult } from "@/screens/asset-detail-screen.view-model";
 import type { CorporateAction, SecurityIdentityDrillIn, SecurityMasterEntry, TradingParameters } from "@/types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const assetSearchSuggestions = ["AAPL", "MSFT", "US91282CHT18"];
 const assetDetailReadinessCues = [
   { label: "Identity", value: "Identifiers, aliases, and current status" },
-  { label: "Passport", value: "Governed edits, approvals, and trust evidence" },
+  { label: "Passport", value: "Controlled edits, approvals, and trust evidence" },
   { label: "Lots", value: "Open lots, cost basis, and accounting impact" },
   { label: "Trading", value: "Lot size, tick size, hours, and circuit breakers" }
 ];
@@ -28,7 +36,7 @@ const assetSavedViews = [
   { id: "exceptions", label: "Review queue", symbol: "MSFT", detail: "Assets with missing identifiers or stale trust evidence" }
 ];
 const assetDetailNextActions = [
-  { id: "security-master", label: "Open Security Master", href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster, detail: "Review governed identity, approvals, and passport posture." },
+  { id: "security-master", label: "Open Security Master", href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster, detail: "Review the security's identity, approvals, and passport status." },
   { id: "live-quotes", label: "Open live quotes", href: WORKSTATION_ROUTE_CATALOG.dataQuotes, detail: "Check current provider price and freshness before trading decisions." },
   { id: "reconciliation", label: "Open reconciliation", href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, detail: "Inspect accounting impact for lots, cash, and unmatched records." }
 ];
@@ -51,7 +59,7 @@ export function AssetDetailScreen() {
     );
   }
 
-  return <AssetDetailPanel securityId={securityId} />;
+  return <AssetDetailPanel key={securityId} securityId={securityId} />;
 }
 
 function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; onSelect: (securityId: string) => void }) {
@@ -154,7 +162,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
                 <>
                   <div className="font-semibold text-foreground">Search results</div>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    Select a result to open governed identity, passport, lot, and trading parameters without leaving the operator workflow.
+                    Select a result to open its identity, passport, lot, and trading parameters without leaving the operator workflow.
                   </p>
                   {searching ? <p className="mt-3 text-sm text-muted-foreground">Searching...</p> : null}
                   {results.length > 0 ? (
@@ -179,7 +187,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
               )}
             </div>
             <div className="rounded-md border border-border/70 bg-background/70 px-3 py-3">
-              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Review areas</div>
+              <div className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Review areas</div>
               <div className="mt-2 grid gap-2">
                 {assetDetailReadinessCues.map((cue) => (
                   <div key={cue.label} className="rounded border border-border/60 bg-secondary/20 px-2 py-1.5">
@@ -204,7 +212,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
                       {view.symbol}
                     </Button>
                   </div>
-                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{view.detail}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{view.detail}</p>
                 </li>
               ))}
             </ul>
@@ -217,7 +225,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
                   <Link className="text-xs font-semibold text-primary underline-offset-2 hover:underline" to={action.href}>
                     {action.label}
                   </Link>
-                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{action.detail}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.detail}</p>
                 </li>
               ))}
             </ul>
@@ -229,16 +237,17 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
 }
 
 export function AssetDetailPanel({ securityId, embedded = false }: { securityId: string; embedded?: boolean }) {
-  const [scopeParams] = useSearchParams();
-  const dossierParams = new URLSearchParams(scopeParams);
-  dossierParams.delete("securityId");
-  dossierParams.delete("tab");
+  const [searchParams] = useSearchParams();
+  const requestedBondAction = resolveBondWorkflowAction(searchParams.get("bondAction"));
   const [entry, setEntry] = useState<SecurityMasterEntry | null>(null);
   const [identity, setIdentity] = useState<SecurityIdentityDrillIn | null>(null);
   const [corporateActions, setCorporateActions] = useState<CorporateAction[]>([]);
   const [tradingParameters, setTradingParameters] = useState<TradingParameters | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const record = instrumentRecordIdentity(entry, identity);
+  const recordContext = useRecordWorkspaceContext(record, { securityId, bondAction: requestedBondAction ? "" : null });
+  const inheritedContext = readRecordWorkspaceContext(searchParams.toString());
 
   useEffect(() => {
     let cancelled = false;
@@ -258,6 +267,9 @@ export function AssetDetailPanel({ securityId, embedded = false }: { securityId:
       .then(([detail, identityResult, corporateActionsResult, tradingParametersResult]) => {
         if (cancelled) {
           return;
+        }
+        if (detail.securityId.toLowerCase() !== securityId.toLowerCase()) {
+          throw new Error("The returned Security Master record does not match the selected instrument.");
         }
 
         setEntry(detail);
@@ -312,6 +324,18 @@ export function AssetDetailPanel({ securityId, embedded = false }: { securityId:
   }
 
   const overview = buildAssetDetailOverviewViewState({ entry, identity, corporateActions });
+  const quotes = workstationRouteWithQuery("dataQuotes", { symbol: record?.scope?.symbol });
+  const registry = workstationRouteWithQuery("accountingSecurityMaster", { securityId });
+  const linkedInstrument = inheritedContext?.record.scope?.securityId;
+  const linkedTicker = inheritedContext?.record.scope?.symbol;
+  const navigationContext = inheritedContext && (linkedInstrument === securityId || (!linkedInstrument && linkedTicker && linkedTicker === record?.scope?.symbol))
+    ? inheritedContext : recordContext;
+  const relatedHref = (route: string) => navigationContext ? appendRecordWorkspaceContext(route, navigationContext) ?? route : route;
+  const isBond = isBondAssetClass(entry.classification.assetClass);
+
+  if (isBond && requestedBondAction) {
+    return <Navigate to={relatedHref(bondWorkflowRoute(entry.securityId, requestedBondAction))} replace />;
+  }
 
   return (
     <ScreenLayout
@@ -319,19 +343,31 @@ export function AssetDetailPanel({ securityId, embedded = false }: { securityId:
       scope={overview.symbol}
       actions={
         <>
-          <Badge variant={overview.statusTone} dot>{overview.statusLabel}</Badge>
           {!embedded ? <Button asChild size="sm" variant="outline">
-            <Link to={`/records/instrument/${encodeURIComponent(entry.securityId)}${dossierParams.size ? `?${dossierParams}` : ""}`}>Open instrument dossier</Link>
+            <Link to={relatedHref(instrumentDossierRoute(entry.securityId, searchParams.toString()))}>Open instrument dossier</Link>
           </Button> : null}
           <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("dataQuotes", { symbol: overview.symbol })}>Live quotes</Link>
+            <Link to={relatedHref(quotes)}>Live quotes</Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <Link to={WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}>Open Security Master</Link>
+            <Link to={relatedHref(registry)}>Open Security Master</Link>
           </Button>
+          {isBond ? <>
+            <Button asChild size="sm" variant="outline">
+              <Link to={relatedHref(bondWorkflowRoute(entry.securityId, "analytics"))}>Bond analytics</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to={relatedHref(bondWorkflowRoute(entry.securityId, "migration"))}>Convention migration</Link>
+            </Button>
+          </> : null}
         </>
       }
     >
+      {requestedBondAction && !isBond ? (
+        <StatusBanner tone="warning" title="Bond workflow unavailable for this instrument"
+          detail={`The selected Security Master record is ${entry.classification.assetClass}. Select a bond to use analytics or convention migration.`} />
+      ) : null}
+      {record ? <RecordIdentitySpine record={record} context={recordContext} /> : null}
       <Tabs
         tabs={[
           { id: "overview", label: "Overview" },
@@ -347,7 +383,7 @@ export function AssetDetailPanel({ securityId, embedded = false }: { securityId:
               <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {overview.fields.map((field) => (
                   <div key={field.label}>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                    <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>{field.label}</dt>
                     <dd className="mt-1 text-sm text-foreground">{field.value}</dd>
                   </div>
                 ))}
@@ -356,7 +392,7 @@ export function AssetDetailPanel({ securityId, embedded = false }: { securityId:
                 <dl className="grid gap-3 sm:grid-cols-2">
                   {overview.technicalFields.map((field) => (
                     <div key={field.label}>
-                      <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                      <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>{field.label}</dt>
                       <dd className="mt-1 break-words font-mono text-sm text-foreground">{field.value}</dd>
                     </div>
                   ))}
@@ -394,6 +430,7 @@ export function AssetDetailPanel({ securityId, embedded = false }: { securityId:
           </div>
         </TabPanel>
         <TabPanel>
+          <div className="space-y-4">
           <Card className="panel-surface">
             <CardHeader>
               <CardTitle>Trading parameters</CardTitle>
@@ -403,27 +440,27 @@ export function AssetDetailPanel({ securityId, embedded = false }: { securityId:
               {tradingParameters ? (
                 <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lot size</dt>
+                    <dt className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lot size</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.lotSize ?? "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Tick size</dt>
+                    <dt className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Tick size</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.tickSize ?? "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Contract multiplier</dt>
+                    <dt className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Contract multiplier</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.contractMultiplier ?? "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Margin requirement</dt>
+                    <dt className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Margin requirement</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.marginRequirementPct != null ? `${tradingParameters.marginRequirementPct}%` : "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Trading hours (UTC)</dt>
+                    <dt className="text-xs font-semibold text-muted-foreground">Trading hours (UTC)</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.tradingHoursUtc ?? "Not set"}</dd>
                   </div>
                   <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Circuit breaker threshold</dt>
+                    <dt className="text-xs font-semibold text-muted-foreground">Circuit breaker threshold</dt>
                     <dd className="mt-1 text-sm text-foreground">{tradingParameters.circuitBreakerThresholdPct != null ? `${tradingParameters.circuitBreakerThresholdPct}%` : "Not set"}</dd>
                   </div>
                 </dl>
@@ -432,6 +469,14 @@ export function AssetDetailPanel({ securityId, embedded = false }: { securityId:
               )}
             </CardContent>
           </Card>
+          {["bond", "fixedincome"].includes(entry.classification.assetClass.toLowerCase().replace(/[\s_-]/g, "")) ? (
+            <details className="rounded border border-border p-4">
+              <summary className="cursor-pointer font-semibold">Prepare bond settlement</summary>
+              <div className="mt-4"><BondSettlementPanel key={entry.securityId} securityId={entry.securityId}
+                termsVersion={identity?.securityId === entry.securityId ? identity.version : null} /></div>
+            </details>
+          ) : null}
+          </div>
         </TabPanel>
         <TabPanel>
           <ContractualCashFlowWorkbench subjectKind="Security" subjectId={entry.securityId} subjectLabel={overview.displayName} />

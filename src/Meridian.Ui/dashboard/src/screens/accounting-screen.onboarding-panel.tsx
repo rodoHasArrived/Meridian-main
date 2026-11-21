@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type InputHTMLAttributes } from "react";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,8 @@ import * as api from "@/lib/api/accounting-onboarding.api";
 import type {
   OnboardingComparison, OnboardingCriteria, OnboardingDifference, OnboardingReadinessPacket, OnboardingSourceSelection, OnboardingWorkspace
 } from "@/types/accounting-onboarding";
+import { Checkbox } from "@/components/ui/checkbox";
+import { OnboardingShadowPanel } from "./accounting-screen.onboarding-shadow-panel";
 
 const split = (value: FormDataEntryValue | null) => String(value ?? "").split(/[,\n]/).map(item => item.trim()).filter(Boolean);
 const field = (data: FormData, name: string) => String(data.get(name) ?? "").trim();
@@ -34,9 +37,9 @@ function CriteriaFields({ criteria }: { criteria?: OnboardingCriteria }) {
     <fieldset className="space-y-2 text-sm">
       <legend className="mb-2 text-xs font-semibold">Required coverage</legend>
       {[["Balance", "Balances"], ["Position", "Positions"], ["Nav", "NAV"]].map(([value, label]) => (
-        <label key={value} className="mr-3 inline-flex items-center gap-2"><input type="checkbox" name="requiredKinds" value={value} defaultChecked={criteria ? criteria.requiredKinds.includes(value) : true} />{label}</label>
+        <Checkbox key={value} className="mr-3 inline-flex items-center gap-2" name="requiredKinds" value={value} defaultChecked={criteria ? criteria.requiredKinds.includes(value) : true} label={<>{label}</>} />
       ))}
-      <label className="flex items-center gap-2"><input type="checkbox" name="requireCloseReadiness" defaultChecked={criteria?.requireCloseReadiness ?? true} />Require close readiness</label>
+      <Checkbox className="flex items-center gap-2" name="requireCloseReadiness" defaultChecked={criteria?.requireCloseReadiness ?? true} label={<>Require close readiness</>} />
     </fieldset>
   </FormGrid>;
 }
@@ -56,17 +59,18 @@ export function AccountingOnboardingPanel() {
   const [selectedId, setSelectedId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [reload, setReload] = useState(0);
   const scopeController = useRef<AbortController | null>(null);
   useEffect(() => {
     const controller = new AbortController();
     scopeController.current = controller;
-    setLoading(true); setError(null);
+    setLoading(true); setLoadFailed(false);
     api.listOnboardingWorkspaces({ signal: controller.signal }).then(next => {
       if (controller.signal.aborted) return;
-      setWorkspaces(next);
+      setWorkspaces(next); setError(null);
       setSelectedId(current => next.some(item => item.workspaceId === current) ? current : "");
-    }).catch(reason => { if (!controller.signal.aborted) setError(errorText(reason)); })
+    }).catch(reason => { if (!controller.signal.aborted) { setLoadFailed(true); setError(errorText(reason)); } })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [reload]);
@@ -100,7 +104,7 @@ export function AccountingOnboardingPanel() {
       <CardDescription>Compare one entity and account population over required dates. Every comparison retains its source snapshots, mapping version, differences and review evidence.</CardDescription>
     </CardHeader>
     <CardContent className="space-y-4">
-      <p className="text-sm text-muted-foreground">External books remain read-only. A readiness packet supports review; any accounting-authority transition requires the separately governed process.</p>
+      <p className="text-sm text-muted-foreground">External books remain read-only. A readiness packet supports review; any accounting-authority transition requires the separately controlled process.</p>
       {error ? <StatusBanner tone="danger" role="alert" title="Onboarding unavailable" detail={error} /> : null}
       <div className="flex flex-wrap items-end gap-3">
         <FormRow label="Retained workspace" labelFor="onboarding-workspace" className="min-w-[16rem] flex-1">
@@ -109,7 +113,7 @@ export function AccountingOnboardingPanel() {
             {workspaces.map(item => <option key={item.workspaceId} value={item.workspaceId}>{item.name} · {item.scope.entityId} · {item.scope.startDate} – {item.scope.endDate}</option>)}
           </Select>
         </FormRow>
-        <Button variant="outline" disabled={loading} onClick={() => { setSelectedId(""); setReload(value => value + 1); }}>Refresh workspaces</Button>
+        <PanelReload reload={() => { if (!loading) setReload(value => value + 1); }} failed={loadFailed} busy={loading} what="onboarding workspaces" />
       </div>
       {!loading && !error && workspaces.length === 0 ? <p role="status" className="text-sm">No onboarding workspaces retained. Define a bounded scope to begin.</p> : null}
       <TechnicalDetails label="Define onboarding scope">
@@ -181,6 +185,7 @@ function WorkspaceDetail({ workspace, onChanged }: { workspace: OnboardingWorksp
     </TechnicalDetails> : null}
     {error ? <StatusBanner tone="danger" role="alert" title="Onboarding action failed" detail={error} /> : null}
     {message ? <p role="status" className="text-sm">{message}</p> : null}
+    <OnboardingShadowPanel workspace={workspace} onChanged={onChanged} />
     <TechnicalDetails label="Coverage and review criteria" description="The onboarding owner can revise criteria. Earlier comparisons and frozen packets keep their original criteria; new work requires review of the current revision.">
       <form aria-label="Update onboarding criteria" key={workspace.dataRevision} className="space-y-3" onSubmit={event => { event.preventDefault(); const criteria = criteriaFrom(new FormData(event.currentTarget)); void mutate(signal => api.updateOnboardingCriteria(workspace.workspaceId, workspace.version, criteria, { signal }), "Criteria revision retained."); }}>
         <CriteriaFields criteria={workspace.criteria} />
@@ -196,7 +201,7 @@ function WorkspaceDetail({ workspace, onChanged }: { workspace: OnboardingWorksp
             {sources.map((source, index) => <option key={index} value={index}>{source.asOfDate} · {source.providerId} · {source.importId} · mapping {source.mappingVersion}</option>)}
           </Select>
         </FormRow>
-        <Button variant="outline" disabled={busy} onClick={() => setSourceReload(value => value + 1)}>Refresh sources</Button>
+        <PanelReload reload={() => { if (!busy) setSourceReload(value => value + 1); }} failed={Boolean(sourceError)} busy={busy} what="onboarding sources" />
       </div>
       <form aria-label="Capture onboarding comparison" className="space-y-3" onSubmit={event => {
         event.preventDefault(); const data = new FormData(event.currentTarget);

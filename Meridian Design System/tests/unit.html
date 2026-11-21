@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian 3.5 — offline unit tests</title>
+<link rel="stylesheet" href="../styles.css">
+<style>body{font-family:var(--font-body,sans-serif);background:var(--bg,#F2F0EB);color:var(--text-primary,#20252B);margin:0;padding:24px}h1{font-size:20px;margin:0 0 4px}p.sub{font:12px var(--font-data,monospace);color:var(--text-muted,#606870);margin:0 0 16px}table{border-collapse:collapse;width:100%;max-width:980px;font:12px var(--font-data,monospace);background:var(--bg-light,#F8F7F3)}td,th{border:1px solid var(--border,#D2CDC3);padding:5px 9px;text-align:left}tr[data-ok="0"] td{background:var(--red-a10,rgba(181,75,66,.1));color:var(--red-dim,#873832)}th{font:600 10px var(--font-body,sans-serif);font-variant:all-small-caps;color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1)}#sum{font:600 14px var(--font-data,monospace);margin:14px 0}</style>
+<script src="../_preview_runtime.js"></script>
+<script src="../_ds_bundle.js"></script>
+<script src="../api/coordination.js"></script>
+<script src="../api/evidence.js"></script>
+</head>
+<body>
+<h1>Meridian 3.5 — offline unit tests</h1>
+<p class="sub">schemas · lifecycle · canonical hashing · invalidation · revert-to-current · metrics · time coherence · legacy adapters · persistence failures · migrations · URL identity · exports/manifest parity. No network beyond same-folder fetches; no browser install assumed beyond opening this file over HTTP.</p>
+<div id="sum">running…</div>
+<table><thead><tr><th>#</th><th>suite</th><th>assertion</th><th>result</th></tr></thead><tbody id="out"></tbody></table>
+<script>
+const rows = [], out = document.getElementById("out");
+let suite = "";
+function t(name, fn) {
+  let ok = false, note = "";
+  try { const r = fn(); ok = r === true || r === undefined; if (typeof r === "string") note = r; } catch (e) { note = String(e && e.message || e); }
+  rows.push({ suite, name, ok, note });
+  const tr = document.createElement("tr");
+  tr.dataset.ok = ok ? "1" : "0";
+  tr.innerHTML = `<td>${rows.length}</td><td>${suite}</td><td>${name}</td><td>${ok ? "PASS" : "FAIL " + note}</td>`;
+  out.appendChild(tr);
+}
+const eq = (a, b) => { if (a !== b) throw new Error(`expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`); };
+const ok = (v, msg) => { if (!v) throw new Error(msg || "falsy"); };
+
+async function isolatedStore(opts = {}) {
+  const src = await (await fetch("../templates/_strategy-executor/executor-store.js")).text();
+  const NS = window.MeridianDesignSystem_205d17;
+  const fake = {
+    MeridianDesignSystem_205d17: { StrategyModel: NS.StrategyModel, StrategyRunModel: NS.StrategyRunModel },
+    location: { search: opts.search || "", href: "https://test.local/templates/x/Y.dc.html" + (opts.search || "") },
+    history: { replaceState() {} },
+  };
+  if (opts.storage !== "none") {
+    const mem = {};
+    fake.localStorage = opts.storage === "throwing" ? { getItem() { throw new DOMException("denied", "SecurityError"); }, setItem() { throw new DOMException("denied", "SecurityError"); }, removeItem() {} }
+      : opts.storage === "quota" ? { getItem: (k) => mem[k] ?? null, setItem() { throw new DOMException("quota", "QuotaExceededError"); }, removeItem: (k) => { delete mem[k]; } }
+      : { getItem: (k) => (k in (opts.seed || {}) && !(k in mem) ? opts.seed[k] : mem[k] ?? null), setItem: (k, v) => { mem[k] = v; }, removeItem: (k) => { delete mem[k]; } };
+  }
+  new Function("window", "globalThis", src)(fake, fake);
+  return fake.MeridianStrategyExecutor;
+}
+
+async function main() {
+  const NS = window.MeridianDesignSystem_205d17 || {};
+  const { StrategyModel: SM, StrategyRunModel: RM, ObjectHooks, TimeHooks } = NS;
+
+  suite = "exports";
+  t("bundle namespace present", () => ok(NS && Object.keys(NS).length > 200, "namespace missing/thin"));
+  t("StrategyModel + constants exported", () => ok(SM && NS.STRATEGY_LIFECYCLE && NS.STRATEGY_FORMATION_STEPS));
+  t("StrategyRunModel + axes exported", () => ok(RM && NS.STRATEGY_RUN_AXES));
+  t("MeridianAPI.coordination carries StrategyModel", () => ok(window.MeridianAPI.coordination.StrategyModel === SM && window.MeridianAPI.coordination.STRATEGY_LIFECYCLE));
+  t("MeridianAPI.evidence carries StrategyRunModel", () => ok(window.MeridianAPI.evidence.StrategyRunModel === RM && window.MeridianAPI.evidence.STRATEGY_RUN_AXES));
+
+  suite = "manifest accuracy";
+  try {
+    const manifest = await (await fetch("../_ds_manifest.json")).json();
+    t("every manifest component is on the namespace", () => {
+      const missing = manifest.components.map((c) => c.name).filter((n) => !(n in NS));
+      return missing.length ? "missing: " + missing.slice(0, 5).join(", ") : true;
+    });
+    t("strategy modules recorded in manifest", () => {
+      const names = new Set(manifest.components.map((c) => c.name));
+      return ["StrategyModel", "STRATEGY_LIFECYCLE", "STRATEGY_FORMATION_STEPS", "StrategyRunModel", "STRATEGY_RUN_AXES"].every((n) => names.has(n)) || "manifest stale — recompiles at end of turn";
+    });
+  } catch (e) { t("manifest fetch", () => { throw e; }); }
+
+  suite = "schemas";
+  t("strategy is the seventeenth object", () => { eq(ObjectHooks.OBJECT_TYPES.length, 17); eq(ObjectHooks.OBJECT_TYPES[16].id, "strategy"); });
+  t("objectMeta('strategy') lifecycle matches STRATEGY_LIFECYCLE", () => { eq(ObjectHooks.objectMeta("strategy").lifecycle.join(","), NS.STRATEGY_LIFECYCLE.map((s) => s.id).join(",")); });
+  t("six formation stages in order", () => eq(NS.STRATEGY_FORMATION_STEPS.map((s) => s.id).join(","), "mandate,thesis,universe,portfolioRules,riskGovernance,review"));
+
+  suite = "lifecycle";
+  t("draft→validating legal; draft→approved illegal", () => ok(SM.canTransition("draft", "validating") && !SM.canTransition("draft", "approved")));
+  t("illegal transition returns issue, never throws", () => { const r = SM.applyTransition(SM.createDraft({}), "active"); ok(!r.ok && r.issue.code === "transition-invalid"); });
+  t("history appended on legal transition", () => { const r = SM.applyTransition(SM.createDraft({}), "validating", { actor: "t" }); ok(r.ok && r.strategy.history.length === 1 && r.strategy.lifecycle === "validating"); });
+  t("retired is terminal", () => ok(SM.isTerminal("retired") && SM.nextStates("retired").length === 0));
+
+  suite = "canonical hashing";
+  t("sha256 test vector (abc)", () => eq(SM.sha256Hex("abc"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"));
+  t("canonical form sorts keys, drops undefined", () => eq(SM.canonicalize({ b: 1, a: [2, { d: undefined, c: "x" }] }), '{"a":[2,{"c":"x"}],"b":1}'));
+  t("hash is order-independent", () => { eq(SM.formationHash({ name: "A", mandate: { x: 1, y: 2 } }), SM.formationHash({ mandate: { y: 2, x: 1 }, name: "A" })); });
+
+  const filled = SM.createDraft({ id: "S-T", name: "Test Strategy", mandate: { objective: "o", benchmark: "b", capitalBand: { min: 1, max: 2 }, horizon: "h" }, thesis: { statement: "x".repeat(50), edge: "e", decay: "d" }, universe: { datasetId: "ds", assetClass: "fi", filters: [{ field: "A", op: ">=", value: 1 }], minAdv: 1 }, portfolioRules: { entry: "e", exit: "x", sizing: "s", maxPositions: 10, rebalance: "m", worksheet: [{ ref: "B2", formula: "Let x = PRICE(c)", status: "ok" }] }, riskGovernance: { maxDrawdownPct: 10, grossExposureMax: 1.5, perNameMax: 0.05, reviewCadence: "Q", approvers: ["a"] } });
+
+  suite = "invalidation";
+  t("gates recompute from current values", () => { eq(SM.stageDisposition(SM.createDraft({}), "mandate"), "blocked"); eq(SM.stageDisposition(filled, "mandate"), "complete"); });
+  t("review blocked before acknowledgment", () => eq(SM.stageDisposition(filled, "review"), "blocked"));
+  t("acknowledgment binds to the exact draft hash", () => { const a = SM.acknowledgeReview(filled); eq(SM.stageDisposition(a, "review"), "complete"); eq(a.review.acknowledgedHash, SM.formationHash(a)); });
+  t("any later edit stales the acknowledgment", () => { const a = SM.acknowledgeReview(filled); const e = { ...a, thesis: { ...a.thesis, statement: "y".repeat(50) } }; ok(SM.validateStage(e, "review").some((i) => i.code === "acknowledgment-stale")); });
+  t("narrative edits never move materialHash; material edits do", () => { const a = SM.acknowledgeReview(filled); const nar = { ...a, thesis: { ...a.thesis, statement: "z".repeat(50) } }; const mat = { ...a, universe: { ...a.universe, datasetId: "other" } }; ok(SM.materialHash(a) === SM.materialHash(nar) && SM.materialHash(a) !== SM.materialHash(mat)); });
+  t("worksheet error blocks the rules stage", () => { const w = { ...filled, portfolioRules: { ...filled.portfolioRules, worksheet: [{ ref: "B2", formula: "RNK x", status: "error", message: "bad" }] } }; ok(SM.validateStage(w, "portfolioRules").some((i) => i.code === "worksheet-error")); });
+  t("checkpoint bumps version and freezes the snapshot", () => { const c = SM.checkpoint(SM.acknowledgeReview(filled)); ok(c.strategy.version === filled.version + 1 && Object.isFrozen(c.snapshot) && c.snapshot.schema === "meridian.strategy.formation/1"); });
+
+  suite = "metrics";
+  const days = []; let ts = Date.parse("2025-01-02"); for (let i = 0; i < 300; i++) { days.push(ts); ts += 86400000 * (i % 5 === 4 ? 3 : 1); }
+  const eqs = days.map((tt, i) => ({ t: tt, v: 100 * Math.pow(1.0006, i) * (1 + 0.01 * Math.sin(i / 9)) }));
+  const bms = days.map((tt, i) => ({ t: tt, v: 100 * Math.pow(1.0003, i) }));
+  const trades = [{ symbol: "A", side: "Buy", qty: 100, entryAt: days[2], entryPx: 99, exitAt: days[40], exitPx: 104, fees: 2 }, { symbol: "B", side: "Sell", qty: 50, entryAt: days[10], entryPx: 101, exitAt: days[60], exitPx: 108, fees: 1.5 }, { symbol: "C", side: "Buy", qty: 10, entryAt: days[80], entryPx: 100 }];
+  const art = RM.completeRun(RM.startRun(RM.createRun(SM.acknowledgeReview(filled), { env: "FIXTURE", window: { start: "2025-01-02", end: "2026-06-30" } })), { series: { equity: eqs, benchmark: bms }, trades });
+  t("uppercase env props stay compatible", () => eq(art.env, "fixture"));
+  t("artifact deep-frozen (immutable history)", () => ok(Object.isFrozen(art) && Object.isFrozen(art.metrics) && Object.isFrozen(art.inputs.snapshot)));
+  t("CAGR is ACT/365.2425 on actual elapsed days", () => { const yrs = (eqs[eqs.length - 1].t - eqs[0].t) / 86400000 / 365.2425; ok(Math.abs(Math.pow(1 + art.metrics.totalReturn, 1 / yrs) - 1 - art.metrics.cagr) < 1e-12); });
+  t("excess = total − benchmark", () => ok(Math.abs(art.metrics.excessReturn - (art.metrics.totalReturn - art.metrics.benchmarkReturn)) < 1e-12));
+  t("drawdown is rolling-peak and negative", () => ok(art.metrics.maxDrawdown < 0 && art.metrics.maxDrawdown > -1));
+  t("declared-method Sharpe present", () => ok(Number.isFinite(art.metrics.sharpe) && /rf 0/.test(art.methods.sharpe)));
+  t("win rate from closed trades net of fees (loss counted)", () => eq(art.metrics.winRate, 0.5));
+  t("fees sum recorded values, never invent", () => eq(art.metrics.fees, 3.5));
+  t("missing evidence → null + issues + fail disposition", () => { const bare = RM.completeRun(RM.createRun(filled, { env: "paper" }), {}); ok(bare.metrics.totalReturn === null && bare.validation.disposition === "fail" && bare.validation.issues.some((i) => i.code === "equity-series-missing")); });
+
+  suite = "revert-to-current";
+  t("proof verifies; tamper → mismatch", () => { ok(RM.verifyProof(art).state === "verified"); const tam = JSON.parse(JSON.stringify(art)); tam.inputs.snapshot.fields.universe.datasetId = "x"; eq(RM.verifyProof(tam).state, "mismatch"); });
+  t("freshness current → stale → current on revert", () => {
+    const d0 = SM.acknowledgeReview(filled);
+    eq(RM.freshness(art, d0).state, "current");
+    const edited = { ...d0, universe: { ...d0.universe, datasetId: "hy" } };
+    const fr = RM.freshness(art, edited);
+    ok(fr.state === "stale" && fr.changed.includes("universe"));
+    eq(RM.freshness(art, d0).state, "current");
+  });
+
+  suite = "time coherence";
+  t("settlement before trade is temporally impossible", () => { const issues = TimeHooks.checkTimeCoherence({ trade: "2026-07-30", settlement: "2026-07-28" }); ok(issues.some((i) => i.severity === "error")); });
+  t("coherent record raises no errors", () => { const issues = TimeHooks.checkTimeCoherence({ trade: "2026-07-30", settlement: "2026-08-02" }); ok(!issues.some((i) => i.severity === "error")); });
+
+  suite = "legacy adapters";
+  t("fromLegacyRun keeps reported separate from derived", () => { const l = RM.fromLegacyRun({ id: "R1", kind: "backtest", startedAt: 1, completedAt: 2, status: "Complete", metrics: { sharpe: 1.1 }, env: "PAPER" }); ok(l.env === "paper" && l.metrics === null && l.reported.sharpe === 1.1 && l.legacy === true); });
+  t("toLegacyRun round-trips id/status/metrics", () => { const b = RM.toLegacyRun(art); ok(b.id === art.id && b.status === "Complete" && b.metrics.totalReturn === art.metrics.totalReturn); });
+
+  suite = "persistence failures";
+  t("unavailable storage → session-only + fixture", async () => { const X = await isolatedStore({ storage: "throwing" }); ok(X.ready() && X.storageNotice() !== null && X.getStrategy("STR-0007")); });
+  t("corrupt JSON → read-only fixture with visible notice", async () => { const X = await isolatedStore({ seed: { "meridian.strategyExecutor.store.v1": "{not json" } }); ok(X.ready() && /corrupt/i.test(X.storageNotice().message)); });
+  t("unsupported schema → safe fallback", async () => { const X = await isolatedStore({ seed: { "meridian.strategyExecutor.store.v1": JSON.stringify({ schemaVersion: 99 }) } }); ok(X.ready() && /schema/i.test(X.storageNotice().message)); });
+  t("quota failure downgrades to session-only mid-flight", async () => { const X = await isolatedStore({ storage: "quota" }); ok(X.ready()); X.updateStrategy("STR-0007", (d) => ({ ...d, name: d.name })); ok(X.storageNotice() !== null); });
+
+  suite = "migrations";
+  t("v0 payload migrates to v1", async () => { const X = await isolatedStore({}); ok(X._internals.migrate({ strategies: {} }) !== null && X._internals.migrate({ strategies: {} }).schemaVersion === 1); });
+  t("newer schema is refused, not guessed", async () => { const X = await isolatedStore({}); ok(X._internals.migrate({ schemaVersion: 99 }) === null); });
+
+  suite = "URL identity";
+  t("precedence: URL params beat store", async () => { const X = await isolatedStore({ search: "?strategy=STR-0007&run=RUN-CARRY-A&runA=RUN-CARRY-A&runB=RUN-CARRY-C" }); const i = X.resolveIdentity(); ok(i.source === "url" && i.runId === "RUN-CARRY-A" && i.runB === "RUN-CARRY-C"); });
+  t("invalid ids fall back to store, then fixture", async () => { const X = await isolatedStore({ search: "?strategy=NOPE&run=NOPE" }); const i = X.resolveIdentity(); ok(i.strategyId === "STR-0007" && i.runId); });
+  t("withIdentity carries ids, never artifact JSON", async () => { const X = await isolatedStore({ search: "?strategy=STR-0007" }); const href = X.withIdentity("../strategy-runs/StrategyRuns.dc.html", { run: "RUN-CARRY-B" }); ok(href.includes("strategy=STR-0007") && href.includes("run=RUN-CARRY-B") && !href.includes("%7B")); });
+  t("acceptance journey: blocker → fix → run → edit → stale → revert → current", async () => {
+    const X = await isolatedStore({});
+    const id = "STR-0007";
+    ok(SM.formationIssues(X.getStrategy(id)).some((i) => i.code === "worksheet-error"), "fixture starts blocked");
+    X.updateWorksheetCell(id, "B5", "Rank carry_roll Desc Top 40");
+    eq(X.freshnessFor("RUN-CARRY-A").state, "current");
+    const run = X.runBacktest(id, { env: "fixture" });
+    ok(run.ok && run.artifact.validation.disposition !== "fail");
+    const before = X.getStrategy(id).universe.datasetId;
+    X.updateStrategy(id, (d) => ({ ...d, universe: { ...d.universe, datasetId: "hy-corp" } }));
+    eq(X.freshnessFor(run.artifact.id).state, "stale");
+    X.updateStrategy(id, (d) => ({ ...d, universe: { ...d.universe, datasetId: before } }));
+    eq(X.freshnessFor(run.artifact.id).state, "current");
+    const att = X.attest({ strategyId: id, runId: run.artifact.id, decision: "approve", signedBy: "T" });
+    eq(X.attestationState(att).state, "standing");
+    X.updateStrategy(id, (d) => ({ ...d, universe: { ...d.universe, datasetId: "util" } }));
+    eq(X.attestationState(att).state, "superseded");
+  });
+
+}
+// async support: t() queues AsyncFunction assertions and the runner awaits them all.
+(async () => {
+  const pending = [];
+  const syncT = t;
+  t = (name, fn) => {
+    if (fn.constructor.name === "AsyncFunction") {
+      const assertionSuite = suite;
+      const report = (assertion) => { const activeSuite = suite; suite = assertionSuite; syncT(name, assertion); suite = activeSuite; };
+      pending.push(fn().then(() => report(() => true)).catch((e) => report(() => { throw e; })));
+    } else syncT(name, fn);
+  };
+  await main();
+  await Promise.all(pending);
+  const fails = rows.filter((r) => !r.ok).length;
+  document.getElementById("sum").textContent = `${rows.length - fails} passed · ${fails} failed · ${rows.length} total`;
+  document.title = fails ? `FAIL ${fails}/${rows.length}` : `PASS ${rows.length}/${rows.length}`;
+  window.__testResults = { total: rows.length, fails, rows };
+})();
+</script>
+</body>
+</html>

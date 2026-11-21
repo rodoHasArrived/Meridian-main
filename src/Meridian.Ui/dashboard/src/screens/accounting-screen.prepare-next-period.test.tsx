@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { axe } from "jest-axe";
 import { ApiError } from "@/lib/api-errors";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import * as api from "@/lib/api/close-preparation.api";
 import { PrepareNextPeriodPanel } from "./accounting-screen.prepare-next-period";
 import { preparationPreview, preparedResult, retainedTemplate, sourcePlan, sourceWorkflow, targetBook, targetPeriod } from "./accounting-screen.prepare-next-period.test-fixtures";
@@ -107,10 +108,10 @@ it("rejects stale previews and requires a new preview before another creation", 
   const { user } = await selectTarget();
   await user.click(screen.getByRole("button", { name: "Preview next period" }));
   await user.click(await screen.findByRole("button", { name: "Create next-period plan" }));
-  await screen.findByText(/Refresh the preview before creating the plan/);
+  await screen.findByText(/Recalculate the preview before creating the plan/);
   expect(storedRecovery()).toBeNull();
   expect(screen.queryByRole("button", { name: "Create next-period plan" })).not.toBeInTheDocument();
-  await user.click(screen.getByRole("button", { name: "Refresh preview" }));
+  await user.click(screen.getByRole("button", { name: "Recalculate preview" }));
   await user.click(await screen.findByRole("button", { name: "Create next-period plan" }));
   await screen.findByText("Next-period plan created");
   expect(service.previewClosePreparation).toHaveBeenCalledTimes(2);
@@ -140,7 +141,7 @@ it("persists before posting and recovers a lost response after reload with the o
   await screen.findByRole("button", { name: "Retry creation" });
   const saved = storedRecovery();
   expect(saved).not.toBeNull();
-  expect(screen.getByRole("button", { name: "Refresh preview" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Recalculate preview" })).toBeDisabled();
   expect(screen.getByLabelText("Retained template")).toBeDisabled();
   expect(screen.getByRole("button", { name: "Capture another version" })).toBeDisabled();
   unmount();
@@ -181,7 +182,7 @@ it.each([
   expect(screen.queryByRole("region", { name: "Next-period preview" })).not.toBeInTheDocument();
   expect(screen.getByLabelText("Target book")).toBeDisabled();
   await user.click(recover);
-  await screen.findByText(/Refresh the preview before creating the plan/);
+  await screen.findByText(/Recalculate the preview before creating the plan/);
   expect(service.createPreparedClosePlan).toHaveBeenCalledWith({ previewId: preparationPreview.previewId, idempotencyKey: "retained-request-key" }, expect.any(AbortSignal));
   expect(storedRecovery()).toBeNull();
   expect(screen.queryByRole("button", { name: "Recover pending creation" })).not.toBeInTheDocument();
@@ -265,4 +266,72 @@ it("shows retained template version and creation history when a prepared plan is
   expect(within(provenance).getByText(/Created by Morgan.*2026-10-01 – 2026-10-31/)).toBeInTheDocument();
   await user.click(within(provenance).getByText("Retained creation history (1)"));
   expect(within(provenance).getByText("Prepared October with fresh tasks and required sign-offs.")).toBeVisible();
+});
+
+it("marks target period boundaries and task deadlines up as calendar dates without changing their text", async () => {
+  const { user, container } = await selectTarget();
+  const target = screen.getByText((_, element) => element?.tagName === "P" && (element.textContent ?? "").startsWith("Target period: "));
+  expect(target).toHaveTextContent(`Target period: ${targetPeriod.label}, 2026-10-01 – 2026-10-31. Status: Open.`);
+  expect(within(target).getByText("2026-10-01")).toHaveAttribute("datetime", "2026-10-01");
+  expect(within(target).getByText("2026-10-31")).toHaveAttribute("datetime", "2026-10-31");
+
+  await user.click(screen.getByRole("button", { name: "Preview next period" }));
+  const preview = await screen.findByRole("region", { name: "Next-period preview" });
+  const summary = within(preview).getByText((_, element) => element?.tagName === "P" && (element.textContent ?? "").includes(" · Calendar "));
+  expect(summary).toHaveTextContent(`${preparationPreview.targetBook.displayName} · 2026-10-01 – 2026-10-31 · Calendar ${preparationPreview.calendar.calendarId} v${preparationPreview.calendar.version}`);
+  expect(within(summary).getByText("2026-10-01").tagName).toBe("TIME");
+  expect(within(summary).getByText("2026-10-31")).toHaveAttribute("datetime", "2026-10-31");
+
+  const deadlines = within(preview).getByRole("table", { name: "Prepared task deadlines and requirements" });
+  const [, reconcile, review] = within(deadlines).getAllByRole("row");
+  expect(reconcile).toHaveTextContent("2026-10-02 → 2026-11-04");
+  expect(within(reconcile).getByText("2026-10-02")).toHaveAttribute("datetime", "2026-10-02");
+  const prepared = within(reconcile).getByText("2026-11-04");
+  expect(prepared).toHaveAttribute("datetime", "2026-11-04");
+  expect(prepared.parentElement?.tagName).toBe("STRONG");
+  expect(review).toHaveTextContent("2026-10-05 → 2026-11-05");
+  expect((await axe(container)).violations).toEqual([]);
+});
+
+it("prints a deadline the service did not send as a calendar date exactly as received", async () => {
+  service.previewClosePreparation.mockResolvedValue({ ...preparationPreview,
+    tasks: preparationPreview.tasks.map((task, index) => index === 0 ? { ...task, sourceDueDate: "2026-10-02T00:00:00Z", dueDate: "2026-02-30" } : task) });
+  const { user } = await selectTarget();
+  await user.click(screen.getByRole("button", { name: "Preview next period" }));
+  const preview = await screen.findByRole("region", { name: "Next-period preview" });
+  const [, reconcile, review] = within(preview).getAllByRole("row");
+  expect(reconcile).toHaveTextContent("2026-10-02T00:00:00Z → 2026-02-30");
+  expect(reconcile.querySelector("time")).toBeNull();
+  expect(within(reconcile).getByText("2026-02-30").parentElement?.tagName).toBe("STRONG");
+  expect(review.querySelectorAll("time")).toHaveLength(2);
+});
+
+it("marks each source deadline in the reusable rule table up as a calendar date", async () => {
+  service.listClosePlanTemplates.mockResolvedValue([]);
+  const user = userEvent.setup();
+  const { container } = render(<MemoryRouter><PrepareNextPeriodPanel initialWorkflowId={sourceWorkflow.workflowId} /></MemoryRouter>);
+  await user.click(screen.getByRole("button", { name: "Prepare next period" }));
+  const rules = await screen.findByRole("table", { name: "Reusable deadline rules" });
+  const reconcile = within(rules).getByRole("rowheader", { name: /Reconcile cash/ });
+  const due = within(reconcile).getByText("2026-10-02");
+  expect(due.tagName).toBe("TIME");
+  expect(due).toHaveAttribute("datetime", "2026-10-02");
+  expect(due.parentElement).toHaveClass("font-mono", "text-xs", "text-muted-foreground");
+  expect(within(within(rules).getByRole("rowheader", { name: /Review close/ })).getByText("2026-10-05")).toHaveAttribute("datetime", "2026-10-05");
+  expect((await axe(container)).violations).toEqual([]);
+});
+
+it("keeps the selected template when the header refresh re-reads the source plan", async () => {
+  const user = userEvent.setup();
+  const tree = <MemoryRouter><PrepareNextPeriodPanel initialWorkflowId={sourceWorkflow.workflowId} /></MemoryRouter>;
+  const view = render(<GlobalRefreshProvider sequence={0}>{tree}</GlobalRefreshProvider>);
+  await user.click(screen.getByRole("button", { name: "Prepare next period" }));
+  const templateKey = `${retainedTemplate.templateId}:${retainedTemplate.version}`;
+  await user.selectOptions(await screen.findByLabelText("Retained template"), templateKey);
+  expect(screen.queryByRole("button", { name: "Refresh source plan" })).not.toBeInTheDocument();
+  const reads = service.getClosePreparationSource.mock.calls.length;
+  view.rerender(<GlobalRefreshProvider sequence={1}>{tree}</GlobalRefreshProvider>);
+  await waitFor(() => expect(service.getClosePreparationSource).toHaveBeenCalledTimes(reads + 1));
+  expect(screen.getByLabelText("Retained template")).toHaveValue(templateKey);
+  expect(screen.getByLabelText("Target book")).toBeInTheDocument();
 });

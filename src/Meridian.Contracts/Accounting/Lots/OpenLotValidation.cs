@@ -1,5 +1,6 @@
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Contracts.Accounting.Lots;
 
@@ -8,6 +9,17 @@ namespace Meridian.Contracts.Accounting.Lots;
 /// </summary>
 public static class OpenLotValidation
 {
+    /// <summary>
+    /// Certifies the stored twelve-decimal quote derived from a unit successor's exact allocated
+    /// basis. Callers must separately validate its retained lineage and posting authority; this
+    /// quote predicate never changes the basis or permits rounding an ordinary acquisition.
+    /// </summary>
+    public static bool IsDerivedSuccessorUnitCost(
+        OpenLotAcquisitionDto acquisition, decimal originalQuantity, decimal unitCost, decimal retainedBasis)
+        => acquisition.QuantityBasis == LotQuantityBasis.Units
+            && acquisition.CorporateActionLineage is not null && originalQuantity > 0m
+            && unitCost == decimal.Round(retainedBasis / originalQuantity, 12, MidpointRounding.ToEven);
+
     public static void Validate(OpenLotDto lot)
     {
         ArgumentNullException.ThrowIfNull(lot);
@@ -27,7 +39,10 @@ public static class OpenLotValidation
         if (acquisition.AcquisitionCurrency == acquisition.FunctionalCurrency
             && (acquisition.AcquisitionFxRateToFunctional != 1m || acquisition.TransactionCostBasis != acquisition.FunctionalCostBasis))
             throw new ArgumentException("Same-currency acquisition FX must equal one and retained transaction and functional bases must agree exactly.");
-        if (Math.Abs(acquisition.FunctionalCostBasis - acquisition.TransactionCostBasis * acquisition.AcquisitionFxRateToFunctional) > 0.01m)
+        // A retained functional basis is rounded to its currency's minor unit, so it can sit up to one
+        // minor unit from the unrounded product. That is a whole unit for zero-decimal currencies.
+        if (Math.Abs(acquisition.FunctionalCostBasis - acquisition.TransactionCostBasis * acquisition.AcquisitionFxRateToFunctional)
+            > Math.Max(0.01m, MinorUnit(acquisition.FunctionalCurrency)))
             throw new ArgumentException("Retained acquisition basis does not reconcile to acquisition FX.");
         if (acquisition.Evidence is null || acquisition.Evidence.Count == 0
             || acquisition.Evidence.Any(e => !RetainedEvidenceIdentityValidator.IsComplete(e)))
@@ -71,6 +86,14 @@ public static class OpenLotValidation
         if (lot.CurrentFactor is { } currentFactor
             && (face is null || currentFactor < 0m || currentFactor >= face.BookedFactor))
             throw new ArgumentException("A current paydown factor requires face terms and lies in [0, booked factor).");
+    }
+
+    private static decimal MinorUnit(string currency)
+    {
+        var unit = 1m;
+        for (var i = 0; i < CurrencyMinorUnits.GetPrecision(currency); i++)
+            unit /= 10m;
+        return unit;
     }
 
     private static bool Currency(string value) => value is { Length: 3 } && value.All(c => c is >= 'A' and <= 'Z');

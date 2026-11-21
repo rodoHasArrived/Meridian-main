@@ -267,6 +267,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 LedgerBookId: fixture.BookId, TenantId: tenant, CompanyId: company);
 
             var posted = await workbench.ApplyLifecycleActionAsync(post, ct);
+            var beforeRetry = (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId, ct)).Should().ContainSingle().Subject;
+            var eligibilityReceipt = beforeRetry.Entry.Metadata.Tags!["controls.eligibility"];
+            eligibilityReceipt.Should().NotBeNullOrWhiteSpace();
+            var auditEventsBeforeRetry = (await fixture.Store.VerifyLedgerEventAuditAsync(ct)).ChainedEvents;
             var replay = await Restart().ApplyLifecycleActionAsync(post, ct);
 
             posted.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
@@ -280,6 +284,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var journals = await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId, ct);
             var journal = journals.Should().ContainSingle().Subject;
             journal.Entry.JournalEntryId.Should().Be(draft.JournalEntryId);
+            journal.Entry.Metadata.Tags!["controls.eligibility"].Should().Be(eligibilityReceipt,
+                "recovery reconstructs the pre-append command without replacing its immutable eligibility receipt");
+            (await fixture.Store.VerifyLedgerEventAuditAsync(ct)).ChainedEvents.Should().Be(auditEventsBeforeRetry,
+                "an exact retry must not append another journal or audit fact");
             var retained = (await assets.GetLatestAsync(candidate.Spine.EventId, candidate.Spine.EventVersion, ct))!.Projection;
             retained.PostedJournalImpact!.JournalEntryId.Should().Be(draft.JournalEntryId);
             retained.TaxLotMutationBatchId.Should().NotBeNull();

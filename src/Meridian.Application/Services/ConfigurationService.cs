@@ -40,6 +40,7 @@ public sealed class ConfigurationService : IAsyncDisposable
     private readonly ConfigurationPipeline _pipeline;
     private readonly Func<IBestOfBreedProviderSelector?> _providerSelectorAccessor;
     private readonly Func<bool> _ibGatewayAvailabilityProbe;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
     private ConfigWatcher? _watcher;
 
     public ConfigurationService(
@@ -49,10 +50,12 @@ public sealed class ConfigurationService : IAsyncDisposable
         ProviderCredentialResolver? credentialResolver = null,
         IBestOfBreedProviderSelector? providerSelector = null,
         Func<bool>? ibGatewayAvailabilityProbe = null,
-        Func<IBestOfBreedProviderSelector?>? providerSelectorAccessor = null)
+        Func<IBestOfBreedProviderSelector?>? providerSelectorAccessor = null,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         _log = log ?? LoggingSetup.ForContext<ConfigurationService>();
-        _wizard = wizard ?? new ConfigurationWizard();
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
+        _wizard = wizard ?? new ConfigurationWizard(ownershipPolicy: _ownershipPolicy);
         _autoConfig = autoConfig ?? new AutoConfigurationService();
         _credentialResolver = credentialResolver ?? new ProviderCredentialResolver(_log);
         _ibGatewayAvailabilityProbe = ibGatewayAvailabilityProbe ?? IsIBGatewayAvailable;
@@ -556,8 +559,8 @@ public sealed class ConfigurationService : IAsyncDisposable
     /// </summary>
     public async Task SaveConfigAsync(AppConfig config, string? configPath = null, CancellationToken ct = default)
     {
-        var store = new ConfigStore(configPath);
-        await store.SaveAsync(config);
+        var store = new ConfigStore(configPath, _ownershipPolicy);
+        await store.SaveAsync(config, ct).ConfigureAwait(false);
         _log.Information("Configuration saved to {Path}", store.ConfigPath);
     }
 

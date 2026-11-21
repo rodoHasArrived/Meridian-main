@@ -28,6 +28,7 @@ public sealed class ProportionalAllocationEngine : IAllocationEngine
         ArgumentNullException.ThrowIfNull(rule);
         if (totalQuantity <= 0)
             throw new ArgumentOutOfRangeException(nameof(totalQuantity), "Must be positive.");
+        AllocationRule.ValidateWeights(rule.SliceWeights, nameof(rule));
 
         var normalized = rule.NormalizedWeights();
         var slices = ComputeSlices(totalQuantity, fillPrice, normalized);

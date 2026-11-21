@@ -4,6 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -20,6 +21,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
     private ParameterItemViewModel? _selectedParameter;
     private InspectorPanelModel _runSummaryInspector = BuildEmptyRunSummaryInspector();
     private InspectorPanelModel _selectedParameterInspector = BuildEmptyParameterInspector();
+    private StrategyRunReplayProvenanceDto? _replayProvenance;
+    private bool _showReplayEvidence;
     private string _runActionStateTitle = "Select a retained run";
     private string _runActionStateDetail = "Portfolio, Ledger, Risk, and Cash Flow unlock after selecting a retained strategy run.";
 
@@ -67,6 +70,53 @@ public sealed class StrategyRunDetailViewModel : BindableBase
     }
 
     public bool HasSelectedParameter => SelectedParameter is not null;
+
+    public StrategyRunReplayProvenanceDto? ReplayProvenance
+    {
+        get => _replayProvenance;
+        private set
+        {
+            if (SetProperty(ref _replayProvenance, value))
+            {
+                OnPropertyChanged(nameof(ReplaySourceTable));
+                OnPropertyChanged(nameof(ReplayRevisionTable));
+                OnPropertyChanged(nameof(HasReplayFingerprint));
+                OnPropertyChanged(nameof(HasReplayRevisions));
+            }
+        }
+    }
+
+    public bool ShowReplayEvidence
+    {
+        get => _showReplayEvidence;
+        private set => SetProperty(ref _showReplayEvidence, value);
+    }
+
+    public bool HasReplayFingerprint => ReplayProvenance?.CompletedInputHashSha256 is not null;
+
+    public bool HasReplayRevisions => ReplayProvenance?.Revisions.Count > 0;
+
+    public WorkstationTableModel<StrategyRunReplaySourceCountDto> ReplaySourceTable => new(
+        ReplayProvenance?.SourceMix ?? [],
+        [
+            new("Symbol", nameof(StrategyRunReplaySourceCountDto.Symbol), 108),
+            new("Source", nameof(StrategyRunReplaySourceCountDto.Source), 140),
+            new("Replayed bars", nameof(StrategyRunReplaySourceCountDto.Bars), 100, "{0:N0}")
+        ],
+        "Replayed bars by source",
+        "Replay provider mix is unavailable",
+        "Source counts are available for new runs that replay bars.");
+
+    public WorkstationTableModel<StrategyRunReplayRevisionDto> ReplayRevisionTable => new(
+        ReplayProvenance?.Revisions ?? [],
+        [
+            new("Instrument", nameof(StrategyRunReplayRevisionDto.Instrument), 96),
+            new("Serving provider", nameof(StrategyRunReplayRevisionDto.ServingProvider), 115),
+            new("Granularity", nameof(StrategyRunReplayRevisionDto.Granularity), 80),
+            new("Revision", nameof(StrategyRunReplayRevisionDto.RevisionId), 450),
+            new("Content hash", nameof(StrategyRunReplayRevisionDto.ContentHash), 450)
+        ],
+        "Verified backfill revisions");
 
     private string _title = "Strategy Run Detail";
     public string Title
@@ -235,13 +285,13 @@ public sealed class StrategyRunDetailViewModel : BindableBase
     private void ApplyDetail(StrategyRunDetail detail)
     {
         Title = $"{detail.Summary.StrategyName} ({detail.Summary.RunId[..Math.Min(8, detail.Summary.RunId.Length)]})";
-        StatusText = $"{detail.Summary.Status} {detail.Summary.Mode} run recorded at {detail.Summary.StartedAt.LocalDateTime:g}.";
+        StatusText = $"{detail.Summary.Status} {detail.Summary.Mode} run recorded at {UtcFormat.FormatDisplayTimestamp(detail.Summary.StartedAt)}.";
         RunActionStateTitle = "Run drill-ins ready";
         RunActionStateDetail = $"Open portfolio, ledger, risk, or cash-flow review for run {detail.Summary.RunId}.";
         ModeText = detail.Summary.Mode.ToString();
         EngineText = detail.Summary.Engine.ToString();
-        StartedAtText = detail.Summary.StartedAt.LocalDateTime.ToString("g");
-        CompletedAtText = detail.Summary.CompletedAt?.LocalDateTime.ToString("g") ?? "In progress";
+        StartedAtText = UtcFormat.FormatDisplayTimestamp(detail.Summary.StartedAt);
+        CompletedAtText = UtcFormat.FormatDisplayTimestamp(detail.Summary.CompletedAt, "In progress");
         NetPnlText = FormatCurrency(detail.Summary.NetPnl);
         ReturnText = FormatPercent(detail.Summary.TotalReturn);
         EquityText = FormatCurrency(detail.Summary.FinalEquity);
@@ -249,6 +299,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
         PortfolioReferenceText = detail.Summary.PortfolioId ?? "Not linked";
         LedgerReferenceText = detail.Summary.LedgerReference ?? "Not linked";
         RunSummaryInspector = BuildRunSummaryInspector(detail);
+        ReplayProvenance = detail.ReplayProvenance;
+        ShowReplayEvidence = detail.Summary.Mode == StrategyRunMode.Backtest;
 
         Parameters.Clear();
         foreach (var parameter in detail.Parameters.OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase))
@@ -327,6 +379,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
         Parameters.Clear();
         SelectedParameter = null;
         RunSummaryInspector = BuildEmptyRunSummaryInspector();
+        ReplayProvenance = null;
+        ShowReplayEvidence = false;
     }
 
     private void NotifyRunCommandsChanged()
@@ -350,8 +404,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
             Badge = new WorkstationBadgeModel("Status", statusValue, "\uE8A5", ToneForStatus(statusValue)),
             Facts =
             [
-                new("Started", detail.Summary.StartedAt.LocalDateTime.ToString("g")),
-                new("Completed", detail.Summary.CompletedAt?.LocalDateTime.ToString("g") ?? "In progress"),
+                new("Started", UtcFormat.FormatDisplayTimestamp(detail.Summary.StartedAt)),
+                new("Completed", UtcFormat.FormatDisplayTimestamp(detail.Summary.CompletedAt, "In progress")),
                 new("Return", FormatPercent(detail.Summary.TotalReturn)),
                 new("Fills", detail.Summary.FillCount.ToString("N0")),
                 new("Portfolio", detail.Summary.PortfolioId ?? "Not linked"),

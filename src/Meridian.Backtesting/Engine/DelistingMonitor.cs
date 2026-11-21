@@ -77,8 +77,10 @@ internal sealed class DelistingMonitor(DelistingPolicy policy, decimal haircutPe
                 {
                     portfolio.ProcessFill(fill);
                 }
-                catch (InvalidOperationException ex)
+                catch (FillRejectedException ex)
                 {
+                    // Refused before any state changed; other failures may have applied part of
+                    // the fill and are left to end the run.
                     _failedLiquidationSymbols.Add(symbol);
                     logger.LogWarning(ex,
                         "Delisting liquidation for {Symbol} in account {AccountId} was rejected by account rules; the position remains open at a stale mark.",

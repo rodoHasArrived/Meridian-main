@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { LedgerAmountProofDrawer } from "@/components/meridian/proof-drawer";
+import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { formatAmountWithCode, pluralizeCount } from "@/lib/format";
 import { getReportAmountBindings } from "@/lib/report-amount-proof-api";
-import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import type { ReportLedgerAmountBinding } from "@/types/report-amount-proof";
 import type { GovernedReportingRun } from "@/types/reporting-governance";
 
@@ -18,20 +17,15 @@ interface AmountState {
 
 /** One report surface over retained amounts; never reconstructs balances from live journals. */
 export function ReportingRetainedAmountsPanel({ run }: { run: Pick<GovernedReportingRun, "runId" | "scope" | "snapshot"> }) {
-  const scopeKey = JSON.stringify([run.runId, run.scope.tenantId, run.scope.companyId,
+  const scopeKey = JSON.stringify([run.runId, run.scope.tenantId, run.scope.companyId, run.scope.organizationId,
     run.scope.fundId, run.scope.bookId, run.scope.periodId, run.snapshot.sourceCheckpointHash]);
   const [result, setResult] = useState<AmountState | null>(null);
-  const [selected, setSelected] = useState<{ key: string; amount: LedgerAmountSelection } | null>(null);
   const [retry, setRetry] = useState(0);
-
-  // Discard the selection on any retained identity change, including a round trip to the old run.
-  if (selected && selected.key !== scopeKey) setSelected(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    const [runId, tenantId, companyId, fundId, bookId, periodId, checkpointHash] = JSON.parse(scopeKey) as string[];
+    const [runId, tenantId, companyId, organizationId, fundId, bookId, periodId, checkpointHash] = JSON.parse(scopeKey) as string[];
     setResult(null);
-    setSelected(null);
     void getReportAmountBindings(runId!, { signal: controller.signal }).then((bindings) => {
       if (controller.signal.aborted) return;
       const valid = Array.isArray(bindings) && bindings.every((binding) =>
@@ -47,6 +41,18 @@ export function ReportingRetainedAmountsPanel({ run }: { run: Pick<GovernedRepor
         binding.scope.periodId === periodId && !!periodId &&
         typeof checkpointHash === "string" && /^[a-fA-F0-9]{64}$/.test(checkpointHash) &&
         binding.sourceSnapshotHash === checkpointHash &&
+        (!binding.amountPassport || (
+          binding.amountPassport.identity?.subjectKind === "ledger-amount" &&
+          binding.amountPassport.identity.subjectId === binding.subjectId &&
+          binding.amountPassport.identity.revision === checkpointHash &&
+          binding.amountPassport.identity.scope?.tenantId === tenantId &&
+          binding.amountPassport.identity.scope.companyId === companyId &&
+          binding.amountPassport.identity.scope.organizationId === organizationId &&
+          binding.amountPassport.identity.scope.fundProfileId === fundId &&
+          binding.amountPassport.identity.scope.ledgerBookId === bookId &&
+          binding.amountPassport.identity.scope.periodId === periodId &&
+          binding.amountPassport.currency === binding.currency
+        )) &&
         hasRetainedEntryIds(binding.journalEntryIds) && hasRetainedEntryIds(binding.ledgerEntryIds));
       const unique = valid && new Set(bindings.map((binding) => binding.amountId)).size === bindings.length;
       setResult({ key: scopeKey, bindings: unique ? bindings : [], error: unique ? null :
@@ -59,7 +65,6 @@ export function ReportingRetainedAmountsPanel({ run }: { run: Pick<GovernedRepor
   }, [scopeKey, retry]);
 
   const current = result?.key === scopeKey ? result : null;
-  const selection = current && !current.error && selected?.key === scopeKey ? selected.amount : null;
 
   return (
     <Card className="panel-surface">
@@ -91,19 +96,17 @@ export function ReportingRetainedAmountsPanel({ run }: { run: Pick<GovernedRepor
                   <tr key={binding.amountId} className="border-b border-border/60 align-top">
                     <th scope="row" className="px-3 py-3 text-left font-medium">{binding.label}</th>
                     <td className="px-3 py-3 text-right">
-                      {binding.proofAvailable !== true ? (
-                        <span className="whitespace-nowrap font-mono">{formatAmountWithCode(binding.amount, binding.currency)}</span>
-                      ) : <Button type="button" size="sm" variant="ghost" className="whitespace-nowrap font-mono underline underline-offset-4"
-                        aria-label={`Inspect ${binding.label} balance ${formatAmountWithCode(binding.amount, binding.currency)}`}
-                        onClick={() => setSelected({ key: scopeKey, amount: {
-                          subjectId: binding.subjectId, amount: binding.amount, currency: binding.currency,
-                          tenantId: binding.scope.tenantId, companyId: binding.scope.companyId,
-                          fundProfileId: binding.scope.fundProfileId, ledgerBookId: binding.scope.ledgerBookId,
-                          periodId: binding.scope.periodId, label: `${binding.label} report balance`,
-                          journalEntryIds: binding.journalEntryIds, ledgerEntryIds: binding.ledgerEntryIds
-                        } })}>
-                        {formatAmountWithCode(binding.amount, binding.currency)}
-                      </Button>}
+                      <AmountPassportTrigger className="whitespace-nowrap font-mono"
+                        ariaLabel={binding.proofAvailable === true
+                          ? `Inspect ${binding.label} balance ${formatAmountWithCode(binding.amount, binding.currency)}`
+                          : `Amount passport restricted for ${binding.label} balance`}
+                        selection={{
+                          label: `${binding.label} report balance`, category: "Report amount",
+                          displayValue: formatAmountWithCode(binding.amount, binding.currency), currency: binding.currency,
+                          unit: "currency", origin: "calculated", zero: binding.amount === 0,
+                          reference: binding.proofAvailable === true ? binding.amountPassport : null,
+                          restricted: binding.proofAvailable !== true
+                        }}>{formatAmountWithCode(binding.amount, binding.currency)}</AmountPassportTrigger>
                     </td>
                     <td className="min-w-[16rem] px-3 py-3">
                       <TechnicalDetails label={`${pluralizeCount(binding.journalEntryIds.length, "journal entry", { plural: "journal entries" })} · ${pluralizeCount(binding.ledgerEntryIds.length, "ledger entry", { plural: "ledger entries" })}`}>
@@ -121,7 +124,6 @@ export function ReportingRetainedAmountsPanel({ run }: { run: Pick<GovernedRepor
           </div>
           </>
         )}
-        <LedgerAmountProofDrawer selection={selection} onClose={() => setSelected(null)} />
       </CardContent>
     </Card>
   );

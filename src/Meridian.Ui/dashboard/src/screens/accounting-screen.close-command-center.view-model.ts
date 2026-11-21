@@ -112,9 +112,12 @@ export function buildCloseCommandCenterViewState({
     {
       id: "breaks",
       label: "Open breaks",
-      value: String(openBreakCount + workflowOpenBreakCount),
-      detail: `${formatCount(openBreakCount, "queue break")} and ${formatCount(workflowOpenBreakCount, "workflow break")} remain open.`,
-      tone: openBreakCount + workflowOpenBreakCount > 0 ? "warning" : "success",
+      // Counted once, from the break queue (A3); summing in the workflow's cases counted breaks twice.
+      value: String(openBreakCount),
+      detail: workflowOpenBreakCount > 0
+        ? `${formatCount(openBreakCount, "queue break")} open; the close workflow also tracks ${formatCount(workflowOpenBreakCount, "break case")}.`
+        : `${formatCount(openBreakCount, "queue break")} open.`,
+      tone: openBreakCount > 0 ? "warning" : "success",
       href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
     },
     {
@@ -212,7 +215,7 @@ export function buildCloseCommandCenterViewState({
   ].slice(0, 8);
   return {
     title: "CFO / Controller close command center",
-    description: "Controller-facing period readiness, close blockers, evidence gaps, provider warnings, report-pack readiness, and sign-off status from shared Accounting read models.",
+    description: "Shows the controller period readiness, close blockers, evidence gaps, provider warnings, report-pack readiness, and sign-off status from shared Accounting data.",
     ariaLabel: "CFO and controller close command center",
     status,
     statusLabel: status === "loading" ? "Loading" : "Blocked",
@@ -353,14 +356,17 @@ function buildSharedFinancialOperationsCommandCenterViewState(
     .filter((blocker) => !commandCenter.queueRows.some((row) => row.queueId === blocker.code))
     .map((blocker) => ({
       id: blocker.code,
-      label: `${blocker.contributorId} - ${blocker.type}`,
+      label: `${humanizeCloseBlockerCode(blocker.contributorId)} - ${blocker.type}`,
       detail: `${blocker.message} Count: ${blocker.count}. Severity: ${blocker.severity}.`,
       tone: "danger" as AccountingToolingTone,
       href: localCommandCenterRoute(null, blocker.contributorId),
       statusLabel: "Blocked",
       ownerLabel: blocker.owner,
       dueLabel: "Required before close",
-      evidenceLabel: blocker.recordIds.length ? blocker.recordIds.join(", ") : "No source record supplied",
+      // Record identifiers are audit material: the row states how many back the blocker and the
+      // identifiers themselves stay behind the audit-details disclosure.
+      evidenceLabel: blocker.recordIds.length ? formatCount(blocker.recordIds.length, "source record") : "No source record supplied",
+      sourceRecordIds: blocker.recordIds,
       actionLabel: "Resolve this requirement and refresh close readiness.",
       impactLabel: "Blocks close completion"
     }));
@@ -469,6 +475,7 @@ function buildSharedFinancialOperationsCommandCenterViewState(
   const actionRows = [...dailyValuationScheduleActions, ...dailyValuationLifecycleAction, ...baseActionRows].slice(0, 4);
 
   return {
+    intercompanyAdvisories: projection?.intercompanyAdvisories ?? null,
     title: "CFO / Controller close command center",
     description: "Controller-facing period readiness, close blockers, evidence gaps, report-pack readiness, and sign-off status from Meridian Financial Operations review data.",
     ariaLabel: "CFO and controller close command center",
@@ -530,6 +537,11 @@ function localCommandCenterRoute(route: string | null | undefined, sourceKind: s
 
 function commandCenterFallbackRoute(sourceKind: string): string | null {
   const normalized = sourceKind.trim().toLowerCase();
+  // Shadow-mode agreement is resolved in the onboarding workspace, which lives under External GL evidence.
+  if (normalized.includes("shadow")) {
+    return WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation;
+  }
+
   if (normalized.includes("break") || normalized.includes("reconciliation")) {
     return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
   }

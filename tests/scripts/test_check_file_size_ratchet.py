@@ -21,7 +21,7 @@ SPEC.loader.exec_module(ratchet)
 @contextlib.contextmanager
 def fake_repo(sources: dict[str, int], baseline: dict[str, int] | None, threshold: int = 10):
     """Build a throwaway repo whose source files have the requested line counts."""
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         root = Path(temp_dir)
         for rel, lines in sources.items():
             path = root / rel

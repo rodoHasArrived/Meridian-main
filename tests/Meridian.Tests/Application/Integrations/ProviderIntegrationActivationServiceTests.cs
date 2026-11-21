@@ -38,6 +38,7 @@ public sealed class ProviderIntegrationActivationServiceTests : IDisposable
         var connection = CreateConnection(manifest);
         await store.SaveManifestAsync(manifest);
         await store.SaveConnectionAsync(connection);
+        await ProviderIntegrationCompletionFixture.RetainEmptySourceAsync(store, manifest, connection);
         var service = new ProviderIntegrationActivationService(store);
 
         var result = await service.ActivateAsync(CreateRequest(manifest, connection));
@@ -159,6 +160,143 @@ public sealed class ProviderIntegrationActivationServiceTests : IDisposable
         await act.Should().ThrowAsync<OperationCanceledException>();
         (await store.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
         (await store.GetConnectionAsync(connection.ConnectionId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
+    }
+
+    [Theory]
+    [InlineData(ProviderIntegrationActivationStateDto.Draft, "missing")]
+    [InlineData(ProviderIntegrationActivationStateDto.DryRunPassed, "missing")]
+    [InlineData(ProviderIntegrationActivationStateDto.DryRunPassed, "partial")]
+    [InlineData(ProviderIntegrationActivationStateDto.DryRunPassed, "interrupted")]
+    [InlineData(ProviderIntegrationActivationStateDto.DryRunPassed, "missing-raw")]
+    [InlineData(ProviderIntegrationActivationStateDto.DryRunPassed, "missing-row")]
+    public async Task ActivateAsync_RefusesClaimedStatesWithoutCompleteRetainedEvidence(ProviderIntegrationActivationStateDto state, string evidence)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateManifest(["providerAccountId", "quantity"], [Mapping("providerAccountId"), Mapping("quantity")]) with { State = state };
+        var connection = CreateConnection(manifest) with { State = state };
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        if (evidence != "missing")
+        {
+            var run = await ProviderIntegrationCompletionFixture.RetainEmptySourceAsync(store, manifest, connection, retainRaw: evidence != "missing-raw");
+            run = evidence switch
+            {
+                "partial" => run with
+                {
+                    Status = ProviderIntegrationProcessingStatusDto.Quarantined,
+                    Issues = [new("http.response.incomplete", ProviderIntegrationIssueSeverityDto.Critical, "Incomplete response.", null, null)]
+                },
+                "interrupted" => run with { Status = ProviderIntegrationProcessingStatusDto.Received, CompletedAt = null },
+                "missing-row" => run with { RecordsReceived = 1, RecordsAccepted = 1 },
+                _ => run
+            };
+            await store.SaveSyncRunAsync(run);
+        }
+
+        var readiness = await new ProviderIntegrationActivationReadinessService(store).EvaluateAsync(manifestId: manifest.ManifestId, connectionId: connection.ConnectionId);
+        var result = await new ProviderIntegrationActivationService(store).ActivateAsync(CreateRequest(manifest, connection));
+
+        readiness.IsReady.Should().BeFalse();
+        result.Activated.Should().BeFalse();
+        result.Readiness.Issues.Should().Contain(issue => issue.Code == "provider-manifest.dry-run-evidence-required");
+        (await store.GetManifestAsync(manifest.ManifestId)).Should().BeEquivalentTo(manifest);
+        (await store.GetConnectionAsync(connection.ConnectionId)).Should().BeEquivalentTo(connection);
+        (await store.GetManifestVersionAsync(manifest.ManifestId, manifest.ManifestVersion + 1)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ActivateAsync_RejectsLatestPartialRunInsteadOfReusingEarlierSuccess()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateManifest(["providerAccountId"], [Mapping("providerAccountId")]);
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        await ProviderIntegrationCompletionFixture.RetainEmptySourceAsync(store, manifest, connection, "old-complete");
+        var newer = await ProviderIntegrationCompletionFixture.RetainEmptySourceAsync(store, manifest, connection,
+            "new-partial", DateTimeOffset.Parse("2026-06-16T12:35:00Z"));
+        await store.SaveSyncRunAsync(newer with { Status = ProviderIntegrationProcessingStatusDto.Quarantined });
+
+        var result = await new ProviderIntegrationActivationService(store).ActivateAsync(CreateRequest(manifest, connection));
+
+        result.Activated.Should().BeFalse();
+        result.Readiness.Issues.Should().Contain(issue => issue.Code == "provider-manifest.dry-run-evidence-required");
+    }
+
+    [Fact]
+    public async Task ActivateAsync_DoesNotReuseEvidenceAfterMappingChange()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateManifest(["providerAccountId"], [Mapping("providerAccountId")]);
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        await ProviderIntegrationCompletionFixture.RetainEmptySourceAsync(store, manifest, connection);
+        var changed = manifest with { ManifestVersion = 2, FieldMappings = [Mapping("providerAccountId") with { SourcePath = "$.different_account" }] };
+        await store.SaveManifestVersionAsync(changed);
+        (await store.CompareExchangeCurrentManifestAsync(manifest.ManifestId,
+            ProviderIntegrationManifestIdentity.Create(manifest), ProviderIntegrationManifestIdentity.Create(changed))).Should().BeTrue();
+
+        var result = await new ProviderIntegrationActivationService(store).ActivateAsync(CreateRequest(changed, connection));
+
+        result.Activated.Should().BeFalse();
+        (await store.GetManifestVersionAsync(manifest.ManifestId, 3)).Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ActivateAsync_UsesActualDraftDryRunAndPreservesItsHistoricalReferenceAcrossActivation()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
+        var connection = CreateConnection(manifest) with { State = ProviderIntegrationActivationStateDto.Draft };
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var reference = ProviderIntegrationManifestIdentity.Create(manifest);
+        var dryRun = await new ProviderIntegrationRestDryRunService(store, new CompleteTransport()).RunRestDryRunAsync(new(
+            "actual-draft-source", manifest.ManifestId, connection.ConnectionId, ProviderCapabilityKindDto.Positions, "positions",
+            new Dictionary<string, string> { ["accountId"] = "A-100" }, new Dictionary<string, string>(), "operator",
+            DateTimeOffset.Parse("2026-06-16T12:30:00Z"), MaxPages: 1));
+        dryRun.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Validated);
+        dryRun.RecordsAccepted.Should().Be(1);
+
+        var result = await new ProviderIntegrationActivationService(store).ActivateAsync(CreateRequest(manifest, connection));
+        var currentReadiness = await new ProviderIntegrationActivationReadinessService(store).EvaluateAsync(manifestId: manifest.ManifestId, connectionId: connection.ConnectionId);
+
+        result.Activated.Should().BeTrue();
+        result.ManifestReference!.ManifestVersion.Should().Be(manifest.ManifestVersion + 1);
+        currentReadiness.IsReady.Should().BeTrue("lifecycle-only activation does not invalidate exact historical source evidence");
+        (await store.GetSyncRunAsync(dryRun.SyncRunId))!.ManifestReference.Should().Be(reference);
+        (await store.GetManifestVersionAsync(manifest.ManifestId, manifest.ManifestVersion)).Should().BeEquivalentTo(manifest);
+    }
+
+    [Fact]
+    public async Task ActivateAsync_DoesNotBorrowEvidenceFromAnotherTenantWithTheSameConnectionId()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var tenantA = store.ForTenant("tenant-a");
+        var tenantB = store.ForTenant("tenant-b");
+        var manifest = CreateManifest(["providerAccountId"], [Mapping("providerAccountId")]);
+        var connection = CreateConnection(manifest);
+        foreach (var tenant in new[] { tenantA, tenantB })
+        {
+            await tenant.SaveManifestAsync(manifest);
+            await tenant.SaveConnectionAsync(connection);
+        }
+        await ProviderIntegrationCompletionFixture.RetainEmptySourceAsync(tenantA, manifest, connection);
+
+        var result = await new ProviderIntegrationActivationService(store).ActivateAsync("tenant-b", CreateRequest(manifest, connection));
+
+        result.Activated.Should().BeFalse();
+        (await tenantB.GetManifestAsync(manifest.ManifestId)).Should().BeEquivalentTo(manifest);
+        (await tenantB.ListSyncRunsAsync(connection.ConnectionId)).Should().BeEmpty();
+        (await tenantA.ListSyncRunsAsync(connection.ConnectionId)).Should().ContainSingle();
+    }
+
+    private sealed class CompleteTransport : IProviderIntegrationHttpTransport
+    {
+        public Task<ProviderIntegrationHttpResponse> SendAsync(ProviderIntegrationHttpRequest request, CancellationToken ct = default)
+            => Task.FromResult(new ProviderIntegrationHttpResponse(200, new Dictionary<string, string>(),
+                """{"positions":[{"account_id":"A-100","cusip":"9128285M8","quantity":"100","currency":"USD","as_of_date":"2026-06-16","position_id":"POS-1"}]}"""));
     }
 
     private static ProviderIntegrationActivationRequestDto CreateRequest(

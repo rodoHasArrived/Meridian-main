@@ -6,9 +6,18 @@ namespace Meridian.Application.Tenancy;
 
 /// <summary>Guards every local fund operation before reading or mutating retained snapshots.</summary>
 public sealed class TenantGuardedLocalFundStructureService(IFundStructureService inner, LocalTenantMigrationGate gate)
-    : INonProductionOnlyService, IFundStructureService
+    : INonProductionOnlyService, IFundStructureService, IEntityLifecycleProjectionSink
 {
     public bool RefusesUnattributedAccess => gate.EnforcesStrictTenancy;
+
+    public Task ApplyLifecycleProjectionAsync(EntityLifecycleRevisionDto revision, CancellationToken ct = default)
+        => gate.ExecuteAsync(async () =>
+        {
+            if (inner is not IEntityLifecycleProjectionSink sink)
+                throw new InvalidOperationException("The local fund structure does not support retained lifecycle projection.");
+            await sink.ApplyLifecycleProjectionAsync(revision, ct).ConfigureAwait(false);
+            return true;
+        });
 
     public Task<OrganizationSummaryDto> CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default)
         => gate.ExecuteAsync(() => inner.CreateOrganizationAsync(request, ct));

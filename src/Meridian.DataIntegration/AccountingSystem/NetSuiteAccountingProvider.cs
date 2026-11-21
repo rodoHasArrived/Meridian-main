@@ -22,6 +22,8 @@ public sealed class NetSuiteAccountingProvider(IProviderCredentialStore store, H
     public override AccountingSystemProviderCapabilities Capabilities { get; } = new(true, true, true, false,
         ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"], RequiresCredentials: true);
     protected override string CompanyField => "AccountId";
+    // External NetSuite evidence remains mandatory. The integration service separately validates
+    // Meridian's posted agreement/account schedule; an internal schedule cannot replace this control.
     protected override string[] ExportControls => ["subsidiary-scope", "classification-segments", "entity-mapping", "intercompany-controls"];
     protected override string ConnectionScope(ProviderCredentialReadResult connection)
         => $"netsuite:account:{Account(connection)}:subsidiary:{NumericField(connection, "SubsidiaryId")}:book:{NumericField(connection, "AccountingBookId")}:basis:date-accrual-calendar-year";

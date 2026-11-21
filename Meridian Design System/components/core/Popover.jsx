@@ -8,20 +8,20 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-popover-root { position: fixed; z-index: 1001; pointer-events: none; }
+.mds-popover-root { position: fixed; z-index: var(--z-dropdown,100); pointer-events: none; }
 .mds-popover-wrap {
-  background: var(--bg-light, #FBFAF8); border: 1px solid var(--border, #E4E3DE);
+  background: var(--bg-light, #F8F7F3); border: 1px solid var(--border, #D2CDC3);
   border-radius: var(--radius-card, 2px); padding: var(--space-md, 12px);
   box-shadow: var(--shadow-menu); pointer-events: auto;
   font-family: var(--font-body); font-size: var(--type-body, 13px);
-  color: var(--text-primary, #22252A); max-width: 280px;
+  color: var(--text-primary, #20252B); max-width: 280px;
   animation: mds-popover-fade-in var(--motion-base, 150ms) var(--ease-standard, ease-out);
 }
 @keyframes mds-popover-fade-in {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
-.mds-popover-overlay { position: fixed; inset: 0; z-index: 1000; }
+.mds-popover-overlay { position: fixed; inset: 0; z-index: calc(var(--z-dropdown,100) - 1); }
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "popover");
@@ -42,6 +42,17 @@ export function Popover({
   inject();
   const rootRef = useRef(null);
   const [style, setStyle] = useState({});
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement;
+    const panel = rootRef.current;
+    return () => {
+      if (document.activeElement === document.body || panel?.contains(document.activeElement)) {
+        const target = anchorEl || previous;
+        if (target?.isConnected) target.focus();
+      }
+    };
+  }, [open, anchorEl]);
 
   // useLayoutEffect: measure + position synchronously before paint, so the popover
   // never flashes at (0,0) on open before the position effect fires.

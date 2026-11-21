@@ -24,10 +24,13 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
     };
 
     private readonly SecurityMasterOptions _options;
+    private readonly Meridian.Storage.Ledger.ITransactionalLedgerJournalStore? _cashDividendLedgerStore;
 
-    public PostgresCorporateActionOperationsStore(SecurityMasterOptions options)
+    public PostgresCorporateActionOperationsStore(SecurityMasterOptions options,
+        Meridian.Storage.Ledger.ITransactionalLedgerJournalStore? cashDividendLedgerStore = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
+        _cashDividendLedgerStore = cashDividendLedgerStore;
     }
 
     public async Task<CorporateActionSourceProposalDto> RecordSourceProposalAsync(
@@ -1471,17 +1474,20 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
             reader.IsDBNull(6) ? null : reader.GetString(6),
             reader.IsDBNull(7) ? null : reader.GetString(7),
             releaseStatus);
-        var displayMetadata = reader.IsDBNull(11) && reader.IsDBNull(12) && reader.IsDBNull(27)
+        var agreeingSources = JsonSerializer.Deserialize<IReadOnlyList<string>>(reader.GetString(13), JsonOptions) ?? [];
+        var dissentingSources = JsonSerializer.Deserialize<IReadOnlyList<string>>(reader.GetString(14), JsonOptions) ?? [];
+        var dissentingFields = reader.IsDBNull(27)
+            ? []
+            : JsonSerializer.Deserialize<IReadOnlyList<CorporateActionDissentFieldDto>>(reader.GetString(27), JsonOptions) ?? [];
+        var displayMetadata = reader.IsDBNull(11) && reader.IsDBNull(12)
+            && agreeingSources.Count == 0 && dissentingSources.Count == 0 && dissentingFields.Count == 0
             ? null
             : new CorporateActionSourceDisplayMetadataDto(
                 reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
                 reader.IsDBNull(12) ? identity.ProviderId : reader.GetString(12),
-                JsonSerializer.Deserialize<IReadOnlyList<string>>(reader.GetString(13), JsonOptions) ?? [],
-                JsonSerializer.Deserialize<IReadOnlyList<string>>(reader.GetString(14), JsonOptions) ?? [],
-                reader.IsDBNull(27)
-                    ? []
-                    : JsonSerializer.Deserialize<IReadOnlyList<CorporateActionDissentFieldDto>>(
-                        reader.GetString(27), JsonOptions) ?? []);
+                agreeingSources,
+                dissentingSources,
+                dissentingFields);
         return new CorporateActionSourceProposalDto(
             reader.GetGuid(0),
             reader.GetGuid(1),

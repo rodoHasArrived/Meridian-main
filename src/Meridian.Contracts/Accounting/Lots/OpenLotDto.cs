@@ -26,6 +26,9 @@ public sealed record OpenLotAcquisitionDto(
     FaceValueAcquisitionTermsDto? FaceValueTerms,
     IReadOnlyList<RetainedEvidenceIdentityDto> Evidence)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondIncomeAcquisitionDto? BondIncome { get; init; }
+
     // Historical acquisition receipts are long and omit this property. Explicit short direction
     // participates in their immutable acquisition payload and atomic replay fingerprint.
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]

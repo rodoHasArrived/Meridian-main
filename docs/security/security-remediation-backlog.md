@@ -52,6 +52,7 @@ This backlog converts the threat-model residual concerns into tracked remediatio
   - API tests proving token-required mutation behavior.
   - Browser workstation tests proving token propagation for POST/PUT/DELETE workflows.
   - Updated threat-model CSRF residual concern marked remediated or narrowed.
+- **Implementation status (2026-11-15):** token issuance and validation are in source. `CookieCsrfProtection` / `UseCookieCsrfProtection()` (`src/Meridian.Ui.Shared/Endpoints/CookieCsrfMiddleware.cs`) issue the `mdc-csrf` cookie and require a matching `X-CSRF-Token` header on cookie-authenticated `/api/*` mutations. The browser request layer (`src/Meridian.Ui/dashboard/src/lib/api/http-client.ts`) and the shared .NET client (`ApiClientService`, `ApiClientSession`) echo it. Focused coverage lives in `tests/Meridian.Tests/Ui/CookieCsrfProtectionTests.cs` and `tests/Meridian.Tests/Integration/EndpointTests/AuthEndpointTests.cs`. Sign-in is exempt from the token check and instead refuses cross-site posts. The threat model now describes the control rather than the gap. Moving this item to `Done` still needs the linked closure evidence above.
 
 ## Rate-limiter enforcement validation
 
@@ -68,6 +69,7 @@ This backlog converts the threat-model residual concerns into tracked remediatio
   - Runtime log snapshot showing middleware activation and policy registration.
   - Reproducible throttling test artifacts (status codes + headers).
   - Threat-model rate-limiter residual concern closed with code-path reference.
+- **Implementation status (2026-11-15):** `UiServer` calls `UseRateLimiter()` after the session, API-key, CSRF, and authorization guards. `UiEndpoints.AddMutationRateLimiter` registers the mutation, `login`, and direct-lending policies, and rejections return `429` with `Retry-After`. `tests/Meridian.Tests/Ui/LoginRateLimitEndpointTests.cs` covers the sign-in policy. The startup diagnostics item remains open.
 
 ## Tenant isolation (fund-scoped data)
 
@@ -175,8 +177,8 @@ This backlog converts the threat-model residual concerns into tracked remediatio
 | --- | --- | --- | --- |
 | SEC-001 | `Authentication, sessions, and authorization` | `docs/security/threat-model-current-state.md` lines 50-54 | "Some endpoint groups still lack explicit permission checks ..." |
 | SEC-002 | `Authentication, sessions, and authorization` | `docs/security/threat-model-current-state.md` lines 50-51 | "Session cookies still do not set `Secure` ... treat TLS + secure-cookie enablement as required ..." |
-| SEC-003 | `CSRF and browser security` | `docs/security/threat-model-current-state.md` lines 62-63 | "No explicit anti-forgery token workflow is visible ..." |
-| SEC-004 | `Rate limiting and request abuse` | `docs/security/threat-model-current-state.md` lines 57-58 | "`UseRateLimiter()` is not visible in `UiServer`; validate effective enforcement ..." |
+| SEC-003 | `CSRF and browser security` | `docs/security/threat-model-current-state.md` § CSRF and browser security | Originally "No explicit anti-forgery token workflow is visible ..."; now describes the double-submit token and the login exemption. |
+| SEC-004 | `Rate limiting and request abuse` | `docs/security/threat-model-current-state.md` § Rate limiting and request abuse | Originally "`UseRateLimiter()` is not visible in `UiServer` ..."; now records the wired middleware and remaining per-route and per-process gaps. |
 | SEC-005 | `Authentication, sessions, and authorization` | `docs/security/threat-model-current-state.md` lines 50-54 | "Fund-scoped data partitions by `FundProfileId` alone; tenant isolation currently relies on the single-company-per-deployment boundary ..." |
 
 ## Weekly governance and status expectations

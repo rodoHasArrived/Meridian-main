@@ -2,7 +2,7 @@ using System.Globalization;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Storage.Archival;
 
 namespace Meridian.Tests.Reconciliation;
@@ -13,7 +13,7 @@ public sealed partial class StatementRunWorkflowServiceTests
     [InlineData("price")]
     [InlineData("settlement")]
     [InlineData("both")]
-    public async Task CreateAsync_ConfiguredTransactionAssignmentPrefersClosestEconomicEvidence(string dimension)
+    public async Task CreateAsync_ConfiguredTransactionFallbackRetainsEveryEligibleCandidate(string dimension)
     {
         var path = await WriteStatementAsync("rank-transactions.csv",
             "EXT-1,SPY,10,10,100.5,trade,2026-05-28,2026-05-30,USD,,");
@@ -32,10 +32,55 @@ public sealed partial class StatementRunWorkflowServiceTests
         var workflow = CreatePolicyWorkflow(new([], [], [far, near]), profile, artifacts);
 
         var result = await workflow.CreateAsync(Request(path, profile.ProfileId));
-        var group = (await artifacts.GetAsync(result.Import.ImportId))!.MatchGroups.Should().ContainSingle().Subject;
-        group.InternalEvidenceReferences.Should().Equal("internal:z-near");
-        group.MatchTier.Should().Be("Tolerance");
-        result.Breaks.Should().ContainSingle(item => item.SourceReference == "internal:a-far");
+        (await artifacts.GetAsync(result.Import.ImportId))!.MatchGroups.Should().BeEmpty();
+        result.Breaks.Should().ContainSingle().Which.BreakCode.Should().Be("TRANSACTION_AMBIGUOUS");
+        result.Cases.Should().ContainSingle().Which.EvidenceReferences.Should()
+            .Contain(["internal-record:internal:a-far", "internal-record:internal:z-near"]);
+        var evidence = result.CaseMatchEvidence.Should().ContainSingle().Subject.Value;
+        evidence.Tier.Should().Be("Candidate");
+        evidence.LedgerAllocations.Should().HaveCount(2);
+        evidence.Residuals.Should().BeEmpty("there is no decided pair to sum or allocate");
+    }
+
+    [Fact]
+    public async Task CreateAsync_FillIdAmountMismatchRetainsBothRowsForCasework()
+    {
+        var path = await WriteStatementAsync("fill-id-mismatch.csv",
+            "EXT-1,SPY,10,10,100,trade,2026-05-28,2026-05-30,USD,,FILL-23");
+        var artifacts = new InMemoryStatementRunMatchArtifactStore();
+        var populations = new InternalReconciliationPopulations([], [], [PolicyTransaction("fill-23", 10m, 90m) with
+        {
+            ExternalTransactionId = "FILL-23",
+            Price = 9m
+        }]);
+        var recovery = new InMemoryStatementRunRecoveryRepository();
+        var workflow = CreatePolicyWorkflow(populations, StatementToleranceProfile.Default, artifacts, recovery: recovery);
+
+        var result = await workflow.CreateAsync(Request(path));
+
+        var difference = result.Breaks.Should().ContainSingle().Subject;
+        difference.BreakCode.Should().Be("TRANSACTION_AMOUNT_DIFFERENCE");
+        difference.Delta.Should().Be(10m);
+        result.Cases.Should().ContainSingle().Which.EvidenceReferences.Should()
+            .Contain($"statement-row:{difference.SourceReference}")
+            .And.Contain("internal-record:internal:fill-23");
+        var artifact = (await artifacts.GetAsync(result.Import.ImportId))!;
+        artifact.MatchGroups.Should().BeEmpty();
+        artifact.ExecutedTolerancePolicy!.EffectiveDate.Should().Be(new DateOnly(2026, 5, 31));
+        artifact.ExecutedTolerancePolicy.Version.Should().Be(StatementToleranceProfile.DefaultProfileVersion);
+        var candidate = artifact.CaseMatchEvidence![difference.BreakId];
+        candidate.Tier.Should().Be("Candidate");
+        candidate.RuleIds.Should().Contain("statement-transaction-external-id-v1");
+        candidate.LedgerAllocations.Should().ContainSingle(item => item.EvidenceReference == "internal:fill-23" && item.Amount == "90"
+            && item.UnitPrice == "9" && item.ExternalTransactionId == "FILL-23");
+        candidate.Residuals.Should().ContainSingle(measure => measure.Measure == "Net amount" && measure.Unit == "USD" && measure.Residual == "10");
+
+        var changedCatalog = CreatePolicyWorkflow(InternalReconciliationPopulations.Empty,
+            StatementToleranceProfile.Default with { Version = 100 }, artifacts, recovery: recovery);
+        var retained = await changedCatalog.GetAsync(result.Import.ImportId);
+        retained!.ExecutedTolerancePolicy.Should().Be(artifact.ExecutedTolerancePolicy);
+        retained.MatchArtifactSha256.Should().Be(StatementDurabilityHashing.Hash(artifact));
+        retained.CaseMatchEvidence.Should().BeEquivalentTo(artifact.CaseMatchEvidence);
     }
 
     [Fact]
@@ -311,7 +356,7 @@ public sealed partial class StatementRunWorkflowServiceTests
 
     private StatementRunWorkflowService CreatePolicyWorkflow(InternalReconciliationPopulations populations,
         StatementToleranceProfile profile, InMemoryStatementRunMatchArtifactStore artifacts,
-        IReconciliationFxRateProvider? fx = null)
+        IReconciliationFxRateProvider? fx = null, InMemoryStatementRunRecoveryRepository? recovery = null)
     {
         var imports = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         return new(imports,
@@ -320,7 +365,7 @@ public sealed partial class StatementRunWorkflowServiceTests
             new CsvBrokerStatementService(imports),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),
             Populations(populations), fx, new InMemoryStatementToleranceProfileProvider([profile]),
-            new InMemoryStatementRunRecoveryRepository(), artifacts,
+            recovery ?? new InMemoryStatementRunRecoveryRepository(), artifacts,
             caseworkCommitStore: EmptyEphemeralStatementCaseworkCommitStore.Instance);
     }
 }

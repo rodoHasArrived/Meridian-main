@@ -1,12 +1,18 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
+import { renderWithRouter as render } from "@/test/render";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as executionAuditApi from "@/lib/api/execution-audit.api";
+import { exportTableQuery } from "@/lib/table-workbench";
 import { ExecutionAuditTrailPanel } from "@/screens/trading-screen.audit-trail";
 import type { AuditTrailExplorerResult } from "@/types/execution-audit.types";
 
 vi.mock("@/lib/api/execution-audit.api", () => ({
   searchExecutionAuditTrail: vi.fn()
+}));
+vi.mock("@/lib/table-workbench", async () => ({
+  ...await vi.importActual<typeof import("@/lib/table-workbench")>("@/lib/table-workbench"),
+  exportTableQuery: vi.fn().mockResolvedValue(undefined)
 }));
 
 const searchExecutionAuditTrail = vi.mocked(executionAuditApi.searchExecutionAuditTrail);
@@ -96,5 +102,29 @@ describe("ExecutionAuditTrailPanel", () => {
 
     expect(await screen.findByText("audit service unavailable")).toBeInTheDocument();
     expect(screen.getByText("Audit trail has not loaded.")).toBeInTheDocument();
+  });
+
+  it("exports all authorized matches using the submitted query, selected columns and lifetime signal", async () => {
+    searchExecutionAuditTrail.mockResolvedValue({ ...result, totalMatched: 412, returned: 2 });
+    vi.mocked(exportTableQuery).mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    const view = render(<ExecutionAuditTrailPanel />);
+    await screen.findByText(/2 most recent of 412 matches/);
+    const exportButton = screen.getByRole("button", { name: "Export CSV" });
+    expect(exportButton).toBeEnabled();
+    await user.type(screen.getByLabelText("Audit trail search text"), "SPY");
+    await user.click(exportButton);
+    expect(exportTableQuery).toHaveBeenLastCalledWith("trading-execution-audit", ["column-1", "column-2", "column-3", "column-4", "column-5", "column-6", "column-7"], "", undefined, undefined, expect.any(AbortSignal));
+    await user.click(screen.getByRole("button", { name: "Search" }));
+    await waitFor(() => expect(searchExecutionAuditTrail).toHaveBeenLastCalledWith({ searchText: "SPY", limit: 50 }));
+    await waitFor(() => expect(exportButton).toBeEnabled());
+    await user.click(screen.getByText("Columns", { selector: "summary" }));
+    await user.click(screen.getByRole("checkbox", { name: "Outcome" }));
+    await user.click(exportButton);
+    expect(exportTableQuery).toHaveBeenLastCalledWith("trading-execution-audit", ["column-1", "column-2", "column-3", "column-5", "column-6", "column-7"], "SPY", undefined, undefined, expect.any(AbortSignal));
+    const signal = vi.mocked(exportTableQuery).mock.calls.at(-1)![5];
+    expect(signal?.aborted).toBe(false);
+    view.unmount();
+    expect(signal?.aborted).toBe(true);
   });
 });

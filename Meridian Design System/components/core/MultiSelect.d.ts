@@ -1,44 +1,60 @@
-export interface MultiSelectAction {
-  id: string;
+import React from "react";
+
+export interface MultiSelectOption {
+  value: string | number;
   label: string;
-  icon?: string;
-  dangerous?: boolean;
-  onClick: (selectedIds: Set<string | number>) => void;
+  /** Right-aligned secondary text (count, region, AUM) */
+  meta?: React.ReactNode;
+  /** Options sharing a group string render under one heading (keep them adjacent) */
+  group?: string;
+  disabled?: boolean;
+}
+
+export interface MultiSelectProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
+  /** Small-caps label above the field */
+  label?: string;
+  /** Options — strings or option objects */
+  options: (string | MultiSelectOption)[];
+  /** Selected values, in the order they were picked */
+  value?: (string | number)[];
+  /** Fires with the full next selection */
+  onChange?: (values: (string | number)[]) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  required?: boolean;
+  error?: React.ReactNode;
+  emptyText?: string;
+  /** Chips shown before collapsing to "+N". @default 4 */
+  maxChips?: number;
+  /** Hard cap on selections — further options go unselectable */
+  maxSelected?: number;
+  /** Show the select-all / clear row. @default true */
+  showBulk?: boolean;
+  /** Custom match predicate; replaces the default case-insensitive substring test */
+  filter?: (option: MultiSelectOption, query: string) => boolean;
+  onQueryChange?: (query: string) => void;
+  id?: string;
+  name?: string;
 }
 
 /**
- * MultiSelect — batch selection toolbar for tables.
+ * Pick **several** values from a list — books, desks, strategies, counterparties, tags. Chips in the
+ * field, a checkbox listbox below, type to filter. ARIA 1.2 multi-select combobox with
+ * `aria-activedescendant`; Backspace removes the last chip, Enter toggles the active option.
  *
- * Manages a Set of selected row IDs. Shows a toolbar with select-all checkbox,
- * selection count, and contextual action buttons (delete, export, reassign, etc.).
- * Wire SelectCheckbox into each table row.
+ * Bulk actions operate on the **currently filtered** options, so typing "EUR" then "Select matches"
+ * adds exactly those.
+ *
+ * For a single value use `Select` (short lists) or `Combobox` (long ones). For acting on selected
+ * *table rows* use `BulkActionBar` — that is a different job and a different component.
  *
  * @example
- * const [selected, setSelected] = useState(new Set());
  * <MultiSelect
- *   selectedIds={selected}
- *   onSelectionChange={setSelected}
- *   totalCount={rows.length}
- *   actions={[
- *     { id: 'delete', label: 'Delete', icon: '⌫', dangerous: true,
- *       onClick: (ids) => deleteRows(Array.from(ids)) }
- *   ]}
+ *   label="Books"
+ *   options={books}
+ *   value={selected}
+ *   onChange={setSelected}
+ *   maxSelected={8}
  * />
  */
-export function MultiSelect(props: {
-  selectedIds?: Set<string | number>;
-  onSelectionChange?: (newSelection: Set<string | number>) => void;
-  totalCount?: number;
-  actions?: MultiSelectAction[];
-  onClearSelection?: () => void;
-}): JSX.Element;
-
-/**
- * SelectCheckbox — individual row checkbox.
- * Wire into each table row; call onChange with (rowId, isChecked).
- */
-export function SelectCheckbox(props: {
-  rowId: string | number;
-  isSelected?: boolean;
-  onChange?: (rowId: string | number, isChecked: boolean) => void;
-}): JSX.Element;
+export declare function MultiSelect(props: MultiSelectProps): React.JSX.Element;

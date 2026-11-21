@@ -5,7 +5,7 @@
 **Reviewed:** 2026-06-16  
 **Date:** 2026-06-16
 
-## Problem
+## Context
 
 Meridian is expanding across portfolio management, fund accounting, reconciliation, reporting, audit evidence, data operations, and workstation UI surfaces. Splitting too early into independently deployed services would increase operational complexity before module boundaries, domain invariants, and accounting/audit workflows are stable.
 

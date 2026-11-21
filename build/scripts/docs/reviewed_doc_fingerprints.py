@@ -15,7 +15,8 @@ LEGACY_CONTRACT = (
     "Source paths use ordinal POSIX ordering; UTF-8 text uses LF-normalized content hashes."
 )
 REVIEW_CONTRACT = (
-    "source_hash retains the reviewed source baseline. readme_hash fingerprints handwritten "
+    "source_hash retains the reviewed source baseline, excluding package-lock.json files and "
+    "package.json dependency version specifiers. readme_hash fingerprints handwritten "
     "README content and exact registered markers, excluding only generated block bodies. "
     "Generated block freshness is independently validated against the source/roadmap registries. "
     "Source paths use ordinal POSIX ordering; UTF-8 text uses LF-normalized content hashes."

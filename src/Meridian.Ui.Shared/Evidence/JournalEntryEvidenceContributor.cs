@@ -7,7 +7,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Services;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;

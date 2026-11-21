@@ -9,6 +9,12 @@ namespace Meridian.Risk.Rules;
 /// <summary>
 /// Halts all new orders when portfolio drawdown exceeds a threshold.
 /// </summary>
+/// <remarks>
+/// Not composed by any host. The enforced drawdown guardrail is
+/// <c>Meridian.Ui.Shared.Services.DrawdownGuardrailRule</c> (same rule name), which reads the
+/// operator-tuned threshold from <c>RiskRuleRuntimeService</c>. This rule is retained for its
+/// existing tests and library callers; prefer the guardrail rule for new composition.
+/// </remarks>
 public sealed class DrawdownCircuitBreaker : IRiskRule
 {
     private readonly IPositionTracker _positionTracker;

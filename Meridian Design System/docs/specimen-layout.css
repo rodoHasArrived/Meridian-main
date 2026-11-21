@@ -1,0 +1,14 @@
+/* Shared layout support for standalone documentation specimens only.
+   This file is deliberately not imported by production styles.css. */
+body.mds-specimen { box-sizing: border-box; min-width: 0; }
+.mds-specimen :where(div, section, article, aside, main, pre) { min-width: 0; overflow-wrap: anywhere; }
+.mds-specimen :where(code, p, li, td, th) { overflow-wrap: anywhere; }
+.mds-specimen pre { max-width: 100%; white-space: pre-wrap; }
+@media (prefers-reduced-motion: reduce) {
+  .mds-specimen *, .mds-specimen *::before, .mds-specimen *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

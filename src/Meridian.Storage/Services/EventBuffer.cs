@@ -230,6 +230,32 @@ public class EventBuffer<T> : IDisposable where T : class
 /// </summary>
 public sealed class MarketEventBuffer : EventBuffer<MarketEvent>
 {
+    private bool _retired;
+
+    // Sinks may evict an empty partition while producers still hold its old dictionary value.
+    // Retirement and admission share the buffer lock, so those producers retry on a new buffer.
+    internal bool TryAdd(MarketEvent evt)
+    {
+        lock (_lock)
+        {
+            if (_retired)
+                return false;
+            Add(evt);
+            return true;
+        }
+    }
+
+    internal bool TryRetireWhenEmpty()
+    {
+        lock (_lock)
+        {
+            if (_count != 0)
+                return false;
+            _retired = true;
+            return true;
+        }
+    }
+
     public MarketEventBuffer(int initialCapacity = 1000) : base(initialCapacity)
     {
     }

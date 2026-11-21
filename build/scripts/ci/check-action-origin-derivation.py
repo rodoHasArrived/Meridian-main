@@ -30,6 +30,15 @@ The DTO set is discovered from Meridian.Contracts rather than hard-coded, so a n
 carrying ActionOrigin is in scope from the moment it is declared, and a route binding it fails until
 it re-derives. Handlers that forward the bound request to a helper which re-derives are covered by
 naming that helper in DERIVING_HELPERS.
+
+Binding is not the only way a handler gets a DTO. A handler that binds the body as a JsonElement and
+calls `JsonSerializer.Deserialize<TDto>`, `ReadFromJsonAsync<TDto>` or a local `TryDeserialize<TDto>`
+helper has the same body-supplied origin in hand, but a parameter-only scan never sees it. That is
+how the banking approve/reject/remediate/bank-evidence handlers passed this guard while handing the
+default HumanOperator origin to a human-only gate, letting an API-key principal approve payments
+(#3405). Manual deserialization of a governed DTO is therefore checked too, against the enclosing
+handler only: the window runs from the nearest route mapping or method declaration before the call to
+the next one after it, so a neighbouring handler's derivation cannot cover it.
 """
 
 from __future__ import annotations
@@ -63,6 +72,20 @@ DERIVING_HELPERS = (
 # How far past the binding to look for the re-derivation. Handlers are short; a binding whose
 # derivation is further away than this is worth restructuring rather than exempting.
 HANDLER_WINDOW_LINES = 60
+
+# Calls that materialize a DTO from the request body by hand rather than through parameter binding.
+MANUAL_DESERIALIZERS = (
+    r"\bDeserialize",  # JsonSerializer.Deserialize and any other Deserialize<T> call
+    r"\bReadFromJsonAsync",
+    r"\bTryDeserialize\w*",
+)
+
+# Where one handler ends and the next begins, for bounding a manual deserialization's window.
+HANDLER_BOUNDARY = re.compile(
+    r"\bMap(?:Get|Post|Put|Patch|Delete|Methods)\s*\("
+    r"|^[ \t]*(?:private|internal|public|protected)\b[^\n;=]*\(",
+    re.MULTILINE,
+)
 
 RECORD_PATTERN = re.compile(r"record\s+(?P<name>\w+)\s*\(")
 EXCLUDED_DIRECTORY_NAMES = {"bin", "node_modules", "obj"}
@@ -107,6 +130,10 @@ def find_untrusted_bindings(
 
     binding = re.compile(r"\b(" + "|".join(sorted(dtos)) + r")\??\s+\w+\s*[,)]")
     covered = (TRUSTED_RESOLVER, PRINCIPAL_RESOLVER) + DERIVING_HELPERS
+    manual = re.compile(
+        r"(?:" + "|".join(MANUAL_DESERIALIZERS) + r")\s*<\s*(?:global::)?(?:\w+\.)*"
+        r"(?P<dto>" + "|".join(sorted(dtos)) + r")\s*\??\s*>"
+    )
     repo_root = endpoints_root.parents[2]
 
     violations: dict[str, list[tuple[int, str]]] = {}
@@ -126,7 +153,29 @@ def find_untrusted_bindings(
                 continue
             rel = path.relative_to(repo_root).as_posix()
             violations.setdefault(rel, []).append((line_index + 1, match.group(1)))
+
+        for match in manual.finditer(text):
+            if any(marker in _enclosing_handler(text, match.start()) for marker in covered):
+                continue
+            rel = path.relative_to(repo_root).as_posix()
+            line = text[: match.start()].count("\n") + 1
+            violations.setdefault(rel, []).append((line, match.group("dto")))
+
+    for sites in violations.values():
+        sites.sort()
     return violations
+
+
+def _enclosing_handler(text: str, position: int) -> str:
+    """Text of the route handler or method around `position`, bounded by its neighbours."""
+    start, end = 0, len(text)
+    for boundary in HANDLER_BOUNDARY.finditer(text):
+        if boundary.start() <= position:
+            start = boundary.start()
+        else:
+            end = boundary.start()
+            break
+    return text[start:end]
 
 
 def main() -> int:
@@ -139,7 +188,8 @@ def main() -> int:
     if violations:
         print("ActionOrigin derivation guard FAILED.", file=sys.stderr)
         print(
-            "These route handlers bind a request DTO carrying ActionOrigin without re-deriving it "
+            "These route handlers bind or deserialize (JsonSerializer.Deserialize, ReadFromJsonAsync, "
+            "TryDeserialize) a request DTO carrying ActionOrigin without re-deriving it "
             "from the authenticated principal, so the human-operator governance gate is whatever "
             "the caller's request body claimed (#2673):",
             file=sys.stderr,
@@ -161,7 +211,10 @@ def main() -> int:
         )
         return 1
 
-    print("ActionOrigin derivation guard: every endpoint binding re-derives the origin server-side.")
+    print(
+        "ActionOrigin derivation guard: every endpoint binding or manual deserialization re-derives "
+        "the origin server-side."
+    )
     return 0
 
 

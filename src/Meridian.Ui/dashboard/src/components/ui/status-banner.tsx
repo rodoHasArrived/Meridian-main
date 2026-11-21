@@ -10,10 +10,10 @@ export interface StatusBannerProps extends Omit<React.HTMLAttributes<HTMLDivElem
 }
 
 const toneClasses: Record<StatusBannerTone, string> = {
-  success: "border-l-success bg-success/10 text-success",
-  warning: "border-l-warning bg-warning/10 text-warning",
-  danger: "border-l-danger bg-danger/10 text-danger",
-  info: "border-l-primary bg-primary/10 text-primary"
+  success: "border-l-success bg-success/10 text-[var(--green-dim)]",
+  warning: "border-l-warning bg-warning/10 text-[var(--orange-dim)]",
+  danger: "border-l-danger bg-danger/10 text-[var(--red-dim)]",
+  info: "border-l-[var(--semantic-info)] bg-[var(--blue-a10)] text-[var(--semantic-info)]"
 };
 
 export function StatusBanner({ className, detail, title, tone = "info", ...props }: StatusBannerProps) {

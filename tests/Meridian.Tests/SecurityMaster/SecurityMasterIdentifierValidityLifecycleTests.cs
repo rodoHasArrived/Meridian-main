@@ -75,7 +75,7 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         foreach (var value in new[] { "GENERIC", "VENDOR.A", "US0000000001", "123456789", "BBG000VALID", "1234567" })
             host.Registry.ResolveToCanonical(value).Should().BeNull();
         host.Registry.GetProviderSymbol("VALIDITY", "vendor").Should().BeNull();
-        host.Clock.Advance(TimeSpan.FromSeconds(10) - TimeSpan.FromTicks(1));
+        await host.AdvanceWithTimerAsync(TimeSpan.FromSeconds(10) - TimeSpan.FromTicks(1), T0.AddSeconds(10));
         host.Registry.ResolveToCanonical("GENERIC").Should().BeNull("ValidFrom is not active before its exact boundary");
 
         await host.AdvanceAndWaitForSeedAsync(TimeSpan.FromTicks(1));
@@ -134,16 +134,16 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         await host.StartAsync();
         await host.WaitForTimerAsync(T0.AddSeconds(10));
         host.FailReads = true;
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceWithTimerAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Reads == 2);
         await host.WaitForTimerAsync(T0.AddSeconds(20));
         host.Registry.ResolveToCanonical("RETRY").Should().BeNull();
         host.Seed.NextValidityTransitionUtc.Should().Be(T0.AddSeconds(10), "failed publication must retain its pending boundary");
 
-        host.Clock.Advance(TimeSpan.FromSeconds(9));
+        await host.AdvanceWithTimerAsync(TimeSpan.FromSeconds(9), T0.AddSeconds(20));
         host.Reads.Should().Be(2, "a due boundary must not bypass retry backoff");
         host.FailReads = false;
-        host.Clock.Advance(TimeSpan.FromSeconds(1));
+        await host.AdvanceWithTimerAsync(TimeSpan.FromSeconds(1));
 
         await UntilAsync(() => host.Registry.ResolveToCanonical("RETRY") == "VALIDITY"
             && host.Seed.NextValidityTransitionUtc is null);
@@ -174,11 +174,11 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         host.Record = host.Record with { Aliases = [Alias(host.Id, "BOUNDARY", T0.AddSeconds(10))] };
         await host.StartAsync();
         await host.WaitForTimerAsync(T0.AddSeconds(10));
-        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await host.AdvanceWithTimerAsync(TimeSpan.FromSeconds(10));
         await UntilAsync(() => host.Registry.ResolveToCanonical("BOUNDARY") == "VALIDITY");
         await host.WaitForTimerAsync(T0.AddMinutes(1));
 
-        host.Clock.Advance(TimeSpan.FromSeconds(50));
+        await host.AdvanceWithTimerAsync(TimeSpan.FromSeconds(50));
 
         await UntilAsync(() => host.Reads >= 3);
         host.Reads.Should().Be(3, "the configured refresh remains due one minute after startup, not one minute after the identifier seed");
@@ -359,6 +359,44 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         => new(Guid.NewGuid(), id, "Ticker", value, provider, SecurityAliasScope.Operations, null, "test", T0, from, to, true);
 
     [Fact]
+    public void AdvanceWithTimer_WaitsForLiveReplacementAfterObservedTimerIsCancelled()
+    {
+        var clock = new ManualClock(T0);
+        var due = T0.AddSeconds(10);
+        using var scheduleChanged = new CancellationTokenSource();
+        var cancelled = Task.Delay(TimeSpan.FromSeconds(10), clock, scheduleChanged.Token);
+        clock.HasTimerAt(due).Should().BeTrue();
+
+        // The worker can consume a queued schedule change after readiness was observed,
+        // cancel that timer, and calculate a replacement delay before the test advances.
+        scheduleChanged.Cancel();
+        cancelled.IsCanceled.Should().BeTrue();
+        var replacementDelay = due - clock.GetUtcNow();
+        clock.TryAdvance(replacementDelay, due).Should().BeFalse();
+        clock.GetUtcNow().Should().Be(T0, "time must not advance after the observed timer was cancelled");
+
+        var replacement = Task.Delay(replacementDelay, clock);
+        clock.TryAdvance(replacementDelay, due).Should().BeTrue();
+        replacement.IsCompletedSuccessfully.Should().BeTrue("the replacement must fire at the intended boundary");
+        clock.GetUtcNow().Should().Be(due);
+        clock.PendingTimerCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task AdvanceWithTimer_CrossesSubMillisecondBoundaryWithoutAProviderTimer()
+    {
+        await using var host = new Host();
+        var elapsed = TimeSpan.FromTicks(1);
+        var delay = Task.Delay(elapsed, host.Clock);
+        delay.IsCompletedSuccessfully.Should().BeTrue("Task.Delay truncates a sub-millisecond delay to zero");
+        host.Clock.PendingTimerCount.Should().Be(0);
+
+        await host.AdvanceWithTimerAsync(elapsed);
+
+        host.Clock.GetUtcNow().Should().Be(T0 + elapsed);
+    }
+
+    [Fact]
     public async Task UntilAsync_AcceptsTheFirstSuccessfulObservationWithoutReadingItAgain()
     {
         var observations = 0;
@@ -430,6 +468,18 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
 
         public Task StartAsync() => Warmup.StartAsync(CancellationToken.None);
         public Task WaitForTimerAsync(DateTimeOffset due) => UntilAsync(() => Clock.HasTimerAt(due));
+        public Task AdvanceWithTimerAsync(TimeSpan elapsed, DateTimeOffset? expectedDue = null)
+        {
+            // Task.Delay creates no provider timer below one millisecond. The precision
+            // test reaches this final tick after an atomic advance with the pending timer.
+            if (elapsed > TimeSpan.Zero && elapsed < TimeSpan.FromMilliseconds(1))
+            {
+                Clock.Advance(elapsed);
+                return Task.CompletedTask;
+            }
+            var due = expectedDue ?? Clock.GetUtcNow() + elapsed;
+            return UntilAsync(() => Clock.TryAdvance(elapsed, due));
+        }
 
         public async Task AdvanceAndWaitForSeedAsync(TimeSpan elapsed)
         {
@@ -440,7 +490,10 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
             Seed.ValidityScheduleChanged += OnPublished;
             try
             {
-                Clock.Advance(elapsed);
+                // A queued schedule change can replace an observed timer. Check that a
+                // timer is still pending and advance under the same clock lock so the
+                // replacement cannot be registered against an already-advanced clock.
+                await AdvanceWithTimerAsync(elapsed);
                 await published.Task.WaitAsync(TimeSpan.FromSeconds(10));
             }
             finally
@@ -482,14 +535,30 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         {
             List<ManualTimer> due;
             lock (_gate)
+                due = TakeDueTimers(_now + duration);
+            foreach (var timer in due)
+                timer.Callback(timer.State);
+        }
+        public bool TryAdvance(TimeSpan duration, DateTimeOffset expectedDue)
+        {
+            List<ManualTimer> due;
+            lock (_gate)
             {
-                _now += duration;
-                due = _timers.Where(timer => timer.Due <= _now).ToList();
-                foreach (var timer in due)
-                    timer.Due = timer.Period == Timeout.InfiniteTimeSpan ? null : _now + timer.Period;
+                if (!_timers.Any(timer => timer.Due == expectedDue))
+                    return false;
+                due = TakeDueTimers(_now + duration);
             }
             foreach (var timer in due)
                 timer.Callback(timer.State);
+            return true;
+        }
+        private List<ManualTimer> TakeDueTimers(DateTimeOffset now)
+        {
+            _now = now;
+            var due = _timers.Where(timer => timer.Due <= _now).ToList();
+            foreach (var timer in due)
+                timer.Due = timer.Period == Timeout.InfiniteTimeSpan ? null : _now + timer.Period;
+            return due;
         }
         private sealed class ManualTimer(ManualClock owner, TimerCallback callback, object? state) : ITimer
         {

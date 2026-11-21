@@ -1,4 +1,5 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
+import { useLocation } from "react-router-dom";
 import * as api from "@/lib/api";
 import { StrategyRunLedgerScreen } from "@/screens/strategy-run-ledger-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
@@ -54,13 +55,76 @@ beforeEach(() => {
   vi.mocked(api.getRunLedgerJournal).mockResolvedValue([]);
 });
 
+function RouteLocation() {
+  const location = useLocation();
+  return <output data-testid="route-location">{location.search}</output>;
+}
+
 async function renderRunLedger(initialEntry = "/strategy/run-ledger") {
-  const result = renderWithRouter(<StrategyRunLedgerScreen />, { initialEntries: [initialEntry] });
+  const result = renderWithRouter(<><StrategyRunLedgerScreen /><RouteLocation /></>, { initialEntries: [initialEntry] });
   await waitForAsyncEffects();
   return result;
 }
 
 describe("StrategyRunLedgerScreen", () => {
+  it("keeps run and date choices before dependent summaries and results", async () => {
+    await renderRunLedger("/strategy/run-ledger?runId=unknown-run&asOf=2026-06-30&scenario=retained");
+
+    const run = screen.getByRole("combobox", { name: "Strategy run" });
+    const date = screen.getByLabelText("As of date (UTC)");
+    const summary = screen.getByLabelText("Explorer summary");
+    expect(run).toHaveValue("unknown-run");
+    expect(run.compareDocumentPosition(date) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(date.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.focus(run);
+    fireEvent.click(screen.getByRole("option", { name: "Select a run…" }));
+    await waitForAsyncEffects();
+    expect(date).toBeDisabled();
+    expect(screen.getByTestId("route-location")).toHaveTextContent("?asOf=2026-06-30&scenario=retained");
+  });
+
+  it("keeps the run picker visible during loading and failed discovery", async () => {
+    let rejectDiscovery: (reason: Error) => void = () => {};
+    vi.mocked(api.getFinancialRecordExplorer).mockReturnValueOnce(new Promise((_resolve, reject) => { rejectDiscovery = reject; }));
+    await renderRunLedger();
+    expect(screen.getByRole("combobox", { name: "Strategy run" })).toBeInTheDocument();
+    expect(screen.getByText("Loading available strategy runs…")).toBeInTheDocument();
+    rejectDiscovery(new Error("offline"));
+    await waitForAsyncEffects();
+    expect(screen.getByRole("combobox", { name: "Strategy run" })).toBeInTheDocument();
+    expect(screen.getByText("Run choices could not be loaded. Refresh this page to try again.")).toBeInTheDocument();
+  });
+
+  it("explains an empty run list beside the required picker", async () => {
+    await renderRunLedger();
+    expect(screen.getByRole("combobox", { name: "Strategy run" })).toBeInTheDocument();
+    expect(screen.getByText("No retained strategy runs are available. Create a run in Strategy to inspect its ledger.")).toBeInTheDocument();
+    expect(screen.getByText("No run selected")).toBeInTheDocument();
+  });
+
+  it("hides the outgoing explorer evidence until the selected run's response arrives", async () => {
+    let finishDiscovery: (value: never) => void = () => {};
+    vi.mocked(api.getFinancialRecordExplorer)
+      .mockResolvedValueOnce({
+        explorerId: "ledger", title: "Run A evidence", description: "", sourceState: "Ready",
+        isBlocked: false, blockedReason: "", scopeItems: [], summaryItems: [], filters: [], columns: [],
+        savedViews: ["run-a", "run-b"].map((id) => ({
+          viewId: id, label: id, description: "", filters: [{ filterId: "run", label: "Run", value: id, operator: "equals", tone: "Info" }], columnIds: [], isActive: false
+        })),
+        rows: [], selectedRecord: null, proofActions: [], recordGraph: { nodes: [], edges: [] }
+      } as never)
+      .mockReturnValueOnce(new Promise((resolve) => { finishDiscovery = resolve; }));
+    await renderRunLedger("/strategy/run-ledger?runId=run-a&scenario=retained");
+    expect(screen.getByRole("heading", { name: "Run A evidence" })).toBeInTheDocument();
+    fireEvent.focus(screen.getByRole("combobox", { name: "Strategy run" }));
+    fireEvent.click(screen.getByRole("option", { name: "run-b" }));
+    await waitForAsyncEffects();
+    expect(screen.queryByRole("heading", { name: "Run A evidence" })).not.toBeInTheDocument();
+    expect(screen.getByTestId("route-location")).toHaveTextContent("?runId=run-b&scenario=retained");
+    finishDiscovery(null as never);
+    await waitForAsyncEffects();
+  });
+
   it("labels itself a simulation artifact rather than the fund's book", async () => {
     await renderRunLedger();
 
@@ -80,6 +144,37 @@ describe("StrategyRunLedgerScreen", () => {
     expect(await screen.findByRole("region", { name: /trial balance lines for the selected ledger run/ })).toBeInTheDocument();
     expect(screen.getByRole("row", { name: /Cash Asset\. Primary basis/ })).toBeInTheDocument();
     expect(screen.getByText("Cash sweep")).toBeInTheDocument();
+  });
+
+  it("applies one inclusive UTC date to balances and journal and can restore run end", async () => {
+    await renderRunLedger("/strategy/run-ledger?runId=run-42");
+    fireEvent.change(screen.getByLabelText("As of date (UTC)"), { target: { value: "2026-06-30" } });
+    await waitForAsyncEffects();
+
+    const cut = { asOf: "2026-06-30T23:59:59.9999999Z" };
+    expect(api.getRunTrialBalance).toHaveBeenLastCalledWith("run-42", cut);
+    expect(api.getRunLedgerJournal).toHaveBeenLastCalledWith("run-42", cut);
+    expect(screen.getByLabelText("As of date (UTC)")).toHaveValue("2026-06-30");
+
+    fireEvent.click(screen.getByRole("button", { name: "Run end" }));
+    await waitForAsyncEffects();
+    expect(api.getRunTrialBalance).toHaveBeenLastCalledWith("run-42");
+    expect(api.getRunLedgerJournal).toHaveBeenLastCalledWith("run-42");
+    expect(screen.getByLabelText("As of date (UTC)")).toHaveValue("");
+  });
+
+  it("exports the selected run and date in the selected accounting format", async () => {
+    await renderRunLedger("/strategy/run-ledger?runId=run-42&asOf=2026-03-01");
+    fireEvent.change(screen.getByLabelText("Accounting export format"), { target: { value: "Parquet" } });
+    expect(screen.getByRole("link", { name: "Download accounting package" })).toHaveAttribute(
+      "href", "/api/workstation/runs/run-42/ledger/export?format=Parquet&asOf=2026-03-01T23%3A59%3A59.9999999Z"
+    );
+  });
+
+  it("restores the economic date from a retained URL", async () => {
+    await renderRunLedger("/strategy/run-ledger?runId=run-42&asOf=2026-03-01");
+    expect(api.getRunTrialBalance).toHaveBeenCalledWith("run-42", { asOf: "2026-03-01T23:59:59.9999999Z" });
+    expect(api.getRunLedgerJournal).toHaveBeenCalledWith("run-42", { asOf: "2026-03-01T23:59:59.9999999Z" });
   });
 
   it("renders the basis bridge that moved with this screen", async () => {
@@ -162,14 +257,19 @@ describe("StrategyRunLedgerScreen", () => {
 
     await renderRunLedger();
 
-    const selector = await screen.findByLabelText("Strategy run", { selector: "select" });
+    const selector = await screen.findByRole("combobox", { name: "Strategy run" });
     expect(selector).toBeInTheDocument();
+    expect(screen.queryByRole("grid", { name: "Ledger records" })).not.toBeInTheDocument();
+    expect(screen.getByText("No run selected")).toBeInTheDocument();
 
-    const runOptions = screen.getAllByRole("option").filter((option) => (option as HTMLOptionElement).value !== "");
-    // Deduped to one option per run, valued by the bare run id the run APIs expect.
-    expect(runOptions.map((option) => (option as HTMLOptionElement).value)).toEqual(["run-42", "run-43"]);
+    fireEvent.focus(selector);
+    const runOptions = within(screen.getByRole("listbox")).getAllByRole("option");
+    expect(runOptions).toHaveLength(2);
     expect(screen.getByRole("option", { name: "Run 42" })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: "Run 43" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("option", { name: "Run 43" }));
+    await waitForAsyncEffects();
+    // Selection uses the bare run id the APIs expect, never a composite ledger record id.
+    expect(api.getRunTrialBalance).toHaveBeenCalledWith("run-43");
   });
 
   it("offers every run the explorer publishes, not only the one whose rows it returned", async () => {
@@ -220,9 +320,14 @@ describe("StrategyRunLedgerScreen", () => {
 
     await renderRunLedger();
 
-    const runOptions = screen.getAllByRole("option").filter((option) => (option as HTMLOptionElement).value !== "");
-    expect(runOptions.map((option) => (option as HTMLOptionElement).value)).toEqual(["run-42", "run-41"]);
-    expect(screen.getByRole("option", { name: "Momentum · Backtest · 2026-05-31 09:00" })).toBeInTheDocument();
+    const selector = screen.getByRole("combobox", { name: "Strategy run" });
+    fireEvent.focus(selector);
+    expect(within(screen.getByRole("listbox")).getAllByRole("option")).toHaveLength(2);
+    fireEvent.change(selector, { target: { value: "2026-05" } });
+    expect(within(screen.getByRole("listbox")).getAllByRole("option")).toHaveLength(1);
+    fireEvent.keyDown(selector, { key: "Enter" });
+    await waitForAsyncEffects();
+    expect(api.getRunTrialBalance).toHaveBeenCalledWith("run-41");
   });
 
   it("scopes the explorer request to the run the panels are reading", async () => {

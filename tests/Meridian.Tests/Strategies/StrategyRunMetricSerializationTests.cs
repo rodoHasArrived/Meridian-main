@@ -97,6 +97,57 @@ public sealed class StrategyRunMetricSerializationTests
         }
     }
 
+    [Theory]
+    [InlineData(double.PositiveInfinity, false)]
+    [InlineData(double.NegativeInfinity, false)]
+    [InlineData(double.PositiveInfinity, true)]
+    [InlineData(double.NegativeInfinity, true)]
+    public async Task InfiniteWinRate_RejectsInvalidEntryBeforeAppendingAndAllowsValidRetry(
+        double winRate,
+        bool withOutcome)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), $"meridian-invalid-win-rate-{Guid.NewGuid():N}");
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var store = new StrategyRunStore(history);
+            var started = StrategyRunEntry.Start("invalid-strategy", "Invalid strategy", RunType.Backtest);
+            await store.RecordRunAsync(started);
+            var result = CreateWinningResult(noDownside: true);
+            var invalid = started.Complete(result with { Metrics = result.Metrics with { WinRate = winRate } });
+            Func<Task> append = withOutcome
+                ? async () =>
+                {
+                    await store.RecordLifecycleEventWithOutcomeAsync(invalid, StrategyRunLifecycleEventType.Completed);
+                }
+            : () => store.RecordRunAsync(invalid);
+
+            var rejected = await append.Should().ThrowAsync<ArgumentException>();
+
+            rejected.Which.ParamName.Should().Be("entry");
+            rejected.Which.InnerException.Should().BeOfType<JsonException>();
+            (await history.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{started.RunId}"
+            })).Should().ContainSingle();
+            var unchanged = await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync(started.RunId);
+            unchanged!.EndedAt.Should().BeNull();
+            unchanged.Metrics.Should().BeNull();
+
+            await store.RecordRunAsync(started.Complete(result));
+            var retained = await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync(started.RunId);
+            retained!.Metrics!.Metrics.WinRate.Should().Be(1d);
+            retained.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+                Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
     private static BacktestResult CreateWinningResult(bool noDownside)
     {
         var from = new DateOnly(2026, 1, 2);

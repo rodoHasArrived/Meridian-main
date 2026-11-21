@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { LocalDateText } from "@/components/ui/local-date-text";
 import { Select } from "@/components/ui/select";
 import type { ClosePeriodPlan } from "@/types";
 import type { CaptureClosePlanTemplateRequest, CloseDeadlineRule, ClosePlanTemplate } from "@/types/close-preparation";
@@ -59,7 +60,7 @@ export function ClosePreparationCalendarForm({ plan, previous, busy, onCapture }
           <tbody>{plan.tasks.map((task, index) => {
             const rule = rules[index];
             return <tr key={task.taskId} className="border-b border-border">
-              <th scope="row" className="p-2 font-medium">{task.displayName}<div className="font-mono text-xs text-muted-foreground">{task.dueDate}</div></th>
+              <th scope="row" className="p-2 font-medium">{task.displayName}<div className="font-mono text-xs text-muted-foreground"><LocalDateText value={task.dueDate} fallback={task.dueDate} /></div></th>
               <td className="min-w-36 p-2"><Select aria-label={`${task.displayName} deadline anchor`} value={rule.anchor} onChange={event => update(task.taskId, { anchor: event.target.value as CloseDeadlineRule["anchor"] })}><option value="PeriodEnd">Period end</option><option value="PeriodStart">Period start</option></Select></td>
               <td className="min-w-24 p-2"><Input required type="number" step="1" aria-label={`${task.displayName} day offset`} value={rule.offsetDays} onChange={event => update(task.taskId, { offsetDays: event.target.value })} /></td>
               <td className="min-w-40 p-2"><Select aria-label={`${task.displayName} day count`} value={rule.dayCount} onChange={event => update(task.taskId, { dayCount: event.target.value as CloseDeadlineRule["dayCount"] })}><option value="BusinessDays">Business days</option><option value="CalendarDays">Calendar days</option></Select></td>

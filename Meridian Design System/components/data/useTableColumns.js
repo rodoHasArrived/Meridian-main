@@ -1,12 +1,12 @@
-// Meridian useTableColumns — column model for DenseDataTable: resize, reorder, pin, hide.
+// Meridian useTableColumns — column model for DataGrid: resize, reorder, pin, hide.
 // Keeps the presentational table dumb; this hook owns the mutable column geometry and
 // persists it per-user under a key. Returns the ordered, visible, sized column list plus
 // the handlers a header row wires up.
 //
 //   const cols = useTableColumns(baseColumns, { persistKey: "blotter.cols" });
-//   <DenseDataTable columns={cols.visibleColumns}
+//   <DataGrid columns={cols.visibleColumns}
 //     onColumnResize={cols.resize} onColumnReorder={cols.reorder}
-//     onColumnPin={cols.togglePin} pinnedKeys={cols.pinnedKeys} />
+//     onColumnPin={cols.togglePin} />
 import React from "react";
 
 export function useTableColumns(baseColumns, { persistKey = null, defaultWidth = 140 } = {}) {
@@ -18,27 +18,26 @@ export function useTableColumns(baseColumns, { persistKey = null, defaultWidth =
       hidden: {},
       pinned: baseColumns.filter((c) => c.pinned).map((c) => c.key),
     };
-    if (persistKey && typeof localStorage !== "undefined") {
-      try {
+    try {
+      if (persistKey && typeof localStorage !== "undefined") {
         const saved = JSON.parse(localStorage.getItem(persistKey));
         // Only adopt saved state whose columns still match the current schema.
         if (saved && [...saved.order].sort().join("|") === [...model.order].sort().join("|")) {
           return { ...model, ...saved };
         }
-      } catch (e) { /* ignore */ }
-    }
+      }
+    } catch (e) { /* unavailable/corrupt storage leaves the declared column model */ }
     return model;
   }, [baseKeys]);
 
   const [model, setModel] = React.useState(initial);
   React.useEffect(() => setModel(initial), [initial]);
   React.useEffect(() => {
-    if (persistKey && typeof localStorage !== "undefined") {
-      localStorage.setItem(persistKey, JSON.stringify(model));
-    }
+    try { if (persistKey && typeof localStorage !== "undefined") localStorage.setItem(persistKey, JSON.stringify(model)); }
+    catch { /* Column changes remain usable without persistence. */ }
   }, [model, persistKey]);
 
-  const byKey = React.useMemo(() => Object.fromEntries(baseColumns.map((c) => [c.key, c])), [baseKeys]);
+  const byKey = React.useMemo(() => Object.fromEntries(baseColumns.map((c) => [c.key, c])), [baseColumns]);
 
   const resize = React.useCallback((key, width) => {
     setModel((m) => ({ ...m, widths: { ...m.widths, [key]: Math.max(48, Math.round(width)) } }));

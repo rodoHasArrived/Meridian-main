@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Readiness panel — mirrors `.panel-state`. A gate / readiness summary block led by
  * a {@link SeverityBadge}, with a title, detail line, optional score, optional body,
@@ -31,4 +32,4 @@ export interface ReadinessPanelProps {
   /** Extra body content between the detail line and the footer. */
   children?: React.ReactNode;
 }
-export declare function ReadinessPanel(props: ReadinessPanelProps): JSX.Element;
+export declare function ReadinessPanel(props: ReadinessPanelProps): React.JSX.Element;

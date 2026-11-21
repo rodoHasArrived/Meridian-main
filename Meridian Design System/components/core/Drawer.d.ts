@@ -20,6 +20,8 @@ export interface DrawerProps {
 }
 
 export interface DrawerHeaderProps {
+  /** Optional title id; Drawer supplies its own per-instance dialog label target. */
+  id?: string;
   title: string;
   onClose?: () => void;
 }

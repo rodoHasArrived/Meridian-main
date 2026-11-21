@@ -86,6 +86,7 @@ public partial class MainWindow : Window
         _windowStateStore = windowStateStore ?? throw new ArgumentNullException(nameof(windowStateStore));
         DataContext = _viewModel;
         _viewModel.LogoutRequested += OnLogoutRequested;
+        _viewModel.ShellRefreshRequested += OnShellRefreshRequested;
 
         // Subscribe to keyboard shortcuts
         _keyboardShortcutService.ShortcutInvoked += OnShortcutInvoked;
@@ -124,6 +125,9 @@ public partial class MainWindow : Window
     }
 
     private async void OnWindowLoaded(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => WindowLoadedCoreAsync(sender, e), nameof(OnWindowLoaded)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task WindowLoadedCoreAsync(object sender, RoutedEventArgs e)
     {
         EnsureShellVisibleOnStartup();
         if (RootFrame.Content is null)
@@ -199,6 +203,7 @@ public partial class MainWindow : Window
 
         // Unsubscribe from all events to prevent memory leaks
         _keyboardShortcutService.ShortcutInvoked -= OnShortcutInvoked;
+        _viewModel.ShellRefreshRequested -= OnShellRefreshRequested;
         _notificationService.NotificationReceived -= OnNotificationReceived;
         _tourService.StepChanged -= OnTourStepChanged;
         _tourService.TourCompleted -= OnTourCompleted;
@@ -311,6 +316,15 @@ public partial class MainWindow : Window
         _viewModel.HandleShortcut(e.ActionId);
     }
 
+    private void OnShellRefreshRequested(object? sender, EventArgs e)
+    {
+        // F5 runs the same shell refresh as the toolbar Refresh button.
+        if (RootFrame.Content is MainPage mainPage)
+        {
+            mainPage.RefreshCurrentPage();
+        }
+    }
+
     private void OnLogoutRequested(object? sender, EventArgs e)
     {
         if (!Dispatcher.CheckAccess())
@@ -410,6 +424,9 @@ public partial class MainWindow : Window
     }
 
     private async void OnLaunchArgsReceived(object? sender, string[] args)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => LaunchArgsReceivedCoreAsync(sender, args), nameof(OnLaunchArgsReceived)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task LaunchArgsReceivedCoreAsync(object? sender, string[] args)
     {
         if (!Dispatcher.CheckAccess())
         {
@@ -601,15 +618,20 @@ public partial class MainWindow : Window
         {
             _ = Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () =>
             {
-                _ = _navigationService.NavigateTo(restorePlan.DeferredPageTag);
+                _ = NavigateToShellPage(restorePlan.DeferredPageTag);
             });
         }
 
         if (!string.IsNullOrWhiteSpace(restorePlan.TargetPageTag))
         {
-            _navigationService.NavigateTo(restorePlan.TargetPageTag);
+            _ = NavigateToShellPage(restorePlan.TargetPageTag);
         }
     }
+
+    private bool NavigateToShellPage(string pageTag)
+        => RootFrame.Content is MainPage mainPage
+            ? mainPage.NavigateToLaunchPage(pageTag)
+            : _navigationService.NavigateTo(pageTag);
 
     /// <summary>
     /// Saves the current workspace session state for next launch.
@@ -640,6 +662,9 @@ public partial class MainWindow : Window
     }
 
     private async void OnActiveContextChanged(object? sender, WorkstationOperatingContextChangedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ActiveContextChangedCoreAsync(sender, e), nameof(OnActiveContextChanged)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ActiveContextChangedCoreAsync(object? sender, WorkstationOperatingContextChangedEventArgs e)
     {
         if (!Dispatcher.CheckAccess())
         {
@@ -651,6 +676,9 @@ public partial class MainWindow : Window
     }
 
     private async void OnFundSwitchRequested(object? sender, EventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => FundSwitchRequestedCoreAsync(sender, e), nameof(OnFundSwitchRequested)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task FundSwitchRequestedCoreAsync(object? sender, EventArgs e)
     {
         if (!Dispatcher.CheckAccess())
         {
@@ -662,6 +690,9 @@ public partial class MainWindow : Window
     }
 
     private async void OnContextSwitchRequested(object? sender, EventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ContextSwitchRequestedCoreAsync(sender, e), nameof(OnContextSwitchRequested)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ContextSwitchRequestedCoreAsync(object? sender, EventArgs e)
     {
         if (!Dispatcher.CheckAccess())
         {
@@ -768,7 +799,7 @@ public partial class MainWindow : Window
         using var stream = File.Create(targetPath);
         encoder.Save(stream);
 
-        Meridian.Wpf.Services.LoggingService.Instance.LogInfo($"Saved automation screenshot to '{targetPath}'.");
+        Meridian.Wpf.Services.LoggingService.Instance.LogInfo("Saved automation screenshot to '{Path}'.", ("Path", targetPath));
     }
 
     private async Task EnsureMainPageShellReadyAsync(CancellationToken ct = default)

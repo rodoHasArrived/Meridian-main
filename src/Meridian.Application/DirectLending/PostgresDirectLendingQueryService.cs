@@ -246,7 +246,9 @@ public sealed partial class PostgresDirectLendingQueryService : IDirectLendingQu
                 contract.CurrentTerms.OriginationDate,
                 contract.CurrentTerms.MaturityDate,
                 servicing.LastAccrualDate,
-                servicing.LastPaymentDate));
+                servicing.LastPaymentDate,
+                servicing.Balances.PrepaidInterest,
+                servicing.Balances.UnappliedCash));
         }
 
         return LoanPortfolioSummaryBuilder.Build(summaries, collateral);

@@ -37,7 +37,7 @@ class SchemaDiffTests(unittest.TestCase):
         self.assertEqual(64, len(result["fingerprint"]))
 
     def test_artifact_tree_comparison_is_deterministic(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             expected = root / "expected"
             candidate = root / "candidate"
@@ -56,6 +56,19 @@ class SchemaDiffTests(unittest.TestCase):
             self.assertFalse(first["clean"])
             self.assertEqual(["added.mmd"], first["added"])
             self.assertEqual(["changed.md"], first["changed"])
+
+    def test_machine_inventory_exclusion_does_not_hide_other_manifest_drift(self) -> None:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
+            expected, candidate = Path(directory) / "expected", Path(directory) / "candidate"
+            expected.mkdir()
+            candidate.mkdir()
+            (candidate / "contracts.json").write_text("{}")
+            self.assertTrue(compare_artifact_trees(expected, candidate,
+                            exclude=frozenset({"contracts.json"}))["clean"])
+            (candidate / "catalog.json").write_text("{}")
+            drift = compare_artifact_trees(expected, candidate, exclude=frozenset({"contracts.json"}))
+            self.assertFalse(drift["clean"])
+            self.assertEqual(["catalog.json"], drift["added"])
 
 
 if __name__ == "__main__":

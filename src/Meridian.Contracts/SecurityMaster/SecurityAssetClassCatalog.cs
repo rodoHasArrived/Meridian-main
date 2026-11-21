@@ -4,6 +4,47 @@ using Meridian.Contracts.Domain.Enums;
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
+/// Canonical Security Master asset-class names, one constant per class, in the F#
+/// <c>AssetClassRegistry</c> declaration order. A test holds this set equal to the F# registry,
+/// so a class added to the domain without a constant here fails the build's test lane.
+/// </summary>
+public static class SecurityAssetClassNames
+{
+    public const string Equity = "Equity";
+    public const string Option = "Option";
+    public const string Future = "Future";
+    public const string Bond = "Bond";
+    public const string FxSpot = "FxSpot";
+    public const string Deposit = "Deposit";
+    public const string MoneyMarketFund = "MoneyMarketFund";
+    public const string CertificateOfDeposit = "CertificateOfDeposit";
+    public const string CommercialPaper = "CommercialPaper";
+    public const string TreasuryBill = "TreasuryBill";
+    public const string Repo = "Repo";
+    public const string CashSweep = "CashSweep";
+    public const string OtherSecurity = "OtherSecurity";
+    public const string Swap = "Swap";
+    public const string DirectLoan = "DirectLoan";
+    public const string StructuredCredit = "StructuredCredit";
+    public const string PrivateFundInterest = "PrivateFundInterest";
+    public const string PrivateCompanyEquity = "PrivateCompanyEquity";
+    public const string RealEstateHolding = "RealEstateHolding";
+    public const string CommitmentGuarantee = "CommitmentGuarantee";
+    public const string Commodity = "Commodity";
+    public const string CryptoCurrency = "CryptoCurrency";
+    public const string Cfd = "Cfd";
+    public const string Warrant = "Warrant";
+    public const string FxForward = "FxForward";
+    public const string NonDeliverableForward = "NonDeliverableForward";
+    public const string CreditDefaultSwap = "CreditDefaultSwap";
+    public const string Swaption = "Swaption";
+    public const string CapFloor = "CapFloor";
+    public const string StructuredNote = "StructuredNote";
+    public const string InvestmentFund = "InvestmentFund";
+    public const string CustomAsset = "CustomAsset";
+}
+
+/// <summary>
 /// Shared Security Master asset-class metadata used by edit workflows, projections,
 /// and workstation capability summaries so asset support does not drift across surfaces.
 /// </summary>
@@ -28,7 +69,7 @@ public static class SecurityAssetClassCatalog
     private static readonly IReadOnlyList<SecurityAssetClassDescriptor> Descriptors =
     [
         new(
-            AssetClass: "Equity",
+            AssetClass: SecurityAssetClassNames.Equity,
             SupportsEquityClassification: true,
             AssetPackIds: ["public-equity-etf"],
             InstrumentTypes: [InstrumentType.Equity],
@@ -51,9 +92,9 @@ public static class SecurityAssetClassCatalog
             ],
             // Every Equity asset-specific term is optional, so a name/currency/identifier row
             // carries the whole contract.
-            SupportsIdentifierOnlyImport: true),
+            SupportsIdentifierOnlyImport: true) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Option",
+            AssetClass: SecurityAssetClassNames.Option,
             UsesOccOptionSymbols: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.FuturesOption],
@@ -69,9 +110,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Future",
+            AssetClass: SecurityAssetClassNames.Future,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.Future, InstrumentType.SingleStockFuture],
             LotUnit: SecurityLotUnitKind.Contracts,
@@ -86,9 +127,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Ric,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true, SettlesDailyVariationMargin = true },
         new(
-            AssetClass: "Bond",
+            AssetClass: SecurityAssetClassNames.Bond,
             CarriesBondCouponStructure: true,
             AssetPackIds: ["fixed-income"],
             SupportsCanonicalBulletAmortization: true,
@@ -115,9 +156,10 @@ public static class SecurityAssetClassCatalog
             Aliases: ["CorporateBond", "MunicipalBond"],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
             // Version 2 adds the optional scheduleConventions block and version 3 the optional
-            // callSchedule and putSchedule arrays. The contract-step writer admits through version 3;
-            // S2 retains floor 1 for documents that declare no schedules.
-            TermsVersion: 3,
+            // callSchedule and putSchedule arrays. Version 4 adds the explicit calculation companion,
+            // and version 5 the signed bond workflow conventions. S2 retains floor 1 for documents
+            // that declare none of those containers.
+            TermsVersion: 5,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
@@ -126,11 +168,28 @@ public static class SecurityAssetClassCatalog
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 2,
                     rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25)."),
-                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
-            ],
-            ReadableTermsVersion: 4) { StampFloor = 1 },
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds explicit overnight and inflation workflow conventions without changing earlier terms; historical calculations retain their versions.")
+            ])
+        {
+            StampFloor = 1,
+            SupportsRecurringFixedIncomeAccrual = true,
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.Maturity, "legalFinalMaturity"),
+                new(SecurityCashFlowTermRole.Issue, "issueDate"),
+                new(SecurityCashFlowTermRole.PrincipalFace, "par"),
+                new(SecurityCashFlowTermRole.CouponRate, "couponRate"),
+                new(SecurityCashFlowTermRole.PaymentFrequency, "paymentFrequency"),
+                new(SecurityCashFlowTermRole.DayCount, "dayCount"),
+                new(SecurityCashFlowTermRole.InflationIndex, "inflationIndex"),
+                new(SecurityCashFlowTermRole.InflationBaseIndexValue, "inflationBaseIndexValue"),
+                new(SecurityCashFlowTermRole.InflationIndexRatio, "inflationIndexRatio")
+            ]
+        },
         new(
-            AssetClass: "FxSpot",
+            AssetClass: SecurityAssetClassNames.FxSpot,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.Forex],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
@@ -143,9 +202,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Ric,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Deposit",
+            AssetClass: SecurityAssetClassNames.Deposit,
             QuotesRatesAsFractions: true,
             AssetPackIds: ["cash-bank"],
             InstrumentTypes: [InstrumentType.Deposit],
@@ -159,9 +218,21 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Isin,
                 SecurityIdentifierKind.Cusip
-            ]),
+            ],
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.CouponRate, "interestRate"),
+                new(SecurityCashFlowTermRole.DayCount, "dayCount")
+            ],
+            StampFloor = 1,
+            AccountingOutsideSlice = true
+        },
         new(
-            AssetClass: "MoneyMarketFund",
+            AssetClass: SecurityAssetClassNames.MoneyMarketFund,
             AssetPackIds: ["cash-bank"],
             InstrumentTypes: [InstrumentType.Equity],
             LotUnit: SecurityLotUnitKind.Units,
@@ -176,9 +247,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "CertificateOfDeposit",
+            AssetClass: SecurityAssetClassNames.CertificateOfDeposit,
             AssetPackIds: ["fixed-income"],
             InstrumentTypes: [InstrumentType.Deposit],
             LotUnit: SecurityLotUnitKind.FaceValue,
@@ -198,7 +269,7 @@ public static class SecurityAssetClassCatalog
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
             // Version 2 adds the optional scheduleConventions block and version 3 the optional
             // callSchedule and putSchedule arrays; S2 keeps undeclared documents at floor 1 after the raise.
-            TermsVersion: 3,
+            TermsVersion: 5,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
@@ -207,11 +278,20 @@ public static class SecurityAssetClassCatalog
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 2,
                     rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25)."),
-                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds the optional governed scalar rateUnit declaration without changing earlier terms.")
+            ])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.CouponRate, "couponRate"),
+                new(SecurityCashFlowTermRole.DayCount, "dayCount")
             ],
-            ReadableTermsVersion: 4) { StampFloor = 1 },
+            StampFloor = 1
+        },
         new(
-            AssetClass: "CommercialPaper",
+            AssetClass: SecurityAssetClassNames.CommercialPaper,
             AssetPackIds: ["fixed-income"],
             SupportsCanonicalBulletAmortization: true,
             InstrumentTypes: [InstrumentType.Bond],
@@ -229,9 +309,20 @@ public static class SecurityAssetClassCatalog
             ],
             AmortizesTowardPar: true,
             RequiresMaturity: true,
-            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond),
+            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.DayCount, "dayCount")
+            ],
+            PaysNoContractualCoupon = true,
+            StampFloor = 1
+        },
         new(
-            AssetClass: "TreasuryBill",
+            AssetClass: SecurityAssetClassNames.TreasuryBill,
             AssetPackIds: ["fixed-income"],
             SupportsCanonicalBulletAmortization: true,
             InstrumentTypes: [InstrumentType.Bond],
@@ -250,9 +341,19 @@ public static class SecurityAssetClassCatalog
             ],
             AmortizesTowardPar: true,
             RequiresMaturity: true,
-            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond),
+            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity")
+            ],
+            PaysNoContractualCoupon = true,
+            StampFloor = 1
+        },
         new(
-            AssetClass: "Repo",
+            AssetClass: SecurityAssetClassNames.Repo,
             TradesAsBilateralContract: true,
             AssetPackIds: ["fixed-income"],
             InstrumentTypes: [InstrumentType.Repo],
@@ -266,9 +367,21 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Isin,
                 SecurityIdentifierKind.Cusip
-            ]),
+            ],
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "endDate"),
+                new(SecurityCashFlowTermRole.Issue, "startDate"),
+                new(SecurityCashFlowTermRole.CouponRate, "repoRate")
+            ],
+            StampFloor = 1,
+            AccountingOutsideSlice = true
+        },
         new(
-            AssetClass: "CashSweep",
+            AssetClass: SecurityAssetClassNames.CashSweep,
             AssetPackIds: ["cash-bank"],
             InstrumentTypes: [InstrumentType.Deposit],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
@@ -280,9 +393,11 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Ticker
-            ]),
+            ],
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
-            AssetClass: "OtherSecurity",
+            AssetClass: SecurityAssetClassNames.OtherSecurity,
             AssetPackIds: ["controlled-other-asset"],
             RequiresGovernedProfile: true,
             LotUnit: SecurityLotUnitKind.Units,
@@ -296,15 +411,18 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Ticker,
                 SecurityIdentifierKind.Figi
             ],
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "CustomAsset",
+            AssetClass: SecurityAssetClassNames.CustomAsset,
             RequiresProfileReference: true,
             AssetPackIds: ["controlled-other-asset"],
             RequiresGovernedProfile: true,
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            // Profile-keyed: one custom_asset_profile_field_projection row per profileFields key
+            // (migration 064), written by a specialized store writer because the field set is
+            // governed per profile rather than fixed per class.
+            ProjectionKind: SecurityTermsProjectionKind.Specialized,
             SupportsBasicCreateWorkflow: true,
             PreferredIdentifierKinds:
             [
@@ -315,9 +433,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Lei
             ],
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Swap",
+            AssetClass: SecurityAssetClassNames.Swap,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.Swap],
@@ -331,21 +449,33 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
                 SecurityIdentifierKind.Lei,
-                SecurityIdentifierKind.ProviderSymbol
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
             ],
             RequiresMaturity: true,
             // Version 2 adds the optional scheduleConventions block to each leg; read ahead of write
             // (ADR-024).
+            TermsVersion: 4,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 1,
                     rationale: "Version 2 adds the optional scheduleConventions block to each leg and changes no version-1 term, so a version-1 payload reads it as unset on every leg (ADR-024, 2026-10-25)."),
-                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 2, rationale: "Version 3 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 2, rationale: "Version 3 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional governed scalar rateUnit declaration without changing earlier terms.")
+            ])
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturityDate"),
+                new(SecurityCashFlowTermRole.Issue, "effectiveDate")
             ],
-            ReadableTermsVersion: 3),
+            StampFloor = 1,
+            AccountingOutsideSlice = true
+        },
         new(
-            AssetClass: "DirectLoan",
+            AssetClass: SecurityAssetClassNames.DirectLoan,
             AssetPackIds: ["private-loan-credit", "mortgage-facility-intercompany"],
             InstrumentTypes: [InstrumentType.DirectLoan],
             LotUnit: SecurityLotUnitKind.FaceValue,
@@ -364,10 +494,21 @@ public static class SecurityAssetClassCatalog
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.DirectLending,
             AmortizesTowardPar: true,
             Aliases: ["Loan", "AmortizingLoan", "BankLoan"],
-            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")],
-            ReadableTermsVersion: 2),
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 2, rationale: "Version 3 adds the optional governed scalar rateUnit declaration without changing earlier terms.")
+            ],
+            TermsVersion: 3)
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.CouponRate, "currentCouponRate")
+            ],
+            StampFloor = 1,
+            AccountingOutsideSlice = true
+        },
         new(
-            AssetClass: "StructuredCredit",
+            AssetClass: SecurityAssetClassNames.StructuredCredit,
             AssetPackIds: ["fixed-income"],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.FactorAmortizing,
@@ -391,7 +532,7 @@ public static class SecurityAssetClassCatalog
             // against the committed manifests. Version 3 adds the optional scheduleConventions block and
             // version 4 the optional callSchedule and putSchedule arrays. The contract-step writer admits
             // through version 4, while S2 retains floor 2 for documents that declare no schedules.
-            TermsVersion: 4,
+            TermsVersion: 6,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
@@ -403,14 +544,26 @@ public static class SecurityAssetClassCatalog
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 3,
                     rationale: "Version 4 adds the optional callSchedule and putSchedule arrays and changes no version-3 term, so a version-3 payload reads them as unset (ADR-024, 2026-10-25)."),
-                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 5, rationale: "Version 6 adds the optional governed scalar rateUnit declaration without changing earlier terms.")
             ],
-            ReadableTermsVersion: 5,
             SupportsProfileBackedTerms: true,
             Aliases: [.. SecurityCanonicalAssetHomes.SecuritizedLabels.Where(static label => label != "StructuredCredit")],
-            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity) { StampFloor = 2 },
+            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity)
+        {
+            CashFlowTermRoles =
+            [
+                new(SecurityCashFlowTermRole.Maturity, "maturity"),
+                new(SecurityCashFlowTermRole.PrincipalFace, "originalFace"),
+                new(SecurityCashFlowTermRole.CurrentFactor, "currentFactor"),
+                new(SecurityCashFlowTermRole.CouponRate, "couponOrIndex", ReadAfterSharedSpellings: true)
+            ],
+            StampFloor = 2,
+            SupportsRecurringFixedIncomeAccrual = true,
+            ReclassifyingProfileIds = ["structured-credit-io-po"]
+        },
         new(
-            AssetClass: "PrivateFundInterest",
+            AssetClass: SecurityAssetClassNames.PrivateFundInterest,
             AssetPackIds: ["private-fund-partnership"],
             LotUnit: SecurityLotUnitKind.Commitment,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
@@ -426,9 +579,15 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true,
             // Spellings the private-fund pack planned and Asset Operations used to accept by name;
             // existing subjects carrying them keep resolving to this class.
-            Aliases: ["PrivateFund", "PartnershipInterest", "LimitedPartnershipInterest"]),
+            Aliases: ["PrivateFund", "PartnershipInterest", "LimitedPartnershipInterest"])
+        {
+            AccountingOutsideSlice = true,
+            SupportsPrivateCapitalRecords = true,
+            ClassificationLabels = ["PrivateFunds"],
+            ReclassifyingProfileIds = ["private-fund-interest"]
+        },
         new(
-            AssetClass: "PrivateCompanyEquity",
+            AssetClass: SecurityAssetClassNames.PrivateCompanyEquity,
             AssetPackIds: ["private-fund-partnership"],
             LotUnit: SecurityLotUnitKind.Shares,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
@@ -442,9 +601,14 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true)
+        {
+            AccountingOutsideSlice = true,
+            ClassificationLabels = ["PrivateEquity"],
+            ReclassifyingProfileIds = ["private-company-equity"]
+        },
         new(
-            AssetClass: "RealEstateHolding",
+            AssetClass: SecurityAssetClassNames.RealEstateHolding,
             AssetPackIds: ["real-estate"],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
@@ -457,9 +621,14 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true)
+        {
+            AccountingOutsideSlice = true,
+            ClassificationLabels = ["RealEstate", "RealEstateInterest"],
+            ReclassifyingProfileIds = ["real-estate-holding"]
+        },
         new(
-            AssetClass: "CommitmentGuarantee",
+            AssetClass: SecurityAssetClassNames.CommitmentGuarantee,
             AssetPackIds: ["commitment-guarantee"],
             LotUnit: SecurityLotUnitKind.Commitment,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
@@ -472,9 +641,14 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true)
+        {
+            AccountingOutsideSlice = true,
+            ClassificationLabels = ["UnfundedCommitment", "Guarantee"],
+            ReclassifyingProfileIds = ["commitment-guarantee"]
+        },
         new(
-            AssetClass: "Commodity",
+            AssetClass: SecurityAssetClassNames.Commodity,
             AssetPackIds: ["controlled-other-asset"],
             InstrumentTypes: [InstrumentType.Commodity],
             LotUnit: SecurityLotUnitKind.Units,
@@ -488,9 +662,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "CryptoCurrency",
+            AssetClass: SecurityAssetClassNames.CryptoCurrency,
             AssetPackIds: ["controlled-other-asset"],
             InstrumentTypes: [InstrumentType.Crypto],
             LotUnit: SecurityLotUnitKind.Units,
@@ -503,9 +677,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Ric,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Cfd",
+            AssetClass: SecurityAssetClassNames.Cfd,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.CFD],
@@ -517,10 +691,12 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
-                SecurityIdentifierKind.Ticker
-            ]),
+                SecurityIdentifierKind.Ticker,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
+            ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "Warrant",
+            AssetClass: SecurityAssetClassNames.Warrant,
             UsesOccOptionSymbols: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.Warrant],
@@ -537,9 +713,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Figi,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
-            ]),
+            ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "FxForward",
+            AssetClass: SecurityAssetClassNames.FxForward,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
@@ -550,10 +726,12 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
-                SecurityIdentifierKind.Ric
-            ]),
+                SecurityIdentifierKind.Ric,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
+            ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "NonDeliverableForward",
+            AssetClass: SecurityAssetClassNames.NonDeliverableForward,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
@@ -564,10 +742,12 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
-                SecurityIdentifierKind.Ric
-            ]),
+                SecurityIdentifierKind.Ric,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
+            ]) { AccountingOutsideSlice = true },
         new(
-            AssetClass: "CreditDefaultSwap",
+            AssetClass: SecurityAssetClassNames.CreditDefaultSwap,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.Notional,
@@ -579,11 +759,15 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
                 SecurityIdentifierKind.Lei,
-                SecurityIdentifierKind.ProviderSymbol
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi,
+                SecurityIdentifierKind.MarkitRedEntity,
+                SecurityIdentifierKind.MarkitRedPair
             ],
-            RequiresMaturity: true) { SupportsCreditLifecycle = true },
+            RequiresMaturity: true) { SupportsCreditLifecycle = true, AccountingOutsideSlice = true },
         new(
-            AssetClass: "Swaption",
+            AssetClass: SecurityAssetClassNames.Swaption,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.Notional,
@@ -594,10 +778,14 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
-                SecurityIdentifierKind.ProviderSymbol
-            ]),
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
+            ],
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
-            AssetClass: "CapFloor",
+            AssetClass: SecurityAssetClassNames.CapFloor,
             TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.Notional,
@@ -608,11 +796,15 @@ public static class SecurityAssetClassCatalog
             [
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.PermId,
-                SecurityIdentifierKind.ProviderSymbol
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Uti,
+                SecurityIdentifierKind.Upi
             ],
-            RequiresMaturity: true),
+            RequiresMaturity: true,
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
-            AssetClass: "StructuredNote",
+            AssetClass: SecurityAssetClassNames.StructuredNote,
             AssetPackIds: ["fixed-income"],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
@@ -624,9 +816,18 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Cusip,
                 SecurityIdentifierKind.InternalCode
             ],
-            RequiresMaturity: true),
+            // The owner chose valuation-mark FVTPL (2026-11-11). This is deliberately outside the
+            // coupon/accrual event slice: FixedIncome taxonomy must not route it into bond posting.
+            RequiresMaturity: true,
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")])
+        {
+            StampFloor = 1,
+            AccountingOutsideSlice = true,
+            ValuationAccountingTreatment = SecurityValuationAccountingTreatment.FairValueThroughProfitOrLoss
+        },
         new(
-            AssetClass: "InvestmentFund",
+            AssetClass: SecurityAssetClassNames.InvestmentFund,
             AssetPackIds: ["public-equity-etf"],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.FundDistributions,
@@ -642,7 +843,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode
             ],
             // Every InvestmentFund asset-specific term is optional; see Equity above.
-            SupportsIdentifierOnlyImport: true)
+            SupportsIdentifierOnlyImport: true) { AccountingOutsideSlice = true }
     ];
 
     /// <summary>
@@ -706,6 +907,15 @@ public static class SecurityAssetClassCatalog
         descriptor = null;
         return assetClass is not null && ByAssetClass.TryGetValue(assetClass.Trim(), out descriptor);
     }
+
+    /// <summary>
+    /// The canonical class name for a catalog name or registered alias, in any casing ("Loan" and
+    /// "directloan" are DirectLoan); any other spelling is returned unchanged so callers that refuse
+    /// or tolerate unknown classes still see what was submitted. The F# codec switches on the
+    /// canonical name, so a class must pass through here before it is mapped.
+    /// </summary>
+    public static string Canonicalize(string assetClass)
+        => TryGet(assetClass, out var descriptor) ? descriptor.AssetClass : assetClass;
 
     /// <summary>
     /// Resolves a free-text asset-class label — the kind a brokerage or custodian stamps on a
@@ -783,11 +993,89 @@ public static class SecurityAssetClassCatalog
     public static IReadOnlyList<SecurityIdentifierKind> GetPreferredIdentifierKinds(string? assetClass)
         => GetOrDefault(assetClass).PreferredIdentifierKinds;
 
+    /// <summary>
+    /// Asset classes permitted to carry each regulatory derivatives-reporting identifier kind.
+    /// UTI and UPI belong to the OTC derivative classes, where each security is one bilateral
+    /// contract and therefore one reportable trade; RED codes name CDS reference entities and
+    /// obligations. Repo (SFTR UTIs), listed options/futures (contract-level securities, not trades)
+    /// and credit-index swaptions (RED on the underlying index) are deliberately not admitted yet.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<SecurityIdentifierKind, IReadOnlySet<string>> RestrictedIdentifierKindAssetClasses =
+        BuildRestrictedIdentifierKindAssetClasses();
+
+    private static Dictionary<SecurityIdentifierKind, IReadOnlySet<string>> BuildRestrictedIdentifierKindAssetClasses()
+    {
+        var otcDerivatives = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Swap", "CreditDefaultSwap", "Swaption", "CapFloor", "FxForward", "NonDeliverableForward", "Cfd"
+        };
+        var creditDefaultSwaps = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "CreditDefaultSwap" };
+        return new Dictionary<SecurityIdentifierKind, IReadOnlySet<string>>
+        {
+            [SecurityIdentifierKind.Uti] = otcDerivatives,
+            [SecurityIdentifierKind.Upi] = otcDerivatives,
+            [SecurityIdentifierKind.MarkitRedEntity] = creditDefaultSwaps,
+            [SecurityIdentifierKind.MarkitRedPair] = creditDefaultSwaps
+        };
+    }
+
+    /// <summary>True when <paramref name="kind"/> has an asset-class restriction (the regulatory derivatives kinds).</summary>
+    public static bool IsAssetClassRestrictedIdentifierKind(SecurityIdentifierKind kind)
+        => RestrictedIdentifierKindAssetClasses.ContainsKey(kind);
+
+    /// <summary>
+    /// Whether a record of <paramref name="assetClass"/> may carry an identifier of
+    /// <paramref name="kind"/>. Every kind without a declared restriction is allowed everywhere.
+    /// </summary>
+    public static bool MayCarryIdentifierKind(string? assetClass, SecurityIdentifierKind kind)
+        => !RestrictedIdentifierKindAssetClasses.TryGetValue(kind, out var allowed)
+           || (TryGet(assetClass, out var descriptor) && allowed.Contains(descriptor.AssetClass));
+
+    /// <summary>The asset classes permitted to carry <paramref name="kind"/>, or <c>null</c> when it is unrestricted.</summary>
+    public static IReadOnlySet<string>? GetPermittedAssetClasses(SecurityIdentifierKind kind)
+        => RestrictedIdentifierKindAssetClasses.TryGetValue(kind, out var allowed) ? allowed : null;
+
     public static IReadOnlyList<string> GetAssetOperationsCapabilities(string? assetClass)
         => GetOrDefault(assetClass).AssetOperationsCapabilities ?? AssetOperationsCapabilitySet.IdentityOnly;
 
     /// <summary>The highest asset-class terms version this node admits on write; a document's S2 stamp may be lower.</summary>
     public static int GetTermsVersion(string? assetClass) => GetOrDefault(assetClass).TermsVersion;
+
+    /// <summary>
+    /// Whether <paramref name="value"/> is the routing key <paramref name="routingKey"/>: equal once
+    /// both are reduced to their letters and digits, ignoring case. <c>"Real Estate"</c>,
+    /// <c>"real-estate"</c> and <c>"RealEstate"</c> are one key; <c>"RealEstateFund"</c> is not.
+    /// </summary>
+    public static bool MatchesRoutingKey(string? value, string routingKey)
+    {
+        ArgumentNullException.ThrowIfNull(routingKey);
+        static string Token(string label) => new(label.Where(char.IsLetterOrDigit).ToArray());
+        return value is not null && string.Equals(Token(value), Token(routingKey), StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// The catalogued classes that own a routing key equal to <paramref name="value"/>
+    /// (<see cref="SecurityAssetClassDescriptor.RoutingKeys"/>), in catalog order, each with the key
+    /// that matched. Empty when no class owns it.
+    /// </summary>
+    public static IReadOnlyList<(SecurityAssetClassDescriptor Descriptor, string RoutingKey)> ClassesOwningRoutingKey(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return [];
+        }
+
+        var owners = new List<(SecurityAssetClassDescriptor, string)>();
+        foreach (var descriptor in All)
+        {
+            if (descriptor.RoutingKeys.FirstOrDefault(key => MatchesRoutingKey(value, key)) is { } matched)
+            {
+                owners.Add((descriptor, matched));
+            }
+        }
+
+        return owners;
+    }
 
     /// <summary>The S2 stamp floor of a document with no versioned declarations, including any later transform target.</summary>
     public static int GetStampFloor(string? assetClass) => GetStampFloor(GetOrDefault(assetClass));
@@ -844,6 +1132,14 @@ public static class SecurityAssetClassCatalog
     /// cash sweeps into the securitized fixed-income slice, because <c>CashSweep</c> and
     /// <c>StructuredCredit</c> once shared an asset-family label.
     /// </para>
+    /// <para>
+    /// Precedence (review D10, slice 4): (1) any declared name whose catalog class is in the slice
+    /// wins, exactly as before; (2) otherwise a declared name the catalog models with an explicit
+    /// <see cref="SecurityAccountingDisposition.OutsideSlice"/> disposition (StructuredNote, Deposit,
+    /// DirectLoan and the other non-slice classes) returns <see langword="null"/> before any taxonomy
+    /// fallback; (3) only when no declared name is catalogued does the coarse taxonomy map apply
+    /// (<c>FixedIncome</c> to Bond), for external names the catalog does not model.
+    /// </para>
     /// </summary>
     /// <param name="declaredClassNames">
     /// Declared class names in precedence order. Blank entries are skipped; entries that name no
@@ -859,6 +1155,17 @@ public static class SecurityAssetClassCatalog
                 GetOrDefault(declaredClassName).AccountingInstrumentClass is { } accountingInstrumentClass)
             {
                 return accountingInstrumentClass;
+            }
+        }
+
+        // A catalogued class with an explicit outside-slice disposition stops the walk before the
+        // taxonomy fallback: StructuredNote's FixedIncome taxonomy must not post it as a bond.
+        foreach (var declaredClassName in declaredClassNames)
+        {
+            if (TryGet(declaredClassName, out var catalogued)
+                && catalogued.AccountingDisposition == SecurityAccountingDisposition.OutsideSlice)
+            {
+                return null;
             }
         }
 
@@ -1026,7 +1333,11 @@ public enum SecurityAssetClassLabelResolution
 /// Whether the terms carry the bond coupon structure and bullet amortization conventions.
 /// </param>
 /// <param name="UsesOccOptionSymbols">Whether OCC option symbols are a valid identifier for the class.</param>
-/// <param name="QuotesRatesAsFractions">Whether a rate at or below one is a fraction, not a percent.</param>
+/// <param name="QuotesRatesAsFractions">
+/// Whether the class quotes its rates as fractions. The per-field unit, range and sign policy that
+/// readers apply is declared in <see cref="SecurityRateFieldUnits"/> (review D10, slice 4); magnitude
+/// never selects a unit.
+/// </param>
 /// <param name="TradesAsBilateralContract">
 /// Whether positions are bilateral contracts against a counterparty under a master agreement, so the
 /// instrument carries <c>OtcContractDto</c> records rather than exchange-traded lots.
@@ -1080,8 +1391,86 @@ public sealed record SecurityAssetClassDescriptor(
     /// </summary>
     public int StampFloor { get; init; } = TermsVersion;
 
+    /// <summary>
+    /// Labels, beyond the canonical name and <see cref="Aliases"/>, that name this class in a record's
+    /// classification metadata (<c>category</c>, <c>subType</c>, <c>accountingClassification</c>).
+    /// They are not aliases: a record cannot be created under one. They exist so metadata that names
+    /// this class is recognized as such when a profile resolves the record to a different class.
+    /// </summary>
+    public IReadOnlyList<string> ClassificationLabels { get; init; } = [];
+
+    /// <summary>
+    /// The registered custom-profile ids whose records resolve to this class instead of staying a
+    /// profile-backed CustomAsset. Only a profile id listed by exactly one class reclassifies.
+    /// </summary>
+    public IReadOnlyList<string> ReclassifyingProfileIds { get; init; } = [];
+
+    /// <summary>
+    /// Which of this class's schema keys play which role in a calculated cash-flow projection
+    /// (review D9). The projection reads them with the shared spellings
+    /// (<see cref="SecurityCashFlowTermRoles.Spellings"/>).
+    /// </summary>
+    public IReadOnlyList<SecurityCashFlowTermBinding> CashFlowTermRoles { get; init; } = [];
+
+    /// <summary>
+    /// Whether the class pays no contractual coupon: its rate is a discount yield, which belongs to
+    /// the carrying-value accretion rather than to coupon accrual, so the projection pays principal only.
+    /// </summary>
+    public bool PaysNoContractualCoupon { get; init; }
+
+    /// <summary>
+    /// The routing keys this class owns: its canonical name, its <see cref="Aliases"/> and its
+    /// <see cref="ClassificationLabels"/>. Compared whole, ignoring case and punctuation
+    /// (<see cref="SecurityAssetClassCatalog.MatchesRoutingKey"/>); never by substring.
+    /// </summary>
+    public IReadOnlyList<string> RoutingKeys => [AssetClass, .. Aliases ?? [], .. ClassificationLabels];
+
     /// <summary>Whether retained contracts support credit determination and linked auction settlement.</summary>
     public bool SupportsCreditLifecycle { get; init; }
+
+    /// <summary>
+    /// Whether positions settle the daily price change in cash (variation margin) instead of
+    /// exchanging the contract's notional. Opening such a position moves no premium; each day's
+    /// change, and the move since the last settlement on a close, is paid or received.
+    /// </summary>
+    public bool SettlesDailyVariationMargin { get; init; }
+
+    /// <summary>
+    /// Whether the class is admitted to recurring coupon-accrual and premium/discount journals.
+    /// Admission is explicit and independent of coupon structure, valuation treatment, or lot unit;
+    /// source freshness, supported accrual intervals and held-lot evidence must still pass their gates.
+    /// </summary>
+    public bool SupportsRecurringFixedIncomeAccrual { get; init; }
+
+    /// <summary>
+    /// Whether the class admits holder-side private-capital commitment records and reported
+    /// lifecycle observations. Commitment lot units alone do not grant this capability.
+    /// </summary>
+    public bool SupportsPrivateCapitalRecords { get; init; }
+
+    /// <summary>
+    /// Declares the class intentionally outside the Security Master accounting slice. Every catalogued
+    /// class states its accounting disposition, an <see cref="AccountingInstrumentClass"/> or this
+    /// marker (review D10, slice 4), so an outside-slice class is distinguishable from a missing mapping.
+    /// </summary>
+    public bool AccountingOutsideSlice { get; init; }
+
+    /// <summary>
+    /// Explicit valuation treatment, separate from admission to the coupon/accrual event slice.
+    /// The daily valuation projector consumes this declaration when selecting a mark template.
+    /// </summary>
+    public SecurityValuationAccountingTreatment ValuationAccountingTreatment { get; init; }
+
+    /// <summary>
+    /// The declared accounting disposition: <see cref="SecurityAccountingDisposition.InSlice"/> when the
+    /// class names an <see cref="AccountingInstrumentClass"/>, <see cref="SecurityAccountingDisposition.OutsideSlice"/>
+    /// when it carries <see cref="AccountingOutsideSlice"/>, and <see cref="SecurityAccountingDisposition.Undeclared"/>
+    /// otherwise (only the uncatalogued Unknown descriptor; a coverage test fails for any catalogued class).
+    /// </summary>
+    public SecurityAccountingDisposition AccountingDisposition
+        => AccountingInstrumentClass is not null ? SecurityAccountingDisposition.InSlice
+            : AccountingOutsideSlice ? SecurityAccountingDisposition.OutsideSlice
+            : SecurityAccountingDisposition.Undeclared;
 
     /// <summary>
     /// The catalog facts below replace per-site asset-class name checks. Each is a declared
@@ -1091,15 +1480,20 @@ public sealed record SecurityAssetClassDescriptor(
     /// equity <c>classification</c> discriminant with preferred and convertible blocks),
     /// <see cref="CarriesBondCouponStructure"/> (terms carry the bond coupon structure and bullet
     /// amortization conventions), <see cref="UsesOccOptionSymbols"/> (OCC option symbols are a
-    /// valid identifier) and <see cref="QuotesRatesAsFractions"/> (a rate at or below one is a
-    /// fraction, not a percent), <see cref="TradesAsBilateralContract"/> (positions are
+    /// valid identifier) and <see cref="QuotesRatesAsFractions"/> (the class quotes rates as
+    /// fractions; per-field units live in <see cref="SecurityRateFieldUnits"/>), <see cref="TradesAsBilateralContract"/> (positions are
     /// bilateral contracts against a counterparty under a master agreement, so the instrument
-    /// carries <c>OtcContractDto</c> records rather than exchange-traded lots) and a
+    /// carries <c>OtcContractDto</c> records rather than exchange-traded lots),
+    /// <see cref="SettlesDailyVariationMargin"/> (positions settle the daily price change in cash
+    /// rather than exchanging notional), <see cref="SupportsRecurringFixedIncomeAccrual"/>
+    /// (the class is admitted to governed recurring accrual journals),
+    /// <see cref="SupportsPrivateCapitalRecords"/> (holder-side private-capital records) and a
     /// <see cref="DefaultValuationModel"/> other than the quoted price (the class is valued from its
     /// projected cash flows and a stored discount curve unless a request names another model).
     /// </summary>
     public bool HasDeclaredBehaviorFacts
         => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions || TradesAsBilateralContract || SupportsCreditLifecycle
+           || SettlesDailyVariationMargin || SupportsRecurringFixedIncomeAccrual || SupportsPrivateCapitalRecords
            || DefaultValuationModel != SecurityValuationModelKind.QuotedPrice;
 
     /// <summary>
@@ -1109,12 +1503,45 @@ public sealed record SecurityAssetClassDescriptor(
     public bool UsesFaceValueLots => LotUnit == SecurityLotUnitKind.FaceValue;
 
     /// <summary>
+    /// How this class's raw quotes scale into money (remediation slice 8). The default derives
+    /// from <see cref="LotUnit"/> — face-value lots quote as a percentage of par, everything else
+    /// per unit — so nothing drifts while every catalogued class follows that rule; a class that
+    /// quotes differently overrides it here, and <c>SecurityQuoteConventionCoverageTests</c> pins
+    /// each class's declared value against the legacy unit-kind conversion so a divergence is a
+    /// visible decision, never a silent repricing.
+    /// </summary>
+    public SecurityQuoteConvention QuoteConvention { get; init; }
+        = LotUnit == SecurityLotUnitKind.FaceValue
+            ? SecurityQuoteConvention.PercentOfPar
+            : SecurityQuoteConvention.PerUnit;
+
+    /// <summary>
     /// Whether a calculated cash-flow schedule projection is expected by default. Derived from
     /// <see cref="CashFlowBehavior"/>: contractual, factor-amortizing, swap-leg and financing
     /// behaviour are calculated from terms; dividends, fund distributions and provider-supplied
     /// flows are not.
     /// </summary>
     public bool SupportsCashflowScheduleByDefault => CashFlowBehavior.IsCalculatedFromTerms();
+}
+
+/// <summary>Whether, and how, an asset class takes part in the Security Master accounting slice.</summary>
+public enum SecurityAccountingDisposition
+{
+    /// <summary>No disposition is declared: a missing mapping, not a decision.</summary>
+    Undeclared,
+
+    /// <summary>The class posts as its declared <see cref="SecurityAssetClassDescriptor.AccountingInstrumentClass"/>.</summary>
+    InSlice,
+
+    /// <summary>The class is intentionally outside the slice and must not reach any posting by fallback.</summary>
+    OutsideSlice
+}
+
+/// <summary>The declared mark-based accounting treatment for an asset class.</summary>
+public enum SecurityValuationAccountingTreatment
+{
+    Unspecified,
+    FairValueThroughProfitOrLoss
 }
 
 /// <summary>

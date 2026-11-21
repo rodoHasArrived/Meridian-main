@@ -144,7 +144,8 @@ public enum ProviderIntegrationIdentityResolutionStatusDto
     ReviewRequired = 1,
     MissingIdentifier = 2,
     NotFound = 3,
-    NotConfigured = 4
+    NotConfigured = 4,
+    Conflict = 5
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<ProviderIntegrationPromotionReadinessStatusDto>))]
@@ -458,7 +459,12 @@ public sealed record ProviderIntegrationStagingIdentityResolutionRowDto(
     string? SecurityDisplayName,
     string? SecurityRoute,
     IReadOnlyList<ProviderIntegrationIdentityCandidateDto> SecurityCandidates,
-    IReadOnlyList<ValidationIssueDto> Issues);
+    IReadOnlyList<ValidationIssueDto> Issues)
+{
+    public string? EvidenceHash { get; init; }
+    public bool HasIdentifierConflict { get; init; }
+    public ProviderIntegrationIdentityDecisionDto? OperatorResolution { get; init; }
+}
 
 public sealed record ProviderIntegrationStagingIdentityResolutionPreviewDto(
     string ConnectionId,
@@ -757,7 +763,11 @@ public sealed record ProviderIntegrationDryRunResultDto(
     int RecordsAccepted,
     int RecordsQuarantined,
     ProviderIntegrationProcessingStatusDto Status,
-    IReadOnlyList<ValidationIssueDto> Issues);
+    IReadOnlyList<ValidationIssueDto> Issues)
+{
+    /// <summary>First twenty server-normalized rows, including blocked rows and exact calculation evidence.</summary>
+    public IReadOnlyList<JsonElement> MappedRecordPreviews { get; init; } = [];
+}
 
 public sealed record ProviderIntegrationSetupSaveRequestDto(
     ProviderIntegrationManifestDto Manifest,

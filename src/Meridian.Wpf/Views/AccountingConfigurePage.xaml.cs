@@ -47,8 +47,24 @@ public partial class AccountingConfigurePage : Page
         // Leaving the page abandons a running verification so the server releases the chain locks.
         _viewModel.AuditChainIntegrity.Cancel();
         _viewModel.FactorPaydown.Cancel();
+        _viewModel.EntityConsolidation.Cancel();
+        _viewModel.ShadowOnboarding.Cancel();
         _loadCts?.Cancel();
         _loadCts?.Dispose();
         _loadCts = null;
+    }
+
+    private async void OnReviewConsolidationDrafts(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (await _viewModel.OpenConsolidationDraftsAsync(_loadCts?.Token ?? CancellationToken.None))
+                AccountingTabs.SelectedIndex = 1;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception exception)
+        {
+            _viewModel.EntityConsolidation.ReportReviewFailure(exception.Message);
+        }
     }
 }

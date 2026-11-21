@@ -9,7 +9,7 @@ namespace Meridian.Wpf.Services;
 /// <summary>
 /// Defines security trust and passport queries and governed override, conflict, and field-edit operations.
 /// </summary>
-public interface IWorkstationSecurityMasterApiClient
+public interface IWorkstationSecurityMasterApiClient : ICashDividendAttestationApiClient
 {
     // ── Operator overrides (shared-contract parity with the browser workstation) ──────────────
     Task<OperatorOverridesDto?> GetOperatorOverridesAsync(
@@ -83,7 +83,7 @@ public interface IWorkstationSecurityMasterApiClient
 /// <summary>
 /// Adapts shared security-master trust, passport, override, conflict, and field-edit APIs for desktop workflows.
 /// </summary>
-public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMasterApiClient
+public sealed partial class WorkstationSecurityMasterApiClient : IWorkstationSecurityMasterApiClient
 {
     private readonly ApiClientService _apiClient;
 
@@ -190,6 +190,8 @@ public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMas
             query.Add("yield=" + yield.ToString(CultureInfo.InvariantCulture));
         if (request.YieldConvention is { } convention)
             query.Add("yieldConvention=" + convention);
+        if (request.CalculationVersion is { } calculationVersion)
+            query.Add("calculationVersion=" + Uri.EscapeDataString(calculationVersion));
         return _apiClient.GetWithResponseAsync<BondAnalyticsResult>(
             SecurityIdRoute(UiApiRoutes.ReferenceDataBondAnalytics, request.SecurityId) + "?" + string.Join("&", query), ct);
     }

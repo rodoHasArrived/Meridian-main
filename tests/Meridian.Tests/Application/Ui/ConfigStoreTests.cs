@@ -427,6 +427,26 @@ public sealed class ConfigStoreTests : IDisposable
         config.DataRoot.Should().Be(Path.Combine(repositoryRoot, "data"));
     }
 
+    [Theory]
+    [InlineData("{")]
+    [InlineData("null")]
+    [InlineData("[]")]
+    [InlineData("{ \"dataRoot\": ")]
+    public void LoadConfig_ExistingUnreadableFile_FailsClosedInsteadOfUsingDefaults(string body)
+    {
+        var configPath = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        File.WriteAllText(configPath, body);
+        var store = new ConfigStore(configPath);
+
+        var staticLoad = () => ConfigStore.LoadConfig(configPath);
+        var instanceLoad = () => store.Load();
+
+        staticLoad.Should().Throw<InvalidDataException>()
+            .Which.Message.Should().Contain(configPath);
+        instanceLoad.Should().Throw<InvalidDataException>();
+        File.ReadAllText(configPath).Should().Be(body, "a failed load never rewrites the operator's file");
+    }
+
     [Fact]
     public void LoadConfig_MigratesLegacyStorageBaseDirectoryToResolvedDataRoot()
     {

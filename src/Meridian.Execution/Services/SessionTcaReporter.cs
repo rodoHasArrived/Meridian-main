@@ -85,9 +85,15 @@ public static class SessionTcaReporter
         decimal Quantity,
         decimal Price,
         decimal Commission,
-        DateTimeOffset Timestamp)
+        DateTimeOffset Timestamp,
+        decimal Multiplier = 1m)
     {
-        public decimal Notional => Quantity * Price;
+        /// <summary>
+        /// Economic principal: quantity × price × contract multiplier, the same principal the
+        /// paper cost model charges notional-based commission on. Without the multiplier a
+        /// 10 bp commission on one 100-multiplier contract would report as 1,000 bp.
+        /// </summary>
+        public decimal Notional => Quantity * Price * Multiplier;
     }
 
     /// <summary>
@@ -142,7 +148,8 @@ public static class SessionTcaReporter
                     quantity,
                     report.FillPrice!.Value,
                     report.Commission ?? 0m,
-                    report.Timestamp));
+                    report.Timestamp,
+                    report.LotMultiplier is > 0m and var multiplier ? multiplier : 1m));
             }
         }
 

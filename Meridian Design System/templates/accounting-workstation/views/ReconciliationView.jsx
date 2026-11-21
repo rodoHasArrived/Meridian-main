@@ -2,7 +2,7 @@
 // resolved by posting the prefilled accrual entry (onPostAccrual → journal drawer).
 function AcctReconciliationView(props) {
   const { ReconciliationPanel, Eyebrow, Callout, Button, MetricCard, Money } =
-    window.MeridianDesignSystem_4f61be;
+    window.MeridianDesignSystem_205d17;
   const left = props.left || [];
   const right = props.right || [];
   const open = left.filter((i) => !i.matched);
@@ -15,6 +15,7 @@ function AcctReconciliationView(props) {
     <section data-screen-label="Reconciliation" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
         <Eyebrow>Cash reconciliation</Eyebrow>
+        {props.scopeLine && <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-primary)" }}>{props.scopeLine}</span>}
         <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>
           Account 1100 · 2026-06-01 → 06-30 · {left.length - open.length} matched · {open.length} open
         </span>
@@ -27,10 +28,15 @@ function AcctReconciliationView(props) {
               {open[0].ref} · {open[0].memo} · {fmt(open[0].amount)} has no ledger counterpart.
               Post the accrual to clear the break.
             </span>
-            <Button variant="primary" size="sm" disabled={props.locked}
+            <Button variant="primary" size="sm" disabled={props.locked || props.postScopeLocked}
               onClick={() => props.onPostAccrual && props.onPostAccrual()}>
               Post accrual entry
             </Button>
+            {props.postScopeLocked && !props.locked && (
+              <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>
+                Posting is per-entity — switch scope to MER-FUND-I to post.
+              </span>
+            )}
           </div>
         </Callout>
       ) : (

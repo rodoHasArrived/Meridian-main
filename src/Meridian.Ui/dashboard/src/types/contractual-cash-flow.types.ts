@@ -111,6 +111,8 @@ export interface ContractualCashFlowEvidence {
 }
 
 export interface ContractualCashFlowResult {
+  /** Selected fields of the authoritative contract returned with calculated results. */
+  resolvedContract?: { streams: Array<{ streamId: string; prepaymentAllowed: boolean }> } | null;
   events: ContractualCashFlowEvent[];
   exerciseEligibility: CashFlowExerciseEligibility[];
   exerciseCalculations: CashFlowExerciseCalculation[];
@@ -134,4 +136,35 @@ export interface ContractualCashFlowRun {
 export interface CreateContractualCashFlowRunRequest {
   runId: string;
   projection: ContractualCashFlowRequest;
+}
+
+export interface CashFlowDateDelta {
+  date: string;
+  streamId: string;
+  leftNetCash: BondDecimal;
+  rightNetCash: BondDecimal;
+  delta: BondDecimal;
+}
+
+export interface CashFlowBlockerDelta {
+  side: "LeftOnly" | "RightOnly";
+  code: string;
+  message: string;
+  streamId: string | null;
+}
+
+/** Pure read over two retained packets of the same subject; nothing is recalculated against current terms. */
+export interface ContractualCashFlowRunComparison {
+  subjectKind: ContractualCashFlowSubjectKind;
+  subjectId: string;
+  leftRunId: string;
+  rightRunId: string;
+  leftReplayVerified: boolean;
+  rightReplayVerified: boolean;
+  sameRequest: boolean;
+  leftOutputHash: string;
+  rightOutputHash: string;
+  cashDeltas: CashFlowDateDelta[];
+  blockerDeltas: CashFlowBlockerDelta[];
+  totalDelta: BondDecimal;
 }

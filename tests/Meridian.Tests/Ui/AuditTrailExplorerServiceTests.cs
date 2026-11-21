@@ -10,6 +10,178 @@ namespace Meridian.Tests.Ui;
 public sealed class AuditTrailExplorerServiceTests
 {
     [Fact]
+    public async Task SearchAsync_DistinguishesUnavailableSourcesFromAnEmptyRetainedTrail()
+    {
+        var unavailable = await new AuditTrailExplorerService().SearchAsync();
+        unavailable.Entries.Should().BeEmpty();
+        unavailable.SourceAvailability.Should().Be(new AuditTrailSourceAvailabilityDto(false, false));
+        var root = CreateTempRoot();
+        try
+        {
+            await using var auditTrail = CreateAuditTrail(root);
+            var empty = await new AuditTrailExplorerService(auditTrail).SearchAsync();
+            empty.Entries.Should().BeEmpty();
+            empty.SourceAvailability.Should().Be(new AuditTrailSourceAvailabilityDto(true, false));
+        }
+        finally { DeleteTempRoot(root); }
+    }
+
+    [Fact]
+    public async Task SearchAsync_ExactOrderResolvesAliasesAndExplicitControlLinksWithoutSymbolJoins()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var trail = CreateAuditTrail(root);
+            var stamp = DateTimeOffset.Parse("2026-11-12T12:00:00Z");
+            await trail.RecordAsync(new ExecutionAuditEntry("submit", "Order", "OrderSubmitted", "Accepted", stamp,
+                OrderId: "client-1", Symbol: "ABC", CorrelationId: "action-1",
+                Metadata: new Dictionary<string, string> { ["gatewayOrderId"] = "broker-1", ["manualOverrideId"] = "override-1" }));
+            await trail.RecordAsync(new ExecutionAuditEntry("control", "Control", "ManualOverrideCreated", "Completed", stamp,
+                Symbol: "ABC", Metadata: new Dictionary<string, string> { ["overrideId"] = "override-1" }));
+            await trail.RecordAsync(new ExecutionAuditEntry("other", "Order", "OrderRejected", "Rejected", stamp,
+                OrderId: "client-10", Symbol: "ABC", CorrelationId: "action-1"));
+            var result = await new AuditTrailExplorerService(trail).SearchAsync(new(OrderId: "broker-1"));
+            result.Entries.Select(entry => entry.AuditId).Should().BeEquivalentTo("submit", "control");
+            result.Sources.Should().Contain(source => source.Source == "ExecutionAuditTrail" && source.State == "RetainedRecordsOnly");
+            result.CoverageNote.Should().Contain("Missing events");
+            var unavailable = await new AuditTrailExplorerService().SearchAsync(new(OrderId: "client-1"));
+            unavailable.Entries.Should().BeEmpty();
+            unavailable.Sources.Should().OnlyContain(source => source.State == "Unavailable");
+        }
+        finally { DeleteTempRoot(root); }
+    }
+
+    [Fact]
+    public async Task SearchAsync_BrokerAliasCollisionsNeverUniteOrdersOrIdentifierNamespaces()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var trail = CreateAuditTrail(root);
+            var stamp = DateTimeOffset.Parse("2026-11-12T12:00:00Z");
+            foreach (var (id, session) in new[] { ("client-A", "session-A"), ("client-B", "session-B") })
+                await trail.RecordAsync(new ExecutionAuditEntry(id, "Order", "OrderSubmitted", "Accepted", stamp,
+                    OrderId: id, Symbol: "ABC", Metadata: new Dictionary<string, string> { ["gatewayOrderId"] = "17", ["sessionId"] = session }));
+            var service = new AuditTrailExplorerService(trail);
+            var ambiguous = await service.SearchAsync(new(OrderId: "17"));
+            ambiguous.Entries.Should().BeEmpty();
+            ambiguous.OrderIdentityStatus.Should().Be("Ambiguous");
+            var canonical = await service.SearchAsync(new(OrderId: "client-A"));
+            canonical.Entries.Select(entry => entry.OrderId).Should().Equal("client-A");
+            await trail.RecordAsync(new ExecutionAuditEntry("cross-namespace", "Order", "OrderSubmitted", "Accepted", stamp,
+                OrderId: "17", Symbol: "ABC", Metadata: new Dictionary<string, string> { ["gatewayOrderId"] = "99", ["sessionId"] = "session-C" }));
+            var exactWins = await service.SearchAsync(new(OrderId: "17"));
+            exactWins.Entries.Select(entry => entry.AuditId).Should().Equal("cross-namespace");
+            exactWins.OrderIdentityStatus.Should().Be("CanonicalOrder");
+            (await service.SearchAsync(new(OrderId: "client-A"))).Entries.Select(entry => entry.OrderId).Should().Equal("client-A");
+            await trail.RecordAsync(new ExecutionAuditEntry("same-client-different-source", "Order", "OrderSubmitted", "Accepted", stamp,
+                OrderId: "client-A", Metadata: new Dictionary<string, string> { ["sessionId"] = "different-session" }));
+            (await service.SearchAsync(new(OrderId: "client-A"))).OrderIdentityStatus.Should().Be("Ambiguous");
+        }
+        finally { DeleteTempRoot(root); }
+    }
+
+    [Fact]
+    public async Task SearchAsync_OrderAliasAuditAndLinkedIdentityValuesRemainCaseSensitive()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var trail = CreateAuditTrail(root);
+            var stamp = DateTimeOffset.Parse("2026-11-12T12:00:00Z");
+            await trail.RecordAsync(new ExecutionAuditEntry("audit", "Order", "OrderSubmitted", "Accepted", stamp,
+                OrderId: "client-a", CorrelationId: "action-a",
+                Metadata: new Dictionary<string, string> { ["gatewayOrderId"] = "broker-a", ["manualOverrideId"] = "override-a" }));
+            await trail.RecordAsync(new ExecutionAuditEntry("AUDIT", "Order", "OrderSubmitted", "Accepted", stamp,
+                OrderId: "CLIENT-A", CorrelationId: "ACTION-A",
+                Metadata: new Dictionary<string, string> { ["gatewayOrderId"] = "BROKER-A" }));
+            await trail.RecordAsync(new ExecutionAuditEntry("wrong-correlation", "Control", "Changed", "Accepted", stamp, CorrelationId: "ACTION-A"));
+            await trail.RecordAsync(new ExecutionAuditEntry("wrong-reference", "Control", "ManualOverrideCreated", "Completed", stamp,
+                Metadata: new Dictionary<string, string> { ["overrideId"] = "OVERRIDE-A" }));
+            var service = new AuditTrailExplorerService(trail);
+            foreach (var identity in new[] { "client-a", "broker-a" })
+                (await service.SearchAsync(new(OrderId: identity))).Entries.Select(entry => entry.AuditId).Should().Equal("audit");
+            (await service.SearchAsync(new(OrderId: "CLIENT-A"))).Entries.Select(entry => entry.AuditId).Should().BeEquivalentTo("AUDIT", "wrong-correlation");
+            (await service.SearchAsync(new(OrderId: "BROKER-A"))).Entries.Select(entry => entry.AuditId).Should().BeEquivalentTo("AUDIT", "wrong-correlation");
+            (await service.SearchAsync(new(OrderId: "Client-A"))).OrderIdentityStatus.Should().Be("NotFound");
+            await trail.RecordAsync(new ExecutionAuditEntry("conflicting-account", "Order", "Changed", "Accepted", stamp,
+                OrderId: "client-a", Metadata: new Dictionary<string, string> { ["brokerAccountId"] = "ACCOUNT" }));
+            await trail.RecordAsync(new ExecutionAuditEntry("different-case-account", "Order", "Changed", "Accepted", stamp,
+                OrderId: "client-a", Metadata: new Dictionary<string, string> { ["brokerAccountId"] = "account" }));
+            (await service.SearchAsync(new(OrderId: "client-a"))).OrderIdentityStatus.Should().Be("Ambiguous");
+        }
+        finally { DeleteTempRoot(root); }
+    }
+
+    [Fact]
+    public async Task SearchAsync_InitializesPersistedSessionsBeforeReadingFillEvidenceAfterRestart()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using (var first = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance,
+                new JsonlFilePaperSessionStore(root, NullLogger<JsonlFilePaperSessionStore>.Instance)))
+            {
+                var session = await first.CreateSessionAsync(new CreatePaperSessionDto("strategy", "Restart", 10000m));
+                await first.RecordFillAsync(session.SessionId, new Meridian.Execution.Sdk.ExecutionReport
+                {
+                    OrderId = "retained-order",
+                    Symbol = "ABC",
+                    ReportType = Meridian.Execution.Sdk.ExecutionReportType.Fill,
+                    OrderStatus = Meridian.Execution.Sdk.OrderStatus.Filled,
+                    Side = Meridian.Execution.Sdk.OrderSide.Buy,
+                    OrderQuantity = 3m,
+                    FilledQuantity = 3m,
+                    FillPrice = 12m,
+                    Timestamp = DateTimeOffset.Parse("2026-11-12T10:00:00Z")
+                });
+            }
+            await using (var restarted = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance,
+                new JsonlFilePaperSessionStore(root, NullLogger<JsonlFilePaperSessionStore>.Instance)))
+            {
+                restarted.GetSessions().Should().BeEmpty();
+                var result = await new AuditTrailExplorerService(paperSessions: restarted).SearchAsync(new(OrderId: "retained-order"));
+                result.Entries.Should().ContainSingle(entry => entry.Category == "Fill");
+            }
+        }
+        finally { DeleteTempRoot(root); }
+    }
+
+    [Fact]
+    public async Task SearchAsync_ProjectsActualSessionFillReportsWithEventTimeAndQuantityBasis()
+    {
+        await using var sessions = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance);
+        var session = await sessions.CreateSessionAsync(new CreatePaperSessionDto("strategy", "Test", 10000m));
+        var eventAt = DateTimeOffset.Parse("2026-11-12T10:00:00Z");
+        await sessions.RecordFillAsync(session.SessionId, new Meridian.Execution.Sdk.ExecutionReport
+        {
+            OrderId = "client-1",
+            ClientOrderId = "client-1",
+            GatewayOrderId = "broker-1",
+            Symbol = "ABC",
+            ReportType = Meridian.Execution.Sdk.ExecutionReportType.PartialFill,
+            OrderStatus = Meridian.Execution.Sdk.OrderStatus.PartiallyFilled,
+            Side = Meridian.Execution.Sdk.OrderSide.Buy,
+            OrderQuantity = 10m,
+            FilledQuantity = 3m,
+            LastFillQuantity = 3m,
+            FillPrice = 12m,
+            Timestamp = eventAt
+        });
+        var service = new AuditTrailExplorerService(paperSessions: sessions);
+        var result = await service.SearchAsync(new(OrderId: "broker-1"));
+        var fill = result.Entries.Should().ContainSingle().Which;
+        fill.Category.Should().Be("Fill");
+        fill.OccurredAt.Should().Be(eventAt);
+        fill.AuditId.Should().StartWith($"session-fill:{session.SessionId}:");
+        fill.Metadata!["timestampBasis"].Should().Be("execution-report-event");
+        fill.Metadata["lastFillQuantity"].Should().Be("3");
+        fill.Metadata["priceBasis"].Should().Be("reported-fill-price");
+        result.Sources.Should().Contain(source => source.Source == "PaperSessionFillHistory" && source.State == "SessionRecordsOnly");
+    }
+
+    [Fact]
     public async Task SearchAsync_ProjectsExecutionPromotionAndControlAuditIntoCrossObjectTimeline()
     {
         var root = CreateTempRoot();

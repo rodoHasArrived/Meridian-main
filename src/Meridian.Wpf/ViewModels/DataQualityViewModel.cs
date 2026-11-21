@@ -33,7 +33,7 @@ public readonly struct TrendStatistics
 /// <summary>
 /// Exposes symbol quality, gaps, alerts, anomalies, and issue drilldowns for desktop review.
 /// </summary>
-public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActionBarProvider
+public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActionBarProvider, Meridian.Wpf.Contracts.IPageRefreshTarget
 {
     private static readonly string[] s_anomalyTypeNames =
     {
@@ -214,6 +214,11 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     private bool _hasNoDrilldownIssues = true;
     public bool HasNoDrilldownIssues { get => _hasNoDrilldownIssues; private set => SetProperty(ref _hasNoDrilldownIssues, value); }
 
+    // ── IPageRefreshTarget implementation: the shell Refresh control reloads this page in place ──
+    private IAsyncRelayCommand? _refreshCommand;
+    public IAsyncRelayCommand RefreshCommand => _refreshCommand ??= new AsyncRelayCommand(() => RefreshAsync());
+    System.Windows.Input.ICommand Meridian.Wpf.Contracts.IPageRefreshTarget.RefreshCommand => RefreshCommand;
+
     // ── IPageActionBarProvider implementation ──────────────────────────────────────
     public string PageTitle => "Data Quality";
     public ObservableCollection<ActionEntry> Actions { get; } = new();
@@ -240,7 +245,6 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     {
         // Populate action bar.
         Actions.Clear();
-        Actions.Add(new ActionEntry("Refresh", new RelayCommand(() => _ = RefreshAsync()), "\uE72C", "Refresh data quality metrics", IsPrimary: true));
         Actions.Add(new ActionEntry("Export Report", new RelayCommand(() => _notificationService.NotifyInfo("Export", "Report export started")), "\uE8A5", "Export quality report"));
 
         return _refreshCoordinator.StartAsync(TimeSpan.FromSeconds(30), ct);
@@ -353,7 +357,8 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     {
         try
         {
-            if (await _apiClient.AcknowledgeAnomalyAsync(alertId, ct).ConfigureAwait(false))
+            // Resume on the UI thread: the continuation mutates collections bound to the view.
+            if (await _apiClient.AcknowledgeAnomalyAsync(alertId, ct).ConfigureAwait(true))
             {
                 _allAlerts.RemoveAll(a => a.Id == alertId);
                 ApplyAlertFilter(_severityFilter);
@@ -371,16 +376,45 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
 
     public async Task AcknowledgeAllAlertsAsync(CancellationToken ct = default)
     {
+        // Only alerts the server actually acknowledged are removed. Clearing the whole list hid
+        // alerts whose acknowledgement failed, and they then never resurfaced as unacknowledged.
+        // ConfigureAwait(true) keeps the continuation on the UI thread that owns the bound lists.
+        var acknowledged = new HashSet<string>(StringComparer.Ordinal);
+        var failed = 0;
         foreach (var alert in _allAlerts.ToList())
         {
             try
-            { await _apiClient.AcknowledgeAnomalyAsync(alert.Id, ct).ConfigureAwait(false); }
-            catch (Exception ex) { _loggingService.LogError("Failed to acknowledge alert", ex); }
+            {
+                if (await _apiClient.AcknowledgeAnomalyAsync(alert.Id, ct).ConfigureAwait(true))
+                    acknowledged.Add(alert.Id);
+                else
+                    failed++;
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                failed++;
+                _loggingService.LogError("Failed to acknowledge alert", ex);
+            }
         }
 
-        _allAlerts.Clear();
+        _allAlerts.RemoveAll(a => acknowledged.Contains(a.Id));
         ApplyAlertFilter(_severityFilter);
-        _notificationService.ShowNotification("All Alerts Acknowledged", "All alerts have been acknowledged.", NotificationType.Success);
+
+        if (failed == 0)
+        {
+            _notificationService.ShowNotification("All Alerts Acknowledged", "All alerts have been acknowledged.", NotificationType.Success);
+        }
+        else
+        {
+            _notificationService.ShowNotification(
+                "Some Alerts Not Acknowledged",
+                $"{acknowledged.Count} alert(s) acknowledged; {failed} could not be acknowledged and remain listed.",
+                NotificationType.Warning);
+        }
     }
 
     public async Task<bool> RepairGapAsync(string gapId, CancellationToken ct = default)
@@ -400,7 +434,7 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
             var response = await _apiClient.RepairGapAsync(
                 gap.Symbol,
                 new QualityGapRemediationRequest(gap.GapId, gap.DashboardVersion),
-                ct).ConfigureAwait(false);
+                ct).ConfigureAwait(true); // continuation removes from the bound Gaps collection
             if (response?.Status == "Completed")
             {
                 Gaps.Remove(gap);
@@ -433,7 +467,7 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
         var repaired = 0;
         foreach (var gap in repairable)
         {
-            if (await RepairGapAsync(gap.GapId, ct).ConfigureAwait(false))
+            if (await RepairGapAsync(gap.GapId, ct).ConfigureAwait(true))
                 repaired++;
         }
 
@@ -444,11 +478,11 @@ public sealed class DataQualityViewModel : BindableBase, IDisposable, IPageActio
     {
         try
         {
-            var result = await _apiClient.RunQualityCheckAsync(path, ct).ConfigureAwait(false);
+            var result = await _apiClient.RunQualityCheckAsync(path, ct).ConfigureAwait(true);
             if (result?.Success == true)
             {
                 _notificationService.ShowNotification("Quality Check Complete", "Quality check completed successfully.", NotificationType.Success);
-                await RefreshDataAsync(ct).ConfigureAwait(false);
+                await RefreshDataAsync(ct).ConfigureAwait(true);
             }
             else
             {

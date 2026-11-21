@@ -1,15 +1,15 @@
-import { useCallback, useMemo, useRef, useState } from "react";
 import { AlertCircle, LineChart, Loader2, RefreshCcw, X } from "lucide-react";
+import { ChartEvidenceMark, ChartEvidenceView } from "@/components/charts/chart-evidence";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { StretchedChartLabels } from "@/components/charts/stretched-chart-labels";
 import { cn } from "@/lib/utils";
 import {
   useHistoricalChartViewModel,
   type CandlestickBarViewModel,
   type CandlestickBollingerOverlay,
   type CandlestickChartViewModel,
-  type CandlestickHoverDetail,
   type CandlestickRsiPanel,
   type ChartModeOption,
   type CompareChartViewModel,
@@ -20,6 +20,7 @@ import {
   type HistoricalChartStatTile,
   type IndicatorToggleOption
 } from "@/components/meridian/historical-chart.view-model";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 export {
   HISTORICAL_CHART_TIMEFRAMES,
@@ -48,7 +49,7 @@ export function HistoricalChartCard({ symbol, className }: HistoricalChartCardPr
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="eyebrow-label">{vm.eyebrow}</div>
+            <div className={eyebrowClassName(vm.eyebrow)}>{vm.eyebrow}</div>
             <CardTitle className="flex items-center gap-2 text-base">
               <LineChart className="h-4 w-4 text-primary" aria-hidden="true" />
               {vm.title}
@@ -282,7 +283,7 @@ function CompareChip({ chip }: { chip: CompareChipViewModel }) {
         style={{ backgroundColor: chip.color }}
       />
       <span className="font-mono">{chip.symbol}</span>
-      <span className={cn("text-[10px] uppercase tracking-wide", statusToneClass)}>{chip.statusLabel}</span>
+      <span className={cn("text-xs uppercase tracking-wide", statusToneClass)}>{chip.statusLabel}</span>
       <button
         type="button"
         onClick={chip.remove}
@@ -297,62 +298,52 @@ function CompareChip({ chip }: { chip: CompareChipViewModel }) {
 }
 
 function CompareChartView({ viewModel: vm }: { viewModel: CompareChartViewModel }) {
+  const observations = vm.series.flatMap((series) => series.observations);
   return (
     <div className="relative">
-      <svg
-        viewBox={vm.viewBox}
-        preserveAspectRatio="none"
-        className="block h-64 w-full overflow-visible"
-        role="img"
-        aria-label={vm.ariaLabel}
-      >
-        <line
-          x1={vm.guideX1}
-          x2={vm.guideX2}
-          y1={vm.zeroLineY}
-          y2={vm.zeroLineY}
-          stroke="var(--chart-grid-major, currentColor)"
-          strokeOpacity="0.4"
-          strokeDasharray="4 4"
-        />
-        <text
-          x={vm.highLabel.x}
-          y={vm.highLabel.y}
-          textAnchor="end"
-          fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
-          fontSize="10"
-          fill="currentColor"
-          fillOpacity="0.55"
-        >
-          {vm.highLabel.value}
-        </text>
-        <text
-          x={vm.lowLabel.x}
-          y={vm.lowLabel.y}
-          textAnchor="end"
-          fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
-          fontSize="10"
-          fill="currentColor"
-          fillOpacity="0.55"
-        >
-          {vm.lowLabel.value}
-        </text>
-        {vm.series.map((series) =>
-          series.points ? (
-            <polyline
-              key={series.symbol}
-              fill="none"
-              stroke={series.color}
-              strokeOpacity={series.isBase ? 1 : 0.9}
-              strokeWidth={series.isBase ? 2 : 1.5}
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              points={series.points}
-              data-testid={`historical-chart-compare-series-${series.symbol}`}
-            />
-          ) : null
+      <ChartEvidenceView label="Historical comparison" evidence={observations}>
+        {(inspection) => (
+          <div className="relative">
+            <svg
+              viewBox={vm.viewBox}
+              preserveAspectRatio="none"
+              className="block h-64 w-full overflow-visible"
+              role="group"
+              aria-label={vm.ariaLabel}
+              aria-describedby={inspection.hintId}
+            >
+              <line
+                x1={vm.guideX1}
+                x2={vm.guideX2}
+                y1={vm.zeroLineY}
+                y2={vm.zeroLineY}
+                stroke="var(--chart-grid-major, currentColor)"
+                strokeOpacity="0.4"
+                strokeDasharray="4 4"
+              />
+              {vm.series.map((series) =>
+                series.points ? (
+                  <polyline
+                    key={series.symbol}
+                    fill="none"
+                    stroke={series.color}
+                    strokeOpacity={series.isBase ? 1 : 0.9}
+                    strokeWidth={series.isBase ? 2 : 1.5}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    points={series.points}
+                    data-testid={`historical-chart-compare-series-${series.symbol}`}
+                  />
+                ) : null
+              )}
+              {observations.map((point, index) => (
+                <ChartEvidenceMark key={point.id} inspection={inspection} index={index} geometry={point} />
+              ))}
+            </svg>
+            <StretchedChartLabels viewBox={vm.viewBox} labels={[vm.highLabel, vm.lowLabel]} fontSize={12} />
+          </div>
         )}
-      </svg>
+      </ChartEvidenceView>
       <CompareLegend series={vm.series} />
     </div>
   );
@@ -368,7 +359,7 @@ function CompareLegend({ series }: { series: CompareSeriesViewModel[] }) {
   return (
     <ul
       aria-label="Comparison series legend"
-      className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted-foreground"
+      className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground"
       data-testid="historical-chart-compare-legend"
     >
       {series.map((s) => (
@@ -379,7 +370,7 @@ function CompareLegend({ series }: { series: CompareSeriesViewModel[] }) {
             style={{ backgroundColor: s.color }}
           />
           <span className="font-mono">{s.symbol}</span>
-          {s.isBase ? <span className="text-[10px] uppercase tracking-wide">Base</span> : null}
+          {s.isBase ? <span className="text-xs uppercase tracking-wide">Base</span> : null}
           <span className={cn("font-mono", compareLegendToneClass[s.lastChangeTone])}>
             {s.lastChangeLabel}
           </span>
@@ -439,79 +430,68 @@ function HistoricalChartStatePanelView({
 
 function BarChartSparkline({ viewModel }: { viewModel: HistoricalChartSparklineViewModel }) {
   return (
-    <svg
-      viewBox={viewModel.viewBox}
-      preserveAspectRatio="none"
-      className="block h-56 w-full overflow-visible"
-      role="img"
-      aria-label={viewModel.ariaLabel}
-    >
-      <line
-        x1={viewModel.guideX1}
-        x2={viewModel.guideX2}
-        y1={viewModel.highGuideY}
-        y2={viewModel.highGuideY}
-        stroke="var(--chart-grid)"
-        strokeOpacity="0.85"
-        strokeDasharray="4 4"
-      />
-      <line
-        x1={viewModel.guideX1}
-        x2={viewModel.guideX2}
-        y1={viewModel.lowGuideY}
-        y2={viewModel.lowGuideY}
-        stroke="var(--chart-grid)"
-        strokeOpacity="0.85"
-        strokeDasharray="4 4"
-      />
-      <path d={viewModel.areaPath} fill={viewModel.stroke} fillOpacity="0.12" stroke="none" />
-      <polyline
-        fill="none"
-        stroke={viewModel.stroke}
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        points={viewModel.points}
-      />
-      <circle
-        cx={viewModel.lastPoint.x}
-        cy={viewModel.lastPoint.y}
-        r="3.25"
-        fill={viewModel.stroke}
-        stroke="var(--chart-grid-major)"
-        strokeOpacity="0.8"
-        strokeWidth="1"
-      />
-      <text
-        x={viewModel.highLabel.x}
-        y={viewModel.highLabel.y}
-        textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
-        fontSize="10"
-        fill="currentColor"
-        fillOpacity="0.55"
-      >
-        {viewModel.highLabel.value}
-      </text>
-      <text
-        x={viewModel.lowLabel.x}
-        y={viewModel.lowLabel.y}
-        textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
-        fontSize="10"
-        fill="currentColor"
-        fillOpacity="0.55"
-      >
-        {viewModel.lowLabel.value}
-      </text>
-    </svg>
+    <ChartEvidenceView label="Historical closing prices" evidence={viewModel.observations}>
+      {(inspection) => (
+        <div className="relative">
+          <svg
+            viewBox={viewModel.viewBox}
+            preserveAspectRatio="none"
+            className="block h-56 w-full overflow-visible"
+            role="group"
+            aria-label={viewModel.ariaLabel}
+            aria-describedby={inspection.hintId}
+          >
+            <line
+              x1={viewModel.guideX1}
+              x2={viewModel.guideX2}
+              y1={viewModel.highGuideY}
+              y2={viewModel.highGuideY}
+              stroke="var(--chart-grid)"
+              strokeOpacity="0.85"
+              strokeDasharray="4 4"
+            />
+            <line
+              x1={viewModel.guideX1}
+              x2={viewModel.guideX2}
+              y1={viewModel.lowGuideY}
+              y2={viewModel.lowGuideY}
+              stroke="var(--chart-grid)"
+              strokeOpacity="0.85"
+              strokeDasharray="4 4"
+            />
+            <path d={viewModel.areaPath} fill={viewModel.stroke} fillOpacity="0.12" stroke="none" />
+            <polyline
+              fill="none"
+              stroke={viewModel.stroke}
+              strokeWidth="1.75"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              points={viewModel.points}
+            />
+            <circle
+              cx={viewModel.lastPoint.x}
+              cy={viewModel.lastPoint.y}
+              r="3.25"
+              fill={viewModel.stroke}
+              stroke="var(--chart-grid-major)"
+              strokeOpacity="0.8"
+              strokeWidth="1"
+            />
+            {viewModel.observations.map((point, index) => (
+              <ChartEvidenceMark key={point.id} inspection={inspection} index={index} geometry={point} />
+            ))}
+          </svg>
+          <StretchedChartLabels viewBox={viewModel.viewBox} labels={[viewModel.highLabel, viewModel.lowLabel]} fontSize={12} />
+        </div>
+      )}
+    </ChartEvidenceView>
   );
 }
 
 function ChartStat({ stat }: { stat: HistoricalChartStatTile }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-2.5 py-1.5">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{stat.label}</div>
+      <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(stat.label) && "uppercase tracking-wide")}>{stat.label}</div>
       <div className="mt-0.5 font-mono text-sm text-foreground">{stat.value}</div>
     </div>
   );
@@ -566,223 +546,129 @@ function IndicatorToggleGroup({ options }: { options: IndicatorToggleOption[] })
 }
 
 function CandlestickChartView({ viewModel: vm }: { viewModel: CandlestickChartViewModel }) {
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-
-  const lastBarIndex = vm.bars.length - 1;
-  const { padX, slotWidth, width } = vm.geometry;
-
-  const resolveIndex = useCallback(
-    (clientX: number): number | null => {
-      const svg = svgRef.current;
-      if (!svg || vm.bars.length === 0) return null;
-      const rect = svg.getBoundingClientRect();
-      if (rect.width <= 0) return null;
-      const ratio = (clientX - rect.left) / rect.width;
-      const svgX = ratio * width;
-      const slotIndex = Math.floor((svgX - padX) / slotWidth);
-      if (slotIndex < 0) return 0;
-      if (slotIndex > lastBarIndex) return lastBarIndex;
-      return slotIndex;
-    },
-    [lastBarIndex, padX, slotWidth, vm.bars.length, width]
-  );
-
-  const handlePointer = useCallback(
-    (event: React.PointerEvent<SVGSVGElement>) => {
-      const next = resolveIndex(event.clientX);
-      if (next !== null) setHoverIndex(next);
-    },
-    [resolveIndex]
-  );
-
-  const clearHover = useCallback(() => setHoverIndex(null), []);
-
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<SVGSVGElement>) => {
-      if (vm.bars.length === 0) return;
-      if (event.key === "ArrowRight") {
-        event.preventDefault();
-        setHoverIndex((prev) => {
-          const base = prev ?? -1;
-          return Math.min(lastBarIndex, base + 1);
-        });
-      } else if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        setHoverIndex((prev) => {
-          if (prev === null) return lastBarIndex;
-          return Math.max(0, prev - 1);
-        });
-      } else if (event.key === "Home") {
-        event.preventDefault();
-        setHoverIndex(0);
-      } else if (event.key === "End") {
-        event.preventDefault();
-        setHoverIndex(lastBarIndex);
-      } else if (event.key === "Escape") {
-        setHoverIndex(null);
-      }
-    },
-    [lastBarIndex, vm.bars.length]
-  );
-
-  const hoveredBar = hoverIndex !== null ? vm.bars[hoverIndex] ?? null : null;
-  const hoverDetail = hoveredBar?.hover ?? null;
-  const liveAnnouncement = hoverDetail?.ariaLabel ?? "";
-  const overlayLegend = useMemo(
-    () => {
-      const entries: Array<{ key: string; label: string; stroke: string }> = vm.smaOverlays.map((overlay) => ({
-        key: `sma-${overlay.period}`,
-        label: overlay.label,
-        stroke: overlay.stroke
-      }));
-      if (vm.bollingerOverlay) {
-        entries.push({
-          key: "bollinger",
-          label: vm.bollingerOverlay.label,
-          stroke: vm.bollingerOverlay.stroke
-        });
-      }
-      return entries;
-    },
-    [vm.smaOverlays, vm.bollingerOverlay]
-  );
+  const observations = [...vm.bars.map((bar) => bar.evidence), ...vm.references];
+  const overlayLegend = [
+    ...vm.smaOverlays.map((overlay) => ({ key: `sma-${overlay.period}`, label: overlay.label, stroke: overlay.stroke })),
+    ...(vm.bollingerOverlay ? [{ key: "bollinger", label: vm.bollingerOverlay.label, stroke: vm.bollingerOverlay.stroke }] : [])
+  ];
 
   const heightClass = vm.rsiPanel ? "h-[21rem]" : "h-64";
 
   return (
     <div className="relative">
-      <svg
-        ref={svgRef}
-        viewBox={vm.viewBox}
-        preserveAspectRatio="none"
-        className={cn("block w-full overflow-visible focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40", heightClass)}
-        role="img"
-        aria-label={vm.ariaLabel}
-        tabIndex={0}
-        onPointerMove={handlePointer}
-        onPointerDown={handlePointer}
-        onPointerLeave={clearHover}
-        onPointerCancel={clearHover}
-        onBlur={clearHover}
-        onKeyDown={handleKeyDown}
-      >
-        {/* High guide line */}
-        <line
-          x1={vm.guideX1}
-          x2={vm.guideX2}
-          y1={vm.highGuideY}
-          y2={vm.highGuideY}
-          stroke="var(--chart-grid)"
-          strokeOpacity="0.85"
-          strokeDasharray="4 4"
-        />
-        {/* Low guide line */}
-        <line
-          x1={vm.guideX1}
-          x2={vm.guideX2}
-          y1={vm.lowGuideY}
-          y2={vm.lowGuideY}
-          stroke="var(--chart-grid)"
-          strokeOpacity="0.85"
-          strokeDasharray="4 4"
-        />
-        {/* High price label */}
-        <text
-          x={vm.highLabel.x}
-          y={vm.highLabel.y}
-          textAnchor="end"
-          fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
-          fontSize="10"
-          fill="currentColor"
-          fillOpacity="0.55"
-        >
-          {vm.highLabel.value}
-        </text>
-        {/* Low price label */}
-        <text
-          x={vm.lowLabel.x}
-          y={vm.lowLabel.y}
-          textAnchor="end"
-          fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
-          fontSize="10"
-          fill="currentColor"
-          fillOpacity="0.55"
-        >
-          {vm.lowLabel.value}
-        </text>
-        {/* Separator between price and volume areas */}
-        <line
-          x1={vm.guideX1}
-          x2={vm.guideX2}
-          y1={vm.volumeAreaTop - 2}
-          y2={vm.volumeAreaTop - 2}
-          stroke="var(--chart-grid)"
-          strokeOpacity="0.3"
-        />
-        {/* Candlestick bars */}
-        {vm.bars.map((bar, i) => (
-          <CandlestickBar key={i} bar={bar} />
-        ))}
-        {/* Volume bars */}
-        {vm.volumeBars.map((vb, i) => (
-          <rect
-            key={i}
-            x={vb.x}
-            y={vb.y}
-            width={vb.width}
-            height={vb.height}
-            fill={vb.isBullish ? "var(--chart-up)" : "var(--chart-dn)"}
-            fillOpacity="0.35"
-          />
-        ))}
-        {/* Bollinger Bands overlay (renders below SMA so SMA stays prominent) */}
-        {vm.bollingerOverlay ? (
-          <BollingerBandsOverlay overlay={vm.bollingerOverlay} />
-        ) : null}
-        {/* Simple moving average overlays */}
-        {vm.smaOverlays.map((overlay) => (
-          <polyline
-            key={overlay.period}
-            fill="none"
-            stroke={overlay.stroke}
-            strokeOpacity="0.9"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            points={overlay.points}
-            aria-label={overlay.ariaLabel}
-            data-testid={`historical-chart-sma-${overlay.period}`}
-          />
-        ))}
-        {/* RSI sub-panel */}
-        {vm.rsiPanel ? <RsiPanelView panel={vm.rsiPanel} /> : null}
-        {/* Crosshair on hovered bar */}
-        {hoveredBar ? (
-          <line
-            x1={hoveredBar.midX}
-            x2={hoveredBar.midX}
-            y1={0}
-            y2={vm.geometry.height}
-            stroke="var(--chart-grid-major, currentColor)"
-            strokeOpacity="0.6"
-            strokeDasharray="3 3"
-            data-testid="historical-chart-crosshair"
-            pointerEvents="none"
-          />
-        ) : null}
-      </svg>
-      {hoverDetail ? (
-        <HistoricalChartHoverPanel detail={hoverDetail} />
-      ) : (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Hover, tap, or focus the chart and use ←/→ to inspect each bar.
-        </p>
-      )}
-      {overlayLegend.length > 0 ? (
+      <ChartEvidenceView label={vm.ariaLabel} evidence={observations} initialIndex={vm.bars.length - 1}>
+        {(inspection) => {
+          const inspectedBar = vm.bars[inspection.activeIndex];
+          return (
+            <div className="relative">
+              <svg
+                viewBox={vm.viewBox}
+                preserveAspectRatio="none"
+                className={cn("block w-full overflow-visible", heightClass)}
+                role="group"
+                aria-label={vm.ariaLabel}
+                aria-describedby={inspection.hintId}
+              >
+                {/* High guide line */}
+                <line
+                  x1={vm.guideX1}
+                  x2={vm.guideX2}
+                  y1={vm.highGuideY}
+                  y2={vm.highGuideY}
+                  stroke="var(--chart-grid)"
+                  strokeOpacity="0.85"
+                  strokeDasharray="4 4"
+                />
+                {/* Low guide line */}
+                <line
+                  x1={vm.guideX1}
+                  x2={vm.guideX2}
+                  y1={vm.lowGuideY}
+                  y2={vm.lowGuideY}
+                  stroke="var(--chart-grid)"
+                  strokeOpacity="0.85"
+                  strokeDasharray="4 4"
+                />
+                {/* Separator between price and volume areas */}
+                <line
+                  x1={vm.guideX1}
+                  x2={vm.guideX2}
+                  y1={vm.volumeAreaTop - 2}
+                  y2={vm.volumeAreaTop - 2}
+                  stroke="var(--chart-grid)"
+                  strokeOpacity="0.3"
+                />
+                {/* Candlestick bars */}
+                {vm.bars.map((bar, i) => (
+                  <CandlestickBar key={i} bar={bar} />
+                ))}
+                {/* Volume bars */}
+                {vm.volumeBars.map((vb, i) => (
+                  <rect
+                    key={i}
+                    x={vb.x}
+                    y={vb.y}
+                    width={vb.width}
+                    height={vb.height}
+                    fill={vb.isBullish ? "var(--chart-up)" : "var(--chart-dn)"}
+                    fillOpacity="0.35"
+                  />
+                ))}
+                {/* Bollinger Bands overlay (renders below SMA so SMA stays prominent) */}
+                {vm.bollingerOverlay ? (
+                  <BollingerBandsOverlay overlay={vm.bollingerOverlay} />
+                ) : null}
+                {/* Simple moving average overlays */}
+                {vm.smaOverlays.map((overlay) => (
+                  <polyline
+                    key={overlay.period}
+                    fill="none"
+                    stroke={overlay.stroke}
+                    strokeOpacity="0.9"
+                    strokeWidth="1.5"
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    points={overlay.points}
+                    aria-label={overlay.ariaLabel}
+                    data-testid={`historical-chart-sma-${overlay.period}`}
+                  />
+                ))}
+                {/* RSI sub-panel */}
+                {vm.rsiPanel ? <RsiPanelView panel={vm.rsiPanel} /> : null}
+                {inspectedBar ? (
+                  <line
+                    x1={inspectedBar.midX}
+                    x2={inspectedBar.midX}
+                    y1={0}
+                    y2={vm.geometry.height}
+                    stroke="var(--chart-crosshair)"
+                    strokeOpacity="0.6"
+                    strokeDasharray="3 3"
+                    data-testid="historical-chart-crosshair"
+                    pointerEvents="none"
+                  />
+                ) : null}
+                {vm.bars.map((bar, index) => (
+                  <ChartEvidenceMark
+                    key={bar.evidence.id}
+                    inspection={inspection}
+                    index={index}
+                    geometry={{ x: bar.midX - vm.geometry.slotWidth / 2, y: 0, width: vm.geometry.slotWidth, height: vm.geometry.height }}
+                  />
+                ))}
+                {vm.references.map((reference, index) => (
+                  <ChartEvidenceMark key={reference.id} inspection={inspection} index={vm.bars.length + index} geometry={reference} />
+                ))}
+              </svg>
+              <StretchedChartLabels viewBox={vm.viewBox} labels={[vm.highLabel, vm.lowLabel, ...(vm.rsiPanel ? [vm.rsiPanel.overboughtLabel, vm.rsiPanel.oversoldLabel] : [])]} fontSize={12} />
+            </div>
+          );
+        }}
+      </ChartEvidenceView>
+      {overlayLegend.length > 0 || vm.rsiPanel ? (
         <ul
           aria-label="Indicator overlays"
-          className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted-foreground"
+          className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground"
         >
           {overlayLegend.map((entry) => (
             <li key={entry.key} className="flex items-center gap-1.5">
@@ -799,7 +685,7 @@ function CandlestickChartView({ viewModel: vm }: { viewModel: CandlestickChartVi
               <span
                 aria-hidden="true"
                 className="inline-block h-0.5 w-4 rounded"
-                style={{ backgroundColor: "var(--chart-rsi, #7C5CBF)" }}
+                style={{ backgroundColor: "var(--chart-rsi, #2E4B6E)" }}
               />
               <span>
                 {vm.rsiPanel.label}
@@ -811,9 +697,6 @@ function CandlestickChartView({ viewModel: vm }: { viewModel: CandlestickChartVi
           ) : null}
         </ul>
       ) : null}
-      <span aria-live="polite" className="sr-only">
-        {liveAnnouncement}
-      </span>
     </div>
   );
 }
@@ -892,31 +775,9 @@ function RsiPanelView({ panel }: { panel: CandlestickRsiPanel }) {
         stroke="var(--chart-grid)"
         strokeOpacity="0.35"
       />
-      <text
-        x={panel.overboughtLabel.x}
-        y={panel.overboughtLabel.y}
-        textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
-        fontSize="9"
-        fill="currentColor"
-        fillOpacity="0.55"
-      >
-        {panel.overboughtLabel.value}
-      </text>
-      <text
-        x={panel.oversoldLabel.x}
-        y={panel.oversoldLabel.y}
-        textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
-        fontSize="9"
-        fill="currentColor"
-        fillOpacity="0.55"
-      >
-        {panel.oversoldLabel.value}
-      </text>
       <polyline
         fill="none"
-        stroke="var(--chart-rsi, #7C5CBF)"
+        stroke="var(--chart-rsi, #2E4B6E)"
         strokeOpacity="0.95"
         strokeWidth="1.4"
         strokeLinejoin="round"
@@ -924,44 +785,6 @@ function RsiPanelView({ panel }: { panel: CandlestickRsiPanel }) {
         points={panel.points}
       />
     </g>
-  );
-}
-
-const hoverChangeToneClass = {
-  positive: "text-success",
-  negative: "text-danger",
-  neutral: "text-foreground"
-} as const;
-
-function HistoricalChartHoverPanel({ detail }: { detail: CandlestickHoverDetail }) {
-  return (
-    <div
-      data-testid="historical-chart-hover-panel"
-      className="mt-2 rounded-md border border-border/60 bg-secondary/30 px-3 py-2 text-xs"
-    >
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="font-mono text-muted-foreground">{detail.timeLabel}</span>
-        <span className={cn("font-mono", hoverChangeToneClass[detail.changeTone])}>
-          {detail.changeLabel}
-        </span>
-      </div>
-      <dl className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 font-mono sm:grid-cols-5">
-        <HoverField label="O" value={detail.openLabel} />
-        <HoverField label="H" value={detail.highLabel} />
-        <HoverField label="L" value={detail.lowLabel} />
-        <HoverField label="C" value={detail.closeLabel} />
-        <HoverField label="Vol" value={detail.volumeLabel} />
-      </dl>
-    </div>
-  );
-}
-
-function HoverField({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline gap-1">
-      <dt className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</dt>
-      <dd className="text-foreground">{value}</dd>
-    </div>
   );
 }
 
@@ -974,7 +797,6 @@ function CandlestickBar({ bar }: { bar: CandlestickBarViewModel }) {
 
   return (
     <g>
-      <title>{bar.tooltipLabel}</title>
       {/* Wick */}
       <line
         x1={bar.midX}

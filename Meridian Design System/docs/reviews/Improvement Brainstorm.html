@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Improvement Brainstorm — Meridian Design System</title>
+<link rel="stylesheet" href="../../styles.css">
+<style id="__om-edit-overrides"></style>
+<style>
+body{margin:0;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:var(--type-body);line-height:var(--lh-body)}
+a{color:var(--link,#2A5F96);text-decoration:none}a:hover{color:var(--link-hover,#1F4A76)}
+code{font-family:var(--font-data);font-size:12px;color:var(--text-primary)}
+.masthead{background:var(--topbar-bg);color:var(--topbar-text)}
+.masthead .in{max-width:1120px;margin:0 auto;padding:14px 32px;display:flex;align-items:baseline;gap:14px}
+.masthead .t{font-weight:600;letter-spacing:.14em;font-size:13px}
+.masthead .v{margin-left:auto;font-family:var(--font-data);font-size:11px;color:var(--topbar-text-muted)}
+.lede{background:var(--bg-medium);border-bottom:1px solid var(--border)}
+.lede .in{max-width:1120px;margin:0 auto;padding:40px 32px}
+.lede h1{font-family:var(--font-display);font-size:28px;line-height:36px;font-weight:600;color:var(--text-primary);margin:0 0 10px}
+.lede p{max-width:78ch;margin:0 0 10px;text-wrap:pretty}
+.eyebrow{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted)}
+.page{max-width:1120px;margin:0 auto;padding:0 32px 80px}
+.tally{display:flex;border:1px solid var(--border);background:var(--bg-light);margin-top:24px}
+.tally div{flex:1;padding:14px 16px;border-right:1px solid var(--border-divider)}
+.tally div:last-child{border-right:none}
+.tally .v{font-family:var(--font-data);font-size:24px;font-weight:600;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.tally .l{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted)}
+h2.sec{font-family:var(--font-display);font-size:var(--type-section);line-height:var(--lh-section);font-weight:600;color:var(--text-primary);margin:56px 0 4px;padding-top:22px;border-top:1px solid var(--border-strong);display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+h2.sec .idx{font-family:var(--font-data);font-size:11px;color:var(--text-muted);font-weight:400;white-space:nowrap}
+.sub-lede{margin:0 0 20px;color:var(--text-muted);font-size:13px;max-width:82ch;text-wrap:pretty}
+.f{border:1px solid var(--border);background:var(--bg-light);margin-bottom:-1px}
+.f__hd{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border-divider);background:var(--bg-medium)}
+.f__id{font-family:var(--font-data);font-size:11px;color:var(--text-muted);letter-spacing:.04em}
+.f__t{font-weight:600;color:var(--text-primary);font-size:14px}
+.f__body{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
+.f__body p{margin:0 0 9px;text-wrap:pretty;font-size:13px;line-height:20px}
+.f__body p:last-child{margin-bottom:0}
+.chip{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;padding:2px 7px;border-radius:2px;white-space:nowrap;margin-left:auto}
+.chip--now{color:var(--severity-action-fg);border:1px solid var(--severity-action-bd);background:var(--severity-action-bg)}
+.chip--next{color:var(--severity-review-fg);border:1px solid var(--severity-review-bd);background:var(--severity-review-bg)}
+.chip--cheap{color:var(--severity-ready-fg,#225840);border:1px solid var(--severity-ready-bd,rgba(46, 118, 85, 0.36));background:var(--severity-ready-bg,rgba(46, 118, 85, 0.1))}
+.chip--open{color:var(--semantic-info,#2F648A);border:1px solid var(--severity-info-bd,#D2CDC3);background:var(--info-surface,#E3ECF2)}
+.chip--done{color:var(--severity-ready-fg,#225840);border:1px solid var(--severity-ready-bd,rgba(46, 118, 85, 0.36));background:var(--severity-ready-bg,rgba(46, 118, 85, 0.1))}
+.chip--parked{color:var(--cond-restricted-fg,#6D757D);border:1px solid var(--cond-restricted-bd,rgba(109, 117, 125, 0.55));background:var(--cond-restricted-bg,rgba(109, 117, 125, 0.14))}
+.answer{border:1px solid var(--border-strong);background:var(--bg-medium);padding:13px 16px;margin:0 0 20px;font-size:13px;line-height:20px;text-wrap:pretty}
+.answer b.q{display:block;font-family:var(--font-data);font-size:10px;font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);margin-bottom:5px}
+.verdict{font-weight:600;color:var(--text-primary)}
+table.rm td.done{font-family:var(--font-data);font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--severity-ready-fg,#225840)}
+table.rm tr.is-done td.p,table.rm tr.is-done td.w{color:var(--text-muted)}
+.col .h{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--border-divider)}
+.ev{background:var(--surface-well,#FCFBF8);border:1px solid var(--border-divider);padding:9px 12px;font-family:var(--font-data);font-size:11px;line-height:18px;color:var(--text-secondary);margin:0 0 9px;white-space:pre-wrap;overflow-x:auto}
+.ev b{color:var(--text-primary);font-weight:600}
+.ev .neg{color:var(--severity-blocked-fg)}
+.ev .pos{color:var(--severity-ready-fg,#225840)}
+.cost{font-family:var(--font-data);font-size:11px;color:var(--text-secondary);border-top:1px solid var(--border-divider);padding-top:8px;margin:9px 0 0}
+.cost b{color:var(--text-primary);font-weight:600}
+table.rm{width:100%;border-collapse:collapse;border:1px solid var(--border);background:var(--bg-light);font-size:13px}
+table.rm th{text-align:left;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);padding:8px 12px;background:var(--bg-medium);border-bottom:1px solid var(--border-strong)}
+table.rm td{padding:9px 12px;border-top:1px solid var(--border-divider);vertical-align:top;line-height:19px}
+table.rm td.p{font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)}
+table.rm td.w{color:var(--text-muted);font-size:12.5px}
+.note{border-left:3px solid var(--brand-signal,#C56343);background:var(--bg-medium);padding:12px 16px;margin-top:28px;font-size:13px;line-height:20px;max-width:84ch;text-wrap:pretty}
+.short{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);background:var(--bg-light);margin-top:20px}
+.short>div{padding:14px 16px;border-right:1px solid var(--border-divider)}
+.short>div:last-child{border-right:none}
+.short .n{font-family:var(--font-data);font-size:11px;color:var(--text-muted)}
+.short h3{margin:6px 0 6px;font:600 14px var(--font-display);color:var(--text-primary)}
+.short p{margin:0;font-size:12.5px;line-height:19px;text-wrap:pretty}
+@media (max-width:900px){.f__body,.short{grid-template-columns:1fr}.tally{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="masthead"><div class="in"><span class="t">MERIDIAN DESIGN SYSTEM</span><span class="v">IMPROVEMENT BRAINSTORM · 2026-08-14 · SWEEP + I-12 SHIPPED 2026-08-15</span></div></div>
+<div class="lede"><div class="in">
+<p class="eyebrow">Brainstorm · nothing decided · candidates only</p>
+<h1>The component work is done. The evidence, the delivery and the tail are not.</h1>
+<p>4.0 finished the consolidation: one row-record table, one way to state a value, one screen declaration, 32 templates curated to 26. Every candidate below starts from something already in the repository — a measured number, a deferral written into the plan, or a contradiction between two shipped files. None of them is "add a component."</p>
+<p>Read the chips as my instinct, not a decision: <span class="chip chip--now">do now</span> <span class="chip chip--next">next release</span> <span class="chip chip--cheap">one sitting</span> <span class="chip chip--open">needs your call</span> <span class="chip chip--done">swept 15 Aug</span> <span class="chip chip--parked">parked</span></p>
+<div class="tally">
+<div><div class="v">101<span style="font-size:14px"> / 268</span></div><div class="l">Exports no screen uses</div></div>
+<div><div class="v">79</div><div class="l">Live only in a card</div></div>
+<div><div class="v">0</div><div class="l">A11y validation runs shipped</div></div>
+<div><div class="v">1</div><div class="l">CDN the type depends on</div></div>
+</div>
+</div></div>
+<div class="page">
+
+<h2 class="sec"><span>The claims outrun the evidence</span><span class="idx">01 / 05</span></h2>
+<p class="sub-lede">This is the one theme I'd argue is now the system's biggest risk. The documentation asserts conformance the repository cannot demonstrate, and it has drifted before — 3.3.1 shipped a "documentation drift" fix for six numbers at once.</p>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-01</span><span class="f__t">Run the accessibility validation instead of deferring it a third time</span><span class="chip chip--now">do now</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>guidelines/ACCESSIBILITY.md</b>  claims WCAG 2.2 AA
+<b>tests/BROWSER_TEST_PLAN.md</b>  "prepared, deferred, not claimed"
+<b>3.5.0 notes</b>             a11y matrix deferred
+<b>4.0 plan, N-03</b>          <span class="neg">deferred again</span> → "headline of 4.1"</p>
+<p>The additive a11y extension across 12 primitives (3.5) was real work. What is missing is the run: no keyboard/ARIA matrix result, no NVDA pass, no responsive sibling check, against 268 exports and 26 screens.</p></div>
+<div class="col"><div class="h">The move</div>
+<p>Turn the plan into a harness rather than a report. Assertion-based DOM checks over the 111 existing cards — every interactive card gets roving-focus, name, role and Escape assertions — plus a per-component scoreboard card in the Documentation group, so the claim on the page IS the last run.</p>
+<p>Then reduce the prose claim to what the harness covers and name the rest as untested. A system that says "keyboard: untested" is more trustworthy than one that says AA and can't show it.</p>
+<p class="cost"><b>Cost</b> one release · harness is the work, not the fixes · <b>Risk</b> the first run will fail loudly, in public</p></div></div></div>
+
+<div class="f" id="I-02"><div class="f__hd"><span class="f__id">I-02</span><span class="f__t">Every asserted number gets generated, or gets deleted</span><span class="chip chip--now">do now</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>docs/PERFORMANCE.md</b> table: 13 + 247 + 45 KB gzip
+                    prose: "≈ <span class="neg">190 KB</span>" total
+                    → <span class="pos">corrected by hand to 305 KB</span>, which
+                      is the argument, not the fix
+<b>3.3.1</b> fixed six drifted counts in one patch
+<b>Figure</b> docstring claimed five retirements
+      that never happened (corrected in 4.0)</p>
+<p><code>generate_inventory.py</code> already proves this works for module and export counts — CI fails on drift. Nothing else in the docs is held that way.</p></div>
+<div class="col"><div class="h">The move</div>
+<p>Extend the generator to every number the documentation states: payload bytes measured from the built bundle, token count, card count, template count, adoption census, contrast results. Anything a human typed becomes a build failure.</p>
+<p>Governance gate: a numeral in a shipped <code>.md</code> outside a generated block is a violation. That is a stricter rule than it sounds and it is the only rule that has actually held.</p>
+<p class="cost"><b>Cost</b> a few sittings, mostly in the generator · <b>Payoff</b> retires a recurring class of patch release</p></div></div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-03</span><span class="f__t">Publish verified-vs-deferred where a consumer lands</span><span class="chip chip--cheap">one sitting</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p>The QA reports say honestly what each release verified and what it deferred. <code>index.html</code>, the readme and the card grid do not — a consumer reads capability claims and never meets the caveat.</p></div>
+<div class="col"><div class="h">The move</div>
+<p>One generated strip on the landing page and one Documentation card: what the current release verified, what it defers, what is do-not-use (Capsule's <code>movable</code>/<code>resizable</code> have been decorative since 3.2 — see I-11). Same content as the QA report, at the front door.</p>
+<p class="cost"><b>Cost</b> one sitting once I-02 exists</p></div></div></div>
+
+<h2 class="sec"><span>Delivery — how a consumer actually gets this</span><span class="idx">02 / 05</span></h2>
+<p class="sub-lede">Meridian is self-hosted software for institutions. Three of the four items here are about that word: self-hosted.</p>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-04</span><span class="f__t">The whole type system is one request to a Google CDN</span><span class="chip chip--now">do now</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>tokens/fonts.css</b>
+@import url("https://fonts.googleapis.com/css2?
+  family=IBM+Plex+Sans…&family=IBM+Plex+Mono…")
++ @font-face { src: local("IBM Plex Sans") }
+
+<b>readme</b> "no webfont binaries ship for them"
+      → <span class="neg">contradicted by the file above</span></p>
+<p>An air-gapped or egress-filtered install gets system-substituted faces: the mono numerics that "never jump" jump, and the 14px body ramp is set in something else. Nothing in the system reports this.</p></div>
+<div class="col"><div class="h">The move</div>
+<p>Self-host the subset — the four weights of each family, Latin, woff2, in <code>assets/fonts/</code> — with the Google import kept only as an optional CDN variant. Roughly 200 KB, cached forever, and it removes a runtime third-party dependency from an institutional deployment.</p>
+<p>Then correct the readme's font paragraph, and add a governance gate: no remote <code>@import</code> in the token closure.</p>
+<p class="cost"><b>Cost</b> one sitting + a licensing check (Plex is OFL) · <b>Payoff</b> the type actually renders as designed, offline</p></div></div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-05</span><span class="f__t">Icons are 48 files and 60-odd relative paths, not a component</span><span class="chip chip--now">do now</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>assets/icons/</b>  48 svg modules
+<b>4.0 phase 1</b>    core/icons.js <span class="neg">deleted</span> (7 Glyphs)
+<b>templates/</b>     a dozen files carry literals like
+  icon: "../../assets/icons/dashboard.svg"</p>
+<p>Copy a template folder into a consuming project — the documented first step — and every nav icon 404s until the consumer rewrites the paths or copies <code>assets/</code> by hand. The iconography guideline says 16–20px, <code>currentColor</code>, no icon font; nothing enforces or delivers that.</p></div>
+<div class="col"><div class="h">The move</div>
+<p>An <code>Icon</code> primitive over a compiled sprite: <code>&lt;Icon name="dashboard"/&gt;</code>, stroke inherits <code>currentColor</code>, size from the density scope, unknown name renders a visible placeholder rather than nothing. <code>NavRail</code> takes a name; the path form stays as the escape hatch for product-specific art.</p>
+<p>This is also the one place where deleting <code>core/icons.js</code> left a hole rather than closing one.</p>
+<p class="cost"><b>Cost</b> a sitting for the sprite compiler, one for the template sweep · <b>Payoff</b> template copies work unedited</p></div></div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-06</span><span class="f__t">Real subpath exports behind the api/ barrels</span><span class="chip chip--parked">parked · answered</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>_ds_bundle.js</b>  1,141 KB raw / ~247 KB gzip
+<b>docs/PERFORMANCE</b> "no tree-shaking… a page using
+  only Button still downloads the accounting tables"
+<b>api/</b> 10 barrels — lazy views of one runtime bundle
+<b>4.0 notes</b> ESM/subpath distribution: <span class="neg">not done</span></p></div>
+<div class="col"><div class="h">The move</div>
+<p>The names consumers already write (<code>MeridianAPI.decision.…</code>) become real entry points, so a report surface pays for <code>accounting</code> and not for <code>trading</code>. The monolith stays as the terminal-friendly default.</p>
+<p>Honest counter-argument: for an all-day operator terminal, 247 KB cached is genuinely cheap, and the current design says so out loud. The reason to do it is embedding Meridian panels in someone else's app — if that is not on the roadmap, this waits.</p>
+<p class="cost"><b>Cost</b> a release, touches the compiler · <b>Call</b> only worth it if embedding is real</p>
+<p class="cost" style="border-top:1px solid var(--border-strong)"><b>Answered 15 Aug: no.</b> Nothing in the repository embeds Meridian in a host — no WebView or iframe integration, and every template is a full-page <code>WorkstationShell</code> at <code>100vh</code>. <code>WORKSTATION_BLUEPRINT</code> already offers <code>height="100%"</code> for a sized container and <b>no screen uses it</b>. The one sibling web surface (<code>Meridian.Ui/dashboard</code>) is its own app with its own palette, not a host. <b>Parked</b> — the counter-argument wins on the current evidence.</p></div></div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-07</span><span class="f__t">One token source, generating CSS, the desktop XAML and JSON</span><span class="chip chip--open">rewritten · premise was wrong</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>tokens/</b>  662 tokens, 10 hand-written CSS files
+<b>tokens/parity-manifest.json</b>  exists
+<b>canonical source</b>  src/Meridian.Wpf/Styles/*.xaml
+<b>4.0 notes</b>  DTCG token source: <span class="neg">not done</span></p>
+<p><b>I had this wrong.</b> <code>parity-manifest.json</code> declares <code>"valuesShared": false</code> and says in full: the dashboard "moved to its own 'Concrete' console palette — VALUES are no longer shared with this system; the shared contract is the token NAME surface." The divergence is deliberate. Generating XAML from one value source would <em>re-couple two palettes that were intentionally decoupled</em>.</p></div>
+<div class="col"><div class="h">The move</div>
+<p><s>A DTCG JSON source of record generating CSS, XAML and consumer JSON.</s> Wrong shape. The real gap is much narrower and much worse: the manifest says <code>scripts/check_token_parity.py verifies tokens/*.css against it</code> — and <b>that script does not exist</b>. <code>scripts/</code> holds nine files; none of them is it. The gate the manifest cites as enforcing the name contract is imaginary.</p>
+<p>So: <b>write the missing checker</b>, scoped to what is actually shared — the 22-name <code>aliasContract</code> and the base flip set — not the values. That is a sitting, not a release, and it converts the file from an assertion into the gate it already claims to be. <b>This is now an I-01/I-02 item</b> (a claim the repo cannot demonstrate), not a distribution one.</p>
+<p class="cost"><b>Cost</b> one sitting · <b>Was</b> "a release, needs monorepo access" — it needs neither</p></div></div></div>
+
+<h2 class="sec"><span>The tail — 101 exports, 79 demos, three leftovers</span><span class="idx">03 / 05</span></h2>
+<p class="sub-lede">4.0 measured this and consciously did not cut it. The census is the receipt; the question is which of it earns another release of maintenance.</p>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-08</span><span class="f__t">Finish D-01: the parametric Figure vs. the five domain ladders</span><span class="chip chip--next">next release</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>Figure</b>  template adoption: <span class="neg">0</span>
+<b>alm-review</b>  took AnalyticalFigure, kept the ladders
+<b>census deviation</b>  "consolidation is 4.1 item D-01"</p>
+<p>The survivor of the chart consolidation is the one chart primitive no screen uses; the components it was meant to retire each carry something it has no prop for — a bucket definition, a two-sided compare mode, per-bucket envelopes.</p></div>
+<div class="col"><div class="h">The move</div>
+<p>Give <code>Figure</code> those three props and migrate <code>alm-review</code>'s three ladders onto it against the acceptance test the plan already wrote — or accept that domain ladders are domain components and demote <code>Figure</code> to what it demonstrably is: the primitive for a <em>new</em> geometry. Either resolution is fine. Leaving it as a promise is not.</p>
+<p class="cost"><b>Cost</b> half a release either way · <b>Payoff</b> closes the last open consolidation claim</p></div></div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-09</span><span class="f__t">Card-only is a status, so make it one</span><span class="chip chip--open">needs your call</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev">79 exports live only in a specimen card, incl.
+<b>BarChart · Treemap · WaterfallChart · YieldCurve
+PnLCalendar · DepthChart · ComparisonPlate</b>
+<b>NotificationCenter</b> — while alerting-workstation
+  hand-rolls its own triage rail
+<b>AgingTable · AllocationEditor · CommitmentBar</b>
+  — the family-office screen that used them is gone</p></div>
+<div class="col"><div class="h">The move</div>
+<p>Not deletion — a declared tier. Mark each export <b>demonstrated</b> (a screen uses it), <b>offered</b> (card only, supported), or <b>candidate</b> (card only, may be cut), generated from the census and printed in the readme and on the card. A consumer then knows which half of the system is load-bearing.</p>
+<p>Then pick the handful worth promoting by building the screen: an exposure/attribution surface would adopt four of the card-only charts at once.</p>
+<p class="cost"><b>Cost</b> tier is generated (cheap); each promotion is a screen · <b>Call</b> do you want fewer components, or more screens?</p></div></div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-10</span><span class="f__t">Sweep the three 4.0 leftovers while the stack is still moving</span><span class="chip chip--cheap">one sitting</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>--accent</b>  kept as white-label palette entry
+<b>TimeContext</b>  structured-only migration deferred
+<b>VarianceCell.tolerance</b>  deprecation not removed</p></div>
+<div class="col"><div class="h">The move</div>
+<p>These are the three named "not yet done" items from the staged notes, all breaking, all small. They belong in 4.0's own window or immediately after — every release they survive is another release of consumers writing them.</p>
+<p class="cost"><b>Cost</b> one sitting + codemod entries in <code>scripts/codemod_4_0.py</code></p></div></div></div>
+
+<h2 class="sec"><span>What the system still cannot express</span><span class="idx">04 / 05</span></h2>
+<p class="sub-lede">Held to the same bar as everything else: each of these is a gap a screen in the repository is currently working around, not a capability I think would be nice.</p>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-11</span><span class="f__t">Wire the dock, or delete the grip</span><span class="chip chip--cheap">one sitting</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>Capsule.jsx</b>  movable → renders ⠿ grip, no handler
+              resizable → renders ⌟, no handler
+<b>3.2 known gaps</b>  "marked do-not-use pending wiring"
+<b>1.24</b>  DockGrid <span class="neg">deleted</span> as speculative
+<b>ops-wall</b>  ships a fixed multi-monitor layout</p>
+<p>Two affordances have advertised a capability that does not exist for three releases, on the exact surface (an ops wall) where operators expect to arrange their own panes.</p></div>
+<div class="col"><div class="h">The move</div>
+<p>Cheap version: delete both props, note it in UPGRADING. Real version: persistent per-user pane layout on <code>ops-wall</code> — drag to reorder, resize to a column span, stored under one key, reset control. Not a free-form canvas; a saved arrangement of a declared region set.</p>
+<p class="cost"><b>Cost</b> delete = one sitting; dock = half a release · <b>Do the delete now either way</b></p></div></div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-12</span><span class="f__t">Entitlement is missing from a system built on authority</span><span class="chip chip--done">shipped 15 Aug</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>ActionGuard</b>  may I <em>do</em> this — yes
+<b>ValueAuthority</b>  who says this figure is right — yes
+<b>may I <em>see</em> this figure</b>  — <span class="neg">nothing</span>
+<b>SessionControls</b>  RoleBadge, ReadOnlyBanner (view-level)</p>
+<p>Read-only is expressed; not-permitted-to-see is not. A blank cell for a redacted figure violates the system's own rule that a blank never stands for a condition — the ten data conditions have no <em>restricted</em>.</p></div>
+<div class="col"><div class="h">The move</div>
+<p>An eleventh condition and a redaction treatment: a stated mark, the policy that withheld it, and who to ask — at cell, column and region scope, composing with <code>ValueEnvelope</code> rather than a new panel.</p>
+<p><b>Answered 15 Aug: yes, and the repo proves it.</b> <code>securities-data.js</code> carries "Restricted list — <b>Real Estate desk</b>. No secondary transfer without Compliance sign-off" and a <code>VAL-005 Blocked</code> control; <code>OBJECT_MODEL</code> already lists <code>restricted</code> in the Account lifecycle; <code>report-pack</code> is scoped to one addressed limited partner and watermarked CONFIDENTIAL. Segregation is not hypothetical — it is in the seed data.</p>
+<p><b>And it cost far less than half a release,</b> because <code>EvidencePreview</code> already shipped the entire vocabulary at document scope — <code>redacted</code>, <code>restriction</code>, <code>permissions.canOpen/canExport</code>, "Export restricted" — under a source comment reading "permissions, redaction, and export restrictions are stated, not implied." This was never a new capability. It was <em>one layer</em> missing it.</p>
+<p class="cost"><b>Shipped:</b> <code>restricted</code> is the eleventh condition (glyph ▨, neutral ink, the strongest border of any condition so it can never read as <code>na</code>). <code>DataConditionValue</code> <b>ignores <code>value</code> entirely</b> when restricted — a withheld figure cannot leak by being passed in — and <code>detail</code> states the withholding policy. Aliases <code>withheld · redacted · confidential · masked · no access</code>. Three new tokens, vocabulary + notation + grammar cards updated, guideline law written.</p></div></div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">I-13</span><span class="f__t">Narrow layouts are hand-rolled per screen</span><span class="chip chip--next">next release</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>TEMPLATE_CONTRACT</b>  states a mobile sibling-state rule
+<b>reconciliation</b>  implements it alone, at ≤1180px,
+  in its own helmet CSS + a local switch
+<b>ScreenComposition</b>  declares regions, not their
+  collapse order</p></div>
+<div class="col"><div class="h">The move</div>
+<p>Regions already declare priority in an archetype — let the archetype own the collapse: which regions fold, in what order, into what switch. One screen wrote that logic well; twenty-five would write it twenty-five ways, and the contract would keep being aspirational.</p>
+<p class="cost"><b>Cost</b> a release across 26 screens · <b>Prereq</b> answer whether operators are ever on a small viewport</p></div></div></div>
+
+<h2 class="sec"><span>Same-day housekeeping</span><span class="idx">05 / 05</span></h2>
+<p class="sub-lede">Small, unambiguous, and each one is the class of thing a previous release already deleted once.</p>
+
+<table class="rm">
+<thead><tr><th style="width:14%">Item</th><th style="width:38%">What was there</th><th>The fix</th><th style="width:8%">State</th></tr></thead>
+<tbody>
+<tr><td class="p">No starting point</td><td>The compiler reports <b>starting points: none</b>, while the readme says "start here → <code>dashboard-workstation</code>".</td><td class="w">Flag the four real entry points so a consuming project is offered them instead of 26 undifferentiated templates. <b>Blocked:</b> <code>starting-point</code> on the <code>@template</code> comment is not the marker — the compiler ignored it. Needs the real attribute.</td><td class="done">open</td></tr>
+<tr class="is-done"><td class="p">screenshots/</td><td>14 dated review captures at the project root.</td><td class="w">Moved to <code>docs/reviews/screenshots/</code>; root folder removed. No file referenced them.</td><td class="done">swept</td></tr>
+<tr class="is-done"><td class="p">Two Unreleased sections</td><td>"Unreleased — 4.0.0" <em>and</em> "Unreleased — staged"; a reader could not tell what ships.</td><td class="w">Staged tier folded in as <b>Consolidation tier — phases 1–4 (shipped in 4.0)</b>. One Unreleased heading.</td><td class="done">swept</td></tr>
+<tr><td class="p">QA file naming</td><td><code>QA_REPORT_3.5.md</code> beside <code>RELEASE_NOTES_3.5.0.md</code>; four release-note files, three QA reports, no index.</td><td class="w">One naming rule, one generated index card. Retire notes older than the last major to <code>docs/archive/</code>.</td><td class="done">open</td></tr>
+<tr class="is-done"><td class="p">Template count in prose</td><td>"31 templates · 24 production screens" in seven places 4.0 curated to <b>26 = 7 + 19</b>; <code>METRICS.md</code> still on 240 components / 105 cards / 644 tokens.</td><td class="w">Swept by hand across readme, CONTRIBUTING, ARCHITECTURE, METRICS, TEMPLATE_CONTRACT, PERFORMANCE against <code>check_design_system</code> (268 / 111 / 26 / 662). Historical release notes left alone. <b>Exactly the drift I-02 exists to stop.</b></td><td class="done">swept</td></tr>
+</tbody>
+</table>
+
+<h2 class="sec"><span>If I had to pick three</span><span class="idx">shortlist</span></h2>
+<div class="short">
+<div><div class="n">01</div><h3>Self-host the fonts (I-04)</h3><p>One sitting, removes a third-party runtime dependency from a self-hosted institutional product, and makes the type render as specified in the environment the product actually ships into.</p></div>
+<div><div class="n">02</div><h3>Generate every number (I-02)</h3><p>Kills a recurring class of patch release and is the precondition for I-01 and I-03. The tooling to do it already exists for two of the counts.</p></div>
+<div><div class="n">03</div><h3>Run the a11y matrix (I-01)</h3><p>Deferred twice, promised as 4.1's headline, and the stack has now stopped moving — which was the stated reason to wait. It is the largest gap between what the docs claim and what the repo can prove.</p></div>
+</div>
+
+<div class="note"><b>Swept 15 Aug, by hand.</b> Three housekeeping rows and the <code>PERFORMANCE.md</code> arithmetic are fixed: the total now reads 305 KB and names the font dependency, the counts agree with the compiler, the changelog has one Unreleased heading, the root captures are gone. Every one of those was typed by a human into a shipped file, which is <a href="#I-02">I-02</a>'s whole case — the next sweep should be a generator, not another sitting like this one.</div>
+
+<div class="answer"><b class="q">Question 1 — is anyone embedding Meridian panels in a host application?</b>
+<span class="verdict">No.</span> No WebView, iframe or host integration exists; every template is a full-page shell at <code>100vh</code>; the embed affordance the blueprint already documents (<code>height="100%"</code>) has zero adopters; and the sibling web dashboard is a separate app on a separate palette. <b>I-06 is parked.</b> <b>I-07 survived the question but failed on its own evidence</b> — its premise was wrong, and what replaced it is a one-sitting job: write the parity checker the manifest already claims exists.</div>
+
+<div class="answer"><b class="q">Question 2 — do deployments segregate visibility by desk or client?</b>
+<span class="verdict">Yes — stated in the seed data, not inferred.</span> A desk-scoped restricted list with a blocking control, <code>restricted</code> already in the Account lifecycle, and an LP-scoped confidential report pack. Better still, <code>EvidencePreview</code> had already solved this at document scope, so the value layer only had to inherit it. <b>I-12 shipped this turn</b> at a fraction of its estimate.</div>
+
+<div class="note"><b>What the two answers actually revealed.</b> Neither question changed a priority the way I expected. One item died (I-06), one was <em>wrong</em> and got smaller and more urgent (I-07 — a cited gate that does not exist belongs in the evidence theme, not distribution), and one shipped the same day because the pattern was already in the building. The recurring shape here is not "what should we build" — it is <b>the repository asserting things about itself that nobody checks</b>: 190 KB, a font claim, seven stale counts, and now a parity script. That is <a href="#I-02">I-02</a>, and it is the one that should go next.</div>
+
+</div>
+</body>
+</html>

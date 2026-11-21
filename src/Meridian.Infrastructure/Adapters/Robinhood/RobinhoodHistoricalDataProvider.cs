@@ -70,6 +70,7 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
     public override TimeSpan RateLimitDelay => TimeSpan.Zero; // Use the hourly window-based limit.
     public override int MaxRequestsPerWindow => 100; // 100 requests/hour for the undocumented endpoint.
     public override TimeSpan RateLimitWindow => TimeSpan.FromHours(1);
+    protected override bool HasKnownQuota => false; // This endpoint has no published quota.
 
     #endregion
 
@@ -116,7 +117,7 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
         try
         {
             var url = $"{BaseUrl}?symbols=AAPL&interval=day&span=week&bounds=regular";
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)

@@ -43,7 +43,7 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
                 )
 
     def test_comment_only_tombstones_are_accepted_for_each_source_language(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             for extension in self.CODE_EXTENSIONS:
                 (root / f"Tombstone{extension}").write_text(
@@ -54,7 +54,7 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
 
     def test_executable_source_is_rejected_for_each_source_language(self) -> None:
         for extension in self.CODE_EXTENSIONS:
-            with self.subTest(extension=extension), tempfile.TemporaryDirectory() as temp_dir:
+            with self.subTest(extension=extension), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
                 root = Path(temp_dir)
                 (root / f"Tombstone{extension}").write_text(
                     "// ARCHIVE TOMBSTONE\nlet restoredCode = 1;\n", encoding="utf-8"
@@ -63,7 +63,7 @@ class ArchiveCodeTombstonesTests(unittest.TestCase):
                     self.assert_comment_only_tombstones(root)
 
     def test_comment_only_source_without_tombstone_marker_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             (root / "Tombstone.cs").write_text("// Historical source\n", encoding="utf-8")
             with self.assertRaisesRegex(AssertionError, "must contain the tombstone marker"):

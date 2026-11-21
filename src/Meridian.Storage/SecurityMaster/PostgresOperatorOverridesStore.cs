@@ -174,16 +174,14 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore, IS
             "Patched",
             updatedBy,
             updatedAt,
-            new
-            {
-                setKeys = request.SetValues?.Keys.Where(static key => !string.IsNullOrWhiteSpace(key)).ToArray() ?? [],
-                removedKeys = request.RemoveKeys?.Where(static key => !string.IsNullOrWhiteSpace(key)).ToArray() ?? [],
-                previousValues = current,
-                values = next,
+            new OperatorOverridesPatchedPayload(
+                request.SetValues?.Keys.Where(static key => !string.IsNullOrWhiteSpace(key)).ToArray() ?? [],
+                request.RemoveKeys?.Where(static key => !string.IsNullOrWhiteSpace(key)).ToArray() ?? [],
+                current,
+                next,
                 reasonCode,
-                approvalStatus = SecurityOverrideApprovalStatusDto.Pending.ToString(),
-                expectedCanonicalVersion
-            },
+                SecurityOverrideApprovalStatusDto.Pending.ToString(),
+                expectedCanonicalVersion),
             ct).ConfigureAwait(false);
 
         return new OperatorOverridesDto(securityId, next, updatedBy, updatedAt)
@@ -293,16 +291,14 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore, IS
             decision.Decision == SecurityOverrideApprovalStatusDto.Approved ? "Approved" : "Rejected",
             reviewer,
             reviewedAt,
-            new
-            {
-                decision = decision.Decision.ToString(),
+            new OperatorOverridesDecisionPayload(
+                decision.Decision.ToString(),
                 reviewer,
-                stagedBy = existing.UpdatedBy,
+                existing.UpdatedBy,
                 comment,
                 reasonCode,
-                restoresPriorDecision = decision.RestoresPriorDecision,
-                values = existing.Values
-            },
+                decision.RestoresPriorDecision,
+                existing.Values),
             ct).ConfigureAwait(false);
 
         return existing with

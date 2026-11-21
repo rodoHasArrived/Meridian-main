@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text.Json;
 using Meridian.Application.DirectLending;
 using Meridian.Contracts.DirectLending;
+using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -12,13 +14,16 @@ public sealed class DirectLendingOperationsReadService
 {
     private readonly IDirectLendingService? _directLendingService;
     private readonly IDirectLendingServicerStatementService? _servicerStatementService;
+    private readonly ILedgerJournalStore? _ledgerJournalStore;
 
     public DirectLendingOperationsReadService(
         IDirectLendingService? directLendingService = null,
-        IDirectLendingServicerStatementService? servicerStatementService = null)
+        IDirectLendingServicerStatementService? servicerStatementService = null,
+        ILedgerJournalStore? ledgerJournalStore = null)
     {
         _directLendingService = directLendingService;
         _servicerStatementService = servicerStatementService;
+        _ledgerJournalStore = ledgerJournalStore;
     }
 
     public async Task<DirectLendingOperationsReadModelDto> GetOperationsAsync(
@@ -83,6 +88,19 @@ public sealed class DirectLendingOperationsReadService
             }
 
             closeBlockers.AddRange(BuildCloseBlockers(loan, contract, servicing, journals, runs, ledgerBookId, unscopedJournals));
+            if (_ledgerJournalStore is not null && servicing is not null)
+            {
+                // Subledger-to-GL tie-out: the loan's servicing balances against the control
+                // accounts the authoritative ledger holds for it.
+                var generalLedgerEntries = await _ledgerJournalStore
+                    .QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: ledgerBookId, AggregateId: loan.LoanId), ct)
+                    .ConfigureAwait(false);
+                closeBlockers.AddRange(BuildSubledgerTieOutBlockers(
+                    loan.LoanId,
+                    loan.FacilityName,
+                    servicing,
+                    generalLedgerEntries.SelectMany(static record => record.Entry.Lines).ToArray()));
+            }
         }
 
         var exceptions = await _directLendingService.GetReconciliationExceptionsAsync(ct).ConfigureAwait(false);
@@ -351,6 +369,62 @@ public sealed class DirectLendingOperationsReadService
             status,
             detail,
             $"{LoanRoute(loan.LoanId)}/journals");
+    }
+
+    /// <summary>Largest difference treated as rounding between a servicing balance and its control account.</summary>
+    public const decimal SubledgerTieOutTolerance = 0.01m;
+
+    /// <summary>
+    /// Compares a loan's servicing balances (the subledger) with the net debit balance of its
+    /// general-ledger control accounts and reports each difference beyond rounding as a close
+    /// blocker. A loan with no general-ledger lines is left to the journal-evidence blocker.
+    /// Differences are warnings, not critical: receipts recorded before payments were split by
+    /// allocation post to a clearing account and legitimately leave a difference to review.
+    /// </summary>
+    public static IReadOnlyList<DirectLendingOperationsCloseBlockerDto> BuildSubledgerTieOutBlockers(
+        Guid loanId,
+        string facilityName,
+        LoanServicingStateDto servicing,
+        IReadOnlyList<LedgerEntry> generalLedgerLines)
+    {
+        ArgumentNullException.ThrowIfNull(servicing);
+        ArgumentNullException.ThrowIfNull(generalLedgerLines);
+        if (generalLedgerLines.Count == 0)
+        {
+            return [];
+        }
+
+        var controls = new (string Account, string Label, decimal Subledger)[]
+        {
+            ("LoanPrincipal", "principal outstanding", servicing.Balances.PrincipalOutstanding),
+            ("AccruedInterestReceivable", "accrued interest", servicing.Balances.InterestAccruedUnpaid),
+            ("PikInterestReceivable", "accrued PIK interest", servicing.PikInterestAccruedUnpaid),
+        };
+
+        var blockers = new List<DirectLendingOperationsCloseBlockerDto>();
+        foreach (var (account, label, subledger) in controls)
+        {
+            var generalLedger = generalLedgerLines
+                .Where(line => string.Equals(line.Account.Name, account, StringComparison.OrdinalIgnoreCase))
+                .Sum(static line => line.Debit - line.Credit);
+            var difference = subledger - generalLedger;
+            if (Math.Abs(difference) <= SubledgerTieOutTolerance)
+            {
+                continue;
+            }
+
+            blockers.Add(new DirectLendingOperationsCloseBlockerDto(
+                loanId,
+                facilityName,
+                "SubledgerTieOut",
+                "Warning",
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"Servicing {label} {subledger:0.00} does not tie to general-ledger {account} {generalLedger:0.00} (difference {difference:0.00})."),
+                $"{LoanRoute(loanId)}/journals"));
+        }
+
+        return blockers;
     }
 
     private static IEnumerable<DirectLendingOperationsCloseBlockerDto> BuildCloseBlockers(

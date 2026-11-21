@@ -10,8 +10,12 @@ internal sealed class OrderFillContext(
     IReadOnlyDictionary<string, OrderState> orders,
     IReadOnlyDictionary<string, string> financialAccountIds,
     IReadOnlyDictionary<string, decimal> contractMultipliers,
-    IReadOnlyDictionary<string, bool> faceValueSizing)
+    IReadOnlyDictionary<string, bool> faceValueSizing,
+    bool captureAccountingSource = false,
+    bool syntheticSource = false)
 {
+    internal bool CaptureAccountingSource => captureAccountingSource;
+    internal bool SyntheticSource => syntheticSource;
     internal bool TryGetOrder(string orderId, out OrderState state) => orders.TryGetValue(orderId, out state!);
     internal bool ContainsOrder(string orderId) => orders.ContainsKey(orderId);
     internal string? GetFinancialAccountId(string? orderId) =>

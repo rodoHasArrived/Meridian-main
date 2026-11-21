@@ -117,14 +117,14 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
   },
   {
     id: "daily-control-tower",
-    title: "Today",
+    title: "Daily Control Tower",
     summary: "Start finance users with today's exceptions, close blockers, reconciliation, ledger, reports, evidence, and data-health work before non-finance surfaces.",
     steps: [
       {
         id: "today",
         label: "Today",
         description: "Start each session from the finance decision queue and next action.",
-        href: "/today",
+        href: "/",
         matchPath: "/"
       },
       {
@@ -158,7 +158,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "reports",
         label: "Reports",
-        description: "Review governed report outputs affected by finance exceptions.",
+        description: "Review report outputs affected by finance exceptions.",
         href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
         matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
       },
@@ -172,7 +172,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "data-health",
         label: "Data Health",
-        description: "Check provider data quality and import posture after finance work is triaged.",
+        description: "Check provider data quality and import status after finance work is triaged.",
         href: WORKSTATION_ROUTE_CATALOG.dataProviders,
         matchPath: WORKSTATION_ROUTE_CATALOG.dataProviders
       }
@@ -221,7 +221,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "evidence-review",
         label: "Evidence review",
-        description: "Package lineage, stale evidence, and packet completeness for governed review.",
+        description: "Package lineage, stale evidence, and packet completeness for review.",
         href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
         matchPath: WORKSTATION_ROUTE_CATALOG.reportingEvidence
       }
@@ -249,7 +249,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "portfolio-exposure",
         label: "Exposure",
-        description: "Review household positions, account sync, cash, buying power, and risk posture.",
+        description: "Review household positions, account sync, cash, buying power, and risk status.",
         href: WORKSTATION_ROUTE_CATALOG.portfolio,
         matchPath: WORKSTATION_ROUTE_CATALOG.portfolio
       },
@@ -263,7 +263,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "report-packs",
         label: "Report packs",
-        description: "Review governed output targets, evidence readiness, and export posture.",
+        description: "Review output targets, evidence readiness, and export status.",
         href: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
         matchPath: WORKSTATION_ROUTE_CATALOG.reportingReportPacks
       }
@@ -312,7 +312,7 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
       {
         id: "close-support",
         label: "Close Support",
-        description: "Review close checklists, period locks, governed reopen evidence, and retained close packages.",
+        description: "Review close checklists, period locks, reopen evidence, and retained close packages.",
         href: WORKSTATION_ROUTE_CATALOG.accountingClose,
         matchPath: WORKSTATION_ROUTE_CATALOG.accountingClose
       }

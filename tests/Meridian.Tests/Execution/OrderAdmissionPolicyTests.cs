@@ -2,6 +2,7 @@ using Meridian.Execution;
 using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -54,7 +55,7 @@ public sealed class OrderAdmissionPolicyTests : IDisposable
             (_, _) => Task.FromResult(new LiveOrderReadinessDecision(false, EvidenceReference: "audit://refusal")));
         var policy = CreatePolicy(gateway, calls, controls, readiness);
 
-        var result = await policy.EvaluatePreflightAsync(policy.Prepare(Request(), "order-1"), default);
+        var result = await policy.EvaluatePreflightAsync(PrepareLiveRun(policy, Request(), "order-1"), default);
 
         Assert.Equal("live order readiness gate", result.Refusal?.Source);
         Assert.Equal("LIVE_ORDER_READINESS_REJECTED", result.Refusal?.ReasonCode);
@@ -77,7 +78,7 @@ public sealed class OrderAdmissionPolicyTests : IDisposable
         });
         var policy = CreatePolicy(gateway, calls, controls, readiness);
 
-        var result = await policy.EvaluatePreflightAsync(policy.Prepare(Request(), "order-1"), default);
+        var result = await policy.EvaluatePreflightAsync(PrepareLiveRun(policy, Request(), "order-1"), default);
 
         Assert.Equal("operator controls", result.Refusal?.Source);
         Assert.Equal("CIRCUIT_BREAKER_OPEN", result.Refusal?.ReasonCode);
@@ -93,7 +94,7 @@ public sealed class OrderAdmissionPolicyTests : IDisposable
         var security = new SecurityGate(calls, new SecurityMasterGateResult(false, "Unknown instrument"));
         var policy = CreatePolicy(gateway, calls, security: security);
 
-        var result = await policy.EvaluatePreflightAsync(policy.Prepare(Request(), "order-1"), default);
+        var result = await policy.EvaluatePreflightAsync(PrepareLiveRun(policy, Request(), "order-1"), default);
 
         Assert.Equal("Security Master gate", result.Refusal?.Source);
         Assert.Equal("Unknown instrument", result.Refusal?.Reason);
@@ -109,7 +110,7 @@ public sealed class OrderAdmissionPolicyTests : IDisposable
         var readiness = new ReadinessGate(calls, (_, _) => Task.FromResult(LiveOrderReadinessDecision.Approved("  ")));
         var policy = CreatePolicy(gateway, calls, readiness: readiness);
 
-        var result = await policy.EvaluatePreflightAsync(policy.Prepare(Request(), "order-1"), default);
+        var result = await policy.EvaluatePreflightAsync(PrepareLiveRun(policy, Request(), "order-1"), default);
 
         Assert.False(result.IsApproved);
         Assert.Equal("Live order readiness gate approved the order without a retained evidence reference.", result.Refusal?.Reason);
@@ -117,15 +118,18 @@ public sealed class OrderAdmissionPolicyTests : IDisposable
     }
 
     [Fact]
-    public async Task MissingRunId_FailsBeforeCallingReadiness()
+    public async Task UntypedLiveOrder_IsRefusedBeforeReadinessControlsAndSecurityMaster()
     {
+        // Untyped live orders carry only metadata identity, which no longer authorizes routing,
+        // even when that metadata names a run.
         var calls = new List<string>();
         var gateway = new TestGateway(ExecutionMode.Live, calls);
         var policy = CreatePolicy(gateway, calls);
 
-        var result = await policy.EvaluatePreflightAsync(policy.Prepare(Request() with { Metadata = null }, "order-1"), default);
+        var result = await policy.EvaluatePreflightAsync(policy.Prepare(Request(), "order-1"), default);
 
-        Assert.Equal("live order readiness gate", result.Refusal?.Source);
+        Assert.Equal("order authority", result.Refusal?.Source);
+        Assert.Equal(OrderAuthorityReasonCodes.UnattributedLiveOrder, result.Refusal?.ReasonCode);
         Assert.Equal(["face-value"], calls);
     }
 
@@ -150,7 +154,7 @@ public sealed class OrderAdmissionPolicyTests : IDisposable
             ["asset_class"] = "us_treasury"
         };
         var legs = new List<OrderLeg> { new() { Symbol = "LEG-1", Side = OrderSide.Buy, RatioQuantity = 1m } };
-        var prepared = policy.Prepare(Request() with { Metadata = metadata, Legs = legs }, "generated-1");
+        var prepared = PrepareLiveRun(policy, Request() with { Metadata = metadata, Legs = legs }, "generated-1");
         var pending = policy.EvaluatePreflightAsync(prepared, default);
         await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
         metadata["asset_class"] = "us_equity";
@@ -208,7 +212,10 @@ public sealed class OrderAdmissionPolicyTests : IDisposable
             ExecutionManualOverrideKinds.BypassOrderControls, "Approved override", "test", RunId: "run-1"));
         var policy = CreatePolicy(gateway, calls, controls);
         var metadata = new Dictionary<string, string> { ["runId"] = "run-1", ["manualOverrideId"] = bypass.OverrideId };
-        var prepared = policy.Prepare(Request() with { Metadata = metadata }, "order-1");
+        // Live routing needs typed authority; paper keeps the untyped path and its exact caller metadata.
+        var prepared = mode == ExecutionMode.Live
+            ? PrepareLiveRun(policy, Request() with { Metadata = metadata }, "order-1")
+            : policy.Prepare(Request() with { Metadata = metadata }, "order-1");
         var result = await policy.EvaluatePreflightAsync(prepared, default);
 
         Assert.Equal(approved, result.IsApproved);
@@ -263,6 +270,16 @@ public sealed class OrderAdmissionPolicyTests : IDisposable
         Assert.Equal(["face-value"], calls);
     }
 
+    /// <summary>Live routing refuses untyped orders; live-path tests submit as a promoted live run.</summary>
+    private static readonly LiveRunOrderAuthority LiveRuns = LiveRunOrderAuthority.Default;
+
+    /// <summary>Prepares <paramref name="request"/> the way OMS.SubmitAsync does for a live run.</summary>
+    private static PreparedOrderAdmission PrepareLiveRun(OrderAdmissionPolicy policy, OrderRequest request, string orderId)
+    {
+        var command = LiveRuns.Command(request);
+        return policy.Prepare(OrderAuthorityMetadata.Bind(command.Order, command.Authority), orderId, command.Authority);
+    }
+
     private OrderAdmissionPolicy CreatePolicy(
         TestGateway gateway,
         List<string> calls,
@@ -274,7 +291,8 @@ public sealed class OrderAdmissionPolicyTests : IDisposable
             configuration ?? (gateway.ExecutionMode == ExecutionMode.Live ? LiveConfiguration() : null),
             security ?? new SecurityGate(calls, new SecurityMasterGateResult(true)),
             controls,
-            readiness ?? new ReadinessGate(calls, (_, _) => Task.FromResult(LiveOrderReadinessDecision.Approved(" audit://ready "))));
+            readiness ?? new ReadinessGate(calls, (_, _) => Task.FromResult(LiveOrderReadinessDecision.Approved(" audit://ready "))),
+            runAuthority: LiveRuns.Source);
 
     private ExecutionOperatorControlService CreateControls() =>
         new(new ExecutionOperatorControlOptions(_controlsRoot), NullLogger<ExecutionOperatorControlService>.Instance);

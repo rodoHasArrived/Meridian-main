@@ -1,3 +1,4 @@
+using Meridian.TestSupport;
 using System.IO;
 using System.IO.Pipes;
 using Xunit;
@@ -22,7 +23,7 @@ internal static class DirectLendingDatabaseTestEnvironment
     internal const string DisableDockerVariable = "MERIDIAN_DISABLE_DOCKER_TESTS";
 
     public static string? GetExternalConnectionString() =>
-        Environment.GetEnvironmentVariable(ConnectionStringVariable);
+        PostgresTestServer.ResolveExternalConnectionString(ConnectionStringVariable);
 
     public static bool TryGetSkipReason(out string? reason)
     {

@@ -1,3 +1,4 @@
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Text;
 
@@ -61,6 +62,8 @@ public sealed record PrivateCapitalFundEventLedgerEvent(
     IReadOnlyList<PrivateCapitalFundEventReportOutput> ReportOutputs,
     IReadOnlyList<PrivateCapitalFundEventIssue> Issues)
 {
+    public string? DeclarationFundEventId { get; init; }
+
     public bool HasCriticalIssues => Issues.Any(static item => item.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
 
     public bool HasEvidence => EvidenceLinks.Count > 0;
@@ -73,7 +76,7 @@ public sealed record PrivateCapitalFundEventLedgerEvent(
         IsApprovalComplete &&
         LedgerImpacts.Count > 0 &&
         LedgerImpacts.All(static item => item.IsBalanced) &&
-        CapitalAccountImpacts.Count > 0;
+        (CapitalAccountImpacts.Count > 0 || PrivateCapitalFundEventLedgerProjector.IsIncomeOnlyEvent(FundEventType));
 
     public bool IsReportReady => IsPostingReady && ReportOutputs.Any(static item => item.IsPublished && item.EvidenceLinks.Count > 0);
 }
@@ -87,7 +90,8 @@ public sealed record PrivateCapitalFundEventLedgerImpact(
     decimal TotalCredits,
     decimal Imbalance,
     bool IsBalanced,
-    IReadOnlyList<PrivateCapitalFundEventLedgerLine> Lines);
+    IReadOnlyList<PrivateCapitalFundEventLedgerLine> Lines,
+    DateOnly? EffectiveDate = null);
 
 public sealed record PrivateCapitalFundEventLedgerLine(
     Guid LedgerEntryId,
@@ -151,7 +155,7 @@ public static class PrivateCapitalFundEventLedgerProjector
 
         var events = entries
             .GroupBy(BuildEventGroupKey, StringComparer.OrdinalIgnoreCase)
-            .Select(group => BuildEvent(group.OrderBy(static entry => entry.Timestamp).ThenBy(static entry => entry.JournalEntryId).ToArray(), reportPacks ?? []))
+            .Select(group => BuildEvent(group.Key, group.ToArray(), reportPacks ?? []))
             .OrderBy(static item => item.FirstPostedAt)
             .ThenBy(static item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -160,6 +164,7 @@ public static class PrivateCapitalFundEventLedgerProjector
     }
 
     private static PrivateCapitalFundEventLedgerEvent BuildEvent(
+        string projectedFundEventId,
         IReadOnlyList<JournalEntry> entries,
         IReadOnlyList<LedgerFinancialReportPack> reportPacks)
     {
@@ -177,11 +182,11 @@ public static class PrivateCapitalFundEventLedgerProjector
         var evidenceLinks = ExtractEvidenceLinks(entries);
         var ledgerImpacts = entries.Select(BuildLedgerImpact).ToArray();
         var capitalAccountImpacts = BuildCapitalAccountImpacts(entries, capitalAccountId, investorId);
-        var reportOutputs = BuildReportOutputs(fundEventId, journalEntryIds, ledgerEntryIds, reportPacks);
+        var reportOutputs = BuildReportOutputs(fundEventId is null ? null : projectedFundEventId, journalEntryIds, ledgerEntryIds, reportPacks);
         var issues = BuildIssues(entries, fundEventId, fundEventType, capitalAccountId, evidenceLinks, ledgerImpacts, capitalAccountImpacts);
 
         return new PrivateCapitalFundEventLedgerEvent(
-            fundEventId ?? $"journal-entry:{journalEntryIds[0]:D}",
+            projectedFundEventId,
             fundEventType ?? "Unclassified",
             entries.Select(static entry => entry.Metadata.EffectiveDate).FirstOrDefault(static value => value is not null),
             capitalAccountId,
@@ -200,7 +205,12 @@ public static class PrivateCapitalFundEventLedgerProjector
             capitalAccountImpacts,
             evidenceLinks,
             reportOutputs,
-            issues);
+            issues)
+        {
+            DeclarationFundEventId = string.Equals(fundEventId, projectedFundEventId, StringComparison.OrdinalIgnoreCase)
+                ? null
+                : fundEventId
+        };
     }
 
     private static PrivateCapitalFundEventLedgerImpact BuildLedgerImpact(JournalEntry entry)
@@ -230,7 +240,8 @@ public static class PrivateCapitalFundEventLedgerProjector
                     line.Debit,
                     line.Credit,
                     Ledger.CalculateNetBalance(line.Account.AccountType, line.Debit, line.Credit)))
-                .ToArray());
+                .ToArray(),
+            entry.Metadata.EffectiveDate);
     }
 
     private static IReadOnlyList<PrivateCapitalFundEventCapitalAccountImpact> BuildCapitalAccountImpacts(
@@ -339,6 +350,10 @@ public static class PrivateCapitalFundEventLedgerProjector
             .ToArray();
     }
 
+    /// <summary>Fund events that are income to the fund and move no investor capital account.</summary>
+    internal static bool IsIncomeOnlyEvent(string? fundEventType)
+        => string.Equals(fundEventType?.Trim(), "DefaultInterest", StringComparison.OrdinalIgnoreCase);
+
     private static IReadOnlyList<PrivateCapitalFundEventIssue> BuildIssues(
         IReadOnlyList<JournalEntry> entries,
         string? fundEventId,
@@ -431,7 +446,9 @@ public static class PrivateCapitalFundEventLedgerProjector
             AddIssue(issues, "private-capital.ledger-impact-unbalanced", PrivateCapitalFundEventIssueSeverity.Critical, "At least one private-capital ledger impact is unbalanced.");
         }
 
-        if (capitalAccountImpacts.Count == 0)
+        // Default interest is income to the fund: a receivable and a revenue leg, with no
+        // movement on the investor's capital account to require.
+        if (capitalAccountImpacts.Count == 0 && !IsIncomeOnlyEvent(fundEventType))
         {
             AddIssue(issues, "private-capital.capital-account-impact-missing", PrivateCapitalFundEventIssueSeverity.Critical, "Posted private-capital event has no capital-account subledger impact.");
         }
@@ -474,9 +491,27 @@ public static class PrivateCapitalFundEventLedgerProjector
         !string.IsNullOrWhiteSpace(metadata.SettlementReference);
 
     private static string BuildEventGroupKey(JournalEntry entry) =>
-        !string.IsNullOrWhiteSpace(entry.Metadata.FundEventId)
-            ? entry.Metadata.FundEventId.Trim()
-            : $"journal-entry:{entry.JournalEntryId:D}";
+        ProjectFundEventId(entry.Metadata.FundEventId, entry.Metadata.FundEventType, entry.Metadata.InvestorId, entry.Metadata.IdempotencyKey)
+        ?? $"journal-entry:{entry.JournalEntryId:D}";
+
+    /// <summary>
+    /// Projects each waterfall declaration's investor journal as a separate fund event. The
+    /// retained declaration ID still correlates the journals from the same distribution.
+    /// </summary>
+    public static string? ProjectFundEventId(string? fundEventId, string? fundEventType, string? investorId, string? idempotencyKey)
+    {
+        var declarationId = TextPrimitives.NormalizeOptional(fundEventId);
+        var investor = TextPrimitives.NormalizeOptional(investorId);
+        if (declarationId is null || investor is null ||
+            !string.Equals(fundEventType?.Trim(), "Distribution", StringComparison.OrdinalIgnoreCase) ||
+            idempotencyKey?.Trim().StartsWith("distribution:", StringComparison.OrdinalIgnoreCase) != true)
+        {
+            return declarationId;
+        }
+
+        var investorScope = $"{Uri.EscapeDataString(declarationId.ToUpperInvariant())}:{Uri.EscapeDataString(investor.ToUpperInvariant())}";
+        return $"distribution-investor:{Sha256Digest.ComputeUtf8(investorScope)}";
+    }
 
     private static IReadOnlyList<string> ExtractEvidenceLinks(IReadOnlyList<JournalEntry> entries) =>
         entries

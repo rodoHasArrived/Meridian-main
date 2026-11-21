@@ -5,6 +5,9 @@ using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Contracts;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -16,6 +19,7 @@ public static class ProviderRoutingEndpoints
     public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         app.MapProviderCredentialOwnershipEndpoints(jsonOptions);
+        app.MapProviderConnectionTemplateEndpoints(jsonOptions);
         var group = app.MapGroup("").WithTags("Provider Routing");
         group.RequireWorkstationTenantScope();
 
@@ -89,11 +93,47 @@ public static class ProviderRoutingEndpoints
             var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             if (!tenant.HasTenantScope)
                 return EndpointHelpers.Forbidden();
-            var result = await service.PreviewForTenantAsync(request, tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(result, jsonOptions);
+            try
+            {
+                RoutePreviewResponse result;
+                if (request.PreviewBackfill)
+                {
+                    if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewConfig | UserPermission.ManageProviders))
+                        return EndpointHelpers.Forbidden();
+                    if (request.ProposedConfig is null &&
+                        context.RequestServices.GetService<Meridian.Application.Backfill.BackfillRoutingRuntime>()?.Current is { } routing)
+                    {
+                        return Results.Json(BackfillRoutingPreview.PreviewActive(routing, request, context.RequestAborted), jsonOptions);
+                    }
+                    var store = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
+                    var resolver = context.RequestServices.GetService<IProviderCredentialResolver>();
+                    if (store is null || resolver is null)
+                        return ApiProblemDetails.ServiceUnavailable(context, "backfill routing preview");
+                    var prepared = await resolver.PrepareAsync(ct: context.RequestAborted).ConfigureAwait(false);
+                    using (prepared.Activate())
+                    {
+                        result = BackfillRoutingPreview.Preview(store.LoadRequired(), request,
+                            config => new ProviderFactory(config, resolver, services: context.RequestServices).CreateBackfillProviders(),
+                            context.RequestAborted);
+                    }
+                }
+                else
+                {
+                    result = await service.PreviewForTenantAsync(request, tenant.TenantId!, context.RequestAborted).ConfigureAwait(false);
+                }
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException exception)
+            {
+                return ApiProblemDetails.Validation(context, "proposedConfig", exception.Message);
+            }
+            catch (NotSupportedException)
+            {
+                return ApiProblemDetails.ServiceUnavailable(context, "proposed routing preview");
+            }
         })
         .WithName("PreviewProviderRoute").RequirePermission(UserPermission.ManageCredentials)
-        .WithDescription("Previews the selected provider route for a capability request.")
+        .WithDescription("Previews current or proposed provider routing without saving or fetching market data.")
         .Produces<RoutePreviewResponse>(StatusCodes.Status200OK);
     }
 

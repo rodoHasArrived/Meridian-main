@@ -1,3 +1,4 @@
+using Meridian.Core.Exceptions;
 using Meridian.Execution.Events;
 
 namespace Meridian.Execution.OrderManagement;
@@ -132,7 +133,19 @@ internal sealed class AccountingHandoffCoordinator
             {
                 // Acceptance and acknowledgment finish even when shutdown cancels replay after
                 // this record was selected. Later records remain pending for the next start.
-                await _tradeEventPublisher.PublishAsync(failure.TradeEvent).ConfigureAwait(false);
+                var retainedScope = _tradeFillHandoffFailureStore.ScopeIdentity.Validate();
+                if (_tradeEventPublisher is IRetainedTradeEventPublisher recoveryPublisher && retainedScope.IsExact)
+                {
+                    // Only the scope-validated durable replay path may carry a historical
+                    // event contract into a consumer whose normal admission requires v1.
+                    await recoveryPublisher.PublishRecoveredAsync(failure.TradeEvent, retainedScope)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    // Preserve compatibility for legacy label-only/custom publishers.
+                    await _tradeEventPublisher.PublishAsync(failure.TradeEvent).ConfigureAwait(false);
+                }
                 await _tradeFillHandoffFailureStore
                     .MarkReplayedAsync(failure.TradeEvent.FillId, CancellationToken.None)
                     .ConfigureAwait(false);
@@ -190,7 +203,7 @@ internal sealed class AccountingHandoffCoordinator
 }
 
 /// <summary>An accepted broker fill has not completed its authoritative accounting handoff.</summary>
-internal sealed class AccountingHandoffException : Exception
+internal sealed class AccountingHandoffException : MeridianException
 {
     public AccountingHandoffException(
         TradeExecutedEvent tradeEvent,

@@ -1,6 +1,6 @@
 # Meridian Threat Model (Current State)
 
-**Last Updated:** 2026-09-25
+**Last Updated:** 2026-11-15
 
 ## 1. Overview
 
@@ -41,6 +41,8 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
   - Session cookies set `Secure` except for proven loopback HTTP. Non-local required-auth production bindings require HTTPS or an explicitly configured TLS-terminating reverse proxy.
   - Operator credentials now require password hashes in `MDC_USERS` / `MDC_PASSWORD_HASH`, and governed user-account administration writes hashes plus audit evidence under the storage root; legacy plaintext password env bootstrap is no longer accepted.
   - Sessions and bounded username/client login-failure windows survive restart. Cooperating instances sharing one session store serialize reads and writes under a cross-process file lease and observe logout/revocation without cached-authority fallback. The fifth failed attempt returns `429` with `Retry-After` and rate-limit headers; timed lockout expires after 15 minutes. Corrupt/unreadable state refuses access. Separate data roots do not form a shared session authority; ADR-019 still limits the supported production envelope to one local node.
+  - The failed-attempt table is capped at 1,024 username/client windows. When full it evicts its oldest window (preferring windows that are not locked out) instead of refusing new usernames, so throwaway-username churn neither locks out untracked accounts nor cheaply lifts an active lockout. `POST /api/auth/login` additionally carries a per-client-address `login` rate limit (10 requests per minute).
+  - Sign-in follows `returnUrl` only when it is a path-absolute local URL (falling back to `/workstation/`), closing the open-redirect path. Because login is exempt from the CSRF token check, it refuses requests the browser marks as cross-site (`Sec-Fetch-Site: cross-site`, or a foreign `Origin` host when Fetch Metadata is absent).
   - A selected role profile that is missing or invalid refuses identity resolution instead of restoring the broader base role. Review actor and permission resolution continues through the authenticated request context.
   - Some endpoint groups still lack explicit permission checks (for example parts of the configuration routes), so authenticated overreach remains plausible where gates are absent. (Direct-lending routes are now permission-gated — group-level `RequireAnyPermission(View/ManageDirectLending)` plus `RequirePermission(ManageDirectLending)` on mutations — and additionally carry the SEC-005 fund-scoped write-tenant gate.)
 
@@ -54,12 +56,15 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
 - **Deployment requirements:** every strict-mode operator needs a `CompanyId`; retained data must be attributed before switching from the migration posture. The unpartitioned fund-structure implementation refuses multiple companies even with strict mode selected. These controls and focused cross-tenant tests do not certify shared multi-tenant production hosting; the supported envelope remains ADR-019's isolated local workstation.
 
 ### Rate limiting and request abuse
-- Mutation routes commonly attach `RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)`.
-- `AddRateLimiter` is wired in shared services, but `UseRateLimiter()` is not visible in `UiServer`; validate effective enforcement in deployed hosts.
+- `UiServer` calls `UseRateLimiter()` after the session, API-key, CSRF, and authorization guards, so the shared policies registered by `UiEndpoints.AddMutationRateLimiter` are enforced in the host.
+- Mutation routes commonly attach `RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)` (10 requests per minute per client address, small burst queue). Sign-in uses the separate `login` policy, and direct-lending mutations use a per-actor policy (20 per minute). Rejections return `429` with `Retry-After`.
+- `MDC_DISABLE_RATE_LIMIT=true` bypasses these limiters only in an explicit Development/Test host outside production, packaged, and customer postures.
+- Residual concern: not every mutating route attaches a rate-limit policy, and limits are per process rather than shared across cooperating instances.
 
 ### CSRF and browser security
 - SameSite=Strict cookies reduce cross-site cookie send behavior and React surfaces avoid obvious unsafe HTML injection patterns.
-- No explicit anti-forgery token workflow is visible for cookie-authenticated mutations (known defense-in-depth gap; treat as an accepted risk only for tightly local/isolated deployments until token-based CSRF protection is added).
+- Cookie-authenticated mutations use a double-submit CSRF token: the host issues a random `mdc-csrf` cookie (SameSite=Strict, readable by the workstation) alongside the session, and `UseCookieCsrfProtection()` requires a matching `X-CSRF-Token` header, compared in constant time, on `POST`/`PUT`/`PATCH`/`DELETE` `/api/*` requests that carry a session cookie. The WPF and shared API clients echo the cookie automatically (`ApiClientSession`, `ApiClientService`).
+- `POST /api/auth/login` is exempt from the token check so plain HTML forms can sign in. The cross-site refusal described under authentication covers that exemption. Requests without a session cookie (for example `X-Api-Key` clients) are not CSRF-checked.
 
 ### Secrets and configuration exposure
 - Sensitive masking is now applied in config payloads (`ConfigEndpoints` uses `SensitiveValueMasker` for Alpaca key/secret fields).

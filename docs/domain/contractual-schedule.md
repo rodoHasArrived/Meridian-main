@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-11-09
 
 ## Definition
 
@@ -158,11 +158,22 @@ write; source availability is not deployment evidence.
 Call and put entries retain the frozen window, exercise, clean-price, notice and calendar semantics
 in [ADR-025](../adr/025-contractual-schedule-kernel.md#applications). Write rules require exercise
 style, coherent windows and prices, and block payment calendars for American exercise or business-day
-notice. Until increment 8 implements redemption scenarios, exercise/notice date generation and
-make-whole amounts, consumers continue using scalar call terms and `mandatoryPutDate`. Declared
-calculated projections carry mapping, kernel and calendar evidence and remain blocked from ledger
-posting. Asset-operations and cash-ladder declaration support, period-keyed journal identity and
-retained posting evidence remain separate work.
+notice. For a Bond whose row decodes the arrays (terms version 3 or later), bond analytics, the cash
+ladder, the notice watch and the asset-operations obligation timeline resolve the same exercise and
+notice dates through `BondExerciseEconomics.TryResolveScenarios`: European and Bermudan whole
+redemptions at a fixed price in percent of par. American windows, make-whole, accreted-value and
+partial redemption are refused there and exist only in the
+[calculation-only contractual companion](contractual-cash-flow-projection.md). The timeline shows
+issuer-call and holder-put events with their notice deadlines for such a bond and does not consult
+its scalar call date; a schedule it cannot resolve is reported as blocked, with no option event. A
+bond that declares no schedule, and every CertificateOfDeposit and StructuredCredit, keeps the
+scalar `callDate`, `mandatoryPutDate` and `preRefundDate` probe (SCH-DEF-009 in the cash ladder,
+SCH-DEF-012 in the timeline). The adopted rules are in ADR-025's increment 8a entry.
+
+Declared calculated projections carry mapping, kernel and calendar evidence and remain blocked from
+ledger posting. Declared bonds in asset operations and the cash ladder read the shared Security
+Master calculation. Period-keyed journal identity and retained posting evidence remain separate
+work.
 
 Both direct-lending projection loops use the shared compounded date grid. Daily PIK, cash-interest
 and commitment-fee accrual use one-day kernel periods while preserving formula-version-one amounts,

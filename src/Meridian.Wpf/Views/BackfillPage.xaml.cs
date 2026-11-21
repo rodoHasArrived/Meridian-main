@@ -71,6 +71,9 @@ public partial class BackfillPage : Page
     // ── Resume / dismiss ─────────────────────────────────────────────────────
 
     private async void ResumeJob_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ResumeJob_ClickCoreAsync(sender, e), nameof(ResumeJob_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ResumeJob_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         if (sender is not Button btn || btn.Tag is not ResumableJobInfo job)
             return;
@@ -288,6 +291,9 @@ public partial class BackfillPage : Page
     // ── Symbol quick-add ─────────────────────────────────────────────────────
 
     private async void AddAllSubscribed_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => AddAllSubscribed_ClickCoreAsync(sender, e), nameof(AddAllSubscribed_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task AddAllSubscribed_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         SymbolsBox.Text = await _viewModel.GetSubscribedSymbolsTextAsync();
         RefreshStartSetupState();
@@ -300,6 +306,9 @@ public partial class BackfillPage : Page
     }
 
     private async void UpdateLatest_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => UpdateLatest_ClickCoreAsync(sender, e), nameof(UpdateLatest_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task UpdateLatest_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         var subscribedSymbols = await _viewModel.GetSubscribedSymbolsTextAsync();
         var preset = _viewModel.BuildLatestUpdatePreset(subscribedSymbols);
@@ -314,6 +323,9 @@ public partial class BackfillPage : Page
     // ── Backfill control ─────────────────────────────────────────────────────
 
     private async void StartBackfill_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => StartBackfill_ClickCoreAsync(sender, e), nameof(StartBackfill_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task StartBackfill_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         RefreshStartSetupState();
         if (!_viewModel.CanStartBackfill)
@@ -364,6 +376,9 @@ public partial class BackfillPage : Page
     }
 
     private async void RefreshStatus_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => RefreshStatus_ClickCoreAsync(sender, e), nameof(RefreshStatus_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task RefreshStatus_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         await _viewModel.RefreshStatusFromApiAsync();
 
@@ -403,6 +418,9 @@ public partial class BackfillPage : Page
     // ── Gap analysis ─────────────────────────────────────────────────────────
 
     private async void ScanGaps_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ScanGaps_ClickCoreAsync(sender, e), nameof(ScanGaps_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ScanGaps_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         var symbolsText = SymbolsBox.Text?.Trim() ?? "";
         var symbols = symbolsText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

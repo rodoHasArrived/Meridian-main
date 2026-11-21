@@ -11,13 +11,13 @@ using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityM
 namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
-/// Tests the opt-in <see cref="CorporateActionLedgerPostingContext.AutoReverseSupersededPostings"/>
-/// path on <see cref="SecurityMasterLedgerBridge"/>: a cancellation/amendment of a previously-posted
+/// Tests the opt-in <see cref="HistoricalCorporateActionPostingContext.AutoReverseSupersededPostings"/>
+/// path on <see cref="HistoricalCorporateActionLedgerFixture"/>: a cancellation/amendment of a previously-posted
 /// corporate action books automated reversing entries (and rebooks amended terms), while the default
 /// context continues to defer corrections to the governed restatement path.
 /// </summary>
 [Trait("Category", "Unit")]
-public sealed class SecurityMasterLedgerBridgeAutoReverseTests
+public sealed class HistoricalCorporateActionLedgerFixtureAutoReverseTests
 {
     private static readonly Guid SecurityId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
     private const string Ticker = "AAPL";
@@ -41,10 +41,11 @@ public sealed class SecurityMasterLedgerBridgeAutoReverseTests
             RightsPerShare: null,
             RecordDate: ExDate.AddDays(1));
 
-    private static (SecurityMasterLedgerBridge Bridge, ISecurityMasterQueryService QueryService) CreateBridge()
+    private static (HistoricalCorporateActionLedgerFixture Bridge, ISecurityMasterQueryService QueryService) CreateBridge()
     {
         var queryService = Substitute.For<ISecurityMasterQueryService>();
-        var bridge = new SecurityMasterLedgerBridge(queryService, NullLogger<SecurityMasterLedgerBridge>.Instance);
+        LedgerBridgeTestRecords.StubSecurityRecord(queryService);
+        var bridge = new HistoricalCorporateActionLedgerFixture(queryService, NullLogger<HistoricalCorporateActionLedgerFixture>.Instance);
         return (bridge, queryService);
     }
 
@@ -53,7 +54,7 @@ public sealed class SecurityMasterLedgerBridgeAutoReverseTests
     {
         var (bridge, queryService) = CreateBridge();
         var ledger = new DomainLedger();
-        var context = new CorporateActionLedgerPostingContext(PositionQuantity: 100m, AutoReverseSupersededPostings: true);
+        var context = new HistoricalCorporateActionPostingContext(PositionQuantity: 100m, AutoReverseSupersededPostings: true);
         var original = MakeDividend(0.25m);
 
         queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original });
@@ -82,7 +83,7 @@ public sealed class SecurityMasterLedgerBridgeAutoReverseTests
     {
         var (bridge, queryService) = CreateBridge();
         var ledger = new DomainLedger();
-        var context = new CorporateActionLedgerPostingContext(PositionQuantity: 100m, AutoReverseSupersededPostings: true);
+        var context = new HistoricalCorporateActionPostingContext(PositionQuantity: 100m, AutoReverseSupersededPostings: true);
         var original = MakeDividend(0.25m);
 
         queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original });
@@ -103,11 +104,35 @@ public sealed class SecurityMasterLedgerBridgeAutoReverseTests
     }
 
     [Fact]
+    public async Task AutoReverse_AmendmentWhoseTermsCannotPost_LeavesTheOriginalInPlace()
+    {
+        var (bridge, queryService) = CreateBridge();
+        var ledger = new DomainLedger();
+        var context = new HistoricalCorporateActionPostingContext(PositionQuantity: 100m, AutoReverseSupersededPostings: true);
+        var original = MakeDividend(0.25m);
+
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original });
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
+        var afterFirstSync = ledger.JournalEntryCount;
+        var incomeBefore = ledger.GetBalance(LedgerAccounts.DividendIncome);
+
+        // The record is unavailable when the amendment arrives, so its replacement cannot be
+        // unitized. Reversing first would leave an amended (not cancelled) dividend with no effect.
+        queryService.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns((SecurityDetailDto?)null);
+        var amendment = MakeDividend(0.30m) with { SupersedesCorpActId = original.CorpActId };
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original, amendment });
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
+
+        ledger.JournalEntryCount.Should().Be(afterFirstSync, "nothing is reversed until the amended terms can be rebooked");
+        ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(incomeBefore);
+    }
+
+    [Fact]
     public async Task AutoReverse_DatesReversalAtCorrectionEvent_NotOriginalPeriod()
     {
         var (bridge, queryService) = CreateBridge();
         var ledger = new DomainLedger();
-        var context = new CorporateActionLedgerPostingContext(PositionQuantity: 100m, AutoReverseSupersededPostings: true);
+        var context = new HistoricalCorporateActionPostingContext(PositionQuantity: 100m, AutoReverseSupersededPostings: true);
         var original = MakeDividend(0.25m); // ex 2026-03-15, income booked that day
 
         queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original });
@@ -141,7 +166,7 @@ public sealed class SecurityMasterLedgerBridgeAutoReverseTests
     {
         var (bridge, queryService) = CreateBridge();
         var ledger = new DomainLedger();
-        var context = new CorporateActionLedgerPostingContext(PositionQuantity: 100m); // AutoReverse defaults off
+        var context = new HistoricalCorporateActionPostingContext(PositionQuantity: 100m); // AutoReverse defaults off
         var original = MakeDividend(0.25m);
 
         queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { original });

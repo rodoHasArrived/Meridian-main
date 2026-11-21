@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { FinancialValue } from "./financial-value";
 import type { LedgerAmountSelection } from "@/types/ledger-amount-proof";
+import { createAmountPassport } from "@/test/amount-passport-fixtures";
+import { axe } from "jest-axe";
 
 vi.mock("@/components/meridian/proof-drawer", () => ({
   LedgerAmountProofDrawer: ({ selection, onClose }: { selection: LedgerAmountSelection | null; onClose: () => void }) => selection
@@ -9,6 +11,27 @@ vi.mock("@/components/meridian/proof-drawer", () => ({
 }));
 
 describe("FinancialValue", () => {
+  it.each(["scoped", "legacy"] as const)("includes the visible condition in the %s passport name while confirmed values remain concise", async (kind) => {
+    const reference = createAmountPassport(undefined, "Cash", "25").reference;
+    const passport: LedgerAmountSelection = { subjectId: "entry:line:debit", ledgerBookId: "book", periodId: "period", fundProfileId: "fund", amount: 25, currency: "USD", label: "Cash debit" };
+    const binding = kind === "scoped" ? { amountPassport: reference } : { passport };
+    const { container, rerender } = render(<FinancialValue value="25.00" currency="USD" condition="stale" reason="Price observation is old" {...binding} />);
+    expect(screen.getByRole("button")).toHaveAccessibleName(`Open Amount passport for ${kind === "scoped" ? "financial value" : "Cash debit"}: 25.00 USD · Stale`);
+    expect(screen.getByTitle("Price observation is old")).toBeInTheDocument();
+    expect((await axe(container, { runOnly: { type: "rule", values: ["label-content-name-mismatch"] } })).violations).toEqual([]);
+    rerender(<FinancialValue value="25.00" currency="USD" condition="confirmed" {...binding} />);
+    expect(screen.getByRole("button")).toHaveAccessibleName(`Open Amount passport for ${kind === "scoped" ? "financial value" : "Cash debit"}: 25.00 USD`);
+    expect(screen.queryByText("Stale")).not.toBeInTheDocument();
+  });
+  it("uses the existing scoped passport trigger without the unavailable-origin question glyph", () => {
+    const reference = createAmountPassport(undefined, "Cash", "25").reference;
+    const { rerender } = render(<FinancialValue value="25.00" currency="USD" condition="confirmed" amountPassport={reference} />);
+    expect(screen.getByRole("button", { name: "Open Amount passport for financial value: 25.00 USD" })).toBeInTheDocument();
+    expect(screen.queryByText("?")).not.toBeInTheDocument();
+    rerender(<FinancialValue value="26.00" currency="USD" condition="confirmed" amountPassport={reference} />);
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(screen.getByText("Amount passport unavailable")).toBeInTheDocument();
+  });
   it("shows missing and zero distinctly and never infers confirmation", () => {
     render(<><FinancialValue value={null} reason="No retained source row" /><FinancialValue value="0" currency="USD" /></>);
     expect(screen.getByText("Not recorded")).toBeInTheDocument();

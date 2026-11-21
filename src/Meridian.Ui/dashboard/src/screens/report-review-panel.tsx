@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
+import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
 import { Button } from "@/components/ui/button";
 import { StatusBanner } from "@/components/ui/status-banner";
-import { getReportRunReview, type ReportRunReview, type ReportReviewChange } from "@/lib/report-run-review-api";
+import { getReportRunReview, type ReportRunReview, type ReportReviewChange, type ReportReviewLine } from "@/lib/report-run-review-api";
+import { parseExactDecimal } from "@/lib/exact-financial-value";
 import { workstationRouteWithQuery } from "@/lib/workspace";
 
 export function ReportReviewPanel({ runId, version, onReview }: {
@@ -42,7 +45,7 @@ export function ReportReviewPanel({ runId, version, onReview }: {
             : `${review.materialChangeCount} material line change${review.materialChangeCount === 1 ? "" : "s"}`}</p>
           {review.materialityPolicy ? <div className="text-sm" aria-label="Authoritative materiality policy">
             <p>Policy {review.materialityPolicy.policyId} · version {review.materialityPolicy.version} · {review.materialityPolicy.currency}</p>
-            <ul className="list-disc pl-5">{review.materialityPolicy.metrics.map((metric) => <li key={`${metric.gridId}:${metric.column}`}>
+            <ul className="list-disc pl-5">{review.materialityPolicy.metrics.map((metric) => <li key={JSON.stringify([metric.gridId, metric.column])}>
               {metric.gridId} / {metric.column}: absolute tolerance {metric.absoluteVariance === null ? "Not assessed" : `${metric.absoluteVariance} ${review.materialityPolicy!.currency}`}; relative tolerance {metric.relativeVariancePercent === null ? "Not assessed" : `${metric.relativeVariancePercent}%`}.
             </li>)}</ul>
           </div> : null}
@@ -52,14 +55,26 @@ export function ReportReviewPanel({ runId, version, onReview }: {
           <section aria-label="Report line amounts"><h3 className="font-semibold">Line amounts</h3>
             <p className="text-sm text-muted-foreground">Variance = current − prior; percentage uses the absolute prior. A zero or missing prior has no percentage.</p>
             {review.lines.length === 0 ? <p className="text-sm text-muted-foreground">{review.baselineRunId ? "No changed line amounts were returned. Check evidence availability above." : "No comparison baseline."}</p>
-              : <div className="overflow-x-auto"><table className="w-full text-sm"><caption className="sr-only">Changed retained report lines</caption>
-                <thead><tr>{["Line", "Prior", "Current", "Variance", "Variance %", ...(review.materialityPolicy ? ["Materiality"] : []), "Evidence"].map((label) => <th key={label} className="p-2 text-left">{label}</th>)}</tr></thead>
-                <tbody>{review.lines.map((line) => <tr key={`${line.gridId}:${line.rowKey}:${line.column}`}>
-                  <th scope="row" className="p-2 text-left font-normal">{line.gridId} · {line.rowKey} · {line.column} ({line.state})</th>
-                  {[line.previous, line.current, line.delta, line.percent === null ? null : `${line.percent}%`].map((value, i) => <td key={i} className="p-2 font-mono tabular-nums">{value ?? "Not applicable"}</td>)}
-                  {review.materialityPolicy ? <td className="p-2">{line.materialityOutcome === "MaterialException" ? "Material exception" : line.materialityOutcome === "WithinTolerance" ? "Within tolerance" : "Not assessed"}</td> : null}
-                  <td className="p-2"><Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: review.runId })}>Run evidence</Link></td>
-                </tr>)}</tbody></table></div>}
+              : <DenseDataTable<ReportReviewLine>
+                  rows={review.lines}
+                  getRowId={(line) => JSON.stringify([line.gridId, line.rowKey, line.column])}
+                  ariaLabel="Changed retained report lines"
+                  emptyText="No changed line amounts were returned."
+                  columns={[
+                    { id: "line", label: "Line", rowHeader: true, className: "whitespace-normal break-words", render: (line) => `${line.gridId} · ${line.rowKey} · ${line.column} (${line.state})` },
+                    ...(["previous", "current", "delta"] as const).map((field, index) => ({
+                      id: field, label: ["Prior", "Current", "Variance"][index], numeric: true,
+                      render: (line: ReportReviewLine) => isMeasuredLine(line)
+                        ? <ReviewAmount label={`${["Prior", "Current", "Variance"][index]} ${line.gridId} / ${line.rowKey} / ${line.column}`} value={line[field]} currency={review.currency}
+                            basis={index === 2 ? "Current retained value minus prior retained value." : "Exact value retained on the selected report revision."} />
+                        : line[field] ?? "Not recorded"
+                    })),
+                    { id: "percent", label: "Variance %", numeric: true, render: (line) => line.percent === null ? "Not applicable" : `${line.percent}%` },
+                    ...(review.materialityPolicy ? [{ id: "materiality", label: "Materiality", render: (line: ReportReviewLine) => line.materialityOutcome === "MaterialException" ? "Material exception" : line.materialityOutcome === "WithinTolerance" ? "Within tolerance" : "Not assessed" }] : []),
+                    { id: "evidence", label: "Evidence", render: () => <Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: review.runId })}>Run evidence</Link> }
+                  ]}
+                />}
+
           </section>
         </>}
     </CardContent>
@@ -69,10 +84,31 @@ export function ReportReviewPanel({ runId, version, onReview }: {
 function Changes({ title, changes, comparable }: { title: string; changes: ReportReviewChange[]; comparable: boolean }) {
   return <section aria-label={title}><h3 className="font-semibold">{title}</h3>
     {changes.length === 0 ? <p className="text-sm text-muted-foreground">{comparable ? "No changes returned. Check evidence availability above." : "No comparison baseline."}</p>
-      : <div className="overflow-x-auto"><table className="w-full text-sm"><caption className="sr-only">{title}</caption>
-        <thead><tr><th className="p-2 text-left">Field or row</th><th className="p-2 text-left">Prior</th><th className="p-2 text-left">Current</th></tr></thead>
-        <tbody>{changes.map((change) => <tr key={change.key}><th scope="row" className="p-2 text-left font-normal">{change.key}</th>
-          <td className="max-w-lg break-words p-2 font-mono">{change.previous ?? "Not present"}</td><td className="max-w-lg break-words p-2 font-mono">{change.current ?? "Not present"}</td></tr>)}</tbody>
-      </table></div>}
+      : <DenseDataTable<ReportReviewChange>
+          rows={changes}
+          getRowId={(change) => change.key}
+          ariaLabel={title}
+          emptyText="No changes returned."
+          columns={[
+            { id: "field", label: "Field or row", rowHeader: true, className: "whitespace-normal break-words", render: (change) => change.key },
+            { id: "previous", label: "Prior", className: "max-w-lg whitespace-normal break-words font-mono", render: (change) => change.previous ?? "Not present" },
+            { id: "current", label: "Current", className: "max-w-lg whitespace-normal break-words font-mono", render: (change) => change.current ?? "Not present" }
+          ]}
+        />}
+
   </section>;
+}
+
+function ReviewAmount({ label, value, currency, basis }: { label: string; value: string | null; currency: string | null; basis: string }) {
+  const displayValue = value ?? "Not recorded";
+  return <AmountPassportTrigger compact ariaLabel={`Inspect ${label}: ${displayValue}${currency ? ` ${currency}` : ""}`}
+    selection={{ label, displayValue, currency, unit: currency ?? "Unit unavailable", origin: "unavailable", basis,
+      category: "Retained report comparison", zero: parseExactDecimal(value)?.coefficient === 0n,
+      unavailableReason: "An amount-scoped passport reference was not retained for this report comparison. Run and snapshot evidence is available." }}>
+    {displayValue}
+  </AmountPassportTrigger>;
+}
+
+function isMeasuredLine(line: ReportReviewLine): boolean {
+  return line.isMeasure ?? [line.previous, line.current, line.delta].some((value) => parseExactDecimal(value) !== null);
 }

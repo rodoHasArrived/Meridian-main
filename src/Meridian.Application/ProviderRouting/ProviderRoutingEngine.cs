@@ -44,11 +44,22 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         return RouteCoreAsync(context, tenantId.Trim(), ct);
     }
 
-    private async ValueTask<ProviderRouteResult> RouteCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct)
+    /// <summary>Evaluates a cloned, restricted config without publishing a runtime snapshot or route history.</summary>
+    public ValueTask<ProviderRouteResult> PreviewForTenantAsync(ProviderRouteContext context, string tenantId,
+        ProviderRoutingProposedConfig proposed, CancellationToken ct = default)
+    {
+        var config = ProviderRoutingPreviewConfig.ApplyBindings(_store.LoadRequired(), tenantId, proposed);
+        return RouteCoreAsync(context, tenantId, ct, config);
+    }
+
+    private async ValueTask<ProviderRouteResult> RouteCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct,
+        AppConfig? proposedConfig = null)
     {
         var executionScope = _kernelObservability.BeginExecution(context);
-        var snapshot = tenantId is null ? GetSnapshot() :
-            ProviderRoutingSnapshot.Build(_store.Load(), ProviderRoutingSnapshotStamp.ForPath(_store.ConfigPath));
+        var snapshot = proposedConfig is not null
+            ? ProviderRoutingSnapshot.Build(proposedConfig, ProviderRoutingSnapshotStamp.ForPath(_store.ConfigPath))
+            : tenantId is null ? GetSnapshot() :
+                ProviderRoutingSnapshot.Build(_store.Load(), ProviderRoutingSnapshotStamp.ForPath(_store.ConfigPath));
         var connections = tenantId is null ? snapshot.ConnectionsById : snapshot.ConnectionsById
             .Where(pair => pair.Value.TenantId == tenantId).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
         var bindings = snapshot.GetBindings(context.Capability);
@@ -99,12 +110,21 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                 continue;
             }
 
+            if (!connection.Enabled)
+            {
+                skipped.Add($"Connection '{connection.ConnectionId}' is disabled.");
+                continue;
+            }
+
             var connectionScopeRank = (connection.Scope ?? new ProviderConnectionScope()).GetMatchScore(context);
             if (connectionScopeRank < 0)
             {
                 skipped.Add($"Connection '{connection.ConnectionId}' scope does not match the requested route.");
                 continue;
             }
+
+            if (!AllowsTemplateScope(connection, context, policy, tenantId))
+                continue;
 
             var adapter = GetAdapter(connection.ProviderFamilyId);
             if (!SupportsCapability(connection, adapter, context.Capability))
@@ -128,6 +148,8 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             };
 
             var fallbackConnectionIds = ResolveFallbacks(binding, connection, connections, effectivePolicy);
+            fallbackConnectionIds = fallbackConnectionIds.Where(id => !connections.TryGetValue(id, out var fallback) ||
+                AllowsTemplateScope(fallback, context, effectivePolicy, tenantId)).ToArray();
             var fallbackScopeRanks = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             if (tenantId is not null)
             {
@@ -166,6 +188,12 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                 if (!connections.TryGetValue(fallbackConnectionId, out var fallbackConnection))
                 {
                     skipped.Add($"Fallback connection '{fallbackConnectionId}' is missing.");
+                    continue;
+                }
+
+                if (!fallbackConnection.Enabled)
+                {
+                    skipped.Add($"Fallback connection '{fallbackConnectionId}' is disabled.");
                     continue;
                 }
 
@@ -217,7 +245,7 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             {
                 var fallback = orderedCandidates.FirstOrDefault(other =>
                     candidate.FallbackConnectionIds.Contains(other.ConnectionId, StringComparer.OrdinalIgnoreCase) &&
-                    other.IsHealthy);
+                    ProviderRouteEligibility.IsSelectable(other, requireHealthy: true));
 
                 if (fallback is not null)
                 {
@@ -225,27 +253,24 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                     {
                         ReasonCodes = fallback.ReasonCodes.Concat(new[] { $"Selected as failover for '{candidate.ConnectionId}'." }).ToArray()
                     };
+                    resultGate = null;
+                    requiresManualApproval = false;
                     break;
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(candidate.PolicyGate))
+            var eligibilityGate = ProviderRouteEligibility.GetBlockReason(candidate, allowManualApproval: true);
+            if (eligibilityGate is not null)
             {
-                resultGate = candidate.PolicyGate;
+                resultGate = eligibilityGate;
                 if (candidate.SafetyMode == ProviderSafetyMode.ManualApprovalRequired)
                     requiresManualApproval = true;
 
                 continue;
             }
 
-            if (!candidate.IsHealthy &&
-                (candidate.SafetyMode == ProviderSafetyMode.NoAutomaticFailover ||
-                 candidate.SafetyMode == ProviderSafetyMode.SameInstitutionOnly))
-            {
-                resultGate = $"Primary connection '{candidate.ConnectionId}' is unhealthy and automatic failover is blocked by policy.";
-                continue;
-            }
-
+            resultGate = null;
+            requiresManualApproval = false;
             if (candidate.SafetyMode == ProviderSafetyMode.ManualApprovalRequired)
             {
                 requiresManualApproval = true;
@@ -307,8 +332,19 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         IProviderFamilyAdapter? adapter,
         ProviderCapabilityKind capability)
     {
+        if (connection.SetupTemplate is { } template && (!connection.Enabled ||
+            !template.RequestedCapabilities.Any(request => request.Capability == capability.ToString())))
+            return false;
+
         if (adapter?.SupportsCapability(capability) == true)
             return true;
+
+        // Legacy family catalogs describe market-data capabilities, not account relationships.
+        // Preserve the bounded Brokerage/Bank/Custodian compatibility below even for cataloged
+        // families, while a known market-data family's negative report remains authoritative.
+        if (adapter is not null && connection.ConnectionType is not
+            (ProviderConnectionType.Brokerage or ProviderConnectionType.Bank or ProviderConnectionType.Custodian))
+            return false;
 
         return connection.ConnectionType switch
         {
@@ -369,6 +405,18 @@ public sealed class ProviderRoutingService : ICapabilityRouter
 
         return null;
     }
+
+    private static bool AllowsTemplateScope(ProviderConnectionConfig connection, ProviderRouteContext context, ProviderSafetyPolicy policy, string? tenantId)
+        => connection.SetupTemplate?.AllowedScope switch
+        {
+            null => true,
+            _ when tenantId is null => false,
+            "Research" => string.Equals(context.Workspace, "research", StringComparison.OrdinalIgnoreCase) &&
+                !context.RequireProductionReady && !policy.RequireProductionReady,
+            "Trading" => string.Equals(context.Workspace, "trading", StringComparison.OrdinalIgnoreCase),
+            "Data" => string.Equals(context.Workspace, "data", StringComparison.OrdinalIgnoreCase),
+            _ => true
+        };
 
     private static IReadOnlyList<string> ResolveFallbacks(
         ProviderBindingConfig binding,
@@ -498,6 +546,27 @@ public sealed class ProviderRoutingService : ICapabilityRouter
     }
 }
 
+/// <summary>One eligibility policy for direct routing, failover, and scored selection.</summary>
+internal static class ProviderRouteEligibility
+{
+    public static bool IsSelectable(ProviderRouteDecision decision, bool requireHealthy = false)
+        => (!requireHealthy || decision.IsHealthy) && GetBlockReason(decision) is null;
+
+    public static string? GetBlockReason(ProviderRouteDecision decision, bool allowManualApproval = false)
+    {
+        if (!string.IsNullOrWhiteSpace(decision.PolicyGate))
+            return decision.PolicyGate;
+
+        if (!decision.IsHealthy && decision.SafetyMode is ProviderSafetyMode.NoAutomaticFailover or ProviderSafetyMode.SameInstitutionOnly)
+            return $"Primary connection '{decision.ConnectionId}' is unhealthy and automatic failover is blocked by policy.";
+
+        if (!allowManualApproval && decision.SafetyMode == ProviderSafetyMode.ManualApprovalRequired)
+            return $"Capability '{decision.Capability}' requires manual approval before routing.";
+
+        return null;
+    }
+}
+
 /// <summary>
 /// Exposes the provider-family adapters available to routing.
 /// </summary>
@@ -552,6 +621,9 @@ internal sealed class ProviderFamilyCatalogService : IProviderFamilyCatalogServi
             family.RegisterCapability(
                 new ProviderCapabilityDescriptor(ProviderCapabilityKind.RealtimeMarketData, "Legacy streaming market data", SupportsFailover: true),
                 resolver: () => _providerRegistry.CreateStreamingClient(sourceId),
+                // Resolution is asynchronous, so read the credentials ahead of the construction
+                // instead of letting it wait on credential storage.
+                asyncResolver: async ct => await _providerRegistry.CreateStreamingClientAsync(sourceId, ct).ConfigureAwait(false),
                 tester: static (_, _) => Task.FromResult(new ProviderConnectionTestResult(true, ["Streaming factory is registered."], DateTimeOffset.UtcNow, "registered")));
         }
 
@@ -677,6 +749,7 @@ internal sealed class MutableProviderFamilyAdapter : IProviderFamilyAdapter
 {
     private readonly Dictionary<ProviderCapabilityKind, ProviderCapabilityDescriptor> _descriptors = new();
     private readonly Dictionary<ProviderCapabilityKind, Func<object?>?> _resolvers = new();
+    private readonly Dictionary<ProviderCapabilityKind, Func<CancellationToken, ValueTask<object?>>> _asyncResolvers = new();
     private Func<string, CancellationToken, Task<ProviderConnectionTestResult>>? _tester;
 
     public MutableProviderFamilyAdapter(string providerFamilyId, string displayName, string description)
@@ -714,18 +787,32 @@ internal sealed class MutableProviderFamilyAdapter : IProviderFamilyAdapter
     }
 
     public ValueTask<object?> ResolveCapabilityAsync(ProviderCapabilityKind capability, CancellationToken ct = default)
-        => ValueTask.FromResult(_resolvers.TryGetValue(capability, out var resolver) ? resolver?.Invoke() : null);
+        => _asyncResolvers.TryGetValue(capability, out var asyncResolver)
+            ? asyncResolver(ct)
+            : ValueTask.FromResult(_resolvers.TryGetValue(capability, out var resolver) ? resolver?.Invoke() : null);
 
+    /// <param name="asyncResolver">
+    /// Preferred over <paramref name="resolver"/> when both are given. Belongs to the same
+    /// registration: it is kept only when this call is the one that supplies the resolver.
+    /// </param>
     public void RegisterCapability(
         ProviderCapabilityDescriptor descriptor,
         Func<object?>? resolver,
-        Func<string, CancellationToken, Task<ProviderConnectionTestResult>>? tester = null)
+        Func<string, CancellationToken, Task<ProviderConnectionTestResult>>? tester = null,
+        Func<CancellationToken, ValueTask<object?>>? asyncResolver = null)
     {
         if (!_descriptors.ContainsKey(descriptor.Kind))
             _descriptors[descriptor.Kind] = descriptor;
 
-        if (!_resolvers.ContainsKey(descriptor.Kind))
+        // Catalog metadata registers a null placeholder before the runtime implementations.
+        // Upgrade that placeholder, but keep the first concrete sync/async registration intact.
+        if (!_resolvers.TryGetValue(descriptor.Kind, out var existingResolver) ||
+            (existingResolver is null && !_asyncResolvers.ContainsKey(descriptor.Kind)))
+        {
             _resolvers[descriptor.Kind] = resolver;
+            if (asyncResolver is not null)
+                _asyncResolvers[descriptor.Kind] = asyncResolver;
+        }
 
         _tester ??= tester;
     }

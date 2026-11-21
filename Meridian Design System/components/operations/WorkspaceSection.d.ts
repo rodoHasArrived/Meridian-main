@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Workspace section — mirrors `.workspace-section-band`. A sticky section header
  * (title + summary, optional jump affordance) over a content body. Bands an operator
@@ -29,4 +30,4 @@ export interface WorkspaceSectionProps {
   children?: React.ReactNode;
   className?: string;
 }
-export declare function WorkspaceSection(props: WorkspaceSectionProps): JSX.Element;
+export declare function WorkspaceSection(props: WorkspaceSectionProps): React.JSX.Element;

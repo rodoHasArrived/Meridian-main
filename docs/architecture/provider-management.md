@@ -421,9 +421,10 @@ architecture supports the following deterministic semantics:
 - Concurrent multi-symbol runs do not guarantee completion order. Treat per-symbol validation
   signals, execution history, and checkpoints as the evidence boundary instead of task completion
   sequence.
-- `ResumeFromCheckpoint=true` skips fully covered symbols and advances partially covered symbols to
-  the day after the recorded checkpoint. Fresh non-resume runs clear only matching-granularity
-  checkpoints, so intraday and daily lanes do not wipe each other.
+- `ResumeFromCheckpoint=true` skips only dates recorded as durably written by the same provider and
+  feed, and fetches every uncovered part of the requested range (before, inside and after the
+  recorded coverage). Date-only checkpoints are not used to skip. Fresh non-resume runs clear only
+  matching-granularity checkpoints and coverage, so intraday and daily lanes do not wipe each other.
 - `PriorityBackfillQueue` orders jobs by `Critical`, `High`, `Normal`, `Low`, then `Deferred`, and
   keeps dependency-blocked jobs paused until all dependencies complete.
 
@@ -595,6 +596,26 @@ Catalog-managed providers resolve one complete credential-store record; missing 
 failures do not fall through to configured values or the legacy resolver. Only unmanaged provider
 types use that legacy resolver. A scoped runtime requires a catalog-managed provider and never
 falls back to provider-wide, config, or environment credentials when its scoped record is missing.
+
+Provider construction is synchronous, so the resolver reads ahead instead of blocking. An
+asynchronous caller awaits `IProviderCredentialResolver.PrepareAsync`, which reads the selected
+vault records under one ownership lease, and then constructs providers inside
+`IPreparedProviderCredentials.Activate()`. `ProviderFactory.CreateAndRegisterAllAsync`,
+`InitializeProvidersAsync`, `ProviderRegistry.CreateStreamingClientAsync`, and the collector and
+backfill mode runners follow this order, as do `BackfillCoordinator`'s asynchronous operations and
+the routing engine's streaming resolver. A record that fails to read fails only its own provider,
+at construction.
+
+The web host calls `WarmProvidersAsync` once `StartAsync` has completed. It builds the registry and
+the lazily constructed capability objects behind it (brokerage gateways, options chains, corporate
+actions) inside one prepared scope, so their first use reads nothing. A capability that cannot be
+constructed then is logged and fails where it is used, as before.
+
+A prepared read ends with its scope. Work started inside the scope that outlives it (a timer, a
+background task) reads the vault itself. A synchronous resolution outside any prepared scope still
+performs one blocking read on the thread pool: anything resolved while the host is starting, the
+synchronous `ProviderRegistry.CreateStreamingClient`, and `BackfillCoordinator`'s synchronous
+`DescribeProviders` and `ValidateRequest` when the registry holds no backfill providers.
 The credential store owns any permitted provider-wide environment fallback policy. Browser and WPF
 credential flows must not write process, user, or machine environment variables.
 

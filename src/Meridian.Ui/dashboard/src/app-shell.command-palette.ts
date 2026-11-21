@@ -1,3 +1,5 @@
+import { getGlobalKeyBinding, matchesKeyCombo } from "@/lib/keymap";
+
 export interface AppShellCommandPaletteTriggerState {
   label: string;
   placeholder: string;
@@ -41,7 +43,10 @@ export function resolveAppShellCommandPaletteShortcut({
   targetIsEditable = false,
   commandPaletteOpen
 }: AppShellCommandPaletteShortcutState): AppShellCommandPaletteShortcutCommand {
-  const isShortcut = (ctrlKey || metaKey) && !altKey && !shiftKey && key.toLowerCase() === "k";
+  const isShortcut = matchesKeyCombo(
+    { key, ctrlKey, metaKey, altKey, shiftKey },
+    getGlobalKeyBinding("command-palette").keys
+  );
   if (!isShortcut) {
     return null;
   }

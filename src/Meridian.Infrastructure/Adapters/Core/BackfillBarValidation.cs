@@ -31,6 +31,7 @@ public static class BackfillBarValidation
     /// and provider publish lag; narrow enough to catch datasets frozen months or years ago.
     /// </summary>
     public const int DefaultStaleToleranceDays = 10;
+    public const int FutureToleranceDays = 1;
 
     /// <summary>
     /// Evaluates whether a non-empty daily-bar result is stale relative to the requested range.
@@ -43,28 +44,34 @@ public static class BackfillBarValidation
         DateOnly? requestedTo,
         DateOnly? today = null,
         int staleToleranceDays = DefaultStaleToleranceDays)
+        => EvaluateRecency(bars, bar => bar.SessionDate, requestedTo, today, staleToleranceDays);
+
+    /// <summary>Applies the same request-relative recency rule without changing adjusted-price provenance.</summary>
+    public static StaleBarsVerdict? EvaluateAdjustedDailyRecency(
+        IReadOnlyList<AdjustedHistoricalBar> bars,
+        DateOnly? requestedTo,
+        DateOnly? today = null,
+        int staleToleranceDays = DefaultStaleToleranceDays)
+        => EvaluateRecency(bars, bar => bar.SessionDate, requestedTo, today, staleToleranceDays);
+
+    private static StaleBarsVerdict? EvaluateRecency<T>(IReadOnlyList<T> bars, Func<T, DateOnly> sessionDate,
+        DateOnly? requestedTo, DateOnly? today, int staleToleranceDays)
     {
         if (bars.Count == 0)
             return null;
-
         var utcToday = today ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var expectedThrough = requestedTo is { } to && to < utcToday ? to : utcToday;
-
-        var latest = bars[0].SessionDate;
+        var latest = sessionDate(bars[0]);
         foreach (var bar in bars)
         {
-            if (bar.SessionDate > latest)
-                latest = bar.SessionDate;
+            var current = sessionDate(bar);
+            if (current > latest)
+                latest = current;
         }
-
         var staleDays = expectedThrough.DayNumber - latest.DayNumber;
         if (staleDays <= staleToleranceDays)
             return null;
-
-        return new StaleBarsVerdict(
-            latest,
-            expectedThrough,
-            staleDays,
+        return new StaleBarsVerdict(latest, expectedThrough, staleDays,
             $"newest bar {latest:yyyy-MM-dd} is {staleDays} calendar days short of the requested range end {expectedThrough:yyyy-MM-dd}");
     }
 
@@ -82,7 +89,7 @@ public static class BackfillBarValidation
         if (bars.Count == 0)
             return bars;
 
-        var latestAllowed = (today ?? DateOnly.FromDateTime(DateTime.UtcNow)).AddDays(1);
+        var latestAllowed = (today ?? DateOnly.FromDateTime(DateTime.UtcNow)).AddDays(FutureToleranceDays);
         var hasFuture = false;
         foreach (var bar in bars)
         {

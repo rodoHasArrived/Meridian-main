@@ -40,3 +40,32 @@ describe("metric card view model", () => {
     expect(model.ariaLabel).toBe("Providers metric. 4/5. Status attention");
   });
 });
+
+describe("buildMetricCardViewModel trust rules", () => {
+  it("drops a bare change with no baseline and shows it once a baseline is stated", () => {
+    const bare = buildMetricCardViewModel({ id: "runs", label: "Runs", value: "24", delta: "+8%", tone: "default" });
+    const labelled = buildMetricCardViewModel({ id: "runs", label: "Runs", value: "24", delta: "+8%", baseline: "vs prior session", tone: "default" });
+
+    expect(bare).toMatchObject({ delta: null, deltaAriaLabel: null, deltaId: null, ariaLabel: "Runs metric. 24. Status neutral" });
+    expect(labelled).toMatchObject({ delta: "+8% vs prior session", deltaAriaLabel: "Change +8% vs prior session" });
+  });
+
+  it("uses the one P&L spelling and carries freshness and provenance into the accessible name", () => {
+    const vm = buildMetricCardViewModel({
+      id: "pnl",
+      label: "Unrealized PnL",
+      value: "+$90",
+      delta: "",
+      tone: "success",
+      freshness: "stale",
+      provenance: { source: "Portfolio workspace", asOf: "2026-06-30T18:05:00Z" }
+    });
+
+    expect(vm).toMatchObject({
+      label: "Unrealized P&L",
+      freshnessLabel: "Stale",
+      provenanceText: "Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC",
+      ariaLabel: "Unrealized P&L metric. +$90. Status positive. Stale: as of Jun 30, 2026, 18:05 UTC. Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC"
+    });
+  });
+});

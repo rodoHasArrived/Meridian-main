@@ -73,7 +73,7 @@ serial run showed one active class; every concurrent run showed two overlapping 
 | Passed / failed / skipped, each run | 130 / 0 / 0 | 130 / 0 / 0 |
 
 The measured subset reduced median wall time by **36.3% (1.57× speedup)**. The
-[committed evidence receipt](evidence/endpoint-fixture-concurrency.json) retains the raw warmup
+[committed evidence receipt](../../archive/docs/testing/evidence/endpoint-fixture-concurrency.json) retains the raw warmup
 and paired timings, hardware limits, assembly hash, and test identity digest. Full TRX files and
 logs remain in the local output directory.
 

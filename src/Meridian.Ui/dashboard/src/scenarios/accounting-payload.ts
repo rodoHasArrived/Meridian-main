@@ -74,7 +74,9 @@ export const accountingPayload: AccountingScenarioPayload = {
       reviewedAt: null,
       resolvedBy: null,
       resolvedAt: null,
-      resolutionNote: null
+      resolutionNote: null,
+      lifecycleState: "Open",
+      evidenceLinks: ["journal:je-cash-1"]
     }
   ],
   cashFlow: {

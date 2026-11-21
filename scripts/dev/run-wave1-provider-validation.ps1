@@ -18,6 +18,7 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
 
 $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 . (Join-Path $PSScriptRoot "SharedCheckpoint.ps1")
+. (Join-Path $PSScriptRoot "ProviderValidationEvidence.ps1")
 $summaryDir = Join-Path $repoRoot $OutputRoot | Join-Path -ChildPath $DateStamp
 New-Item -ItemType Directory -Force -Path $summaryDir | Out-Null
 $preflight = Invoke-MeridianPreflight `
@@ -59,6 +60,36 @@ $commonTestArgs = @(
     "-maxcpucount:1"
 )
 
+# One inventory drives both executable filters and the provider evidence receipt.
+$providerEvidence = [ordered]@{
+    Alpaca = @(
+        "AlpacaBrokerageGatewayTests", "AlpacaCorporateActionProviderTests",
+        "AlpacaCredentialAndReconnectTests", "AlpacaHistoricalDataProviderTests",
+        "AlpacaMessageParsingTests", "AlpacaQuotePipelineGoldenTests", "AlpacaQuoteRoutingTests",
+        "ProviderFactoryCredentialContextTests",
+        "ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam"
+    )
+    Robinhood = @(
+        "RobinhoodBrokerageGatewayTests", "RobinhoodMarketDataClientTests",
+        "RobinhoodHistoricalDataProviderTests", "RobinhoodSymbolSearchProviderTests",
+        "HostedBrokerageGatewayRegistrationTests",
+        "ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam"
+    )
+    Yahoo = @(
+        "YahooFinanceHistoricalDataProviderTests", "YahooFinanceIntradayContractTests",
+        "ProviderCapabilityDescriptorCatalogTests.Scenario_UnsupportedYahooStreaming_RuntimeCatalogKeepsHistoricalFallbackOnly"
+    )
+}
+
+$crossCuttingEvidence = [ordered]@{
+    Checkpoint = @("BackfillStatusStoreTests", "ParallelBackfillServiceTests", "GapBackfillServiceTests", "CheckpointEndpointTests")
+    Execution = @(
+        "PaperSessionPersistenceServiceTests.TradeStationExecutionSlice_CreateUpdateCancelAndFillReconciliation_ProducesDeterministicCanonicalEvidence",
+        "PaperSessionPersistenceServiceTests.TradeStationExecutionSlice_DelayedOutOfOrderEvents_RemainsIdempotentAndDeterministic"
+    )
+    Parquet = @("ParquetStorageSinkTests", "ParquetConversionServiceTests")
+}
+
 $steps = @(
     [ordered]@{
         Name = "Meridian.Tests build"
@@ -77,51 +108,56 @@ $steps = @(
     [ordered]@{
         Name = "Alpaca core provider confidence"
         Kind = "test"
+        Evidence = $providerEvidence.Alpaca
         Command = @(
             "dotnet"
         ) + $commonTestArgs + @(
             "--filter",
-            "FullyQualifiedName~AlpacaBrokerageGatewayTests|FullyQualifiedName~AlpacaCorporateActionProviderTests|FullyQualifiedName~AlpacaCredentialAndReconnectTests|FullyQualifiedName~AlpacaMessageParsingTests|FullyQualifiedName~AlpacaQuotePipelineGoldenTests|FullyQualifiedName~AlpacaQuoteRoutingTests|FullyQualifiedName~AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam"
+            (($providerEvidence.Alpaca | ForEach-Object { "FullyQualifiedName~$_" }) -join "|")
         )
     },
     [ordered]@{
         Name = "Robinhood supported surface"
         Kind = "test"
+        Evidence = $providerEvidence.Robinhood
         Command = @(
             "dotnet"
         ) + $commonTestArgs + @(
             "--filter",
-            "FullyQualifiedName~RobinhoodBrokerageGatewayTests|FullyQualifiedName~RobinhoodMarketDataClientTests|FullyQualifiedName~RobinhoodHistoricalDataProviderTests|FullyQualifiedName~RobinhoodSymbolSearchProviderTests|FullyQualifiedName~RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam"
+            (($providerEvidence.Robinhood | ForEach-Object { "FullyQualifiedName~$_" }) -join "|")
         )
     },
     [ordered]@{
         Name = "Yahoo historical-only core provider"
         Kind = "test"
+        Evidence = $providerEvidence.Yahoo
         Command = @(
             "dotnet"
         ) + $commonTestArgs + @(
             "--filter",
-            "FullyQualifiedName~YahooFinanceHistoricalDataProviderTests|FullyQualifiedName~YahooFinanceIntradayContractTests"
+            (($providerEvidence.Yahoo | ForEach-Object { "FullyQualifiedName~$_" }) -join "|")
         )
     },
     [ordered]@{
         Name = "Checkpoint reliability and gap handling"
         Kind = "test"
+        Evidence = @($crossCuttingEvidence.Checkpoint) + @($crossCuttingEvidence.Execution)
         Command = @(
             "dotnet"
         ) + $commonTestArgs + @(
             "--filter",
-            "FullyQualifiedName~BackfillStatusStoreTests|FullyQualifiedName~ParallelBackfillServiceTests|FullyQualifiedName~GapBackfillServiceTests|FullyQualifiedName~CheckpointEndpointTests|FullyQualifiedName~TradeStationExecutionSlice_CreateUpdateCancelAndFillReconciliation_ProducesDeterministicCanonicalEvidence|FullyQualifiedName~TradeStationExecutionSlice_DelayedOutOfOrderEvents_RemainsIdempotentAndDeterministic"
+            ((( @($crossCuttingEvidence.Checkpoint) + @($crossCuttingEvidence.Execution) ) | ForEach-Object { "FullyQualifiedName~$_" }) -join "|")
         )
     },
     [ordered]@{
         Name = "Parquet sink and conversion"
         Kind = "test"
+        Evidence = @($crossCuttingEvidence.Parquet)
         Command = @(
             "dotnet"
         ) + $commonTestArgs + @(
             "--filter",
-            "FullyQualifiedName~ParquetStorageSinkTests|FullyQualifiedName~ParquetConversionServiceTests"
+            ((( @($crossCuttingEvidence.Parquet) ) | ForEach-Object { "FullyQualifiedName~$_" }) -join "|")
         )
     }
 )
@@ -131,15 +167,7 @@ $activeProviderRows = @(
         name = "Alpaca"
         posture = "repo-closed"
         lane = "core provider confidence"
-        offlineEvidence = @(
-            "AlpacaBrokerageGatewayTests",
-            "AlpacaCorporateActionProviderTests",
-            "AlpacaCredentialAndReconnectTests",
-            "AlpacaMessageParsingTests",
-            "AlpacaQuotePipelineGoldenTests",
-            "AlpacaQuoteRoutingTests",
-            "ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam"
-        )
+        offlineEvidence = $providerEvidence.Alpaca
         runtimeEvidence = @()
         notes = @(
             "Active Wave 1 core provider row.",
@@ -150,13 +178,7 @@ $activeProviderRows = @(
         name = "Robinhood"
         posture = "bounded"
         lane = "supported surface"
-        offlineEvidence = @(
-            "RobinhoodBrokerageGatewayTests",
-            "RobinhoodMarketDataClientTests",
-            "RobinhoodHistoricalDataProviderTests",
-            "RobinhoodSymbolSearchProviderTests",
-            "ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam"
-        )
+        offlineEvidence = $providerEvidence.Robinhood
         runtimeEvidence = @(
             "artifacts/provider-validation/robinhood/2026-04-09/auth-session/summary.md",
             "artifacts/provider-validation/robinhood/2026-04-09/quote-polling/summary.md",
@@ -172,10 +194,7 @@ $activeProviderRows = @(
         name = "Yahoo"
         posture = "repo-closed"
         lane = "historical and fallback confidence"
-        offlineEvidence = @(
-            "YahooFinanceHistoricalDataProviderTests",
-            "YahooFinanceIntradayContractTests"
-        )
+        offlineEvidence = $providerEvidence.Yahoo
         runtimeEvidence = @()
         notes = @(
             "Active historical-only core provider row.",
@@ -262,20 +281,12 @@ $crossCuttingClosures = @(
     [ordered]@{
         name = "Checkpoint reliability"
         posture = "repo-closed"
-        evidence = @(
-            "BackfillStatusStoreTests",
-            "ParallelBackfillServiceTests",
-            "GapBackfillServiceTests",
-            "CheckpointEndpointTests"
-        )
+        evidence = $crossCuttingEvidence.Checkpoint
     },
     [ordered]@{
         name = "Parquet L2 flush behavior"
         posture = "repo-closed"
-        evidence = @(
-            "ParquetStorageSinkTests",
-            "ParquetConversionServiceTests"
-        )
+        evidence = $crossCuttingEvidence.Parquet
     }
 )
 
@@ -294,7 +305,13 @@ function Invoke-Step {
 
     $slug = ($Step.Name.ToLowerInvariant() -replace '[^a-z0-9]+', '-').Trim('-')
     $logPath = Join-Path $summaryDir "$slug.log"
-    $commandText = ($Step.Command | ForEach-Object {
+    $command = @($Step.Command)
+    $trxPath = Join-Path $summaryDir "$slug.trx"
+    if ($Step.Kind -eq "test") {
+        Remove-Item -LiteralPath $trxPath -Force -ErrorAction SilentlyContinue
+        $command += @("--logger", "trx;LogFileName=$slug.trx", "--results-directory", $summaryDir)
+    }
+    $commandText = ($command | ForEach-Object {
         if ($_ -match '\s') { '"{0}"' -f $_ } else { $_ }
     }) -join ' '
     $commandText = Convert-ToSummarySafeText -Text $commandText
@@ -305,7 +322,7 @@ function Invoke-Step {
     $previousErrorActionPreference = $ErrorActionPreference
     $ErrorActionPreference = "Continue"
     try {
-        & $Step.Command[0] @($Step.Command[1..($Step.Command.Count - 1)]) 2>&1 |
+        & $command[0] @($command[1..($command.Count - 1)]) 2>&1 |
             Tee-Object -FilePath $logPath |
             ForEach-Object { $output += $_ }
     }
@@ -315,11 +332,20 @@ function Invoke-Step {
     $exitCode = $LASTEXITCODE
     $stopwatch.Stop()
 
+    $testEvidence = $null
+    if ($Step.Kind -eq "test") {
+        $expected = if ($Step.Contains("Evidence")) { @($Step.Evidence) } else { @() }
+        $testEvidence = Get-MeridianProviderTestEvidence -TrxPath $trxPath -ExpectedEvidence $expected
+    }
+    $passed = $exitCode -eq 0 -and ($null -eq $testEvidence -or $testEvidence.success)
+
     [ordered]@{
         name = $Step.Name
         kind = $Step.Kind
-        status = if ($exitCode -eq 0) { "passed" } else { "failed" }
+        status = if ($passed) { "passed" } else { "failed" }
         exitCode = $exitCode
+        testEvidence = $testEvidence
+        trxPath = if ($Step.Kind -eq "test") { "$slug.trx" } else { $null }
         durationSeconds = [Math]::Round($stopwatch.Elapsed.TotalSeconds, 2)
         command = $commandText
         logPath = $logPath.Substring($repoRoot.Length + 1).Replace('\', '/')
@@ -339,7 +365,9 @@ $checkpoint = Initialize-MeridianCheckpoint `
         dateStamp = $DateStamp
         outputRoot = $OutputRoot
         operatorSignoffPath = $OperatorSignoffPath
-        steps = @($steps | ForEach-Object { [string]$_.Name })
+        sourceRevision = (& git -C $repoRoot rev-parse HEAD)
+        evidenceVersion = 2
+        steps = @($steps | ForEach-Object { [ordered]@{ name = $_.Name; command = @($_.Command) } })
     }) `
     -ForceStep $ForceCheckpointStep `
     -AllowInputMismatch:$AllowCheckpointInputMismatch
@@ -347,30 +375,19 @@ $checkpoint = Initialize-MeridianCheckpoint `
 $results = New-Object System.Collections.Generic.List[object]
 foreach ($step in $steps) {
     $stepSlug = ($step.Name.ToLowerInvariant() -replace '[^a-z0-9]+', '-').Trim('-')
-    if (-not (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId $stepSlug)) {
-        Write-Host "==> $($step.Name) (checkpoint resume: skipped)"
-        $logPath = Join-Path $summaryDir "$stepSlug.log"
-        $results.Add([ordered]@{
-            name = $step.Name
-            kind = $step.Kind
-            status = "passed"
-            exitCode = 0
-            durationSeconds = 0
-            command = "resumed-from-checkpoint"
-            logPath = $logPath.Substring($repoRoot.Length + 1).Replace('\', '/')
-            tail = "Step reused from checkpoint."
-        }) | Out-Null
-        continue
-    }
+    # A retained success cannot prove that current working-tree sources still match
+    # an old build. Reexecute build and test steps, retaining checkpoints as run status.
 
     Start-MeridianCheckpointStep -Context $checkpoint -StepId $stepSlug -Description $step.Name
     try {
         $stepResult = Invoke-Step -Step $step
         if ($stepResult.status -eq "failed") {
-            Fail-MeridianCheckpointStep -Context $checkpoint -StepId $stepSlug -Message "Step failed with exit code $($stepResult.exitCode)."
+            Fail-MeridianCheckpointStep -Context $checkpoint -StepId $stepSlug -Message "Step failed process or test-evidence validation (exit code $($stepResult.exitCode))."
         }
         else {
-            Complete-MeridianCheckpointStep -Context $checkpoint -StepId $stepSlug -ArtifactPointers @($stepResult.logPath)
+            $pointers = @((Join-Path $summaryDir "$stepSlug.log"))
+            if ($step.Kind -eq "test") { $pointers += Join-Path $summaryDir "$stepSlug.trx" }
+            Complete-MeridianCheckpointStep -Context $checkpoint -StepId $stepSlug -ArtifactPointers $pointers
         }
 
         $results.Add($stepResult) | Out-Null
@@ -434,11 +451,9 @@ $summary = [ordered]@{
     steps = $results
 }
 
-if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "write-wave1-summary-json") {
-    Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-json" -Description "Write wave1-validation-summary.json"
-    $summary | ConvertTo-Json -Depth 6 | Set-Content -Path $jsonPath
-    Complete-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-json" -ArtifactPointers @($jsonPath)
-}
+Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-json" -Description "Write wave1-validation-summary.json"
+$summary | ConvertTo-Json -Depth 8 | Set-Content -Path $jsonPath
+Complete-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-json" -ArtifactPointers @($jsonPath)
 
 $md = @(
     "# Wave 1 Validation Summary",
@@ -506,13 +521,14 @@ foreach ($closure in $crossCuttingClosures) {
 
 $md += @(
     "",
-    "| Step | Kind | Status | Duration (s) | Log |",
-    "|---|---|---|---:|---|"
+    "| Step | Kind | Status | Tests passed/executed | Duration (s) | Log |",
+    "|---|---|---|---:|---:|---|"
 )
 
 foreach ($result in $results) {
     $logRef = $result.logPath.Replace('\', '/')
-    $md += "| $($result.name) | $($result.kind) | $($result.status) | $($result.durationSeconds) | ``$logRef`` |"
+    $testCounts = if ($null -ne $result.testEvidence) { "$($result.testEvidence.passed)/$($result.testEvidence.executed)" } else { "n/a" }
+    $md += "| $($result.name) | $($result.kind) | $($result.status) | $testCounts | $($result.durationSeconds) | ``$logRef`` |"
 }
 
 $md += @(
@@ -522,11 +538,10 @@ $md += @(
     "- $(($deferredProviders -join ", "))"
 )
 
-if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "write-wave1-summary-md") {
-    Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-md" -Description "Write wave1-validation-summary.md"
-    $md -join [Environment]::NewLine | Set-Content -Path $mdPath
-    Complete-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-md" -ArtifactPointers @($mdPath)
-}
+
+Start-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-md" -Description "Write wave1-validation-summary.md"
+$md -join [Environment]::NewLine | Set-Content -Path $mdPath
+Complete-MeridianCheckpointStep -Context $checkpoint -StepId "write-wave1-summary-md" -ArtifactPointers @($mdPath)
 
 $packetScript = Join-Path $PSScriptRoot "generate-dk1-pilot-parity-packet.ps1"
 if (Test-Path -LiteralPath $packetScript) {
@@ -537,25 +552,21 @@ if (Test-Path -LiteralPath $packetScript) {
         $packetArgs.OperatorSignoffPath = $OperatorSignoffPath
     }
 
-    if (Test-MeridianCheckpointStepShouldRun -Context $checkpoint -StepId "generate-dk1-packet") {
-        Start-MeridianCheckpointStep -Context $checkpoint -StepId "generate-dk1-packet" -Description "Generate DK1 parity packet."
-        try {
-            if ($summary.result -ne "passed") {
-                $packetArgs.AllowFailedSummary = $true
-                & $packetScript @packetArgs
-            }
-            else {
-                & $packetScript @packetArgs
-            }
-            Complete-MeridianCheckpointStep -Context $checkpoint -StepId "generate-dk1-packet" -ArtifactPointers @($summaryDir)
+    # Tests are rerun on resume; regenerate downstream evidence from this invocation.
+    Start-MeridianCheckpointStep -Context $checkpoint -StepId "generate-dk1-packet" -Description "Generate DK1 parity packet."
+    try {
+        if ($summary.result -ne "passed") {
+            $packetArgs.AllowFailedSummary = $true
+            & $packetScript @packetArgs
         }
-        catch {
-            Fail-MeridianCheckpointStep -Context $checkpoint -StepId "generate-dk1-packet" -Message $_.Exception.Message
-            throw
+        else {
+            & $packetScript @packetArgs
         }
+        Complete-MeridianCheckpointStep -Context $checkpoint -StepId "generate-dk1-packet" -ArtifactPointers @($summaryDir)
     }
-    else {
-        Write-Host "==> DK1 parity packet generation (checkpoint resume: skipped)"
+    catch {
+        Fail-MeridianCheckpointStep -Context $checkpoint -StepId "generate-dk1-packet" -Message $_.Exception.Message
+        throw
     }
 }
 

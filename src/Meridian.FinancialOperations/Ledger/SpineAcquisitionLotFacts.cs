@@ -35,6 +35,8 @@ internal static class SpineAcquisitionLotFacts
         var settlementIssues = BondSettlementConsideration.ValidateAcquisition(acquisition);
         if (settlementIssues.Count > 0)
             throw new ArgumentException(string.Join(" ", settlementIssues));
+        if (acquisition.BondIncome is { } income)
+            BondIncomeCalculator.ValidateAcquisition(income, acquisition.Quantity * acquisition.UnitCost);
     }
 
     // A lot acquired through the spine states its canonical acquisition facts on the lot of record
@@ -49,7 +51,8 @@ internal static class SpineAcquisitionLotFacts
         LedgerTaxLotRecord lot,
         FaceValueAcquisitionTermsDto? faceTerms,
         IReadOnlyList<RetainedEvidenceIdentityDto> sourceEvidence,
-        IReadOnlyList<RetainedEvidenceIdentityDto> approvalEvidence)
+        IReadOnlyList<RetainedEvidenceIdentityDto> approvalEvidence,
+        BondIncomeAcquisitionDto? bondIncome = null)
     {
         var approval = approvalEvidence
             .OrderByDescending(static evidence => evidence.ReviewedAtUtc)
@@ -85,6 +88,13 @@ internal static class SpineAcquisitionLotFacts
             .ToArray();
         var basis = lot.OriginalQuantity * lot.UnitCost;
         var currency = lot.Currency.Trim().ToUpperInvariant();
+        if (bondIncome is not null)
+        {
+            BondIncomeCalculator.ValidateAcquisition(bondIncome, basis);
+            if (bondIncome.KnownAt > approval.RetainedAtUtc
+                || bondIncome.Evidence.Any(evidence => !source.Contains(evidence)))
+                throw new InvalidOperationException("Bond income acquisition assumptions require retained source evidence covered by this approval.");
+        }
         return new OpenLotAcquisitionDto(
             faceTerms is null ? LotQuantityBasis.Units : LotQuantityBasis.Face,
             currency,
@@ -94,7 +104,8 @@ internal static class SpineAcquisitionLotFacts
             FunctionalCostBasis: basis,
             HoldingPeriodStartDate: lot.AcquiredDate,
             FaceValueTerms: faceTerms,
-            lotEvidence);
+            lotEvidence)
+        { BondIncome = bondIncome };
     }
 
     private const string OpenLotAcquisitionEvidenceSubjectType = "OpenLotAcquisition";

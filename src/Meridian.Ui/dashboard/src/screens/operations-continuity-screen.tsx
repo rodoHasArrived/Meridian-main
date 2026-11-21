@@ -19,11 +19,14 @@ import {
   submitOperationsContinuityApproval
 } from "@/lib/api";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
+import { useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
+import { eyebrowClassName } from "@/design-system/label-case";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import { readinessToneToBadgeVariant, readinessToneToPanelClass } from "@/lib/shared-tone-mappings";
+import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
 import {
   buildReopenWorkflowFormDisabledReason,
   formatApprovalDecisionCommandError,
@@ -64,14 +67,14 @@ const workflowColumns: DenseDataTableColumn<OperationsContinuityWorkflowRow>[] =
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.title}</span>
-        <span className="mt-1 block break-words font-mono text-[11px] text-muted-foreground">{row.subtitle}</span>
+        <span className="mt-1 block break-words font-mono text-xs text-muted-foreground">{row.subtitle}</span>
       </span>
     )
   },
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "gates",
@@ -104,7 +107,7 @@ const gateColumns: DenseDataTableColumn<OperationsContinuityGateRow>[] = [
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "required",
@@ -147,7 +150,7 @@ const blockerColumns: DenseDataTableColumn<OperationsContinuityBlockerRow>[] = [
   {
     id: "severity",
     label: "Severity",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.severityTone)}>{row.severityLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.severityTone)}>{row.severityLabel}</Badge>
   },
   {
     id: "evidence",
@@ -172,7 +175,7 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block font-mono tabular-nums text-foreground">{row.valueLabel}</span>
       </span>
     )
@@ -216,7 +219,7 @@ const closeCalendarColumns: DenseDataTableColumn<OperationsContinuityCloseCalend
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.dueLabel}</span>
       </span>
     )
@@ -226,7 +229,7 @@ const closeCalendarColumns: DenseDataTableColumn<OperationsContinuityCloseCalend
     label: "Readiness",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.readinessTone)}>{row.readinessLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.readinessTone)}>{row.readinessLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.ownerLabel}</span>
       </span>
     )
@@ -282,7 +285,7 @@ function buildFinancialOperationsCommandSpineColumns({
       label: "Command",
       render: (row) => (
         <span className="block text-xs leading-5">
-          <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
           <span className="mt-1 block text-foreground">{row.commandLabel}</span>
           <span className="block font-mono text-muted-foreground">{row.postureLabel}</span>
         </span>
@@ -363,7 +366,7 @@ const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsO
     label: "Work item",
     render: (row) => (
       <div className="min-w-0">
-        <span className="eyebrow-label">{row.kindLabel}</span>
+        <span className={eyebrowClassName(row.kindLabel)}>{row.kindLabel}</span>
         <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
         {row.technicalCode ? (
@@ -377,7 +380,7 @@ const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsO
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "owner",
@@ -428,7 +431,7 @@ function buildWorkflowApprovalHistoryColumns({
       label: "Status",
       render: (row) => (
         <span className="block text-xs leading-5">
-          <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
           <span className="mt-1 block text-muted-foreground">{row.decidedLabel}</span>
         </span>
       )
@@ -516,7 +519,7 @@ const reviewedAutomationArtifactColumns: DenseDataTableColumn<OperationsReviewed
     label: "Output",
     render: (row) => (
       <span className="block min-w-0">
-        <span className="eyebrow-label">{row.kindLabel}</span>
+        <span className={eyebrowClassName(row.kindLabel)}>{row.kindLabel}</span>
         <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.sourceSummary}</span>
       </span>
@@ -527,7 +530,7 @@ const reviewedAutomationArtifactColumns: DenseDataTableColumn<OperationsReviewed
     label: "Review",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.reviewLabel}</span>
         <span className="block font-mono text-muted-foreground">{row.confidenceLabel}</span>
       </span>
@@ -571,7 +574,7 @@ const evidencePackageColumns: DenseDataTableColumn<OperationsContinuityEvidenceP
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.readinessLabel}</span>
       </span>
     )
@@ -639,7 +642,7 @@ function buildBreakCaseColumns({
       label: "Status",
       render: (row) => (
         <span className="block text-xs leading-5">
-          <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
           <span className="mt-1 block text-muted-foreground">{row.severityLabel}</span>
           <span className="block text-muted-foreground">{row.materialityLabel}</span>
         </span>
@@ -770,7 +773,7 @@ function buildChecklistColumns({
     {
       id: "status",
       label: "Status",
-      render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+      render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
     },
     {
       id: "owner",
@@ -859,7 +862,7 @@ const reconciliationLaneColumns: DenseDataTableColumn<OperationsContinuityReconc
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.breakCountLabel}</span>
       </span>
     )
@@ -912,7 +915,7 @@ const closeCockpitLaneColumns: DenseDataTableColumn<OperationsContinuityCloseCoc
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "evidence",
@@ -950,7 +953,7 @@ const closeCockpitWorkflowColumns: DenseDataTableColumn<OperationsContinuityClos
         ) : (
           <span className="block font-semibold text-foreground">{row.periodLabel}</span>
         )}
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.id}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{row.id}</span>
       </span>
     )
   },
@@ -959,7 +962,7 @@ const closeCockpitWorkflowColumns: DenseDataTableColumn<OperationsContinuityClos
     label: "Readiness",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.readinessTone)}>{row.readinessLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.readinessTone)}>{row.readinessLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.statusLabel}</span>
       </span>
     )
@@ -994,7 +997,7 @@ const closeCockpitApprovalColumns: DenseDataTableColumn<OperationsContinuityClos
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.workflowLabel}</span>
-        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.id}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{row.id}</span>
       </span>
     )
   },
@@ -1003,7 +1006,7 @@ const closeCockpitApprovalColumns: DenseDataTableColumn<OperationsContinuityClos
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.decidedLabel}</span>
       </span>
     )
@@ -1059,7 +1062,7 @@ const navSupportPackageColumns: DenseDataTableColumn<OperationsContinuityNavSupp
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.componentSummaryLabel}</span>
       </span>
     )
@@ -1106,7 +1109,7 @@ const accountingRecordColumns: DenseDataTableColumn<OperationsAccountingRecordEv
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "evidence",
@@ -1182,14 +1185,15 @@ export function OperationsContinuityScreen({ closeHub = false }: { closeHub?: bo
   const vm = useOperationsContinuityScreenViewModel(undefined, closeScope, {
     initialWorkflowId: searchParams.get("workflowId"),
     filters: {
+      fundAccountId: searchParams.get("recordScope") === "1" ? closeScope.fundAccountId ?? undefined : undefined,
       ledgerBookId: searchParams.get("ledgerBookId") ?? undefined,
       periodId: searchParams.get("periodId") ?? undefined
     }
-  });
+  }, useFundScopeNarrowingContext());
+  useOnGlobalRefresh(vm.refresh);
   const [confirmation, setConfirmation] = useState<{ kind: "publish" | "reopen"; row?: FinancialOperationsCommandSpineRow; workflowId: string; version: number; scope: string } | null>(null);
-  const [publicationReason, setPublicationReason] = useState("");
   const scopeIdentity = JSON.stringify(closeScope);
-  useEffect(() => { setConfirmation(null); setPublicationReason(""); }, [scopeIdentity, vm.selectedWorkflowId]);
+  useEffect(() => { setConfirmation(null); }, [scopeIdentity, vm.selectedWorkflowId]);
   const [breakCommand, setBreakCommand] = useState<{
     pending: { breakId: string; kind: BreakCommandKind } | null;
     message: string | null;
@@ -1530,7 +1534,7 @@ export function OperationsContinuityScreen({ closeHub = false }: { closeHub?: bo
 
       setReopenWorkflowCommand({
         pending: false,
-        message: result.message?.trim() || "Governed reopen retained through shared operations command.",
+        message: result.message?.trim() || "Period reopen retained through shared operations command.",
         error: null
       });
       await vm.refresh();
@@ -1544,7 +1548,7 @@ export function OperationsContinuityScreen({ closeHub = false }: { closeHub?: bo
   }, [reopenWorkflowForm, vm.closeGovernance, vm.refresh]);
 
   const reopenWorkflowDisabledReason = reopenWorkflowCommand.pending
-    ? "Wait for the active governed reopen command to finish."
+    ? "Wait for the active period reopen command to finish."
     : vm.closeGovernance.reopenWorkflowDisabledReason ?? buildReopenWorkflowFormDisabledReason(reopenWorkflowForm);
 
   const financialOperationsCommandSpineColumns = useMemo(
@@ -1553,7 +1557,6 @@ export function OperationsContinuityScreen({ closeHub = false }: { closeHub?: bo
       onSubmitApproval: (row) => { void submitApprovalCommand(row); },
       onCloseWorkflow: (row) => {
         if (!row.workflowId || row.expectedWorkflowVersion === null) return;
-        setPublicationReason("");
         setConfirmation({ kind: "publish", row, workflowId: row.workflowId, version: row.expectedWorkflowVersion, scope: scopeIdentity });
       }
     }),
@@ -1589,11 +1592,10 @@ export function OperationsContinuityScreen({ closeHub = false }: { closeHub?: bo
     currentPublicationRow?.closeWorkflowReportPackId, currentPublicationRow?.closeWorkflowEvidenceLinks, currentPublicationRow?.closeWorkflowChecklistControlApprovals
   ]);
   const confirmationStale = confirmation !== null && (confirmation.version !== confirmationCurrentVersion || confirmation.scope !== scopeIdentity || confirmation.workflowId !== vm.selectedWorkflowId || publicationEvidenceChanged);
-  const confirmationReasonMissing = confirmation?.kind === "publish" && !publicationReason.trim();
   const closeSections = {
 board: <>{vm.selectedDetail ? (
         <section className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-          <div className={cn("rounded-lg border", readinessToneToPanelClass(vm.selectedDetail.statusTone))}>
+          <div className={cn("rounded-lg border", statusPanelClass(vm.selectedDetail.statusTone))}>
             <EntitySummary
               id={vm.selectedDetail.id}
               eyebrow="Selected workflow"
@@ -1601,7 +1603,7 @@ board: <>{vm.selectedDetail ? (
               subtitle={vm.selectedDetail.subtitle}
               description={vm.selectedDetail.description}
               ariaLabel={vm.selectedDetail.ariaLabel}
-              status={<Badge variant={readinessToneToBadgeVariant(vm.selectedDetail.statusTone)}>{vm.selectedDetail.statusLabel}</Badge>}
+              status={<Badge variant={statusBadgeVariant(vm.selectedDetail.statusTone)}>{vm.selectedDetail.statusLabel}</Badge>}
               fields={selectedWorkflowOperationalMetadata}
             />
             <div className="px-4 pb-4">
@@ -1616,7 +1618,7 @@ board: <>{vm.selectedDetail ? (
                   <dl className="grid gap-3 text-xs leading-5 sm:grid-cols-2">
                     {selectedWorkflowTechnicalMetadata.map((field) => (
                       <div key={field.label}>
-                        <dt className="eyebrow-label">{field.label}</dt>
+                        <dt className={eyebrowClassName(field.label)}>{field.label}</dt>
                         <dd className="break-words font-mono text-foreground">{field.value}</dd>
                       </div>
                     ))}
@@ -1647,7 +1649,7 @@ board: <>{vm.selectedDetail ? (
           </Card>
         </section>
       ) : null}
-<section className="grid gap-4"><Card className={cn("border", readinessToneToPanelClass(vm.dashboard.statusTone))}>
+<section className="grid gap-4"><Card className={cn("border", statusPanelClass(vm.dashboard.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1657,7 +1659,7 @@ board: <>{vm.selectedDetail ? (
                 </CardTitle>
                 <CardDescription>{vm.dashboard.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.dashboard.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.dashboard.statusTone)}>
                 {vm.dashboard.statusLabel}
               </Badge>
             </div>
@@ -1683,7 +1685,7 @@ board: <>{vm.selectedDetail ? (
             />
           </CardContent>
         </Card>
-<Card className={cn("border", readinessToneToPanelClass(vm.closeCalendar.statusTone))}>
+<Card className={cn("border", statusPanelClass(vm.closeCalendar.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1693,7 +1695,7 @@ board: <>{vm.selectedDetail ? (
                 </CardTitle>
                 <CardDescription>{vm.closeCalendar.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.closeCalendar.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.closeCalendar.statusTone)}>
                 {vm.closeCalendar.statusLabel}
               </Badge>
             </div>
@@ -1729,7 +1731,7 @@ board: <>{vm.selectedDetail ? (
           </CardContent>
         </Card></section>
 <section className="grid gap-4">
-        <Card className={cn("border", readinessToneToPanelClass(vm.financialOperationsQueue.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.financialOperationsQueue.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1739,7 +1741,7 @@ board: <>{vm.selectedDetail ? (
                 </CardTitle>
                 <CardDescription>{vm.financialOperationsQueue.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.financialOperationsQueue.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.financialOperationsQueue.statusTone)}>
                 {vm.financialOperationsQueue.statusLabel}
               </Badge>
             </div>
@@ -1757,7 +1759,7 @@ board: <>{vm.selectedDetail ? (
         </Card>
       </section>
 <section className="grid gap-4">
-        <Card className={cn("border", readinessToneToPanelClass(vm.closeCockpit.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.closeCockpit.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1767,7 +1769,7 @@ board: <>{vm.selectedDetail ? (
                 </CardTitle>
                 <CardDescription>{vm.closeCockpit.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.closeCockpit.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.closeCockpit.statusTone)}>
                 {vm.closeCockpit.statusLabel}
               </Badge>
             </div>
@@ -1921,7 +1923,7 @@ blockers: <><section className="grid gap-4"><Card className="panel-surface">
               <AlertTriangle className="h-5 w-5 text-primary" aria-hidden="true" />
               {vm.breakCasesLabel}
             </CardTitle>
-            <CardDescription>Source-owned reconciliation breaks with retained owner, due-date, escalation, variance, and evidence posture.</CardDescription>
+            <CardDescription>Source-owned reconciliation breaks with retained owner, due-date, escalation, variance, and evidence status.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {breakCommand.error ? (
@@ -1958,7 +1960,7 @@ checklist: <><section className="grid gap-4"><Card className="panel-surface">
                 </CardTitle>
                 <CardDescription>Shared close-control tasks required before approval and close transitions.</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.checklistSummary.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.checklistSummary.statusTone)}>
                 {vm.checklistSummary.taskCountLabel}
               </Badge>
             </div>
@@ -1996,7 +1998,7 @@ checklist: <><section className="grid gap-4"><Card className="panel-surface">
             />
           </CardContent>
         </Card></section></>,
-approvals: <><section className="grid gap-4"><Card className={cn("border", readinessToneToPanelClass(vm.commandSpine.statusTone))}>
+approvals: <><section className="grid gap-4"><Card className={cn("border", statusPanelClass(vm.commandSpine.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -2006,7 +2008,7 @@ approvals: <><section className="grid gap-4"><Card className={cn("border", readi
                 </CardTitle>
                 <CardDescription>{vm.commandSpine.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.commandSpine.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.commandSpine.statusTone)}>
                 {vm.commandSpine.statusLabel}
               </Badge>
             </div>
@@ -2071,7 +2073,7 @@ approvals: <><section className="grid gap-4"><Card className={cn("border", readi
             />
           </CardContent>
         </Card></section>
-<section className="grid gap-4"><Card className={cn("border", readinessToneToPanelClass(vm.closeGovernance.statusTone))}>
+<section className="grid gap-4"><Card className={cn("border", statusPanelClass(vm.closeGovernance.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -2081,7 +2083,7 @@ approvals: <><section className="grid gap-4"><Card className={cn("border", readi
                 </CardTitle>
                 <CardDescription>{vm.closeGovernance.lockDetail}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.closeGovernance.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.closeGovernance.statusTone)}>
                 {vm.closeGovernance.statusLabel}
               </Badge>
             </div>
@@ -2135,7 +2137,7 @@ approvals: <><section className="grid gap-4"><Card className={cn("border", readi
               </p>
             ) : null}
             <form
-              aria-label="Governed period reopen command"
+              aria-label="Period reopen command"
               className="border-t border-border/60 pt-4"
               onSubmit={(event) => {
                 event.preventDefault();
@@ -2195,14 +2197,14 @@ approvals: <><section className="grid gap-4"><Card className={cn("border", readi
             </form>
           </CardContent>
         </Card>
-<Card className={cn("border", readinessToneToPanelClass(vm.closePackage.statusTone))}>
+<Card className={cn("border", statusPanelClass(vm.closePackage.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <CardTitle>{vm.closePackage.title}</CardTitle>
-                <CardDescription>Governed close publication from the shared operations-continuity workflow.</CardDescription>
+                <CardDescription>Close publication from the shared operations-continuity workflow.</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.closePackage.statusTone)}>{vm.closePackage.statusLabel}</Badge>
+              <Badge variant={statusBadgeVariant(vm.closePackage.statusTone)}>{vm.closePackage.statusLabel}</Badge>
             </div>
           </CardHeader>
           <CardContent>
@@ -2256,7 +2258,7 @@ approvals: <><section className="grid gap-4"><Card className={cn("border", readi
           </CardContent>
         </Card></section></>,
 evidence: <><section className="grid gap-4">
-        <Card className={cn("border", readinessToneToPanelClass(vm.reviewedAutomation.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.reviewedAutomation.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -2266,7 +2268,7 @@ evidence: <><section className="grid gap-4">
                 </CardTitle>
                 <CardDescription>{vm.reviewedAutomation.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.reviewedAutomation.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.reviewedAutomation.statusTone)}>
                 {vm.reviewedAutomation.statusLabel}
               </Badge>
             </div>
@@ -2302,7 +2304,7 @@ evidence: <><section className="grid gap-4">
               <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
               {vm.evidencePackagesLabel}
             </CardTitle>
-            <CardDescription>Shared package posture for accounting records, report packs, close manifests, and audit support.</CardDescription>
+            <CardDescription>Shared package status for accounting records, report packs, close manifests, and audit support.</CardDescription>
           </CardHeader>
           <CardContent>
             <DenseDataTable
@@ -2316,7 +2318,7 @@ evidence: <><section className="grid gap-4">
           </CardContent>
         </Card>
       </section>
-<section className="grid gap-4"><Card className={cn("border", readinessToneToPanelClass(vm.accountingRecordSummary.statusTone))}>
+<section className="grid gap-4"><Card className={cn("border", statusPanelClass(vm.accountingRecordSummary.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -2326,7 +2328,7 @@ evidence: <><section className="grid gap-4">
                 </CardTitle>
                 <CardDescription>{vm.accountingRecordSummary.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.accountingRecordSummary.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.accountingRecordSummary.statusTone)}>
                 {vm.accountingRecordSummary.statusLabel}
               </Badge>
             </div>
@@ -2398,7 +2400,7 @@ evidence: <><section className="grid gap-4">
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Badge variant="outline">{vm.workflowsSummaryLabel}</Badge>
           {closeHub ? <Button asChild variant="outline" size="sm"><Link to={{ pathname: "/accounting/workflow", search: location.search, hash: "#close-command-center" }}>Valuation and period operations</Link></Button> : null}
-          <Button
+          {vm.errorText ? <Button
             type="button"
             variant="outline"
             size="sm"
@@ -2411,7 +2413,7 @@ evidence: <><section className="grid gap-4">
           >
             <RefreshCcw className="h-4 w-4" aria-hidden="true" />
             {vm.reloadLabel}
-          </Button>
+          </Button> : null}
         </div>
       </section>
 <section className="grid gap-4 xl:grid-cols-[1fr_0.75fr]">
@@ -2424,6 +2426,9 @@ evidence: <><section className="grid gap-4">
             <CardDescription>Select a workflow to inspect close-lane gates, blockers, next action, and timeline.</CardDescription>
           </CardHeader>
           <CardContent>
+            {vm.workflowsFundScopeNote && !vm.loading && !vm.errorText ? (
+              <p role="status" aria-label="Operations continuity fund scope" data-narrowing={vm.workflowsFundScopeStatus} className="mb-2 text-xs text-muted-foreground">{vm.workflowsFundScopeNote}</p>
+            ) : null}
             <DenseDataTable
               columns={workflowColumns}
               rows={vm.workflows}
@@ -2443,7 +2448,7 @@ evidence: <><section className="grid gap-4">
         </Card>
 
         <Card
-          className={cn("border", readinessToneToPanelClass(vm.nextAction.statusTone))}
+          className={cn("border", statusPanelClass(vm.nextAction.statusTone))}
           role="region"
           aria-label="Recommended next action"
         >
@@ -2456,7 +2461,7 @@ evidence: <><section className="grid gap-4">
                 </CardTitle>
                 <CardDescription>{vm.nextAction.detail}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.nextAction.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.nextAction.statusTone)}>
                 {vm.nextAction.statusLabel}
               </Badge>
             </div>
@@ -2504,19 +2509,37 @@ evidence: <><section className="grid gap-4">
       <div><dt>Period</dt><dd>{closeScope.periodId ?? "Not recorded"}</dd></div>
       <div><dt>Expected version</dt><dd>{confirmation?.version}</dd></div>
     </dl>
-    {confirmation?.kind === "publish" ? <div className="mt-4 space-y-1.5"><Label htmlFor="close-publication-reason">Reason</Label><Input id="close-publication-reason" value={publicationReason} onChange={(event) => setPublicationReason(event.target.value)} /></div> : <p className="mt-4 text-sm">{reopenWorkflowForm.justification}</p>}
+    {confirmation?.kind === "reopen" ? <p className="mt-4 text-sm">{reopenWorkflowForm.justification}</p> : null}
     {confirmationStale ? <p role="alert" className="mt-3 text-sm text-danger">The selected workflow changed. Cancel and review its latest evidence before continuing.</p> : null}
-    <div className="mt-5 flex justify-end gap-2">
-      <Button variant="outline" onClick={() => setConfirmation(null)}>Cancel</Button>
-      <Button disabled={confirmationStale || confirmationReasonMissing} disabledReason={confirmationStale ? "Review the latest workflow first." : confirmationReasonMissing ? "Enter a reason for publication." : null} onClick={() => {
-        if (!confirmation || confirmationStale || confirmationReasonMissing) return;
+    <CloseConfirmationControls kind={confirmation?.kind ?? "publish"} stale={confirmationStale}
+      onCancel={() => setConfirmation(null)} onConfirm={(reason) => {
+        if (!confirmation || confirmationStale) return;
         const pending = confirmation;
         setConfirmation(null);
-        if (pending.kind === "publish" && pending.row) void closeWorkflowCommandHandler(pending.row, publicationReason.trim());
+        if (pending.kind === "publish" && pending.row) void closeWorkflowCommandHandler(pending.row, reason);
         else void reopenWorkflowCommandHandler();
-      }}>{confirmation?.kind === "reopen" ? "Confirm reopen" : "Confirm publication"}</Button>
-    </div>
+      }} />
   </DialogContent>
 </Dialog>
 </div>;
+}
+
+
+/** Keep reason keystrokes local so a dense close workspace does not redraw every table. */
+function CloseConfirmationControls({ kind, stale, onCancel, onConfirm }: {
+  kind: "publish" | "reopen";
+  stale: boolean;
+  onCancel: () => void;
+  onConfirm: (reason: string) => void;
+}) {
+  const [reason, setReason] = useState("");
+  const missing = kind === "publish" && !reason.trim();
+  return <>
+    {kind === "publish" ? <div className="mt-4 space-y-1.5"><Label htmlFor="close-publication-reason">Reason</Label><Input id="close-publication-reason" value={reason} onChange={(event) => setReason(event.target.value)} /></div> : null}
+    <div className="mt-5 flex justify-end gap-2">
+      <Button variant="outline" onClick={onCancel}>Cancel</Button>
+      <Button disabled={stale || missing} disabledReason={stale ? "Review the latest workflow first." : missing ? "Enter a reason for publication." : null}
+        onClick={() => { if (!stale && !missing) onConfirm(reason.trim()); }}>{kind === "reopen" ? "Confirm reopen" : "Confirm publication"}</Button>
+    </div>
+  </>;
 }

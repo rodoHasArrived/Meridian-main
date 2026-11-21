@@ -4,6 +4,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import * as maintenanceApi from "@/lib/api/archive-maintenance.api";
 import { ArchiveMaintenanceOperations } from "@/screens/data-operations-maintenance";
 import type { ArchiveMaintenanceExecution } from "@/types/archive-maintenance.types";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
+
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
 
 vi.mock("@/lib/api/archive-maintenance.api", () => ({
   getMaintenanceServiceStatus: vi.fn(),
@@ -96,11 +103,14 @@ afterEach(() => {
 });
 
 describe("ArchiveMaintenanceOperations", () => {
-  it("renders service posture and execution history from the maintenance endpoints", async () => {
+  it("renders source-ordered history with keyboard scroll and cancellation access", async () => {
+    const user = userEvent.setup();
     primeReads();
-    render(<ArchiveMaintenanceOperations />);
+    // JSDOM omits the browser's closed-details visibility rule. Match that native
+    // behavior so userEvent's Tab traversal does not enter hidden menu controls.
+    render(<><style>{"details:not([open]) > :not(summary) { display: none; }"}</style><ArchiveMaintenanceOperations /></>);
 
-    const posture = await screen.findByLabelText("Archive maintenance posture");
+    const posture = await screen.findByLabelText("Archive maintenance status");
     expect(within(posture).getByText("Running")).toBeInTheDocument();
     expect(within(posture).getByText("95.0%")).toBeInTheDocument();
     expect(within(posture).getByText("Next due: Nightly health check")).toBeInTheDocument();
@@ -108,6 +118,38 @@ describe("ArchiveMaintenanceOperations", () => {
     const history = screen.getByLabelText("Maintenance execution history");
     expect(within(history).getByText("Cleanup")).toBeInTheDocument();
     expect(within(history).getByText("Checksum mismatch in shard 12")).toBeInTheDocument();
+    const historyRows = within(history).getAllByRole("row");
+    expect(within(historyRows[1]).getByText("Cleanup")).toBeInTheDocument();
+    expect(within(historyRows[2]).getByText("HealthCheck")).toBeInTheDocument();
+    expect(within(historyRows[0]).queryAllByRole("button")).toHaveLength(0);
+    expect(api.getMaintenanceExecutions).toHaveBeenCalledWith(25);
+    const toolbar = screen.getByRole("group", { name: "Maintenance execution history table controls" });
+    expect(within(toolbar).getByText("Columns", { selector: "summary", exact: true }).closest("details")).not.toHaveAttribute("open");
+    // A short table carries two small controls: Columns, and one menu for export and saved views.
+    const moreActions = within(toolbar).getByLabelText("Maintenance execution history more table actions");
+    expect(moreActions.closest("details")).not.toHaveAttribute("open");
+    // This history is server-backed, so search stays even with two loaded rows.
+    expect(within(toolbar).getByRole("searchbox", { name: "Search" })).toBeInTheDocument();
+    expect(within(toolbar).queryByRole("combobox", { name: "Maintenance execution history density" })).not.toBeInTheDocument();
+    screen.getByRole("combobox", { name: "Maintenance task type" }).focus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Run maintenance now" })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Show failed only" })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByRole("searchbox", { name: "Search" })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByText("Columns", { selector: "summary", exact: true })).toHaveFocus();
+    await user.tab();
+    expect(moreActions).toHaveFocus();
+    await user.tab();
+    const scrollArea = screen.getByRole("region", { name: "Maintenance execution history scroll area" });
+    expect(scrollArea).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(scrollArea).toHaveFocus();
+    expect(api.cancelMaintenanceExecution).not.toHaveBeenCalled();
   });
 
   it("starts a manual run for the selected task type and refreshes", async () => {
@@ -116,7 +158,7 @@ describe("ArchiveMaintenanceOperations", () => {
     const user = userEvent.setup();
     render(<ArchiveMaintenanceOperations />);
 
-    await screen.findByLabelText("Archive maintenance posture");
+    await screen.findByLabelText("Archive maintenance status");
     await user.selectOptions(screen.getByLabelText("Maintenance task type"), "Cleanup");
     await user.click(screen.getByRole("button", { name: "Run maintenance now" }));
 
@@ -131,7 +173,7 @@ describe("ArchiveMaintenanceOperations", () => {
     const user = userEvent.setup();
     render(<ArchiveMaintenanceOperations />);
 
-    await screen.findByLabelText("Archive maintenance posture");
+    await screen.findByLabelText("Archive maintenance status");
     const cancelButtons = screen.getAllByRole("button", { name: "Cancel" });
     expect(cancelButtons).toHaveLength(1);
 
@@ -145,12 +187,25 @@ describe("ArchiveMaintenanceOperations", () => {
     const user = userEvent.setup();
     render(<ArchiveMaintenanceOperations />);
 
-    await screen.findByLabelText("Archive maintenance posture");
+    await screen.findByLabelText("Archive maintenance status");
     await user.click(screen.getByRole("button", { name: "Show failed only" }));
 
     await waitFor(() => expect(api.getFailedMaintenanceExecutions).toHaveBeenCalledWith(25));
     const history = screen.getByLabelText("Maintenance execution history");
     await waitFor(() => expect(within(history).queryAllByRole("row")).toHaveLength(2));
+  });
+
+  it("preserves distinct empty history messages for all and failed-only reads", async () => {
+    primeReads();
+    api.getMaintenanceExecutions.mockResolvedValue([]);
+    api.getFailedMaintenanceExecutions.mockResolvedValue([]);
+    const user = userEvent.setup();
+    render(<ArchiveMaintenanceOperations />);
+    expect(await screen.findByText("No maintenance executions recorded.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Show failed only" }));
+    expect(await screen.findByText("No failed maintenance executions recorded.")).toBeInTheDocument();
+    expect(api.getFailedMaintenanceExecutions).toHaveBeenCalledWith(25);
+    expect(screen.queryByRole("button", { name: "Cancel" })).not.toBeInTheDocument();
   });
 
   it("keeps the panel readable when one read fails and says how many failed", async () => {
@@ -159,9 +214,27 @@ describe("ArchiveMaintenanceOperations", () => {
     render(<ArchiveMaintenanceOperations />);
 
     expect(await screen.findByText(/1 of 5 maintenance reads failed/)).toBeInTheDocument();
-    const posture = screen.getByLabelText("Archive maintenance posture");
+    const posture = screen.getByLabelText("Archive maintenance status");
     expect(within(posture).getByText("Running")).toBeInTheDocument();
     // Both statistics-backed metrics fall back together; neither reports a zero.
     expect(within(posture).getAllByText("Execution statistics have not loaded.")).toHaveLength(2);
+  });
+
+  it("re-reads with the header refresh and offers Retry only after a failed read", async () => {
+    primeReads();
+    const user = userEvent.setup();
+    render(<HeaderRefresh><ArchiveMaintenanceOperations /></HeaderRefresh>);
+    await screen.findByLabelText("Archive maintenance status");
+    await waitFor(() => expect(api.getMaintenanceExecutions).toHaveBeenCalledTimes(1));
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading archive maintenance" })).not.toBeInTheDocument();
+
+    api.getMaintenanceStatistics.mockRejectedValueOnce(new Error("statistics unavailable"));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    expect(await screen.findByText(/1 of 5 maintenance reads failed/)).toBeInTheDocument();
+    expect(api.getMaintenanceExecutions).toHaveBeenCalledTimes(2);
+    await user.click(screen.getByRole("button", { name: "Retry loading archive maintenance" }));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Retry loading archive maintenance" })).not.toBeInTheDocument());
+    expect(api.getMaintenanceExecutions).toHaveBeenCalledTimes(3);
   });
 });

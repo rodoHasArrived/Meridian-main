@@ -6,8 +6,9 @@
 **Reviewed:** 2026-11-21
 **Baseline:** `86a1689f20`; branch `codex/workstation-ux-roadmap`
 
-This record implements the user-approved end-to-end UX roadmap. The supplied November 20
-review described a later revision; implementation and verification use the baseline above.
+This record implements the user-approved end-to-end UX roadmap. Initial implementation used
+the baseline above. Publication integrates `main` at `83235ca09b`, retaining its newer shell,
+record search, financial workflows, scoped passports and reviewed bulk-command protocol.
 Roadmap registry statuses remain authoritative; this document records this change’s work and evidence.
 
 ## Delivery and acceptance
@@ -46,7 +47,7 @@ accounting and operational-evidence context, approved roadmap. Agent handoffs re
 files, exact validation, unresolved risks, and released file claims. Evidence is invalidated by
 subsequent changes to the tested behavior.
 
-## Verification
+## Initial implementation verification
 
 Validation uses deterministic synthetic fixtures; there are no live-provider or production claims.
 
@@ -86,13 +87,43 @@ Review latest choice, and required a fresh confirmation without automatic retry.
 no page errors or document horizontal overflow. Late scope/draft/session responses and
 same-version local edits have focused regression coverage.
 
+## Current-main integration verification
+
+Integration preserves current-main record scope, attention/triage, queue keyboard navigation,
+accounting domain panels, durable bulk preview identities and native scoped amount passports.
+Obsolete parallel panel extractions were removed. The accounting entry component has 1,990 lines.
+
+Fresh checks after dependency installation and contract generation include the production Vite
+bundle, zero new workstation-governance violations, matching design-system assets, 216 shell/Close
+tests, 212 financial/journal tests, five passport navigation tests, 98 reporting tests, 151 dossier
+and Portfolio tests, and 44 import tests. These are focused suite counts, not the full repository
+test suite. Targeted lint passed for each frontend lane. Source README validation passed; document
+structure validation passed with 615 existing lifecycle warnings.
+
+Actual Chromium checks at 1280×720 and 1440×900 exercised Post, Reverse and Lock confirmation
+and cancellation, with no request before confirmation and restored focus. Journal 409 checks
+retained notes through explicit review, with one submission, one reread and no automatic retry;
+all eight flows had no page errors or document horizontal overflow. These use deterministic
+synthetic responses and do not establish live-backend or Windows accessibility behavior.
+
+The six-route axe smoke passed against its unchanged baseline, with no new serious or critical
+findings. Ready inspector focus checks passed for 18 expanded controls at 1440×1100, 1440×900
+and 1280×720. Six additional rendered task walkthroughs passed; nine handled fixture-only 404s
+are recorded in their evidence, so they are not described as console-clean.
+
+Upgrade regressions retain original legacy statement-command identities and typed-measure
+migration hashes. Exact display fields remain outside the durable reconciliation serialization
+contract. Trial-balance proof preserves contributing preparer-attestation classifications even
+when a source proof is blocked, and applies the existing authorized disclosure projection.
+
 ## Known source limitations
 
-Live Holdings values use exact quantities and derivative multipliers, but their mutable portfolio
-and quote sources have no retained owner-scoped position-and-mark checkpoint. Existing durable
+Live Holdings values use exact quantities and derivative multipliers. Where their mutable portfolio
+and quote reads supply no retained owner-scoped position-and-mark checkpoint, existing durable
 position snapshots omit mark/event identity; shared symbols or equal amounts cannot establish
 provenance. These live cells show an explicit unavailable/provisional condition and do not claim
-amount-level proof. Trial-balance aggregates have immutable contributor/checkpoint passports.
+amount-level proof. Existing source-owned passport references are retained where available.
+Trial-balance aggregates have immutable contributor/checkpoint passports.
 
 Case comparison measures do not expose retained side-specific passport subjects; missing proof is
 explicit rather than replaced by generic record navigation. Generic reconciliation comparisons

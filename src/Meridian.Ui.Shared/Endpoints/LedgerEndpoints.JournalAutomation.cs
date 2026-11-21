@@ -65,6 +65,11 @@ public static partial class LedgerEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // Source-linked reversals require the dedicated accountant permission and exact
+            // retained book ownership checks. The generic monthly route cannot grant that authority.
+            if (request.Kind == AutomatedJournalScheduleKind.PeriodEndMarkReversal || request.PeriodAdjustment is not null)
+                return Results.BadRequest(new { error = "Use the governed period-adjustments/schedule-mark-reversal route for source-linked reversal schedules." });
+
             var store = context.RequestServices.GetService<IAutomatedJournalScheduleStore>();
             if (store is null)
             {
@@ -403,17 +408,19 @@ public static partial class LedgerEndpoints
             try
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                var result = await service.ApproveAndPostAsync(request with
-                {
-                    Actor = ResolveMutationActor(context, request.Actor),
+                var result = await service.ApproveAndPostAsync(new DailyValuationBatchLifecycleRequestDto(
+                    ScheduleId: request.ScheduleId,
+                    FundProfileId: request.FundProfileId,
+                    Actor: ResolveMutationActor(context, request.Actor),
+                    Notes: request.Notes,
+                    EvidenceLinks: request.EvidenceLinks,
                     // Derived alongside Actor and tenant scope. This batch approves and posts
                     // journal entries through a service that gates them on RequireHumanOperator, so
                     // an origin taken from the body would let a service credential satisfy the very
                     // control that exists to require a human (#2673).
-                    ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
-                    TenantId = tenantContext.TenantId,
-                    CompanyId = tenantContext.CompanyId
-                }, context.RequestAborted).ConfigureAwait(false);
+                    ActionOrigin: EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
+                    TenantId: tenantContext.TenantId,
+                    CompanyId: tenantContext.CompanyId), context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (UnauthorizedAccessException)
@@ -722,6 +729,92 @@ public static partial class LedgerEndpoints
             }
         })
         .WithName("RunLedgerJournalAutomationCapitalCallFundingIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
+        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationCapitalCallDefaultInterestIntake, async (RunCapitalCallDefaultInterestDraftIntakeRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
+            if (runner is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await runner.RunCapitalCallDefaultInterestIntakeAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Conflict(context, ex.Message);
+            }
+        })
+        .WithName("RunLedgerJournalAutomationCapitalCallDefaultInterestIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
+        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationDistributionIntake, async (RunDistributionDeclarationDraftIntakeRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
+            if (runner is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await runner.RunDistributionDeclarationIntakeAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Conflict(context, ex.Message);
+            }
+        })
+        .WithName("RunLedgerJournalAutomationDistributionIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
         .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)

@@ -55,9 +55,7 @@ public sealed class StrategyRunWorkspaceService
 
     private static string ResolveConfiguredDataRoot()
     {
-        var configService = ConfigService.Instance;
-        var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
-        return configService.ResolveDataRoot(config);
+        return ConfigService.Instance.ConfiguredDataRoot;
     }
 
     public StrategyRunWorkspaceService(
@@ -138,6 +136,9 @@ public sealed class StrategyRunWorkspaceService
         var detail = await _readService.GetRunDetailAsync(runId, ct).ConfigureAwait(false);
         return detail?.Ledger;
     }
+
+    public Task<LedgerSummary?> GetLedgerAsync(string runId, DateTimeOffset asOf, CancellationToken ct = default) =>
+        _readService.GetLedgerSummaryAsync(runId, asOf, ct);
 
     public Task<IReadOnlyList<RunComparisonDto>> CompareRunsAsync(
         IEnumerable<string> runIds,

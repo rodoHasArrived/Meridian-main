@@ -7,29 +7,29 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-toast-stack{position:fixed;bottom:20px;right:20px;z-index:9999;
+.mds-toast-stack{position:fixed;bottom:20px;right:20px;z-index:var(--z-toast,300);
   display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none;}
 .mds-toast{display:flex;align-items:flex-start;gap:10px;min-width:280px;max-width:420px;
-  padding:12px 14px;border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);
+  padding:12px 14px;border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);
   pointer-events:all;}
 .mds-toast--out{display:none;}
 .mds-toast__bar{width:3px;flex-shrink:0;align-self:stretch;margin:-12px 0 -12px -14px;}
-.mds-toast--success .mds-toast__bar{background:var(--green,#3A7A56);}
-.mds-toast--warning .mds-toast__bar{background:var(--amber,#8A5C12);}
-.mds-toast--error   .mds-toast__bar{background:var(--red,#A8443C);}
-.mds-toast--info    .mds-toast__bar{background:var(--accent,#A85436);}
+.mds-toast--success .mds-toast__bar{background:var(--green,#2E7655);}
+.mds-toast--warning .mds-toast__bar{background:var(--amber,#986717);}
+.mds-toast--error   .mds-toast__bar{background:var(--red,#B54B42);}
+.mds-toast--info    .mds-toast__bar{background:var(--semantic-info,#2F648A);}
 .mds-toast__body{flex:1;min-width:0;}
 .mds-toast__title{font-family:var(--font-body);font-size:13px;font-weight:600;
-  color:var(--text-primary,#22252A);}
-.mds-toast__detail{font-family:var(--font-data);font-size:11px;color:var(--text-secondary,#4E5258);margin-top:2px;}
+  color:var(--text-primary,#20252B);}
+.mds-toast__detail{font-family:var(--font-data);font-size:11px;color:var(--text-secondary,#535C65);margin-top:2px;}
 .mds-toast__close{appearance:none;border:none;background:transparent;cursor:pointer;
-  color:var(--text-muted,#5E666F);font-size:16px;line-height:1;padding:0;flex-shrink:0;}
-.mds-toast__close:hover{color:var(--text-primary,#22252A);}
-.mds-toast__action{appearance:none;border:1px solid var(--accent,#A85436);background:transparent;
-  cursor:pointer;color:var(--accent-dim,#8C4429);font-family:var(--font-body);font-size:12px;
+  color:var(--text-muted,#606870);font-size:16px;line-height:1;padding:0;flex-shrink:0;}
+.mds-toast__close:hover{color:var(--text-primary,#20252B);}
+.mds-toast__action{appearance:none;border:1px solid var(--brand-signal,#C56343);background:transparent;
+  cursor:pointer;color:var(--brand-signal-ink,#944A32);font-family:var(--font-body);font-size:12px;
   font-weight:600;padding:4px 10px;margin-top:8px;align-self:flex-start;border-radius:var(--radius-button,2px);}
-.mds-toast__action:hover{background:var(--accent-ghost,#F4E7E0);}
-.mds-toast__action:focus-visible{outline:var(--focus-ring,2px solid #A85436);outline-offset:1px;}
+.mds-toast__action:hover{background:var(--brand-signal-ghost,#F6E6DF);}
+.mds-toast__action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds","toast");
@@ -39,7 +39,7 @@ function inject() {
 
 // Global event bus
 const listeners = new Set();
-window.MeridianToast = {
+const toastApi = {
   show({ tone = "info", title, detail, duration = 4000, action = null }) {
     const id = Date.now() + Math.random();
     listeners.forEach(fn => fn({ id, tone, title, detail, duration, action }));
@@ -57,28 +57,34 @@ window.MeridianToast = {
   dismiss(id) { dismissers.forEach(fn => fn(id)); },
 };
 const dismissers = new Set();
+if (typeof window !== "undefined") window.MeridianToast = toastApi;
 
 export function ToastProvider() {
   inject();
   const [toasts, setToasts] = React.useState([]);
+  const timers = React.useRef(new Set());
+  const schedule = (callback, duration) => {
+    const timer = setTimeout(() => { timers.current.delete(timer); callback(); }, duration);
+    timers.current.add(timer);
+  };
 
   React.useEffect(() => {
     const handler = (toast) => {
       setToasts(prev => [...prev.slice(-4), { ...toast, exiting: false }]);
-      if (toast.duration > 0) setTimeout(() => {
+      if (toast.duration > 0) schedule(() => {
         setToasts(prev => prev.map(t => t.id === toast.id ? { ...t, exiting: true } : t));
-        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== toast.id)), 180);
+        schedule(() => setToasts(prev => prev.filter(t => t.id !== toast.id)), 180);
       }, toast.duration);
     };
     const dismisser = (id) => dismiss(id);
     listeners.add(handler);
     dismissers.add(dismisser);
-    return () => { listeners.delete(handler); dismissers.delete(dismisser); };
+    return () => { listeners.delete(handler); dismissers.delete(dismisser); timers.current.forEach(clearTimeout); timers.current.clear(); };
   }, []);
 
   const dismiss = (id) => {
     setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 180);
+    schedule(() => setToasts(prev => prev.filter(t => t.id !== id)), 180);
   };
 
   if (!toasts.length) return null;
@@ -91,12 +97,12 @@ export function ToastProvider() {
             <div className="mds-toast__title">{t.title}</div>
             {t.detail && <div className="mds-toast__detail">{t.detail}</div>}
             {t.action && (
-              <button className="mds-toast__action" onClick={() => { t.action.onAction?.(); dismiss(t.id); }}>
+              <button type="button" className="mds-toast__action" onClick={() => { t.action.onAction?.(); dismiss(t.id); }}>
                 {t.action.label}
               </button>
             )}
           </div>
-          <button className="mds-toast__close" onClick={() => dismiss(t.id)}>×</button>
+          <button type="button" className="mds-toast__close" aria-label="Dismiss notification" onClick={() => dismiss(t.id)}>×</button>
         </div>
       ))}
     </div>
@@ -104,7 +110,7 @@ export function ToastProvider() {
 }
 
 export function useToast() {
-  return window.MeridianToast;
+  return toastApi;
 }
 
 // Alias so the bundler finds a named "Toast" export from Toast.jsx

@@ -23,7 +23,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
 
     private readonly InMemorySecurityMasterRevisionStore _revisions = new();
     private readonly Mock<ISecurityMasterStore> _projectionStore = new(MockBehavior.Loose);
-    private readonly Mock<ISecurityMasterAmender> _amender = new(MockBehavior.Loose);
+    private readonly Mock<IGovernedPublicationAmender> _amender = new(MockBehavior.Loose);
 
     [Fact]
     public void Order_RunsBeforeProjectionRebuild()
@@ -53,7 +53,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         await CreateHandler().HandleAsync(Event(revisionId, "marketData.rating"));
 
         _amender.Verify(
-            a => a.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
+            a => a.AmendApprovedRevisionAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -66,7 +66,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         await CreateHandler().HandleAsync(Event(revisionId, "assetSpecificTerms.par"));
 
         _amender.Verify(
-            a => a.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
+            a => a.AmendApprovedRevisionAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -81,7 +81,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         await CreateHandler().HandleAsync(Event(draft.RevisionId, "assetSpecificTerms.par"));
 
         _amender.Verify(
-            a => a.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
+            a => a.AmendApprovedRevisionAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -92,7 +92,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         SetProjection("Bond", BondTerms());
         AmendSecurityTermsRequest? captured = null;
         _amender
-            .Setup(a => a.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(a => a.AmendApprovedRevisionAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
             .Callback<AmendSecurityTermsRequest, CancellationToken>((request, _) => captured = request)
             .ReturnsAsync(Detail());
 
@@ -120,7 +120,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         SetProjection("Bond", BondTerms());
         AmendSecurityTermsRequest? captured = null;
         _amender
-            .Setup(a => a.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(a => a.AmendApprovedRevisionAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
             .Callback<AmendSecurityTermsRequest, CancellationToken>((request, _) => captured = request)
             .ReturnsAsync(Detail());
 
@@ -143,7 +143,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         await CreateHandler().HandleAsync(Event(revisionId, "assetSpecificTerms.par"));
 
         _amender.Verify(
-            a => a.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
+            a => a.AmendApprovedRevisionAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -160,7 +160,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         });
         AmendSecurityTermsRequest? captured = null;
         _amender
-            .Setup(a => a.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(a => a.AmendApprovedRevisionAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
             .Callback<AmendSecurityTermsRequest, CancellationToken>((request, _) => captured = request)
             .ReturnsAsync(Detail());
 
@@ -183,7 +183,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         await CreateHandler().HandleAsync(Event(revisionId, "assetSpecificTerms.principalSchedule.0.amount"));
 
         _amender.Verify(
-            a => a.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
+            a => a.AmendApprovedRevisionAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -193,7 +193,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         var revisionId = await SeedApprovedFieldRevisionAsync("assetSpecificTerms.par", "1000");
         SetProjection("Bond", BondTerms());
         _amender
-            .Setup(a => a.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(a => a.AmendApprovedRevisionAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("event store unavailable"));
 
         await CreateHandler().Invoking(h => h.HandleAsync(Event(revisionId, "assetSpecificTerms.par")))
@@ -207,7 +207,7 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
         var revisionId = await SeedApprovedFieldRevisionAsync("assetSpecificTerms.couponRate", "4.5");
         SetProjection("Bond", BondTerms());
         _amender
-            .Setup(a => a.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(a => a.AmendApprovedRevisionAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Detail());
 
         var conflict = new SecurityMasterConflict(

@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Single-select radio group — the form primitive `Checkbox`/`Toggle` don't cover. A column
  * (or row) of radios with a filled accent center dot, optional per-option hint. Controlled
@@ -24,4 +25,4 @@ export interface RadioGroupProps extends Omit<React.HTMLAttributes<HTMLDivElemen
   /** Disable the whole group. @default false */
   disabled?: boolean;
 }
-export declare function RadioGroup(props: RadioGroupProps): JSX.Element;
+export declare function RadioGroup(props: RadioGroupProps): React.JSX.Element;

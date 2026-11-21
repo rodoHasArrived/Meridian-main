@@ -102,6 +102,8 @@ public sealed record OrderRequest
     public OptionContractIdentity? OptionContract { get; init; }
     public IReadOnlyList<OrderLeg>? Legs { get; init; }
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderSessionIntent? SessionIntent { get; init; }
 }
 
 /// <summary>One leg in a multi-leg options order.</summary>
@@ -191,6 +193,41 @@ public sealed record ExecutionReport
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public decimal? LotMultiplier { get; init; }
 
+    /// <summary>
+    /// The money multiplier the paper book applied to this fill: quote × quantity × this value is
+    /// the cash it moved (the contract multiplier for listed premium contracts, 1 otherwise).
+    /// Stamped when the fill is booked so a session replay reproduces the same economics. Absent on
+    /// records written before paper books scaled contract premiums; those replay at 1×, as they
+    /// were booked. Omitted from serialized payloads when null so existing records are unaffected.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? BookedMoneyMultiplier { get; init; }
+
+    /// <summary>
+    /// Whether the paper book booked this fill under daily variation margin (futures): opening
+    /// moves no notional and a close settles only the change since the last settlement. Stamped
+    /// with <see cref="BookedMoneyMultiplier"/> so a replay books the fill the same way. Absent on
+    /// records written before paper futures settled variation margin; those replay on the 1×
+    /// notional model they were booked on. Omitted from serialized payloads when null.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public bool? BookedVariationMargin { get; init; }
+
+    /// <summary>
+    /// Accrued interest per 100 face at <see cref="SettlementDate"/>, for a face-value fill of a
+    /// coupon-bearing bond whose clean price is <see cref="FillPrice"/>. The buyer pays and the
+    /// seller receives it on top of the clean consideration, so settlement cash is the dirty
+    /// amount. Stated per 100 face (like the price) so a partial-fill increment scales it by its
+    /// own face. Absent when the gateway priced no accrual; those fills settle clean, as before.
+    /// Omitted from serialized payloads when null so existing durable records are unaffected.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccruedInterestPer100 { get; init; }
+
+    /// <summary>Contractual settlement date the accrued interest was measured to; absent when none was priced.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? SettlementDate { get; init; }
+
     /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
     public decimal? Fees { get; init; }
 
@@ -204,6 +241,9 @@ public sealed record ExecutionReport
     /// <summary>Broker-reported external account that owns the order, never caller routing metadata.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? BrokerAccountId { get; init; }
+    /// <summary>Exact account-activity identifier supplied by the broker for this fill.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? BrokerActivityId { get; init; }
     /// <summary>The client-provided order ID from the original <see cref="OrderRequest"/>.</summary>
     public string? ClientOrderId { get; init; }
     /// <summary>Broker identity superseded by this replacement, when explicitly reported.</summary>
@@ -274,6 +314,10 @@ public sealed record OrderResult
     public string? ErrorMessage { get; init; }
     public OrderState? OrderState { get; init; }
 
+    /// <summary>True when a failed submission may have routed and requires reconciliation before retrying.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool RequiresOrderReconciliation { get; init; }
+
     /// <summary>
     /// Non-blocking risk flags raised while the order was approved (e.g. concentration
     /// observe-band or warning-severity rule breaches), surfaced so callers and operators
@@ -303,11 +347,32 @@ public sealed record OrderResult
     /// <see cref="RiskWarnings"/> is already on the wire and rendered by shipped clients.
     /// </remarks>
     public RiskDecisionSummary? RiskDecision { get; init; }
+
+    /// <summary>
+    /// The order-authority outcome for this submission: set when order authority refused it, and
+    /// when a typed submission was admitted. Null for untyped submissions refused or admitted by
+    /// other gates.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public AuthorityDecisionSummary? AuthorityDecision { get; init; }
 }
 
 /// <summary>Current state of an order tracked by the OMS.</summary>
 public sealed record OrderState
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? StrategyArtifactId { get; init; }
+
+    /// <summary>Who or what originated the order; null for states created outside order submission.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderCommandOrigin? Origin { get; init; }
+
+    /// <summary>The journal submission attempt associated with this tracked order incarnation.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? JournalAttemptId { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderSessionIntent? SessionIntent { get; init; }
     public required string OrderId { get; init; }
     public required string Symbol { get; init; }
     public required OrderSide Side { get; init; }
@@ -328,6 +393,15 @@ public sealed record OrderState
     /// <summary>External account retained from the broker acknowledgement for exact restart recovery.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? BrokerAccountId { get; init; }
+
+    /// <summary>
+    /// The tracked order whose acknowledgement created this one, for a broker-side bracket/OCO
+    /// exit leg; <see langword="null"/> for an ordinary order. Sibling legs of one parent are
+    /// one-cancels-other, so at most one of them executes — a control that sums working orders
+    /// uses this to count the legs once rather than twice.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ParentOrderId { get; init; }
 
     /// <summary>Strategy run that authorized this retained order, when supplied.</summary>
     public string? RunId { get; init; }
@@ -375,8 +449,16 @@ public sealed record PositionState
     public decimal Quantity { get; init; }
     public decimal AverageCostBasis { get; init; }
     public decimal MarketPrice { get; init; }
-    public decimal UnrealizedPnl => (MarketPrice - AverageCostBasis) * Quantity;
+
+    /// <summary>
+    /// Multiplier that turns quantity × quote into money for this position (100 for a standard
+    /// equity option, 1 for outright instruments). <see cref="AverageCostBasis"/> and
+    /// <see cref="MarketPrice"/> stay per-unit quotes; the money fields below apply it.
+    /// </summary>
+    public decimal ContractMultiplier { get; init; } = 1m;
+
+    public decimal UnrealizedPnl => (MarketPrice - AverageCostBasis) * Quantity * ContractMultiplier;
     public decimal RealizedPnl { get; init; }
-    public decimal MarketValue => MarketPrice * Math.Abs(Quantity);
+    public decimal MarketValue => MarketPrice * Math.Abs(Quantity) * ContractMultiplier;
     public DateTimeOffset LastUpdated { get; init; }
 }

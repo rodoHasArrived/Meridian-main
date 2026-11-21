@@ -17,6 +17,7 @@ public sealed class StatusWriter : IAsyncDisposable
     private readonly string _path;
     private readonly Func<AppConfig> _configProvider;
     private readonly IEventMetrics _metrics;
+    private readonly TimeProvider _timeProvider;
     private readonly CancellationTokenSource _cts = new();
     private readonly Serilog.ILogger _log = LoggingSetup.ForContext<StatusWriter>();
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -27,27 +28,45 @@ public sealed class StatusWriter : IAsyncDisposable
     };
     private Task? _loop;
 
-    public StatusWriter(string path, Func<AppConfig> configProvider, IEventMetrics? metrics = null)
+    public StatusWriter(string path, Func<AppConfig> configProvider, IEventMetrics? metrics = null, TimeProvider? timeProvider = null)
     {
         _path = path;
         _configProvider = configProvider;
         _metrics = metrics ?? new DefaultEventMetrics();
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public void Start(TimeSpan interval)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-        _loop = WriteLoopAsync(interval);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(interval, TimeSpan.Zero, nameof(interval));
+        _loop ??= WriteLoopAsync(interval);
     }
 
-    private async Task WriteLoopAsync(TimeSpan interval, CancellationToken ct = default)
+    private async Task WriteLoopAsync(TimeSpan interval)
     {
         while (!_cts.IsCancellationRequested)
         {
-            await WriteOnceAsync();
             try
-            { await Task.Delay(interval, _cts.Token); }
-            catch (TaskCanceledException) { }
+            {
+                await WriteOnceAsync(_cts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (_cts.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                _log.Warning(ex, "Status snapshot write failed; retrying at the next interval");
+            }
+
+            try
+            {
+                await Task.Delay(interval, _timeProvider, _cts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (_cts.IsCancellationRequested)
+            {
+                break;
+            }
         }
     }
 

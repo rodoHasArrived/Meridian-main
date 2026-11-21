@@ -151,6 +151,104 @@ public sealed class ReportGenerationServiceTests
     }
 
     [Fact]
+    public async Task GenerateAsync_CanonicalClassificationLabels_GroupExactlyAsBefore()
+    {
+        // Pins grouping for current canonical labels: label decoding (review slice 3, decision D2)
+        // must leave every canonical family, the asset-class fallback and every sub-type unchanged.
+        var report = await GenerateClassifiedReportAsync(
+            ("PREF", "Equity", "PreferredEquity", "PreferredShare"),
+            ("COMM", "Equity", "CommonEquity", "CommonShare"),
+            ("BOND", "FixedIncome", null, "CorporateBond"),
+            ("COIN", "Other", "Crypto", "Spot"));
+
+        report.AssetClassSections.Select(static section => (section.AssetClass, section.Rows.Count))
+            .Should().Equal(
+                ("CommonEquity", 1), ("Crypto", 1), ("FixedIncome", 1), ("PreferredEquity", 1), ("Unclassified", 1));
+        report.TrialBalance.Where(static row => row.Symbol is not null)
+            .Select(static row => (row.Symbol, row.AssetFamily, row.SubType))
+            .Should().BeEquivalentTo(new[]
+            {
+                ("PREF", (string?)"PreferredEquity", (string?)"PreferredShare"),
+                ("COMM", "CommonEquity", "CommonShare"),
+                ("BOND", null, "CorporateBond"),
+                ("COIN", "Crypto", "Spot")
+            });
+    }
+
+    [Fact]
+    public async Task GenerateAsync_LegacyLabelledRecord_GroupsWithItsCanonicalPeers()
+    {
+        // Decision D2 (review slice 3): a record retained with the retired F# rendering groups and
+        // displays under its canonical label instead of forming its own "Some(...)" section.
+        var report = await GenerateClassifiedReportAsync(
+            ("PREF", "Equity", "PreferredEquity", "PreferredShare"),
+            ("OLDPREF", "Equity", "Some(PreferredEquity)", "PreferredShare"),
+            ("COIN", "Other", "Crypto", "Spot"),
+            ("OLDCOIN", "Other", "Some(OtherFamily \"Crypto\")", "OtherSubType \"Spot\""));
+
+        report.AssetClassSections.Select(static section => (section.AssetClass, section.Rows.Count))
+            .Should().Equal(("Crypto", 2), ("PreferredEquity", 2), ("Unclassified", 1));
+        report.TrialBalance.Single(static row => row.Symbol == "OLDCOIN").SubType.Should().Be("Spot");
+    }
+
+    [Fact]
+    public async Task GenerateAsync_LegacyLabelledRecord_ContentHashStillFingerprintsTheRetainedLabels()
+    {
+        var canonical = await GenerateClassifiedReportAsync(("PREF", "Equity", "PreferredEquity", "PreferredShare"));
+        var legacy = await GenerateClassifiedReportAsync(("PREF", "Equity", "Some(PreferredEquity)", "PreferredShare"));
+
+        legacy.AssetClassSections.Select(static section => section.AssetClass)
+            .Should().Equal(canonical.AssetClassSections.Select(static section => section.AssetClass));
+        legacy.SnapshotReceipt!.ContentHash.Should().NotBe(
+            canonical.SnapshotReceipt!.ContentHash,
+            "the receipt hashes the economic definition as retained; decoding is a read-side display/grouping repair");
+    }
+
+    [Fact]
+    public async Task GenerateAsync_LegacyUnionPayload_IsKeptVerbatim_InRowsAndInTheCsvExport()
+    {
+        // A retained free-text payload is the label itself: OtherSubType "None" reads as the literal
+        // None and Some(OtherFamily "Some(Equity)") as Some(Equity). The export must carry the rows'
+        // already-decoded labels, not decode them a second time.
+        var report = await GenerateClassifiedReportAsync(
+            ("ODD", "Other", "Some(OtherFamily \"Some(Equity)\")", "OtherSubType \"None\""));
+
+        var row = report.TrialBalance.Single(static row => row.Symbol == "ODD");
+        row.SubType.Should().Be("None");
+        row.AssetFamily.Should().Be("Some(Equity)");
+
+        var csv = System.Text.Encoding.UTF8.GetString(
+            Meridian.Ui.Shared.Services.FundOperationsWorkspaceReadService.BuildTrialBalanceCsv(report.TrialBalance, CancellationToken.None));
+        var exported = csv.Split('\n').Single(static line => line.Contains("ODD", StringComparison.Ordinal));
+        exported.Should().Contain("None").And.Contain("Some(Equity)");
+    }
+
+    private static readonly Guid ClassifiedFixtureNamespace = Guid.Parse("4d7f2c1e-9a0b-4c55-8e21-3b6a1f0d9c42");
+
+    private static async Task<ReportPack> GenerateClassifiedReportAsync(
+        params (string Symbol, string AssetClass, string? AssetFamily, string SubType)[] securities)
+    {
+        var details = new Dictionary<string, SecurityDetailDto>(StringComparer.OrdinalIgnoreCase);
+        var economics = new Dictionary<Guid, SecurityEconomicDefinitionRecord>();
+        foreach (var (symbol, assetClass, assetFamily, subType) in securities)
+        {
+            // Deterministic ids keep the content hash comparable across separately built fixtures.
+            var securityId = new Guid(System.Security.Cryptography.MD5.HashData(
+                ClassifiedFixtureNamespace.ToByteArray().Concat(System.Text.Encoding.UTF8.GetBytes(symbol)).ToArray()));
+            details[symbol] = BuildDetail(securityId, symbol, assetClass);
+            economics[securityId] = BuildEconomicDefinition(
+                securityId, assetClass, assetFamily, subType, "Corporate", "US",
+                SecurityIdentifierKind.InternalCode, $"ID-{symbol}");
+        }
+
+        var service = new ReportGenerationService(new StubSecurityMasterQueryService(details, economics));
+        return await service.GenerateAsync(new ReportRequest(
+            FundId: "fund-1",
+            AsOf: new DateTimeOffset(2026, 4, 11, 0, 0, 0, TimeSpan.Zero),
+            FundLedger: BuildLedgerBookWithSymbols(securities.Select(static security => security.Symbol).ToArray())));
+    }
+
+    [Fact]
     public async Task GenerateAsync_WithLineDimensions_RetainsCanonicalLedgerDimensionEnvelope()
     {
         var securityId = Guid.NewGuid();
@@ -228,6 +326,31 @@ public sealed class ReportGenerationServiceTests
         {
             PositionId = positionId
         });
+    }
+
+    [Fact]
+    public async Task GenerateAsync_TotalNetAssets_IsAssetsLessLiabilities()
+    {
+        var service = new ReportGenerationService(new StubSecurityMasterQueryService(
+            new Dictionary<string, SecurityDetailDto>(),
+            new Dictionary<Guid, SecurityEconomicDefinitionRecord>()));
+        var asOf = new DateTimeOffset(2026, 4, 11, 12, 0, 0, TimeSpan.Zero);
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var capital = new LedgerAccount("Capital", LedgerAccountType.Equity);
+        var loan = new LedgerAccount("Margin loan", LedgerAccountType.Liability);
+        var income = new LedgerAccount("Fee income", LedgerAccountType.Revenue);
+        var expense = new LedgerAccount("Interest expense", LedgerAccountType.Expense);
+        var ledgerBook = new FundLedgerBook("fund-1");
+        var at = asOf.AddHours(-1);
+        ledgerBook.FundLedger.PostLines(at, "Contribution", [(cash, 1_000m, 0m), (capital, 0m, 1_000m)]);
+        ledgerBook.FundLedger.PostLines(at, "Borrowing", [(cash, 400m, 0m), (loan, 0m, 400m)]);
+        ledgerBook.FundLedger.PostLines(at, "Fee earned", [(cash, 50m, 0m), (income, 0m, 50m)]);
+        ledgerBook.FundLedger.PostLines(at, "Interest paid", [(expense, 20m, 0m), (cash, 0m, 20m)]);
+
+        var report = await service.GenerateAsync(new ReportRequest("fund-1", asOf, ledgerBook));
+
+        // Assets 1,430 less liabilities 400; equals capital 1,000 plus net income 30.
+        report.TotalNetAssets.Should().Be(1_030m);
     }
 
     [Fact]

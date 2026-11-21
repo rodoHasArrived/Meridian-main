@@ -39,6 +39,9 @@ export interface LoanBookRowViewModel {
   commitmentLabel: string;
   principalOutstandingLabel: string;
   interestAccruedLabel: string;
+  /** Owed to the borrower (PRD-115); the not-reported marker when the host predates it. */
+  prepaidInterestLabel: string;
+  unappliedCashLabel: string;
   availableToDrawLabel: string;
   maturityLabel: string;
   lastPaymentLabel: string;
@@ -148,6 +151,8 @@ export function buildLoanBookRow(loan: LoanSummary): LoanBookRowViewModel {
     commitmentLabel: money(loan.commitmentAmount),
     principalOutstandingLabel: money(loan.principalOutstanding),
     interestAccruedLabel: money(loan.interestAccruedUnpaid),
+    prepaidInterestLabel: money(loan.prepaidInterest),
+    unappliedCashLabel: money(loan.unappliedCash),
     availableToDrawLabel: money(loan.availableToDraw),
     maturityLabel: dateLabel(loan.maturityDate),
     lastPaymentLabel: dateLabel(loan.lastPaymentDate),

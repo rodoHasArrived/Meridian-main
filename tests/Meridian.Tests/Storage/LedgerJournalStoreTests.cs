@@ -270,6 +270,15 @@ public sealed class LedgerJournalStoreTests
             AggregateId = book.LedgerBookId,
             LedgerBookId = book.LedgerBookId
         };
+        target = target with
+        {
+            Entry = new JournalEntry(target.Entry.JournalEntryId, target.Entry.Timestamp, target.Entry.Description,
+                target.Entry.Lines.Select(line => line with
+                {
+                    ChartAccount = StandardChartOfAccounts.Instance.GetPostingReference(line.Account),
+                    Memo = "Retained line memo"
+                }).ToArray(), target.Entry.Metadata)
+        };
         var neighbor = BuildBalancedJournalWrite(period.PeriodId, now.AddMinutes(1)) with
         {
             AggregateId = book.LedgerBookId,
@@ -296,6 +305,108 @@ public sealed class LedgerJournalStoreTests
         var foreign = new PostgresLedgerJournalStore(database.Options, new FixedQueryTenantAccessor("tenant-beta"),
             TenantScopeEnforcementOptions.FailClosed);
         (await foreign.QueryAsync(query)).Should().BeEmpty("knowing the journal identity must not bypass tenant scope");
+
+        var prefixQuery = query with
+        {
+            JournalEntryId = null,
+            JournalEntryIdPrefix = target.Entry.JournalEntryId.ToString("D")[..23].ToUpperInvariant()
+        };
+        (await owner.QueryAsync(prefixQuery)).Should().ContainSingle().Which.Entry.JournalEntryId.Should().Be(target.Entry.JournalEntryId);
+        (await owner.QueryAsync(prefixQuery with { LedgerBookId = otherBook.LedgerBookId })).Should().BeEmpty();
+        (await foreign.QueryAsync(prefixQuery)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ExecutionLineageFilter_MatchesExactMetadataIdentifiersOnly()
+    {
+        var fillId = Guid.Parse("6F8B2C1E-0000-4000-8000-000000000001");
+        var (fillSql, fillParameters) = PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(FillId: fillId));
+        fillSql.Should().Be(" and je_filter.metadata ->> 'fillId' = @execution_fill_id");
+        fillParameters.Should().ContainSingle().Which.Should().Be(("execution_fill_id", (object)"6f8b2c1e-0000-4000-8000-000000000001"),
+            "metadata stores GUIDs in lowercase D form");
+
+        var (orderSql, orderParameters) = PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(OrderId: " PO-1 "));
+        orderSql.Should().Be(" and je_filter.metadata -> 'tags' ->> 'source.orderId' = @execution_order_id");
+        orderParameters.Should().ContainSingle().Which.Should().Be(("execution_order_id", (object)"PO-1"));
+
+        var orderGuid = Guid.NewGuid();
+        var (guidSql, guidParameters) = PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(OrderId: orderGuid.ToString("N")));
+        guidSql.Should().Contain("'source.orderId' = @execution_order_id").And.Contain("->> 'orderId' = @execution_order_guid");
+        guidParameters.Should().Contain(("execution_order_guid", (object)orderGuid.ToString("D")));
+
+        PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(LedgerBookId: Guid.NewGuid()))
+            .Sql.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ExecutionLineageFilter_ComparesExactlyTheExpressionsMigration075Indexes()
+    {
+        // The partial expression indexes are used only when the filter compares the identical expression.
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        string? migrationPath = null;
+        while (directory is not null && migrationPath is null)
+        {
+            var candidate = Path.Combine(directory.FullName, "src", "Meridian.Storage", "Ledger", "Migrations",
+                "V_ledger_075__journal_execution_lineage_indexes.sql");
+            migrationPath = File.Exists(candidate) ? candidate : null;
+            directory = directory.Parent;
+        }
+        migrationPath.Should().NotBeNull("the execution-lineage index migration ships with the store");
+        var migration = File.ReadAllText(migrationPath!);
+
+        var sql = PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(FillId: Guid.NewGuid())).Sql
+            + PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(OrderId: Guid.NewGuid().ToString())).Sql;
+        foreach (var expression in new[] { "metadata ->> 'fillId'", "metadata -> 'tags' ->> 'source.orderId'", "metadata ->> 'orderId'" })
+        {
+            sql.Should().Contain($"je_filter.{expression} =");
+            migration.Should().Contain($"(({expression}))").And.Contain($"where ({expression}) is not null");
+        }
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task QueryAsync_ExecutionLineageFindsPostingsByRecordedFillAndOrderWithinBookAndTenant()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var registry = new PostgresFundProfileTenancyRegistry(database.Options);
+        await registry.BindAsync("fund-lineage", "tenant-alpha");
+        var now = DateTimeOffset.Parse("2026-05-15T12:00:00Z");
+        var book = new LedgerBookRecord(Guid.NewGuid(), "fund-lineage", Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund, "Lineage book", "USD", now, now);
+        await database.JournalStore.SaveLedgerBookAsync(book);
+        var otherBook = book with { LedgerBookId = Guid.NewGuid(), FundStructureNodeId = Guid.NewGuid() };
+        await database.JournalStore.SaveLedgerBookAsync(otherBook);
+        var period = await database.JournalStore.SavePeriodAsync(new LedgerAccountingPeriod(
+            Guid.NewGuid(), book.LedgerBookId, 2026, 5, "2026-05", new(2026, 5, 1), new(2026, 5, 31),
+            "Open", now, null, 0), expectedVersion: 0);
+        LedgerJournalEntryWrite Write(DateTimeOffset at, JournalEntryMetadata metadata)
+        {
+            var write = BuildBalancedJournalWrite(period.PeriodId, at) with { AggregateId = book.LedgerBookId, LedgerBookId = book.LedgerBookId };
+            return write with { Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description, write.Entry.Lines, metadata) };
+        }
+        var fillA = Guid.NewGuid();
+        var fillB = Guid.NewGuid();
+        var orderGuid = Guid.NewGuid();
+        var taggedFill = Write(now, new JournalEntryMetadata(ActivityType: "trade-fill", FillId: fillA,
+            Tags: new Dictionary<string, string> { ["source.orderId"] = "PO-1" }));
+        var guidOrderFill = Write(now.AddMinutes(1), new JournalEntryMetadata(ActivityType: "trade-fill", OrderId: orderGuid, FillId: fillB));
+        var unrelated = Write(now.AddMinutes(2), new JournalEntryMetadata(ActivityType: "margin-interest"));
+        foreach (var write in new[] { taggedFill, guidOrderFill, unrelated })
+            await database.JournalStore.AppendAsync(write);
+        var owner = new PostgresLedgerJournalStore(database.Options, new FixedQueryTenantAccessor("tenant-alpha"),
+            TenantScopeEnforcementOptions.FailClosed);
+
+        (await owner.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: book.LedgerBookId, FillId: fillA)))
+            .Should().ContainSingle().Which.Entry.JournalEntryId.Should().Be(taggedFill.Entry.JournalEntryId);
+        (await owner.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: book.LedgerBookId, OrderId: "PO-1")))
+            .Should().ContainSingle().Which.Entry.JournalEntryId.Should().Be(taggedFill.Entry.JournalEntryId);
+        (await owner.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: book.LedgerBookId, OrderId: orderGuid.ToString("D").ToUpperInvariant())))
+            .Should().ContainSingle().Which.Entry.JournalEntryId.Should().Be(guidOrderFill.Entry.JournalEntryId);
+        (await owner.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: book.LedgerBookId, OrderId: "PO-2"))).Should().BeEmpty();
+        (await owner.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: otherBook.LedgerBookId, FillId: fillA))).Should().BeEmpty();
+        var foreign = new PostgresLedgerJournalStore(database.Options, new FixedQueryTenantAccessor("tenant-beta"),
+            TenantScopeEnforcementOptions.FailClosed);
+        (await foreign.QueryAsync(new LedgerJournalEntryQuery(FillId: fillA))).Should().BeEmpty("a fill identifier must not bypass tenant scope");
     }
 
     [LedgerDatabaseFact]
@@ -441,6 +552,21 @@ public sealed class LedgerJournalStoreTests
             retainedContext,
             book.AccountingPolicyId,
             book.AccountingPolicyVersion);
+
+        var foreignFunctionalEntry = new JournalEntry(
+            validWrite.Entry.JournalEntryId,
+            validWrite.Entry.Timestamp,
+            validWrite.Entry.Description,
+            validWrite.Entry.Lines.Select(line => new LedgerEntry(
+                line.EntryId, line.JournalEntryId, line.Timestamp, line.Account, line.Debit, line.Credit,
+                line.Description, line.Dimensions,
+                new LedgerEntryCurrency("EUR", "EUR", line.Debit, line.Credit, 1m))).ToArray(),
+            validWrite.Entry.Metadata);
+        var foreignFunctionalWrite = validWrite with { Entry = foreignFunctionalEntry };
+        var appendForeignCurrency = () => database.JournalStore.AppendAsync(foreignFunctionalWrite);
+        await appendForeignCurrency.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*line functional currency 'EUR'*retained ledger book*currency 'USD'*");
+
         await database.JournalStore.AppendAsync(validWrite);
 
         var retained = await database.JournalStore.QueryAsync(
@@ -728,9 +854,17 @@ public sealed class LedgerJournalStoreTests
 
         var act = () => database.JournalStore.AppendAsync(second);
 
-        var exception = await act.Should().ThrowAsync<PostgresException>();
-        exception.Which.SqlState.Should().Be(PostgresErrorCodes.UniqueViolation);
-        exception.Which.ConstraintName.Should().Be("ux_journal_entries_command");
+        await act.Should().ThrowAsync<LedgerValidationException>().WithMessage("*identity collision*");
+        // The append boundary now rejects mismatched receipts before insertion. Keep proving
+        // the database's global uniqueness guard as well as the unchanged retained posting.
+        await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var index = connection.CreateCommand();
+        index.CommandText = "select indexdef from pg_indexes where schemaname=@schema and indexname='ux_journal_entries_command'";
+        index.Parameters.AddWithValue("schema", database.Options.SchemaName);
+        var definition = (string?)await index.ExecuteScalarAsync();
+        definition.Should().NotBeNull();
+        definition.Should().Contain("CREATE UNIQUE INDEX").And.Contain("(command_id)");
         var retained = await database.JournalStore.GetByPeriodAsync(periodId);
         retained.Should().ContainSingle(record =>
             record.Entry.JournalEntryId == first.Entry.JournalEntryId &&
@@ -2638,7 +2772,14 @@ public sealed class LedgerJournalStoreTests
             VendorId: "vendor-1",
             ProjectId: "project-1")
         {
-            PositionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70")
+            PositionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70"),
+            IntercompanyAgreementId = Guid.Parse("aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb"),
+            IntercompanyAgreementVersion = 1,
+            AccountingArrangementId = "51e16a9e-56f3-4765-81b6-403c38a29d71",
+            AccountingArrangementRevisionId = "51e16a9e-56f3-4765-81b6-403c38a29d72",
+            ChartAccountNodeId = "51e16a9e-56f3-4765-81b6-403c38a29d73",
+            AccountBindingRevisionId = "51e16a9e-56f3-4765-81b6-403c38a29d74",
+            IntercompanyTransactionId = "recharge-transaction-1"
         };
 
     private static bool HasDimensionValue(PropertyInfo property, LedgerLineDimensionSet dimensions)

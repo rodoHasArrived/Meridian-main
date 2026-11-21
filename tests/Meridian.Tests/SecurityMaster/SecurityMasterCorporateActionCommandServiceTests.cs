@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 
@@ -34,18 +35,21 @@ public sealed class SecurityMasterCorporateActionCommandServiceTests
     [Fact]
     public async Task AppendAsync_WithValidDividend_AppendsThroughEventStoreAndReturnsAudit()
     {
+        const string sourceSystem = "private-source\r\nforged-source";
+        const string actor = "analyst+private-account@example.com";
         var securityId = Guid.NewGuid();
         var action = CreateDividend(securityId);
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var logger = new RecordingLogger<SecurityMasterCorporateActionCommandService>();
         var service = new SecurityMasterCorporateActionCommandService(
             eventStore,
-            NullLogger<SecurityMasterCorporateActionCommandService>.Instance);
+            logger);
 
         var result = await service.AppendAsync(new SecurityMasterCorporateActionAppendRequestDto(
             securityId,
             action,
-            SourceSystem: "workstation-http",
-            Actor: "analyst@example.com",
+            SourceSystem: sourceSystem,
+            Actor: actor,
             SourceRecordId: "case-42",
             Reason: "operator import",
             CorrelationId: "trace-42"));
@@ -53,12 +57,19 @@ public sealed class SecurityMasterCorporateActionCommandServiceTests
         result.CorporateAction.Should().Be(action);
         result.Audit.SecurityId.Should().Be(securityId);
         result.Audit.CorporateActionId.Should().Be(action.CorpActId);
-        result.Audit.SourceSystem.Should().Be("workstation-http");
-        result.Audit.Actor.Should().Be("analyst@example.com");
+        result.Audit.SourceSystem.Should().Be(sourceSystem);
+        result.Audit.Actor.Should().Be(actor);
         result.Audit.SourceRecordId.Should().Be("case-42");
         result.Audit.Reason.Should().Be("operator import");
         result.Audit.CorrelationId.Should().Be("trace-42");
         await eventStore.Received(1).AppendCorporateActionAsync(action, Arg.Any<CancellationToken>());
+        logger.Entries.Should().NotBeEmpty();
+        logger.Entries.Should().OnlyContain(entry =>
+            entry.Exception == null
+            && !entry.Message.Contains(sourceSystem, StringComparison.Ordinal)
+            && !entry.Message.Contains(actor, StringComparison.Ordinal)
+            && !entry.Message.Contains('\r')
+            && !entry.Message.Contains('\n'));
     }
 
     [Fact]

@@ -7,3 +7,5 @@ global using Meridian.Strategies.Interfaces;
 global using Meridian.Strategies.Models;
 global using Microsoft.Extensions.Logging;
 [assembly: InternalsVisibleTo("Meridian.Tests")]
+[assembly: InternalsVisibleTo("Meridian.Storage.Tests")]
+[assembly: InternalsVisibleTo("Meridian.Execution.Tests")]

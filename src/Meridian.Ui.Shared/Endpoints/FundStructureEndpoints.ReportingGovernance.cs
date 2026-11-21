@@ -669,7 +669,7 @@ public static partial class FundStructureEndpoints
         }
     }
 
-    private static bool TryResolveReportingGovernanceCaller(
+    internal static bool TryResolveReportingGovernanceCaller(
         HttpContext context,
         out ReportingGovernanceCallerContext? caller,
         out IResult? error)

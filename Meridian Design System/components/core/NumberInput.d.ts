@@ -1,6 +1,7 @@
+import type React from "react";
 /** Numeric field with +/- stepper buttons — mono value, hairline border. `min`/`max` clamp the value
  * and disable the boundary button; uncontrolled beyond the initial `value` (keeps its own state). */
-export interface NumberInputProps {
+export interface NumberInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "min" | "max" | "step"> {
   /** Small-caps label rendered above the field. */
   label?: string;
   /** Initial value. @default 0 */
@@ -13,4 +14,4 @@ export interface NumberInputProps {
   step?: number;
   disabled?: boolean;
 }
-export declare function NumberInput(props: NumberInputProps): JSX.Element;
+export declare function NumberInput(props: NumberInputProps): React.JSX.Element;

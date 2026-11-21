@@ -784,7 +784,7 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
       id: "rule-trade-buy",
       title: "Trade buy posting",
       eventLabel: "TradeExecuted",
-      effectiveLabel: "2026-01-01 -> 2026-12-31",
+      effectiveLabel: "2026-01-01 → 2026-12-31",
       priorityLabel: "Priority 10",
       promotionLabel: "Approved by cfo",
       statusLabel: "Generated postings"
@@ -901,7 +901,7 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
       expect.objectContaining({
         id: "worker-plan-historical-book-primary",
         kindLabel: "Historical journal backfill",
-        countLabel: "275 source records -> 275 migrated records",
+        countLabel: "275 source records → 275 migrated records",
         evidenceLabel: "1 evidence reference",
         tone: "success"
       })
@@ -918,7 +918,7 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
         severityLabel: "Warning",
         areaLabel: "Ledger Books, Posting Rules, Journal Lifecycle, Close Reporting",
         blockingIssueLabel: "workflow.evidence.missing, journal.lifecycle.missing",
-        issueDetailLabel: "workflow.evidence.missing: Ledger-book workflow evidence is missing for the selected book. -> Retain selected-book workflow evidence before production rollout.",
+        issueDetailLabel: "workflow.evidence.missing: Ledger-book workflow evidence is missing for the selected book. → Retain selected-book workflow evidence before production rollout.",
         routeLabel: "/accounting/configure, /accounting/journal-entries",
         tone: "warning"
       }),

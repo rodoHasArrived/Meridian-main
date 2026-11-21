@@ -41,7 +41,11 @@ public sealed class JsonlBackfillBarWriter(string dataRoot) : IBackfillBarWriter
             DataGranularity.Minute5 => "5min",
             DataGranularity.Minute15 => "15min",
             DataGranularity.Minute30 => "30min",
-            _ => "daily"
+            DataGranularity.Hour4 => "4hour",
+            DataGranularity.Weekly => "weekly",
+            DataGranularity.Monthly => "monthly",
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(granularity), granularity, "Unsupported backfill bar granularity.")
         };
         var policy = new JsonlStoragePolicy(new StorageOptions
         {

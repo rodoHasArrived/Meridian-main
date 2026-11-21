@@ -51,6 +51,13 @@ public sealed class SchedulePeriodRollingRatchetTests
         // isInterestOnlyPeriod: the interest-only end date is origination plus the interest-only
         // months, a single contractual offset that no schedule generates.
         ["src/Meridian.FSharp/Domain/DirectLending.fs"] = 1,
+        // Portfolio presentation/scenario horizons: two default 2Y/10Y rate-shock pillars and
+        // four 1Y/3Y/5Y/10Y maturity-bucket boundaries. These never construct coupon periods.
+        ["src/Meridian.Instruments/FixedIncome/BondPortfolioWorkflowServices.cs"] = 6,
+        // Retained observation query bounds only: two one-month post-maturity ceilings (fixings
+        // and CPI) and one 25-month CPI lookback covering the admitted 24-month lag plus interpolation.
+        // Contractual periods and their payment/accrual dates still come from ScheduleGenerator.
+        ["src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs"] = 3,
     };
 
     private static readonly Regex PeriodRoll = new(@"\.Add(Months|Years)\s*[( ]", RegexOptions.CultureInvariant);

@@ -1,0 +1,3 @@
+# Local calendar helpers and DOW
+
+`DOW` is the public Sunday-first weekday vocabulary. Local-date helper functions back the `LocalDate` carrier and date pickers. `fromISO` round-trips year/month/day and rejects impossible dates; `addMonths` clamps month-end rather than rolling into the next month. `parseLoose` rejects impossible ISO and numeric dates instead of silently normalizing them. Use local calendar dates for accounting, settlement and reporting days; use `Timestamp` for genuine instants. `weeksFor`, `dowLabels` and `rangePresets` accept explicit calendar inputs for deterministic fixtures. Do not convert a calendar date through UTC serialization to display it.

@@ -1,3 +1,4 @@
+import { DesignSystemStatus } from "@/design-system/status";
 import { Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
   type ReportingCommandStatus
 } from "@/screens/reporting-screen.shared-components";
 import type { ReportWriterDatasetSource } from "@/types";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 export type ExportsReportRunDraftField =
   | "templateRowId"
@@ -124,8 +126,8 @@ export function ExportsReportRunner({
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="eyebrow-label">{workspaceLabel}</div>
-              <CardTitle>Run a governed report now</CardTitle>
+              <div className={eyebrowClassName(workspaceLabel)}>{workspaceLabel}</div>
+              <CardTitle>Run a report now</CardTitle>
               <CardDescription>
                 Submit approved Reporting templates through Meridian reporting services with explicit date, requester, retry, and dataset context.
               </CardDescription>
@@ -236,7 +238,7 @@ export function ExportsReportRunner({
             <div>
               <h4 className="text-sm font-semibold text-foreground">Restate a released report</h4>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Regenerating a released report is a governed action that supersedes the released run. Select the
+                Regenerating a released report is a controlled action that supersedes the released run. Select the
                 released run to restate — its template and as-of date are reused so the new run versions into the same
                 series — and record why. The reason is retained in the run&apos;s audit trail.
               </p>
@@ -294,7 +296,7 @@ export function ExportsReportRunner({
                       <Badge variant={selectedTemplate.accessGovernance.postureVariant}>{selectedTemplate.accessGovernance.postureLabel}</Badge>
                       <Badge variant="outline">{presentReportingIdentifier(selectedTemplate.family, "Report")}</Badge>
                     </>
-                  ) : <Badge variant="outline">Unavailable</Badge>}
+                  ) : <DesignSystemStatus status="unavailable">Unavailable</DesignSystemStatus>}
                 </span>
               </div>
               <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2" aria-label={`${contextLabel} request summary`}>
