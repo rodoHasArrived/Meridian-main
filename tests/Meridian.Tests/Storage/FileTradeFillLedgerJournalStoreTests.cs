@@ -65,6 +65,30 @@ public sealed class FileTradeFillLedgerJournalStoreTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task LateFillWithEarlierTimestamp_KeepsPostingSequenceAfterRestart()
+    {
+        var later = Write(Buy(1_000m, "fill-later", Start.AddMinutes(2)));
+        var lateArrival = Write(Buy(250m, "fill-late-arrival", Start.AddMinutes(1)));
+        IReadOnlyList<LedgerJournalEntryRecord> beforeRestart;
+        await using (var store = OpenStore())
+        {
+            var target = FileTradeFillLedger.CreatePostingTarget(store);
+            await target.PostAndConfirmAsync(later);
+            await target.PostAndConfirmAsync(lateArrival);
+            beforeRestart = await store.GetAllAsync();
+        }
+
+        await using var reopened = OpenStore();
+        var afterRestart = await reopened.GetAllAsync();
+
+        beforeRestart.Select(record => record.Entry.JournalEntryId)
+            .Should().Equal(later.Entry.JournalEntryId, lateArrival.Entry.JournalEntryId);
+        afterRestart.Select(record => (record.Entry.JournalEntryId, record.GlobalSequence))
+            .Should().Equal(beforeRestart.Select(record => (record.Entry.JournalEntryId, record.GlobalSequence)),
+                "a record's sequence is its durable posting position, not its timestamp rank");
+    }
+
+    [Fact]
     public async Task RepostAfterRestart_ConfirmsRetainedJournalWithoutAppending()
     {
         var write = Write(Buy(1_000m, "fill-1"), commandId: Guid.NewGuid());

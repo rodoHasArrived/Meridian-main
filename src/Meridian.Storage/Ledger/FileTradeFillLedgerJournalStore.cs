@@ -293,8 +293,10 @@ public sealed class FileTradeFillLedgerJournalStore
         }
 
         // The last envelope for a journal id wins: an earlier one can only be an envelope whose
-        // entry never reached the journal, superseded by the replay that retained it.
-        var envelopes = new Dictionary<Guid, TradeFillJournalEnvelope>();
+        // entry never reached the journal, superseded by the replay that retained it. Its WAL
+        // sequence also records posting order: each entry's final envelope is made durable
+        // immediately before the entry, under the store gate.
+        var envelopes = new Dictionary<Guid, (TradeFillJournalEnvelope Envelope, long WalSequence)>();
         await foreach (var walRecord in _envelopes.GetUncommittedRecordsAsync(ct).ConfigureAwait(false))
         {
             if (walRecord.RecordType != EnvelopeRecordType)
@@ -317,28 +319,33 @@ public sealed class FileTradeFillLedgerJournalStore
                     $"Trade-fill journal '{ScopeId}' envelope {walRecord.Sequence} is unreadable: {ex.Message}", ex);
             }
 
-            envelopes[envelope.JournalEntryId] = envelope;
+            envelopes[envelope.JournalEntryId] = (envelope, walRecord.Sequence);
         }
 
+        // The rebuilt ledger orders its journal by entry timestamp, which a late fill can precede.
+        // Retained records keep posting order instead, so their sequences survive a restart.
         var ledger = await _journal.LoadLedgerAsync(ct).ConfigureAwait(false);
-        var sequence = 0L;
+        var retained = new List<(long WalSequence, TradeFillJournalEnvelope Envelope, JournalEntry Entry)>(ledger.Journal.Count);
         foreach (var journalEntry in ledger.Journal)
         {
-            sequence++;
-            if (!envelopes.TryGetValue(journalEntry.JournalEntryId, out var envelope))
+            if (!envelopes.TryGetValue(journalEntry.JournalEntryId, out var bound))
             {
                 throw new InvalidDataException(
                     $"Trade-fill journal '{ScopeId}' entry '{journalEntry.JournalEntryId:D}' has no posting envelope.");
             }
 
-            if (!Sha256Digest.FixedEquals(envelope.EntryHash, EntryHash(journalEntry)))
+            if (!Sha256Digest.FixedEquals(bound.Envelope.EntryHash, EntryHash(journalEntry)))
             {
                 throw new InvalidDataException(
                     $"Trade-fill journal '{ScopeId}' entry '{journalEntry.JournalEntryId:D}' does not match its posting envelope.");
             }
 
-            AddRecord(envelope.ToRecord(journalEntry, sequence));
+            retained.Add((bound.WalSequence, bound.Envelope, journalEntry));
         }
+
+        var sequence = 0L;
+        foreach (var (_, envelope, journalEntry) in retained.OrderBy(static item => item.WalSequence))
+            AddRecord(envelope.ToRecord(journalEntry, ++sequence));
 
         _loaded = true;
     }
