@@ -265,6 +265,7 @@ public sealed class UiServer : IAsyncDisposable
                 if (!string.IsNullOrWhiteSpace(
                         Environment.GetEnvironmentVariable(LifecycleSupervisorBridgeHostedService.PipeEnvironmentVariable)))
                 {
+                    builder.Services.AddSingleton<RuntimeSupervisorConnection>();
                     builder.Services.AddHostedService<LifecycleSupervisorBridgeHostedService>();
                 }
 

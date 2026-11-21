@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using BackfillCoordinator = Meridian.Ui.Shared.Services.BackfillCoordinator;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
+using BackfillRoutingRuntime = Meridian.Application.Backfill.BackfillRoutingRuntime;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -347,14 +348,15 @@ public static class BackfillEndpoints
         .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageProviders);
 
         // Get provider statuses from the effective host configuration.
-        group.MapGet(UiApiRoutes.BackfillProviderStatuses, (HttpContext context, [FromServices] ConfigStore store) =>
+        group.MapGet(UiApiRoutes.BackfillProviderStatuses, (HttpContext context, [FromServices] ConfigStore store,
+            [FromServices] BackfillRoutingRuntime? runtime) =>
         {
             var providerConfig = store.Load().Backfill?.Providers;
-            if (providerConfig is null)
+            if (providerConfig is null && runtime?.Current is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill provider configuration");
 
             var metadata = GetKnownProviderMetadata();
-            var statuses = BuildProviderStatuses(metadata, providerConfig);
+            var statuses = BuildProviderStatuses(metadata, providerConfig ?? new());
             return Results.Json(statuses, jsonOptions);
         })
         .WithName("GetBackfillProviderStatuses")
@@ -396,11 +398,41 @@ public static class BackfillEndpoints
             }
         })
         .WithName("UpdateBackfillProvider")
-        .WithDescription("Updates secret-free backfill options within the declared vendor-tier ceiling; requires a host restart.")
+        .WithDescription("Updates secret-free backfill options. Enablement and priority apply to the next job; pacing and tiers require restart.")
         .ProducesValidationProblem()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .RequirePermission(UserPermission.ManageProviders)
         .RequirePermission(UserPermission.ModifyConfig);
+
+        group.MapGet(UiApiRoutes.BackfillProviders + "/effective-order", (HttpContext context,
+            [FromServices] BackfillRoutingRuntime? runtime) =>
+        {
+            if (runtime?.Current is not { } routing)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill routing runtime");
+
+            var tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId;
+            var visible = routing.ForTenant(tenantId);
+            static object ToProvider(BackfillRoutingProvider entry) => new
+            {
+                entry.ProviderId,
+                entry.Provider.DisplayName,
+                entry.Priority,
+                entry.Provider.IsSimulated
+            };
+
+            return Results.Json(new
+            {
+                Providers = visible.DefaultOrder.Select(ToProvider).ToArray(),
+                AvailableProviders = visible.Providers.Select(ToProvider).ToArray(),
+                routing.FallbackEnabled,
+                routing.RotationEnabled
+            }, jsonOptions);
+        })
+        .WithName("GetEffectiveBackfillProviderOrder")
+        .WithDescription("Returns the active default route and available choices for the next historical backfill job.")
+        .Produces(200)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+        .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageProviders, UserPermission.TriggerBackfill);
 
         // Get fallback chain preview (enabled providers only, sorted by priority)
         group.MapGet(UiApiRoutes.BackfillFallbackChain, (HttpContext context, [FromServices] ConfigStore store) =>

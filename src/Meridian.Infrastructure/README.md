@@ -11,6 +11,11 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Infrastructure
 
+Host backfill routing retains throttle and rotation counts by provider and UTC date beneath
+`DataRoot/_meta`. It writes the last seven UTC dates atomically and keeps recent individual
+observations in memory. Durable history records route observations independently of the shared
+admission budget and its vendor reset policy.
+
 NYSE direct data sources and unified streaming refuse activation in production, packaged and
 customer builds until their provider-wide credential path supports retained tenant/account
 ownership. Final host posture and direct-construction environment flags are checked before
@@ -71,6 +76,10 @@ failures. Caller cancellation is also excluded from circuit-breaker failures.
 The queued backfill worker fetches and stores daily bars only. A request for any other granularity fails without fetching or writing, instead of storing daily bars under that granularity's file prefix where gap analysis counted them as coverage. `DataGapAnalyzer` reads `bar_15min` files as 15-minute data, not 5-minute.
 
 `BackfillJobManager` applies request-progress updates and serializes the job under one lock, so parallel request workers cannot corrupt progress or fail a succeeded request. `GapsFilled` counts each filled date once.
+
+The active backfill route shares per-vendor admission, cooldown, and health across direct and queued jobs.
+The worker records a vendor attempt when it calls that adapter, retains provider attribution and fixed
+fallback codes, and counts a session as filled after its canonical-symbol bars reach storage.
 
 Alpaca streaming trade deduplication keys on trade id and venue as well as symbol, price, size and timestamp, so distinct prints with identical content are kept while a re-delivered message is still suppressed.
 

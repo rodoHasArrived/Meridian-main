@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TickerStripService
+
+Qualified name: <code>Meridian.Wpf.Services.TickerStripService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/TickerStripService.cs:12](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L12).
+
+Manages the single always-on-top TickerStripWindow instance. Call Toggle to open/close the strip from any part of the shell.
+
+```csharp
+public static class TickerStripService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Toggle();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:17](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L17) | Opens the strip if it is closed; closes it if it is open. |
+| <code>public static void Open();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:26](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L26) | Opens and shows the ticker strip (no-op if already visible). |
+| <code>public static void Close();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:41](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L41) | Closes the ticker strip (no-op if already closed). |
+| <code>public static bool IsOpen =&gt; …;</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:48](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L48) | Returns true while the strip window is open. |
+
 ## TickerUpdateMessage
 
 Qualified name: <code>Meridian.Wpf.Services.TickerUpdateMessage</code>. Kind: `class`.
@@ -1139,23 +1160,3 @@ Declared public members:
 | <code>IReadOnlyList&lt;PaneContentState&gt; GetVisiblePaneContentStates(PaneHostViewModel paneHost);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:28](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L28) |  |
 | <code>FrameworkElement CreatePaneContent(PaneContentState state);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:30](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L30) |  |
 | <code>void InitializeNavigationFrame(Frame frame);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:32](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L32) |  |
-
-## IShellPageRegistry
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.IShellPageRegistry</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:8](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L8).
-
-Exposes the registered desktop pages, workspace capabilities, and shell definitions.
-
-```csharp
-public interface IShellPageRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;ShellPageDescriptor&gt; Pages { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:10](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L10) |  |
-| <code>IReadOnlyList&lt;WorkspaceCapabilityDescriptor&gt; WorkspaceCapabilities { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:12](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L12) |  |
-| <code>IReadOnlyList&lt;WorkspaceShellDefinition&gt; WorkspaceShells { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:14](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L14) |  |

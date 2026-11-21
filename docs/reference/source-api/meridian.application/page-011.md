@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityValidationContext
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityValidationContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:8](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L8).
+
+```csharp
+public sealed record SecurityValidationContext(SecurityProjectionRecord Record, DateTimeOffset EvaluatedAtUtc);
+```
+
+## SecurityValidationGateService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityValidationGateService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:9](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L9).
+
+Evaluates symbol and security validation gates against Security Master evidence.
+
+```csharp
+public sealed class SecurityValidationGateService : ISecurityValidationGateService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityValidationGateService(ISecurityMasterQueryService securityMaster, ISecurityValidationService validationService, ISecurityValidationSnapshotStore snapshotStore);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:15](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L15) |  |
+| <code>public async Task&lt;SecurityValidationGateResultDto&gt; ValidateSymbolAsync(string symbol, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:25](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L25) |  |
+| <code>public async Task&lt;SecurityValidationGateResultDto&gt; ValidateSecurityAsync(Guid securityId, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, string? symbol = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:69](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs#L69) |  |
+
+## SecurityValidationService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityValidationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:24](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L24).
+
+Runs record and universe validation using registered asset-class rules and reference evidence.
+
+```csharp
+public sealed class SecurityValidationService : ISecurityValidationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityValidationService(ISecurityMasterStore store, AssetClassValidatorRegistry assetClassValidators, IOperatorOverridesStore? operatorOverridesStore = null);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:50](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L50) |  |
+| <code>public async Task&lt;SecurityValidationReportDto&gt; ValidateSecurityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:60](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L60) |  |
+| <code>public async Task&lt;SecurityValidationReportDto&gt; ValidateUniverseAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:90](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs#L90) |  |
+
 ## DiscountedCashFlowValuationModel
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Valuation.DiscountedCashFlowValuationModel</code>. Kind: `class`.
@@ -945,60 +995,3 @@ Declared public members:
 | <code>public string Name { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:586](../../../../src/Meridian.Application/Services/DryRunService.cs#L586) |  |
 | <code>public bool Passed { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:587](../../../../src/Meridian.Application/Services/DryRunService.cs#L587) |  |
 | <code>public string Message { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:588](../../../../src/Meridian.Application/Services/DryRunService.cs#L588) |  |
-
-## ValidationSection
-
-Qualified name: <code>Meridian.Application.Services.ValidationSection</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DryRunService.cs:557](../../../../src/Meridian.Application/Services/DryRunService.cs#L557).
-
-A validation section with checks.
-
-```csharp
-public sealed class ValidationSection
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:559](../../../../src/Meridian.Application/Services/DryRunService.cs#L559) |  |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:560](../../../../src/Meridian.Application/Services/DryRunService.cs#L560) |  |
-| <code>public List&lt;ValidationCheck&gt; Checks { get; set; } = new ();</code> | [src/Meridian.Application/Services/DryRunService.cs:561](../../../../src/Meridian.Application/Services/DryRunService.cs#L561) |  |
-| <code>public List&lt;string&gt; Warnings { get; set; } = new ();</code> | [src/Meridian.Application/Services/DryRunService.cs:562](../../../../src/Meridian.Application/Services/DryRunService.cs#L562) |  |
-| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Application/Services/DryRunService.cs:563](../../../../src/Meridian.Application/Services/DryRunService.cs#L563) |  |
-| <code>public void AddCheck(string name, bool passed, string message, string errorMessage);</code> | [src/Meridian.Application/Services/DryRunService.cs:565](../../../../src/Meridian.Application/Services/DryRunService.cs#L565) |  |
-
-## WebhookConfig
-
-Qualified name: <code>Meridian.Application.Services.WebhookConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:670](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L670).
-
-Configuration for a single webhook endpoint.
-
-```csharp
-public sealed record WebhookConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; init; } = &quot;Default&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:675](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L675) | Display name for the webhook. |
-| <code>public string Url { get; init; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:680](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L680) | Webhook URL. |
-| <code>public WebhookType Type { get; init; } = WebhookType.Generic;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:685](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L685) | Type of webhook (affects message formatting). |
-| <code>public bool Enabled { get; init; } = true;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:690](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L690) | Whether this webhook is enabled. |
-| <code>public Dictionary&lt;string, string&gt;? Headers { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:695](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L695) | Custom headers to include with requests. |
-
-## WebhookDeliveryResult
-
-Qualified name: <code>Meridian.Application.Services.WebhookDeliveryResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:771](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L771).
-
-Result of a single webhook delivery.
-
-```csharp
-public readonly record struct WebhookDeliveryResult(string WebhookName, WebhookType WebhookType, bool Success, int? StatusCode, string? ErrorMessage, DateTimeOffset SentAt);
-```

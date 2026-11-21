@@ -18,9 +18,11 @@ public partial class AddProviderWizardPage
     private async Task LoadOwnedConnectionsAsync(long? generation = null)
     {
         IReadOnlyList<ProviderConnectionDto> connections;
-        try { connections = await _settingsConfigService.GetOwnedCredentialConnectionsAsync(); }
+        try
+        { connections = await _settingsConfigService.GetOwnedCredentialConnectionsAsync(); }
         catch { connections = []; }
-        if (!generation.HasValue || IsCurrentCredentialScope(generation.Value)) _ownedConnections = connections;
+        if (!generation.HasValue || IsCurrentCredentialScope(generation.Value))
+            _ownedConnections = connections;
     }
 
     private void ResetOwnedConnectionScope()
@@ -39,7 +41,8 @@ public partial class AddProviderWizardPage
         _viewModel.ResetConnectionTest();
         _viewModel.SaveStatusText = string.Empty;
         _updatingConnectionSelection = true;
-        try { _viewModel.SelectedOwnedConnection = null; }
+        try
+        { _viewModel.SelectedOwnedConnection = null; }
         finally { _updatingConnectionSelection = false; }
     }
 
@@ -50,12 +53,15 @@ public partial class AddProviderWizardPage
         {
             foreach (var child in CredentialFieldsPanel.Children)
             {
-                if (child is SecretInputControl secret) secret.ClearSecret();
-                else if (child is TextBox text) text.Clear();
+                if (child is SecretInputControl secret)
+                    secret.ClearSecret();
+                else if (child is TextBox text)
+                    text.Clear();
             }
             CredentialFieldsPanel.Children.Clear();
         }
         finally { _clearingPersistedFields = false; }
+        _viewModel.SetCredentialDraftPresence(false);
     }
 
     private void ApplyOwnedConnectionChoices()
@@ -79,7 +85,8 @@ public partial class AddProviderWizardPage
 
     private async System.Threading.Tasks.Task OwnedConnectionSelectionChangedCoreAsync(object sender, SelectionChangedEventArgs e)
     {
-        if (_updatingConnectionSelection || sender is not ComboBox selector) return;
+        if (_updatingConnectionSelection || sender is not ComboBox selector)
+            return;
         await ApplyOwnedConnectionSelectionAsync(selector.SelectedItem as ProviderConnectionDto);
     }
 
@@ -87,7 +94,8 @@ public partial class AddProviderWizardPage
     {
         // Binding notifications can arrive after the synchronous update guard has dropped.
         // Compare with the accepted/pending scope, not the already-updated two-way binding.
-        if (SameOwnedCredentialScope(_selectedOwnedConnection, selection)) return Task.CompletedTask;
+        if (SameOwnedCredentialScope(_selectedOwnedConnection, selection))
+            return Task.CompletedTask;
         return SelectOwnedConnectionAsync(selection?.ConnectionId);
     }
 
@@ -113,7 +121,8 @@ public partial class AddProviderWizardPage
         var connection = matches[0];
         _selectedOwnedConnection = connection;
         _updatingConnectionSelection = true;
-        try { _viewModel.SelectedOwnedConnection = connection; }
+        try
+        { _viewModel.SelectedOwnedConnection = connection; }
         finally { _updatingConnectionSelection = false; }
         var generation = _credentialScopeGeneration;
         var ct = _credentialScopeCts.Token;
@@ -121,9 +130,11 @@ public partial class AddProviderWizardPage
         try
         {
             await ValidateOwnedConnectionAsync(provider, connection, ct);
-            if (!IsCurrentCredentialScope(generation)) return;
+            if (!IsCurrentCredentialScope(generation))
+                return;
             var statuses = await _settingsConfigService.GetProviderCredentialStatusesAsync(ct, connection.ConnectionId);
-            if (!IsCurrentCredentialScope(generation)) return;
+            if (!IsCurrentCredentialScope(generation))
+                return;
             _credentialStatuses = statuses;
             BuildCredentialFields();
             _viewModel.CanUseOwnedCredentials = _serviceFields is { Count: > 0 };
@@ -134,7 +145,8 @@ public partial class AddProviderWizardPage
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (Exception)
         {
-            if (!IsCurrentCredentialScope(generation)) return;
+            if (!IsCurrentCredentialScope(generation))
+                return;
             _viewModel.CanUseOwnedCredentials = false;
             _viewModel.OwnedConnectionStatusText = "Selected connection ownership or credential status is unavailable. Reload existing connections; no fallback was used.";
         }
@@ -148,7 +160,8 @@ public partial class AddProviderWizardPage
         ResetOwnedConnectionScope();
         var generation = _credentialScopeGeneration;
         await LoadOwnedConnectionsAsync(generation);
-        if (IsCurrentCredentialScope(generation)) ApplyOwnedConnectionChoices();
+        if (IsCurrentCredentialScope(generation))
+            ApplyOwnedConnectionChoices();
     }
 
     private async Task ValidateOwnedConnectionAsync(ProviderCatalogEntry provider, ProviderConnectionDto expected, CancellationToken ct)
@@ -171,7 +184,8 @@ public partial class AddProviderWizardPage
     {
         connection = _selectedOwnedConnection;
         if (connection is not null && _viewModel.CanUseOwnedCredentials && _serviceFields is not null
-            && ProviderIdentity.EqualsId(connection.ProviderFamilyId, provider.Id)) return true;
+            && ProviderIdentity.EqualsId(connection.ProviderFamilyId, provider.Id))
+            return true;
         _viewModel.SetConnectionTestError("Select an existing owned connection with an available credential schema first.");
         _viewModel.SetSaveError("Credentials were not changed. Missing ownership cannot fall back to provider-wide credentials.");
         return false;
@@ -187,18 +201,22 @@ public partial class AddProviderWizardPage
     internal async Task RemoveOwnedCredentialsAsync()
     {
         if (_selectedProvider is not { } provider || _operationInProgress || !_viewModel.RemoveCredentialsConfirmed
-            || !TryGetOwnedCredentialScope(provider, out var connection)) return;
+            || !TryGetOwnedCredentialScope(provider, out var connection))
+            return;
         var generation = _credentialScopeGeneration;
         var ct = _credentialScopeCts.Token;
         _operationInProgress = true;
         try
         {
             await ValidateOwnedConnectionAsync(provider, connection!, ct);
-            if (!IsCurrentCredentialScope(generation)) return;
+            if (!IsCurrentCredentialScope(generation))
+                return;
             await _settingsConfigService.RemoveProviderCredentialsAsync(provider.Id, connection!.ConnectionId, ct);
-            if (!IsCurrentCredentialScope(generation)) return;
+            if (!IsCurrentCredentialScope(generation))
+                return;
             await SelectOwnedConnectionAsync(connection.ConnectionId);
-            if (_credentialScopeGeneration != generation + 1) return;
+            if (_credentialScopeGeneration != generation + 1)
+                return;
             _viewModel.SaveStatusText = $"Credentials removed from selected connection {connection.ConnectionId}.";
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }

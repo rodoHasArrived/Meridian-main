@@ -80,6 +80,25 @@ public sealed class SymbolMappingViewModelTests
     }
 
     [Fact]
+    public async Task AddMappingAsync_HostFailureRetainsDraftForRetry()
+    {
+        var client = new FakeSymbolMappingClient { FailWrites = true };
+        var viewModel = new SymbolMappingViewModel(client);
+        await viewModel.LoadAsync();
+        viewModel.NewCanonicalSymbol = "BRK.B";
+        viewModel.SelectedProviderId = "IB";
+        viewModel.NewProviderSymbol = "BRK B";
+
+        await viewModel.AddMappingAsync();
+
+        viewModel.NewCanonicalSymbol.Should().Be("BRK.B");
+        viewModel.NewProviderSymbol.Should().Be("BRK B");
+        viewModel.CanAddMapping().Should().BeTrue();
+        viewModel.StatusMessage.Should().Contain("Host unavailable");
+        client.Mappings.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task RemoveMapping_RequiresInlineConfirmationBeforeDeleting()
     {
         var client = new FakeSymbolMappingClient();
@@ -154,6 +173,7 @@ public sealed class SymbolMappingViewModelTests
         public List<SymbolMapping> Mappings { get; } = [];
 
         public bool Loaded { get; private set; }
+        public bool FailWrites { get; init; }
 
         public IReadOnlyList<MappingProviderInfo> Providers => _providers;
 
@@ -179,19 +199,20 @@ public sealed class SymbolMappingViewModelTests
                     ?? SymbolMappingService.ApplyDefaultTransform(canonicalSymbol, provider.Id));
         }
 
-        public Task AddOrUpdateMappingAsync(SymbolMapping mapping, CancellationToken ct = default)
+        public Task SetProviderSymbolAsync(string canonicalSymbol, string providerId, string providerSymbol, CancellationToken ct = default)
         {
-            var existing = Mappings.FindIndex(candidate =>
-                string.Equals(candidate.CanonicalSymbol, mapping.CanonicalSymbol, StringComparison.OrdinalIgnoreCase));
-            if (existing >= 0)
+            if (FailWrites)
+                throw new InvalidOperationException("Host unavailable.");
+
+            var mapping = GetMapping(canonicalSymbol);
+            if (mapping is null)
             {
-                Mappings[existing] = mapping;
-            }
-            else
-            {
+                mapping = new SymbolMapping { CanonicalSymbol = canonicalSymbol };
                 Mappings.Add(mapping);
             }
 
+            mapping.ProviderSymbols ??= new Dictionary<string, string>();
+            mapping.ProviderSymbols[providerId] = providerSymbol;
             return Task.CompletedTask;
         }
 
@@ -212,6 +233,6 @@ public sealed class SymbolMappingViewModelTests
             return Task.FromResult(1);
         }
 
-        public string ExportToCsv() => "Canonical,IB,Yahoo";
+        public Task<string> ExportToCsvAsync(CancellationToken ct = default) => Task.FromResult("Canonical,IB,Yahoo");
     }
 }

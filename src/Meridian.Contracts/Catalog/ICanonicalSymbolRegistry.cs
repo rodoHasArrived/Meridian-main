@@ -136,6 +136,19 @@ public interface ICanonicalSymbolRegistryMigrationWriter
         CancellationToken ct = default);
 }
 
+/// <summary>Optional host-side writer for durable, atomic operator edits.</summary>
+public interface ICanonicalSymbolOperatorMappingWriter
+{
+    Task<int> SaveOperatorMappingsAsync(
+        IReadOnlyList<CanonicalSymbolDefinition> definitions,
+        CancellationToken ct = default);
+
+    Task<int> RemoveOperatorMappingsAsync(
+        string canonical,
+        string? provider,
+        CancellationToken ct = default);
+}
+
 /// <summary>Optional atomic reconciliation of Security-Master-owned symbol authority.</summary>
 public interface ICanonicalSymbolRegistrySecurityMasterWriter
 {

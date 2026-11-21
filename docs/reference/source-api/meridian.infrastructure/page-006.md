@@ -6,6 +6,112 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SyntheticHistoricalDataProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Synthetic.SyntheticHistoricalDataProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:14](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L14).
+
+Generates deterministic historical market data and corporate actions for offline development.
+
+```csharp
+public sealed class SyntheticHistoricalDataProvider : IHistoricalDataProvider, ICorporateActionSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SyntheticHistoricalDataProvider(SyntheticMarketDataConfig? config = null);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L19) |  |
+| <code>public bool IsSimulated =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L28) | Every bar this provider returns is a deterministic seeded walk, not an observed market price. Declared so valuation and reporting can mark derived figures as non-real. |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L30) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L31) |  |
+| <code>public string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L32) |  |
+| <code>public int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:33](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L33) |  |
+| <code>public TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L34) |  |
+| <code>public HistoricalDataCapabilities Capabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L35) |  |
+| <code>public Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:37](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L37) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L65) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L75) |  |
+| <code>public Task&lt;HistoricalQuotesResult&gt; GetHistoricalQuotesAsync(string symbol, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:85](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L85) |  |
+| <code>public Task&lt;HistoricalQuotesResult&gt; GetHistoricalQuotesAsync(IEnumerable&lt;string&gt; symbols, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L88) |  |
+| <code>public Task&lt;HistoricalTradesResult&gt; GetHistoricalTradesAsync(string symbol, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:91](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L91) |  |
+| <code>public Task&lt;HistoricalTradesResult&gt; GetHistoricalTradesAsync(IEnumerable&lt;string&gt; symbols, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:94](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L94) |  |
+| <code>public Task&lt;HistoricalAuctionsResult&gt; GetHistoricalAuctionsAsync(string symbol, DateOnly start, DateOnly end, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:97](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L97) |  |
+| <code>public Task&lt;HistoricalAuctionsResult&gt; GetHistoricalAuctionsAsync(IEnumerable&lt;string&gt; symbols, DateOnly start, DateOnly end, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:100](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L100) |  |
+| <code>public Task&lt;IReadOnlyList&lt;DividendInfo&gt;&gt; GetDividendsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:103](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L103) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SplitInfo&gt;&gt; GetSplitsAsync(string symbol, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs:112](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs#L112) |  |
+
+## SyntheticMarketDataClient
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Synthetic.SyntheticMarketDataClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L22).
+
+Publishes simulated trades, quotes, order books, and reference data for offline development.
+
+```csharp
+public sealed class SyntheticMarketDataClient : IMarketDataClient, ISymbolSearchProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SyntheticMarketDataClient(IMarketEventPublisher publisher, SyntheticMarketDataConfig? config = null);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L34) |  |
+| <code>public bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L46) |  |
+| <code>public bool IsSimulated =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L49) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L51) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L52) |  |
+| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L53) |  |
+| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L54) |  |
+| <code>public ProviderCapabilities ProviderCapabilities { get; } = ProviderCapabilities.Hybrid(trades : true, quotes : true, depth : true, adjustedPrices : true, intraday : true) with { SupportsSymbolSearch = true, SupportsAssetTypeFilter = true, SupportsExchangeFilter = true, SupportedAssetTypes = new[] { &quot;Stock&quot;, &quot;ETF&quot; }, SupportedExchanges = new[] { &quot;XNAS&quot;, &quot;XNYS&quot;, &quot;ARCX&quot; }, MaxDepthLevels = 50 };</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L55) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L65) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L66) |  |
+| <code>public int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L67) |  |
+| <code>public event Action&lt;WebSocketConnectionDiagnostics&gt;? ConnectionDiagnosticsChanged;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:70](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L70) |  |
+| <code>public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:73](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L73) |  |
+| <code>public Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:118](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L118) |  |
+| <code>public Task DisconnectAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:130](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L130) |  |
+| <code>public int SubscribeMarketDepth(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:133](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L133) |  |
+| <code>public void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:145](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L145) |  |
+| <code>public int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:151](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L151) |  |
+| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:163](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L163) |  |
+| <code>public Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:169](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L169) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; SearchAsync(string query, int limit = 10, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:171](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L171) |  |
+| <code>public Task&lt;SymbolDetails?&gt; GetDetailsAsync(SymbolId symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:174](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L174) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs:177](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs#L177) |  |
+
+## SyntheticOptionsChainProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Synthetic.SyntheticOptionsChainProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L22).
+
+Deterministic synthetic options chain provider for offline development and testing. Generates realistic option chains around the current underlying price using a closed-form Black-Scholes model. All data is deterministic and reproducible.
+
+```csharp
+public sealed class SyntheticOptionsChainProvider : IOptionsChainProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int DefaultStrikeRange = 10;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L30) |  |
+| <code>public const int MaxStrikeRange = 100;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L31) |  |
+| <code>public SyntheticOptionsChainProvider(SyntheticMarketDataConfig? config = null);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L35) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L44) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:45](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L45) |  |
+| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L46) |  |
+| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:47](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L47) |  |
+| <code>public ProviderCapabilities ProviderCapabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L48) |  |
+| <code>public OptionsChainCapabilities Capabilities { get; } = new () { SupportsGreeks = true, SupportsOpenInterest = true, SupportsImpliedVolatility = true, SupportsIndexOptions = true, SupportsHistorical = false, SupportsStreaming = false, SupportedInstrumentTypes = new[] { InstrumentType.EquityOption, InstrumentType.IndexOption } };</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L55) |  |
+| <code>public Task&lt;IReadOnlyList&lt;DateOnly&gt;&gt; GetExpirationsAsync(string underlyingSymbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L71) |  |
+| <code>public Task&lt;IReadOnlyList&lt;decimal&gt;&gt; GetStrikesAsync(string underlyingSymbol, DateOnly expiration, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:80](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L80) |  |
+| <code>public Task&lt;OptionChainSnapshot?&gt; GetChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:92](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L92) |  |
+| <code>public Task&lt;OptionQuote?&gt; GetOptionQuoteAsync(OptionContractSpec contract, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs:131](../../../../src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs#L131) |  |
+
 ## BrokerAdapterTemplate
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.BrokerAdapterTemplate</code>. Kind: `class`.
@@ -801,71 +907,3 @@ Declared public members:
 | <code>public ContractVerificationService(ILogger&lt;ContractVerificationService&gt; logger);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:15](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L15) |  |
 | <code>public IReadOnlyList&lt;ContractViolation&gt; Violations =&gt; …;</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:23](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L23) | Gets all recorded violations from the last verification run. |
 | <code>public bool VerifyContracts(params Assembly[] assemblies);</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:30](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L30) | Verifies all ADR implementations in the specified assemblies. |
-
-## ContractViolation
-
-Qualified name: <code>Meridian.Infrastructure.Contracts.ContractViolation</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:186](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L186).
-
-Represents a contract violation found during verification.
-
-```csharp
-public sealed record ContractViolation(string AdrId, string TypeName, string Message)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs:191](../../../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs#L191) |  |
-
-## CapabilityConfig
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.CapabilityConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:361](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L361).
-
-Capability configuration for a data source.
-
-```csharp
-public sealed record CapabilityConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int? HistoricalLookbackDays { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:366](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L366) | Maximum historical lookback in days. |
-| <code>public int? HistoricalLookbackYears { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:371](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L371) | Maximum historical lookback in years. |
-| <code>public string[]? IntradayBarIntervals { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:376](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L376) | Supported intraday bar intervals. |
-| <code>public int? MaxDepthLevels { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:381](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L381) | Maximum depth levels for market depth. |
-| <code>public bool SupportsL2 { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:386](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L386) | Whether this source supports L2 market depth. |
-| <code>public bool SupportsAdjustedPrices { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:391](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L391) | Whether this source supports adjusted prices. |
-| <code>public bool SupportsDividends { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:396](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L396) | Whether this source supports dividend data. |
-| <code>public bool SupportsSplits { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:401](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L401) | Whether this source supports split data. |
-| <code>public string[]? SupportedMarkets { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:406](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L406) | Supported market regions. |
-
-## ConnectionConfig
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.ConnectionConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:320](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L320).
-
-Connection configuration for a data source.
-
-```csharp
-public sealed record ConnectionConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? BaseUrl { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:325](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L325) | Base URL for HTTP-based sources. |
-| <code>public string? Host { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:330](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L330) | Host for socket-based sources. |
-| <code>public int? Port { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:335](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L335) | Port for socket-based sources. |
-| <code>public bool UsePaper { get; init; }</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:340](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L340) | Whether to use paper/sandbox environment. |
-| <code>public bool EnableWebSocket { get; init; } = true;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:345](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L345) | Whether to use WebSocket connection. |
-| <code>public int TimeoutSeconds { get; init; } = 30;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:350](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L350) | Connection timeout in seconds. |
-| <code>public int KeepAliveSeconds { get; init; } = 30;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:355](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L355) | Keep-alive interval in seconds. |

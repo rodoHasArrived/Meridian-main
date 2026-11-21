@@ -6,6 +6,249 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradeDto
+
+Qualified name: <code>Meridian.Contracts.Domain.TradeDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:8](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L8).
+
+Trade data transfer object.
+
+```csharp
+public sealed class TradeDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;timestamp&quot;)] public DateTimeOffset Timestamp { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:14](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L14) | Gets or sets the trade timestamp. |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:20](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L20) | Gets or sets the trade symbol. |
+| <code>[JsonPropertyName(&quot;price&quot;)] public decimal Price { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:26](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L26) | Gets or sets the trade price. |
+| <code>[JsonPropertyName(&quot;size&quot;)] public long Size { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:32](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L32) | Gets or sets the trade size. |
+| <code>[JsonPropertyName(&quot;aggressor&quot;)] public string Aggressor { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:38](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L38) | Gets or sets the aggressor side indicator. |
+| <code>[JsonPropertyName(&quot;sequenceNumber&quot;)] public long SequenceNumber { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:44](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L44) | Gets or sets the sequence number associated with the trade. |
+| <code>[JsonPropertyName(&quot;streamId&quot;)] public string? StreamId { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:50](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L50) | Gets or sets the stream identifier for the trade. |
+| <code>[JsonPropertyName(&quot;venue&quot;)] public string? Venue { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:56](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L56) | Gets or sets the venue for the trade. |
+| <code>[JsonPropertyName(&quot;tradeId&quot;)] public string? TradeId { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:62](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L62) | Gets or sets the provider-specific trade identifier. |
+| <code>[JsonPropertyName(&quot;conditions&quot;)] public string[]? Conditions { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:68](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L68) | Gets or sets any trade conditions supplied by the provider. |
+
+## VenueCode
+
+Qualified name: <code>Meridian.Contracts.Domain.VenueCode</code>. Kind: `struct`.
+
+Source: [src/Meridian.Contracts/Domain/VenueCode.cs:11](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L11).
+
+Zero-cost value object representing a trading-venue or exchange code. Prevents accidental interchange of venue codes with SymbolId or ProviderId.
+
+```csharp
+public readonly struct VenueCode : IEquatable<VenueCode>, IComparable<VenueCode>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public VenueCode(string value);</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:18](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L18) | Initializes a new VenueCode. |
+| <code>public string Value =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:26](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L26) | Returns the venue code string (uppercase). |
+| <code>public static implicit operator string(VenueCode code) =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:29](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L29) | Implicitly converts a VenueCode to its underlying string value. |
+| <code>public static explicit operator VenueCode(string value) =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:32](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L32) | Explicitly converts a raw string to a VenueCode. |
+| <code>public static readonly VenueCode Nyse = new (&quot;NYSE&quot;);</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:36](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L36) | New York Stock Exchange. |
+| <code>public static readonly VenueCode Nasdaq = new (&quot;NASDAQ&quot;);</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:38](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L38) | NASDAQ National Market. |
+| <code>public static readonly VenueCode Cboe = new (&quot;CBOE&quot;);</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:40](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L40) | Chicago Board Options Exchange. |
+| <code>public static readonly VenueCode NyseArca = new (&quot;ARCA&quot;);</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:42](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L42) | NYSE Arca electronic exchange. |
+| <code>public static readonly VenueCode Unknown = new (&quot;UNKNOWN&quot;);</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:44](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L44) | Synthetic marker for an unknown or unavailable venue. |
+| <code>public bool Equals(VenueCode other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:47](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L47) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:51](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L51) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:54](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L54) |  |
+| <code>public int CompareTo(VenueCode other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:58](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L58) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:62](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L62) |  |
+| <code>public static bool operator == (VenueCode left, VenueCode right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:65](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L65) |  |
+| <code>public static bool operator != (VenueCode left, VenueCode right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/VenueCode.cs:68](../../../../src/Meridian.Contracts/Domain/VenueCode.cs#L68) |  |
+
+## CreateEnvironmentDraftRequest
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.CreateEnvironmentDraftRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:99](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L99).
+
+```csharp
+public sealed record CreateEnvironmentDraftRequest(Guid DraftId, string Name, string CreatedBy, OrganizationEnvironmentDefinitionDto Definition, string? Notes = null);
+```
+
+## EnvironmentContextMappingDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentContextMappingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:180](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L180).
+
+```csharp
+public sealed record EnvironmentContextMappingDto(string NodeDefinitionId, Guid RuntimeNodeId, string ContextKey, string LaneId, string LaneName, EnvironmentLaneArchetype Archetype);
+```
+
+## EnvironmentDraftDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentDraftDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:106](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L106).
+
+```csharp
+public sealed record EnvironmentDraftDto(Guid DraftId, string Name, OrganizationEnvironmentDefinitionDto Definition, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string CreatedBy, string UpdatedBy, Guid? BasedOnVersionId = null, string? Notes = null);
+```
+
+## EnvironmentLaneArchetype
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLaneArchetype</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:22](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L22).
+
+```csharp
+public enum EnvironmentLaneArchetype
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IndividualInvestor</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:24](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L24) |  |
+| <code>AdvisoryPractice</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:25](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L25) |  |
+| <code>FamilyOffice</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:26](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L26) |  |
+| <code>FundPlatform</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:27](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L27) |  |
+| <code>Custom</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:28](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L28) |  |
+
+## EnvironmentLaneDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLaneDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:75](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L75).
+
+```csharp
+public sealed record EnvironmentLaneDefinitionDto(string LaneId, string Name, EnvironmentLaneArchetype Archetype, string DefaultWorkspaceId, string DefaultLandingPageTag, string RootNodeDefinitionId, string DefaultContextNodeDefinitionId, IReadOnlyList<EnvironmentManagedScopeKind> AllowedManagedScopeKinds, string? Description = null, IReadOnlyDictionary<string, string>? LabelOverrides = null, bool ShowInNavigation = true, bool UseForEmptyStates = true);
+```
+
+## EnvironmentLaneRuntimeDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLaneRuntimeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:159](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L159).
+
+```csharp
+public sealed record EnvironmentLaneRuntimeDto(string LaneId, string Name, EnvironmentLaneArchetype Archetype, string RootNodeDefinitionId, string DefaultWorkspaceId, string DefaultLandingPageTag, string DefaultContextNodeDefinitionId, IReadOnlyList<EnvironmentManagedScopeKind> AllowedManagedScopeKinds, IReadOnlyDictionary<string, string>? LabelOverrides = null, bool ShowInNavigation = true, bool UseForEmptyStates = true);
+```
+
+## EnvironmentLedgerGroupRuntimeDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentLedgerGroupRuntimeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:188](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L188).
+
+```csharp
+public sealed record EnvironmentLedgerGroupRuntimeDto(Guid LedgerGroupId, string NodeDefinitionId, string DisplayName, string BaseCurrency, Guid? OrganizationId, Guid? BusinessId, Guid? ClientId, Guid? FundId, Guid? SleeveId, Guid? VehicleId, IReadOnlyList<Guid> AccountIds, IReadOnlyList<Guid> InvestmentPortfolioIds);
+```
+
+## EnvironmentManagedScopeKind
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentManagedScopeKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:32](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L32).
+
+```csharp
+public enum EnvironmentManagedScopeKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IndividualInvestor</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:34](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L34) |  |
+| <code>FamilyOffice</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:35](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L35) |  |
+| <code>Fund</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:36](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L36) |  |
+
+## EnvironmentNodeDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:47](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L47).
+
+```csharp
+public sealed record EnvironmentNodeDefinitionDto(string NodeDefinitionId, EnvironmentNodeKind NodeKind, string Code, string Name, string BaseCurrency, string? Description = null, string? ParentNodeDefinitionId = null, OwnershipRelationshipTypeDto? ParentRelationshipType = null, string? LaneId = null, BusinessKindDto? BusinessKind = null, LegalEntityTypeDto? LegalEntityType = null, AccountTypeDto? AccountType = null, ClientSegmentKind ClientSegmentKind = ClientSegmentKind.Unspecified, string? Jurisdiction = null, string? LedgerReference = null, string? Institution = null, bool IsActive = true);
+```
+
+## EnvironmentNodeKind
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:7](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L7).
+
+```csharp
+public enum EnvironmentNodeKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Organization</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:9](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L9) |  |
+| <code>Business</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:10](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L10) |  |
+| <code>Client</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:11](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L11) |  |
+| <code>Fund</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:12](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L12) |  |
+| <code>Sleeve</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:13](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L13) |  |
+| <code>Vehicle</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:14](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L14) |  |
+| <code>InvestmentPortfolio</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:15](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L15) |  |
+| <code>Entity</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:16](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L16) |  |
+| <code>Account</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:17](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L17) |  |
+| <code>LedgerGroup</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:18](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L18) |  |
+
+## EnvironmentNodeRemapDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentNodeRemapDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:117](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L117).
+
+```csharp
+public sealed record EnvironmentNodeRemapDto(string RemovedNodeDefinitionId, string ReplacementNodeDefinitionId);
+```
+
+## EnvironmentPublishChangeDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentPublishChangeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:146](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L146).
+
+```csharp
+public sealed record EnvironmentPublishChangeDto(string ChangeType, EnvironmentNodeKind? NodeKind, string TargetId, string Summary, bool IsBreaking = false);
+```
+
+## EnvironmentPublishPlanDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:121](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L121).
+
+```csharp
+public sealed record EnvironmentPublishPlanDto(Guid DraftId, string PublishedBy, bool AllowDestructiveDeletes = false, string? VersionLabel = null, string? Notes = null, IReadOnlyList<EnvironmentNodeRemapDto>? NodeRemaps = null);
+```
+
+## EnvironmentPublishPreviewDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:153](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L153).
+
+```csharp
+public sealed record EnvironmentPublishPreviewDto(Guid DraftId, EnvironmentValidationResultDto Validation, IReadOnlyList<EnvironmentPublishChangeDto> Changes, bool HasDestructiveChanges);
+```
+
+## EnvironmentRelationshipDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:66](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L66).
+
+```csharp
+public sealed record EnvironmentRelationshipDefinitionDto(string RelationshipDefinitionId, string ParentNodeDefinitionId, string ChildNodeDefinitionId, OwnershipRelationshipTypeDto RelationshipType, bool IsPrimary = false, decimal? OwnershipPercent = null, string? Notes = null);
+```
+
 ## EnvironmentValidationIssueDto
 
 Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto</code>. Kind: `record`.
@@ -620,355 +863,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;EtlStagedFile&gt; StageAsync(string jobId, EtlRemoteFile file, Stream sourceStream, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/IEtlStagingStore.cs:9](../../../../src/Meridian.Contracts/Etl/IEtlStagingStore.cs#L9) |  |
-
-## IPartnerFileParser
-
-Qualified name: <code>Meridian.Contracts.Etl.IPartnerFileParser</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:375](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L375).
-
-Parses a staged partner file into record envelopes.
-
-```csharp
-public interface IPartnerFileParser
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string SchemaId { get; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:377](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L377) |  |
-| <code>bool CanParse(EtlStagedFile file);</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:378](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L378) |  |
-| <code>IAsyncEnumerable&lt;PartnerRecordEnvelope&gt; ParseAsync(EtlStagedFile file, EtlCheckpointToken? checkpoint, string? schemaId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:379](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L379) |  |
-
-## IPartnerSchemaRegistry
-
-Qualified name: <code>Meridian.Contracts.Etl.IPartnerSchemaRegistry</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:456](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L456).
-
-Resolves CSV column schemas by partner schema ID.
-
-```csharp
-public interface IPartnerSchemaRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>CsvSchemaDefinition GetCsvSchema(string schemaId);</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:458](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L458) |  |
-| <code>bool IsSupported(string schemaId);</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:459](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L459) |  |
-
-## ISftpFilePublisher
-
-Qualified name: <code>Meridian.Contracts.Etl.ISftpFilePublisher</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Etl/ISftpFilePublisher.cs:6](../../../../src/Meridian.Contracts/Etl/ISftpFilePublisher.cs#L6).
-
-Publishes a local file to the configured SFTP destination.
-
-```csharp
-public interface ISftpFilePublisher
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task PublishAsync(EtlDestinationDefinition destination, string localPath, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/ISftpFilePublisher.cs:8](../../../../src/Meridian.Contracts/Etl/ISftpFilePublisher.cs#L8) |  |
-
-## PartnerRecordEnvelope
-
-Qualified name: <code>Meridian.Contracts.Etl.PartnerRecordEnvelope</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:261](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L261).
-
-Carries a parsed partner record together with its source file, checksum, and record index.
-
-```csharp
-public sealed class PartnerRecordEnvelope
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;partnerSchemaId&quot;)] public required string PartnerSchemaId { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:264](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L264) |  |
-| <code>[JsonPropertyName(&quot;sourceFileName&quot;)] public required string SourceFileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:267](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L267) |  |
-| <code>[JsonPropertyName(&quot;sourceFileChecksum&quot;)] public required string SourceFileChecksum { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:270](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L270) |  |
-| <code>[JsonPropertyName(&quot;recordIndex&quot;)] public required long RecordIndex { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:273](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L273) |  |
-| <code>[JsonPropertyName(&quot;fields&quot;)] public required IReadOnlyDictionary&lt;string, string?&gt; Fields { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:276](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L276) |  |
-| <code>[JsonPropertyName(&quot;rawLine&quot;)] public string? RawLine { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:279](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L279) |  |
-
-## AggregationOption
-
-Qualified name: <code>Meridian.Contracts.Export.AggregationOption</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:150](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L150).
-
-Describes a selectable aggregation value and its display text.
-
-```csharp
-public sealed class AggregationOption
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Value { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:152](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L152) |  |
-| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:153](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L153) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:154](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L154) |  |
-
-## AnalysisExportFormat
-
-Qualified name: <code>Meridian.Contracts.Export.AnalysisExportFormat</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:315](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L315).
-
-```csharp
-public enum AnalysisExportFormat : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>CSV</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:317](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L317) |  |
-| <code>Parquet</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:318](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L318) |  |
-| <code>JSON</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:319](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L319) |  |
-| <code>JSONL</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:320](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L320) |  |
-| <code>Excel</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:321](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L321) |  |
-| <code>HDF5</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:322](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L322) |  |
-| <code>Feather</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:323](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L323) |  |
-
-## AnalysisExportOptions
-
-Qualified name: <code>Meridian.Contracts.Export.AnalysisExportOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:22](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L22).
-
-Selects the market data, fields, aggregation, encoding, and destination for an analysis export.
-
-```csharp
-public sealed class AnalysisExportOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:24](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L24) |  |
-| <code>public DateOnly? FromDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:25](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L25) |  |
-| <code>public DateOnly? ToDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:26](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L26) |  |
-| <code>public AnalysisExportFormat Format { get; set; } = AnalysisExportFormat.Parquet;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:27](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L27) |  |
-| <code>public DataAggregation? Aggregation { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:28](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L28) |  |
-| <code>public string[]? IncludeFields { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:29](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L29) |  |
-| <code>public string[]? ExcludeFields { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:30](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L30) |  |
-| <code>public Dictionary&lt;string, string&gt;? Filters { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:31](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L31) |  |
-| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:32](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L32) |  |
-| <code>public string? FileName { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:33](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L33) |  |
-| <code>public CompressionType? Compression { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:34](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L34) |  |
-| <code>public bool IncludeMetadata { get; set; } = true;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:35](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L35) |  |
-| <code>public bool SplitBySymbol { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:36](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L36) |  |
-| <code>public string? Timezone { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:37](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L37) |  |
-
-## AnalysisExportResponse
-
-Qualified name: <code>Meridian.Contracts.Export.AnalysisExportResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:212](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L212).
-
-Carries the API response for an analysis export, including generated files and output statistics.
-
-```csharp
-public sealed class AnalysisExportResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:214](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L214) |  |
-| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:215](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L215) |  |
-| <code>public string[]? FilesCreated { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:216](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L216) |  |
-| <code>public long RowsExported { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:217](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L217) |  |
-| <code>public long BytesWritten { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:218](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L218) |  |
-| <code>public float DurationSeconds { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:219](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L219) |  |
-| <code>public string[]? Warnings { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:220](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L220) |  |
-
-## AnalysisExportResult
-
-Qualified name: <code>Meridian.Contracts.Export.AnalysisExportResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:113](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L113).
-
-Reports analysis export success, created files, output volume, duration, and warnings.
-
-```csharp
-public sealed class AnalysisExportResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:115](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L115) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:116](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L116) |  |
-| <code>public string? Format { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:117](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L117) |  |
-| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:118](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L118) |  |
-| <code>public List&lt;string&gt; FilesCreated { get; set; } = new ();</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:119](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L119) |  |
-| <code>public long RowsExported { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:120](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L120) |  |
-| <code>public long BytesWritten { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:121](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L121) |  |
-| <code>public TimeSpan Duration { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:122](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L122) |  |
-| <code>public List&lt;string&gt; Warnings { get; set; } = new ();</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:123](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L123) |  |
-
-## CompressionType
-
-Qualified name: <code>Meridian.Contracts.Export.CompressionType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:340](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L340).
-
-```csharp
-public enum CompressionType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:342](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L342) |  |
-| <code>Gzip</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:343](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L343) |  |
-| <code>LZ4</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:344](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L344) |  |
-| <code>Snappy</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:345](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L345) |  |
-| <code>ZSTD</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:346](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L346) |  |
-
-## DataAggregation
-
-Qualified name: <code>Meridian.Contracts.Export.DataAggregation</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:326](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L326).
-
-```csharp
-public enum DataAggregation : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Tick</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:328](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L328) |  |
-| <code>Second</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:329](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L329) |  |
-| <code>Minute</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:330](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L330) |  |
-| <code>FiveMinute</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:331](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L331) |  |
-| <code>FifteenMinute</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:332](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L332) |  |
-| <code>ThirtyMinute</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:333](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L333) |  |
-| <code>Hour</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:334](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L334) |  |
-| <code>Daily</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:335](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L335) |  |
-| <code>Weekly</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:336](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L336) |  |
-| <code>Monthly</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:337](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L337) |  |
-
-## DataTypeInclusion
-
-Qualified name: <code>Meridian.Contracts.Export.DataTypeInclusion</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:99](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L99).
-
-Selects which market data categories a research package includes.
-
-```csharp
-public sealed class DataTypeInclusion
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Trades { get; set; } = true;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:101](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L101) |  |
-| <code>public bool Quotes { get; set; } = true;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:102](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L102) |  |
-| <code>public bool Bars { get; set; } = true;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:103](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L103) |  |
-| <code>public bool OrderBook { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:104](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L104) |  |
-| <code>public bool OrderFlow { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:105](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L105) |  |
-
-## DateRangeType
-
-Qualified name: <code>Meridian.Contracts.Export.DateRangeType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Export/ExportPreset.cs:210](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L210).
-
-Date range types for export presets.
-
-```csharp
-public enum DateRangeType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Today</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:213](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L213) | Export today&#x27;s data. |
-| <code>Yesterday</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:215](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L215) | Export yesterday&#x27;s data. |
-| <code>LastWeek</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:217](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L217) | Export last 7 days. |
-| <code>LastMonth</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:219](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L219) | Export last 30 days. |
-| <code>LastQuarter</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:221](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L221) | Export last quarter (90 days). |
-| <code>LastYear</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:223](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L223) | Export last year. |
-| <code>All</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:225](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L225) | Export all available data. |
-| <code>Custom</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:227](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L227) | Use custom date range. |
-
-## ExportAnalysisApiFile
-
-Qualified name: <code>Meridian.Contracts.Export.ExportAnalysisApiFile</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:236](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L236).
-
-File-level evidence returned from an analysis export run.
-
-```csharp
-public sealed record ExportAnalysisApiFile(string Path, string? Symbol, string? Format, long SizeBytes, long RecordCount);
-```
-
-## ExportAnalysisApiRequest
-
-Qualified name: <code>Meridian.Contracts.Export.ExportAnalysisApiRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:226](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L226).
-
-Browser and desktop request contract for the shared analysis export endpoint.
-
-```csharp
-public sealed record ExportAnalysisApiRequest(string? ProfileId, string[]? Symbols, string? Format, DateTime? StartDate, DateTime? EndDate);
-```
-
-## ExportAnalysisApiResponse
-
-Qualified name: <code>Meridian.Contracts.Export.ExportAnalysisApiResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:246](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L246).
-
-Shared response contract for the analysis export endpoint.
-
-```csharp
-public sealed record ExportAnalysisApiResponse(string? JobId, bool Success, string Status, string ProfileId, string[]? Symbols, int FilesGenerated, long TotalRecords, long TotalBytes, string? OutputDirectory, double DurationSeconds, string? Error, string[] Warnings, IReadOnlyList<ExportAnalysisApiFile> Files, DateTimeOffset Timestamp);
-```
-
-## ExportFormatInfo
-
-Qualified name: <code>Meridian.Contracts.Export.ExportFormatInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:139](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L139).
-
-Describes an export format&#x27;s file extension, purpose, and compression support.
-
-```csharp
-public sealed class ExportFormatInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:141](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L141) |  |
-| <code>public string Extension { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:142](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L142) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:143](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L143) |  |
-| <code>public bool SupportsCompression { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:144](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L144) |  |

@@ -15,13 +15,15 @@ public sealed class BackfillProvenanceCapture
     private bool _fallbackOccurred;
 
     public BackfillProvenanceCapture(IHistoricalDataProvider provider, DataGranularity granularity,
-        bool symbolTimelineResolution, bool background = false, Func<string, int>? resolveStaleToleranceDays = null)
+        bool symbolTimelineResolution, bool background = false, Func<string, int>? resolveStaleToleranceDays = null,
+        Func<IHistoricalDataProvider, int>? resolvePriority = null)
     {
         _isComposite = provider is CompositeHistoricalDataProvider;
         var composite = provider as CompositeHistoricalDataProvider;
-        _candidates = composite?.GetReceiptCandidates(granularity) ?? [provider];
+        _candidates = composite?.GetCandidates(granularity) ?? [provider];
         Sources = _candidates.Select(candidate => Describe(candidate) with
         {
+            Priority = composite?.GetReceiptPriority(candidate) ?? resolvePriority?.Invoke(candidate) ?? candidate.Priority,
             StaleToleranceDays = composite?.ResolveValidationProfile(candidate.Name).StaleToleranceDays
                 ?? resolveStaleToleranceDays?.Invoke(candidate.Name)
                 ?? BackfillBarValidation.DefaultStaleToleranceDays
@@ -110,15 +112,27 @@ public sealed class BackfillProvenanceCapture
         {
             if (!_counts.TryGetValue(provider, out var counts))
                 _counts.Add(provider, counts = new Counts());
-            _fallbackOccurred |= _isComposite && !ReferenceEquals(_candidates[0], provider);
+            _fallbackOccurred |= _isComposite && !_candidates.IsDefaultOrEmpty && !ReferenceEquals(_candidates[0], provider);
             switch (observation)
             {
-                case BackfillProviderObservation.Requested: counts.Requests++; break;
-                case BackfillProviderObservation.Data: counts.ResponsesWithData++; break;
-                case BackfillProviderObservation.Unavailable: counts.Unavailable++; break;
-                case BackfillProviderObservation.Empty: counts.EmptyResponses++; break;
-                case BackfillProviderObservation.Stale: counts.StaleResponses++; break;
-                case BackfillProviderObservation.StaleAccepted: counts.StaleResponsesAccepted++; break;
+                case BackfillProviderObservation.Requested:
+                    counts.Requests++;
+                    break;
+                case BackfillProviderObservation.Data:
+                    counts.ResponsesWithData++;
+                    break;
+                case BackfillProviderObservation.Unavailable:
+                    counts.Unavailable++;
+                    break;
+                case BackfillProviderObservation.Empty:
+                    counts.EmptyResponses++;
+                    break;
+                case BackfillProviderObservation.Stale:
+                    counts.StaleResponses++;
+                    break;
+                case BackfillProviderObservation.StaleAccepted:
+                    counts.StaleResponsesAccepted++;
+                    break;
             }
         }
     }

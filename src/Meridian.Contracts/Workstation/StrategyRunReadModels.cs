@@ -477,6 +477,10 @@ public sealed record StrategyRunDetail(
 
     private IReadOnlyList<StrategyRunAcceptanceChecklistItemDto> _acceptanceChecklist = [];
 
+    /// <summary>Observed replay sources and verified backfill revisions from a completed run.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public StrategyRunReplayProvenanceDto? ReplayProvenance { get; init; }
+
     /// <summary>
     /// Optional W6 evidence-loop projection. Kept outside the primary constructor so the
     /// established CLR constructor and deconstruction signatures remain compatible.
@@ -497,6 +501,17 @@ public sealed record StrategyRunDetail(
         init => _acceptanceChecklist = value ?? [];
     }
 }
+
+public sealed record StrategyRunReplayProvenanceDto(
+    IReadOnlyList<StrategyRunReplaySourceCountDto> SourceMix,
+    IReadOnlyList<StrategyRunReplayRevisionDto> Revisions,
+    string? SourceMixHash,
+    string? CompletedInputHashSha256);
+
+public sealed record StrategyRunReplaySourceCountDto(string Symbol, string Source, long Bars);
+
+public sealed record StrategyRunReplayRevisionDto(
+    string RevisionId, string ContentHash, string ServingProvider, string Instrument, string Granularity);
 
 /// <summary>
 /// Security Master coverage state associated with a workstation security reference.
@@ -693,6 +708,9 @@ public sealed record StrategyRunComparison(
     IReadOnlyList<string>? CompatibilityWarnings = null,
     StrategyRunArtifactCompleteness? ArtifactCompleteness = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceMixHash { get; init; }
+
     public string? FinancingCoverageStatus { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
     public decimal? RunAttributedMarginInterest { get; init; }
@@ -826,6 +844,9 @@ public sealed record RunComparisonDto(
     IReadOnlyList<string>? CompatibilityWarnings = null,
     StrategyRunArtifactCompleteness? ArtifactCompleteness = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceMixHash { get; init; }
+
     public string? FinancingCoverageStatus { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
     public decimal? RunAttributedMarginInterest { get; init; }

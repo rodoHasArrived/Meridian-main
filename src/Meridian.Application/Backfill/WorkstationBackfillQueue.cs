@@ -121,7 +121,8 @@ public sealed class WorkstationBackfillQueue(
                 ErrorMessage = result.Success ? null : "One or more symbols could not be completed.",
                 Statistics = new ExecutionStatistics { TotalSymbols = result.Symbols.Length, TotalBarsRetrieved = result.BarsWritten },
                 QuotaReceipt = result.QuotaReceipt,
-                BatchReceipts = result.BatchReceipts?.Select(BackfillBatchReceiptSummary.FromReceipt).ToArray()
+                BatchReceipts = result.BatchReceipts?.Select(BackfillBatchReceiptSummary.FromReceipt).ToArray(),
+                RoutingAttempts = result.RoutingAttempts
             };
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
