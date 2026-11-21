@@ -6,6 +6,138 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FinancialRecordExplorerGraphNodeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerGraphNodeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:126](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L126).
+
+```csharp
+public sealed record FinancialRecordExplorerGraphNodeDto(string NodeId, string Label, string NodeType, FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default, string Href = "");
+```
+
+## FinancialRecordExplorerProofActionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerProofActionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:113](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L113).
+
+```csharp
+public sealed record FinancialRecordExplorerProofActionDto(string ActionId, string Label, string Description, string Href, bool IsEnabled = true, string DisabledReason = "", FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
+```
+
+## FinancialRecordExplorerQueryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerQueryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L32).
+
+```csharp
+public sealed record FinancialRecordExplorerQueryDto(string ViewId = "", string SearchText = "", IReadOnlyList<FinancialRecordExplorerFilterDto>? Filters = null);
+```
+
+## FinancialRecordExplorerRecordGraphDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerRecordGraphDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:122](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L122).
+
+```csharp
+public sealed record FinancialRecordExplorerRecordGraphDto(IReadOnlyList<FinancialRecordExplorerGraphNodeDto> Nodes, IReadOnlyList<FinancialRecordExplorerGraphEdgeDto> Edges);
+```
+
+## FinancialRecordExplorerRelationshipDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerRelationshipDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:139](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L139).
+
+```csharp
+public sealed record FinancialRecordExplorerRelationshipDto(string RelationshipId, string Label, string Description, string Href = "", FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
+```
+
+## FinancialRecordExplorerRowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L89).
+
+One row of a financial-record explorer.
+
+```csharp
+public sealed record FinancialRecordExplorerRowDto(string RecordId, string RecordType, string Label, string Source, string Status, FinancialRecordExplorerTone Tone, IReadOnlyList<FinancialRecordExplorerCellDto> Cells, FinancialRecordExplorerSelectedRecordDto Detail, string? SourceRunId = null);
+```
+
+## FinancialRecordExplorerSavedViewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerSavedViewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L42).
+
+```csharp
+public sealed record FinancialRecordExplorerSavedViewDto(string ViewId, string Label, string Description, bool IsSystem, bool IsActive, IReadOnlyList<FinancialRecordExplorerFilterDto> Filters, string SearchText = "", IReadOnlyList<string>? ColumnIds = null, bool? IsReadOnly = false, string? Origin = null);
+```
+
+## FinancialRecordExplorerSavedViewSaveRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerSavedViewSaveRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:146](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L146).
+
+```csharp
+public sealed record FinancialRecordExplorerSavedViewSaveRequestDto(string Label, string Description, string SearchText, IReadOnlyList<FinancialRecordExplorerFilterDto> Filters, IReadOnlyList<string>? ColumnIds = null);
+```
+
+## FinancialRecordExplorerScopeItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerScopeItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L37).
+
+```csharp
+public sealed record FinancialRecordExplorerScopeItemDto(string Label, string Value, FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
+```
+
+## FinancialRecordExplorerSelectedRecordDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerSelectedRecordDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:100](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L100).
+
+```csharp
+public sealed record FinancialRecordExplorerSelectedRecordDto(string RecordId, string RecordType, string Title, string Subtitle, string Description, FinancialRecordExplorerTone Tone, IReadOnlyList<FinancialRecordExplorerSummaryItemDto> Fields, IReadOnlyList<FinancialRecordExplorerProofActionDto> ProofActions, IReadOnlyList<FinancialRecordExplorerRelationshipDto> UsedIn, IReadOnlyList<FinancialRecordExplorerRelationshipDto> Impacts, string FullRecordHref = "");
+```
+
+## FinancialRecordExplorerSummaryItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerSummaryItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L54).
+
+```csharp
+public sealed record FinancialRecordExplorerSummaryItemDto(string Label, string Value, string Detail = "", FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
+```
+
+## FinancialRecordExplorerTone
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerTone</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L6).
+
+```csharp
+public enum FinancialRecordExplorerTone : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Default</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L8) |  |
+| <code>Success</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L9) |  |
+| <code>Warning</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L10) |  |
+| <code>Danger</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L11) |  |
+| <code>Info</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L12) |  |
+
 ## FirstRunStatusDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FirstRunStatusDto</code>. Kind: `record`.
@@ -490,157 +622,4 @@ Reconciliation row shown in Accounting operator queues.
 
 ```csharp
 public sealed record FundReconciliationItem(Guid ReconciliationRunId, Guid AccountId, string AccountDisplayName, DateOnly AsOfDate, string Status, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, DateTimeOffset RequestedAt, DateTimeOffset? CompletedAt, string ScopeLabel = "Account", string? StrategyName = null, string? RunId = null, int SecurityIssueCount = 0, bool HasSecurityCoverageIssues = false, string CoverageLabel = "n/a");
-```
-
-## FundReportAssetClassSectionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportAssetClassSectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:493](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L493).
-
-Asset-class total included in a report-pack preview.
-
-```csharp
-public sealed record FundReportAssetClassSectionDto(string AssetClass, decimal Total);
-```
-
-## FundReportingProfileDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportingProfileDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:126](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L126).
-
-Reporting profile metadata exposed to Accounting and Reporting workflows.
-
-```csharp
-public sealed record FundReportingProfileDto(string Id, string Name, string TargetTool, string Format, string Description, bool LoaderScript, bool DataDictionary);
-```
-
-## FundReportingSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportingSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:431](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L431).
-
-Report/export posture for the Accounting workspace.
-
-```csharp
-public sealed record FundReportingSummaryDto(int ProfileCount, IReadOnlyList<string> RecommendedProfiles, IReadOnlyList<WorkstationReportPackDistributionPayload> ReportPackDistributions, IReadOnlyList<FundReportingProfileDto> Profiles, string Summary, IReadOnlyList<ReportPackWorkflowRecordDto>? WorkflowRecords = null, IReadOnlyList<ReportingScheduleRecordDto>? Schedules = null, IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null, IReadOnlyList<PortfolioReportingCutDto>? PortfolioCuts = null, IReadOnlyList<StructuredReportingExportDto>? StructuredExports = null, IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null, IReadOnlyList<PortfolioReportingLiveViewDto>? LivePortfolioViews = null, IReadOnlyList<CrossFundReportingConsolidationDto>? CrossFundConsolidations = null, IReadOnlyList<PortfolioReportingPnlSliceDto>? PnlSlices = null, IReadOnlyList<PortfolioReportingAnalyticsRowDto>? AnalyticsRows = null, string? FundProfileId = null, IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null, FinancialRecordExplorerDto? ReportLineProvenanceExplorer = null, IReadOnlyList<WorkstationReportWriterDatasetSourcePayload>? ReportWriterDatasetSources = null, WorkstationReportAccessAuditSummaryDto? AccessAudit = null, IReadOnlyList<WorkstationReportingDailyWorkItemDto>? DailyWork = null, IReadOnlyList<ReportingStarterKitDto>? StarterKits = null, ReportingStarterKitStateDto? StarterKitState = null);
-```
-
-## FundReportPackArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:551](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L551).
-
-One persisted report-pack artifact and its integrity metadata.
-
-```csharp
-public sealed record FundReportPackArtifactDto(string ArtifactKind, GovernanceReportArtifactFormatDto Format, string RelativePath, long SizeBytes, string ChecksumSha256, int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
-```
-
-## FundReportPackEvidenceBundleApprovalDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackEvidenceBundleApprovalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:821](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L821).
-
-```csharp
-public sealed record FundReportPackEvidenceBundleApprovalDto(GovernanceReportPackStatusDto? FromStatus, GovernanceReportPackStatusDto ToStatus, DateTimeOffset ApprovedAtUtc, string Actor, string Reason, string CorrelationId);
-```
-
-## FundReportPackEvidenceBundleDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackEvidenceBundleDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:829](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L829).
-
-```csharp
-public sealed record FundReportPackEvidenceBundleDto(Guid BundleId, Guid ReportId, string FundProfileId, string DisplayName, GovernanceReportKindDto ReportKind, string Currency, DateTimeOffset AsOf, DateTimeOffset GeneratedAt, DateTimeOffset ExportedAtUtc, string ExportedBy, string ManifestPath, string ProvenancePath, string SourceSnapshotHash, FundReportPackSnapshotDto Manifest, FundReportPackProvenanceDto Provenance, IReadOnlyList<FundReportPackEvidenceBundleApprovalDto> Approvals, IReadOnlyList<FundReportPackEvidenceBundleSourceLinkDto> SourceLinks, IReadOnlyList<FundReportPackArtifactDto> Artifacts, IReadOnlyList<string> Warnings, FundReportPackArtifactDto? BundleArtifact = null, string ContractName = GovernanceReportPackContract.ContractName, int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
-```
-
-## FundReportPackEvidenceBundleSourceLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackEvidenceBundleSourceLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:812](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L812).
-
-```csharp
-public sealed record FundReportPackEvidenceBundleSourceLinkDto(string SourceType, string SourceId, string Label, string? Route, string SourceSystem, IReadOnlyList<string> RelatedEvidenceIds, DateTimeOffset? CapturedAtUtc = null);
-```
-
-## FundReportPackGenerateRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackGenerateRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:535](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L535).
-
-Request to generate and persist an immutable governed report pack.
-
-```csharp
-public sealed record FundReportPackGenerateRequestDto(string FundProfileId, string AuditActor, GovernanceReportKindDto ReportKind = GovernanceReportKindDto.TrialBalance, DateTimeOffset? AsOf = null, string? Currency = null, string? CorrelationId = null, string? DecisionRationale = null, IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null, int? ExpectedSchemaVersion = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingThemeOverride = null);
-```
-
-## FundReportPackHistoryItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackHistoryItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:788](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L788).
-
-Lightweight row used when listing generated governed report packs.
-
-```csharp
-public sealed record FundReportPackHistoryItemDto(Guid ReportId, string FundProfileId, string DisplayName, GovernanceReportKindDto ReportKind, string Currency, DateTimeOffset AsOf, DateTimeOffset GeneratedAt, decimal TotalNetAssets, string AuditActor, int ArtifactCount, int WarningCount, string RelativeManifestPath, int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public GovernanceReportPackStatusDto Status { get; init; } = GovernanceReportPackStatusDto.Unknown;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:803](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L803) |  |
-| <code>public int ValidationIssueCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:805](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L805) |  |
-| <code>public int LifecycleEventCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:807](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L807) |  |
-| <code>public FundAuditPackReadinessDto? AuditPackReadiness { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:809](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L809) |  |
-
-## FundReportPackLifecycleEventDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackLifecycleEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:746](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L746).
-
-Audit event describing a report-pack lifecycle transition.
-
-```csharp
-public sealed record FundReportPackLifecycleEventDto(GovernanceReportPackStatusDto? FromStatus, GovernanceReportPackStatusDto ToStatus, DateTimeOffset ChangedAt, string Actor, string Reason, string CorrelationId);
-```
-
-## FundReportPackLineagePointerDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackLineagePointerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:589](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L589).
-
-```csharp
-public sealed record FundReportPackLineagePointerDto(string ScopeType, string ScopeKey, string EvidenceType, string EvidenceId, string? DisplayLabel = null, string? Route = null, string? SourceSystem = null, IReadOnlyList<string>? RelatedEvidenceIds = null, int? EvidenceCount = null, decimal? Amount = null, DateTimeOffset? CapturedAt = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Guid? AmountId { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:603](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L603) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerAmountScopeDto? AmountScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:605](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L605) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceSnapshotHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:607](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L607) |  |
-
-## FundReportPackPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:518](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L518).
-
-Preview of a generated governed report pack without writing the artifact to disk.
-
-```csharp
-public sealed record FundReportPackPreviewDto(Guid ReportId, string FundProfileId, string DisplayName, GovernanceReportKindDto ReportKind, string Currency, DateTimeOffset AsOf, DateTimeOffset GeneratedAt, decimal TotalNetAssets, int TrialBalanceLineCount, int AssetClassSectionCount, IReadOnlyList<FundReportAssetClassSectionDto> AssetClassSections, ReportBrandingThemeDto? BrandingTheme = null);
 ```

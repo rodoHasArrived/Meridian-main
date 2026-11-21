@@ -6,6 +6,261 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LeaseRecord
+
+Qualified name: <code>Meridian.Contracts.Coordination.LeaseRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Coordination/LeaseRecord.cs:6](../../../../src/Meridian.Contracts/Coordination/LeaseRecord.cs#L6).
+
+Durable lease record used for shared-storage resource ownership.
+
+```csharp
+public sealed record LeaseRecord(string ResourceId, string InstanceId, long LeaseVersion, DateTimeOffset AcquiredAtUtc, DateTimeOffset ExpiresAtUtc, DateTimeOffset LastRenewedAtUtc);
+```
+
+## CredentialInfo
+
+Qualified name: <code>Meridian.Contracts.Credentials.CredentialInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:65](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L65).
+
+Extended credential information with metadata for tracking expiration and authentication status.
+
+```csharp
+public sealed class CredentialInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:68](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L68) |  |
+| <code>[JsonPropertyName(&quot;resource&quot;)] public string Resource { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:71](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L71) |  |
+| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:74](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L74) |  |
+| <code>[JsonPropertyName(&quot;credentialType&quot;)] public CredentialType CredentialType { get; set; } = CredentialType.ApiKey;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:77](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L77) |  |
+| <code>[JsonPropertyName(&quot;expiresAt&quot;)] public DateTime? ExpiresAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:80](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L80) |  |
+| <code>[JsonPropertyName(&quot;lastAuthenticatedAt&quot;)] public DateTime? LastAuthenticatedAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:83](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L83) |  |
+| <code>[JsonPropertyName(&quot;lastTestedAt&quot;)] public DateTime? LastTestedAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:86](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L86) |  |
+| <code>[JsonPropertyName(&quot;testStatus&quot;)] public CredentialTestStatus TestStatus { get; set; } = CredentialTestStatus.Unknown;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:89](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L89) |  |
+| <code>[JsonPropertyName(&quot;isExpiringSoon&quot;)] public bool IsExpiringSoon =&gt; …;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:92](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L92) |  |
+| <code>[JsonPropertyName(&quot;isExpired&quot;)] public bool IsExpired =&gt; …;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:97](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L97) |  |
+| <code>[JsonPropertyName(&quot;canAutoRefresh&quot;)] public bool CanAutoRefresh { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:100](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L100) |  |
+| <code>[JsonIgnore] public string? RefreshToken { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:103](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L103) |  |
+| <code>[JsonIgnore] public string ExpirationDisplay { get; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:109](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L109) | Gets a friendly display string for the expiration status. |
+| <code>[JsonIgnore] public string LastAuthDisplay { get; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:134](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L134) | Gets a friendly display string for the last authentication time. |
+
+## CredentialMetadata
+
+Qualified name: <code>Meridian.Contracts.Credentials.CredentialMetadata</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:210](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L210).
+
+Metadata stored alongside credentials for tracking expiration and auth status.
+
+```csharp
+public sealed class CredentialMetadata
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;resource&quot;)] public string Resource { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:213](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L213) |  |
+| <code>[JsonPropertyName(&quot;credentialType&quot;)] public CredentialType CredentialType { get; set; } = CredentialType.ApiKey;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:216](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L216) |  |
+| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:219](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L219) |  |
+| <code>[JsonPropertyName(&quot;expiresAt&quot;)] public DateTime? ExpiresAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:222](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L222) |  |
+| <code>[JsonPropertyName(&quot;lastAuthenticatedAt&quot;)] public DateTime? LastAuthenticatedAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:225](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L225) |  |
+| <code>[JsonPropertyName(&quot;lastTestedAt&quot;)] public DateTime? LastTestedAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:228](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L228) |  |
+| <code>[JsonPropertyName(&quot;testStatus&quot;)] public CredentialTestStatus TestStatus { get; set; } = CredentialTestStatus.Unknown;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:231](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L231) |  |
+| <code>[JsonIgnore] public string? RefreshToken { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:234](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L234) |  |
+| <code>[JsonPropertyName(&quot;tokenEndpoint&quot;)] public string? TokenEndpoint { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:237](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L237) |  |
+| <code>[JsonPropertyName(&quot;clientId&quot;)] public string? ClientId { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:240](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L240) |  |
+| <code>[JsonPropertyName(&quot;autoRefreshEnabled&quot;)] public bool AutoRefreshEnabled { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:243](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L243) |  |
+| <code>[JsonPropertyName(&quot;lastRefreshAttemptAt&quot;)] public DateTime? LastRefreshAttemptAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:246](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L246) |  |
+| <code>[JsonPropertyName(&quot;refreshFailureCount&quot;)] public int RefreshFailureCount { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:249](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L249) |  |
+
+## CredentialTestResult
+
+Qualified name: <code>Meridian.Contracts.Credentials.CredentialTestResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:158](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L158).
+
+Result of a credential test operation.
+
+```csharp
+public sealed class CredentialTestResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;success&quot;)] public bool Success { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:161](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L161) |  |
+| <code>[JsonPropertyName(&quot;message&quot;)] public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:164](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L164) |  |
+| <code>[JsonPropertyName(&quot;testedAt&quot;)] public DateTime TestedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:167](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L167) |  |
+| <code>[JsonPropertyName(&quot;responseTimeMs&quot;)] public long ResponseTimeMs { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:170](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L170) |  |
+| <code>[JsonPropertyName(&quot;serverInfo&quot;)] public string? ServerInfo { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:173](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L173) |  |
+| <code>[JsonPropertyName(&quot;expiresAt&quot;)] public DateTime? ExpiresAt { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:176](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L176) |  |
+| <code>[JsonPropertyName(&quot;scopes&quot;)] public string[]? Scopes { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:179](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L179) |  |
+| <code>public static CredentialTestResult CreateSuccess(string message, long responseTimeMs = 0);</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:184](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L184) | Creates a successful test result. |
+| <code>public static CredentialTestResult CreateFailure(string message);</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:197](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L197) | Creates a failed test result. |
+
+## CredentialTestStatus
+
+Qualified name: <code>Meridian.Contracts.Credentials.CredentialTestStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:34](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L34).
+
+Status of the last credential test.
+
+```csharp
+public enum CredentialTestStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:39](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L39) | Credential has not been tested. |
+| <code>Testing</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:44](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L44) | Credential test is in progress. |
+| <code>Success</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:49](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L49) | Credential test succeeded. |
+| <code>Failed</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:54](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L54) | Credential test failed. |
+| <code>Expired</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:59](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L59) | Credential has expired. |
+
+## CredentialType
+
+Qualified name: <code>Meridian.Contracts.Credentials.CredentialType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:8](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L8).
+
+Types of credentials supported by the system.
+
+```csharp
+public enum CredentialType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ApiKey</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:13](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L13) | Simple API key (non-expiring). |
+| <code>ApiKeyWithSecret</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:18](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L18) | API key with secret (e.g., Alpaca KeyId + SecretKey). |
+| <code>OAuth2Token</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:23](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L23) | OAuth 2.0 access token (typically time-limited). |
+| <code>BearerToken</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:28](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L28) | Bearer token for API authentication. |
+
+## EnvironmentSecretProvider
+
+Qualified name: <code>Meridian.Contracts.Credentials.EnvironmentSecretProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Credentials/ISecretProvider.cs:38](../../../../src/Meridian.Contracts/Credentials/ISecretProvider.cs#L38).
+
+Default ISecretProvider that resolves secrets from environment variables. This bridges the gap between the vault abstraction and local/test environments where secrets are supplied as MDC_VAULT__{PATH}__{KEY} environment variables.
+
+```csharp
+public sealed class EnvironmentSecretProvider : ISecretProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Contracts/Credentials/ISecretProvider.cs:41](../../../../src/Meridian.Contracts/Credentials/ISecretProvider.cs#L41) |  |
+| <code>public Task&lt;string?&gt; GetSecretAsync(string path, string key, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Credentials/ISecretProvider.cs:44](../../../../src/Meridian.Contracts/Credentials/ISecretProvider.cs#L44) |  |
+| <code>public Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Credentials/ISecretProvider.cs:90](../../../../src/Meridian.Contracts/Credentials/ISecretProvider.cs#L90) |  |
+
+## ISecretProvider
+
+Qualified name: <code>Meridian.Contracts.Credentials.ISecretProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Credentials/ISecretProvider.cs:9](../../../../src/Meridian.Contracts/Credentials/ISecretProvider.cs#L9).
+
+Abstraction for retrieving secrets from external stores such as AWS Secrets Manager, Azure Key Vault, HashiCorp Vault, or environment variables. Implementations are plugged in via DI to replace the environment-variable bridge in CredentialConfig.
+
+```csharp
+public interface ISecretProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;string?&gt; GetSecretAsync(string path, string key, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Credentials/ISecretProvider.cs:18](../../../../src/Meridian.Contracts/Credentials/ISecretProvider.cs#L18) | Retrieves a secret value for the given path and key. |
+| <code>Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Credentials/ISecretProvider.cs:25](../../../../src/Meridian.Contracts/Credentials/ISecretProvider.cs#L25) | Checks whether this secret provider is configured and reachable. |
+| <code>string Name { get; }</code> | [src/Meridian.Contracts/Credentials/ISecretProvider.cs:30](../../../../src/Meridian.Contracts/Credentials/ISecretProvider.cs#L30) | Gets the display name of this provider (e.g., &quot;AWS Secrets Manager&quot;, &quot;Environment Variables&quot;). |
+
+## OAuthProviderConfig
+
+Qualified name: <code>Meridian.Contracts.Credentials.OAuthProviderConfig</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:284](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L284).
+
+Configuration for OAuth-based credential providers.
+
+```csharp
+public sealed class OAuthProviderConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;providerId&quot;)] public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:287](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L287) |  |
+| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:290](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L290) |  |
+| <code>[JsonPropertyName(&quot;tokenEndpoint&quot;)] public string TokenEndpoint { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:293](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L293) |  |
+| <code>[JsonPropertyName(&quot;clientId&quot;)] public string ClientId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:296](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L296) |  |
+| <code>[JsonPropertyName(&quot;clientSecret&quot;)] public string? ClientSecret { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:299](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L299) |  |
+| <code>[JsonPropertyName(&quot;scopes&quot;)] public string[]? Scopes { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:302](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L302) |  |
+| <code>[JsonPropertyName(&quot;autoRefreshThresholdMinutes&quot;)] public int AutoRefreshThresholdMinutes { get; set; } = 5;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:305](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L305) |  |
+
+## OAuthTokenResponse
+
+Qualified name: <code>Meridian.Contracts.Credentials.OAuthTokenResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Credentials/CredentialModels.cs:255](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L255).
+
+OAuth token response from a token endpoint.
+
+```csharp
+public sealed class OAuthTokenResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;access_token&quot;)] public string AccessToken { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:258](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L258) |  |
+| <code>[JsonPropertyName(&quot;token_type&quot;)] public string TokenType { get; set; } = &quot;Bearer&quot;;</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:261](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L261) |  |
+| <code>[JsonPropertyName(&quot;expires_in&quot;)] public int ExpiresInSeconds { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:264](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L264) |  |
+| <code>[JsonPropertyName(&quot;refresh_token&quot;)] public string? RefreshToken { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:267](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L267) |  |
+| <code>[JsonPropertyName(&quot;scope&quot;)] public string? Scope { get; set; }</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:270](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L270) |  |
+| <code>public DateTime GetExpirationTime();</code> | [src/Meridian.Contracts/Credentials/CredentialModels.cs:275](../../../../src/Meridian.Contracts/Credentials/CredentialModels.cs#L275) | Calculates the absolute expiration time from the expires_in value. |
+
+## CryptoReferenceDto
+
+Qualified name: <code>Meridian.Contracts.CryptoCurrency.CryptoReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CryptoCurrency/CryptoDtos.cs:3](../../../../src/Meridian.Contracts/CryptoCurrency/CryptoDtos.cs#L3).
+
+```csharp
+public sealed record CryptoReferenceDto(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string? Network, string PrimaryIdentifier, long Version);
+```
+
+## DepositReferenceDto
+
+Qualified name: <code>Meridian.Contracts.Deposits.DepositReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Deposits/DepositDtos.cs:5](../../../../src/Meridian.Contracts/Deposits/DepositDtos.cs#L5).
+
+```csharp
+public sealed record DepositReferenceDto(Guid SecurityId, string DisplayName, string Currency, string DepositType, string InstitutionName, DateOnly? Maturity, decimal? InterestRate, string? DayCount, bool IsCallable, string PrimaryIdentifier, long Version)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Meridian.Contracts.SecurityMaster.DayCountConvention? DayCountConvention =&gt; …;</code> | [src/Meridian.Contracts/Deposits/DepositDtos.cs:22](../../../../src/Meridian.Contracts/Deposits/DepositDtos.cs#L22) | DayCount as a typed convention, or null when the stored text is absent or names no recognized basis. The raw text stays on DayCount. |
+
 ## SwapLegDto
 
 Qualified name: <code>Meridian.Contracts.Derivatives.SwapLegDto</code>. Kind: `record`.
@@ -475,165 +730,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:457](../../..
 
 ```csharp
 public sealed record DirectLendingOperationsCollateralCoverageDto(Guid LoanId, string FacilityName, decimal PrincipalOutstanding, decimal CollateralValue, decimal CoverageRatio, string Status, string Detail, string Route);
-```
-
-## DirectLendingOperationsEvidenceItemDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsEvidenceItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:488](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L488).
-
-```csharp
-public sealed record DirectLendingOperationsEvidenceItemDto(Guid LoanId, string FacilityName, string EvidenceType, string Label, string Status, string Route);
-```
-
-## DirectLendingOperationsJournalPostureDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsJournalPostureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:496](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L496).
-
-```csharp
-public sealed record DirectLendingOperationsJournalPostureDto(Guid LoanId, string FacilityName, int DraftCount, int PostedCount, string Status, string Detail, string Route);
-```
-
-## DirectLendingOperationsLoanHealthDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsLoanHealthDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:439](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L439).
-
-```csharp
-public sealed record DirectLendingOperationsLoanHealthDto(Guid LoanId, string FacilityName, string BorrowerName, LoanStatus Status, CurrencyCode Currency, decimal CommitmentAmount, decimal PrincipalOutstanding, decimal InterestAccruedUnpaid, decimal PenaltyAccruedUnpaid, DateOnly MaturityDate, DateOnly? LastAccrualDate, DateOnly? LastPaymentDate, string HealthStatus, string HealthDetail, string Route, Guid? SecurityId = null);
-```
-
-## DirectLendingOperationsReadModelDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsReadModelDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:424](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L424).
-
-```csharp
-public sealed record DirectLendingOperationsReadModelDto(DateTimeOffset AsOf, string Status, string StatusDetail, IReadOnlyList<DirectLendingOperationsLoanHealthDto> LoanHealth, IReadOnlyList<DirectLendingOperationsCollateralCoverageDto> CollateralCoverage, IReadOnlyList<DirectLendingOperationsStatusPostureDto> CovenantStatusPosture, IReadOnlyList<DirectLendingOperationsCalendarItemDto> ServicingCalendar, IReadOnlyList<DirectLendingOperationsEvidenceItemDto> Evidence, IReadOnlyList<DirectLendingOperationsJournalPostureDto> Journals, IReadOnlyList<DirectLendingOperationsReconciliationExceptionDto> ReconciliationExceptions, IReadOnlyList<DirectLendingOperationsCloseBlockerDto> CloseBlockers, IReadOnlyList<DirectLendingOperationsServicerStatementDto>? ServicerStatements = null, Guid? LedgerBookId = null);
-```
-
-## DirectLendingOperationsReconciliationExceptionDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsReconciliationExceptionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:505](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L505).
-
-```csharp
-public sealed record DirectLendingOperationsReconciliationExceptionDto(Guid ExceptionId, Guid LoanId, string FacilityName, string ExceptionType, decimal DifferenceAmount, string Status, string AssignedTo, string Detail, string Route);
-```
-
-## DirectLendingOperationsServicerStatementDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsServicerStatementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:524](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L524).
-
-```csharp
-public sealed record DirectLendingOperationsServicerStatementDto(Guid BatchId, ServicerStatementKind Kind, string ServicerName, DateOnly StatementDate, string Status, int RowCount, int UnmappedRowCount, int ExceptionCount, int ReadyToApplyRowCount, int AppliedRowCount, string EvidenceRoute, string Detail);
-```
-
-## DirectLendingOperationsStatusPostureDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOperationsStatusPostureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:467](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L467).
-
-```csharp
-public sealed record DirectLendingOperationsStatusPostureDto(Guid LoanId, string FacilityName, LoanStatus LoanStatus, string CovenantStatus, bool PikEnabled, AmortizationType AmortizationType, string RestructurePosture, string Detail, string Route, Guid? SecurityId = null);
-```
-
-## DirectLendingOptions
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:6](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L6).
-
-Configures direct lending persistence, projection versioning, replay, and outbox processing.
-
-```csharp
-public sealed class DirectLendingOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:8](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L8) |  |
-| <code>public string Schema { get; set; } = &quot;security_master&quot;;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:10](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L10) |  |
-| <code>public int SnapshotIntervalVersions { get; set; } = 50;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:12](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L12) |  |
-| <code>public int CurrentEventSchemaVersion { get; set; } = 1;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:14](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L14) |  |
-| <code>public string ProjectionEngineVersion { get; set; } = &quot;dl-engine-v1&quot;;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:16](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L16) |  |
-| <code>public int OutboxBatchSize { get; set; } = 50;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:18](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L18) |  |
-| <code>public int OutboxPollIntervalSeconds { get; set; } = 5;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:20](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L20) |  |
-| <code>public int ReplayBatchSize { get; set; } = 250;</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:22](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L22) |  |
-| <code>public bool RequireSecurityMasterReferenceForDurableWrites { get; set; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:24](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L24) |  |
-| <code>public Guid? LedgerBookId { get; set; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:27](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L27) | Explicit book for configured single-currency accounting; null retains legacy period selection. |
-| <code>public string? LedgerChartMappingRevision { get; set; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:30](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L30) | Pinned chart workspace version required by configured loan posting. |
-| <code>public Dictionary&lt;string, string&gt; LedgerAccountPaths { get; set; } = new (StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs:33](../../../../src/Meridian.Contracts/DirectLending/DirectLendingOptions.cs#L33) | Maps economic account roles (for example LoanPrincipal) to configured chart paths. |
-
-## DirectLendingOutboxMessageDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingOutboxMessageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:463](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L463).
-
-```csharp
-public sealed record DirectLendingOutboxMessageDto(Guid OutboxMessageId, string Topic, string MessageKey, string PayloadJson, DateTimeOffset OccurredAt, DateTimeOffset VisibleAfter, DateTimeOffset? ProcessedAt, int ErrorCount, string? LastError);
-```
-
-## DirectLendingRateField
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingRateField</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:24](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L24).
-
-The rate field a declared value belongs to; each field has its own valid range.
-
-```csharp
-public enum DirectLendingRateField : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IndexFixing = 0</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:27](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L27) | An observed benchmark fixing. May be negative. |
-| <code>Spread = 1</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:30](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L30) | The margin over the index. May be negative (a discount margin). |
-| <code>Floor = 2</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:33](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L33) | A rate floor. May be negative (for example a negative-rate index floor). |
-| <code>Cap = 3</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:36](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L36) | A rate cap. |
-| <code>PikShare = 4</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:39](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L39) | The share of interest paid in kind; must lie in &#91;0, 1&#93; once normalized. |
-
-## DirectLendingRateUnit
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingRateUnit</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:11](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L11).
-
-The unit a direct-lending rate value is declared in. There is deliberately no &quot;unspecified&quot; member: a declared rate always says what its number means, so a sub-one value never has to be read by magnitude (the D10 defect in docs/architecture/security-master-extensibility-review.md).
-
-```csharp
-public enum DirectLendingRateUnit : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fraction = 0</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:14](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L14) | The value is already a fraction: 0.05 means five percent. |
-| <code>Percent = 1</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:17](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L17) | The value is in percentage points: 5 means five percent. |
-| <code>BasisPoints = 2</code> | [src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs:20](../../../../src/Meridian.Contracts/DirectLending/RateUnitNormalizer.cs#L20) | The value is in basis points: 500 means five percent. |
-
-## DirectLendingReplayCheckpointDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.DirectLendingReplayCheckpointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:474](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L474).
-
-```csharp
-public sealed record DirectLendingReplayCheckpointDto(string ProjectionName, long LastProcessedPosition, Guid? LastEventId, DateTimeOffset? LastRebuiltAt, string Status, string? Details);
 ```

@@ -1232,7 +1232,7 @@ export type ProviderCredentialSource =
 export type ProviderVerificationState = "NotRequired" | "NotVerified" | "Verified" | "Failed" | "Stale";
 export type ProviderContinuityHealth = "Unknown" | "Healthy" | "Warning" | "Degraded" | "Blocked";
 export type ProviderReadinessStatus = "Ready" | "Review" | "Degraded" | "Blocked" | "Unknown";
-export type ProviderReadinessEvidenceKind = "Credential" | "Connection" | "Validation" | "Degradation" | "Plaid" | "Routing";
+export type ProviderReadinessEvidenceKind = "Credential" | "Connection" | "Validation" | "Degradation" | "Plaid" | "Routing" | "Unknown";
 export type ProviderCredentialInputKind = "Text" | "Password" | "Url";
 
 export interface ProviderCredentialFieldMetadata {

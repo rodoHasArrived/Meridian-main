@@ -6,6 +6,130 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EntityTimelineJsonContext
+
+Qualified name: <code>Meridian.Contracts.FundStructure.EntityTimelineJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs:22](../../../../src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs#L22).
+
+```csharp
+public partial class EntityTimelineJsonContext : JsonSerializerContext;
+```
+
+## ExpireOwnershipLinkRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.ExpireOwnershipLinkRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:134](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L134).
+
+```csharp
+public sealed record ExpireOwnershipLinkRequest(Guid OwnershipLinkId, DateTimeOffset EffectiveTo, string ExpiredBy, string? Notes = null);
+```
+
+## FundAccountsDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundAccountsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:554](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L554).
+
+Fund-level grouping of accounts by type.
+
+```csharp
+public sealed record FundAccountsDto(Guid FundId, IReadOnlyList<AccountSummaryDto> CustodianAccounts, IReadOnlyList<AccountSummaryDto> BankAccounts, IReadOnlyList<AccountSummaryDto> BrokerageAccounts, IReadOnlyList<AccountSummaryDto> OtherAccounts);
+```
+
+## FundOperatingSliceDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundOperatingSliceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:397](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L397).
+
+```csharp
+public sealed record FundOperatingSliceDto(FundSummaryDto Fund, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<AccountSummaryDto> Accounts, IReadOnlyList<FundSleeveOperatingViewDto> Sleeves, IReadOnlyList<VehicleOperatingViewDto> Vehicles);
+```
+
+## FundOperatingStructureQuery
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundOperatingStructureQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureQueries.cs:26](../../../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs#L26).
+
+```csharp
+public sealed record FundOperatingStructureQuery(Guid BusinessId, Guid? OrganizationId = null, Guid? FundId = null, Guid? SleeveId = null, Guid? VehicleId = null, Guid? InvestmentPortfolioId = null, bool ActiveOnly = true, DateTimeOffset? AsOf = null);
+```
+
+## FundOperatingViewDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundOperatingViewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:404](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L404).
+
+```csharp
+public sealed record FundOperatingViewDto(OrganizationSummaryDto Organization, BusinessSummaryDto Business, IReadOnlyList<FundOperatingSliceDto> Funds, IReadOnlyList<InvestmentPortfolioSummaryDto> UnassignedInvestmentPortfolios, IReadOnlyList<AccountSummaryDto> UnassignedAccounts, FundStructureSharedDataAccessDto? SharedDataAccess = null);
+```
+
+## FundSleeveOperatingViewDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundSleeveOperatingViewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:386](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L386).
+
+```csharp
+public sealed record FundSleeveOperatingViewDto(SleeveSummaryDto Sleeve, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<AccountSummaryDto> Accounts);
+```
+
+## FundStructureAssignmentDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureAssignmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:349](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L349).
+
+```csharp
+public sealed record FundStructureAssignmentDto(Guid AssignmentId, Guid NodeId, string AssignmentType, string AssignmentReference, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, bool IsPrimary);
+```
+
+## FundStructureAssignmentQuery
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureAssignmentQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureQueries.cs:36](../../../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs#L36).
+
+```csharp
+public sealed record FundStructureAssignmentQuery(Guid? NodeId = null, string? AssignmentType = null, string? AssignmentReference = null, DateTimeOffset? AsOf = null, bool ActiveOnly = true);
+```
+
+## FundStructureContractsJsonContext
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureContractsJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureContractsJsonContext.cs:124](../../../../src/Meridian.Contracts/FundStructure/FundStructureContractsJsonContext.cs#L124).
+
+Provides source-generated JSON metadata for fund structure, account, reconciliation, and setup contracts.
+
+```csharp
+public sealed partial class FundStructureContractsJsonContext : JsonSerializerContext;
+```
+
+## FundStructureGraphDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureGraphDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:510](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L510).
+
+```csharp
+public sealed record FundStructureGraphDto(IReadOnlyList<FundStructureNodeDto> Nodes, IReadOnlyList<OwnershipLinkDto> OwnershipLinks, IReadOnlyList<FundStructureAssignmentDto> Assignments);
+```
+
+## FundStructureNodeDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureNodeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:126](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L126).
+
+```csharp
+public sealed record FundStructureNodeDto(Guid NodeId, FundStructureNodeKindDto Kind, string Code, string Name, string? Description, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo);
+```
+
 ## FundStructureNodeKindDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureNodeKindDto</code>. Kind: `enum`.
@@ -493,191 +617,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>LegalEntityReadAuthorityProof StructureAuthorityProof { get; }</code> | [src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs:25](../../../../src/Meridian.Contracts/FundStructure/LegalEntityReadAuthorityProof.cs#L25) |  |
-
-## IngestBankStatementRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IngestBankStatementRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:93](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L93).
-
-Request to ingest a bank statement.
-
-```csharp
-public sealed record IngestBankStatementRequest(Guid BatchId, Guid AccountId, DateOnly StatementDate, string BankName, string? Notes, IReadOnlyList<BankStatementLineDto> Lines, string LoadedBy, bool IsBackfill = false, int StatementRevision = 1, bool IsTransactionFeed = false);
-```
-
-## IngestCustodianStatementRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IngestCustodianStatementRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:80](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L80).
-
-Request to ingest a custodian position statement.
-
-```csharp
-public sealed record IngestCustodianStatementRequest(Guid BatchId, Guid AccountId, DateOnly AsOfDate, string CustodianName, string SourceFormat, string? Notes, IReadOnlyList<CustodianPositionLineDto> Lines, string LoadedBy, bool IsBackfill = false, CustodianStatementAuthorityDto? Authority = null);
-```
-
-## IntercompanyAccountingArrangementActionDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:11](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L11).
-
-```csharp
-public enum IntercompanyAccountingArrangementActionDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Create</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:11](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L11) |  |
-| <code>Revise</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:11](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L11) |  |
-| <code>Submit</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:11](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L11) |  |
-| <code>Approve</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:11](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L11) |  |
-| <code>Reject</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:11](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L11) |  |
-| <code>Retire</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:11](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L11) |  |
-
-## IntercompanyAccountingArrangementActionRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:83](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L83).
-
-```csharp
-public sealed record IntercompanyAccountingArrangementActionRequest(Guid RequestId, long ExpectedVersion, string? Reason = null, DateTimeOffset? EffectiveAt = null, Guid? RevisionId = null);
-```
-
-## IntercompanyAccountingArrangementDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:20](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L20).
-
-Immutable accounting configuration linked to native legal authority; contains no editable legal terms.
-
-```csharp
-public sealed record IntercompanyAccountingArrangementDto(Guid ArrangementId, Guid OrganizationId, string ArrangementReference, IntercompanyAccountingTemplateKindDto TemplateKind, Guid CanonicalAgreementId, int CanonicalAgreementVersion, string CanonicalPayloadHash, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, Guid RevisionId, int RevisionNumber, long Version, IntercompanyAccountingArrangementStatusDto Status, IReadOnlyList<IntercompanyPartyMappingDto> PartyMappings, string CreatedBy, DateTimeOffset CreatedAt, string UpdatedBy, DateTimeOffset UpdatedAt, string? ApprovedBy = null, DateTimeOffset? ApprovedAt = null, DateTimeOffset? RetiredAt = null, Guid? PredecessorRevisionId = null, IReadOnlyList<IntercompanyEntityLifecycleReferenceDto>? LifecycleEvidence = null, Guid? SupersedesRevisionId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore] public IntercompanyCanonicalAgreementReferenceDto CanonicalReference =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:31](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L31) |  |
-
-## IntercompanyAccountingArrangementEventDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:63](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L63).
-
-```csharp
-public sealed record IntercompanyAccountingArrangementEventDto(Guid RequestId, string RequestDigest, IntercompanyAccountingArrangementActionDto Action, string Actor, DateTimeOffset RecordedAt, string? Reason, IntercompanyAccountingArrangementDto Snapshot, string PreviousHash = "", string ContentHash = "", Guid? TargetRevisionId = null, IntercompanyAccountingArrangementDto? TargetRevisionSnapshot = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore] public IntercompanyAccountingArrangementDto AffectedRevision =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:68](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L68) |  |
-
-## IntercompanyAccountingArrangementHistoryDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:70](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L70).
-
-```csharp
-public sealed record IntercompanyAccountingArrangementHistoryDto(IReadOnlyList<IntercompanyAccountingArrangementEventDto> Events)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyAccountingArrangementDto Current =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:72](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L72) |  |
-
-## IntercompanyAccountingArrangementRevisionResolver
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementRevisionResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementRevisionResolver.cs:4](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementRevisionResolver.cs#L4).
-
-One interpretation of approved, retired and superseded accounting mapping windows.
-
-```csharp
-public static class IntercompanyAccountingArrangementRevisionResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IntercompanyAccountingArrangementDto ResolveApprovedRevision(IntercompanyAccountingArrangementHistoryDto history, Guid revisionId, DateTimeOffset economicDate);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementRevisionResolver.cs:6](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementRevisionResolver.cs#L6) |  |
-
-## IntercompanyAccountingArrangementsJsonContext
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementsJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:118](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L118).
-
-```csharp
-public sealed partial class IntercompanyAccountingArrangementsJsonContext : JsonSerializerContext;
-```
-
-## IntercompanyAccountingArrangementStatusDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:9](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L9).
-
-```csharp
-public enum IntercompanyAccountingArrangementStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Draft</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:9](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L9) |  |
-| <code>Submitted</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:9](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L9) |  |
-| <code>Approved</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:9](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L9) |  |
-| <code>Rejected</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:9](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L9) |  |
-| <code>Retired</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:9](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L9) |  |
-
-## IntercompanyAccountingTemplateKindDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccountingTemplateKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L7).
-
-```csharp
-public enum IntercompanyAccountingTemplateKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Loan</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L7) |  |
-| <code>CostRecharge</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L7) |  |
-| <code>ManagementFee</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L7) |  |
-| <code>ExpenseShare</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L7) |  |
-| <code>CashSweep</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L7) |  |
-| <code>Guarantee</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L7) |  |
-| <code>Manual</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L7) |  |
-| <code>LoanInterest</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:7](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L7) |  |
-
-## IntercompanyAccrualAuthoritySegment
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualAuthoritySegment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:27](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L27).
-
-One approved accounting-profile revision and its pinned legal revision over &#91;From, To).
-
-```csharp
-public sealed record IntercompanyAccrualAuthoritySegment(DateOnly From, DateOnly To, Guid AccountingArrangementId, Guid AccountingArrangementRevisionId, IntercompanyAgreementRevisionDto LegalRevision);
-```

@@ -224,5 +224,15 @@ public partial class AddProviderWizardPage
         finally { if (IsCurrentCredentialScope(generation)) _operationInProgress = false; }
     }
 
-    private void OnPageUnloaded(object sender, RoutedEventArgs e) => ResetOwnedConnectionScope();
+    private void OnPageUnloaded(object sender, RoutedEventArgs e)
+    {
+        var setupId = _templateSetupId;
+        _templatePageCts.Cancel();
+        _templatePageCts.Dispose();
+        _templatePageCts = new();
+        _templateBusy = false;
+        ResetOwnedConnectionScope();
+        if (_reviewedTemplate is not null) ClearTemplateReview();
+        if (setupId is Guid id) _ = DiscardAbandonedTemplateAsync(id);
+    }
 }

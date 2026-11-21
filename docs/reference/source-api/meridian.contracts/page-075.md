@@ -6,6 +6,149 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterLotModelDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterLotModelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:334](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L334).
+
+```csharp
+public sealed record SecurityMasterLotModelDto(string QuantityModel, decimal? LotSize, decimal? ContractMultiplier, bool UsesFaceValue, bool SupportsFactorAdjustedExposure, bool RequiresResolvedSecurityId, string Summary);
+```
+
+## SecurityMasterManualChangeApprovalPostureDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterManualChangeApprovalPostureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:568](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L568).
+
+```csharp
+public sealed record SecurityMasterManualChangeApprovalPostureDto(string PolicyKey, OperationsGateKeyDto Gate, string Route, string RequiredPermission, int RequiredDistinctApprovals, bool RequiresIndependentReviewer, string EvidenceRequirement, string Status, int ManualChangeCount, int UnapprovedManualChangeCount, string Summary);
+```
+
+## SecurityMasterOpenLotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOpenLotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:357](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L357).
+
+```csharp
+public sealed record SecurityMasterOpenLotDto(Guid SecurityId, string PortfolioId, string RunId, string? AccountScopeId, string? AccountScopeDisplayName, string? VehicleScopeId, string? VehicleScopeDisplayName, string LotId, string Symbol, DateTimeOffset TradeDate, DateTimeOffset? SettleDate, decimal OriginalQuantity, decimal CurrentQuantity, decimal? OriginalFace, decimal? CurrentFace, decimal? FactorAdjustedQuantity, decimal? FactorAdjustedFace, decimal CostBasis, decimal EntryPrice, decimal? UnrealizedPnl, string Currency, string LotStatus, string SourceSystem, string? SourceRecordId, DateTimeOffset AsOfUtc, string? SourceUpdatedBy, string? SourceReason, bool IsLongTerm, string? Notes)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsShort { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:389](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L389) | True when the positive lot quantity represents a short position. |
+
+## SecurityMasterOpenLotProvenanceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOpenLotProvenanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:392](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L392).
+
+```csharp
+public sealed record SecurityMasterOpenLotProvenanceDto(string ProvenanceId, string RunId, string PortfolioId, string? AccountScopeId, string? AccountScopeDisplayName, string SourceSystem, string? SourceRecordId, DateTimeOffset AsOfUtc, string Summary);
+```
+
+## SecurityMasterOpenLotReadModelDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOpenLotReadModelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:343](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L343).
+
+```csharp
+public sealed record SecurityMasterOpenLotReadModelDto(string QuantityModel, decimal? LotSize, decimal? ContractMultiplier, bool UsesFaceValue, bool SupportsFactorAdjustedExposure, bool RequiresResolvedSecurityId, decimal? CurrentFactor, DateOnly? CurrentFactorDate, DateTimeOffset AsOfUtc, string Summary, IReadOnlyList<SecurityMasterOpenLotDto> Lots, IReadOnlyList<SecurityMasterOpenLotProvenanceDto> ProvenanceHistory);
+```
+
+## SecurityMasterOperatingModelDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatingModelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:519](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L519).
+
+```csharp
+public sealed record SecurityMasterOperatingModelDto(Guid SecurityId, string? ClientId, string? AccountId, string? FundProfileId, string Status, string Summary, IReadOnlyList<SecurityMasterOperatingModelStageDto> Stages, IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> EntitlementApplicability, IReadOnlyList<SecurityMasterOperatorMetadataDto> OperatorMetadata, SecurityMasterManualChangeApprovalPostureDto ManualChangeApproval, IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> Controls, DateTimeOffset RetrievedAtUtc);
+```
+
+## SecurityMasterOperatingModelStageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatingModelStageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:533](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L533).
+
+```csharp
+public sealed record SecurityMasterOperatingModelStageDto(string StageId, string Title, string Status, string Summary, int EvidenceCount, int BlockingIssueCount);
+```
+
+## SecurityMasterOperatorMetadataDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatorMetadataDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:557](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L557).
+
+```csharp
+public sealed record SecurityMasterOperatorMetadataDto(string MetadataId, string VendorName, DataVendorDataType DataType, string SourceCategory, string ExpectedRefreshCadence, int? DefaultMaxDaysStale, bool RequiresDirectClientContract, string? OperatorMetadata, string Summary);
+```
+
+## SecurityMasterProviderSymbolMappingDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterProviderSymbolMappingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:187](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L187).
+
+```csharp
+public sealed record SecurityMasterProviderSymbolMappingDto(string MappingSource, string MappingKind, string Value, string NormalizedValue, string? Provider, string? NormalizedProvider, bool IsPrimary, bool IsEnabled, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, bool IsActive);
+```
+
+## SecurityMasterPublishResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterPublishResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:145](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L145).
+
+Result of publishing a revision. When the edit affects a hard-closed period with report-pack exposure, RestatementRequired is set and RestatementCandidates carries the report packs an operator may restate via the governed report-pack lifecycle.
+
+```csharp
+public sealed record SecurityMasterPublishResultDto(Guid SecurityId, Guid RevisionId, long NewVersion, bool RestatementRequired, IReadOnlyList<RestatementCandidateDto> RestatementCandidates, IReadOnlyList<string> InvalidatedProjections, SecurityMasterCanonicalMergeOutcomeDto? CanonicalMerge = null);
+```
+
+## SecurityMasterRecommendedActionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterRecommendedActionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:426](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L426).
+
+```csharp
+public sealed record SecurityMasterRecommendedActionDto(SecurityMasterRecommendedActionKind Kind, string Title, string Detail, bool IsPrimary, bool IsEnabled, Guid? ConflictId = null, string? Target = null);
+```
+
+## SecurityMasterRecommendedActionKind
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterRecommendedActionKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L26).
+
+```csharp
+public enum SecurityMasterRecommendedActionKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ResolveSelectedConflict = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L28) |  |
+| <code>BulkResolveLowRiskConflicts = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L29) |  |
+| <code>BackfillTradingParameters = 2</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L30) |  |
+| <code>ReviewCorporateActions = 3</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L31) |  |
+| <code>OpenPortfolioImpact = 4</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L32) |  |
+| <code>OpenLedgerImpact = 5</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L33) |  |
+| <code>OpenReconciliationImpact = 6</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L34) |  |
+| <code>OpenReportPackImpact = 7</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L35) |  |
+| <code>EditSelectedSecurity = 8</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L36) |  |
+| <code>RefreshTrustSnapshot = 9</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L37) |  |
+
 ## SecurityMasterRevisionPublishedEvent
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterRevisionPublishedEvent</code>. Kind: `record`.
@@ -520,152 +663,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;StatementActivityCompletenessDto&gt;? ActivityCompleteness { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:161](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L161) |  |
 | <code>public int? TaxLotCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L162) |  |
 | <code>public int? BorrowPositionCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:163](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L163) |  |
-
-## StatementImportReconciliationCaseLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementImportReconciliationCaseLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L197).
-
-Direct reconciliation case handoff returned after statement import so workstation clients can render case actions without relying on parallel route arrays or rebuilding case routes.
-
-```csharp
-public sealed record StatementImportReconciliationCaseLinkDto(string CaseId, string? BreakId, string Route, string Label, string Status, string Priority, string Reason, string SuggestedNextAction);
-```
-
-## StatementKindSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementKindSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:133](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L133).
-
-Per-kind record breakdown so operators importing a mixed statement see exactly what lands in each lane (positions, transactions, cash balances, fees, dividends).
-
-```csharp
-public sealed record StatementKindSummaryDto(string Kind, int RecordCount, IReadOnlyList<StatementRecordPreviewDto> SampleRecords);
-```
-
-## StatementMappingProfileActivityCodeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileActivityCodeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L44).
-
-```csharp
-public sealed record StatementMappingProfileActivityCodeDto(string SourceCode, string CanonicalActivityType);
-```
-
-## StatementMappingProfileCsvOptionsDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileCsvOptionsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L33).
-
-```csharp
-public sealed record StatementMappingProfileCsvOptionsDto(string Delimiter, string Quote, bool HasHeader);
-```
-
-## StatementMappingProfileDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L19).
-
-Declarative statement mapping profile shared with workstation clients.
-
-```csharp
-public sealed record StatementMappingProfileDto(int SchemaVersion, string ProfileId, string DisplayName, string Format, StatementMappingProfileCsvOptionsDto? Csv, string? Culture, IReadOnlyList<string>? DateFormats, IReadOnlyList<StatementMappingProfileFieldDto> Fields, IReadOnlyList<StatementMappingProfileActivityCodeDto> ActivityCodes, string? LastAcceptedFingerprint, bool IsBuiltIn, string? Notes);
-```
-
-## StatementMappingProfileFieldDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileFieldDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L38).
-
-```csharp
-public sealed record StatementMappingProfileFieldDto(string CanonicalField, string SourceColumn, IReadOnlyList<string>? Aliases, bool Required);
-```
-
-## StatementMatchSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementMatchSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:157](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L157).
-
-Aggregate matching posture for a statement reconciliation run.
-
-```csharp
-public sealed record StatementMatchSummaryDto(int? StatementItemCount, int? MatchedItemCount, int? AutoMatchedItemCount, int? ManualMatchedItemCount, int? ReviewRequiredItemCount, int? BreakCount, int? PositionBreakCount, int? CashBreakCount, int? TransactionBreakCount, StatementMatchTier? HighestUnresolvedTier = null, decimal? MatchedNotional = null, decimal? UnmatchedNotional = null, string? BaseCurrency = null);
-```
-
-## StatementMatchTier
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementMatchTier</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L39).
-
-Confidence tier assigned to a statement item matched against Meridian books and activity.
-
-```csharp
-public enum StatementMatchTier : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L41) |  |
-| <code>Exact = 1</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L42) |  |
-| <code>WithinTolerance = 2</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L43) |  |
-| <code>Probable = 3</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L44) |  |
-| <code>Manual = 4</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L45) |  |
-| <code>Unmatched = 5</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L46) |  |
-
-## StatementNormalizedCashDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementNormalizedCashDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:125](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L125).
-
-Canonical cash-balance row normalized from a statement source.
-
-```csharp
-public sealed record StatementNormalizedCashDto(string? RowId, string? AccountId, string? Currency, decimal? Amount, DateTimeOffset? AsOfUtc, string? Fingerprint, string? CashType = null, string? SourceReference = null);
-```
-
-## StatementNormalizedPositionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementNormalizedPositionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:106](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L106).
-
-Canonical position row normalized from a statement source.
-
-```csharp
-public sealed record StatementNormalizedPositionDto(string? RowId, string? AccountId, string? Symbol, decimal? Quantity, decimal? MarketPrice, decimal? MarketValue, string? Currency, DateTimeOffset? AsOfUtc, string? Fingerprint, string? SecurityId = null, string? Cusip = null, string? Isin = null, string? Sedol = null, string? SourceReference = null);
-```
-
-## StatementNormalizedTransactionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementNormalizedTransactionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:138](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L138).
-
-Canonical transaction row normalized from a statement source.
-
-```csharp
-public sealed record StatementNormalizedTransactionDto(string? RowId, string? AccountId, string? ActivityType, DateOnly? TradeDate, decimal? Amount, string? Currency, string? Fingerprint, DateOnly? SettleDate = null, string? ExternalTransactionId = null, string? Symbol = null, decimal? Quantity = null, decimal? Price = null, string? Description = null, string? SourceReference = null);
-```
-
-## StatementProfileSuggestionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementProfileSuggestionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:139](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L139).
-
-A catalog profile ranked against the detected columns of an uploaded statement.
-
-```csharp
-public sealed record StatementProfileSuggestionDto(string ProfileId, string DisplayName, decimal Score);
-```

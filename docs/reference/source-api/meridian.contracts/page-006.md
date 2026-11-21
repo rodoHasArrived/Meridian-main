@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FieldError
+
+Qualified name: <code>Meridian.Contracts.Api.FieldError</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ErrorResponse.cs:267](../../../../src/Meridian.Contracts/Api/ErrorResponse.cs#L267).
+
+Represents a field-level validation error.
+
+```csharp
+public sealed record FieldError([property : JsonPropertyName("field")] string Field, [property : JsonPropertyName("message")] string Message, [property : JsonPropertyName("code")] string? Code = null, [property : JsonPropertyName("attemptedValue")] object? AttemptedValue = null);
+```
+
 ## ForceFailoverRequest
 
 Qualified name: <code>Meridian.Contracts.Api.ForceFailoverRequest</code>. Kind: `record`.
@@ -857,16 +869,4 @@ Response containing provider comparison data.
 
 ```csharp
 public record ProviderComparisonResponse(DateTimeOffset Timestamp, ProviderMetricsResponse[] Providers, int TotalProviders, int HealthyProviders);
-```
-
-## ProviderConnectionDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:85](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L85).
-
-Provider connection DTO exposed to clients.
-
-```csharp
-public sealed record ProviderConnectionDto(string ConnectionId, string ProviderFamilyId, string DisplayName, string ConnectionType, string ConnectionMode, bool Enabled, string? CredentialReference, string? InstitutionId, string? ExternalAccountId, ProviderRouteScopeDto? Scope, string[] Tags, string? Description, bool ProductionReady, string? TenantId = null, string? CredentialEnvironment = null);
 ```

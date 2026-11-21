@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderConnectionDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:85](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L85).
+
+Provider connection DTO exposed to clients.
+
+```csharp
+public sealed record ProviderConnectionDto(string ConnectionId, string ProviderFamilyId, string DisplayName, string ConnectionType, string ConnectionMode, bool Enabled, string? CredentialReference, string? InstitutionId, string? ExternalAccountId, ProviderRouteScopeDto? Scope, string[] Tags, string? Description, bool ProductionReady, string? TenantId = null, string? CredentialEnvironment = null);
+```
+
 ## ProviderConnectionHealthResponse
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionHealthResponse</code>. Kind: `record`.
@@ -26,6 +38,38 @@ Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:20](../../../../src/Me
 
 ```csharp
 public sealed record ProviderConnectionHealthSnapshotDto([property : JsonPropertyName("providerId")] string ProviderId, [property : JsonPropertyName("displayName")] string DisplayName, [property : JsonPropertyName("isEnabled")] bool IsEnabled, [property : JsonPropertyName("isConnected")] bool? IsConnected, [property : JsonPropertyName("connectionState")] string ConnectionState, [property : JsonPropertyName("diagnosticsAvailable")] bool DiagnosticsAvailable, [property : JsonPropertyName("lastFailureKind")] string? LastFailureKind, [property : JsonPropertyName("reconnectAttempts")] int? ReconnectAttempts = null);
+```
+
+## ProviderConnectionTemplateDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:8](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L8).
+
+The portable allowlist. Semantics and checklist entries are catalog codes.
+
+```csharp
+public sealed record ProviderConnectionTemplateDto(string Name, string ProviderKind, int ProviderVersion, string Environment, string ConnectionType, string ConnectionMode, string AllowedScope, ProviderTemplateCapabilityDto[] RequestedCapabilities, ProviderTemplateBindingDto SuggestedBinding, string ExpectedDataSemantics, string[] VerificationChecklist);
+```
+
+## ProviderConnectionTemplateFile
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateFile</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:28](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L28).
+
+```csharp
+public sealed record ProviderConnectionTemplateFile(int SchemaVersion, ProviderConnectionTemplateDto[] Templates);
+```
+
+## ProviderConnectionTemplateOption
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateOption</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:32](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L32).
+
+```csharp
+public sealed record ProviderConnectionTemplateOption(ProviderConnectionTemplateDto Template, string Revision, bool IsBuiltIn, bool RequiresExternalAccount, ProviderTemplateReviewRow[] ReviewRows, string[] VerificationChecks);
 ```
 
 ## ProviderConnectionTest
@@ -614,73 +658,3 @@ Request to configure a provider through the legacy provider setup route. Secrets
 ```csharp
 public sealed record ProviderSetupRequest(string? Kind, string? DisplayName, string? ApiKey, string? ApiSecret, string? Endpoint, string[]? Capabilities, string? Environment = null);
 ```
-
-## ProviderSetupResult
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderSetupResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderSetupApiModels.cs:21](../../../../src/Meridian.Contracts/Api/ProviderSetupApiModels.cs#L21).
-
-Safe provider setup result. This response never includes raw provider credentials.
-
-```csharp
-public sealed record ProviderSetupResult(bool Success, string? ProviderId, string ProviderName, string Message, string? Error, string? ConnectionId = null, string[]? BindingIds = null, ProviderCredentialStateDto? CredentialState = null, ProviderCredentialSourceDto? CredentialSource = null, string? CredentialReference = null, string? Environment = null, string[]? Warnings = null);
-```
-
-## ProviderStatusResponse
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderStatusResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:129](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L129).
-
-Response containing provider connection status.
-
-```csharp
-public record ProviderStatusResponse(string ProviderId, string Name, string ProviderType, bool? IsConnected, bool IsEnabled, int Priority, int ActiveSubscriptions, DateTimeOffset? LastHeartbeat, string? LifecycleState = null, string? WebSocketState = null, bool? IsReconnecting = null, DateTimeOffset? LastHeartbeatReceivedAt = null, DateTimeOffset? LastMessageReceivedAt = null, DateTimeOffset? LastReconnectAttemptAt = null, int? ReconnectAttempts = null, string? LastFailureKind = null, int? FailedSubscriptions = null, int? RecoveringSubscriptions = null, DateTimeOffset? LastSubscriptionMessageAt = null, string? ConnectionState = null, bool DiagnosticsAvailable = false, IReadOnlyList<ProviderStreamStatusResponse>? Streams = null);
-```
-
-## ProviderStreamStatusResponse
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderStreamStatusResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:119](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L119).
-
-Response containing provider connection status.
-
-```csharp
-public record ProviderStreamStatusResponse(string AssetClass, string Feed, string Entitlement, string LifecycleState, bool IsConnected, bool IsDegraded, string? DegradationReason);
-```
-
-## ProviderTemplateOutput
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateOutput</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:330](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L330).
-
-Unified provider template output for standardized UI consumption. Combines provider catalog metadata with runtime status into a single consistent structure that both Web and desktop can consume without provider-specific conditionals.
-
-```csharp
-public sealed class ProviderTemplateOutput
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;providerId&quot;)] public string ProviderId { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:334](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L334) |  |
-| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:337](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L337) |  |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:340](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L340) |  |
-| <code>[JsonPropertyName(&quot;providerType&quot;)] public string ProviderType { get; init; } = &quot;backfill&quot;;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:343](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L343) |  |
-| <code>[JsonPropertyName(&quot;isEnabled&quot;)] public bool IsEnabled { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:347](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L347) |  |
-| <code>[JsonPropertyName(&quot;isConnected&quot;)] public bool IsConnected { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:350](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L350) |  |
-| <code>[JsonPropertyName(&quot;isHealthy&quot;)] public bool IsHealthy { get; init; } = true;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:353](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L353) |  |
-| <code>[JsonPropertyName(&quot;requiresCredentials&quot;)] public bool RequiresCredentials { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:357](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L357) |  |
-| <code>[JsonPropertyName(&quot;hasValidCredentials&quot;)] public bool HasValidCredentials { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:360](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L360) |  |
-| <code>[JsonPropertyName(&quot;credentialFields&quot;)] public CredentialFieldOutput[] CredentialFields { get; init; } = Array.Empty&lt;CredentialFieldOutput&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:363](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L363) |  |
-| <code>[JsonPropertyName(&quot;capabilities&quot;)] public ProviderCapabilityOutput Capabilities { get; init; } = new ();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:367](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L367) |  |
-| <code>[JsonPropertyName(&quot;notes&quot;)] public string[] Notes { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:371](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L371) |  |
-| <code>[JsonPropertyName(&quot;warnings&quot;)] public string[] Warnings { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:374](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L374) |  |
-| <code>[JsonPropertyName(&quot;rateLimit&quot;)] public ProviderRateLimitOutput? RateLimit { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:378](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L378) |  |
-| <code>[JsonPropertyName(&quot;supportedMarkets&quot;)] public string[] SupportedMarkets { get; init; } = new[] { &quot;US&quot; };</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:382](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L382) |  |
-| <code>[JsonPropertyName(&quot;dataTypes&quot;)] public string[] DataTypes { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:385](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L385) |  |
-| <code>public static ProviderTemplateOutput FromCatalogEntry(ProviderCatalogEntry entry);</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:390](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L390) | Creates a ProviderTemplateOutput from a ProviderCatalogEntry. |
