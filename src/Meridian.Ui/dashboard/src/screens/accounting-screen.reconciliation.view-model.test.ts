@@ -748,6 +748,30 @@ describe("accounting-screen reconciliation view model", () => {
     expect(failed.statusAnnouncement).toBe("Break action failed: Review endpoint rejected");
   });
 
+  it("keeps quantity variance and tolerance units in labels and accessible detail", () => {
+    const item: ReconciliationBreakQueueItem = { ...breakQueue[0], variance: 2.5, toleranceBand: 100,
+      measures: [{ kind: "Quantity", expected: 10, actual: 12.5, variance: 2.5, tolerance: 0.0001,
+        unit: "Shares (multiplier 1)", unavailableReason: null }] };
+    const [row] = buildReconciliationBreakRows([item], null);
+    expect(row.varianceLabel).toBe("+2.5 Shares (multiplier 1)");
+    expect(row.rowAriaLabel).toContain("Variance +2.5 Shares (multiplier 1)");
+    expect(row.rowAriaLabel).not.toContain("$");
+    const state = buildReconciliationBreakQueueState({ breakQueue: [item], selectedBreakId: item.breakId,
+      loading: false, loadError: null, action: null, actionError: null });
+    expect(state.selectedDetail?.fields).toContainEqual({ label: "Tolerance band", value: "0.0001 Shares (multiplier 1)" });
+  });
+
+  it("does not render an incomparable typed quantity as a scalar currency residual", () => {
+    const item: ReconciliationBreakQueueItem = { ...breakQueue[0], variance: 999,
+      measures: [{ kind: "Quantity", expected: null, actual: null, variance: null, tolerance: 0.01,
+        unit: "Shares", unavailableReason: "Native units disagree." }] };
+    const [row] = buildReconciliationBreakRows([item], null);
+    expect(row.varianceLabel).toBe("Unavailable");
+    expect(row.varianceTone).toBe("default");
+    expect(row.rowAriaLabel).not.toContain("999");
+    expect(row.rowAriaLabel).not.toContain("$");
+  });
+
   it("derives reconciliation resolve dialog labels and validation state", () => {
     const blankResolve = buildReconciliationResolveDialogState("run-42:cash", "Resolved", "  ");
 

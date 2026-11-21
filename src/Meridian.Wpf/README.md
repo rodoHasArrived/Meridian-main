@@ -15,8 +15,9 @@ Posted Ledger offers a complete-period journal CSV download over the shared jour
 The returned bytes are saved without local accounting conversion, and superseded book/period reads
 cannot open a save dialog. Strategy run replay evidence shows retained data-quality warnings,
 affected-fill counts and source assessments; missing assessment coverage stays explicitly unknown.
-Strategy reconciliation detail preserves typed quantity and cost-basis units, tolerances, as-of
-values and unavailable reasons in its existing check rows. Focused view-model/service tests cover
+Strategy reconciliation queues and detail preserve typed quantity and cost-basis units, tolerances,
+as-of values and unavailable reasons. Run and fund monetary totals require comparable currency
+evidence; quantities and mixed currencies remain unavailable as monetary totals. Focused view-model/service tests cover
 these projections and stale downloads; native rendering and save dialogs require Windows.
 
 Provider Accounting exposes host quota settings for Twelve Data and Alpha Vantage, adapter-managed

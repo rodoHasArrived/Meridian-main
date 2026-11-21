@@ -1,3 +1,4 @@
+import { caseQueueResidual, caseQueueTolerance } from "@/lib/reconciliation-measure-presentation";
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { getRunReviewPacketPath } from "@/lib/api";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
@@ -924,18 +925,23 @@ export function buildReconciliationBreakRows(
     const canDismiss = !action && item.status !== "Dismissed";
     const isSelected = item.breakId === selectedBreakId;
     const financeLabel = financeBreakLabel(item.category);
+    const typed = (item.measures?.length ?? 0) > 0 || item.statementEvidence != null;
+    const residual = typed ? caseQueueResidual(item) : null;
+    const varianceLabel = residual ? `${residual.amount}${residual.unit ? ` ${residual.unit}` : ""}`
+      : formatSignedCurrency(item.variance, { minimumFractionDigits: 2, zeroLabel: "$0" });
+    const unavailable = typed && (residual?.amount === "Unavailable" || residual?.amount === "Multiple");
 
     return {
       ...item,
       actionBusy,
       financeLabel,
-      varianceLabel: formatSignedCurrency(item.variance, { minimumFractionDigits: 2, zeroLabel: "$0" }),
-      varianceTone: item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
+      varianceLabel,
+      varianceTone: unavailable ? "default" : item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
       statusBadgeVariant: reconciliationBreakStatusBadgeVariant(item.status),
       detectedAtLabel: formatAccountingDate(item.detectedAt),
       lastUpdatedAtLabel: formatAccountingDate(item.lastUpdatedAt),
       ownerLabel: item.assignedTo ?? "Unassigned",
-      rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${formatSignedCurrency(item.variance, { minimumFractionDigits: 2, zeroLabel: "$0" })}. ${item.reason}`,
+      rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${varianceLabel}. ${item.reason}`,
       rowSelectAriaLabel: `Inspect reconciliation break ${item.breakId}`,
       detailPanelId: "reconciliation-break-detail-panel",
       isSelected,
@@ -999,7 +1005,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Updated", value: row.lastUpdatedAtLabel },
       { label: "Exception route", value: formatReconciliationMetadata(row.exceptionRoute, "Unrouted") },
       { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
-      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatPrefixedCurrency(row.toleranceBand) },
+      { label: "Tolerance band", value: caseQueueTolerance(row) ?? (row.toleranceBand == null ? "Policy default" : formatPrefixedCurrency(row.toleranceBand)) },
       { label: "Priority", value: formatReconciliationMetadata(row.priority, "Normal") },
       { label: "Urgency", value: buildReconciliationExceptionUrgency(row) },
       { label: "SLA tone", value: formatReconciliationMetadata(row.slaBadgeTone, "info") },

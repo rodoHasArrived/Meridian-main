@@ -365,7 +365,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             StatusIcon: GetQueueStatusIcon(item.Status),
             CategoryLabel: Humanize(item.Category),
             Variance: item.Variance,
-            VarianceText: FormatCurrency(item.Variance, "USD"),
+            VarianceText: FormatQueueVariance(item),
             Reason: item.Reason,
             AssignedToLabel: string.IsNullOrWhiteSpace(item.AssignedTo) ? "Unassigned" : item.AssignedTo,
             DetectedAt: item.DetectedAt,
@@ -403,6 +403,24 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
              LastActivityText: item.LastActivityAt.HasValue ? FormatTimestamp(item.LastActivityAt.Value) : FormatTimestamp(item.LastUpdatedAt),
              SignOffChecklist: BuildSignOffChecklist(item))
         { Lineage = item.Lineage };
+    }
+
+    internal static string FormatMonetaryTotal(decimal? amount, string? currency, string? unavailableReason)
+    {
+        if (unavailableReason is not null || !amount.HasValue) return "Unavailable";
+        if (amount == 0m && currency is null) return "No monetary breaks";
+        return string.IsNullOrWhiteSpace(currency) ? "Unavailable" : FormatCurrency(amount, currency);
+    }
+
+    internal static string FormatQueueVariance(ReconciliationBreakQueueItem item)
+    {
+        if (item.Measures is not { Count: > 0 }) return FormatCurrency(item.Variance, "USD");
+        if (item.Measures.Count > 1) return "Multiple measures";
+        var measure = item.Measures[0];
+        if (measure.UnavailableReason is not null || measure.Variance is null) return "Unavailable";
+        var unit = string.IsNullOrWhiteSpace(measure.Unit) || measure.Unit == "currency"
+            ? "Currency unavailable" : measure.Unit;
+        return $"{measure.Variance.Value.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)} {unit}";
     }
 
     private static string JoinOrDefault(IReadOnlyList<string>? values, string fallback)
@@ -488,7 +506,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             TotalMatched: item.TotalMatched,
             TotalBreaks: item.TotalBreaks,
             BreakAmountTotal: item.BreakAmountTotal,
-            BreakAmountText: FormatCurrency(item.BreakAmountTotal, "USD"),
+            BreakAmountText: FormatMonetaryTotal(item.ComparableBreakAmountTotal, item.BreakAmountCurrency, item.BreakAmountUnavailableReason),
             RequestedAt: item.RequestedAt,
             RequestedAtText: FormatTimestamp(item.RequestedAt),
             CompletedAt: item.CompletedAt,
@@ -576,6 +594,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
 
         auditRows.Sort(static (left, right) => right.Timestamp.CompareTo(left.Timestamp));
 
+        var monetaryTotal = ReconciliationMonetaryTotal.FromBreaks(detail.Breaks);
         return new FundReconciliationDetailModel(
             SourceType: FundReconciliationSourceType.StrategyRun,
             DetailKey: runOverride?.RowKey ?? $"strategy:{detail.Summary.RunId}",
@@ -594,14 +613,15 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             TotalChecks: detail.Summary.MatchCount + detail.Summary.BreakCount,
             TotalMatched: detail.Summary.MatchCount,
             TotalBreaks: detail.Summary.BreakCount,
-            BreakAmountTotal: detail.Breaks.Sum(item => Math.Abs(item.Variance)),
+            BreakAmountTotal: monetaryTotal.Amount ?? 0m,
             SecurityIssueCount: detail.Summary.SecurityIssueCount,
             EmptyExceptionsText: "No open strategy-run exceptions remain for this reconciliation.",
             EmptySecurityCoverageText: "Security coverage is fully aligned for this strategy-run reconciliation.",
             ExceptionRows: exceptionRows,
             AllCheckRows: allChecks,
             SecurityCoverageRows: securityCoverage,
-            AuditRows: auditRows);
+            AuditRows: auditRows)
+        { BreakAmountDisplayOverride = FormatMonetaryTotal(monetaryTotal.Amount, monetaryTotal.Currency, monetaryTotal.UnavailableReason) };
     }
 
     private static FundReconciliationDetailModel BuildAccountDetail(
@@ -658,7 +678,8 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             ExceptionRows: exceptionRows,
             AllCheckRows: allRows,
             SecurityCoverageRows: [],
-            AuditRows: auditRows);
+            AuditRows: auditRows)
+        { BreakAmountDisplayOverride = runRow.BreakAmountText };
     }
 
     internal static IReadOnlyList<FundReconciliationCheckDetailRow> MapStrategyBreakMeasures(

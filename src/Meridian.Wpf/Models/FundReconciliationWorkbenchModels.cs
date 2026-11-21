@@ -193,7 +193,10 @@ public sealed record FundReconciliationDetailModel(
     IReadOnlyList<FundReconciliationCheckDetailRow> ExceptionRows,
     IReadOnlyList<FundReconciliationCheckDetailRow> AllCheckRows,
     IReadOnlyList<FundReconciliationSecurityCoverageRow> SecurityCoverageRows,
-    IReadOnlyList<FundReconciliationAuditTrailRow> AuditRows);
+    IReadOnlyList<FundReconciliationAuditTrailRow> AuditRows)
+{
+    public string? BreakAmountDisplayOverride { get; init; }
+}
 
 public sealed record FundReconciliationCheckDetailRow(
     string RowKey,

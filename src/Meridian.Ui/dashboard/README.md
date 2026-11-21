@@ -83,6 +83,9 @@ Ledger Explorer offers **Download journal CSV** for the selected book period thr
 its complete-period scope is independent of the table's filters. A changed book or period aborts a
 pending download, and authorization or storage failures remain visible for retry.
 
+Reconciliation queue labels, accessible descriptions and tolerance details preserve the retained
+quantity or monetary unit. Unavailable comparisons do not fall back to a dollar residual.
+
 Strategy run **Replay data sources** shows retained repaired, gap-filled, low-quality and unknown
 input warnings with affected-fill counts and expandable source assessments. Missing assessment
 coverage remains distinct from an assessed run without warnings. Focused coverage lives in

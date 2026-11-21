@@ -107,6 +107,8 @@ public sealed class FundReconciliationWorkbenchServiceTests
         snapshot.KnownRunCount.Should().Be(1);
         snapshot.MissingRunCount.Should().Be(0);
         snapshot.UnavailableRunCount.Should().Be(1);
+        snapshot.Summary.ComparableBreakAmountTotal.Should().BeNull();
+        snapshot.Summary.BreakAmountUnavailableReason.Should().NotBeNullOrWhiteSpace();
         snapshot.BreakQueueReadAvailable.Should().BeFalse();
         snapshot.CalibrationReadAvailable.Should().BeFalse();
         snapshot.InReviewBreakCount.Should().Be(0);
@@ -143,6 +145,8 @@ public sealed class FundReconciliationWorkbenchServiceTests
         snapshot.KnownRunCount.Should().Be(2);
         snapshot.MissingRunCount.Should().Be(0);
         snapshot.UnavailableRunCount.Should().Be(1);
+        snapshot.Summary.ComparableBreakAmountTotal.Should().BeNull();
+        snapshot.Summary.BreakAmountUnavailableReason.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -480,6 +484,60 @@ public sealed class FundReconciliationWorkbenchServiceTests
         row.ActualAmountText.Should().Be("12.5 Shares (multiplier 1)");
         row.ToleranceText.Should().Be("0.0001 Shares (multiplier 1)");
         row.ExpectedAmountText.Should().NotContain("USD");
+    }
+
+    [Fact]
+    public void QueueVariance_UsesRetainedNativeUnitAndSuppressesIncomparableResidual()
+    {
+        var item = new ReconciliationBreakQueueItem("typed", "run", "Strategy",
+            ReconciliationBreakCategory.AmountMismatch, ReconciliationBreakQueueStatus.Open,
+            999m, "Review native units.", null, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow,
+            Measures: [new(ReconciliationBreakMeasureKindDto.Quantity, 10m, 12.5m, 2.5m, 0.0001m, "Shares")]);
+
+        FundReconciliationWorkbenchService.FormatQueueVariance(item).Should().Be("2.5 Shares");
+        item = item with { Measures = [item.Measures![0] with { UnavailableReason = "Native units disagree." }] };
+        FundReconciliationWorkbenchService.FormatQueueVariance(item).Should().Be("Unavailable");
+    }
+
+    [Fact]
+    public async Task StrategySummary_WithQuantityBreak_DoesNotReportAScalarCurrencyTotal()
+    {
+        var detail = BuildStrategyDetail("run-fund-ops");
+        detail = detail with { Breaks = [detail.Breaks[0] with
+        {
+            Measures = [new(ReconciliationBreakMeasureKindDto.Quantity, 10m, 12.5m, 2.5m, 0.0001m, "Shares")]
+        }] };
+        var context = await CreateContextAsync(new FakeWorkstationReconciliationApiClient(runDetails: [detail]));
+
+        var snapshot = await context.Service.GetSnapshotAsync("alpha-fund");
+
+        snapshot.Summary.ComparableBreakAmountTotal.Should().BeNull();
+        snapshot.Summary.BreakAmountCurrency.Should().BeNull();
+        snapshot.Summary.BreakAmountUnavailableReason.Should().NotBeNullOrWhiteSpace();
+        snapshot.RunRows.Should().ContainSingle(row => row.BreakAmountText == "Unavailable");
+        var expanded = await context.Service.GetRunDetailAsync(snapshot.RunRows.Single(), "USD");
+        expanded!.BreakAmountDisplayOverride.Should().Be("Unavailable");
+    }
+
+    [Fact]
+    public void MonetarySummary_RequiresRetainedCurrencyAndKeepsEmptyPopulationDistinct()
+    {
+        FundReconciliationWorkbenchService.FormatMonetaryTotal(100m, null, null).Should().Be("Unavailable");
+        FundReconciliationWorkbenchService.FormatMonetaryTotal(null, null, "Currencies disagree.").Should().Be("Unavailable");
+        FundReconciliationWorkbenchService.FormatMonetaryTotal(0m, null, null).Should().Be("No monetary breaks");
+        FundReconciliationWorkbenchService.FormatMonetaryTotal(100m, "EUR", null).Should().Contain("EUR");
+    }
+
+    [Fact]
+    public void WorkspaceQueue_DoesNotPresentQuantityOrUnknownScalarAsMoneyAtRisk()
+    {
+        var summary = new ReconciliationSummary(1, 1, 999m, []);
+        var item = AccountingWorkspacePresentationService.BuildReconciliationQueue(summary, null)[0];
+        item.Detail.Should().Contain("monetary total is unavailable");
+        item.Detail.Should().NotContain("999").And.NotContain("at risk");
+        summary = summary with { ComparableBreakAmountTotal = 50m, BreakAmountCurrency = "EUR" };
+        item = AccountingWorkspacePresentationService.BuildReconciliationQueue(summary, null)[0];
+        item.Detail.Should().Contain("EUR").And.Contain("50");
     }
 
     private static Guid ToFundId(string fundProfileId)
