@@ -464,6 +464,24 @@ public sealed class FundReconciliationWorkbenchServiceTests
         rows[1].ExpectedAsOfText.Should().NotBeNullOrWhiteSpace();
     }
 
+    [Fact]
+    public void StrategyMatchedMeasures_KeepNativeUnitsAndTolerance()
+    {
+        var item = BuildStrategyDetail("run-typed").Matches[0] with
+        {
+            Measures = [new(ReconciliationBreakMeasureKindDto.Quantity, 12.5m, 12.5m, 0m, 0.0001m, "Shares (multiplier 1)")]
+        };
+
+        var row = FundReconciliationWorkbenchService.MapStrategyMatchMeasures(item, "USD").Single();
+
+        row.StatusLabel.Should().Be("Matched");
+        row.CheckLabel.Should().EndWith("Quantity");
+        row.ExpectedAmountText.Should().Be("12.5 Shares (multiplier 1)");
+        row.ActualAmountText.Should().Be("12.5 Shares (multiplier 1)");
+        row.ToleranceText.Should().Be("0.0001 Shares (multiplier 1)");
+        row.ExpectedAmountText.Should().NotContain("USD");
+    }
+
     private static Guid ToFundId(string fundProfileId)
         => new(MD5.HashData(Encoding.UTF8.GetBytes(fundProfileId.Trim())));
 

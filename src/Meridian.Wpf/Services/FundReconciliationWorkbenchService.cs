@@ -516,19 +516,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
                 focusBreak?.BreakId.EndsWith($":{breakItem.CheckId}", StringComparison.OrdinalIgnoreCase) == true))
             .ToArray();
         var allChecks = detail.Matches
-            .Select(match => new FundReconciliationCheckDetailRow(
-                RowKey: $"match:{match.CheckId}",
-                CheckLabel: match.Label,
-                CategoryLabel: "Matched",
-                StatusLabel: "Matched",
-                StatusIcon: "\u2713",
-                SourceLabel: $"{match.ExpectedSource} \u2192 {match.ActualSource}",
-                ExpectedAmountText: FormatCurrency(match.ExpectedAmount, baseCurrency),
-                ActualAmountText: FormatCurrency(match.ActualAmount, baseCurrency),
-                VarianceText: FormatCurrency(Math.Abs(match.Variance), baseCurrency),
-                Reason: "Matched",
-                ExpectedAsOfText: FormatTimestamp(match.ExpectedAsOf),
-                ActualAsOfText: FormatTimestamp(match.ActualAsOf)))
+            .SelectMany(match => MapStrategyMatchMeasures(match, baseCurrency))
             .Concat(exceptionRows)
             .ToArray();
 
@@ -674,31 +662,41 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
     }
 
     internal static IReadOnlyList<FundReconciliationCheckDetailRow> MapStrategyBreakMeasures(
-        ReconciliationBreakDto item, string baseCurrency, bool highlighted = false)
-    {
-        FundReconciliationCheckDetailRow BuildRow(string key, string label, string expected,
-            string actual, string variance, string reason, string tolerance = "Not retained") => new(
-            RowKey: key,
-            CheckLabel: label,
+        ReconciliationBreakDto item, string baseCurrency, bool highlighted = false) => MapStrategyMeasures(new(
+            RowKey: item.CheckId,
+            CheckLabel: item.Label,
             CategoryLabel: Humanize(item.Category),
             StatusLabel: Humanize(item.Status),
             StatusIcon: GetBreakStatusIcon(item.Status),
             SourceLabel: item.MissingSource,
-            ExpectedAmountText: expected,
-            ActualAmountText: actual,
-            VarianceText: variance,
-            Reason: reason,
+            ExpectedAmountText: FormatCurrency(item.ExpectedAmount, baseCurrency),
+            ActualAmountText: FormatCurrency(item.ActualAmount, baseCurrency),
+            VarianceText: FormatCurrency(Math.Abs(item.Variance), baseCurrency),
+            Reason: item.Reason,
             ExpectedAsOfText: FormatTimestamp(item.ExpectedAsOf),
             ActualAsOfText: FormatTimestamp(item.ActualAsOf),
-            IsHighlighted: highlighted,
-            ToleranceText: tolerance);
+            IsHighlighted: highlighted), item.Measures);
 
-        if (item.Measures is not { Count: > 0 })
-            return [BuildRow(item.CheckId, item.Label, FormatCurrency(item.ExpectedAmount, baseCurrency),
-                FormatCurrency(item.ActualAmount, baseCurrency),
-                FormatCurrency(Math.Abs(item.Variance), baseCurrency), item.Reason)];
+    internal static IReadOnlyList<FundReconciliationCheckDetailRow> MapStrategyMatchMeasures(
+        ReconciliationMatchDto item, string baseCurrency) => MapStrategyMeasures(new(
+            RowKey: $"match:{item.CheckId}",
+            CheckLabel: item.Label,
+            CategoryLabel: "Matched",
+            StatusLabel: "Matched",
+            StatusIcon: "\u2713",
+            SourceLabel: $"{item.ExpectedSource} \u2192 {item.ActualSource}",
+            ExpectedAmountText: FormatCurrency(item.ExpectedAmount, baseCurrency),
+            ActualAmountText: FormatCurrency(item.ActualAmount, baseCurrency),
+            VarianceText: FormatCurrency(Math.Abs(item.Variance), baseCurrency),
+            Reason: "Matched",
+            ExpectedAsOfText: FormatTimestamp(item.ExpectedAsOf),
+            ActualAsOfText: FormatTimestamp(item.ActualAsOf)), item.Measures);
 
-        return item.Measures.Select(measure =>
+    private static IReadOnlyList<FundReconciliationCheckDetailRow> MapStrategyMeasures(
+        FundReconciliationCheckDetailRow row, IReadOnlyList<ReconciliationBreakMeasureDto>? measures)
+    {
+        if (measures is not { Count: > 0 }) return [row];
+        return measures.Select(measure =>
         {
             var label = measure.Kind switch
             {
@@ -709,11 +707,17 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             string FormatMeasure(decimal? value) => value.HasValue
                 ? $"{value.Value.ToString("G29", System.Globalization.CultureInfo.InvariantCulture)} {measure.Unit}".TrimEnd()
                 : "Unavailable";
-            var reason = string.IsNullOrWhiteSpace(measure.UnavailableReason)
-                ? item.Reason : $"{item.Reason} {measure.UnavailableReason}";
-            return BuildRow($"{item.CheckId}:{measure.Kind}", $"{item.Label} · {label}",
-                FormatMeasure(measure.Expected), FormatMeasure(measure.Actual),
-                FormatMeasure(measure.Variance), reason, FormatMeasure(measure.Tolerance));
+            return row with
+            {
+                RowKey = $"{row.RowKey}:{measure.Kind}",
+                CheckLabel = $"{row.CheckLabel} · {label}",
+                ExpectedAmountText = FormatMeasure(measure.Expected),
+                ActualAmountText = FormatMeasure(measure.Actual),
+                VarianceText = FormatMeasure(measure.Variance),
+                ToleranceText = FormatMeasure(measure.Tolerance),
+                Reason = string.IsNullOrWhiteSpace(measure.UnavailableReason)
+                    ? row.Reason : $"{row.Reason} {measure.UnavailableReason}"
+            };
         }).ToArray();
     }
 
