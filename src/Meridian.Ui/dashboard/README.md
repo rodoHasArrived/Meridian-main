@@ -82,14 +82,18 @@ workspace presents advisory obligation monitoring and reviewed legacy coverage c
 revocations; close advisories stay outside blockers. See [intercompany controls](../../../docs/operators/intercompany-entity-controls.md).
 
 The Providers route also includes on-demand backfill tier/priority controls, a read-only routing
-preview, validation profiles and bounded quota history. Tier defaults and ceilings come from the
-server catalog; choosing a paid tier declares the operator's subscription and does not verify it.
+preview, and bounded quota history. The server catalog supplies tier defaults and ceilings.
+Choosing a paid tier records the operator's declared subscription.
 Numeric priority and Move up provide keyboard alternatives to dragging. Preview accepts symbol,
 daily date range and proposed priority/availability without saving or fetching prices; unavailable
-vendors, fabricated selections and unverified coverage remain explicit. Validation relaxation
-requires a reason and exposes retained change history. Quota history distinguishes an observed
-throttle from the next provider attempted. Recent events remain process-lifetime evidence, and
-daily throttle and rotation totals are retained for seven UTC days.
+vendors, fabricated selections and unverified coverage remain explicit. Quota history distinguishes
+an observed throttle from the next provider attempted. Recent events remain process-lifetime
+evidence, and daily throttle and rotation totals are retained for seven UTC days.
+
+Each provider detail opens Data quality rules with effective values, deployment defaults, and
+retained before/after evidence. Authorized operators can review an edit or reset. A relaxation
+requires a reason and confirmation of the affected future jobs. The panel displays saved live
+thresholds alongside the startup values while activation is pending.
 
 The provider editor reads the host's effective order for new jobs. Save feedback explains when a
 routing change is active and when pacing or tier changes require a restart. The Backfills route

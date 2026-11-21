@@ -143,26 +143,33 @@ describe("useGovernedApprovalsViewModel", () => {
   });
 
   it("lets a poll slower than the interval land instead of superseding it on every tick", async () => {
-    const slow = deferred<RiskEscalation[]>();
-    const api = services({
-      getRiskEscalations: vi.fn()
-        .mockReturnValueOnce(slow.promise)
-        .mockResolvedValue([])
-    });
-    const { result } = renderHook(() => useGovernedApprovalsViewModel(api, true, 20));
+    vi.useFakeTimers();
+    try {
+      const intervalMs = 20;
+      const slow = deferred<RiskEscalation[]>();
+      const api = services({
+        getRiskEscalations: vi.fn()
+          .mockReturnValueOnce(slow.promise)
+          .mockResolvedValue([])
+      });
+      const { result } = renderHook(() => useGovernedApprovalsViewModel(api, true, intervalMs));
 
-    // Several intervals pass while the first read is still unanswered.
-    await new Promise((resolve) => setTimeout(resolve, 90));
-    expect(api.getRiskEscalations).toHaveBeenCalledTimes(1);
+      // Several ticks leave the outstanding request in place.
+      await act(() => vi.advanceTimersByTimeAsync(4 * intervalMs));
+      expect(api.getRiskEscalations).toHaveBeenCalledTimes(1);
 
-    await act(async () => {
-      slow.resolve([escalation()]);
-      await slow.promise;
-    });
-    expect(result.current.escalations).toHaveLength(1);
+      await act(async () => {
+        slow.resolve([escalation()]);
+        await slow.promise;
+      });
+      expect(result.current.escalations).toHaveLength(1);
 
-    // Once it has answered, the interval polls again.
-    await waitFor(() => expect(vi.mocked(api.getRiskEscalations).mock.calls.length).toBeGreaterThan(1));
+      await act(() => vi.advanceTimersByTimeAsync(intervalMs));
+      expect(api.getRiskEscalations).toHaveBeenCalledTimes(2);
+      expect(result.current.escalations).toEqual([]);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("loads the caller's parked escalations", async () => {

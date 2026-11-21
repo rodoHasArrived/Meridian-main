@@ -1239,6 +1239,14 @@ import, and `sample`/`skip` lead with the starter kit's desk. Activation outcome
 reports the completed work to `POST /api/workstation/first-run/outcomes/complete`, so the
 checklist reflects finished work rather than page visits.
 
+## Provider data quality rules
+
+`GET /api/providers/{providerName}/validation-profile` returns the effective and default values,
+profile source, startup streaming values, and retained audit history. `PUT` requires an authenticated
+actor with `ManageProviders` and `ModifyConfig`. A relaxation requires a reason and explicit
+confirmation. A reset removes the override. The profile and its before/after audit entry are
+saved together, and a stale requested revision returns a conflict before either can change.
+
 ## Provider connection templates
 
 The browser Data workspace and WPF Add Provider wizard use the same tenant-owned template library.
