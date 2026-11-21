@@ -41,8 +41,12 @@ public sealed class ReconciliationRunServiceTests
 
         detail.Should().NotBeNull();
         detail!.Summary.RunId.Should().Be("run-1");
-        detail.Summary.BreakCount.Should().Be(0);
+        detail.Breaks.Should().NotBeEmpty("legacy journals do not retain native accounting evidence");
+        detail.Breaks.Should().OnlyContain(item => item.Category == ReconciliationBreakCategory.ClassificationGap
+            && item.Measures != null && item.Measures.All(measure => measure.UnavailableReason != null));
         detail.Matches.Should().Contain(match => match.CheckId == "cash-balance");
+        detail.Summary.LedgerAsOf.Should().Be(detail.Summary.PortfolioAsOf,
+            "run completion clocks do not change the economic comparison cutoff");
 
         var latest = await repository.GetLatestForRunAsync("run-1");
         latest.Should().NotBeNull();
@@ -1694,7 +1698,9 @@ public sealed class ReconciliationRunServiceTests
             portfolioAsOfOffsetMinutes: 30,
             portfolioCashOverride: 950m));
 
-        var service = CreateService(store, new InMemoryReconciliationRunRepository());
+        var service = CreateService(store, new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null, bankTransactionSource: null,
+            ledgerAdapter: new IndependentCutoffLedgerAdapter(TimeSpan.FromMinutes(-30)));
 
         var detail = await service.RunAsync(new ReconciliationRunRequest("run-break-severity", AmountTolerance: 0.01m, MaxAsOfDriftMinutes: 5));
 
@@ -1745,7 +1751,9 @@ public sealed class ReconciliationRunServiceTests
             "run-partial-status",
             portfolioAsOfOffsetMinutes: 5760));
 
-        var service = CreateService(store, new InMemoryReconciliationRunRepository());
+        var service = CreateService(store, new InMemoryReconciliationRunRepository(),
+            securityReferenceLookup: null, bankTransactionSource: null,
+            ledgerAdapter: new IndependentCutoffLedgerAdapter(TimeSpan.FromMinutes(-5760)));
 
         var detail = await service.RunAsync(new ReconciliationRunRequest(
             "run-partial-status",
@@ -2129,7 +2137,8 @@ public sealed class ReconciliationRunServiceTests
         ISecurityMasterAccountingEventService? securityMasterAccountingEventService = null,
         ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter = null,
         IExternalStatementReconciliationSourceAdapter? externalStatementAdapter = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        IStrategyLedgerReconciliationSourceAdapter? ledgerAdapter = null)
     {
         IStrategyRepository strategyRepository = store;
         var portfolioReadService = securityReferenceLookup is null
@@ -2146,6 +2155,7 @@ public sealed class ReconciliationRunServiceTests
                 projectionService: new ReconciliationProjectionService(),
                 repository: repository,
                 bankTransactionSource: bankTransactionSource,
+                ledgerAdapter: ledgerAdapter,
                 externalStatementAdapter: externalStatementAdapter,
                 securityValidationGate: securityValidationGate,
                 securityMasterAccountingEventService: securityMasterAccountingEventService,
@@ -2157,7 +2167,7 @@ public sealed class ReconciliationRunServiceTests
             projectionService: new ReconciliationProjectionService(),
             repository: repository,
             bankTransactionSource: bankTransactionSource,
-            ledgerAdapter: null,
+            ledgerAdapter: ledgerAdapter,
             portfolioAdapter: null,
             internalCashAdapter: null,
             externalStatementAdapter: externalStatementAdapter,
@@ -2165,6 +2175,17 @@ public sealed class ReconciliationRunServiceTests
             securityMasterAccountingEventService: securityMasterAccountingEventService,
             securityMasterAccountingEventSourceAdapter: securityMasterAccountingEventSourceAdapter,
             timeProvider: timeProvider);
+    }
+
+    // Models an independently retained source population cut. A run's EndedAt no longer
+    // fabricates source timing drift because the production reader uses the economic cut.
+    private sealed class IndependentCutoffLedgerAdapter(TimeSpan offset) : IStrategyLedgerReconciliationSourceAdapter
+    {
+        public ReconciliationLedgerInput? Adapt(StrategyRunDetail detail)
+        {
+            var source = new StrategyLedgerReconciliationSourceAdapter().Adapt(detail);
+            return source is null ? null : source with { AsOf = source.AsOf + offset };
+        }
     }
 
     private sealed class MutableTimeProvider(DateTimeOffset utcNow) : TimeProvider
