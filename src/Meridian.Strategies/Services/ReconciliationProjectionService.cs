@@ -46,13 +46,19 @@ public sealed partial class ReconciliationProjectionService
             .Where(static group => group.All(static row => row.Quantity == 0m && row.MonetaryBasis == 0m && row.CoverageFailure is null))
             .Select(static group => group.Key).ToHashSet();
         var ledgerLongSymbols = new HashSet<string>(
-            ledgerTrialBalance
+            ledger?.AccountingPositions is { Count: > 0 } longEvidence
+                ? longEvidence.Where(row => !row.IsShort && !knownClosed.Contains((row.Symbol.ToUpperInvariant(), false)))
+                    .Select(static row => row.Symbol)
+                : ledgerTrialBalance
                 .Where(line => string.Equals(line.AccountName, "Securities", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(line.Symbol)
                     && !knownClosed.Contains((line.Symbol.ToUpperInvariant(), false)))
                 .Select(static line => line.Symbol!),
             StringComparer.OrdinalIgnoreCase);
         var ledgerShortSymbols = new HashSet<string>(
-            ledgerTrialBalance
+            ledger?.AccountingPositions is { Count: > 0 } shortEvidence
+                ? shortEvidence.Where(row => row.IsShort && !knownClosed.Contains((row.Symbol.ToUpperInvariant(), true)))
+                    .Select(static row => row.Symbol)
+                : ledgerTrialBalance
                 .Where(line => string.Equals(line.AccountName, "Short Securities Payable", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(line.Symbol)
                     && !knownClosed.Contains((line.Symbol.ToUpperInvariant(), true)))
                 .Select(static line => line.Symbol!),

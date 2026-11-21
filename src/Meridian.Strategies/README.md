@@ -21,6 +21,11 @@ approval, resolution and sign-off rules remain unchanged. See
 Scoped paper/live run ledger reads use an optional `IStrategyRunLedgerSource` to rebuild from
 posted journals with the exact retained run identity. The source authorizes the financial account
 and book independently; terminal metrics are not required. Backtests retain their recorded books.
+Scoped reconciliation creation and retained-result reads use that same request-scope reader,
+including the portfolio's economic cutoff. Unsupported legacy scoped implementations fail closed.
+An empty private paper/live context ledger does not establish an empty accounting book. Retained
+canonical trade-role and chart-reference evidence can register a custom carrying account for native
+comparisons without renaming posted lines or inferring roles from account codes.
 
 Run ledger read models support inclusive economic-time cuts without mutating retained journals.
 Scoped result reads reuse the tenant/company run-visibility guard for downstream accounting

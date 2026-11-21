@@ -738,9 +738,12 @@ public sealed partial class StrategyRunReadService
         if (run is null)
             return null;
         var ledger = await ReadRunLedgerAsync(run, scope, ct).ConfigureAwait(false);
+        if (ledger is null)
+            return null;
+        var postingChart = scope is null ? null : _postedLedgerSource?.GetPostingChart(ledger, asOf);
         return asOf.HasValue
-            ? await _ledgerReadService.BuildSummaryAsync(run, asOf.Value, ct, ledger).ConfigureAwait(false)
-            : await _ledgerReadService.BuildSummaryAsync(run, ct, ledger).ConfigureAwait(false);
+            ? await _ledgerReadService.BuildSummaryAsync(run, asOf.Value, ct, ledger, postingChart).ConfigureAwait(false)
+            : await _ledgerReadService.BuildSummaryAsync(run, ct, ledger, postingChart).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(

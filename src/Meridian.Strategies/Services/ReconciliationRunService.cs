@@ -78,11 +78,22 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
     }
 
-    public async Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
+    public Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
+        => RunCoreAsync(request, scope: null, ct);
+
+    public Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, StrategyRunReadScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return RunCoreAsync(request, scope, ct);
+    }
+
+    private async Task<ReconciliationRunDetail?> RunCoreAsync(ReconciliationRunRequest request, StrategyRunReadScope? scope, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var runDetail = await _runReadService.GetRunDetailAsync(request.RunId, ct).ConfigureAwait(false);
+        var runDetail = scope is null
+            ? await _runReadService.GetRunDetailAsync(request.RunId, ct).ConfigureAwait(false)
+            : await _runReadService.GetRunDetailAsync(request.RunId, scope, ct).ConfigureAwait(false);
         if (runDetail is null)
         {
             return null;
@@ -93,7 +104,9 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         if (runDetail.Portfolio is { } portfolioCut)
             runDetail = runDetail with
             {
-                Ledger = await _runReadService.GetLedgerSummaryAsync(request.RunId, portfolioCut.AsOf, ct).ConfigureAwait(false)
+                Ledger = scope is null
+                    ? await _runReadService.GetLedgerSummaryAsync(request.RunId, portfolioCut.AsOf, ct).ConfigureAwait(false)
+                    : await _runReadService.GetLedgerSummaryAsync(request.RunId, portfolioCut.AsOf, scope, ct).ConfigureAwait(false)
             };
 
         var normalizedInputs = new ReconciliationNormalizedInputs(
@@ -238,11 +251,33 @@ public sealed class ReconciliationRunService : IReconciliationRunService
     public Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, CancellationToken ct = default) =>
         _repository.GetByIdAsync(reconciliationRunId, ct);
 
+    public async Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, StrategyRunReadScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        var detail = await _repository.GetByIdAsync(reconciliationRunId, ct).ConfigureAwait(false);
+        return detail is not null && await _runReadService.IsRunAccessibleAsync(detail.Summary.RunId, scope, ct).ConfigureAwait(false)
+            ? detail : null;
+    }
+
     public Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, CancellationToken ct = default) =>
         _repository.GetLatestForRunAsync(runId, ct);
 
+    public async Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return await _runReadService.IsRunAccessibleAsync(runId, scope, ct).ConfigureAwait(false)
+            ? await _repository.GetLatestForRunAsync(runId, ct).ConfigureAwait(false) : null;
+    }
+
     public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, CancellationToken ct = default) =>
         _repository.GetHistoryForRunAsync(runId, ct);
+
+    public async Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return await _runReadService.IsRunAccessibleAsync(runId, scope, ct).ConfigureAwait(false)
+            ? await _repository.GetHistoryForRunAsync(runId, ct).ConfigureAwait(false) : [];
+    }
 
     private static ReconciliationBreakCategory MapCategory(
         string category,

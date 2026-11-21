@@ -43,11 +43,16 @@ public sealed partial class StrategyRunReadService
             if (posted is not null)
                 return posted;
         }
-        return run.Metrics?.Ledger;
+        var retained = run.Metrics?.Ledger;
+        // The private live context ledger starts empty and does not attest an empty accounting book.
+        return run.RunType != RunType.Backtest && retained?.Journal.Count == 0 ? null : retained;
     }
 
     private async Task<LedgerSummary?> BuildRunLedgerSummaryAsync(StrategyRunEntry run,
         StrategyRunReadScope? scope, CancellationToken ct)
-        => await _ledgerReadService.BuildSummaryAsync(run, ct,
-            await ReadRunLedgerAsync(run, scope, ct).ConfigureAwait(false)).ConfigureAwait(false);
+    {
+        var ledger = await ReadRunLedgerAsync(run, scope, ct).ConfigureAwait(false);
+        return ledger is null ? null : await _ledgerReadService.BuildSummaryAsync(run, ct, ledger,
+            scope is null ? null : _postedLedgerSource?.GetPostingChart(ledger)).ConfigureAwait(false);
+    }
 }

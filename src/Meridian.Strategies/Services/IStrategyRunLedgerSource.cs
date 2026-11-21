@@ -9,4 +9,7 @@ public interface IStrategyRunLedgerSource
 {
     Task<IReadOnlyLedger?> ReadAsync(StrategyRunEntry run, StrategyRunReadScope scope,
         CancellationToken ct = default);
+
+    /// <summary>Explicit retained posting-role registrations for this selected ledger population.</summary>
+    IChartOfAccounts? GetPostingChart(IReadOnlyLedger ledger, DateTimeOffset? asOf = null) => null;
 }

@@ -468,6 +468,9 @@ public sealed partial class WorkstationEndpointsTests
             return Task.FromResult<ReconciliationRunDetail?>(null);
         }
 
+        public Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, StrategyRunReadScope scope, CancellationToken ct = default)
+            => RunAsync(request, ct);
+
         public Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, CancellationToken ct = default)
             => Task.FromResult<ReconciliationRunDetail?>(null);
 
@@ -493,6 +496,18 @@ public sealed partial class WorkstationEndpointsTests
             LastRunRequest = request;
             return Task.FromResult<ReconciliationRunDetail?>(detail);
         }
+
+        public Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, StrategyRunReadScope scope, CancellationToken ct = default)
+            => RunAsync(request, ct);
+
+        public Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, StrategyRunReadScope scope, CancellationToken ct = default)
+            => GetByIdAsync(reconciliationRunId, ct);
+
+        public Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default)
+            => GetLatestForRunAsync(runId, ct);
+
+        public Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default)
+            => GetHistoryForRunAsync(runId, ct);
 
         public Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, CancellationToken ct = default) =>
             string.Equals(reconciliationRunId, detail.Summary.ReconciliationRunId, StringComparison.OrdinalIgnoreCase)

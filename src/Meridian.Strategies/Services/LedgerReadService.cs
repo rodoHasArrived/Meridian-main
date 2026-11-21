@@ -33,20 +33,20 @@ public sealed class LedgerReadService
         => BuildSummaryAsync(entry, ct, postedLedger: null);
 
     public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct,
-        IReadOnlyLedger? postedLedger)
-        => BuildSummaryCoreAsync(entry, asOf: null, ct, postedLedger);
+        IReadOnlyLedger? postedLedger, IChartOfAccounts? postingChart = null)
+        => BuildSummaryCoreAsync(entry, asOf: null, ct, postedLedger, postingChart);
 
     public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct = default)
         => BuildSummaryCoreAsync(entry, asOf, ct, postedLedger: null);
 
     public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf,
-        CancellationToken ct, IReadOnlyLedger? postedLedger)
-        => BuildSummaryCoreAsync(entry, asOf, ct, postedLedger);
+        CancellationToken ct, IReadOnlyLedger? postedLedger, IChartOfAccounts? postingChart = null)
+        => BuildSummaryCoreAsync(entry, asOf, ct, postedLedger, postingChart);
 
     private async Task<LedgerSummary?> BuildSummaryCoreAsync(StrategyRunEntry entry, DateTimeOffset? asOf,
-        CancellationToken ct, IReadOnlyLedger? postedLedger)
+        CancellationToken ct, IReadOnlyLedger? postedLedger, IChartOfAccounts? postingChart = null)
     {
-        var summary = BuildBaseSummary(entry, asOf, postedLedger);
+        var summary = BuildBaseSummary(entry, asOf, postedLedger, postingChart);
         if (summary is null || _securityReferenceLookup is null || summary.TrialBalance.Count == 0)
         {
             return summary;
@@ -94,7 +94,7 @@ public sealed class LedgerReadService
     }
 
     private static LedgerSummary? BuildBaseSummary(StrategyRunEntry entry, DateTimeOffset? asOf,
-        IReadOnlyLedger? postedLedger)
+        IReadOnlyLedger? postedLedger, IChartOfAccounts? selectedPostingChart = null)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
@@ -104,7 +104,7 @@ public sealed class LedgerReadService
             return null;
         }
 
-        var postingChart = (ledger as Meridian.Ledger.Ledger)?.Policy?.Chart;
+        var postingChart = selectedPostingChart ?? (ledger as Meridian.Ledger.Ledger)?.Policy?.Chart;
 
         // Reuse the ledger's validation and normal-balance rules for an inclusive economic-time
         // cut. Never mutate the retained run ledger or mix final balances with historical journal.

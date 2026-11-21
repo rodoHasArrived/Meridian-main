@@ -64,7 +64,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var detail = await service.RunAsync(request, context.RequestAborted).ConfigureAwait(false);
+            var detail = await service.RunAsync(request, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
@@ -88,7 +88,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var detail = await service.GetByIdAsync(reconciliationRunId, context.RequestAborted).ConfigureAwait(false);
+            var detail = await service.GetByIdAsync(reconciliationRunId, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
@@ -105,7 +105,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var detail = await service.GetLatestForRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var detail = await service.GetLatestForRunAsync(runId, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false);
             return detail is null
                 ? Results.NotFound()
                 : Results.Json(detail, jsonOptions);
@@ -123,7 +123,7 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Reconciliation service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var history = await service.GetHistoryForRunAsync(runId, context.RequestAborted).ConfigureAwait(false);
+            var history = await service.GetHistoryForRunAsync(runId, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false);
             return history.Count == 0
                 ? Results.NotFound()
                 : Results.Json(history, jsonOptions);

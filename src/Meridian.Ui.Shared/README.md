@@ -11,6 +11,11 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui.Shared
 
+Strategy reconciliation endpoints pass trusted tenant/company scope through creation, result-ID,
+latest-result and history reads. Foreign or malformed scoped runs return not found before posted
+accounting sources are queried. Canonical run journals retain their explicit securities-role and
+chart-reference evidence for native comparisons; missing source coverage remains unavailable.
+
 Reconciliation queues expose a monetary total only when every break supplies one comparable typed
 money measure in the same retained currency. Quantity-only, legacy, mixed-currency and unverified
 account rows retain counts and an unavailable explanation instead of a dollar total. The nullable

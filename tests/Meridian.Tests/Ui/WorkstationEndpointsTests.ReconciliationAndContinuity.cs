@@ -291,7 +291,8 @@ public sealed partial class WorkstationEndpointsTests
         var created = await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions);
         created.Should().NotBeNull();
         created!.Summary.RunId.Should().Be("run-recon");
-        created.Summary.BreakCount.Should().Be(0);
+        created.Breaks.Should().NotBeEmpty("legacy run snapshots do not attest complete native accounting positions");
+        created.Breaks.Should().OnlyContain(item => item.Category == ReconciliationBreakCategory.ClassificationGap);
         created.Matches.Should().Contain(match => match.CheckId == "cash-balance");
 
         var latestResponse = await client.GetAsync(UiApiRoutes.RunsReconciliation.Replace("{runId}", "run-recon"));
