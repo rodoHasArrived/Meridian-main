@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
-using System.Security.Cryptography;
-using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Contracts.Operations;
 
@@ -152,5 +151,5 @@ public static class ProviderProvenanceLabels
     }
 
     private static string OpaqueId(string kind, string value) =>
-        $"{kind}-{Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes($"{kind}:v1:{value}")))[..24]}";
+        $"{kind}-{Sha256Digest.ComputeUtf8($"{kind}:v1:{value}")[..24]}";
 }

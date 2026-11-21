@@ -78,8 +78,7 @@ import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history"
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
-import { BackfillQuotaPanel, BackfillReceiptEvidence } from "@/screens/data-screen.backfill-quota";
-import { TimeText } from "@/components/ui/time-text";
+import { BackfillSubmissionPanel, BackfillReceiptEvidence } from "@/screens/data-screen.backfill-quota";
 import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
@@ -1954,37 +1953,7 @@ function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperations
         )}
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
         {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
-        {vm.preview && <BackfillQuotaPanel preview={vm.preview} submissionEstimate={vm.submission?.quota} busy={vm.busy}
-          selectAlternative={(alternative) => {
-            providerField.current?.focus();
-            vm.selectBackfillAlternative(alternative);
-          }} />}
-        {quota && !vm.submission && (
-          <div className="mt-3 space-y-2 text-sm">
-            <label className="flex w-fit items-center gap-2">
-              <input type="checkbox" checked={vm.scheduleForLater} disabled={vm.busy}
-                onChange={(event) => vm.setScheduleForLater(event.target.checked)} />
-              Schedule for later
-            </label>
-            {vm.scheduleForLater && (
-              <label className="grid max-w-xs gap-1">
-                Earliest start (UTC)
-                <Input type="datetime-local" value={vm.scheduledStart} disabled={vm.busy}
-                  onChange={(event) => vm.setScheduledStart(event.target.value)} />
-              </label>
-            )}
-          </div>
-        )}
-        {vm.submission && (
-          <div className="mt-4 space-y-2 rounded-md border border-border/70 p-3" role="status">
-            <p className="text-sm font-medium">{submissionStatus} · {vm.submission.provider}</p>
-            <p className="break-all font-mono text-xs text-muted-foreground">Job {vm.submission.executionId}</p>
-            {submissionStatus === "Scheduled" && <p className="text-xs">Eligible from <TimeText value={vm.submission.scheduledAt} />.</p>}
-            {vm.submission.quota.exceedsBudget && <p className="text-xs">Requests are paced to the shared provider budget.</p>}
-            {latestSubmission?.quotaReceipt && <BackfillReceiptEvidence receipt={latestSubmission.quotaReceipt} />}
-          </div>
-        )}
-        {latestSubmission?.batchReceipts?.length ? <BackfillBatchReceipts receipts={latestSubmission.batchReceipts} /> : null}
+        <BackfillSubmissionPanel vm={vm} providerField={providerField} />
         {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
         {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
         {vm.result?.quotaReceipt && <div className="mt-3"><BackfillReceiptEvidence receipt={vm.result.quotaReceipt} /></div>}

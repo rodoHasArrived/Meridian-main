@@ -1,6 +1,6 @@
 import { useState, type ComponentProps } from "react";
 import { MemoryRouter } from "react-router-dom";
-import { act, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { resetSinceLastVisitCache, type RecordSurfaceVisit, type SurfaceVisitServices } from "@/lib/since-last-visit";
@@ -401,8 +401,10 @@ describe("Reconciliation workbench", () => {
   it("opens the shortcut sheet with ? and lists every key in the map (C2)", async () => {
     const user = userEvent.setup();
     renderWorkbench();
-    queueRows()[0]!.focus();
-    await user.keyboard("?");
+    const firstRow = queueRows()[0]!;
+    act(() => firstRow.focus());
+    expect(firstRow).toHaveFocus();
+    fireEvent.keyDown(firstRow, { key: "?", code: "Slash", shiftKey: true });
     const sheet = await screen.findByRole("dialog", { name: "Break queue shortcuts" });
     for (const description of ["Move to the next break", "Move to the previous break", "Open the evidence drawer for the current break", "Show these shortcuts"]) {
       expect(within(sheet).getByText(description)).toBeInTheDocument();

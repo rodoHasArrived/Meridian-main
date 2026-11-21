@@ -592,6 +592,11 @@ Declared public members:
 | <code>public string? ExternalTransactionId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:138](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L138) | The broker/custodian transaction identifier, used for exact transaction matching. |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? MarketValue { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:146](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L146) | Custodian-stated market value of a holding, when the source states it. Required for bonds, whose quantity is face and whose price is quoted per 100 face, so quantity x price is not value. Omitted from serialized rows when absent so retained imports keep their content. |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:153](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L153) | Custodian-stated accrued interest on a holding (absolute amount in Currency), reconciled against Meridian&#x27;s accrued interest receivable. Null when the source states none. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? RelatedTransactionId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:157](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L157) | The source payment identity linked by a retained reversal. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Guid? SecurityId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:161](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L161) | Explicit canonical instrument identity supplied by the source mapping. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ReceiptAllocations { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:165](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L165) | Source allocation JSON; every positive leg identifies one obligation or projected flow. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ObligationKey { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:169](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L169) | Source identity for a payment allocated to one obligation. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Guid? ProjectedCashFlowId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:173](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L173) | Accepted projected flow identity for a payment allocated to one obligation. |
 
 ## DataSourceSnapshot
 
@@ -734,7 +739,7 @@ public sealed record NormalizedStatementRow(string RowId, StatementRowKind Kind,
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationBreakClassifications</code>. Kind: `class`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:288](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L288).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:308](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L308).
 
 Machine-readable break classifications carried on ReconciliationBreakRecord.Classification.
 
@@ -746,13 +751,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string InternalTransactionPopulationUnavailable = &quot;internal-transaction-population-unavailable&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:295](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L295) | Statement transaction matching ran against an empty internal ledger-transaction population, so every statement movement is structurally unmatched. Breaks carrying this classification are informational only: they stay visible for operator review but must not block close outputs. |
+| <code>public const string InternalTransactionPopulationUnavailable = &quot;internal-transaction-population-unavailable&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:315](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L315) | Statement transaction matching ran against an empty internal ledger-transaction population, so every statement movement is structurally unmatched. Breaks carrying this classification are informational only: they stay visible for operator review but must not block close outputs. |
 
 ## ReconciliationBreakExplanation
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationBreakExplanation</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:200](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L200).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:220](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L220).
 
 ```csharp
 public sealed record ReconciliationBreakExplanation(string Summary, IReadOnlyList<string> SourceSystems, string ProbableCause, string LedgerImpact, string SuggestedNextAction, string RequiredSignoffRole, IReadOnlyList<string> EvidenceLinks);
@@ -762,7 +767,7 @@ public sealed record ReconciliationBreakExplanation(string Summary, IReadOnlyLis
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationBreakRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:241](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L241).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:261](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L261).
 
 ```csharp
 public sealed record ReconciliationBreakRecord(string BreakId, string RunId, string ImportId, string SourceReference, string BreakCode, string Category, decimal Delta, decimal Tolerance, bool ToleranceBreached, DateTimeOffset CreatedAtUtc, string Status)
@@ -772,14 +777,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? EvidenceLink { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:254](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L254) |  |
-| <code>public string? Classification { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:260](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L260) | Optional machine-readable classification qualifying how the break should be governed. null for an ordinary break. See ReconciliationBreakClassifications. |
+| <code>public string? EvidenceLink { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:274](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L274) |  |
+| <code>public string? Classification { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:280](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L280) | Optional machine-readable classification qualifying how the break should be governed. null for an ordinary break. See ReconciliationBreakClassifications. |
 
 ## ReconciliationCase
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCase</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:156](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L156).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:176](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L176).
 
 ```csharp
 public sealed record ReconciliationCase(string CaseId, string ImportId, string Status, string Reason, decimal Confidence, string Rationale, DateTimeOffset CreatedAtUtc, IReadOnlyList<ReconciliationCaseHistoryEntry> History)
@@ -789,27 +794,27 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Owner { get; init; } = &quot;unassigned&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:166](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L166) |  |
-| <code>public string Priority { get; init; } = &quot;Normal&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:167](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L167) |  |
-| <code>public DateTimeOffset? DueAtUtc { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:168](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L168) |  |
-| <code>public DateTimeOffset? SlaBreachedAtUtc { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:169](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L169) |  |
-| <code>public IReadOnlyList&lt;ReconciliationCaseCommentThread&gt; CommentThreads { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:170](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L170) |  |
-| <code>public IReadOnlyList&lt;ReconciliationCaseAuditEvent&gt; AuditEvents { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:171](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L171) |  |
-| <code>public ReconciliationResolutionMetadata? Resolution { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:172](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L172) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:173](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L173) |  |
-| <code>public IReadOnlyList&lt;ReconciliationCaseDecisionNote&gt; DecisionNotes { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:174](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L174) |  |
-| <code>public DateTimeOffset LastUpdatedAtUtc { get; init; } = CreatedAtUtc;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:175](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L175) |  |
-| <code>public string LastUpdatedBy { get; init; } = &quot;system&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:176](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L176) |  |
-| <code>public string Disposition { get; init; } = &quot;Open&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:177](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L177) |  |
-| <code>public int AgingDays { get; init; } = 0;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:178](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L178) |  |
-| <code>public IReadOnlyList&lt;ReconciliationCaseAttachment&gt; Attachments { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:179](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L179) |  |
-| <code>public ReconciliationBreakExplanation? BreakExplanation { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:180](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L180) |  |
+| <code>public string Owner { get; init; } = &quot;unassigned&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:186](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L186) |  |
+| <code>public string Priority { get; init; } = &quot;Normal&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:187](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L187) |  |
+| <code>public DateTimeOffset? DueAtUtc { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:188](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L188) |  |
+| <code>public DateTimeOffset? SlaBreachedAtUtc { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:189](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L189) |  |
+| <code>public IReadOnlyList&lt;ReconciliationCaseCommentThread&gt; CommentThreads { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:190](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L190) |  |
+| <code>public IReadOnlyList&lt;ReconciliationCaseAuditEvent&gt; AuditEvents { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:191](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L191) |  |
+| <code>public ReconciliationResolutionMetadata? Resolution { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:192](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L192) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:193](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L193) |  |
+| <code>public IReadOnlyList&lt;ReconciliationCaseDecisionNote&gt; DecisionNotes { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:194](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L194) |  |
+| <code>public DateTimeOffset LastUpdatedAtUtc { get; init; } = CreatedAtUtc;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:195](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L195) |  |
+| <code>public string LastUpdatedBy { get; init; } = &quot;system&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:196](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L196) |  |
+| <code>public string Disposition { get; init; } = &quot;Open&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:197](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L197) |  |
+| <code>public int AgingDays { get; init; } = 0;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:198](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L198) |  |
+| <code>public IReadOnlyList&lt;ReconciliationCaseAttachment&gt; Attachments { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:199](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L199) |  |
+| <code>public ReconciliationBreakExplanation? BreakExplanation { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:200](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L200) |  |
 
 ## ReconciliationCaseAttachment
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseAttachment</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:191](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L191).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:211](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L211).
 
 ```csharp
 public sealed record ReconciliationCaseAttachment(string AttachmentId, string EvidenceKind, string SourceSystem, string SourceReference, string ContentHash, string? Route, DateTimeOffset AttachedAtUtc);
@@ -819,7 +824,7 @@ public sealed record ReconciliationCaseAttachment(string AttachmentId, string Ev
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseAuditEvent</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:187](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L187).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:207](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L207).
 
 ```csharp
 public sealed record ReconciliationCaseAuditEvent(string EventId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Detail);
@@ -829,7 +834,7 @@ public sealed record ReconciliationCaseAuditEvent(string EventId, string EventTy
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseComment</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:185](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L185).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:205](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L205).
 
 ```csharp
 public sealed record ReconciliationCaseComment(string CommentId, string Body, string Actor, DateTimeOffset CreatedAtUtc, string? ParentCommentId = null);
@@ -839,7 +844,7 @@ public sealed record ReconciliationCaseComment(string CommentId, string Body, st
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseCommentThread</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:183](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L183).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:203](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L203).
 
 ```csharp
 public sealed record ReconciliationCaseCommentThread(string ThreadId, string Subject, IReadOnlyList<ReconciliationCaseComment> Comments);
@@ -849,7 +854,7 @@ public sealed record ReconciliationCaseCommentThread(string ThreadId, string Sub
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseDecisionNote</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:209](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L209).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:229](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L229).
 
 ```csharp
 public sealed record ReconciliationCaseDecisionNote(string DecisionNoteId, string Actor, DateTimeOffset CreatedAtUtc, string Note, IReadOnlyList<string> EvidenceReferences);
@@ -869,7 +874,7 @@ public sealed record ReconciliationCaseEvent(DateTimeOffset OccurredAtUtc, strin
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseHistoryEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:216](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L216).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:236](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L236).
 
 ```csharp
 public sealed record ReconciliationCaseHistoryEntry(DateTimeOffset TimestampUtc, string FromStatus, string ToStatus, string Note)
@@ -879,5 +884,5 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Actor { get; init; } = &quot;system&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:222](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L222) |  |
-| <code>public string? EvidenceId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:223](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L223) |  |
+| <code>public string Actor { get; init; } = &quot;system&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:242](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L242) |  |
+| <code>public string? EvidenceId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:243](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L243) |  |
